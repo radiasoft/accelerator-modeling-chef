@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  CHEF:      A Qt-based Application 
+******  Chef:      A Qt-based Application 
 ******             Layered on top of of BEAMLINE.
 ******                                                                
 ******  File:      chefplotmain.cpp
@@ -33,15 +33,12 @@
 *************************************************************************/
 
 #include <CHEFPlotMain.h> 
-#include <CHEFPlotData.h> 
 #include <CHEFPlot.h>
 #include <Plot.h>
+#include <PlotData.h> 
 #include <Lego.h>
 #include <TuneDiagram.h>
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
-#include <qwt/qwt_plot_canvas.h>
-#include <qwt/qwt_scale.h>
 #include <qapplication.h>
 #include <qtoolbar.h>
 #include <qmenubar.h>
@@ -50,8 +47,12 @@
 #include <qpainter.h>
 #include <qtable.h>
 
-#include <qwt/qwt_painter.h>
-#include <qwt/qwt_plot_printfilter.h>
+#include <qwt_painter.h>
+#include <qwt_plot_printfilter.h>
+#include <qwt_plot_canvas.h>
+#include <qwt_plot_curve.h>
+#include <qwt_scale_widget.h>
+
 #include <DataDisplay.h>
 
 #include <iostream>
@@ -62,121 +63,184 @@
 const int canvas_height = 30;
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
-: CHEFPlotMainBase(parent,name,f), _auto_clear(true) 
+: CHEFPlotMainBase(parent,name,f), auto_clear_(true) 
 {
-  _chefplot = new CHEFPlot(this);
-  setCentralWidget(_chefplot);
-  // REMOVE: _tunediagram = new TuneDiagram( parent, 0, Qt::WDestructiveClose );
-  _tunediagram = new TuneDiagram( parent );
-  _tunediagram->hide();
+
+  chefplot_    = new CHEFPlot(this);
+  setCentralWidget(chefplot_);
+
+  tunediagram_ = new TuneDiagram( parent );
+  tunediagram_->hide();
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 CHEFPlotMain::~CHEFPlotMain() {
 
  // Qt widgets are automatically destroyed when their parent is destroyed
 
-
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlotMain::displayLattice(beamline const& bml){
 
-  _chefplot->displayLattice(bml);
-  
-  }
-
-  
-//.................................................................................
-
-void CHEFPlotMain::addData(CHEFPlotData& cpdata)
+void CHEFPlotMain::displayLattice(BmlPtr bml)
 {
- if (_auto_clear) _chefplot->clear(); 
- _tunediagram->setTunes( cpdata.getHorTune(), cpdata.getVerTune());
- _tunediagram->draw();
- _chefplot->addData(cpdata);
+  chefplot_->displayLattice(bml);
+}
+  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CHEFPlotMain::addData(PlotData& pltdata)
+{
+
+ 
+ if (auto_clear_) chefplot_->clear(); 
+
+ tunediagram_->setTunes( pltdata.getTunes().htune, pltdata.getTunes().vtune );
+ tunediagram_->draw();
+
+ chefplot_->setData(pltdata);
+
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::enableGrid(bool set) {
   
- _chefplot->enableGrid(set);
+ chefplot_->enableGrid(set);
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//.................................................................................
 
 void CHEFPlotMain::enableThumbWheels(bool set) {
 
- _chefplot->enableThumbWheels(set);
+ chefplot_->enableThumbWheels(set);
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::enableLegoPlot(bool set) {
 
- _chefplot->enableLegoPlot(set);
+ chefplot_->enableLegoPlot(set);
+
 }
 
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlotMain::zoomUseRightAxis() {
+
+void CHEFPlotMain::enableZoomRightYAxis() {
+
+  std::cout << " CHEFPlotMain::enableZoomRightYAxis()" << std::endl;
+ chefplot_->enableZoomRightYAxis(); 
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlotMain::enableZoomLeftYAxis() {
   
- _chefplot->zoomUseRightAxis();
-
+  std::cout << " CHEFPlotMain::enableZoomZoomLeftYAxis()" << std::endl;
+ chefplot_->enableZoomLeftYAxis(); 
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlotMain::zoomUseLeftAxis(){
+void CHEFPlotMain::enableZoomIn() {
 
-  _chefplot->zoomUseLeftAxis();
+  std::cout << " CHEFPlotMain::enableZoomIn()" << std::endl;
+  chefplot_->enableZoomIn();  
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlotMain::enableZoomOut() 
+{
+  
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CHEFPlotMain::zoomReset()
+{
+
+  std::cout << " CHEFPlotMain::zoomReset()" << std::endl;
+  chefplot_->zoomReset();  
   
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::showDataPoints( bool set ){
 
-  _chefplot->_plot->enableDataPointSymbols(set);
+  chefplot_->plot_->enableDataPointSymbols(set);
   
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::enableLegend( bool set ){
 
-  _chefplot->_plot->enableLegend(set);
-  _chefplot->_plot->replot();
+  chefplot_->plot_->enableLegend(set);
+  chefplot_->plot_->replot();
   
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::enableInterpolation( bool set ){
 
-  _chefplot->_plot->enableInterpolation(set);
-  _chefplot->_plot->replot();
+  chefplot_->plot_->enableInterpolation(set);
+  chefplot_->plot_->replot();
   
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::enableCoordinatesDisplay( bool set ){
 
-  _chefplot->_plot->enableCoordinatesDisplay(set);
+  chefplot_->plot_->enableCoordinatesDisplay(set);
   
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::exit( ){
   
@@ -189,190 +253,89 @@ void CHEFPlotMain::exit( ){
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::clear( ){
   
-     _chefplot->clear();  //  clear the plot
+     chefplot_->clear();  //  clear the plot
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::setAutoClear( bool set){
   
-     _auto_clear = set;
+     auto_clear_ = set;
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
-void CHEFPlotMain::filePrint() {
-
-  QPrinter printer;
-  printer.setOrientation(QPrinter::Landscape);
-     //printer.setResolution(600);
-  printer.setMinMax(1,1);
-  printer.setPageSize(QPrinter::Letter);
-  printer.setColorMode(QPrinter::Color);
-  if ( !printer.setup() ) return;
-
-  if ( printer.printerName() != "" )
-  {
-    _chefplot->_plot->print(printer);
-
-  }
-
-#if 0 
-
-   //////////////////////////////////////////
-  
-  QPainter  painter(&printer);
-     //QRect     plotRect           = painter.viewport();
-     //QRect     xBottomScaleRect   = painter;
-     //QRect     yLeftScaleRect     = ;
-     //QRect     yRightScaleRect    = ;
-     //QRect     titleRect          = ;
-     //QRect     legendRect         = ;
-  
-
-
-  //QRect               canvasRect;
-  //QwtArray            map; // mapping between plot and paint device coordinates
-
-
-     //QwtPlotLayout* plotlayout  = _chefplot->_plot->layout();
-  
-
-    QwtPlotPrintFilter  pfilter =   QwtPlotPrintFilter();
-
-    int axisCnt  = 3;
-    int sDist    = 0;
-    int eDist    = 0;
-    const QwtScaleDiv* scaleDiv;
-
-    QwtPainter::setMetricsMap(_chefplot->_plot, painter.device());
-    const QwtMetricsMap& metricsMap = QwtPainter::metricsMap();
-
-
-    QwtArray<QwtDiMap> map(axisCnt);
-
-    for (int axis_index = 0; axis_index < axisCnt; axis_index++)
-    {
-        scaleDiv = _chefplot->_plot->axisScale(axis_index);
-        
-        map[axis_index].setDblRange(scaleDiv->lBound(), scaleDiv->hBound(), scaleDiv->logScale());
-
-        std::cout << "scaleDiv->lBound(), scaleDiv->hBound()" << scaleDiv->lBound() << "  " << scaleDiv->hBound() << std::endl;
-
-        sDist = _chefplot->_plot->axis(axis_index)->startBorderDist();
-        eDist = _chefplot->_plot->axis(axis_index)->endBorderDist();
-
-        const QRect scaleRect = _chefplot->_plot->axis(axis_index)->rect();
-
-        double from, to;
-
-        if ( axis_index == QwtPlot::xTop || axis_index == QwtPlot::xBottom )
-        {
-            from = metricsMap.layoutToDeviceX(scaleRect.left()  + sDist);
-            to   = metricsMap.layoutToDeviceX(scaleRect.right() - eDist);
-        }
-        else
-        {
-            from = metricsMap.layoutToDeviceY(scaleRect.bottom() - sDist);
-            to   = metricsMap.layoutToDeviceY(scaleRect.top()    + eDist);
-        }
-
-        map[axis_index].setIntRange(qwtInt(from), qwtInt(to));
-        std::cout << "from, to: " << from << "  " << to << std::endl;
-    }
-
-     const QRect canvasRect = metricsMap.layoutToDevice(_chefplot->_plot->canvas()->rect());
-     _chefplot->_plot->printCanvas(&painter, canvasRect,  map,  pfilter);
-
-     QwtPainter::resetMetricsMap();
-
-
-  
-    //_chefplot->_plot->printScale(painter, axis, startDist, endDist, baseDist, rect);
-   //_chefplot->_plot->printCanvas(painter, canvasRect,  map,  pfilter);
-   //  _chefplot->_plot->printLegend(painter, rect);
-     //_chefplot->_plot->printTitle(painter, rect);
-
-     //painter.setViewport(plotRect.width()*0.20, plotRect.height()*0.20,  plotRect.width()*0.60, plotRect.height()*0.60);
-
-#endif
-
-
-}
-
-//.................................................................................
-
-void 
-CHEFPlotMain::showTunes() 
+void CHEFPlotMain::showTunes() 
 {
-  _tunediagram->setCaption( this->caption() );
+  tunediagram_->setCaption( this->caption() );
 
-  int x = ( qApp->mainWidget()->width()  - _tunediagram->width()  ) / 2;
-  int y = ( qApp->mainWidget()->height() - _tunediagram->height() ) / 2;
-  _tunediagram->parentWidget()->move( x, y );
+  int x = ( qApp->mainWidget()->width()  - tunediagram_->width()  ) / 2;
+  int y = ( qApp->mainWidget()->height() - tunediagram_->height() ) / 2;
+
+  tunediagram_->parentWidget()->move( x, y );
+
   // NOTE: Must be done this way rather than
   // NOTE: 
-  // NOTE:    _tunediagram->move( x, y );
+  // NOTE:    tunediagram_->move( x, y );
   // NOTE:  
   // NOTE: because of MDI interface.
   // NOTE: See TrollTech's documentation on class QWorkspace.
 
-  _tunediagram->show();
+  tunediagram_->show();
 }
 
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
-CHEFPlotMain::_showdata() 
+
+void CHEFPlotMain::showdata() 
 {
 
-  // as much of possible of this function should be moved to Datadisplay.
-
-  QWidget* parent = 0;
+  QWidget* parent = ( !parentWidget()) ? 0 : parentWidget()->parentWidget();
   
-  if (this->parentWidget() == 0) 
-    parent = 0;
-  else
-    parent = this->parentWidget()->parentWidget();
+  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, ! (chefplot_->getBeamline()->empty()) ); 
 
-
-  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, ! (_chefplot->getBeamline().empty()) ); 
   dd->setCaption( this->caption() );
   dd->resize(width(), height());
 
-   
-  const QwtPlotCurve* c = 0;
-  QwtArray<long> keys = _chefplot->_plot->curveKeys(); 
 
-  unsigned int rowsize    =  1;
-  unsigned int colsize    =  2*keys.size();  
+  unsigned int rowsize    =  0;
+  unsigned int colsize    =  0;  
   unsigned int bmlcolsize =  0;
-
-  unsigned int nelmnts =  0;              // no of elements in the beamline (if it exists)
+  unsigned int nelmnts    =  0;              // no of elements in the beamline (if it exists)
 
   // determine maximum no of rows in the table 
 
-  for (unsigned int i=0; i< keys.size(); i++)
+  QwtPlotCurve *  cv = 0;
+  QwtPlotItemList const&  itemlist = chefplot_->plot_->itemList();
+
+  for (QwtPlotItemList::const_iterator it = itemlist.begin(); it != itemlist.end() ; ++it)
   {
-    c = _chefplot->_plot->curve( keys[i] );
-    rowsize = std::max( (int) rowsize, c->dataSize() );
+    if ( (*it)->rtti() != QwtPlotItem::Rtti_PlotCurve)  continue;
+
+    cv          = dynamic_cast<QwtPlotCurve*>(*it);
+    rowsize     = std::max( (int) rowsize, cv->dataSize() );
+    colsize    += 2; 
   };
  
   // adjust row and col size to accomodate beamline element names and azimuth info if applicable  
 
   QString data("");
-  if ( !( _chefplot->getBeamline().empty() )  ) 
+  if ( !( chefplot_->getBeamline()->empty() )  ) 
   {  
-     nelmnts    = _chefplot->getBeamline().countHowManyDeeply();  
+     nelmnts    = chefplot_->getBeamline()->countHowManyDeeply();  
      bmlcolsize = 4;
      rowsize    = std::max( rowsize, nelmnts );
 
@@ -384,102 +347,111 @@ CHEFPlotMain::_showdata()
      dd->DataTable->horizontalHeader()->setLabel( 2,    "Element Length [m]");
      dd->DataTable->horizontalHeader()->setLabel( 3,    "End Azimuth [m]");
   
-     DeepBeamlineIterator it( const_cast<beamline&>(_chefplot->getBeamline()) );
-     bmlnElmnt* beptr = 0;
-
      int idx =0;
      double azimuth = 0.0;
+   
+     ElmPtr beptr;
 
-     while ( (beptr = it++) ) 
+     for (beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(chefplot_->getBeamline())->deep_begin();
+                                  it != boost::const_pointer_cast<beamline>(chefplot_->getBeamline())->deep_end(); ++it, ++idx )
      {
+       beptr = (*it);
 
        azimuth += beptr->Length();
        dd->DataTable->setText(idx, 0,       beptr->Name()  );
        dd->DataTable->setText(idx, 1,       beptr->Type()  );
        dd->DataTable->setText(idx, 2,       data.setNum( beptr->Length()) );
        dd->DataTable->setText(idx, 3,       data.setNum( azimuth) );
-      idx++;
+
      }
   }
 
   // set datatable rowsize/colsize
 
-  for (unsigned int i=0; i < keys.size() ; i++) 
-  {
-    c = _chefplot->_plot->curve( keys[i] );
-    dd->DataTable->horizontalHeader()->setLabel( bmlcolsize+2*i,      _chefplot->_plot->axis( c->xAxis() )->title() );
-    dd->DataTable->horizontalHeader()->setLabel( bmlcolsize+2*i+1,    _chefplot->_plot->axis( c->yAxis() )->title() + QString("\n")+ c->title() );
+  int idx   = -1; // curve index
+  int col1  =  0;
+  int col2  =  0;
 
-  };
+  for (QwtPlotItemList::const_iterator it = itemlist.begin(); it != itemlist.end() ; ++it ) {
 
+    if ( (*it)->rtti() != QwtPlotItem::Rtti_PlotCurve)  continue;
 
-  for (unsigned int j=0; j < keys.size() ; j++)
-  {
-    c = _chefplot->_plot->curve( keys[j] );
+    cv          = dynamic_cast<QwtPlotCurve*>(*it); ++idx;
 
-    for (int i=0; i < c->dataSize(); i++)    
-    { 
+    col1 = bmlcolsize+2*idx; 
+    col2 = col1+1; 
+
+    dd->DataTable->horizontalHeader()->setLabel( col1,    chefplot_->plot_->axisWidget( cv->xAxis() )->title().text() );
+    dd->DataTable->horizontalHeader()->setLabel( col2,    chefplot_->plot_->axisWidget( cv->yAxis() )->title().text()
+                                                                         + QString("\n")+ cv->title().text() );
+    for (int row=0; row < cv->dataSize(); ++row) { 
    
-      dd->DataTable->setText(i, bmlcolsize+2*j,       data.setNum( c->x( i ) ));
-      dd->DataTable->setText(i, bmlcolsize+2*j+1,     data.setNum( c->y( i ) ));
+      dd->DataTable->setText(row, col1,     data.setNum( cv->x( row) ) ); // a rather inefficient way of setting row values. FIX ME !
+      dd->DataTable->setText(row, col2,     data.setNum( cv->y( row) ) );
 
     }
-
   };
+
 
   dd->show();
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::optionsVerLogScaleLeft(bool set) 
 {
 
   if (set)
 
-    _chefplot->setLogScale( QwtPlot::yLeft);
+    chefplot_->setLogScale( QwtPlot::yLeft);
 
   else
 
-    _chefplot->setLinScale( QwtPlot::yLeft);
+    chefplot_->setLinScale( QwtPlot::yLeft);
 
 
 }
 
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFPlotMain::optionsVerLogScaleRight(bool set) 
 {
 
   if (set)
 
-    _chefplot->setLogScale( QwtPlot::yRight);
+    chefplot_->setLogScale( QwtPlot::yRight);
 
   else
 
-    _chefplot->setLinScale( QwtPlot::yRight);
+    chefplot_->setLinScale( QwtPlot::yRight);
 
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFPlotMain::optionsHorLogScale(bool set) 
 {
 
   if (set)
 
-    _chefplot->setLogScale( QwtPlot::xBottom);
+    chefplot_->setLogScale( QwtPlot::xBottom);
 
   else
 
-    _chefplot->setLinScale( QwtPlot::xBottom);
+    chefplot_->setLinScale( QwtPlot::xBottom);
 
 
 }
 
-//.................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFPlotMain::optionsPersistent(bool set) 
 {
@@ -487,3 +459,17 @@ void CHEFPlotMain::optionsPersistent(bool set)
     setAutoClear(!set);     
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlotMain::filePrint() 
+{
+
+  // not implemented.
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
