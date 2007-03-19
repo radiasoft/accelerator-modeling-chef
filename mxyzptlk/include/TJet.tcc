@@ -50,6 +50,12 @@
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******
+****** Mar 2007 ostiguy@fnal.gov  
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
+****** - added STL compatible monomial term iterators   
 ******  
 **************************************************************************
 *************************************************************************/
@@ -308,7 +314,7 @@ Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
   //       results in a null JLPtr. Tcoord is not fully formed 
   //       until the instantiate() method is called. 
       
-  TJetEnvironment<T>::_coordinates.push_back( this );
+  TJetEnvironment<T>::coordinates_.push_back( this );
   
 }
 
@@ -351,7 +357,7 @@ Tparam<T>::Tparam( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
   //       results in a null JLPtr. Tcoord is not fully formed 
   //       until the instantiate() method is called. 
       
-TJetEnvironment<T>::_parameters.push_back( this );
+TJetEnvironment<T>::parameters_.push_back( this );
 
 
 }

@@ -58,7 +58,11 @@
 ******  
 ****** Mar 2007  ostiguy@fnal.gov
 ******
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators    
+******
 ******  
 **************************************************************************
 **************************************************************************
@@ -200,7 +204,7 @@ friend class TJL;
 
   void dispose()           { TJL<T>::discardTJL(  this ); }  // used by ReferenceCounter class 
 
-  inline JLPtr<T> clone() 
+  inline JLPtr<T> clone() const 
                            { return JLPtr<T>( TJL<T>::makeTJL(  *this ) ); } 
 
 
@@ -339,6 +343,9 @@ friend class TJL;
   template <typename U>
   class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::forward_traversal_tag > {
   
+  template<typename V>
+  friend class iter_;
+
     private:
       struct enabler {};
 
