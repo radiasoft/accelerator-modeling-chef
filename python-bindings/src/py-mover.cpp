@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******                                                               
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-mover.cpp
@@ -19,22 +22,21 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+******
+*********************************************************************************
+*********************************************************************************
+********************************************************************************/
+
 #include <boost/python.hpp>
-
 #include <beamline/mover.h>
-
-
-void wrap_mover () {
-  
 
 using namespace boost::python;
 
+void wrap_mover () {
 
-class_<mover>("mover")
-  .def(init<const char*>())
-  .def( "switchOn",   &mover::switchOn)
-  .def( "switchOff",  &mover::switchOff);
+  //class_<mover, bases<Circuit>, boost::noncopyable>("mover", init<const char*>())
+  //.def( "switchOn",   &mover::switchOn)
+  //.def( "switchOff",  &mover::switchOff);
  
 }
 
