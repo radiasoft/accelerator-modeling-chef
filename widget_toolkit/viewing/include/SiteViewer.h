@@ -12,6 +12,13 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+*****   Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -23,9 +30,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007   ostiguy@fnal.gov
+****** - support for reference-counted elements and beamlines 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -37,17 +44,14 @@
 #include <qvbox.h>
 #include <qgl.h>
 
-class beamline;
-class bmlnElmnt;
-class BeamlineContext;
+#include "BeamlineExpressionTree.h"
+#include <beamline/BmlPtr.h>
+
 class QPopupMenu;
 class QString;
 class QMouseEvent;
 class QueryDialog;
 
-#ifndef BMLEXPTREE_H
-#include "BeamlineExpressionTree.h"
-#endif
 
 class SiteViewer : public QVBox
 {
@@ -57,7 +61,7 @@ Q_OBJECT
 class Wndw : public QGLWidget
 {
  public:
-  Wndw( SiteViewer* );
+   Wndw( SiteViewer* );
   ~Wndw();
 
   void paintGL();
@@ -90,8 +94,8 @@ class Wndw : public QGLWidget
 
 
 public:
-  SiteViewer( const Particle&, beamline*, QWidget* = 0, const char* = 0, WFlags = 0 );
-  SiteViewer( BeamlineContext&, QWidget* = 0, const char* = 0, WFlags = 0 );
+  SiteViewer( const Particle&, BmlPtr, QWidget* = 0, const char* = 0, WFlags = 0 );
+  SiteViewer( BmlContextPtr, QWidget* = 0, const char* = 0, WFlags = 0 );
   ~SiteViewer();
 
   bool filter( const bmlnElmnt* ) const;
@@ -130,8 +134,7 @@ private:
   double  _zmin;
   double  _zmax;
 
-  BeamlineContext* _bmlConPtr;
-  bool             _deleteContext;
+  BmlContextPtr    _bmlConPtr;
   bool             _showStart;
   bmlnElmnt**      _element;
 
