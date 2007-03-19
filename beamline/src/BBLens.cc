@@ -174,7 +174,7 @@ void BBLens::AdjustSigma()
            "void BBLens::AdjustSigma()", 
            "Cannot find ETinfo" ) );
   }
-   std::cout << " BBLens::AdjustSigma() is BROKEN ! FIXME ! " < std::endl;
+   std::cout << " BBLens::AdjustSigma() is BROKEN ! FIXME ! " << std::endl;
    exit (1); 
 
   // These statement BREAK the library hierarchy !!!
