@@ -11,6 +11,13 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
 ******  Authors:   Leo Michelotti
 ******             Nadezhda Shemyakina  (Summer, 2001)
@@ -26,9 +33,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007 ostiguy@fnal.gov
+****** -removed dependencies on slist/dlist
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -58,7 +65,7 @@
 #include <qlineedit.h>
 #include <qgl.h>
 
-#include "slist.h"
+#include <list>
 
 // typedef void (*DrawFunc) ( DrawSpace3D* );
 
@@ -140,7 +147,7 @@ class TrbWidget : public QVBox
 Q_OBJECT
 
 public:
-  TrbWidget( slist& orbitList );
+  TrbWidget( std::list<Orbit*>& orbitList );
   // The TrbWidget constructor assumes ownership
   //   of all Orbits in orbits3D. In the process
   //   it empties the list.
@@ -167,14 +174,14 @@ public slots:
 
 // Private data
 private:
-  slist            _myOrbits;
-  QTimer*          _p_timer;
-  QMenuBar*        _p_menu;
-  DrawSpace3D*     _p_glWindow;
-  QHBox*           _p_trackBox;
-  QPushButton*     _p_startBtn;
-  QLabel*          _p_blankLabel;
-  bool             _isIterating;
+  std::list<Orbit*>  _myOrbits;
+  QTimer*            _p_timer;
+  QMenuBar*          _p_menu;
+  DrawSpace3D*       _p_glWindow;
+  QHBox*             _p_trackBox;
+  QPushButton*       _p_startBtn;
+  QLabel*            _p_blankLabel;
+  bool               _isIterating;
 };
 
 
