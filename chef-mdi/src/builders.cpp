@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  CHEF: Library of Qt based widget classes, providing GUI   
+******  Chef: Library of Qt based widget classes, providing GUI   
 ******             interfaces to exercise the functionality        
 ******             of BEAMLINE.                                    
 ******                                                                
@@ -12,6 +12,17 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Usage, modification, and redistribution are subject to terms 
+******  of the License supplied with this software.                  
+******                                                               
+******  Software and documentation created under                    
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.    
+******  The U.S. Government retains a world-wide non-exclusive,     
+******  royalty-free license to publish or reproduce documentation   
+******  and software for U.S. Government purposes. This software     
+******  is protected under the U.S. and Foreign Copyright Laws.      
+******  URA/FNAL reserves all rights.                        
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -23,9 +34,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007 ostiguy@fnal.gov
+****** - changes to support new semantics of reference counted beamlines
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -50,9 +61,9 @@
 
 using namespace std;
 
-void CHEFGUI::_makeFODO()
+void CHEFGUI::makeFODO()
 {
-  beamline* bmlPtr = new beamline( "5_FODO_cells" );
+  BmlPtr bmlPtr( new beamline( "5_FODO_cells" ) );
 
   const double f =  7.0;  /*[m]*/                 // focal length of thin quads
   const double l = 10.0;  /*[m]*/                 // length of drift
@@ -67,35 +78,34 @@ void CHEFGUI::_makeFODO()
  
   QtMonitor M( "Qt_monitor" );
 
-  bmlPtr->append( M.Clone() );
+  bmlPtr->append( M );
   for( int i = 0; i < 5; i++ ) {
-    bmlPtr->append( O.Clone() );
-    bmlPtr->append( F.Clone() );
-    bmlPtr->append( M.Clone() );
-    bmlPtr->append( O.Clone() );
-    bmlPtr->append( M.Clone() );
-    bmlPtr->append( O.Clone() );
-    bmlPtr->append( D.Clone() );
-    bmlPtr->append( M.Clone() );
-    bmlPtr->append( O.Clone() );
-    bmlPtr->append( M.Clone() );
+    bmlPtr->append( O );
+    bmlPtr->append( F );
+    bmlPtr->append( M );
+    bmlPtr->append( O );
+    bmlPtr->append( M );
+    bmlPtr->append( O );
+    bmlPtr->append( D );
+    bmlPtr->append( M );
+    bmlPtr->append( O );
+    bmlPtr->append( M );
   }
    
   bmlPtr->setEnergy( energy );
   
-  _p_currBmlCon = new BeamlineContext( Proton(energy), bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(energy), bmlPtr) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  _p_currBmlCon->handleAsRing();
+  p_currBmlCon_->handleAsRing();
 
-  emit _new_beamline();
+  emit new_beamline();
 }
 
 
-void CHEFGUI::_makeSingSext()
+void CHEFGUI::makeSingSext()
 {
-  beamline* bmlPtr = new beamline( "Henon lattice" );
+  BmlPtr bmlPtr( new beamline( "Henon lattice" ) );
 
   const double f =  7.0;  /*[m]*/                 // focal length of thin quads
   const double l = 10.0;  /*[m]*/                 // length of drift
@@ -111,28 +121,27 @@ void CHEFGUI::_makeSingSext()
  
   QtMonitor M( "Qt monitor" );
 
-  bmlPtr->append( M.Clone() );
-  bmlPtr->append( O.Clone() );
-  bmlPtr->append( F.Clone() );
-  bmlPtr->append( M.Clone() );
-  bmlPtr->append( O.Clone() );
-  bmlPtr->append( M.Clone() );
-  bmlPtr->append( S.Clone() );
-  bmlPtr->append( O.Clone() );
-  bmlPtr->append( D.Clone() );
-  bmlPtr->append( M.Clone() );
-  bmlPtr->append( O.Clone() );
-  bmlPtr->append( M.Clone() );
+  bmlPtr->append( M );
+  bmlPtr->append( O );
+  bmlPtr->append( F );
+  bmlPtr->append( M );
+  bmlPtr->append( O );
+  bmlPtr->append( M );
+  bmlPtr->append( S );
+  bmlPtr->append( O );
+  bmlPtr->append( D );
+  bmlPtr->append( M );
+  bmlPtr->append( O );
+  bmlPtr->append( M );
    
   bmlPtr->setEnergy( energy );
   
-  _p_currBmlCon = new BeamlineContext( Proton(energy), bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(energy), bmlPtr) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  _p_currBmlCon->handleAsRing();
+  p_currBmlCon_->handleAsRing();
 
-  emit _new_beamline();
+  emit new_beamline();
 }
 
 
