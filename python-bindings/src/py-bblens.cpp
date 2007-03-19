@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-bblens.cpp
@@ -19,7 +22,10 @@
 ******             Fermi National Laboratory, Batavia, IL   60510
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+*********************************************************************************
+*********************************************************************************
+********************************************************************************/
+
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
@@ -27,6 +33,11 @@
 
 #include <boost/python.hpp>
 
+//-------------------------------------------------------------------------------
+// local code and definitions
+//-------------------------------------------------------------------------------
+
+namespace {
 
 void local_NormalizedEField(double x, double y) {
      //  NormalizedEField(x,y)
@@ -53,21 +64,27 @@ void local_localPropagateJetParticle(JetParticle& p){
      //localPropagateJetParticle
 }
 
+} // anonymous namespace
 
-void wrap_bblens () {
+//-------------------------------------------------------------------------------
+// wrapper definition
+//-------------------------------------------------------------------------------
 
 using namespace boost::python;
 
- class_<BBLens>("BBLens") 
+
+void wrap_bblens () {
+
+ class_<BBLens, bases<bmlnElmnt>, BBLensPtr >("BBLens") 
    .def(init<const char*, double const&, double const&, double const&,  double const*>())
-   .def("AdjustSigma",               &BBLens::AdjustSigma)
-   .def("NormalizedEField",          &local_NormalizedEField)
-   .def("JetNormalizedEField",       &local_JetNormalizedEField)
-   .def("localPropagateBunch",       &local_localPropagateBunch)
-   .def("localPropagateParticle",    &local_localPropagateParticle)
-   .def("localPropagateJetParticle", &local_localPropagateJetParticle)
-   .def("Type",                      &BBLens::Type)
-   .def_readwrite("useRound",        &BBLens::useRound);
+   .def("AdjustSigma",                   &BBLens::AdjustSigma)
+   //  .def("NormalizedEField",          &local_NormalizedEField)
+   //.def("JetNormalizedEField",         &local_JetNormalizedEField)
+   //.def("localPropagateBunch",         &BBLens::PropagateBunch)
+   //.def("localPropagateParticle",      &BBLens::PropagateParticle)
+   //.def("localPropagateJetParticle",   &BBLens::PropagateJetParticle)
+   .def("Type",                          &BBLens::Type)
+   .def_readwrite("useRound",            &BBLens::useRound);
 
 }
 
