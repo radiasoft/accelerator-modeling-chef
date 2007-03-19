@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-cf_sbend.h
@@ -19,7 +22,9 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+******************************************************************************
+******************************************************************************
+******************************************************************************/
 
 #include <boost/python.hpp>
 #include <beamline/bmlnElmnt.h>
@@ -28,22 +33,32 @@
 
 using namespace boost::python;
 
-static double (CF_sbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_sbend::setEntryAngle;
-static double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sbend::setEntryAngle;
+namespace {
 
-static double (CF_sbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_sbend::setExitAngle;
-static double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
+//-------------------------------------------------------------------------------
+// local code and definitions
+//-------------------------------------------------------------------------------
+
+double (CF_sbend::*setEntryAngleDouble_Ptr)     (double const&        ) = &CF_sbend::setEntryAngle;
+double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sbend::setEntryAngle;
+
+double (CF_sbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_sbend::setExitAngle;
+double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
 
 // The following functions exist in the header file CF_sbend.h but currently have no implementation.
 
-//static double (CF_sbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_sbend::AdjustPosition;
-//static double (CF_sbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_sbend::AdjustPosition;
+//double (CF_sbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_sbend::AdjustPosition;
+//double (CF_sbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_sbend::AdjustPosition;
 
+} // anonymous namespace 
+
+//-------------------------------------------------------------------------------
+// wrapper code
+//-------------------------------------------------------------------------------
 
 void wrap_cf_sbend () {
 
-  class_<CF_sbend, bases<bmlnElmnt> >("CF_sbend", init<double const&, double const&, double const&>() )
-
+  class_<CF_sbend, bases<bmlnElmnt>,CFSbendPtr>("CF_sbend", init<double const&, double const&, double const&>() )
   .def(init<const char*, double const&, double const&, double const&>() )
   .def(init<             double const&, double const&, double const&, int>() )
   .def(init<const char*, double const&, double const&, double const&, int>() )
@@ -74,4 +89,5 @@ void wrap_cf_sbend () {
   .def("OrbitLength",             &CF_sbend::OrbitLength);
 
 }
+
 

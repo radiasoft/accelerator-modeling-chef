@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-decapole.cpp
@@ -19,22 +22,20 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
-
 #include <beamline/decapole.h>
-
-
-void wrap_decapole () {
-  
 
 using namespace boost::python;
 
 
-class_<thinDecapole, bases<bmlnElmnt> >("thinDecapole", init<double const&>())
+void wrap_decapole () {
+
+class_<thinDecapole, bases<bmlnElmnt>, ThinDecapolePtr >("thinDecapole", init<double const&>())
   .def( init<char const*, double const&>() )
   .def( "Type",    &thinDecapole::Type);
 
-
 }
- 

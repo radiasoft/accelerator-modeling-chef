@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-drift.cpp
@@ -19,7 +22,9 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
 
 #include <boost/python.hpp>
 #include <beamline/bmlnElmnt.h>
@@ -29,7 +34,7 @@ using namespace boost::python;
 
 void wrap_drift () {
 
-class_<drift, bases<bmlnElmnt> >("drift", init<>())
+class_<drift, bases<bmlnElmnt>, DriftPtr >("drift", init<>())
   .def(init<double const&>() )
   .def(init<char const*>() )
   .def(init<char const*, double>() );
