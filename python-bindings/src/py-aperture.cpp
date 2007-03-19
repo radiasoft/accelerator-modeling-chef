@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-aperture.h
@@ -19,13 +22,16 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <beamline/Aperture.h>
 #include <boost/python.hpp>
 
-void wrap_aperture () {
-  
 using namespace boost::python;
+
+void wrap_aperture () {
 
    /** this does nothing ***/
    /** Aperture is currently a pure virtual class ***/
@@ -36,6 +42,7 @@ class_<Aperture>("Aperture")
   .def( "Type", &Aperture::Type );
  
 #endif
+
 }
 
 
