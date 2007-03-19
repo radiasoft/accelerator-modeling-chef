@@ -31,7 +31,15 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+******
+******* REVISION HISTORY
+****** 
+******  Mar 2007     ostiguy@fnal.gov
+******
+****** - support for reference counted elements/beamlines 
+****** - visitor interface takes advantage of (reference) dynamic type
+****** - initialization optimizations
+*****                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -56,26 +64,32 @@
 #include <beamline/beamline_elements.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline.h>
-#include <beamline/BmlPtrList.h>
 #include <beamline/Alignment.h>
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::ModifierVisitor()
-: _queryPtr(0), _toDoList(), _doneList(), _currentPtr(0)
+: queryPtr_(0),  toDoList_(), currentPtr_()
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ModifierVisitor::ModifierVisitor( BoolNode const& x )
+: queryPtr_(0), toDoList_(), currentPtr_()
 {
+  queryPtr_ = x.Clone();
 }
 
 
-ModifierVisitor::ModifierVisitor( const BoolNode& x )
-: _queryPtr(0), _toDoList(), _doneList(), _currentPtr(0)
-{
-  _queryPtr = x.Clone();
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-ModifierVisitor::ModifierVisitor( const BmlPtrList& x )
-: _queryPtr(0), _toDoList(x), _doneList(), _currentPtr(0)
+ModifierVisitor::ModifierVisitor( std::list<ElmPtr> const& x )
+: queryPtr_(0), toDoList_(x), currentPtr_()
 {
   // This list is assumed to be sorted.
   // Elements must appear
@@ -83,96 +97,35 @@ ModifierVisitor::ModifierVisitor( const BmlPtrList& x )
   // they appear in the beamline
   // to be visited.
 
-  _currentPtr = _toDoList.get();  // Will be null if list is empty.
+  if ( toDoList_.empty() ) return;
+
+  currentPtr_ = toDoList_.front();  
+  toDoList_.pop_front();
 }
 
 
-ModifierVisitor::ModifierVisitor( bmlnElmnt& x )
-: _queryPtr(0), _toDoList(), _doneList(), _currentPtr(&x)
-{
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ModifierVisitor::ModifierVisitor( ElmPtr const& x )
+: queryPtr_(), toDoList_(), currentPtr_(x)
+{}
 
 
-ModifierVisitor::ModifierVisitor( bmlnElmnt* x )
-: _queryPtr(0), _toDoList(), _doneList(), _currentPtr(x)
-{
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::~ModifierVisitor()
-{
-  delete _queryPtr;
-  _currentPtr = 0;
-}
+{ }
 
 
-const BmlPtrList& ModifierVisitor::getDoneList() const
-{
-  return _doneList;
-}
-
-
-int ModifierVisitor::getNumberModified() const
-{
-  return _doneList.size();
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 int ModifierVisitor::getNumberRemaining() const
 {
-  return _toDoList.size();
+  return toDoList_.size();
 }
 
 
-// *********************************************
-// ***** class AlignVisitor
-// *********************************************
-
-AlignVisitor::AlignVisitor( const alignmentData& a, bmlnElmnt* q )
-: ModifierVisitor(q), _myAlign(a)
-{
-}
-
-
-AlignVisitor::AlignVisitor( const alignmentData& a, const BoolNode& q )
-: ModifierVisitor(q), _myAlign(a)
-{
-}
-
-
-AlignVisitor::AlignVisitor( const alignmentData& a, const BmlPtrList& q )
-: ModifierVisitor(q), _myAlign(a)
-{
-}
-
-
-AlignVisitor::~AlignVisitor()
-{
-}
-
-
-void AlignVisitor::visitBmlnElmnt( bmlnElmnt* q )
-{
-  if( 0 == q ) { return; }
-
-  if( _queryPtr ) {
-    if( _queryPtr->evaluate( q ) ) {
-      _doAlign(q);
-      _doneList.append(q);
-    }
-  }
-
-  else if( _currentPtr ) {
-    if( q == _currentPtr ) {
-      _doAlign(q);
-      _doneList.append(q);
-      _currentPtr = _toDoList.get();
-    }
-  }
-}
-
-
-void AlignVisitor::_doAlign( bmlnElmnt* q )
-{
-  q->setAlignment(_myAlign);
-}
