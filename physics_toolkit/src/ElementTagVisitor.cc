@@ -25,6 +25,10 @@
 ******* is protected under the U.S. and Foreign Copyright Laws. 
 ******* URA/FNAL reserves all rights.
 *******                                                                
+******* REVISION HISTORY
+******* Mar 2007       ostiguy@fnal.gov
+******* - use new-style STL-compatible beamline iterators
+******* - use new-style type safe Barnacles.
 *******
 **************************************************************************
 **************************************************************************
@@ -36,7 +40,6 @@
 #include <beamline/beamline.h>
 #include <boost/any.hpp>
 #include <basic_toolkit/iosetup.h>
-#include <beamline/BeamlineIterator.h>
 
 
 using boost::any;
@@ -47,33 +50,30 @@ using FNAL::pcout;
 using FNAL::pcerr;
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ElementTagVisitor::ElementTagVisitor( vector<Location>& locations, 
                                       string tag, 
                                       string azimuth_up_tag, 
                                       string azimuth_down_tag): 
-  _locations(locations), 
-  _loc_it(_locations.begin()), 
-  _tag_name(tag), 
-  _azimuth_up_tag(azimuth_up_tag),  
-  _azimuth_down_tag(azimuth_down_tag),
-  _ntags(0)
-
-{  
-
-
-
-}
+  locations_(locations), 
+  loc_it_(locations.begin()), 
+  tag_name_(tag), 
+  azimuth_up_tag_(azimuth_up_tag),  
+  azimuth_down_tag_(azimuth_down_tag),
+  ntags_(0)
+{}
   
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//...............................................................................................................
 
 
 ElementTagVisitor::~ElementTagVisitor() {}
 
-
-//...............................................................................................................
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 bool ElementTagVisitor::overlap(double x1, double x2, double y1, double y2) {
@@ -81,50 +81,44 @@ bool ElementTagVisitor::overlap(double x1, double x2, double y1, double y2) {
 
  if (x1 == x2) { 
 
-     if ( (x1>y1) && (x1<y2) )
-       return true;
-     else 
-       return false;
-
+     return ( (x1>y1) && (x1<y2) ) ? true : false;
   }
 
   if (y1 == y2) { 
 
-     if ( (y1>x1) && (y1<x2) )  
-       return true;
-     else 
-       return false;
+    return ( (y1>x1) && (y1<x2) ) ? true : false;  
     
   }
 
   double num =0;
-  if ( (num = std::min(x2,y2) - std::max(x1,y1)) > 0.0 )
-     return ( num/std::min((x2-x1),(y2-y1)) > _overlap_tolerance );
+  
+  if ( (num = std::min(x2,y2) - std::max(x1,y1)) > 0.0 ) 
+    return  ( num/std::min((x2-x1),(y2-y1)) > overlap_tolerance_ );
   else
     return false;
 
 }
 
-//...............................................................................................................
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ElementTagVisitor::visitBmlnElmnt( bmlnElmnt* e) { 
    
-  double e_up   = any_cast<double>( (*e)[_azimuth_up_tag   ]   );  
-  double e_down = any_cast<double>( (*e)[_azimuth_down_tag ] );
+  double e_up   = any_cast<double>( (*e)[azimuth_up_tag_   ]   );  
+  double e_down = any_cast<double>( (*e)[azimuth_down_tag_ ] );
 
 
   // If the element is a match for the current interval
   // tag the element and make the next interval current.
    
 
-  if ( overlap( e_up,  e_down,  _loc_it->azimuth_up,   _loc_it->azimuth_down ) ) {
+  if ( overlap( e_up,  e_down,  loc_it_->azimuth_up,   loc_it_->azimuth_down ) ) {
 
-    (*e)[_tag_name] = _loc_it->label;
+    (*e)[tag_name_] = loc_it_->label;
     
-    ++_loc_it;
+    ++loc_it_;
 
-    ++_ntags;
+    ++ntags_;
 
   };  
 
@@ -132,23 +126,22 @@ void ElementTagVisitor::visitBmlnElmnt( bmlnElmnt* e) {
 }
 
 
-//................................................................................................................
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ElementTagVisitor::visitBeamline( beamline* e) {   
    
   // ... Start visiting from the origin marker  
   
-   DeepBeamlineIterator it ( *e );
-  
-   bmlnElmnt* p = 0;
-   while( p = it++ ) 
-   {
-       visitBmlnElmnt( p ); 
+
+   for ( beamline::deep_iterator it  = e->deep_begin(); 
+                                 it != e->deep_end(); ++it ) {
+       visitBmlnElmnt( (*it).get() ); 
 
    };
 
-   (*pcout) << "Tag table contains " << _locations.size()  << " entries." << std::endl;  
-   (*pcout) << "Number of beamline elements tagged : "      <<  _ntags   << std::endl;  
+   (*pcout) << "Tag table contains " << locations_.size()  << " entries." << std::endl;  
+   (*pcout) << "Number of beamline elements tagged : "      <<  ntags_   << std::endl;  
 
 }
 
