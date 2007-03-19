@@ -44,39 +44,33 @@
 
 
 DataDisplay::DataDisplay(QWidget* parent, const char* name, WFlags f, bool showbml):
-  DataDisplayBase(parent, name, f), _showbml(showbml) 
-{
+  DataDisplayBase(parent, name, f), showbml_(showbml) 
+{ }
 
-
-}
-
-// ..................................................................................  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DataDisplay::~DataDisplay() 
+{ }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void DataDisplay::filePrint()
 {
 
+  //  output( std::cout );
 
 }
 
-// ..................................................................................  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-DataDisplay::filePrint()
-{
-
-  //  _output( std::cout );
-
-}
-
-// ..................................................................................  
-
-void 
-DataDisplay::_output( std::ostream& os)
+void DataDisplay::output( std::ostream& os)
 {
 
  int rows = DataTable->numRows(); 
  int cols = DataTable->numCols(); 
-
 
  os << "! LEGEND:"<< std::endl;
  os << "! "       << std::endl;
@@ -133,10 +127,10 @@ DataDisplay::_output( std::ostream& os)
  }
 }
 
-// ..................................................................................  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-DataDisplay::fileSave()
+void DataDisplay::fileSave()
 {
 
   QString s = caption()+QString("-")+(QDateTime::currentDateTime()).toString();
@@ -146,12 +140,13 @@ DataDisplay::fileSave()
 
   std::ofstream fs ( s.ascii() );
  
-  _output( fs );
+  output( fs );
 
 
 }
 
-// ..................................................................................  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void DataDisplay::fileSaveAs()
 {
@@ -169,19 +164,21 @@ void DataDisplay::fileSaveAs()
                     "Save Data File As" );
 
   std::ofstream fs ( s.ascii() );
-  _output( fs );
+  output( fs );
  
 }
 
-void 
-DataDisplay::viewMerge( bool set)
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  DataDisplay::viewMerge( bool set)
 {
 
   int cols      = DataTable->numCols(); 
   int rows      = DataTable->numRows(); 
   int rowoffset = 0;
 
-  if (_showbml) rowoffset = 4;  
+  if (showbml_) rowoffset = 4;  
 
   if (set) {
    
@@ -204,14 +201,12 @@ DataDisplay::viewMerge( bool set)
 
 }
 
-// ..................................................................................  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-DataDisplay::fileExit()
+void DataDisplay::fileExit()
 {
-
- close();
-
+  close();
 }
 
 
