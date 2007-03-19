@@ -35,8 +35,8 @@ class LegoPlot: public QWidget {
   LegoPlot(QWidget * parent = 0, const char * name = 0, WFlags f = 0 );
   ~LegoPlot();
   
-  void setBeamline( beamline const& bml);
-  beamline const&   getBeamline();
+  void        setBeamline(  ConstBmlPtr bml);
+  ConstBmlPtr getBeamline();
 
   void setBeamlineDisplayLimits(double x, double w, int loffset, int roffset);
   void enableBeamlineDisplay(bool enabled);
@@ -53,15 +53,15 @@ class LegoPlot: public QWidget {
 
   private:
 
-  beamline   _beamline;     // the displayed beamline
-  QPainter*  _painter;
-  QPixmap*   _pixmap;
+  ConstBmlPtr  bml_;     // the displayed beamline
+  QPainter*    painter_;
+  QPixmap*     pixmap_;
 
-  double     _x0;           // the beamline display origin in physical coordinates
-  double     _w;            // the beamline display extent in physical coordinates
-  double     _scale;        
-  int        _loffset;  
-  int        _roffset;  
+  double     x0_;           // the beamline display origin in physical coordinates
+  double     w_;            // the beamline display extent in physical coordinates
+  double     scale_;        
+  int        loffset_;  
+  int        roffset_;  
    
   
 };
