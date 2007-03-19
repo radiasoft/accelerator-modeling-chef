@@ -32,7 +32,7 @@
 ******  QueryDialog interactively constructs a BoolNode object that
 ******  can be used to select elements with a beamline.  Upon closing,
 ******  the BoolNode is returned as argument to the QueryDialog signal
-******  _useThis.
+******  useThis.
 ******  
 ******  ------------------
 ******  Use meta-fragment:
@@ -40,7 +40,7 @@
 ******    #include <QueryDialog.h>
 ******    ...
 ******    QueryDialog qdl( 0, 0, false, Qt::WDestructiveClose );
-******    connect( &qdl,  SIGNAL(_useThis( const BoolNode& )), 
+******    connect( &qdl,  SIGNAL( useThis( const BoolNode& )), 
 ******             <receiver-address>, SLOT( <handler> );
 ******    ...
 ******    qdl->show();
@@ -68,37 +68,36 @@ class QueryDialog : public QWidget
 Q_OBJECT
 
  public:
-  QueryDialog( QWidget* parent = 0, 
-               const char* name = 0, 
-               WFlags f = 0 );
+  QueryDialog( QWidget* parent = 0, const char* name = 0, WFlags f = 0 );
   ~QueryDialog();
 
   const BoolNode& query();
   int exec();
 
 public slots:
-  void _opEnter();
-  void _opAnd();
-  void _opOr();
-  void _opNot();
-  void _doFilter();
+
+  void  opEnter();
+  void  opAnd();
+  void  opOr();
+  void  opNot();
+  void  doFilter();
 
 signals:
-  void _useThis( const BoolNode& );
+  void useThis( BoolNode const& );
 
 private:
-  QTextEdit*     _displayPtr;
-  QTabWidget*    _tabWidgetPtr;
-  QLineEdit*     _nameEdt;
-  QLineEdit*     _lengthEdt;
-  QHButtonGroup* _lengthBtnGrp;
-  QLineEdit*     _strengthEdt;
-  QHButtonGroup* _strengthBtnGrp;
-  QListBox*      _typeTabPtr;
-  QVBox*         _opsBoxPtr;
-  BoolNode*      _queryPtr[4];  // Four registers
+  QTextEdit*     displayPtr_;
+  QTabWidget*    tabWidgetPtr_;
+  QLineEdit*     nameEdt_;
+  QLineEdit*     lengthEdt_;
+  QHButtonGroup* lengthBtnGrp_;
+  QLineEdit*     strengthEdt_;
+  QHButtonGroup* strengthBtnGrp_;
+  QListBox*      typeTabPtr_;
+  QVBox*         opsBoxPtr_;
+  BoolNode*      queryPtr_[4];  // Four registers
 
-  void           _updateDisplay();
+  void           updateDisplay();
 };
 
 #endif  // QUERYDIALOG_H
