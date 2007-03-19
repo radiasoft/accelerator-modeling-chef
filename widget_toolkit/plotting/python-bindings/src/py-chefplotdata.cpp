@@ -21,32 +21,27 @@
 ******
 ****************************************************************************/
 #include <boost/python.hpp>
-#include <CHEFPlotData.h>
+#include <PlotData.h>
 #include <beamline/beamline.h>
 
 using namespace boost::python;
 
 
-void wrap_chefplot_CHEFPlotData() {
+void wrap_chefplot_PlotData() {
 
 
-  class_ <CHEFPlotData, boost::shared_ptr<CHEFPlotData> >("CHEFPlotData", init<>() )
+  class_ <PlotData>("PlotData", init<>() )
     
-    .def("addCurve",    &CHEFPlotData::addCurve  )
+    .def("addCurve",           &PlotData::addCurve  )
+    .def("setBeamline",        &PlotData::setBeamline )
+    .def("setXLabel",          &PlotData::setXLabel )
+    .def("setYLabel",          &PlotData::setYLabel );
 
-    .def("setBeamline", &CHEFPlotData::setBeamline )
-
-    //.def("getBeamline", &CHEFPlotData::getBeamline )
-    
-    .def("setXLabel",   &CHEFPlotData::setXLabel )
-    .def("setYLabel",   &CHEFPlotData::setYLabel )
-
-    .def("setScaleMagLeft",   &CHEFPlotData::setScaleMagLeft  )
-    .def("setScaleMagRight",  &CHEFPlotData::setScaleMagRight )
-
-    .def("scaleMagLeft",       &CHEFPlotData::scaleMagLeft )
-    .def("scaleMagRight",      &CHEFPlotData::scaleMagRight );
-
+    //.def("getBeamline", &PlotData::getBeamline )
+    //.def("setScaleMagLeft",    &PlotData::setScaleMagLeft  )
+    //.def("setScaleMagRight",   &PlotData::setScaleMagRight )
+    //.def("scaleMagLeft",       &PlotData::scaleMagLeft )
+    //.def("scaleMagRight",      &PlotData::scaleMagRight );
     // CHEFCurve* operator[](int i) const;
-    
+    ;
 }
