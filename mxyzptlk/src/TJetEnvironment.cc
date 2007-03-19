@@ -62,8 +62,7 @@ TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> 
                                                     // _pbok was used as a flag to detect the presence of parameters 
                                                     // poisson bracket OK is true only when phase space dimension is even; 
                                                     // Consider simply checking the space dimensions before taking a PB ? 
-
-  // scratch_( buildScratchPads( maxWeight_, numVar_) ) 
+   scratch_( buildScratchPads( maxWeight_, numVar_) ) 
  {
 
     
