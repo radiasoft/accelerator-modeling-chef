@@ -45,6 +45,9 @@
 ******  - calcs_ array is now an STL vector. LF are now returned by 
 ******    returning a const reference to the entire vector.
 ******  - misc cleanup.  
+****** Mar 2007     ostiguy@fnal.gov
+****** - added support for reference counted elements/beamlines
+******
 ******
 *************************************************************************
 *************************************************************************/
@@ -93,16 +96,16 @@ LBSage::Info::Info()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LBSage::LBSage( const beamline* x, bool doClone ) 
-: Sage( x, doClone )
+LBSage::LBSage( BmlPtr x) 
+: Sage( x )
 {}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LBSage::LBSage( const beamline& x, bool doClone ) 
-: Sage( &x, doClone )
+LBSage::LBSage( beamline const& x) 
+: Sage( x )
 {}
 
 
@@ -112,10 +115,10 @@ LBSage::LBSage( const beamline& x, bool doClone )
 
 void LBSage::eraseAll() 
 {
-  _myBeamlinePtr->dataHook.eraseAll( "LBSage" );
+  myBeamlinePtr_->dataHook.eraseAll( "LBSage" );
 
-  for (beamline::deep_iterator it  =  _myBeamlinePtr->deep_begin(); 
-                              it != _myBeamlinePtr->deep_end();  ++it) {
+  for (beamline::deep_iterator it  =  myBeamlinePtr_->deep_begin(); 
+                              it != myBeamlinePtr_->deep_end();  ++it) {
     (*it)->dataHook.eraseAll( "LBSage" );
   }
 
@@ -142,8 +145,6 @@ int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
   const int yp  = Particle::npyIndex(); 
   const int dpp = Particle::ndpIndex();
 
-  MatrixC E(n,n), E2(n,n);
-  
   //*********************************************************
   // NOTE:
   // ----- 
@@ -156,7 +157,7 @@ int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
   // 
   //*********************************************************
  
-  E = ( jpart.State() ).Jacobian().Matrix::eigenVectors();
+  MatrixC E = ( jpart.State() ).Jacobian().Matrix::eigenVectors();
   BmlUtil::normalize( E );
 
   Mapping id( "identity" );
@@ -164,14 +165,12 @@ int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
 
 
   double lng = 0.0;
-  std::complex<double>  temp;
 
   calcs_.clear();
 
-  bmlnElmnt* be;
-  for (beamline::deep_iterator it  =  _myBeamlinePtr->deep_begin(); 
-                              it != _myBeamlinePtr->deep_end();  ++it) {
-   be = (*it);
+  for (beamline::deep_iterator it  =  myBeamlinePtr_->deep_begin(); 
+                               it !=  myBeamlinePtr_->deep_end();  ++it) {
+   ElmPtr be = (*it);
 
     calcs_.push_back( LBSage::Info() );
 
@@ -179,11 +178,12 @@ int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
     calcs_.back().arcLength = lng;
     
     be->propagate( jpart );
-    E2 = jpart.State().Jacobian() * E;
+    MatrixC  E2 = jpart.State().Jacobian() * E;
     BmlUtil::normalize( E2 );
     
     // beta_1x and beta_2y
-    temp = E2(x,x);
+
+    std::complex<double> temp = E2(x,x);
     if( real(temp) > 0.0 ) {
       calcs_.back().beta_1x = 2.0*real(temp)*real(temp);
     }
@@ -222,6 +222,7 @@ int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
     calcs_.back().beta_2x = 2.0*real(temp*conj(temp));
 
     // alpha_1y and alpha_2x
+
     temp = E2(yp,x)*E2(y,x);
     calcs_.back().alpha_1y = -2.0*real(temp);
     calcs_.back().u2       = -2.0*imag(temp);
