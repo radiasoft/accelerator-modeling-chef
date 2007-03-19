@@ -50,6 +50,11 @@
 ******  Sep 2006 
 ******  
 ****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead.
+****** 
+****** Mar 2007 
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
 ******
 **************************************************************************
 *************************************************************************/
@@ -112,7 +117,7 @@ class DLLEXPORT TJLterm
   TJLterm( EnvPtr<T> const&  pje );     // pje = null implies a constant term 
   TJLterm( IntArray  const&, const T&,  EnvPtr<T> const& pje );
 
-  TJLterm( IntArray const&, T const& );
+  TJLterm( IntArray const&, T const&, int offset );
   TJLterm( TJLterm  const& );
 
   template<typename U>
@@ -138,10 +143,10 @@ class DLLEXPORT TJLterm
 
   private:
 
-  static boost::pool<>& _ordered_memPool;  // an ordered pool of TJLterms
+  static boost::pool<>&  ordered_memPool_;  // an ordered pool of TJLterms
   
    // the sizes of the allocated arrays, indexed by their pointers (used for deallocation).    
-  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& _array_sizes; 
+  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >&array_sizes_; 
  
   // the declarations below are meant to prevent use of all forms of operator new[];
 
