@@ -33,6 +33,15 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
+****** REVISION HISTORY
+******
+****** Mar 2007        ostiguy@fnal.gov
+******
+****** - use new-style STL compatible beamline iterators
+****** - support for reference counted elements/beamlines
+****** - use C++ based RTTI rather than string comparisons
+****** - Initialization optimizations
+******
 **************************************************************************
 *************************************************************************/
 
@@ -44,31 +53,41 @@
 #include <basic_toolkit/TMatrix.h>
 #include <mxyzptlk/Mapping.h>
 #include <beamline/beamline_elements.h>
-#include <beamline/BmlPtrList.h>
-#include <beamline/BeamlineIterator.h>
+#include <beamline/BmlPtr.h> 
+
 #include <physics_toolkit/BmlUtil.h>
 
 using namespace std;
+using namespace boost;
 
-ostream* BmlUtil::_errorStreamPtr  = &cerr;
-ostream* BmlUtil::_outputStreamPtr = &cout;
+ostream* BmlUtil::errorStreamPtr_  = &cerr;
+ostream* BmlUtil::outputStreamPtr_ = &cout;
 
 const double BmlUtil::mlt1   = 1.0e-6;
 const int    BmlUtil::PSDERR = 1;
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void BmlUtil::setErrorStream( ostream& w )
 {
-  _errorStreamPtr = &w;
+  errorStreamPtr_ = &w;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BmlUtil::setOutputStream( ostream& w )
 {
-  _outputStreamPtr = &w;
+  outputStreamPtr_ = &w;
 }
 
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool BmlUtil::isKnown( const bmlnElmnt* x )
 {
@@ -76,7 +95,10 @@ bool BmlUtil::isKnown( const bmlnElmnt* x )
 }
 
 
-bool BmlUtil::isKnown( const bmlnElmnt& x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool BmlUtil::isKnown( bmlnElmnt const& x )
 {
   if ( typeid(x) == typeid(drift)         )   { return true; }
   if ( typeid(x) == typeid(marker)        )   { return true; }
@@ -121,67 +143,62 @@ bool BmlUtil::isKnown( const bmlnElmnt& x )
 }
 
 
-void BmlUtil::writeAsTransport( const Mapping* mapPtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlUtil::writeAsTransport( Mapping const& map )
 {
-  BmlUtil::writeAsTransport( *mapPtr );
-}
 
-
-void BmlUtil::writeAsTransport( const Mapping& map )
-{
-  Jet cmp;
-  Jet::iterator iter(cmp);
-
-  const JLterm* termPtr;
   int d = map.Dim();
   int e;
   IntArray exps(d);
+
+  Jet cmp;
+
   for( int i = 0; i < d; i++ ) {
     cmp = map(i);
-    iter.reset();
-    termPtr = ++iter;
-    while( 0 != termPtr ) {
-      *_outputStreamPtr << "M_{ " << (i+1);
-      exps = termPtr->exponents();
-      for( int j = 0; j < d; j++ ) {
+
+    for ( Jet::iterator it = cmp.begin(); it != cmp.end() ; ++it ) { 
+     *outputStreamPtr_ << "M_{ " << (i+1);
+      exps = it->exponents();
+      for( int j=0;  j<d; ++j) {
         e = exps(j);
         if( 0 != e ) {
           for( int k = 0; k < e; k++ ) {
-            *_outputStreamPtr << " " << (j+1);
+            *outputStreamPtr_ << " " << (j+1);
 	  }
         }        
       }
-      *_outputStreamPtr << " } = " << termPtr->coefficient() << endl;
-      termPtr = ++iter;
+      *outputStreamPtr_ << " } = " << it->coefficient() << endl;
     }
   }
 }
 
 
-bool BmlUtil::isSpace( const bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool BmlUtil::isSpace( bmlnElmnt const&  x )
 {
-  if( !BmlUtil::isKnown( x ) ) { 
+  if( !isKnown( x ) ) { 
     ostringstream uic;
-    uic << "The type " << (x->Type()) << " is not recognized.";
+    uic << "The type " << ( x.Type()) << " is not recognized.";
     throw( GenericException( __FILE__, __LINE__,
            "bool BmlUtil::isSpace( const bmlnElmnt* x )",
            uic.str().c_str() ) );
     
   }
 
-  return (    ( 0 == strcasecmp( "drift",  x->Type() ) )
-           || ( 0 == strcasecmp( "marker", x->Type() ) ) 
-           || ( 0 == strcasecmp( "Slot",   x->Type() ) )
-           || ( 0 == strcasecmp( "srot",   x->Type() ) ) 
+  return (    ( 0 == strcasecmp( "drift",  x.Type() ) )
+           || ( 0 == strcasecmp( "marker", x.Type() ) ) 
+           || ( 0 == strcasecmp( "Slot",   x.Type() ) )
+           || ( 0 == strcasecmp( "srot",   x.Type() ) ) 
          );
 }
 
 
-bool BmlUtil::isSpace( const bmlnElmnt& x )
-{
-  return BmlUtil::isSpace( &x );
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void BmlUtil::normalize( MatrixC& B )
@@ -191,18 +208,17 @@ void BmlUtil::normalize( MatrixC& B )
 
   const std::complex<double> complex_0(0.0,0.0);
   const std::complex<double> mi(0.,-1.);
-  int i, j;
 
   // Normalizing the linear normal form coordinates
-  MatrixD  J( "J", 6 );
-  MatrixC  Nx;
-  Nx = ( B.transpose() * J * B * J ) * mi;
 
-  for( i = 0; i < 6; i++ ) {
+  MatrixD  J( "J", 6 );
+  MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
+
+  for( int i = 0; i < 6; i++ ) {
    Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
    if( abs( ( (std::complex<double> ) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
 
-       /* CAUTION */   for( j = 0; j < 6; j++ ) {
+       /* CAUTION */   for( int j = 0; j < 6; j++ ) {
        /* CAUTION */    if( j == i ) continue;
        /* CAUTION */    else if( abs( Nx(i,j) ) > BmlUtil::mlt1 ) {
        /* CAUTION */          ostringstream uic;
@@ -225,21 +241,22 @@ void BmlUtil::normalize( MatrixC& B )
   cm0 = conj(m0);
   m1  = B(1,1)/abs(B(1,1));
   cm1 = conj(m1);
-  for( i = 0; i < 6; i++ ) {
+
+  for( int i = 0; i < 6; i++ ) {
     B(i,0) *= cm0;
     B(i,3) *= m0;
     B(i,1) *= cm1;
     B(i,4) *= m1;
   }
   if( imag(B(3,0)) > 0.0 ) {
-    for( i = 0; i < 6; i++ ) {
+    for( int i=0; i<6; ++i) {
       m0 = B(i,0);
       B(i,0) = B(i,3);
       B(i,3) = m0;
     }
   }
   if( imag(B(4,1)) > 0.0 ) {
-    for( i = 0; i < 6; i++ ) {
+    for( int i=0; i < 6; ++i ) {
       m0 = B(i,1);
       B(i,1) = B(i,4);
       B(i,4) = m0;
@@ -248,10 +265,10 @@ void BmlUtil::normalize( MatrixC& B )
 }
 
 
-// ============================================================== //
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int BmlUtil::makeCovariance( CovarianceSage::Info& w,
-                             const Particle& prtn,
+int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
                              double eps_1, double eps_2, double eps_3 )
 {
   // Some of this code has been lifted from the function
@@ -262,7 +279,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
   const std::complex<double>  i( 0., 1. );
 
   if( firstTime ) {
-    *_errorStreamPtr << "\n*** WARNING ***"
+    *errorStreamPtr_ << "\n*** WARNING ***"
                         "\n*** WARNING *** File: " << __FILE__
                      <<                  " Line: " << __LINE__
                      << "\n*** WARNING *** BmlUtil::makeCovariance"
@@ -294,7 +311,7 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
 
   int n = Particle::PSD;
   if( 6 != n ) {
-    *_errorStreamPtr << "\n*** WARNING ***"
+    *errorStreamPtr_ << "\n*** WARNING ***"
                         "\n*** WARNING *** File: " << __FILE__
                      <<                  " Line: " << __LINE__
                      << "\n*** WARNING *** BmlUtil::makeCovariance"
@@ -340,6 +357,9 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w,
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
                              const Particle& prtn,
                              double eps_1, double eps_2, double eps_3 )
@@ -348,85 +368,91 @@ int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
 }
 
 
-beamline* BmlUtil::cloneLineAndInsert( double          percent,
-                                       BmlPtrList&     insertions,
-                                       BmlPtrList&     targets,
-                                       const beamline* linePtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
+                                       std::list<ElmPtr>&         insertions,
+                                       std::list<ElmPtr>&         targets,
+                                       ConstBmlPtr                linePtr )
 {
-  // Test arguments
-  if( !linePtr ) { return 0; }
+
+  if( !linePtr ) { return BmlPtr(); }
 
   if( 0 == insertions.size() || 0 == targets.size() ) {
-    return  linePtr->Clone();
+    return  BmlPtr( linePtr->Clone() );
   }
 
   if( percent < 0.0 ) { percent = 0.0; }
   if( percent > 1.0 ) { percent = 1.0; }
+
   bool upstream   = (0.0 == percent);
   bool downstream = (1.0 == percent);
 
 
   // Begin ...
-  beamline* ret = new beamline( linePtr->Name() );
-  BeamlineIterator bli( const_cast<beamline&>(*linePtr) );
-  bmlnElmnt* q   = 0;
-  bmlnElmnt* ins = 0;
-  bmlnElmnt* trg = 0;
-  bmlnElmnt* spa = 0;
-  bmlnElmnt* spb = 0;
+
+  BmlPtr ret( new beamline( linePtr->Name().c_str() ) );
+
+  ElmPtr spa;
+  ElmPtr spb;
 
 
-  while( 0 != ( q = bli++ ) ) {
-    ins = insertions.get();
-    trg = targets.get();
-    if( (0 == ins) || (0 == trg) ) { break; }
+  beamline::const_iterator it;
 
-    if( typeid(*q) == typeid(beamline) ) {
-      insertions.insert(ins);
-      targets.insert(trg);
-      ret->append( BmlUtil::cloneLineAndInsert
-                   ( percent, insertions, targets,
-                     dynamic_cast<const beamline*>(q) ) );
+  for ( it  = linePtr->begin(); it != linePtr->end(); ++it) {
+
+    if( insertions.empty() || targets.empty() ) break; 
+
+    ElmPtr ins = insertions.front(); insertions.erase( insertions.begin() );
+    ElmPtr trg = targets.front();       targets.erase(    targets.begin() );
+
+
+    if( typeid(**it) == typeid(beamline) ) {
+
+      insertions.push_front(ins);
+      targets.push_front(trg);
+      ret->append( cloneLineAndInsert ( percent, insertions, targets,  dynamic_pointer_cast<const beamline>(*it) ) );
     }
 
     else {
       // Here's where the real work is done.
-      if( trg == q ) {
+
+      if( trg == (*it) ) {
         if( upstream ) {
-          ret->append( ins );
-          ret->append( q->Clone() );
+          ret->append( ElmPtr( ins->Clone() ) );
+          ret->append( ElmPtr( (*it)->Clone() )  );
         }
         else if( downstream ) {
-          ret->append( q->Clone() );
-          ret->append( ins );
+          ret->append( ElmPtr( (*it)->Clone() )  );
+          ret->append( ElmPtr( ins->Clone() ) );
         }
         else {
-          q->Split( percent, &spa, &spb );
-          ret->append( spa );
-          ret->append( ins );
-          ret->append( spb );
+          (*it)->Split( percent, spa, spb ); 
+          ret->append( ElmPtr(spa->Clone()) );
+          ret->append( ElmPtr(ins->Clone()) );
+          ret->append( ElmPtr(spb->Clone()) );
         }
       }
 
       else {
-        ret->append(q->Clone());
-        insertions.insert(ins);
-        targets.insert(trg);
+        ret->append( ElmPtr( (*it)->Clone()) );
+        insertions.push_front( ins );
+        targets.push_front( trg );
       }
     }
   }
-
-
   // If there are elements left over, handle them.
-  while(q) {
-    ret->append(q->Clone());
-    q = bli++;
+
+  for (  ; it != linePtr->end(); ++it ) {
+    ret->append( ElmPtr( (*it)->Clone() ) );
   }
 
   // Finished ...
+
   ret->setEnergy( linePtr->Energy() );
   return ret;
-}
+  }
 
 
 
