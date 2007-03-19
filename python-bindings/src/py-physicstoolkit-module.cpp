@@ -24,7 +24,7 @@
 
 #include <beamline/beamline.h>
 
-extern beamline* DriftsToSlots( beamline& original );
+extern beamline* DriftsToSlots( beamline const& original );
 
 using namespace boost::python;
 
