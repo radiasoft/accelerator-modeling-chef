@@ -35,9 +35,7 @@
 ******          Email: michelotti@fnal.gov                         
 ******                                                                
 ****** REVISION HISTORY
-******
-****** Mar 2007            ostiguy@fnal.gov
-******
+****** Mar 2007     ostiguy@fnal.gov
 ****** -eliminated unsafe casts
 ****** -support for reference counted elements
 **************************************************************************
@@ -335,12 +333,12 @@ bmlnElmnt* read_istream(istream& is)
     else {
       double energy;
       is >> energy;
-      ( static_cast<beamline*>(element)->setEnergy( energy );
+      static_cast<beamline*>(element)->setEnergy( energy );
       bmlnElmnt *e = NULL;
       do {
         e = read_istream(is);
         if ( e ) {
-          ( static_cast<beamline*>(element)->append(ElmPtr(e)); 
+          static_cast<beamline*>(element)->append(ElmPtr(e)); 
 	}
       } while ( e );
     }
