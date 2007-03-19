@@ -51,7 +51,12 @@
 ****** - EnvPtr<> is now a true class rather than a typedef wrapper 
 ****** - template syntax declaration cleanup to better conform to standard. 
 ******   Code now compiles cleanly with g++ 4.X   
-******      
+****** Mar 2007 ostiguy@fnal.gov  
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
+****** - added STL compatible monomial term iterators   
+****** - eliminated dependence on class Cascade     
 *************************************************************************
 *************************************************************************/
 #ifndef TJETENV_H
@@ -59,7 +64,7 @@
 
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/VectorD.h>
-#include <basic_toolkit/Cascade.h>
+// #include <basic_toolkit/Cascade.h>
 #include <basic_toolkit/TMatrix.h>
 #include <deque>
 #include <list>
@@ -111,29 +116,37 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
  public:
  
  template<typename U> 
+
  struct ScratchArea { 
-    int                        _maxWeight;
-    int                        _numVar;
-    int                        _maxTerms;       // Maximum number of monomial terms.
-    Cascade                    _offset;         // Switching functor for fast access to offset
-    int*                       _exponent;       //  Used by nexcom (as called by TJL::operator()
-                                                //   when storing monomials.
-                                                //   indices in the _TJLmonomial and _TJLmml arrays.
-    U*                         _monomial;       // Storage area for monomials used in multinomial
-                                                // evaluation. 
-    JLPtr<U>*                  _TJLmonomial;    // Storage area for TJL monomials used in concatenation.
+    int                            maxWeight_;
+    int                            numVar_;
+    int                            maxTerms_;       // Maximum number of monomial terms.
+    //Cascade                        offset_;         // Switching functor for fast access to offset
+    int*                           exponent_;       // Used by nexcom (as called by TJL::operator()
+                                                    //   when storing monomials.
+                                                    //   indices in the _TJLmonomial and _TJLmml arrays.
+    U*                             monomial_;       // Storage area for monomials used in multinomial
+                                                    // evaluation. 
+    JLPtr<U>*                      TJLmonomial_;    // Storage area for TJL monomials used in concatenation.
  
-    TJLterm<U>*                _TJLmml;         // Same as above, but used for collecting terms
-                                                //   during multiplication.
-    const IntArray  _allZeroes;                 // An integer array containing zeroes.  Used to 
-                                                //   filter the standard part of a variable.
+    TJLterm<U>*                    TJLmml_;         // Same as above, but used for collecting terms
+                                                    //   during multiplication.
+    std::vector<std::vector<int> > multTable_;      // monomial multiplication table 
+    std::vector<int>               weight_offsets_; // Offsets of the weights groups within the scratchpad     
+
+    const IntArray                 allZeroes_;      // An integer array containing zeroes.  Used to 
+                                                    //   filter the standard part of a variable.
+
+
 
    ScratchArea( TJetEnvironment<U>* pje, int weight, int numvar);
   ~ScratchArea();
  
+   int offsetIndex(IntArray const& exp) const;
+
    private:
 
-  ScratchArea(const ScratchArea&); 
+  ScratchArea(ScratchArea const&); 
 
  };
 
@@ -141,15 +154,15 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
  class Exists {
  private:
 
-  int _maxWeight;
-  int _numVar;
+  int maxWeight_;
+  int numVar_;
 
  public:
 
-   Exists(int maxweight, int numvar): _maxWeight(maxweight), _numVar(numvar) {}
+   Exists(int maxweight, int numvar): maxWeight_(maxweight), numVar_(numvar) {}
 
    bool operator()( const ScratchArea<U>* p ) const {
-     return ( ( p->_numVar == _numVar )&&(p->_maxWeight == _maxWeight) );
+     return ( ( p->numVar_ == numVar_ )&&(p->maxWeight_ == maxWeight_) );
    } 
  };
 
@@ -172,8 +185,8 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
   static EnvPtr<T>   EndEnvironment(double* scale=0);
 
   static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
-  static EnvPtr<T>   makeInverseJetEnvironment(const TMapping<T>& map); 
-  static EnvPtr<T>   makeJetEnvironment(int maxweight, const Vector&, double* scale=0);
+  static EnvPtr<T>   makeInverseJetEnvironment(TMapping<T> const& map); 
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const&,  double* scale=0);
 
   template<typename U>
   static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const&);
@@ -191,11 +204,11 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    // operators -------------------------------------------
 
 
-  bool operator==( const TJetEnvironment<T>& ) const;
-  bool operator!=( const TJetEnvironment<T>& ) const;
+  bool operator==( TJetEnvironment<T> const& ) const;
+  bool operator!=( TJetEnvironment<T> const& ) const;
 
-  bool approxEq( const TJetEnvironment<T>&, const Vector& tolerance ) const;
-  bool approxEq( const TJetEnvironment<T>&, const double* tolerance ) const;
+  bool approxEq( TJetEnvironment<T> const&, Vector const& tolerance ) const;
+  bool approxEq( TJetEnvironment<T> const&, double const* tolerance ) const;
 
      // Second argument is a "tolerance" Vector. There is
      //   no default: the invoking program must declare
@@ -205,39 +218,44 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
      // The second version is riskier. There is no guarantee
      //   that the array of doubles will not be overrun.
 
-   bool hasReferencePoint( const Vector& ) const;
-   bool hasReferencePoint( const double* ) const;
-   bool hasApproxReferencePoint( const Vector&, const Vector& tolerance ) const;
-   bool hasApproxReferencePoint( const double*, const Vector& tolerance ) const;
-   bool hasApproxReferencePoint( const Vector&, const double* tolerance ) const;
-   bool hasApproxReferencePoint( const double*, const double* tolerance ) const;
+   bool hasReferencePoint( Vector const& ) const;
+   bool hasReferencePoint( double const* ) const;
+   bool hasApproxReferencePoint( Vector const&, Vector const& tolerance ) const;
+   bool hasApproxReferencePoint( double const*, Vector const& tolerance ) const;
+   bool hasApproxReferencePoint( Vector const&, double const* tolerance ) const;
+   bool hasApproxReferencePoint( double const*, double const* tolerance ) const;
 
    // queries --------------------------------------------------------
 
 
-   int             numVar()      const { return  _numVar;      }
-   int             spaceDim()    const { return  _spaceDim;    }
-   int             dof()         const { return  _dof;         }
-   const T*        refPoint()    const { return  _refPoint;    }
-   int             maxWeight()   const { return  _maxWeight;   }
-   const double*   scale()       const { return _scale;        }
-   const T*        getRefPoint() const { return _refPoint; } 
+   int             numVar()      const { return   numVar_;      }
+   int             spaceDim()    const { return   spaceDim_;    }
+   int             dof()         const { return   dof_;         }
+   const T*        refPoint()    const { return   refPoint_;    }
+   int             maxWeight()   const { return   maxWeight_;   }
+   const double*   scale()       const { return   scale_;        }
+   const T*        getRefPoint() const { return   refPoint_; } 
  
-   T*              monomial()    const { return  _scratch->_monomial;    }
-   int*            exponent()    const { return  _scratch->_exponent;    }
+   T*              monomial()    const { return   scratch_->monomial_;    }
+   //int*            exponent()    const { return   scratch_->exponent_;    }
 
-   JLPtr<T>*       TJLmonomial() const { return  _scratch->_TJLmonomial; }
+   JLPtr<T>*       TJLmonomial() const { return   scratch_->TJLmonomial_; }
 
-   TJLterm<T>*     TJLmml()      const { return  _scratch->_TJLmml;      }
+   TJLterm<T>*     TJLmml()      const { return   scratch_->TJLmml_;      }
 
-   int             offsetIndex(const IntArray& exp)  const    { return _scratch->_offset.index(exp); }  
-   int             offsetIndex(      int const* exp) const    { return _scratch->_offset.index(exp); }  
+   int             multOffset    (int const& lhs, int const& rhs)  const    
+                                    { return  ( rhs >  scratch_->multTable_[lhs].size()-1 ) ?  scratch_->multTable_[lhs][rhs]:  
+                                                                                               scratch_->multTable_[rhs][lhs]; }  
 
-   const IntArray& allZeroes() const                         { return _scratch->_allZeroes; }     
-   int             maxTerms() const                          { return _scratch->_maxTerms;}
+   int             offsetIndex( IntArray const& exp) const;
+   //int             oldoffsetIndex( IntArray const& exp)    const    { return scratch_->offset_.index(exp); }  
+   //int             oldoffsetIndex(     int const* exp)     const    { return scratch_->offset_.index(exp); }  
 
-   static EnvPtr<T> const& getLastEnv()                  { return _lastEnv; }
-   static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { _lastEnv = pje;  return pje;} 
+   const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
+   int             maxTerms() const                          { return scratch_->maxTerms_;}
+
+   static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
+   static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
 
    // Streams --------------------------------------------------------- 
 
@@ -246,36 +264,36 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
  private:
 
-  static EnvPtr<T>   _lastEnv;             // default environment  
+  static EnvPtr<T>   lastEnv_;             // default environment  
 
-  int                _numVar;              // Number of scalar variables associated with 
+  int                numVar_;              // Number of scalar variables associated with 
                                            //   the JLC variable.
-  int                _spaceDim;            // This is, if you will, the dimension of phase space.
-  int                _dof;                 // The number of degrees of freedom = SpaceDim / 2.
-  T*                 _refPoint;            // Reference point in phase space about which 
+  int                spaceDim_;            // This is, if you will, the dimension of phase space.
+  int                dof_;                 // The number of degrees of freedom = SpaceDim / 2.
+  T*                 refPoint_;            // Reference point in phase space about which 
                                            //   derivatives are taken.
-  double*            _scale;               // An array containing numbers which scale the
+  double*            scale_;               // An array containing numbers which scale the
                                            //   problem's variables.  Each entry is a "typical
                                            //   size" for the variable of the same index.
-  int                _maxWeight;           // Maximum acceptable weight of a variable,
+  int                maxWeight_;           // Maximum acceptable weight of a variable,
                                            //   equivalent to the maximum order of derivatives
                                            //   to be carried through calculations.
 
-  bool               _pbok;                // Taking Poisson brackets is OK: the dimension of 
+  bool               pbok_;                // Taking Poisson brackets is OK: the dimension of 
                                            //   phase space is even.
 
-  ScratchArea<T>*    _scratch;             // pointer to a common scratch area. Scratch is 
+  ScratchArea<T>*    scratch_;             // pointer to a common scratch area. Scratch is 
                                            // unique for (maxweight, nvar) 
 
 
  // Static data members ------------------------------------------------
  
-  static std::deque<Tcoord<T>*>&        _coordinates;    // used only during new environment creation 
-  static std::deque<Tparam<T>*>&        _parameters;     // used only during new environment creation
-  static std::list<ScratchArea<T>* >&   _scratch_areas;  // list of existing scratch areas 
-  static std::list<EnvPtr<T> >&         _environments;   // list of existing environments
+  static std::deque<Tcoord<T>*>&        coordinates_;    // used only during new environment creation 
+  static std::deque<Tparam<T>*>&        parameters_;     // used only during new environment creation
+  static std::list<ScratchArea<T>* >&   scratch_areas_;  // list of existing scratch areas 
+  static std::list<EnvPtr<T> >&         environments_;   // list of existing environments
                                                                // Note: there is a list for every typename parameter T
-  static int   _tmp_maxWeight; // used by Begin/EndEnvironment() 
+  static int   tmp_maxWeight_; // used by Begin/EndEnvironment() 
 
 
 // Private Member  functions -------------------------------------
@@ -284,7 +302,7 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
   TJetEnvironment& DeepCopy( const TJetEnvironment& env);
 
-  ScratchArea<T>* _buildScratchPads(int maxweight, int numvar);
+  ScratchArea<T>*  buildScratchPads(int maxweight, int numvar);
 
   TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
 
