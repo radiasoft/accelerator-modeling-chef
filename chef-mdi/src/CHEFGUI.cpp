@@ -30,14 +30,18 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
+
+/*************************************************************************/
 /* Creation Date:  August 2004                                           */
 /* Revision Date:  July,  2005                                           */
-/*   - added five slots: _editEditElement                                */
-/*                       _editFlatten                                    */
-/*                       _editMisalign                                   */
-/*                       _editNewOrder                                   */
-/*                       _pushParticles                                  */
+/*   - added five slots: editEditElement                                 */
+/*                       editFlatten                                     */
+/*                       editMisalign                                    */
+/*                       editNewOrder                                    */
+/*                       pushParticles                                   */
 /*   - LPJM                                                              */
 /*                                                                       */
 /*************************************************************************/
@@ -49,9 +53,22 @@
 #include <istream>
 #include <streambuf>
 
+#include <boost/shared_ptr.hpp>
+
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
+#include <beamline/marker.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/sector.h>
+#include <beamline/marker.h>
+#include <mxyzptlk/EnvPtr.h>
+#include <bmlfactory/MAD8Factory.h>
+#include <bmlfactory/ParserException.h>
+#include <parsers/xsif/XSIFFactory.h>
+#include <physics_toolkit/BeamlineContext.h>
+
 #include <CHEFGUI.h>
-#include <CHEFCurve.h>
-#include <CurveData.h>
 #include <filters.h>
 #include <BeamlineBrowser.h>
 #include <BmlSelectionDialog.h>
@@ -65,16 +82,6 @@
 #include <appworkspace.h>
 #include <about.h>
 
-#include <beamline/BeamlineIterator.h>
-#include <beamline/marker.h>
-#include <beamline/CF_rbend.h>
-#include <beamline/CF_sbend.h>
-#include <beamline/sector.h>
-
-#include <qwt/qwt_plot.h>
-
-#include <GenericException.h>
-#include <ParserException.h>
 #include <BmlUtil.h>
 
 #include <qapplication.h>
@@ -88,147 +95,157 @@
 #include <qassistantclient.h>
 #include <qaction.h>
 #include <qsqldatabase.h>
+#include <qwt_plot.h>
+
 
 #include <CF_Editor.h>
 #include <qpychef.h>
 #include <devicetable.h>
 
-#include <LattFncData.h>
-#include <ETFncData.h>
-#include <LBFncData.h>
-#include <DspnFncData.h>
-#include <MomentsFncData.h>
 
 #include <CHEFPlotMain.h>
+#include <CurveData.h>
+#include <PlotData.h>
 #include <DbConnectDialog.h>
-#include <EnvPtr.h>
 
-#include <beamline/marker.h>
 
-#include <parsers/xsif/XSIFFactory.h>
+#include <CommandTwiss.h>
+#include <CommandPropagateTwiss.h>
+#include <CommandMoments.h>
+#include <CommandPropagateMoments.h>
+#include <CommandEdwardsTeng.h>
+#include <CommandEigenmodes.h>
+#include <CommandDispersion.h>
+#include <CommandPropagateDispersion.h>
 
-#include <iosetup.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;
 
 using namespace std;
 
-extern beamline* DriftsToSlots( /* const */ beamline& original );
+extern beamline* DriftsToSlots( beamline const& original );
+
+
+struct DataStore {
+    double az;
+    double x1;
+    double x2;
+    double x3;
+};
 
 
 
-CHEFGUI::CHEFGUI(QWidget* parent, const char* name, WFlags f):
-CHEFGUIBase(parent,name,f), _plotWidget(0),
-                            _ETplotWidget(0),
-                            _MMplotWidget(0),
-                            _LBplotWidget(0),
-                            _DspnplotWidget(0),
-                            _p_vwr(0)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
+  :CHEFGUIBase(parent,name,f), browser_(0)
 
 {
 
-  _userOptions.couplingOption = Options::ignore_coupling;
+  userOptions_.couplingOption = Options::ignore_coupling;
 
-  _p_currBmlCon  = 0;
-  _p_currQBmlRoot = 0;
-  _p_clickedQBml = 0;
+  p_currQBmlRoot_ = 0;
+  p_clickedQBml_  = 0;
 
   // Create an initial Jet environment
   double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
   Jet__environment::BeginEnvironment( 1 );
 
-  _x   = new coord(0.0);
-  _y   = new coord(0.0);
-  _z   = new coord(0.0);
-  _px  = new coord(0.0);
-  _py  = new coord(0.0);
-  _pz  = new coord(0.0);
+  x_   = new coord(0.0);
+  y_   = new coord(0.0);
+  z_   = new coord(0.0);
+  px_  = new coord(0.0);
+  py_  = new coord(0.0);
+  pz_  = new coord(0.0);
 
-  _p_JetEnv      = Jet__environment::EndEnvironment(scale);
-  JetC__environment::setLastEnv(_p_JetEnv );      // implicit conversion
-  _p_JetCEnv     =  JetC__environment::getLastEnv();    
+  p_JetEnv_      = Jet__environment::EndEnvironment(scale);
+  JetC__environment::setLastEnv( p_JetEnv_ );      // implicit conversion
+  p_JetCEnv_     =  JetC__environment::getLastEnv();    
 
  
-  if( _p_JetEnv != Jet__environment::getLastEnv() ) {
+  if( p_JetEnv_ != Jet__environment::getLastEnv() ) {
     std::stringstream uic;
     uic << "An impossibility has occurred\nin file "
         << __FILE__
         << " at line " << __LINE__
-        << ":\n_p_JetEnv != Jet::lastEnv";
+        << ":\np_JetEnv_ != Jet::lastEnv";
     QMessageBox::information( 0, "CHEF: ERROR",
                               uic.str().c_str() );
   }
 
   // Make connections
-  connect( this, SIGNAL(_new_beamline()),
-           this, SLOT  (_launch_browser()) );
+
+  connect( this, SIGNAL(new_beamline()    ),
+           this, SLOT  (launch_browser()) );
 
 
 
-  _centralWidget = new AppWorkspace(this, "AppWorkspace");
+  centralWidget_ = new AppWorkspace(this, "AppWorkspace");
 
-  setCentralWidget( _centralWidget );
+  setCentralWidget( centralWidget_ );
 
 
   // the browser initial set of windows are created in QShowEvent handler. This allow for correct initial geometry
-  // based on the initial main widget dimensions.   _launch_browser();
+  // based on the initial main widget dimensions.   
 
-
-  _eventfilter = new WindowCloseEventEater();
+   eventfilter_ = new WindowCloseEventEater();
 
 
   // initialize the beamline browser
   // -------------------------------
 
-   _p_vwr = new BeamlineBrowser( centralWidget(), "BeamlineBrowser" );
+   browser_ = new BeamlineBrowser( centralWidget(), "BeamlineBrowser" );
 
-   _p_vwr->hide();
-   _p_vwr->installEventFilter( _eventfilter );
+   browser_->hide();
+   browser_->installEventFilter( eventfilter_ );
 
    windowsTree_BrowserAction->setOn(true);
-   _p_vwr->setAllColumnsShowFocus( true );
+   browser_->setAllColumnsShowFocus( true );
 
 
 
-    connect( this,   SIGNAL(_modeChanged( const BeamlineContext* )),
-             _p_vwr, SLOT(resetPixmap( const BeamlineContext* ))        );
+    connect( this,   SIGNAL( modeChanged( ConstBmlContextPtr )),
+             browser_, SLOT(resetPixmap( ConstBmlContextPtr ))        );
 
-    connect( _p_vwr, SIGNAL(sig_bmlLeftClicked( BeamlineContext*,   QBmlRoot* )),
-             this,   SLOT( _set_p_clickedContext( BeamlineContext*, QBmlRoot* ))    );
+    connect( browser_, SIGNAL(sig_bmlLeftClicked( BmlContextPtr,   QBmlRoot* )),
+             this,   SLOT(  set_p_clickedContext( BmlContextPtr,  QBmlRoot* ))    );
 
-    connect( _p_vwr, SIGNAL( sig_bmlLeftClicked( QBml* )),
-             this,   SLOT(_set_p_clickedQBml( QBml* ))    );
+    connect( browser_, SIGNAL( sig_bmlLeftClicked( QBml* )),
+             this,   SLOT( set_p_clickedQBml( QBml* ))    );
 
-    connect( _p_vwr, SIGNAL( sig_newContext( BeamlineContext* )),
-             this,   SLOT(_slot_contextGenerated( BeamlineContext* ))    );
+    connect( browser_, SIGNAL( sig_newContext( BmlContextPtr )),
+             this,   SLOT( slot_contextGenerated( BmlContextPtr ))    );
+
+
 
    // initialize the Message window and the associated Message io
    // --------------------------------------------------------
  
-     _messages  = new QTextEdit(_centralWidget, "Messages");
-     _messages->setCaption("Messages");
-     _messages->setFont(QFont("MiscFixed"));
-     _messages->hide();
-     _messages->installEventFilter(_eventfilter);
+     messages_  = new QTextEdit(centralWidget_, "Messages");
+     messages_->setCaption("Messages");
+     messages_->setFont(QFont("MiscFixed"));
+     messages_->hide();
+     messages_->installEventFilter( eventfilter_);
 
 
-     _messages_stdout = new Messages<0>(_messages);
-     _messages_stdwar = new Messages<1>(_messages);
-     _messages_stderr = new Messages<2>(_messages);
+     messages_stdout_ = new Messages<0>(messages_);
+     messages_stdwar_ = new Messages<1>(messages_);
+     messages_stderr_ = new Messages<2>(messages_);
 
-     _p_messages_stdout_stream = new std::ostream( _messages_stdout ); 
-     _p_messages_stdwar_stream = new std::ostream( _messages_stdwar ); 
-     _p_messages_stderr_stream = new std::ostream( _messages_stderr );
+     p_messages_stdout_stream_ = new std::ostream( messages_stdout_ ); 
+     p_messages_stdwar_stream_ = new std::ostream( messages_stdwar_ ); 
+     p_messages_stderr_stream_ = new std::ostream( messages_stderr_ );
   
 #ifdef _WIN32
-     _messages->append( QString("CHEF (Win32) Beta Version, July 2005)") );
+     messages_->append( QString("CHEF (Win32) Beta Version, July 2005)") );
 #else
-     _messages->append( QString("CHEF (Unix/Linux) Beta Version,  July 2005)") );
+     messages_->append( QString("CHEF (Unix/Linux) Beta Version,  July 2005)") );
 #endif
-     _messages->append( QString("(C) URA/Fermilab, All Rights Reserved.\n") );
+     messages_->append( QString("(C) URA/Fermilab, All Rights Reserved.\n") );
     
-     iosetup(_p_messages_stdout_stream, _p_messages_stdwar_stream);
+     iosetup( p_messages_stdout_stream_, p_messages_stdwar_stream_);
 
      windowsMessagesAction->setOn(true);
 
@@ -236,19 +253,19 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
    // initialize the Python Interpreter window
    // ------------------------------------------
 
-     _interpreter = 0;
-     _interpreter = new QPyCHEF(_centralWidget , "Interpreter");
-     _interpreter->hide();
-     _interpreter->installEventFilter(_eventfilter);
+     interpreter_ = 0;
+     interpreter_ = new QPyCHEF(centralWidget_ , "Interpreter");
+     interpreter_->hide();
+     interpreter_->installEventFilter( eventfilter_ );
      windowsInterpreterAction->setOn(true);
 
 
    // initialize the ACNET Devices Monitor window
    // ------------------------------------------
 
-    _devices = new DeviceTable(_centralWidget, "Devices");
-    _devices->hide();
-    _devices->installEventFilter(_eventfilter);
+    devices_ = new DeviceTable(centralWidget_, "Devices");
+    devices_->hide();
+    devices_->installEventFilter( eventfilter_ );
      windowsDevicesAction->setOn(true);
 
 
@@ -259,18 +276,18 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
      // there seems to be a bug in Qt when windows with a fixed size are displayed in a 
      // QWorkspace.
  
-    _dbconnect_dlg  = new DbConnectDialog(  dynamic_cast<QWorkspace*>(_centralWidget), 
+    dbconnect_dlg_  = new DbConnectDialog(  dynamic_cast<QWorkspace*>( centralWidget_ ), 
                                             "Database Connection");  
-    _dbretrieve_dlg = new DbRetrieveDialog( dynamic_cast<QWorkspace*>(_centralWidget), 
+    dbretrieve_dlg_ = new DbRetrieveDialog( dynamic_cast<QWorkspace*>( centralWidget_ ), 
                                             "Retrieve Data from Database");
 #endif
-    _dbconnect_dlg  = new DbConnectDialog( 0, "Database Connection");  
-    _dbretrieve_dlg = new DbRetrieveDialog(0, "Retrieve Data from Database");
+    dbconnect_dlg_  = new DbConnectDialog( 0, "Database Connection");  
+    dbretrieve_dlg_ = new DbRetrieveDialog(0, "Retrieve Data from Database");
 
-    connect( _dbconnect_dlg, SIGNAL( buttonOkClicked(const DbConnectStruct&)    ), 
-             this,             SLOT(_handleDBConnection(const DbConnectStruct&) ) );
+    connect( dbconnect_dlg_, SIGNAL( buttonOkClicked(const DbConnectStruct&)    ), 
+             this,             SLOT( handleDBConnection(const DbConnectStruct&) ) );
 
-    _default_db = 0;
+    default_db_ = 0;
 
     databaseRetrieveDataAction->setEnabled(false);
 
@@ -282,73 +299,136 @@ CHEFGUIBase(parent,name,f), _plotWidget(0),
     // initialize the help window
     //----------------------------
 
-    _assistanthelp = new QAssistantClient("", this ); // path is empty; use system path to find assistant executable
+    assistanthelp_ = new QAssistantClient("", this ); // path is empty; use system path to find assistant executable
 
     QStringList cmdLst;
     cmdLst << "-hideSidebar";
     cmdLst << "-profile"<<QString("doc") + QDir::separator() + QString("chefdoc.adp");
-    _assistanthelp->setArguments( cmdLst );
+    assistanthelp_->setArguments( cmdLst );
 
     // initialize the Beamline Section Dialog
 
-    _bmlSelectionDialog = new BmlSelectionDialog(this,"BmlSelectionDialog", WType_Popup );
-    _bmlSelectionDialog->hide();
+    bmlSelectionDialog_ = new BmlSelectionDialog(this,"BmlSelectionDialog", WType_Popup );
+    bmlSelectionDialog_->hide();
 
 
-    connect(_p_vwr , SIGNAL( sig_browserIsEmpty()    ),    this, SLOT( _disableMenus() ) );
-    connect(_p_vwr , SIGNAL( sig_browserIsNotEmpty() ),    this, SLOT( _enableMenus()  )  );
+    connect(browser_ , SIGNAL( sig_browserIsEmpty()    ),    this, SLOT( disableMenus() ) );
+    connect(browser_ , SIGNAL( sig_browserIsNotEmpty() ),    this, SLOT( enableMenus()  )  );
 
-    _disableMenus();
+    disableMenus();
 
 
     // initialize persistent dialogs
 
-    _initCondDialogLF       = new InitCondDialogLF(this, "InitCondDialogLF", 0);
-    _initCondDialogLF->ULFMode();
-    _initCondDialogLF->setCaption("Uncoupled Lattice Functions: Initial Conditions");
+    initCondDialogLF_       = new InitCondDialogLF(this, "InitCondDialogLF", 0);
+    initCondDialogLF_->ULFMode();
+    initCondDialogLF_->setCaption("Uncoupled Lattice Functions: Initial Conditions");
 
-    _initCondDialogDisp     = new InitCondDialogLF(this, "InitCondDialogLF", 0);
-    _initCondDialogDisp->dispersionMode();
-    _initCondDialogDisp->setCaption("Dispersion: Initial Conditions");
+    initCondDialogDisp_     = new InitCondDialogLF(this, "InitCondDialogLF", 0);
+    initCondDialogDisp_->dispersionMode();
+    initCondDialogDisp_->setCaption("Dispersion: Initial Conditions");
 
-    _initCondDialogMoments  = new InitCondDialogLF(this, "InitCondDialogLF", 0);
-    _initCondDialogMoments->momentsMode();
-    _initCondDialogMoments->setCaption("Moments (Including Transverse Coupling) : Initial Conditions");
+    initCondDialogMoments_  = new InitCondDialogLF(this, "InitCondDialogLF", 0);
+    initCondDialogMoments_->momentsMode();
+    initCondDialogMoments_->setCaption("Moments (Including Transverse Coupling) : Initial Conditions");
+
+
+    // -------------------------------------------------------------------------
+    // define the commands
+    //--------------------------------------------------------------------------
+
+
+#if  0
+    command_computeTwiss_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_2(QWidget*, BmlContextPtr&)  >  ( CommandTwiss()                ); 
+
+    command_propagateTwiss_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_3(QWidget*,  BmlContextPtr&, LattFuncSage::lattFunc const& )    >    ( CommandPropagateTwiss() ); 
+
+    command_computeMoments_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandMoments()              );  
+    command_propagateMoments_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)    >    ( CommandPropagateMoments() );  
+
+    command_computeEdwardsTeng_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandEdwardsTeng()          ); 
+
+    command_computeEigenmodes_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandEigenmodes()           ); 
+
+    command_computeDispersion_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandDispersion()           ); 
+    command_propagateDispersion_ = 
+          Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)  >      ( CommandPropagateDispersion()  ); 
+
+#endif
+
+
+    command_computeTwiss_ = 
+          boost::function<QWidget* (QWidget*, BmlContextPtr&)  >                                        ( CommandTwiss() ); 
+
+    command_propagateTwiss_ = 
+          boost::function<QWidget* (QWidget*,  BmlContextPtr&, LattFuncSage::lattFunc const& ) >         ( CommandPropagateTwiss() ); 
+
+    command_computeMoments_ = 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                        ( CommandMoments() );  
+    command_propagateMoments_ = 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)    >     ( CommandPropagateMoments());  
+
+    command_computeEdwardsTeng_ = 
+      boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandEdwardsTeng());           
+
+    command_computeEigenmodes_ = 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                        ( CommandEigenmodes()); 
+
+    command_computeDispersion_ = 
+      boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandDispersion()        ); 
+    command_propagateDispersion_ = 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)  >       ( CommandPropagateDispersion() ); 
+
+
 
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CHEFGUI::~CHEFGUI()
 {
 
    // remove the eventfilters
 
-    if (_p_vwr)       _p_vwr->removeEventFilter( _eventfilter );
-    if (_messages)    _messages->removeEventFilter( _eventfilter );
-    if (_interpreter) _interpreter->removeEventFilter( _eventfilter );
-    if (_devices)     _devices->removeEventFilter( _eventfilter );
+    if (browser_)           browser_->removeEventFilter( eventfilter_ );
+    if (messages_)         messages_->removeEventFilter( eventfilter_ );
+    if (interpreter_)   interpreter_->removeEventFilter( eventfilter_ );
+    if (devices_)           devices_->removeEventFilter( eventfilter_ );
 
     // delete the message window ostream and streambuf objects
 
-    //if (_p_messages_stdout_stream) delete _p_messages_stdout_stream;
-    //if (_p_messages_stderr_stream) delete _p_messages_stderr_stream;
+    //if ( pmessages_stdout_stream_ ) delete pmessages__stdout_stream_;
+    //if ( pmessages_stderr_stream_ ) delete pmessages__stderr_stream_;
 
-    //if (_messages_stdout) delete _messages_stdout;
-    //if (_messages_stderr) delete _messages_stderr;
+    //if (messages_stdout_) delete messages_stdout_;
+    //if (messages_stderr_) delete messages_stderr_;
 
-    if (_x)  delete _x;
-    if (_y)  delete _y;
-    if (_z)  delete _z;
-    if (_px) delete _px;
-    if (_py) delete _py;
-    if (_pz) delete _pz;
+    if (x_)  delete x_;
+    if (y_)  delete y_;
+    if (z_)  delete z_;
+    if (px_) delete px_;
+    if (py_) delete py_;
+    if (pz_) delete pz_;
 
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void CHEFGUI::readBmlFile( QString s) {
 
- beamline* bmlPtr = new beamline;
+ BmlPtr bmlPtr = BmlPtr( new beamline );
+
  std::ifstream inputStream( s );
       inputStream >> (*bmlPtr);
       inputStream.close();
@@ -375,26 +455,27 @@ void CHEFGUI::readBmlFile( QString s) {
       wpu->exec();
 
       if( qrb_proton_ptr->isDown() ) {
-        _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
       }
       else {
-        _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
       }
 
   delete wpu;
 
-  _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
-                                            // when the context is destroyed;
+  contextList_.push_front( p_currBmlCon_ );
 
-  _contextList.insert( _p_currBmlCon );
-  emit _new_beamline();
+  emit new_beamline();
    
 
-  _p_vwr->clearSelection();
+  browser_->clearSelection();
 
 }
 
-void CHEFGUI::_openFile()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::openFile()
 {
   std::auto_ptr<bmlfactory> bfp;
 
@@ -411,7 +492,6 @@ void CHEFGUI::_openFile()
   if( QString(".bml")  == s.right(4) )                                       lattice_format = bml_format; 
   if( QString(".xsif") == s.right(5) )                                       lattice_format = xsif_format; 
     
-
    try {
         switch ( lattice_format ) {
            case mad_format:   
@@ -446,20 +526,20 @@ void CHEFGUI::_openFile()
 
     //  instantiate only the n last beamlines defined in the mad file.
 
-    _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
-    _bmlSelectionDialog->setBeamParameters( *bfp.get() );
-    _bmlSelectionDialog->show();
+    bmlSelectionDialog_->setList( beamline_list, bfp->getUseStatementBeamlineName() );
+    bmlSelectionDialog_->setBeamParameters( *bfp.get() );
+    bmlSelectionDialog_->show();
 
-    while (_bmlSelectionDialog->isVisible()) qApp->processEvents();
+    while ( bmlSelectionDialog_->isVisible()) qApp->processEvents();
 
-    double brho = _bmlSelectionDialog->getBRHO();
+    double brho = bmlSelectionDialog_->getBRHO();
 
-     beamline_list = _bmlSelectionDialog->getSelected(); 
+     beamline_list = bmlSelectionDialog_->getSelected(); 
 
     std::list<std::string>::reverse_iterator it;
     int nlines = 0;
     for ( it = beamline_list.rbegin(); it != beamline_list.rend(); it++) {
-    	    beamline* bmlPtr = 0;
+    	    BmlPtr bmlPtr;
     	    try {
             bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
           } 
@@ -474,10 +554,10 @@ void CHEFGUI::_openFile()
 
           const char* typeStringPtr = bfp->getParticleType();
           if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
-            _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr) );
     	    }
           else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
-            _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
     	    }
           else {
             QMessageBox mb(  QString("*** ERROR ***")
@@ -491,11 +571,9 @@ void CHEFGUI::_openFile()
             while (mb.isVisible())  qApp->processEvents(); 
     	    }
 
-          _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called)
-                                                //when the context is destroyed;
-          _contextList.insert( _p_currBmlCon );
+          contextList_.push_front( p_currBmlCon_ );
 
-          _p_vwr->displayBeamline( _p_currBmlCon );
+          browser_->displayBeamline( p_currBmlCon_ );
 
           nlines++;
      }
@@ -503,8 +581,10 @@ void CHEFGUI::_openFile()
  }
 
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_openDeviceFile()
+void CHEFGUI::openDeviceFile()
 {
 
 
@@ -515,12 +595,15 @@ void CHEFGUI::_openDeviceFile()
 
  std::ifstream is( s.ascii());
 
- _devices->readDeviceList(is);
+ devices_->readDeviceList(is);
  is.close();
 
 }
 
-void CHEFGUI::_openScriptFile()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::openScriptFile()
 {
 
  QString s = QFileDialog::getOpenFileName( QString::null,
@@ -528,36 +611,45 @@ void CHEFGUI::_openScriptFile()
 
   if ( s.isEmpty() ) return;
 
-  _interpreter->readFile( s.ascii() );
+  interpreter_->readFile( s.ascii() );
 
 }
 
 
-void CHEFGUI::_print()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::print()
 {
   double s = 0.0;
-  if( 0 != _p_currBmlCon ) 
-  { _p_currBmlCon->peekAt( s, _p_currBmlCon->getParticle() ); }
+  if( 0 != p_currBmlCon_ ) 
+  { p_currBmlCon_->peekAt( s, p_currBmlCon_->getParticle() ); }
 }
 
 
-void CHEFGUI::_fileWriteTree()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::fileWriteTree()
 {
-  if( 0 != _p_currBmlCon ) { _p_currBmlCon->writeTree(); }
+  if( 0 != p_currBmlCon_ ) { p_currBmlCon_->writeTree(); }
 }
 
 
-void CHEFGUI::_fileSaveAs()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::fileSaveAs()
 {
   // REMOVE: if( _p_clickedCon == 0 ) {
-  if( _p_currBmlCon == 0 ) {
+  if( p_currBmlCon_ == 0 ) {
     QMessageBox::information( 0, "CHEF",
                 "Left click on a beamline first." );
     return;
   }
 
   // REMOVE: QString startName(_p_clickedCon->name());
-  QString startName(_p_currBmlCon->name());
+  QString startName(p_currBmlCon_->name());
   startName += ".bml";
 
   QString s = QFileDialog::getSaveFileName(
@@ -567,12 +659,12 @@ void CHEFGUI::_fileSaveAs()
                    0,
                    "Save File As" );
 
-  // REMOVE: beamline* bmlPtr = (beamline*) _p_clickedCon->cheatBmlPtr();
-  beamline* bmlPtr = (beamline*) _p_currBmlCon->cheatBmlPtr();
+
+   BmlPtr bmlPtr = boost::const_pointer_cast<beamline>(p_currBmlCon_->cheatBmlPtr());
 
   if( s.length() > 0 ) {
     std::ofstream outStream( s.latin1() );
-    outStream << *bmlPtr;
+    outStream << (*bmlPtr);
     outStream.close();
   }
 
@@ -580,13 +672,16 @@ void CHEFGUI::_fileSaveAs()
 
 }
 
-void CHEFGUI::_fileEditorSaveAs()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::fileEditorSaveAs()
 {
 
   // save the file in the opened editor window that has focus
 
 
-CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() );
+CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(centralWidget_)->activeWindow() );
 
  if (!editor) return;
 
@@ -604,13 +699,16 @@ QString s = QFileDialog::getSaveFileName(
 
 }
 
-void CHEFGUI::_fileEditorSave()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::fileEditorSave()
 {
 
   // save the file in the opened editor window that has focus
 
 
-CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() );
+CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(centralWidget_)->activeWindow() );
 
  if (!editor) return;
 
@@ -619,6 +717,9 @@ CF_Editor* editor = dynamic_cast<CF_Editor*>( dynamic_cast<QWorkspace*>(_central
  outStream.close();
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 CHEFGUI::editParse()
@@ -632,15 +733,15 @@ CHEFGUI::editParse()
 
   for (QWidget* w = wlist.first(); w; w = wlist.next())
   {
-   if ( dynamic_cast<QWorkspace*>(_centralWidget)->activeWindow() == w ) 
+   if ( dynamic_cast<QWorkspace*>(centralWidget_)->activeWindow() == w ) 
     {
       if ( QString((w)->name()) == QString("MAD8 Editor") ) 
       { 
-	if ( (editor = dynamic_cast<CF_Editor*>(w)) ) _parseEditorMAD8( editor );
+	if ( (editor = dynamic_cast<CF_Editor*>(w)) ) parseEditorMAD8( editor );
       }
       if ( QString((w)->name()) == QString("Python Editor") ) 
       { 
-        if( (editor = dynamic_cast<CF_Editor*>(w)) )  _parseEditorPython(editor);
+        if( (editor = dynamic_cast<CF_Editor*>(w)) )  parseEditorPython(editor);
       }
     }
   }
@@ -648,8 +749,11 @@ CHEFGUI::editParse()
 }
  
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void 
-CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
+CHEFGUI::parseEditorMAD8( CF_Editor* editor )
 {
   std::auto_ptr<bmlfactory> bfp;
  
@@ -692,19 +796,19 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
        
   //  instantiate only the n last beamlines defined in the mad file. 
 
-  _bmlSelectionDialog->setList( beamline_list, bfp->getUseStatementBeamlineName() );
-  _bmlSelectionDialog->setBeamParameters( *bfp.get() );
-  _bmlSelectionDialog->show();
+   bmlSelectionDialog_->setList( beamline_list, bfp->getUseStatementBeamlineName() );
+   bmlSelectionDialog_->setBeamParameters( *bfp.get() );
+   bmlSelectionDialog_->show();
 
-  while (_bmlSelectionDialog->isVisible()) qApp->processEvents();
+  while ( bmlSelectionDialog_->isVisible()) qApp->processEvents();
 
-  double brho = _bmlSelectionDialog->getBRHO();
+  double brho =  bmlSelectionDialog_->getBRHO();
 
-  _bmlSelectionDialog->getSelected(); // this function alters beamline_list 
+  bmlSelectionDialog_->getSelected(); // this function alters beamline_list 
 
   std::list<std::string>::iterator it;
   int nlines = 0;
-  beamline* bmlPtr = 0;
+  BmlPtr bmlPtr;
   
   for ( it = beamline_list.begin(); it != beamline_list.end(); it++) {
 
@@ -730,10 +834,10 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
 
         const char* typeStringPtr = bfp->getParticleType();
         if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
-          _p_currBmlCon = new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr, false );
+          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr ));
 	}
         else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
-          _p_currBmlCon = new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr, false );
+          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
 	}
         else {
           QMessageBox mb(  QString("*** ERROR ***")
@@ -747,64 +851,79 @@ CHEFGUI::_parseEditorMAD8( CF_Editor* editor )
           while (mb.isVisible())  qApp->processEvents(); 
 	}
 
-        _p_currBmlCon->setClonedFlag( true ); // force beamline destruction (eliminate() is called) 
-                                                //when the context is destroyed;
-        _contextList.insert( _p_currBmlCon );
-        _p_vwr->displayBeamline( _p_currBmlCon );
+        contextList_.push_front( p_currBmlCon_ );
+        browser_->displayBeamline( p_currBmlCon_ );
         nlines++;
   } 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
-CHEFGUI::_parseEditorPython( CF_Editor* /* editor */ )
+CHEFGUI::parseEditorPython( CF_Editor* /* editor */ )
 {
   //  FIXME ! QPyCHEF needs to be fixed
-  //  _interpreter->runBuffer( editor->text().ascii() );
+  //  interpreter_->runBuffer( editor->text().ascii() );
 }
 
-void CHEFGUI::_editFindFilter()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editFindFilter()
 {
   QueryDialog* qdl = new QueryDialog( 0, 0, Qt::WDestructiveClose );
-  connect( qdl,  SIGNAL(_useThis( const BoolNode& )),
-           this, SLOT  (_processFilter( const BoolNode& )) );
+  connect( qdl,  SIGNAL( useThis( const BoolNode& )),
+           this, SLOT  ( processFilter( const BoolNode& )) );
   qdl->show();
 }
 
 
-void CHEFGUI::_editSelectAll()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editSelectAll()
 {
-  _p_vwr->selectAll( true );
+  browser_->selectAll( true );
 }
 
 
-void CHEFGUI::_editSelectNone()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editSelectNone()
 {
-  _p_vwr->clearSelection();
-  _p_currBmlCon   = 0;
-  _p_currQBmlRoot = 0;
-  _p_clickedQBml  = 0;
+  browser_->clearSelection();
+  p_currBmlCon_   = BmlContextPtr();
+  p_currQBmlRoot_ = 0;
+  p_clickedQBml_  = 0;
 }
 
 
-void CHEFGUI::_editCopyLine()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editCopyLine()
 {
   // Procedure copied from CHEF.builders.cc
   // and slightly modified.
 
-  if( 0 != _p_currBmlCon ) {
-    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                         _p_currBmlCon->cloneBeamline(),
-                                         false );
-    _p_currBmlCon->setClonedFlag( true );
-    _contextList.insert( _p_currBmlCon );
-    emit _new_beamline();
+  if( !p_currBmlCon_ ) {
+    p_currBmlCon_ = 
+     BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(),
+                                         BmlPtr( p_currBmlCon_->cheatBmlPtr()->Clone() ) ) );
+
+    contextList_.push_front( p_currBmlCon_ );
+    emit new_beamline();
   }
 }
 
-void CHEFGUI::_editRenameLine()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editRenameLine()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( 0 == p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
@@ -814,7 +933,7 @@ void CHEFGUI::_editRenameLine()
 
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( "Name: ", qhb1 );
-        QLineEdit* qle = new QLineEdit( _p_currBmlCon->name(), qhb1 );
+        QLineEdit* qle = new QLineEdit( p_currBmlCon_->name(), qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
@@ -839,24 +958,26 @@ void CHEFGUI::_editRenameLine()
   int returnCode = wpu->exec();
 
   if( returnCode == QDialog::Accepted ) {
-    _p_currBmlCon->rename( qle->text().ascii() );
-    _p_currQBmlRoot->setText( 0, qle->text() );
+    p_currBmlCon_->rename( qle->text().ascii() );
+    p_currQBmlRoot_->setText( 0, qle->text() );
   }
 
   delete wpu;
 }
 
 
-void CHEFGUI::_editRemoveLine()
-{
-  if( 0 == _p_currBmlCon ) { return; }
-  if( 0 == (_p_vwr->removeBeamline( _p_currBmlCon )) )
-  { // Note: Beamline has been eliminated as well.
-    _contextList.remove( _p_currBmlCon );
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    delete _p_currBmlCon;
-    _p_currBmlCon = 0;
-    _p_currQBmlRoot = 0;
+void CHEFGUI::editRemoveLine()
+{
+  if( !p_currBmlCon_ ) { return; }
+  if( !browser_->removeBeamline( p_currBmlCon_ ) )
+  { 
+    contextList_.remove( p_currBmlCon_ );
+
+    p_currBmlCon_ = BmlContextPtr();
+    p_currQBmlRoot_ = 0;
   }
   else
   { QMessageBox::information( 0, "CHEF: ERROR",
@@ -865,16 +986,19 @@ void CHEFGUI::_editRemoveLine()
 }
 
 
-void CHEFGUI::_horTuneCtrl()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::horTuneCtrl()
 {
 
- if( 0 == _p_currBmlCon ) {
+ if( 0 == p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    _testFC( CHEFGUI::_buildHTuneCircuit );
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+      testFC( &CHEFGUI::buildHTuneCircuit );
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -884,55 +1008,19 @@ void CHEFGUI::_horTuneCtrl()
 }
 
 
-void CHEFGUI::_verTuneCtrl()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::verTuneCtrl()
 {
 
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    _testFC( CHEFGUI::_buildVTuneCircuit );
-  }
-  else {
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              "Selected line is not periodic."
-                              "\nTry fixing with Edit/Mode function." );
-  }
-
-}
-
-
-void CHEFGUI::_horChromCtrl()
-{
-
- if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
-    return;
-  }
-
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    _testFC( CHEFGUI::_buildHChromCircuit );
-  }
-  else {
-    QMessageBox::information( 0, "CHEF: ERROR",
-                              "Selected line is not periodic."
-                              "\nTry fixing with Edit/Mode function." );
-  }
-}
-
-
-void CHEFGUI::_verChromCtrl()
-{
-
-  if( 0 == _p_currBmlCon ) {
-    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
-    return;
-  }
-
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    _testFC( CHEFGUI::_buildVChromCircuit );
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+     testFC( &CHEFGUI::buildVTuneCircuit );
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -943,76 +1031,128 @@ void CHEFGUI::_verChromCtrl()
 }
 
 
-int
-CHEFGUI::_buildHTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::horChromCtrl()
 {
-  aPtr->_p_currBmlCon->addHTuneCorrector( bPtr );
-  return 0; // this should really be a void function
+
+ if( !p_currBmlCon_ ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+     testFC( &CHEFGUI::buildHChromCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
 }
 
 
-int
-CHEFGUI::_buildVTuneCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::verChromCtrl()
 {
-  aPtr->_p_currBmlCon->addVTuneCorrector( bPtr );
-  return 0; // this should really be a void function
+
+  if( !p_currBmlCon_ ) {
+    QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
+    return;
+  }
+
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+      testFC( &CHEFGUI::buildVChromCircuit );
+  }
+  else {
+    QMessageBox::information( 0, "CHEF: ERROR",
+                              "Selected line is not periodic."
+                              "\nTry fixing with Edit/Mode function." );
+  }
+
 }
 
 
-int
-CHEFGUI::_buildHChromCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::buildHTuneCircuit(  ConstElmPtr bPtr ) const
 {
-  aPtr->_p_currBmlCon->addHChromCorrector( bPtr );
-  return 0; // this should really be a void function
+  // ????????? p_currBmlCon_->addHTuneCorrector( bPtr );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::buildVTuneCircuit(  ConstElmPtr bPtr ) const
+{
+  //????????????p_currBmlCon_->addVTuneCorrector( bPtr );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::buildHChromCircuit(  ConstElmPtr bPtr ) const
+{
+  //????????????? p_currBmlCon_->addHChromCorrector( bPtr );
 }
 
 
-int
-CHEFGUI::_buildVChromCircuit( const CHEFGUI* aPtr, const bmlnElmnt* bPtr )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::buildVChromCircuit(  ConstElmPtr bPtr ) const
 {
-  aPtr->_p_currBmlCon->addVChromCorrector( bPtr );
-  return 0; // this should really be a void function
+  // ???????????? p_currBmlCon_->addVChromCorrector( bPtr );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editCondense()
+void CHEFGUI::editCondense()
 {
+
   DriftEliminator de;
 
-  if (!_p_currBmlCon)
+  if (!p_currBmlCon_)
   {
      QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a beamline first." );
      return;
   };
 
-  _p_currBmlCon->accept(de);
+  p_currBmlCon_->accept(de);
 
-  beamline* bmlPtr = de.clonedBeamlinePtr();
-  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                       bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  BmlPtr bmlPtr( de.beamlinePtr()->Clone() ) ;
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(), bmlPtr) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  emit _new_beamline();
+  emit new_beamline();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editNewOrder()
+void CHEFGUI::editNewOrder()
 {
+
   // One quick test ...
-  if( 0 == _p_clickedQBml ) {
+  if( !p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
 			  "A single beamline element must be chosen first." );
     return;
   }
 
   // Locate the element and its root beamline
-  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(_p_clickedQBml);
+  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(p_clickedQBml_);
 
   // This test should be made more flexible after
   //   allowing non-flat beamlines to be processed.
-  if( 0 == qbmlElPtr ) {
+
+  if( !qbmlElPtr ) {
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nIn function void CHEF::_editNewOrder():"
@@ -1021,13 +1161,17 @@ void CHEFGUI::_editNewOrder()
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
-  const bmlnElmnt* elmntPtr = qbmlElPtr->cheatElementPtr();
-  QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+
+  ConstBmlPtr elmntPtr = boost::static_pointer_cast<beamline const>(qbmlElPtr->cheatElementPtr());
+
+  QBmlRoot* theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
 
   // Invoke this slot to reset the current settings.
-  BeamlineContext* contextPtr = const_cast<BeamlineContext*>(theRoot->cheatContextPtr());
-  _set_p_clickedContext( contextPtr, theRoot );
-  beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+
+  ConstBmlContextPtr contextPtr = theRoot->cheatContextPtr();
+
+  set_p_clickedContext( boost::const_pointer_cast<BeamlineContext>(contextPtr), theRoot );
+  ConstBmlPtr bmlPtr = boost::static_pointer_cast<beamline const>(p_currBmlCon_->cheatBmlPtr());
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1039,10 +1183,16 @@ void CHEFGUI::_editNewOrder()
   }
 
   // Do the operation.
-  if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+
+  if( 0 == (browser_->removeBeamline( boost::const_pointer_cast<BeamlineContext>(contextPtr) )) ) {
+
+    BmlPtr bmlPtr(bmlPtr->Clone());
     bmlPtr->startAt(elmntPtr);
-    contextPtr->reset();
-    emit _new_beamline();
+
+    contextPtr = ConstBmlContextPtr(); // this should reset/delete current context
+
+
+    emit new_beamline();
   }
   else { 
     std::ostringstream uic;
@@ -1056,24 +1206,29 @@ void CHEFGUI::_editNewOrder()
 }
 
 
-void CHEFGUI::_editMergeQuads()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editMergeQuads()
 {
   QuadEliminator qe;
-  _p_currBmlCon->accept(qe);
+  p_currBmlCon_->accept(qe);
 
-  beamline* bmlPtr = qe.clonedBeamlinePtr();
-  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                       bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  BmlPtr bmlPtr( qe.beamlinePtr()->Clone() );
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(),
+                                       bmlPtr ) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  emit _new_beamline();
+  emit new_beamline();
 }
 
 
-void CHEFGUI::_toolMisalign()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::toolMisalign()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a beamline first." );
     return;
@@ -1116,7 +1271,7 @@ void CHEFGUI::_toolMisalign()
     qvb->adjustSize();
 
   QString qstr( "CHEFGUI: " );
-  qstr += _p_currBmlCon->name();
+  qstr += p_currBmlCon_->name();
   wpu->setCaption( qstr );
   wpu->adjustSize();
 
@@ -1135,7 +1290,7 @@ void CHEFGUI::_toolMisalign()
 
       else if( bendPtr == qbg->selected() ) {
         RollAccumulator actn( "CF_rbend", rollAngle );
-        int n = _p_currBmlCon->processElements( actn );
+        int n = p_currBmlCon_->processElements( actn );
 
         QString numString;
         numString.setNum(n);
@@ -1145,7 +1300,7 @@ void CHEFGUI::_toolMisalign()
 
       else if( quadPtr == qbg->selected() ) {
         RollAccumulator actn( "quadrupole", rollAngle );
-        int n = _p_currBmlCon->processElements( actn );
+        int n = p_currBmlCon_->processElements( actn );
 
         QString numString;
         numString.setNum(n);
@@ -1159,13 +1314,15 @@ void CHEFGUI::_toolMisalign()
   delete wpu;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editAlignBends()
+void CHEFGUI::editAlignBends()
 {
   // This menu function changes the beamline in place
   // without creating a new one.
 
-  const bmlnElmnt* selected = _p_vwr->getSelectedElement(_p_currBmlCon);
+  ConstElmPtr  selected = browser_->getSelectedElement(p_currBmlCon_);
   if( 0 == selected )
   {
     QMessageBox::information( 0, "CHEF: INFO",
@@ -1177,26 +1334,19 @@ void CHEFGUI::_editAlignBends()
     if( typeid(*selected) == typeid(CF_rbend) )
     {
       // The following was modeled on rrv19.cfrbend.cfg
-      CF_rbend* prototype = (CF_rbend*) selected->Clone();
+      
+      CFRbendPtr prototype( boost::static_pointer_cast<CF_rbend const>(selected)->Clone() );
 
-      Particle* pPtr = (_p_currBmlCon->getParticle()).Clone();
-      pPtr->SetReferenceEnergy( _p_currBmlCon->getEnergy() );
+      Particle particle (  p_currBmlCon_->getParticle() );
+      particle.SetReferenceEnergy( p_currBmlCon_->getEnergy() );
+
         // This line is almost certainly unnecessary.
-      pPtr->setStateToZero();
-      // REMOVE: double inState [] = { 0., 0., 0., 0., 0., 0. };
-      // REMOVE: inState[ p.npxIndex() ]
-      // REMOVE:             =  ( p.Momentum()/p.ReferenceMomentum() )
-      // REMOVE:                * sin( prototype->getPoleFaceAngle() / 2.0 );
-      // REMOVE: inState[ pPtr->npxIndex() ]
-      // REMOVE:             =  ( p.Momentum()/p.ReferenceMomentum() )
-      // REMOVE:                * sin( prototype->getPoleFaceAngle() );
-      // REMOVE: pPtr->setState( inState );
-      pPtr->set_npx( ( pPtr->Momentum()/pPtr->ReferenceMomentum() )
+      particle.setStateToZero();
+      particle.set_npx( ( particle.Momentum()/particle.ReferenceMomentum() )
                      * sin( prototype->getPoleFaceAngle() ) );
 
-      double delta = ( prototype->AdjustPosition(*pPtr) );
+      double delta = ( prototype->AdjustPosition( particle) );
 
-      delete pPtr; pPtr = 0;
 
       // Dialog: permission to realign the CF_rbends
       QDialog* wpu = new QDialog( 0, 0, true );
@@ -1231,11 +1381,10 @@ void CHEFGUI::_editAlignBends()
       if( returnCode == QDialog::Accepted )
       {
         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
-        _p_currBmlCon->setAlignment( cf, prototype->Alignment() );
+        p_currBmlCon_->setAlignment( cf, prototype->Alignment() );
       }
 
       delete wpu;
-      delete prototype;
     }
 
     else
@@ -1248,68 +1397,74 @@ void CHEFGUI::_editAlignBends()
 }
 
 
-void CHEFGUI::_editFlatten()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editFlatten()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a beamline first." );
     return;
   }
 
   // Create a cloned, flattened beamline
-  beamline* tempPtr = _p_currBmlCon->cheatBmlPtr()->flatten();
-  beamline* bmlPtr  = dynamic_cast<beamline*>(tempPtr->Clone());
+  beamline  tempbml = p_currBmlCon_->cheatBmlPtr()->flatten();
+  BmlPtr bmlPtr( tempbml.Clone() );
     // This step is necessary,
     //   because the same objects exist both
     //   the original and flattened beamlines.
-  delete tempPtr;
     // Does not delete beamline elements.
 
-  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                       bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  p_currBmlCon_ = BmlContextPtr ( new BeamlineContext( p_currBmlCon_->getParticle(), bmlPtr ) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  emit _new_beamline();
+  emit new_beamline();
 }
 
 
-void CHEFGUI::_pushParticles()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::pushParticles()
 {
   DistributionWidget* dwPtr
-    = new DistributionWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
+    = new DistributionWidget( *(p_currBmlCon_), 0, 0, Qt::WDestructiveClose );
   dwPtr->show();
 }
 
 
-void CHEFGUI::_editEditElement()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editEditElement()
 {
   // The code in this method was patterned after that
   // in CHEF::_editNewOrder()
 
   // One quick test ...
-  if( 0 == _p_clickedQBml ) {
+  if( 0 == p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
 			  "A single beamline element must be chosen first." );
     return;
   }
 
   // Locate the element and its root beamline
-  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(_p_clickedQBml);
+  QBmlElmt* qbmlElPtr = dynamic_cast<QBmlElmt*>(p_clickedQBml_);
 
   // This test should be made more flexible after
   //   allowing non-flat beamlines to be processed.
   if( 0 == qbmlElPtr ) {
     // Allow modifying the beamline only
-    if( 0 != _p_currBmlCon ) {
-      BeamlineContext* contextPtr = _p_currBmlCon;
-      if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+    if(p_currBmlCon_ ) {
+      BmlContextPtr contextPtr = p_currBmlCon_;
+      if( 0 == (browser_->removeBeamline( contextPtr )) ) {
         editDialog edg;
         edg._contextPtr = contextPtr;
-        beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+        BmlPtr bmlPtr = boost::const_pointer_cast<beamline>(p_currBmlCon_->cheatBmlPtr() );
         bmlPtr->accept(edg);
         contextPtr->reset();
-        emit _new_beamline();
+        emit new_beamline();
         return;
       }
     }
@@ -1323,13 +1478,13 @@ void CHEFGUI::_editEditElement()
       return;
     }
   }
-  const bmlnElmnt* elmntPtr = qbmlElPtr->cheatElementPtr();
-  QBmlRoot* theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+  ConstElmPtr elmntPtr = qbmlElPtr->cheatElementPtr();
+  QBmlRoot* theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
 
   // Invoke this slot to reset the current settings.
-  BeamlineContext* contextPtr = const_cast<BeamlineContext*>(theRoot->cheatContextPtr());
-  _set_p_clickedContext( contextPtr, theRoot );
-  beamline* bmlPtr = const_cast<beamline*>(_p_currBmlCon->cheatBmlPtr());
+  BmlContextPtr contextPtr = boost::const_pointer_cast<BeamlineContext>(theRoot->cheatContextPtr());
+  set_p_clickedContext( contextPtr, theRoot );
+  ConstBmlPtr  bmlPtr = p_currBmlCon_->cheatBmlPtr();
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1342,12 +1497,12 @@ void CHEFGUI::_editEditElement()
 
   // Finally, do the editing with the help of 
   // and editDialog visitor.
-  if( 0 == (_p_vwr->removeBeamline( contextPtr )) ) {
+  if( 0 == (browser_->removeBeamline( contextPtr )) ) {
     editDialog edg;
     edg._contextPtr = contextPtr;
-    const_cast<bmlnElmnt*>(elmntPtr)->accept(edg);
+    boost::const_pointer_cast<bmlnElmnt>(elmntPtr)->accept(edg);
     contextPtr->reset();
-    emit _new_beamline();
+    emit new_beamline();
   }
   else { 
     std::ostringstream uic;
@@ -1361,7 +1516,10 @@ void CHEFGUI::_editEditElement()
 }
 
 
-void CHEFGUI::_editAlign()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editAlign()
 {
   bool handleSpace   = true;
   bool handleSbend   = true;
@@ -1432,16 +1590,15 @@ void CHEFGUI::_editAlign()
       euclidData.tilt    *= 0.001;  // milliradians -> radians
 
       // Search for selected elements
-      QPtrList<bmlnElmnt> theChosenOnes;
-      theChosenOnes = _p_vwr->findAllSelected(dynamic_cast<QBmlRoot*>(_p_clickedQBml));
+     
+      std::list<ElmPtr> theOnes = browser_->findAllSelected(dynamic_cast<QBmlRoot*>(p_clickedQBml_));
 
-      // Convert to a BmlPtrList, for use by AlignVisitor
-      //   Weed out undesirable elements; this probably should
-      //   be done by AlignVisitor itself.
-      BmlPtrList theOnes;
-      bmlnElmnt* elementPtr;
-      while( 0 != (elementPtr = theChosenOnes.take()) ) {
-        if( BmlUtil::isSpace(elementPtr) ) {
+      ElmPtr elementPtr;
+
+      for ( std::list<ElmPtr>::iterator it  = theOnes.begin();  
+                                        it != theOnes.end(); ++it )
+      { 
+        if( BmlUtil::isSpace(**it) ) {
           if(handleSpace) {
             QMessageBox::warning( 0, "CHEF: WARNING", 
               "This function will not align empty space."
@@ -1459,22 +1616,24 @@ void CHEFGUI::_editAlign()
             handleSbend = false;
           }
         }
-        else {
-          theOnes.append(elementPtr);
-        }
       }
 
      // Do the alignment
+
       AlignVisitor euclid( euclidData, theOnes );
-      if( 0 != _p_currBmlCon) { _p_currBmlCon->accept( euclid ); }
+      if( p_currBmlCon_) { p_currBmlCon_->accept( euclid ); }
      }
   }
 }
 
 
-void CHEFGUI::_editAlignData()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editAlignData()
 {
-  if( 0 == _p_currBmlCon ) {
+
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF: INFO",
                               "You must select a beamline first." );
     return;
@@ -1487,23 +1646,16 @@ void CHEFGUI::_editAlignData()
   std::ifstream dataStream( s );
 
 
-  struct DataStore {
-    double az;
-    double x1;
-    double x2;
-    double x3;
-  };
-  slist dataBag;
-  DataStore* dtmPtr;
+  std::list< boost::shared_ptr<DataStore> > dataBag;
 
   char oneLine[1024];
   if( dataStream ) {
     dataStream.getline(oneLine,1000);
     while( !dataStream.eof() ) {
       std::istringstream lineStream( oneLine );
-      dtmPtr = new DataStore;
+      boost::shared_ptr<DataStore> dtmPtr( new DataStore );
       lineStream >> dtmPtr->az >> dtmPtr->x1 >> dtmPtr->x2 >> dtmPtr->x3;
-      dataBag.append(dtmPtr);
+      dataBag.push_back(dtmPtr);
       dataStream.getline(oneLine,1000);
     }
     dataStream.close();
@@ -1518,19 +1670,21 @@ void CHEFGUI::_editAlignData()
 
 
   // Invoke a SurveyMatcher object
-  beamline* bmlPtr = (beamline*)(_p_currBmlCon->cheatBmlPtr());
+
+  ConstBmlPtr bmlPtr = p_currBmlCon_->cheatBmlPtr();
+
   Vector r(3);
   std::vector<Vector> rawData;
-  slist_iterator getNext(dataBag);
-  while((  0 != (dtmPtr = (DataStore*)getNext() )  )) {
-    r(0) = dtmPtr->x1;
-    r(1) = dtmPtr->x2;
-    r(2) = dtmPtr->x3;
+
+  for ( std::list<boost::shared_ptr<DataStore> >::iterator it = dataBag.begin(); it != dataBag.end(); ++it ) 
+  {                   
+    r(0) = (*it)->x1;
+    r(1) = (*it)->x2;
+    r(2) = (*it)->x3;
     rawData.push_back(r);
   }
 
-  SurveyMatcher sm( rawData, bmlPtr );
-  
+  SurveyMatcher sm( rawData, boost::const_pointer_cast<beamline>(bmlPtr) );
 
 
   // Preparing the plot
@@ -1541,91 +1695,70 @@ void CHEFGUI::_editAlignData()
   std::vector<double>       yArray;
   std::vector<double>       zArray;
 
-  bool firstPass = true;
-  for( int i = 0; i < n; ++i) {
-    dtmPtr = (DataStore*) dataBag.get();
-    if( dtmPtr ) {
-      azimuthArray.push_back( dtmPtr->az );
+  int i =0;
+  for ( std::list<boost::shared_ptr<DataStore> >::iterator it = dataBag.begin(); it != dataBag.end(); ++it, ++i ) 
+  {
+
+      azimuthArray.push_back( (*it)->az );
       r = sm.getLocalDisplacement(i);
       xArray.push_back( r(0) );
       yArray.push_back( r(1) );
       zArray.push_back( r(2) );
-      delete dtmPtr;
-    }
-    else {
-      if( firstPass ) {
-        std::ostringstream uic;
-        uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-               "\nIn function void CHEF::_editAlignData()"
-               "\nImpossible condition occurred: not enough data."
-               "\nOperation will abort.";
-        QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
-        return;
-      }
-    }
   }
 
-  if( 0 != dataBag.get() ) {
-    std::ostringstream uic;
-    uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::_editAlignData()"
-           "\nImpossible condition occurred: too much data."
-           "\nOperation will abort.";
-    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
-    return;
-  }
+  CurveData  dxCurve( azimuthArray, xArray, "dx"  );
+  CurveData  dyCurve( azimuthArray, yArray, "dy"  );
+  CurveData  dzCurve( azimuthArray, zArray, "dz"  );
 
+//dxCurve->setPen( QPen( "black", 1, Qt::SolidLine ) );
+//dyCurve->setPen( QPen( "red", 1, Qt::SolidLine ) );
+//dzCurve->setPen( QPen( "green",  1, Qt::SolidLine ) );
 
-  boost::shared_ptr<CHEFCurve> 
-    dxCurve( new CHEFCurve( CurveData( &azimuthArray[0], &xArray[0], azimuthArray.size() ), "dx" ));
-  boost::shared_ptr<CHEFCurve> 
-    dyCurve( new CHEFCurve( CurveData( &azimuthArray[0], &yArray[0], azimuthArray.size() ), "dy" ));
-  boost::shared_ptr<CHEFCurve> 
-    dzCurve( new CHEFCurve( CurveData( &azimuthArray[0], &zArray[0], azimuthArray.size() ), "dz" ));
-
-  dxCurve->setPen( QPen( "black", 1, Qt::SolidLine ) );
-  dyCurve->setPen( QPen( "red", 1, Qt::SolidLine ) );
-  dzCurve->setPen( QPen( "green",  1, Qt::SolidLine ) );
-
-  dxCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
-  dyCurve->setAxis( QwtPlot::xBottom, QwtPlot::yLeft );
-  dzCurve->setAxis( QwtPlot::xBottom, QwtPlot::Right );
+  dxCurve.setAxes( CurveData::xBottom, CurveData::yLeft );
+  dyCurve.setAxes( CurveData::xBottom, CurveData::yLeft );
+  dzCurve.setAxes( CurveData::xBottom, CurveData::yRight );
 
 
   // Create a CHEFPlotData object for handing over to the plotter
-  CHEFPlotData plotData;
+
+  PlotData plotData;
   plotData.addCurve(dxCurve);
   plotData.addCurve(dyCurve);
   plotData.addCurve(dzCurve);
-  plotData.setXLabel( "Arc Length [m]"              );
-  plotData.setYLabel( "Data",       QwtPlot::yLeft  );
-  plotData.setBeamline( *_p_currBmlCon->cheatBmlPtr() );
+  plotData.setXLabel( "Arc Length [m]"         );
+  plotData.setYLabel( CurveData::yLeft, "Data" );
+  plotData.setBeamline( p_currBmlCon_->cheatBmlPtr() );
 
 
   // Plot and display the results
-  CHEFPlotMain* surveyPlotter
-    = new CHEFPlotMain( 0, "Survey Plotter", Qt::WDestructiveClose );
+  CHEFPlotMain* surveyPlotter = new CHEFPlotMain( 0, "Survey Plotter", Qt::WDestructiveClose );
   surveyPlotter->setCaption( "CR&P" );
   surveyPlotter->addData( plotData );
   surveyPlotter->show();
 
   #if 0
   DataAlignWidget* dawPtr 
-    = new DataAlignWidget( *(_p_currBmlCon), 0, 0, Qt::WDestructiveClose );
+    = new DataAlignWidget( *(p_currBmlCon_), 0, 0, Qt::WDestructiveClose );
   dawPtr->show();
   #endif
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editD2S()
+void CHEFGUI::editD2S()
 {
-  beamline* bmlPtr = DriftsToSlots( (beamline&) *(_p_currBmlCon->cheatBmlPtr()) );
-  if( bmlPtr != _p_currBmlCon->cheatBmlPtr() ) {
-    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                         bmlPtr, false );
-    _p_currBmlCon->setClonedFlag( true );
-    _contextList.insert( _p_currBmlCon );
-    emit _new_beamline();
+
+  beamline* bp = DriftsToSlots( *(p_currBmlCon_->cheatBmlPtr()) );
+  
+  BmlPtr bmlPtr(bp);
+
+  if( bmlPtr != p_currBmlCon_->cheatBmlPtr() ) {
+    p_currBmlCon_ = BmlContextPtr (new BeamlineContext( p_currBmlCon_->getParticle(),
+                                         bmlPtr) );
+    contextList_.push_front( p_currBmlCon_ );
+    emit new_beamline();
   }
   else {
     QMessageBox::warning( 0
@@ -1638,10 +1771,13 @@ void CHEFGUI::_editD2S()
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CHEFGUI::insDlgData CHEFGUI::_insertionDialog() const
+insDlgData CHEFGUI::insertionDialog() const
 {
   // Dialog to determine where to insert new elements.
+
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
 
@@ -1683,7 +1819,8 @@ CHEFGUI::insDlgData CHEFGUI::_insertionDialog() const
   int returnCode = wpu->exec();
 
   // Package and return dialog choices
-  CHEFGUI::insDlgData ret;
+  
+  insDlgData ret;
   if( returnCode != QDialog::Accepted ) {
     ret.accepted   = false;
     ret.upstream   = false;
@@ -1698,50 +1835,53 @@ CHEFGUI::insDlgData CHEFGUI::_insertionDialog() const
     ret.downstream = ( downPtr == qbg->selected() );
   }
 
-  delete wpu;
   return ret;
 }
 
 
-void CHEFGUI::_editAddMarkers()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editAddMarkers()
 {
-  insDlgData options;
-  options = _insertionDialog();
+  insDlgData options = insertionDialog();
 
   if( options.accepted ) {
     // Preliminaries
     QString markerName( options.namePrefix );
 
     // Locate the root beamline
-    QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(_p_clickedQBml);
-    if( 0 == theRoot ) {
-      theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+    QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(p_clickedQBml_);
+    if( !theRoot ) {
+      theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
     }
 
     // Find selected elements
-    QPtrList<bmlnElmnt> theChosenOnes;
-    theChosenOnes = _p_vwr->findAllSelected( theRoot );
-    if( theChosenOnes.isEmpty() ) {
+
+    std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
+
+    if( theOnes.empty() ) {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-             "\nIn function: void CHEFGUI::_editAddMarkers():"
+             "\nIn function: void CHEFGUI::editAddMarkers():"
              "\nNo elements selected; no action will be taken.";
       QMessageBox::warning( 0, "CHEF: WARNING", uic.str().c_str() );
       return;
     }
 
     // Load BmlPtrLists, for use by lower level tools
-    BmlPtrList theOnes;
-    BmlPtrList insertions;
-    bmlnElmnt* elementPtr;
-    while( 0 != (elementPtr = theChosenOnes.take()) ) {
-      theOnes.append(elementPtr);
-      insertions.append( new marker(markerName.ascii()) );
+
+    std::list<ElmPtr> insertions;
+
+    for ( std::list<ElmPtr>::iterator it = theOnes.begin(); it != theOnes.end(); ++it )
+    {
+      theOnes.push_back(*it);
+      insertions.push_back( ElmPtr( new marker(markerName.ascii() ) ));
     }
 
     // Create the new beamline with inserted markers included
-    const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
-    beamline* bmlPtr = 0;
+    ConstBmlPtr oldbmlPtr = p_currBmlCon_->cheatBmlPtr();
+    BmlPtr bmlPtr;
 
     if( options.upstream ) {
       bmlPtr = BmlUtil::cloneLineAndInsert( 0.0, insertions, theOnes, oldbmlPtr );
@@ -1760,61 +1900,71 @@ void CHEFGUI::_editAddMarkers()
 
 
     // Generate a new BeamlineContext to handle the new line
-    bool makeRing = _p_currBmlCon->isTreatedAsRing();
-    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                         bmlPtr, false );
-    _p_currBmlCon->setClonedFlag( true );
-    if( makeRing ) { _p_currBmlCon->handleAsRing(); }
-    else           { _p_currBmlCon->handleAsLine(); }
-    _contextList.insert( _p_currBmlCon );
+    bool makeRing = p_currBmlCon_->isTreatedAsRing();
+    p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(),
+                                         bmlPtr) );
+
+    if( makeRing ) { p_currBmlCon_->handleAsRing(); }
+    else           { p_currBmlCon_->handleAsLine(); }
+    contextList_.push_front( p_currBmlCon_ );
 
     // Finished!
-    emit _new_beamline();
+    emit new_beamline();
   }
+
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editAddQtMons()
+void CHEFGUI::editAddQtMons()
 {
-  insDlgData options;
-  options = _insertionDialog();
+
+  insDlgData options = insertionDialog();
 
   if( options.accepted ) {
     QString markerName( options.namePrefix );
 
     // Locate the root beamline
-    QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(_p_clickedQBml);
+
+    QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(p_clickedQBml_);
     if( 0 == theRoot ) {
-      theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+      theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
     }
 
     // Find selected elements
-    QPtrList<bmlnElmnt> theChosenOnes;
-    theChosenOnes = _p_vwr->findAllSelected( theRoot );
-    if( theChosenOnes.isEmpty() ) {
+
+    std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
+
+    if( theOnes.empty() ) {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-             "\nIn function: void CHEFGUI::_editAddQtMons():"
+             "\nIn function: void CHEFGUI::editAddQtMons():"
              "\nNo elements selected; no action will be taken.";
       QMessageBox::information( 0, "CHEF: WARNING", uic.str().c_str() );
       return;
     }
 
-    // Load BmlPtrLists, for use by lower level tools
-    BmlPtrList theOnes;
-    BmlPtrList insertions;
-    bmlnElmnt* elementPtr;
-    QtMonitor* qtmPtr = 0;
-    while( 0 != (elementPtr = theChosenOnes.take()) ) {
-      qtmPtr = new QtMonitor(markerName.ascii());
+    std::list<ElmPtr> insertions;
+
+    QtMonitorPtr qtmPtr;
+
+    for ( std::list<ElmPtr>::iterator   it  = theOnes.begin();  
+                                   it != theOnes.end(); ++it) {
+
+      
+      qtmPtr = QtMonitorPtr( new QtMonitor(markerName.ascii()) );
       qtmPtr->setStrength(5.0);  // to survive condensation
-      theOnes.append(elementPtr);
-      insertions.append( qtmPtr );
+      insertions.push_back( qtmPtr );
+
     }
 
     // Create the new beamline with inserted monitors included
-    const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
-    beamline* bmlPtr = 0;
+
+    ConstBmlPtr oldbmlPtr = p_currBmlCon_->cheatBmlPtr();
+
+    BmlPtr bmlPtr;
 
     if( options.upstream ) {
       bmlPtr = BmlUtil::cloneLineAndInsert( 0.0, insertions, theOnes, oldbmlPtr );
@@ -1827,42 +1977,47 @@ void CHEFGUI::_editAddQtMons()
     }
 
     // Register the azimuth at all QtMonitor locations.
-    QtMonitor::setAzimuth( bmlPtr );
+    QtMonitor::setAzimuth( *bmlPtr );
 
     // Final steps
+
     QString newName( oldbmlPtr->Name() );
     newName += ".monitored";
     bmlPtr->rename( newName.ascii() );
     bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
 
     // Generate a new BeamlineContext to handle the new line
-    bool makeRing = _p_currBmlCon->isTreatedAsRing();
-    _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                         bmlPtr, false );
-    _p_currBmlCon->setClonedFlag( true );
-    if( makeRing ) { _p_currBmlCon->handleAsRing(); }
-    else           { _p_currBmlCon->handleAsLine(); }
-    _contextList.insert( _p_currBmlCon );
+
+    bool makeRing = p_currBmlCon_->isTreatedAsRing();
+
+    p_currBmlCon_ = BmlContextPtr(  new BeamlineContext( p_currBmlCon_->getParticle(),
+                                         bmlPtr) );
+    if( makeRing ) { p_currBmlCon_->handleAsRing(); }
+    else           { p_currBmlCon_->handleAsLine(); }
+    contextList_.push_front( p_currBmlCon_ );
 
     // Signal the new line
-    emit _new_beamline();
+    emit new_beamline();
   }
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editMode()
+void CHEFGUI::editMode()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( 0 == p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
   // Set up the query
   bool makeRing = false;
-  QString message(_p_currBmlCon->name());
+  QString message(p_currBmlCon_->name());
 
-  if( _p_currBmlCon->isRing() ) {
-    if( _p_currBmlCon->isTreatedAsRing() ) {
+  if( p_currBmlCon_->isRing() ) {
+    if( p_currBmlCon_->isTreatedAsRing() ) {
       message +=   " is closed and is currently considered"
                  "\n a periodic structure."
                  "\n Do you want to treat it only as a beamline?";
@@ -1875,7 +2030,7 @@ void CHEFGUI::_editMode()
     }
   }
   else {
-    if( _p_currBmlCon->isTreatedAsRing() ) {
+    if( p_currBmlCon_->isTreatedAsRing() ) {
       message +=   " is not closed but is considered periodic."
                    "\nDo you want to treat it only as a beamline?";
       makeRing = false;
@@ -1913,124 +2068,121 @@ void CHEFGUI::_editMode()
   int returnCode = wpu->exec();
 
   if( returnCode == QDialog::Accepted ) {
-    _p_currBmlCon->reset();
+    p_currBmlCon_->reset();
     // "Yes" answer indicates change of mode.
 
     if( makeRing ) {
-      _p_currBmlCon->handleAsRing();
+      p_currBmlCon_->handleAsRing();
     }
     else {
-      _p_currBmlCon->handleAsLine();
+      p_currBmlCon_->handleAsLine();
     }
 
-    emit _modeChanged( _p_currBmlCon );
+    emit modeChanged( p_currBmlCon_ );
   }
 
   delete wpu;
 }
 
 
-void CHEFGUI::_editPartition()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::editPartition()
 {
-  // This is a stripped down version.
-  // Code to be entered like that in CHEFGUI::_editAddMarkers()
 
   // Locate the root beamline
-  QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(_p_clickedQBml);
-  if( 0 == theRoot ) {
-    theRoot = const_cast<QBmlRoot*>(_p_clickedQBml->topBmlParent());
+
+  QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(p_clickedQBml_);
+
+  if( !theRoot ) {
+    theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
   }
 
   // Find selected elements
-  QPtrList<bmlnElmnt> theChosenOnes;
-  theChosenOnes = _p_vwr->findAllSelected( theRoot );
-  if( theChosenOnes.isEmpty() ) {
+ 
+  std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
+
+  if( theOnes.empty() ) {
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function: void CHEFGUI::_editPartition():"
+           "\nIn function: void CHEFGUI::editPartition():"
            "\nSelection list is empty; no action taken.";
     QMessageBox::information( 0, "CHEF: WARNING", uic.str().c_str() );
     return;
   }
 
-  // Convert to a BmlPtrList, for use by lower level tools
-  BmlPtrList theOnes;
-  bmlnElmnt* elementPtr;
-  while( 0 != (elementPtr = theChosenOnes.take()) ) {
-    theOnes.append(elementPtr);
-  }
 
   // Create the new beamline with split elements
-  const beamline* oldbmlPtr = _p_currBmlCon->cheatBmlPtr();
+
+  ConstBmlPtr oldbmlPtr = p_currBmlCon_->cheatBmlPtr();
+
   QString newName( oldbmlPtr->Name() );
   newName += ".split";
-  beamline* bmlPtr = new beamline( newName.ascii() );
+
+  BmlPtr bmlPtr( new beamline( newName.ascii() ) );
   bmlPtr->setEnergy( oldbmlPtr->Energy() );
 
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*oldbmlPtr) );
-  bmlnElmnt* qb  = dbi++;
-  bmlnElmnt* qa  = theOnes.get();
-  bmlnElmnt* spa = 0;
-  bmlnElmnt* spb = 0;
+  ElmPtr spa, spb;
 
-  // Split selected elements
-  while( (0 != qa) && ( 0 != qb ) ) {
-    if( qa == qb ) {
-      qa->Split( 0.5, &spa, &spb );
-      bmlPtr->append(spa);
-      bmlPtr->append(spb);
-      qa = theOnes.get();
-    }
-    else {
-      bmlPtr->append(qb->Clone());
-    }
+  std::list<ElmPtr>::iterator it   = theOnes.begin();
+  
+  for ( beamline::const_deep_iterator dit  = oldbmlPtr->deep_begin();  
+                                      dit != oldbmlPtr->deep_end();  ++dit ) 
+  {
 
-    qb = dbi++;
+        if( (*dit) == (*it) ) 
+        {
+           (*it)->Split( 0.5, spa, spb );
+            bmlPtr->append(spa);
+            bmlPtr->append(spb);
+            ++it;
+        }
+        else 
+        {
+           bmlPtr->append( ElmPtr( (*dit)->Clone() ) );
+        }
+
   }
 
-  // Finish the line
-  while( 0 != qb ) {
-    bmlPtr->append(qb->Clone());
-    qb = dbi++;
-  }
 
   // Generate a new BeamlineContext to handle the new line
-  bool makeRing = _p_currBmlCon->isTreatedAsRing();
-  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                       bmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  if( makeRing ) { _p_currBmlCon->handleAsRing(); }
-  else           { _p_currBmlCon->handleAsLine(); }
-  _contextList.insert( _p_currBmlCon );
 
+  bool makeRing = p_currBmlCon_->isTreatedAsRing();
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(), bmlPtr) );
 
-  // Finished!
-  // delete wpu;
-  emit _new_beamline();
+  if( makeRing ) { p_currBmlCon_->handleAsRing(); }
+  else           { p_currBmlCon_->handleAsLine(); }
+  contextList_.push_front( p_currBmlCon_ );
+
+  emit new_beamline();
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_editPartAndSect()
+void CHEFGUI::editPartAndSect()
 {
 
-  if( 0 == _p_currBmlCon ) {
+
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  beamline* bmlPtr = _p_currBmlCon->cloneBeamline();
-    // Must be eliminated before exiting.
-  double energy    = bmlPtr->Energy();
+
+  BmlPtr bmlPtr( p_currBmlCon_->cheatBmlPtr()->Clone() );
+
+  double energy   = bmlPtr->Energy();
 
   // Insert equally spaced markers throughout the model.
   double bmlLength = 0.0;
 
-  bmlnElmnt* q;
-  DeepBeamlineIterator dbi( *bmlPtr );
-  while((  q = dbi++  )) {
-    bmlLength += q->Length();
+  for ( beamline::deep_iterator it = bmlPtr->deep_begin(); it != bmlPtr->deep_end(); ++it) 
+  { 
+    bmlLength += (*it)->Length();
   }
-  dbi.reset();
 
   // Dialog to obtain number of markers
   // ----------------------------------
@@ -2065,28 +2217,32 @@ void CHEFGUI::_editPartAndSect()
   int returnCode = wpu->exec();
 
   int order = 2;
-  beamline* splitBmlPtr = new beamline( "Sectorized beamline" );
+
+  BmlPtr splitBmlPtr( new beamline( "Sectorized beamline" ) );
+
   splitBmlPtr->setEnergy( energy );
+
   if( returnCode == QDialog::Accepted ) {
+
     bool ok;
     numberOfSectors = (qle->text()).toInt( &ok);
 
+#if 0
     if( ok && ( numberOfSectors > 1 )) {
       // Insert equally spaced markers throughout
       // the bml model.
 
       marker* spaceCharge[ numberOfSectors + 1 ];
+
       double markerInterval = bmlLength / ((double) numberOfSectors);
       double insertionPoint = markerInterval;
 
-      Particle* pPtr = (_p_currBmlCon->getParticle()).Clone();
-      pPtr->setStateToZero();
-      InsertionList insl( *pPtr );
-      delete pPtr; pPtr = 0;
+      Particle particle( p_currBmlCon_->getParticle()) );
+      particle.setStateToZero();
 
       spaceCharge[ 0 ] = new marker;
-      int i;
-      for( i = 1; i < numberOfSectors; i++ ) {
+
+      for( int i = 1; i < numberOfSectors; i++ ) {
         spaceCharge[i] = new marker;
         insl.Append( new InsertionListElement( insertionPoint, spaceCharge[i] ));
         insertionPoint += markerInterval;
@@ -2094,23 +2250,12 @@ void CHEFGUI::_editPartAndSect()
       spaceCharge[ numberOfSectors ] = new marker;
 
       double s = 0.0;
-      slist removedElements;
 
       bmlPtr->insert( spaceCharge[0] );
-      bmlPtr->InsertElementsFromList( s, insl, removedElements );
+      bmlPtr->InsertElementsFromList( s, insl );
       bmlPtr->append( spaceCharge[numberOfSectors] );
 
-      // Display and delete the removed elements
-      *pcout << "Removed elements\n";
-
-      slist_iterator fembril( removedElements );
-      bmlnElmnt* qq;
-      while(( qq = (bmlnElmnt*) fembril() )) {
-        //cout << qq->Type() << "  " << qq->Name() << "\n";
-        delete qq;
-      }
-      //cout << std::endl;
-
+#endif
       // Create a temporary Jet environment
       // ----------------------------------
       Jet__environment_ptr  formerJetEnv  = Jet__environment::getLastEnv();
@@ -2118,74 +2263,68 @@ void CHEFGUI::_editPartAndSect()
 
       double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
       Jet__environment::BeginEnvironment( order );
-      // coord x(0.0),  y(0.0),  z(0.0),
-      //      px(0.0), py(0.0), pz(0.0);
-      // ??? This needs to be fixed!!!
-      coord* x = new coord(0.0);
-      coord* y = new coord(0.0);
-      coord* z = new coord(0.0);
-      coord* px = new coord(0.0);
-      coord* py = new coord(0.0);
-      coord* pz = new coord(0.0);
+
+      std::auto_ptr<coord>  x( new coord(0.0) );
+      std::auto_ptr<coord>  y( new coord(0.0) );
+      std::auto_ptr<coord>  z( new coord(0.0) );
+      std::auto_ptr<coord> px( new coord(0.0) );
+      std::auto_ptr<coord> py( new coord(0.0) );
+      std::auto_ptr<coord> pz( new coord(0.0) );
+
       Jet__environment::EndEnvironment(scale);
-      JetC__environment::setLastEnv( _p_JetEnv ); // implicit conversion
+      JetC__environment::setLastEnv( p_JetEnv_ ); // implicit conversion
 
 
       // Sectorize between the partition markers.
       // ----------------------------------------
-      pPtr = (_p_currBmlCon->getParticle()).Clone();
-      pPtr->SetReferenceEnergy( _p_currBmlCon->getEnergy() );
+
+      Particle particle(p_currBmlCon_->getParticle() );
+
+      particle.SetReferenceEnergy( p_currBmlCon_->getEnergy() );
         // This line is almost certainly unnecessary.
-      pPtr->setStateToZero();
+      particle.setStateToZero();
 
-      for( i = 0; i < numberOfSectors; i++ ) {
-        JetParticle* jpPtr = new JetParticle(*pPtr);
-        splitBmlPtr->append( bmlPtr->MakeSector( *(spaceCharge[i]),
-                                                 *(spaceCharge[i+1]),
-                                                 order, *jpPtr  ) );
-        delete jpPtr; jpPtr = 0;
+      for( int i = 0; i < numberOfSectors; ++i) {
+
+        JetParticle jetparticle(particle);
+#if 0
+        splitBmlPtr->append( bmlPtr->MakeSector( *(spaceCharge[i]), *(spaceCharge[i+1]), order, *jpPtr  ) );
         splitBmlPtr->append( spaceCharge[i+1]->Clone() );
+#endif
       }
-
-      delete pPtr; pPtr = 0;
 
 
       // Restore former environment...
       // -----------------------------
+
       Jet__environment::setLastEnv( formerJetEnv );
       JetC__environment::setLastEnv( formerJetCEnv );
 
-      delete x;
-      delete y;
-      delete z;
-      delete px;
-      delete py;
-      delete pz;
-    }
   }
-
-
+  
   delete wpu;
-  bmlPtr->zap(); delete bmlPtr; bmlPtr = 0;
 
-  _p_currBmlCon = new BeamlineContext( _p_currBmlCon->getParticle(),
-                                       splitBmlPtr, false );
-  _p_currBmlCon->setClonedFlag( true );
-  _contextList.insert( _p_currBmlCon );
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(), splitBmlPtr ) );
+  contextList_.push_front( p_currBmlCon_ );
 
-  emit _new_beamline();
+  emit new_beamline();
+
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_helpContents()
+void CHEFGUI::helpContents()
 {
- _assistanthelp->openAssistant();
+  assistanthelp_->openAssistant();
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_helpAbout()
+void CHEFGUI::helpAbout()
 {
 
   QWidget* helpabout = new About( this,"About CHEF", Qt::WDestructiveClose );
@@ -2193,1006 +2332,469 @@ void CHEFGUI::_helpAbout()
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFGUI::_slot_contextGenerated( BeamlineContext* x )
+void CHEFGUI::slot_contextGenerated( BmlContextPtr x )
 {
-  if( x )
-  { if( x->getClonedFlag() )
-    { _p_currBmlCon = x;
-      _contextList.insert( x );
-    }
-  }
+  if( x ) contextList_.push_front( x );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_uncoupledLFDispatch(){
+void CHEFGUI::twissDispatch(){
 
- if( 0 == _p_currBmlCon ) {
+ if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchLatt();
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+
+     CHEFGUI::periodicTwiss();
+
   } else {
-     CHEFGUI::_pushULF();
+
+     CHEFGUI::propagateTwiss();
   }
 }
 
-void CHEFGUI::_momentsDispatch(){
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- if( 0 == _p_currBmlCon ) {
+void CHEFGUI::momentsDispatch(){
+
+ if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchMoments();
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+    CHEFGUI::periodicMoments();
   } else {
-     CHEFGUI::_pushMoments();
+     CHEFGUI::propagateMoments();
   }
 }
 
-void CHEFGUI::_dispersionDispatch(){
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- if( 0 == _p_currBmlCon ) {
+void CHEFGUI::dispersionDispatch(){
+
+ if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( _p_currBmlCon->isTreatedAsRing() ) {
-    CHEFGUI::_launchDispersion();
+  if( p_currBmlCon_->isTreatedAsRing() ) {
+    CHEFGUI::periodicDispersion();
   } else {
-     CHEFGUI::_pushDispersion();
+     CHEFGUI::propagateDispersion();
   }
 }
 
 
-void CHEFGUI::_launchLatt()
-{
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- if( 0 == _p_currBmlCon ) {
+void CHEFGUI::periodicTwiss()
+{ 
+   if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
-  }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+   }
+
+   if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-  LattFncData* lfd = 0;
-  try {
-    lfd = new LattFncData( _p_currBmlCon );
-    lfd->doCalc();
-    lfd->makeCurves();
+   QWidget* plot = command_computeTwiss_( centralWidget(), p_currBmlCon_ ); 
+
+   plot->show();
+
   }
-  catch( const std::exception& ge ) {
+ 
 
-    std::ostringstream uic;
-    uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown by LattFncData.\n"
-           "The message was:\n"
-        << ge.what();
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-    QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()),
-                   QMessageBox::Critical,
-                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-    mb.show();
-    while(mb.isVisible()) { qApp->processEvents(); }
+void CHEFGUI::periodicLB()
+{ 
 
-    if( 0 != lfd ) { delete lfd; lfd = 0; }
-    return;
-  }
-
-  if( lfd ) {
-
-    if (!_plotWidget)
-    {
-      _plotWidget  =  new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose );
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-          theCaption[i] = '\0';
-       }
-       strcat( theCaption, "CHEF: Lattice Functions (uncoupled): " );
-       strcat( theCaption, _p_currBmlCon->name() );
-       _plotWidget->setCaption( theCaption );
-       _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-       _plotWidget->setAutoClear(true);
-       _plotWidget->show();
-
-    };
-
-    _plotWidget->addData( *lfd );
-    delete lfd;
-    lfd = 0;
-  }
-
-  //std::cout << " TJL<double, std::complex<double> >::_initstorecalls = " << TJL<double, std::complex<double> >::_initstorecalls << std::endl;
-  //std::cout << " TJL<std::complex<double>, double >::_initstorecalls = " << TJL<std::complex<double>, double >::_initstorecalls << std::endl;
-  // std::cout << " double  pool size = " <<  TJL<double, std::complex<double> >::_thePool.size() << std::endl;
-  //std::cout << " complex pool size = " <<  TJL<std::complex<double>, double >::_thePool.size() << std::endl;
-
-
-}
-
-
-void CHEFGUI::_launchLB()
-{
-
-  if( 0 == _p_currBmlCon ) {
+   if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
-  }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+   }
+   if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-  LBFncData* lbfd = 0;
-  try {
-    lbfd = new LBFncData( _p_currBmlCon );
-    lbfd->doCalc();
-    lbfd->makeCurves();
-  }
-  catch( const std::exception& ge ) {
+   QWidget* plot = command_computeEigenmodes_( centralWidget(), p_currBmlCon_ ); 
 
-    std::ostringstream uic;
-    uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown by LBFncData.\n"
-           "The message was:\n"
-        << ge.what();
+   plot->show();
 
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
-                   QMessageBox::Critical,
-                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-    mb.show();
-    while(mb.isVisible()) { qApp->processEvents(); }
-
-    if( lbfd ) { delete lbfd; lbfd = 0; }
-    return;
-  }
-
-  if( lbfd ) {
-    if (!_LBplotWidget)
-    {
-       _LBplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget", Qt::WDestructiveClose); // destructive close needed !
-
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-         theCaption[i] = '\0';
-       }
-       strcat( theCaption, "CHEF: Lattice Functions (eigenvectors): " );
-       strcat( theCaption, _p_currBmlCon->name() );
-       _LBplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-       _LBplotWidget->setCaption( theCaption );
-       _LBplotWidget->setAutoClear(true);
-       _LBplotWidget->show();
-    };
-    _LBplotWidget->addData( *lbfd );
-    delete lbfd;
-    lbfd = 0;
-  }
 }
 
 
 
-void CHEFGUI::_launchET()
-{
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  if( 0 == _p_currBmlCon ) {
+void CHEFGUI::periodicET()
+{ 
+
+   if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
-  }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+   }
+   if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-  ETFncData*  etfd = 0;
-  try {
-    etfd = new ETFncData( _p_currBmlCon );
-    etfd->doCalc();
-    etfd->makeCurves();
-  }
-  catch( const std::exception& ge ) {
+   QWidget* plot = command_computeEdwardsTeng_( centralWidget(), p_currBmlCon_ ); 
 
-    std::ostringstream uic;
-    uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown by ETFncData.\n"
-           "The message was:\n"
-        << ge.what();
-
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
-                   QMessageBox::Critical,
-                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-    mb.show();
-    while(mb.isVisible()) { qApp->processEvents(); }
-
-    if( 0 != etfd ) { delete etfd; etfd = 0; }
-    return;
-  }
-
-  if( etfd ) {
-    if (!_ETplotWidget)
-    {
-       _ETplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
-                                                      Qt::WDestructiveClose);
-       // destructive close needed !
+   plot->show();
 
 
-     char theCaption[1024];
-     for( int i = 0; i < 1024; i++ ) {
-       theCaption[i] = '\0';
-     };
-     strcat( theCaption, "CHEF: Lattice Functions (factorization): " );
-     strcat( theCaption, _p_currBmlCon->name() );
-     _ETplotWidget->setCaption( theCaption );
-     _ETplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-     _ETplotWidget->setAutoClear(true);
-     _ETplotWidget->show();
-    };
-
-    _ETplotWidget->addData( *etfd );
-    delete etfd;
-    etfd = 0;
-  }
 }
 
 
-void CHEFGUI::_launchMoments()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::periodicMoments()
 {
 
-  if( 0 == _p_currBmlCon ) {
+   if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
-  }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+   }
+   if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+   QWidget* plot = command_computeMoments_( centralWidget(), p_currBmlCon_ ); 
 
-  MomentsFncData*  mfd = 0;
-  try {
-    mfd = new MomentsFncData( _p_currBmlCon );
-    mfd->doCalc();
-    mfd->makeCurves();
-  }
-  catch( const std::exception& ge ) {
-
-    std::ostringstream uic;
-    uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown by MomentsFncData.\n"
-           "The message was:\n"
-        << ge.what();
-
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
-                   QMessageBox::Critical,
-                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-    mb.show();
-    while(mb.isVisible()) { qApp->processEvents(); }
-
-    if( 0 != mfd ) { delete mfd; mfd = 0; }
-    return;
-  }
-
-  if( mfd ) {
-    if (!_MMplotWidget)
-    {
-       _MMplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
-                                                      Qt::WDestructiveClose);
-       // destructive close needed !
-
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-        theCaption[i] = '\0';
-       }
-      strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
-      strcat( theCaption, _p_currBmlCon->name() );
-      _MMplotWidget->setCaption( theCaption );
-      _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-      _MMplotWidget->setAutoClear(true);
-      _MMplotWidget->show();
-   };
-
-   _MMplotWidget->addData( *mfd );
-    delete mfd;
-    mfd = 0;
-  }
+   plot->show();
 
 }
 
-void CHEFGUI::_pushMoments()
-{
-  if( 0 == _p_currBmlCon ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::propagateMoments()
+{ 
+
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
-  if( _p_currBmlCon->isTreatedAsRing() ) {
+  if( p_currBmlCon_->isTreatedAsRing() ) {
     QMessageBox::information( 0, "CHEF: ERROR",
       "Moments are \"pushed\" through beamlines only."
       "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-#if 0
-   CovarianceSage::Info info_default;
-  _p_currBmlCon->getInitial( &info_default);
-  _initCondDialogMoments->setInitCond( );
-#endif
 
-  if( QDialog::Accepted == _initCondDialogMoments->exec() ){
-    // Two steps are needed here:
-    //   (1) read the text widgets and
-    //   (2) return the lattice functions.
-    _initCondDialogMoments->readInputValues();
-    LattFuncSage::lattFunc initialConditions( _initCondDialogMoments->getInitCond() );
+  if( QDialog::Accepted == initCondDialogMoments_->exec() ){
+    initCondDialogMoments_->readInputValues();
+    LattFuncSage::lattFunc initialConditions = initCondDialogMoments_->getInitCond();
 
-  CovarianceSage::Info initialCovariance;
-    initialCovariance.arcLength = 0.0;
-    initialCovariance.beta.hor  = initialConditions.beta.hor;
-    initialCovariance.beta.ver  = initialConditions.beta.ver;
-    initialCovariance.alpha.hor = initialConditions.alpha.hor;
-    initialCovariance.alpha.ver = initialConditions.alpha.ver;
+    QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
 
-    int returnCode
-      = BmlUtil::makeCovariance( initialCovariance, _p_currBmlCon->getParticle() );
-    // This assumes, by default, an equal horizontal and vertical emittance.
+    plot->show();
 
-    if( 0 != returnCode ) {
-      QMessageBox::information( this, "CHEF", "Calculation failed." );
-      return;
-    }
-
-    _p_currBmlCon->setInitialCovariance( initialCovariance );
-
-    MomentsFncData* mfd = 0;
-    try {
-      mfd = new MomentsFncData ( _p_currBmlCon );
-      mfd->doCalc();
-      mfd->makeCurves();
-    }
-    catch( const std::exception& ge ) {
-      std::ostringstream uic;
-      uic << __FILE__ << ", line " << __LINE__ << ": "
-          << "Exception was thrown by MomentsFncData.\n"
-             "The message was:\n"
-          << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
-                     QMessageBox::Critical,
-                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-      mb.show();
-      while(mb.isVisible()) { qApp->processEvents(); }
-
-      if( 0 != mfd) { delete mfd; mfd = 0; }
-      return;
-    }
-
-    if(mfd) {
-      if (!_MMplotWidget)
-      {
-         _MMplotWidget = new CHEFPlotMain( _centralWidget, "MMplotWidget", Qt::WDestructiveClose );
-         // destructive close needed !
-
-
-         char theCaption[1024];
-         for( int i = 0; i < 1024; i++ ) {
-           theCaption[i] = '\0';
-         }
-         strcat( theCaption, "CHEF: Lattice Functions (covariance): " );
-         strcat( theCaption, _p_currBmlCon->name() );
-
-         _MMplotWidget->setCaption( theCaption );
-         _MMplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-         _MMplotWidget->setAutoClear(true);
-         _MMplotWidget->show();
-      };
-
-      _MMplotWidget->addData( *mfd  );
-      delete mfd;
-      mfd = 0;
-    }
   }
 
 }
 
 
-void CHEFGUI::_pushDispersion()
-{
-  if( 0 == _p_currBmlCon ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::propagateDispersion()
+{ 
+
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
-  if( _p_currBmlCon->isTreatedAsRing() ) {
+  if( p_currBmlCon_->isTreatedAsRing() ) {
     QMessageBox::information( 0, "CHEF: ERROR",
       "Dispersion is \"pushed\" through beamlines only."
       "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-#if 0
-  DispersionSage::Info disp_defaults;
-  _p_currBmlCon->getInitial(&disp_defaults);
-#endif
+  if( QDialog::Accepted == initCondDialogDisp_->exec() )
+  {
 
-  if( QDialog::Accepted == _initCondDialogDisp->exec() ){
-    // Two steps are needed here:
-    //   (1) read the text widgets and
-    //   (2) return the lattice functions.
-    _initCondDialogDisp->readInputValues();
-    LattFuncSage::lattFunc initialConditions( _initCondDialogDisp->getInitCond() );
+    initCondDialogDisp_->readInputValues();
+    LattFuncSage::lattFunc initialConditions = initCondDialogDisp_->getInitCond();
 
-    DispersionSage::Info initialDispersion;
-    initialDispersion.arcLength      = 0.0;
-    initialDispersion.dispersion.hor = initialConditions.dispersion.hor;
-    initialDispersion.dispersion.ver = initialConditions.dispersion.ver;
-    initialDispersion.dPrime.hor     = initialConditions.dPrime.hor;
-    initialDispersion.dPrime.ver     = initialConditions.dPrime.ver;
-
-    _p_currBmlCon->setInitialDispersion( initialDispersion );
-
-    DspnFncData* dfd = 0;
-    try {
-      dfd = new DspnFncData ( _p_currBmlCon );
-      // dfd->doCalc( initialDispersion );
-      dfd->doCalc();
-      dfd->makeCurves();
-    }
-    catch( const std::exception& ge ) {
-      std::ostringstream uic;
-      uic << __FILE__ << ", line " << __LINE__ << ": "
-          << "Exception was thrown by DspnFncData.\n"
-             "The message was:\n"
-          << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
-                     QMessageBox::Critical,
-                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-      mb.show();
-      while(mb.isVisible()) { qApp->processEvents(); }
-
-      if( 0 != dfd) { delete dfd; dfd = 0; }
-      return;
-    }
-
-    if(dfd) {
-      if (!_DspnplotWidget)
-      {
-         _DspnplotWidget = new CHEFPlotMain( _centralWidget, "DspnplotWidget", Qt::WDestructiveClose );
-         // destructive close needed !
-
-
-         char theCaption[1024];
-         for( int i = 0; i < 1024; i++ ) {
-           theCaption[i] = '\0';
-         };
-
-         strcat( theCaption, "CHEF: Dispersion: " );
-         strcat( theCaption, _p_currBmlCon->name() );
-         _DspnplotWidget->setCaption( theCaption );
-         _DspnplotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-         _DspnplotWidget->setAutoClear(true);
-         _DspnplotWidget->show();
-
-      };
-
-      _DspnplotWidget->addData( *dfd  );
-      delete dfd;
-      dfd = 0;
-    }
+    QWidget* plot = command_propagateDispersion_( centralWidget(), p_currBmlCon_ , initialConditions); 
+   
+    plot->show();
   }
 
 }
 
 
-void CHEFGUI::_pushULF()
-{
-  if( 0 == _p_currBmlCon ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::propagateTwiss()
+{ 
+
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
-  if( _p_currBmlCon->isTreatedAsRing() ) {
+
+  if( p_currBmlCon_->isTreatedAsRing() ) {
     QMessageBox::information( 0, "CHEF: ERROR",
       "Lattice functions are \"pushed\" through beamlines only."
       "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-#if 0
-  LattFuncSage::lattFunc lfic;
-   _p_currBmlCon->getInitial( &lfic);
-   _initCondDialogLF->setInitCond( lfic );
-#endif
 
-  if( QDialog::Accepted == _initCondDialogLF->exec() ){
-    // Two steps are needed here:
-    //   (1) read the text widgets and
-    //   (2) return the lattice functions.
-    _initCondDialogLF->readInputValues();
-    LattFuncSage::lattFunc initialConditions( _initCondDialogLF->getInitCond() );
+  if( QDialog::Accepted == initCondDialogLF_->exec() ) 
+  {
 
-    _p_currBmlCon->setInitialTwiss( initialConditions );
+    initCondDialogLF_->readInputValues();
 
-    LattFncData* lfd = 0;
-    try {
-      lfd = new LattFncData ( _p_currBmlCon );
-      // lfd->doCalc( initialConditions );
-      lfd->doCalc();
-      lfd->makeCurves();
-    }
-    catch( const std::exception& ge ) {
-      std::ostringstream uic;
-      uic << __FILE__ << ", line " << __LINE__ << ": "
-          << "Exception was thrown by LattFncData.\n"
-             "The message was:\n"
-          << ge.what();
-      QMessageBox mb(QString("CHEF: ERROR"), QString( uic.str().c_str() ),
-                     QMessageBox::Critical,
-                     QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-      mb.show();
-      while(mb.isVisible()) { qApp->processEvents(); }
+    LattFuncSage::lattFunc initialConditions = initCondDialogLF_->getInitCond();
 
-      if( 0 != lfd) { delete lfd; lfd = 0; }
-      return;
-    }
-
-    if(lfd) {
-      if (!_plotWidget)
-      {
-         _plotWidget = new CHEFPlotMain( _centralWidget, "PlotWidget", Qt::WDestructiveClose );
-         // destructive close needed !
-
-
-         char theCaption[1024];
-         for( int i = 0; i < 1024; i++ ) {
-           theCaption[i] = '\0';
-         };
-
-         strcat( theCaption, "CHEF: Uncoupled Lattice Functions: " );
-         strcat( theCaption, _p_currBmlCon->name() );
-         _plotWidget->setCaption( theCaption );
-         _plotWidget->setGeometry(0,0,_centralWidget->width(), _centralWidget->height() );
-         _plotWidget->show();
-      };
-
-      _plotWidget->addData( *lfd  );
-      delete lfd;
-      lfd = 0;
-    }
+    QWidget* plot = command_propagateTwiss_( centralWidget(), p_currBmlCon_ , initialConditions); 
+   
+    plot->show();
   }
-
 
 }
 
 
-void CHEFGUI::_launchTrack()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::launchTrack()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF",
                               "Must select a beamline first." );
     return;
   }
 
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+  if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
-  _trackWidget = new Tracker( _p_currBmlCon, _centralWidget, "Tracker", Qt::WDestructiveClose);
-  _trackWidget->setCaption( "CHEF:: Phase Space Tracking" );
+  tracker_ = new Tracker( p_currBmlCon_, centralWidget_, "Tracker", Qt::WDestructiveClose);
+  tracker_->setCaption( "CHEF:: Phase Space Tracking" );
 
 
   // Centrally locate the track widget.
   // ----------------------------------
-  _trackWidget->adjustSize();
+  tracker_->adjustSize();
 
-  int cw = _centralWidget->width();
-  int ch = _centralWidget->height();
-  int  w = _trackWidget->width();
-  int  h = _trackWidget->height();
+  int cw = centralWidget_->width();
+  int ch = centralWidget_->height();
+  int  w = tracker_->width();
+  int  h = tracker_->height();
 
   if( w < cw && h < ch ) {
-    _trackWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
+    tracker_->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
   }                                                            // is required by the
   else if( h < ch ) {                                          // MDI interface, that
-    _trackWidget->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
+    tracker_->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
   }
   else if( w < cw ) {
-    _trackWidget->parentWidget()->move( (cw-w)/2, 0 );
+    tracker_->parentWidget()->move( (cw-w)/2, 0 );
   }
   else {
-    _trackWidget->parentWidget()->move( 0, 0 );
+    tracker_->parentWidget()->move( 0, 0 );
   }
 
-  _trackWidget->show();
+  tracker_->show();
 }
 
 
-void CHEFGUI::_launchRayTrace()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::launchRayTrace()
 {
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF",
                               "Must select a beamline first." );
     return;
   }
 
-  _traceWidget = new RayTrace(_p_currBmlCon, _centralWidget, "RayTrace", Qt::WDestructiveClose );
-  _traceWidget->setCaption( "CHEF:: Orbit Trace" );
+  tracer_ = new RayTrace(p_currBmlCon_, centralWidget_, "RayTrace", Qt::WDestructiveClose );
+  tracer_->setCaption( "CHEF:: Orbit Trace" );
 
 
   // Centrally locate the trace widget.
   // ----------------------------------
-  _traceWidget->adjustSize();
+  tracer_->adjustSize();
 
-  int cw = _centralWidget->width();
-  int ch = _centralWidget->height();
-  int  w = _traceWidget->width();
-  int  h = _traceWidget->height();
+  int cw = centralWidget_->width();
+  int ch = centralWidget_->height();
+  int  w = tracer_->width();
+  int  h = tracer_->height();
 
   if( w < cw && h < ch ) {
-    _traceWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
+    tracer_->parentWidget()->move( (cw-w)/2, (ch-h)/2 );  // Accessing the parent
   }                                                            // is required by the
   else if( h < ch ) {                                          // MDI interface, that
-    _traceWidget->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
+    tracer_->parentWidget()->move( 0, (ch-h)/2 );         // is, the QWorkspace.
   }
   else if( w < cw ) {
-    _traceWidget->parentWidget()->move( (cw-w)/2, 0 );
+    tracer_->parentWidget()->move( (cw-w)/2, 0 );
   }
   else {
-    _traceWidget->parentWidget()->move( 0, 0 );
+    tracer_->parentWidget()->move( 0, 0 );
   }
 
-  _traceWidget->show();
+  tracer_->show();
 }
 
-void CHEFGUI::_launchDispersion()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::periodicDispersion()
 {
 
-  if( 0 == _p_currBmlCon ) {
+   if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
-  }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+   }
+   if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
     return;
   }
 
+   QWidget* plot = command_computeDispersion_( centralWidget(), p_currBmlCon_ ); 
 
-  DspnFncData* dfd = 0;
-  try {
-    dfd = new DspnFncData ( _p_currBmlCon );
-    dfd->doCalc();
-    dfd->makeCurves();
-  }
-  catch( const std::exception& ge ) {
-
-    std::ostringstream uic;
-    uic << __FILE__ << ", line " << __LINE__ << ": "
-        << "Exception was thrown by DspnFncData.\n"
-           "The message was:\n"
-        << ge.what();
-
-    QMessageBox mb(QString("Fatal Error"), QString( uic.str().c_str() ),
-                   QMessageBox::Critical,
-                   QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
-    mb.show();
-    while(mb.isVisible()) { qApp->processEvents(); }
-
-    if( 0 != dfd ) { delete dfd; dfd = 0; }
-    return;
-  }
-
-  if( dfd ) {
-    if (!_DspnplotWidget)
-    {
-       _DspnplotWidget = new CHEFPlotMain( _centralWidget, "plotWidget",
-                                                        Qt::WDestructiveClose);
-       // destructive close needed !
-
-
-       char theCaption[1024];
-       for( int i = 0; i < 1024; i++ ) {
-         theCaption[i] = '\0';
-       };
-
-       strcat( theCaption, "CHEF: Dispersion: " );
-       strcat( theCaption, _p_currBmlCon->name() );
-       _DspnplotWidget->setCaption( theCaption );
-       _DspnplotWidget->setGeometry( 0, 0, _centralWidget->width(), _centralWidget->height() );
-       _DspnplotWidget->setAutoClear(true);
-       _DspnplotWidget->show();
-     };
-
-      _DspnplotWidget->addData( *dfd  );
-      delete dfd;
-      dfd=0;
-  }
+   plot->show();
 
 }
 
-void CHEFGUI::_launchDilution()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::launchDilution()
+{ }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::launchSiteVu()
 {
-
-  // Test for arguments
-  if( (0 == _toolArgs[0]) || (0 == _toolArgs[1]) ) {
-    QMessageBox::information( 0, "CHEF",
-                              "ERROR: You must set two arguments as Mappings." );
-    return;
-  }
-
-
-  // Obtain arguments
-  BeamlineContextPtr* onePtr = dynamic_cast<BeamlineContextPtr*>( _toolArgs[1] );
-  BeamlineContextPtr* twoPtr = dynamic_cast<BeamlineContextPtr*>( _toolArgs[0] );
-
-  if( (0 == onePtr) || (0 == twoPtr) ) {
-    QMessageBox::information( 0, "CHEF",
-                              "ERROR: Arguments were not set correctly."
-                              "\nERROR: Must have two beamlines." );
-    return;
-  }
-  else
-  {
-    BeamlineContext* bc1Ptr = (BeamlineContext*) (onePtr->ptr());
-    BeamlineContext* bc2Ptr = (BeamlineContext*) (twoPtr->ptr());
-
-    if( !(bc1Ptr->isTreatedAsRing() && bc2Ptr->isTreatedAsRing()) ) {
-      QMessageBox::information( 0, "CHEF: ERROR",
-                                "Both lines must be periodic."
-                                "\nTry fixing with Edit/Mode function." );
-      return;
-    }
-  }
-
-  // Phase space dimension must be 6 (optional?)
-  int n = Particle::PSD;
-  if( 6 != n ) {
-    QMessageBox::information( 0, "CHEF",
-         "ERROR: Was expecting 6 dimensional phase space." );
-    return;
-  }
-
-  const int index [] = { Particle::xIndex(), Particle::npxIndex(),
-                         Particle::yIndex(), Particle::npyIndex() };
-
-  // Get invariant emittances
-  QDialog* wpu = new QDialog( 0, 0, true );
-    QVBox* qvb = new QVBox( wpu );
-      QHBox* qhb1 = new QHBox( qvb );
-        QLabel* qlba
-          = new QLabel( "(pseudo-)horizontal invariant emittance", qhb1 );
-        QLineEdit* qleh = new QLineEdit( "30", qhb1 );
-        new QLabel( "pi mm-mr", qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-
-      QHBox* qhb2 = new QHBox( qvb );
-        QLabel* qlbb
-          = new QLabel( "(pseudo-)vertical invariant emittance", qhb2 );
-        QLineEdit* qlev = new QLineEdit( "30", qhb2 );
-        new QLabel( "pi mm-mr", qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-
-
-      // Fix widths of labels
-      int max = qlba->sizeHint().width();
-      if( max < qlbb->sizeHint().width() ) { max = qlbb->sizeHint().width(); }
-      qlba->setFixedWidth(max);
-      qlbb->setFixedWidth(max);
-
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* okayBtn = new QPushButton( "OK", qhb3 );
-          okayBtn->setDefault( true );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
-        QPushButton* cancelBtn = new QPushButton( "Cancel", qhb3 );
-          connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(reject()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-
-    // Adjust sizes
-      qhb1->adjustSize();
-      qhb2->adjustSize();
-      qhb3->adjustSize();
-    qvb->adjustSize();
-
-  wpu->setCaption( "CHEF::Tool: Emittance Dilution" );
-  wpu->adjustSize();
-
-  int returnCode = wpu->exec();
-
-
-  // Do the calculation
-  if( returnCode == QDialog::Accepted ) {
-    bool okh, okv;
-    double emm_1 = (qleh->text()).toDouble( &okh);
-    double emm_2 = (qlev->text()).toDouble( &okv);
-    if( okh && okv ) {
-      MatrixD cov1(n,n), cov2(n,n);
-      BeamlineContext* bc1Ptr = (BeamlineContext*) (onePtr->ptr());
-      BeamlineContext* bc2Ptr = (BeamlineContext*) (twoPtr->ptr());
-
-      cov1 = bc1Ptr->equilibriumCovariance( emm_1, emm_2 );
-      cov2 = bc2Ptr->equilibriumCovariance( emm_1, emm_2 );
-
-      MatrixD cov_a(4,4), cov_b(4,4);
-      int i, j;
-      for( i = 0; i < 4; i++ ) {
-        for( j = 0; j < 4; j++ ) {
-          cov_a(i,j) = cov1( index[i], index[j] );
-          cov_b(i,j) = cov2( index[i], index[j] );
-        }
-      }
-
-      MatrixD ev(1,4);
-      ev = real( (cov_a*(cov_b.inverse())).eigenValues() );
-      double rho = - 1.0e88;
-      for( i = 0; i < 4; i++ )
-      { if( rho < ev(0,i) ) { rho = ev(0,i); } }
-      double answer = rho*rho*rho*rho;
-      answer *= cov_b.determinant();
-      answer /= cov_a.determinant();
-      answer = sqrt( answer );
-
-      // Communicate answer to outside world.
-      QString answerString;
-      answerString.setNum( 100.0*( answer - 1.0 ) );
-      QMessageBox::information( 0, "CHEF",
-        "Emittance dilution = " + answerString + " %" );
-    }
-  }
-}
-
-
-void CHEFGUI::_pushArgs()
-{
-  int i;
-  int j = CHEF_numargs - 1;
-  if( _toolArgs[j] ) {
-    delete _toolArgs[j];  // virtual destructor should work
-    _toolArgs[j] = 0;
-  }
-  for( i = j; i >= 1; i-- ) {
-    _toolArgs[i] = _toolArgs[i-1];
-  }
-}
-
-void CHEFGUI::_enterMapArg()
-{
- _pushArgs();
-
-  // REMOVE: if( 0 != _p_clickedCon ) {
-  // REMOVE:   _toolArgs[0] = new MappingPtr( _p_clickedCon->getOneTurnMap() );
-  // REMOVE: }
-  if( 0 != _p_currBmlCon ) {
-    _toolArgs[0] = new MappingPtr( _p_currBmlCon->getOneTurnMap() );
-  }
-  else {
-    QMessageBox::information( 0, "CHEF",
-                              "Left click on a beamline, idiot." );
-  }
-}
-
-
-void CHEFGUI::_enterContextArg()
-{
- _pushArgs();
-  if( 0 != _p_currBmlCon ) {
-    _toolArgs[0] = new BeamlineContextPtr( *_p_currBmlCon );
-  }
-  else {
-    QMessageBox::information( 0, "CHEF",
-                              "Left click on a beamline, idiot." );
-  }
-}
-
-
-void CHEFGUI::_clearArgs()
-{
-  for( int i = 0; i < CHEF_numargs; i++ ) {
-    if( _toolArgs[i] ) {
-      delete _toolArgs[i];  // virtual destructor should work
-      _toolArgs[i] = 0;
-    }
-  }
-}
-
-
-void CHEFGUI::_launchSiteVu()
-{
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF",
                               "Must select a beamline first." );
     return;
   }
 
-  _siteWidget = new SiteViewer( *(_p_currBmlCon) , _centralWidget, "SiteViewer", Qt::WDestructiveClose );
+  viewer_ = new SiteViewer( p_currBmlCon_ , centralWidget_, "SiteViewer", Qt::WDestructiveClose );
   // Must be deleted by itself.
-  _siteWidget->setCaption( QString("CHEF:: Site Viewer")+
+  viewer_->setCaption( QString("CHEF:: Site Viewer")+
                            QString("    ")+
-                           QString(_p_currBmlCon->name()) );
+                           QString(p_currBmlCon_->name()) );
 
   // Centrally locate the site widget.
   // ----------------------------------
-  // _siteWidget->adjustSize();    //    !! Must not do this here, for some reason. !!
+  // viewer_->adjustSize();    //    !! Must not do this here, for some reason. !!
 
-  // int a = int( sqrt( double( (_siteWidget->parentWidget()->width())*(_siteWidget->parentWidget()->height()) )/3.0 ) );
-  // _siteWidget->resize(a,a);                    // Order is important
-  // _siteWidget->adjustSize();  // NEW           // These two interfere in some bizarre way.
+  // int a = int( sqrt( double( (viewer_->parentWidget()->width())*(viewer_->parentWidget()->height()) )/3.0 ) );
+  // viewer_->resize(a,a);                    // Order is important
+  // viewer_->adjustSize();  // NEW           // These two interfere in some bizarre way.
 
-  int cw = _centralWidget->width();
-  int ch = _centralWidget->height();
-  int  w = _siteWidget->width();
-  int  h = _siteWidget->height();
+  int cw = centralWidget_->width();
+  int ch = centralWidget_->height();
+  int  w = viewer_->width();
+  int  h = viewer_->height();
 
   #if 1
   if( w < cw && h < ch ) {                                     // ??? THIS WORKS ???
-    _siteWidget->move( (cw-w)/2, (ch-h)/2 );                   
+    viewer_->move( (cw-w)/2, (ch-h)/2 );                   
   }                                                            
   else if( h < ch ) {                                          
-    _siteWidget->move( 0, (ch-h)/2 );                          
+    viewer_->move( 0, (ch-h)/2 );                          
   }
   else if( w < cw ) {
-    _siteWidget->move( (cw-w)/2, 0 );
+    viewer_->move( (cw-w)/2, 0 );
   }
   else {
-    _siteWidget->move( 0, 0 );
+    viewer_->move( 0, 0 );
   }
   #endif
   #if 0
   if( w < cw && h < ch ) {                                     // ??? BUT THIS DOES NOT ???
-    _siteWidget->parentWidget()->move( (cw-w)/2, (ch-h)/2 );   // Accessing the parent
+    viewer_->parentWidget()->move( (cw-w)/2, (ch-h)/2 );   // Accessing the parent
   }                                                            // is required by the
   else if( h < ch ) {                                          // MDI interface, that
-    _siteWidget->parentWidget()->move( 0, (ch-h)/2 );          // is, the QWorkspace.
+    viewer_->parentWidget()->move( 0, (ch-h)/2 );          // is, the QWorkspace.
   }
   else if( w < cw ) {
-    _siteWidget->parentWidget()->move( (cw-w)/2, 0 );
+    viewer_->parentWidget()->move( (cw-w)/2, 0 );
   }
   else {
-    _siteWidget->parentWidget()->move( 0, 0 );
+    viewer_->parentWidget()->move( 0, 0 );
   }
   #endif
 
-  _siteWidget->show();
+  viewer_->show();
 }
 
 
-void CHEFGUI::_launch_browser()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::launch_browser()
 {
 
 
-  _p_vwr->clearSelection();
+  browser_->clearSelection();
 
-  if( _p_currBmlCon) _p_vwr->displayBeamline( _p_currBmlCon ); // display the beamline only if it exists;
+  if( p_currBmlCon_) browser_->displayBeamline( p_currBmlCon_ ); // display the beamline only if it exists;
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_tuneCtrl()
+void CHEFGUI::tuneCtrl()
 {
 
-  if( 0 == _p_currBmlCon ) {
+  if( 0 == p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+  if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
@@ -3241,7 +2843,7 @@ void CHEFGUI::_tuneCtrl()
     double deltaNuV = (qlev->text()).toDouble( &okv);
     if( okh && okv ) {
       if( (0. != deltaNuH) || (0. != deltaNuV) ) {
-        if( 0 != (returnCode = _p_currBmlCon->changeTunesBy( deltaNuH, deltaNuV )) ) {
+        if( 0 != (returnCode = p_currBmlCon_->changeTunesBy( deltaNuH, deltaNuV )) ) {
           (*pcerr) << "*** WARNING *** File "
                << __FILE__
                << ", Line "
@@ -3259,15 +2861,17 @@ void CHEFGUI::_tuneCtrl()
   delete wpu;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_chromCtrl()
+void CHEFGUI::chromCtrl()
 {
 
-  if( 0 == _p_currBmlCon ) {
+  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
-  if( !(_p_currBmlCon->isTreatedAsRing()) ) {
+  if( !(p_currBmlCon_->isTreatedAsRing()) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Selected line is not periodic."
                               "\nTry fixing with Edit/Mode function." );
@@ -3317,7 +2921,7 @@ void CHEFGUI::_chromCtrl()
       if( (0. != deltaChrH) || (0. != deltaChrV) ) {
         try 
         {
-          if( 0 != (returnCode = _p_currBmlCon->changeChromaticityBy( deltaChrH, deltaChrV )) ) {
+          if( 0 != (returnCode = p_currBmlCon_->changeChromaticityBy( deltaChrH, deltaChrV )) ) {
             (*pcerr) << "*** WARNING *** File "
                  << __FILE__
                  << ", Line "
@@ -3343,22 +2947,30 @@ void CHEFGUI::_chromCtrl()
 }
 
 
-void CHEFGUI::_set_p_clickedContext( BeamlineContext* x, QBmlRoot* y )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::set_p_clickedContext( BmlContextPtr x, QBmlRoot* y )
 {
-  _p_currBmlCon   = x;
-  _p_currQBmlRoot = y;
-  _p_clickedQBml  = y;
+  p_currBmlCon_   = x;
+  p_currQBmlRoot_ = y;
+  p_clickedQBml_  = y;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::set_p_clickedQBml( QBml* x )
+{
+  p_clickedQBml_ = x;
 }
 
 
-void CHEFGUI::_set_p_clickedQBml( QBml* x )
-{
-  _p_clickedQBml = x;
-}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void CHEFGUI::_do_nothing()
+void CHEFGUI::do_nothing()
 
 {
   QMessageBox::information( 0, "CHEF",
@@ -3366,6 +2978,8 @@ void CHEFGUI::_do_nothing()
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::showEvent(QShowEvent* event) {
 
@@ -3376,61 +2990,55 @@ void CHEFGUI::showEvent(QShowEvent* event) {
 
   QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-  _p_vwr->setSizePolicy(policy);
-  _p_vwr->show();
+  browser_->setSizePolicy(policy);
+  browser_->show();
 
-  _messages->setSizePolicy(policy);
-  _messages->show();
+  messages_->setSizePolicy(policy);
+  messages_->show();
 
-  _interpreter->setSizePolicy(policy);
-  _interpreter->show();
+  interpreter_->setSizePolicy(policy);
+  interpreter_->show();
 
 
-  _devices->setSizePolicy(policy);
-  _devices->show();
+  devices_->setSizePolicy(policy);
+  devices_->show();
 
-  _windowsDefaultLayout();
+  windowsDefaultLayout();
 
-   return QMainWindow::showEvent(event);
+  return QMainWindow::showEvent(event);
 
 }
 
 
-void CHEFGUI::_processFilter( const BoolNode& query )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::processFilter( BoolNode const& query )
 {
 
-  _foundList.clear();
-  if( 0 == (_p_vwr->findElement( _p_clickedQBml, query, _foundList )) ) {
-    bmlnElmnt* elementPtr;
-    QPtrListIterator<bmlnElmnt> it( _foundList );
-    while ( (elementPtr = it.current()) != 0 ) {
-      ++it;
-    }
-  }
-  else {
+  foundList_.clear();
+
+  if( browser_->findElement( p_clickedQBml_, query, foundList_ ) ) {
     QMessageBox::information( 0, "CHEF: ERROR",
                               "Operation not successful." );
+    return;
   }
 }
 
 
-void CHEFGUI::_testFC( ACTFUNC11 actfcn ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::testFC( ACTFUNC11 actfcn ) const
 {
-  QListViewItem* fc = _p_vwr->firstChild();
 
-  while( 0 != fc ) {
-    if(typeid(*fc) == typeid(QBmlRoot)) {
-      this->_traverseTree( dynamic_cast<QBmlRoot*>(fc),
-                           actfcn );
-    }
+  QListViewItem* fc = browser_->firstChild();
 
-    else {
-      std::stringstream uic;
-      uic << "An impossibility has occurred\nin file "
-          << __FILE__
-          << " at line " << __LINE__ ;
-      QMessageBox::information( 0, "CHEF: ERROR",
-                                uic.str().c_str() );
+  while( fc ) 
+  {
+    if( typeid(*fc) == typeid(QBmlRoot)) 
+    {
+       traverseTree( dynamic_cast<QBmlRoot*>(fc), actfcn );
     }
 
     fc = fc->nextSibling();
@@ -3438,38 +3046,27 @@ void CHEFGUI::_testFC( ACTFUNC11 actfcn ) const
 }
 
 
-void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC11 actfcn ) const
 {
 
-
-  // cout << "Recognized QBmlRoot "
-  //      << x->fullName()
-  //      << endl;
-
+  // Applies actfcn on selected elements. If element is a beamline, 
+  // the function is called recursively.
+ 
   QListViewItem* fc = x->firstChild();
 
-  while( 0 != fc )
+  while( fc )
   {
     if(typeid(*fc) == typeid(QBmlElmt)) {
-      // cout << "Recognized QBmlElmt "
-      //      << dynamic_cast<QBmlElmt*>(fc)->fullName()
-      //      << std::endl;
       if( fc->isSelected() ) {
-        (*actfcn)( this, dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
+        (this->*actfcn)( dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
       }
     }
 
     else if(typeid(*fc) == typeid(QBmlRoot)) {
-      this->_traverseTree( dynamic_cast<QBmlRoot*>(fc), actfcn );
-    }
-
-    else {
-      std::stringstream uic;
-      uic << "An impossibility has occurred\nin file "
-          << __FILE__
-          << " at line " << __LINE__ ;
-      QMessageBox::information( 0, "CHEF: ERROR",
-                                uic.str().c_str() );
+      traverseTree( dynamic_cast<QBmlRoot*>(fc), actfcn );
     }
 
     fc = fc->nextSibling();
@@ -3478,107 +3075,139 @@ void CHEFGUI::_traverseTree( const QBmlRoot* x, ACTFUNC11 actfcn ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void CHEFGUI::windowsMessagesAction_toggled( bool set )
 {
   if (set)
-    _messages->show();
+    messages_->show();
   else
-    _messages->hide();
+    messages_->hide();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::windowsTree_BrowserAction_toggled( bool set )
 {
   if (set)
-    _p_vwr->show();
+    browser_->show();
   else
-    _p_vwr->hide();
+    browser_->hide();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::windowsInterpreterAction_toggled( bool  set){
 
   if (set) {
-    _interpreter->show();
+    interpreter_->show();
   }
   else
   {
-    _interpreter->hide();
+    interpreter_->hide();
   }
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::windowsDevicesAction_toggled( bool  set)
 {
   if (set)
   {
-    _devices->show();
+    devices_->show();
   }
   else
   {
-    _devices->hide();
+    devices_->hide();
   }
 }
 
 
-void CHEFGUI::_windowsCascade() {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  dynamic_cast<AppWorkspace*>(_centralWidget)->cascade();
+void CHEFGUI::windowsCascade() {
 
-}
-
-void CHEFGUI::_windowsMinimizeAll(){
-
-
+  dynamic_cast<AppWorkspace*>(centralWidget_)->cascade();
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::_windowsTile(){
-
-  dynamic_cast<AppWorkspace*>(_centralWidget)->tile();
-
-}
+void CHEFGUI::windowsMinimizeAll(){
 
 
-void CHEFGUI::_windowsDefaultLayout(){
-
-  dynamic_cast<AppWorkspace*>(_centralWidget)->defaultLayout();
 
 }
 
 
-void CHEFGUI::_disableMenus()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+void CHEFGUI::windowsTile(){
+
+  dynamic_cast<AppWorkspace*>(centralWidget_)->tile();
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::windowsDefaultLayout(){
+
+  dynamic_cast<AppWorkspace*>(centralWidget_)->defaultLayout();
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::disableMenus()
 {
-  _enableMenus(false);
+  enableMenus(false);
 
 }
 
-void CHEFGUI::_enableMenus()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::enableMenus()
 {
 
- _enableMenus(true);
+ enableMenus(true);
 
 }
 
-void CHEFGUI::_enableMenus( bool set )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::enableMenus( bool set )
 {
 
 //  Enable/Disable actions that do/do not make sense if
 //  at least one beamline is/is not defined;
 
     calculationsLatticeFunctionsEigenvaluesAction->setEnabled(set);
-    calculationsLattice_FunctionsUncoupledAction->setEnabled(set);
-    calculationsLattice_FunctionsMomentsAction->setEnabled(set);
-    calculationsLattice_FunctionsEdwards_TengAction->setEnabled(set);
-    calculationsPushULFAction->setEnabled(set);
-    calculationsPushMomentsAction->setEnabled(set);
-    calculationsPushDispersionAction->setEnabled(set);
+    calculationsLatticeFunctionsTwissAction->setEnabled(set);
+    calculationsLatticeFunctionsMomentsAction->setEnabled(set);
+    calculationsLatticeFunctionsEdwardsTengAction->setEnabled(set);
+    calculationsPropagateTwissAction->setEnabled(set);
+    calculationsPropagateMomentsAction->setEnabled(set);
+    calculationsPropagateDispersionAction->setEnabled(set);
 
     toolsSite_ViewerAction->setEnabled(set);
     toolsTrackAction->setEnabled(set);
     toolsTraceAction->setEnabled(set);
     calculationsDispersionAction->setEnabled(set);
-    calculationsEmittance_DilutionAction->setEnabled(set);
+    calculationsEmittanceDilutionAction->setEnabled(set);
     controlsBuildHTuneCctAction->setEnabled(set);
     controlsBuildVTuneCctAction->setEnabled(set);
     controlsAdjustTuneAction->setEnabled(set);
@@ -3615,7 +3244,9 @@ void CHEFGUI::_enableMenus( bool set )
 }
 
 
-void CHEFGUI::_exit()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+void CHEFGUI::exit()
 {
 
   close();
@@ -3625,46 +3256,61 @@ void CHEFGUI::_exit()
 }
 
 
-void CHEFGUI::_devicesClearSelection()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::devicesClearSelection()
 {
 
-  _devices->clearSelection();
+  devices_->clearSelection();
 
 }
 
 
-void CHEFGUI::_devicesRefreshAll()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::devicesRefreshAll()
 {
 
   devicesRefreshAction->setEnabled(false);
-  _devices->refreshAll();
+  devices_->refreshAll();
   devicesRefreshAction->setEnabled(true);
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::devicesAutoRefresh(bool set)
 {
-  _devices->setAutoRefresh(set);
+  devices_->setAutoRefresh(set);
 }
 
 
-void CHEFGUI::modeRing(bool /*set */)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::modeRing(bool  set)
 {
   // obsolete ??
   // modeLineAction->setOn(!set);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::modeLine(bool /*set */)
+void CHEFGUI::modeLine(bool  set )
 {
   // obsolete ??
   // modeRingAction->setOn( !set);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::fileEditPython()
-{
+void CHEFGUI::fileEditPython() {
+
   std::ifstream is;
   QString theText;
   char buffer[1024];
@@ -3676,7 +3322,7 @@ void CHEFGUI::fileEditPython()
 
   is.open(s);
 
-   CF_Editor* editor = new CF_Editor( _centralWidget, "Python Editor", Qt::WDestructiveClose);
+   CF_Editor* editor = new CF_Editor( centralWidget_, "Python Editor", Qt::WDestructiveClose);
    editor->hide();
 
 
@@ -3695,11 +3341,14 @@ void CHEFGUI::fileEditPython()
 
    editor->setCaption(s);
    editor->setText( theText );
-   editor->resize(_centralWidget->width()-_p_vwr->width()-20, _centralWidget->height()-30);
-   editor->move(_p_vwr->width()+10, 0);
+   editor->resize(centralWidget_->width()-browser_->width()-20, centralWidget_->height()-30);
+   editor->move(browser_->width()+10, 0);
    editor->show();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFGUI::fileEditMAD8()
 {
@@ -3712,7 +3361,7 @@ void CHEFGUI::fileEditMAD8()
 
   if( s.isEmpty() ) return;
 
-   CF_Editor* editor = new CF_Editor( _centralWidget , "MAD8 Editor", Qt::WDestructiveClose);
+   CF_Editor* editor = new CF_Editor( centralWidget_ , "MAD8 Editor", Qt::WDestructiveClose);
    //editor->setMarginLineNumbers(1,1);
    //editor->setLexer(0); // this should eventually be a MAD8 Lexer
    editor->hide();
@@ -3730,36 +3379,41 @@ void CHEFGUI::fileEditMAD8()
       editor->setText( theText );
       // the correction is for the dimensions **with** the frame.
       // width() is
-      editor->resize(width()-_p_vwr->frameGeometry().width()-20,
-                     _centralWidget->height()-30);
-      editor->move( _p_vwr->frameGeometry().width()+10, 0);
+      editor->resize(width()-browser_->frameGeometry().width()-20,
+                     centralWidget_->height()-30);
+      editor->move( browser_->frameGeometry().width()+10, 0);
       editor->show();
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-CHEFGUI::_databaseConnect() { 
+void CHEFGUI::databaseConnect() 
+{ 
 
-  _dbconnect_dlg->show();
+  dbconnect_dlg_->show();
 
 }
 
-void CHEFGUI::_handleDBConnection( const DbConnectStruct& st )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::handleDBConnection( const DbConnectStruct& st )
 {
  
-  if (_default_db ) { 
-     QSqlDatabase::removeDatabase(_default_db); // drop existing connection
-     _default_db = 0;
+  if ( default_db_ ) { 
+     QSqlDatabase::removeDatabase( default_db_); // drop existing connection
+      default_db_ = 0;
   }
 
-   _default_db = QSqlDatabase::addDatabase( st.driver );
-   _default_db->setDatabaseName(st.dbname ); 
-   _default_db->setUserName(st.username);
-   _default_db->setPassword(st.passwd);
-   _default_db->setHostName(st.hostname); 
+   default_db_ = QSqlDatabase::addDatabase( st.driver );
+   default_db_->setDatabaseName(st.dbname ); 
+   default_db_->setUserName(st.username);
+   default_db_->setPassword(st.passwd);
+   default_db_->setHostName(st.hostname); 
 
-   if ( ! _default_db->open() ) {
+   if ( ! default_db_->open() ) {
       QMessageBox::warning(this,"Database Connection", "Database Connection Failed");
       databaseRetrieveDataAction->setEnabled(false);
    }   
@@ -3769,187 +3423,19 @@ void CHEFGUI::_handleDBConnection( const DbConnectStruct& st )
    }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-CHEFGUI::_databaseRetrieve(){ 
+void CHEFGUI::databaseRetrieve()
+{ 
 
-  if (_default_db )  
-     _dbretrieve_dlg->show();
+  if ( default_db_ )  
+      dbretrieve_dlg_->show();
 
 }
 
-
-
-// *****************************************
-// Implementation: class CF_rbendFinder_quad
-// *****************************************
-
-
-CF_rbendFinder_quad::CF_rbendFinder_quad( double q )
-: _integratedQuad(q)
-{
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 
-CF_rbendFinder_quad::~CF_rbendFinder_quad()
-{
-}
-
-
-void CF_rbendFinder_quad::setQuadrupole( double q )
-{
-  _integratedQuad = q;
-}
-
-
-bool CF_rbendFinder_quad::operator()( const bmlnElmnt* x )
-{
-  static bool ret;
-  ret = false;
-
-  if( 0 == strcmp( x->Type(), "CF_rbend" ) ) {
-    if( _integratedQuad == ((CF_rbend*) x)->getQuadrupole() ) {
-      ret = true;
-    }
-  }
-
-  return ret;
-}
-
-
-bool CF_rbendFinder_quad::operator()( const bmlnElmnt& x )
-{
-  return this->operator()( &x );
-}
-
-
-// *****************************************
-// Implementation: class RollAccumulator
-// *****************************************
-
-RollAccumulator::RollAccumulator( const char* theType, double theta )
-: _deltaRoll(theta), _weak(false)
-{
-  _type = new char [ strlen(theType) + 1 ];
-  strcpy( _type, theType );
-}
-
-
-RollAccumulator::~RollAccumulator()
-{
-  delete [] _type;
-}
-
-
-void RollAccumulator::setWeakType()
-{
-  _weak = true;
-}
-
-
-void RollAccumulator::setStrongType()
-{
-  _weak = false;
-}
-
-
-int RollAccumulator::operator()( bmlnElmnt* x )
-{
-  static int  ret;
-  static bool doit;
-
-  ret = -1;
-  doit = false;
-
-  if( _weak ) {
-    doit = ( 0 != strstr( x->Type(), _type ) );
-  }
-  else {
-    doit = ( 0 == strcmp( x->Type(), _type ) );
-  }
-
-  if( doit ) {
-    alignmentData ad( x->Alignment() );
-    ad.tilt += _deltaRoll;
-    x->setAlignment( ad );
-    ret = 0;
-  }
-
-  return ret;
-}
-
-
-int RollAccumulator::operator()( bmlnElmnt& x )
-{
-  return this->operator()( &x );
-}
-
-// ******************************************
-// Implementation: class argPtr + descendants
-// ******************************************
-
-argPtr::argPtr( void* x, bool y )
-: _owned(y)
-{
-  if(x) { _ptr = x; }
-  else {
-    (*pcerr) << "\n*** ERROR *** "
-            "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** ERROR *** argPtr::argPtr( void* x )"
-            "\n*** ERROR *** Constructor does not accept null argument."
-         << std::endl;
-    _ptr = this;
-  }
-};
-
-argPtr::~argPtr()
-{
-}
-
-const void* argPtr::ptr() const
-{
-  return _ptr;
-}
-
-
-bool argPtr::isOwned() const
-{
-  return _owned;
-}
-
-
-MappingPtr::MappingPtr( const Mapping& x, bool y )
-: argPtr( new Mapping(x), true )
-{
-  if( !y ) {
-    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** MappingPtr::MappingPtr( const Mapping& x, bool y ) "
-            "\n*** WARNING *** Second argument is being ignored."
-         << std::endl;
-  }
-}
-
-
-MappingPtr::~MappingPtr()
-{
-  if( _owned ) { delete ((Mapping*) _ptr); }
-}
-
-
-BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y )
-: argPtr( ((void*) &x), false )
-{
-  if( y ) {
-    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** BeamlineContextPtr::BeamlineContextPtr( const BeamlineContext& x, bool y ) "
-            "\n*** WARNING *** Second argument is being ignored."
-         << std::endl;
-  }
-}
-
-
-BeamlineContextPtr::~BeamlineContextPtr()
-{
-  if( _owned ) { delete ((BeamlineContext*) _ptr); }
-}
