@@ -1,5 +1,6 @@
-/***************************************************************************  
-****************************************************************************                                                             
+/*******************************************************************************  
+********************************************************************************
+********************************************************************************
 ******
 ******  Python bindings for mxyzpltk/beamline libraries 
 ******  
@@ -21,130 +22,160 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+*******************************************************************************/
+
 #include <boost/python.hpp>
 #include <string>
 
+#include <boost/iterator/indirect_iterator.hpp>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/beamline.h>
-#include <beamline/InsertionList.h>
-
 
 class PropFunc;
 
 using namespace boost::python;
 
+namespace {
 
-#define USE_INSERTELEMENTSFROMLIST_WORKARAOUND yes
-
-
-void (beamline::*beamline_propagateParticle)     (Particle&      ) = &beamline::propagate;
-void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) = &beamline::propagate;
-void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) = &beamline::propagate;
-
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(beamline_overloads1,     countHowMany,       0, 0 );
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(beamline_overloads2,     countHowManyDeeply, 0, 0 );
+typedef boost::indirect_iterator<beamline::iterator>                     indirect_iterator;
+typedef boost::indirect_iterator<beamline::pre_order_iterator>           indirect_pre_order_iterator;
+typedef boost::indirect_iterator<beamline::post_order_iterator>          indirect_post_order_iterator;
+typedef boost::indirect_iterator<beamline::deep_iterator>                indirect_deep_iterator;
 
 
-struct beamlineWrap: beamline {
-
-    beamlineWrap(PyObject* self, const char* name = "NONAME"):
-       _self(self), beamline(name) {}
-    
-    beamlineWrap(PyObject* self,   beamline const& bl):
-        _self(self),beamline( bl) {}
- 
-    double InsertElementsFromListWrap( double s_0, InsertionList& il, slist& sl);  // a version of InsertElementsFromList
-                                                                                // that is callable from Python.
- 
-    PyObject* _self;
-};
+typedef boost::indirect_iterator<beamline::reverse_iterator>             indirect_reverse_iterator;
+typedef boost::indirect_iterator<beamline::reverse_pre_order_iterator>   indirect_reverse_pre_order_iterator;
+typedef boost::indirect_iterator<beamline::reverse_post_order_iterator>  indirect_reverse_post_order_iterator;
+typedef boost::indirect_iterator<beamline::reverse_deep_iterator>        indirect_reverse_deep_iterator;
 
 
-double  
-beamlineWrap::InsertElementsFromListWrap( double s_0, InsertionList& il, slist& sl ) 
-{
+indirect_iterator indirect_begin( beamline& bml ) { return bml.begin(); }
+indirect_iterator   indirect_end( beamline& bml ) { return bml.end();   }
 
- double tmp_s0 = s_0;  
+indirect_pre_order_iterator indirect_pre_begin( beamline& bml )  { return bml.pre_begin(); }
+indirect_pre_order_iterator   indirect_pre_end( beamline& bml )  { return bml.pre_end();   }
 
- beamline::InsertElementsFromList(tmp_s0, il, sl); 
+indirect_post_order_iterator indirect_post_begin( beamline& bml ) { return bml.post_begin(); }
+indirect_post_order_iterator   indirect_post_end( beamline& bml ) { return bml.post_end();   }
 
- return tmp_s0;
+indirect_deep_iterator      indirect_deep_begin( beamline& bml ) { return bml.deep_begin(); }
+indirect_deep_iterator        indirect_deep_end( beamline& bml ) { return bml.deep_end();   }
 
-}
+indirect_reverse_iterator indirect_rbegin( beamline& bml )                 { return bml.rbegin(); }
+indirect_reverse_iterator   indirect_rend( beamline& bml )                 { return bml.rend();   }
+
+indirect_reverse_pre_order_iterator indirect_rpre_begin( beamline& bml )   { return bml.rpre_begin(); }
+indirect_reverse_pre_order_iterator   indirect_rpre_end( beamline& bml )   { return bml.rpre_end();   }
+
+indirect_reverse_post_order_iterator indirect_rpost_begin( beamline& bml ) { return bml.rpost_begin(); }
+indirect_reverse_post_order_iterator   indirect_rpost_end( beamline& bml ) { return bml.rpost_end();   }
+  
+indirect_reverse_deep_iterator      indirect_rdeep_begin( beamline& bml )  { return bml.rdeep_begin(); }
+indirect_reverse_deep_iterator        indirect_rdeep_end( beamline& bml )  { return bml.rdeep_end();   }
 
 
-int (beamline::*twiss1)( JetParticle&, double const&, int  )     = &beamline::twiss;
-int (beamline::*twiss2)( char,JetParticle& )                     = &beamline::twiss;
-int (beamline::*twiss3)( lattFunc&, JetParticle&, int)           = &beamline::twiss;
 
-void (beamline::*insert1) (  bmlnElmnt*  )          = &beamline::insert;
-void (beamline::*append1) (  bmlnElmnt* )           = &beamline::append;
-void (beamline::*accept1) (  BmlVisitor& )          = &beamline::accept;
+void (beamline::*beamline_propagateParticle)     (Particle&      ) =  &beamline::propagate;
+void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) =  &beamline::propagate;
+void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) =  &beamline::propagate;
+
+void (beamline::*insert1) (  ElmPtr const& )                       =  &beamline::insert;
+void (beamline::*append1) (  ElmPtr const& )                       =  &beamline::append;
+void (beamline::*accept1) (  BmlVisitor& )                         =  &beamline::accept;
+
+int (beamline::*countHowMany1)()       const                       =  &beamline::countHowMany;
+int (beamline::*countHowManyDeeply1)() const                       =  &beamline::countHowManyDeeply;
+
+bmlnElmnt& beamline_firstElement ( beamline& bml ) { return *bml.firstElement(); }
+bmlnElmnt& beamline_lastElement  ( beamline& bml ) { return *bml.lastElement(); }
+
+} // anonymous namespace
+
+//------------------------------------------------------------------------------
+// wrapper code
+//------------------------------------------------------------------------------
 
 void wrap_beamline() {
 
- class_<beamline, bases<bmlnElmnt>, beamlineWrap> beamlineWrap_("beamline", init<>() );
+class_<beamline, bases<bmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beamline", init<>() );
 
- beamlineWrap_.def( init<const char*>() );
- beamlineWrap_.def( init<const beamline& >() );
- beamlineWrap_.def("__iter__", 
-   range<return_value_policy<reference_existing_object> >( &beamline::deep_begin, &beamline::deep_end ) );
- beamlineWrap_.def("propagateParticle",      beamline_propagateParticle);
- beamlineWrap_.def("propagateJetParticle",   beamline_propagateJetParticle);
- beamlineWrap_.def("propagateParticleBunch", beamline_propagateParticleBunch);
- beamlineWrap_.def("zap",                    &beamline::zap) ;
- beamlineWrap_.def("clear",                  &beamline::clear);
- beamlineWrap_.def("insert",                 insert1);
- beamlineWrap_.def("append",                 append1 );
+beamline_.def( init<const char*>() );
+beamline_.def( init<const beamline& >() );
+beamline_.def("__iter__", 
+    range< return_value_policy<reference_existing_object> >( &indirect_deep_begin, &indirect_deep_end) ); // default iterator
 
+beamline_.def("iterator", 
+   range<return_value_policy<reference_existing_object> > (  &indirect_begin,      &indirect_end) );
 
-   //.def("InsertElementAt",          &beamline::InsertElementAt);
+beamline_.def("pre_order_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_pre_begin,  &indirect_pre_end ) );
+
+beamline_.def("post_order_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_post_begin, &indirect_post_end ) );
+
+beamline_.def("deep_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_deep_begin, &indirect_deep_end ) );
+
+beamline_.def("reverse_iterator", 
+   range<return_value_policy<reference_existing_object> > (  &indirect_rbegin,      &indirect_rend) );
+
+beamline_.def("reverse_pre_order_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_rpre_begin,  &indirect_rpre_end ) );
+
+beamline_.def("reverse_post_order_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_rpost_begin, &indirect_rpost_end ) );
+
+beamline_.def("reverse_deep_iterator", 
+    range<return_value_policy<reference_existing_object> >(  &indirect_rdeep_begin, &indirect_rdeep_end ) );
+
+beamline_.def("clear",                  &beamline::clear);
+beamline_.def("insert",                 insert1);
+beamline_.def("append",                 append1 );
+beamline_.def("flatten",                &beamline::flatten);
+
+// beamline_.def("InsertElementsFromList",  &beamlineWrap::InsertElementsFromList);
+// beamline_.def("InsertElementAt",         &beamline::InsertElementAt);
 
   // PROPAGATE PARTICLES
 
- beamlineWrap_.def("setEnergy",      &beamline::setEnergy);
- beamlineWrap_.def("unTwiss",        &beamline::unTwiss);
- beamlineWrap_.def("eraseBarnacles", &beamline::eraseBarnacles);
- beamlineWrap_.def("twiss", twiss1);
- beamlineWrap_.def("twiss", twiss2);
- beamlineWrap_.def("twiss", twiss3);
+ beamline_.def("propagateParticle",      beamline_propagateParticle);
+ beamline_.def("propagateJetParticle",   beamline_propagateJetParticle);
+ beamline_.def("propagateParticleBunch", beamline_propagateParticleBunch);
 
- // Editing
-#ifdef USE_INSERTELEMENTSFROMLIST_WORKARAOUND
- // n.b. as soon as this workaround is no longer needed, the function
- // InsertElementsFromList1 should be deleted from
- // beamline/include/bmlnElmnt.h
- beamlineWrap_.def("InsertElementsFromList", &beamline::InsertElementsFromList1);
-#else  
-  beamlineWrap_.def("InsertElementsFromList", &beamlineWrap::InsertElementsFromListWrap);
-#endif
+ beamline_.def("setEnergy",      &beamline::setEnergy);
+ beamline_.def("unTwiss",        &beamline::unTwiss);
+ beamline_.def("eraseBarnacles", &beamline::eraseBarnacles);
+
+ //beamline_.def("twiss", twiss1);
+ //beamline_.def("twiss", twiss2);
+ //beamline_.def("twiss", twiss3);
 
   // QUERIES
 
-  //beamlineWrap_.def("whatisLattice",            whatisLattice1); 
-  //beamlineWrap_.def("whatisLattice",            whatisLattice2);
-  beamlineWrap_.def("countHowMany",               &beamline::countHowMany,       beamline_overloads1());
-  beamlineWrap_.def("countHowManyDeeply",         &beamline::countHowManyDeeply, beamline_overloads2());
-  beamlineWrap_.def("depth",                      &beamline::depth);
-//beamlineWrap_.def("contains",                   &beamline::contains);
-//beamlineWrap_.def("firstElement",               &beamline::firstElement);
-//beamlineWrap_.def("lastElement",                &beamline::lastElement);
-  beamlineWrap_.def("twissIsDone",                &beamline::twissIsDone);
-  beamlineWrap_.def("setTwissIsDone",             &beamline::setTwissIsDone);
-  beamlineWrap_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
-  beamlineWrap_.def("Energy",                     &beamline::Energy);
-  beamlineWrap_.def("OrbitLength",                &beamline::OrbitLength);
-  beamlineWrap_.def("accept",                     accept1);
-  beamlineWrap_.def("flatten",&beamline::flatten,
-       return_value_policy<reference_existing_object>());
- 
-  //beamlineWrap_.def("whatIsRing",               &beamline::whatIsRing)
+ //beamline_.def("whatisLattice",            whatisLattice1); 
+ //beamline_.def("whatisLattice",            whatisLattice2);
+ beamline_.def("countHowMany",               countHowMany1 );
+ beamline_.def("countHowManyDeeply",         countHowManyDeeply1 );
+ beamline_.def("isFlat",                     &beamline::isFlat);
+ beamline_.def("empty",                      &beamline::empty);
+ beamline_.def("depth",                      &beamline::depth);
+ beamline_.def("contains",                   &beamline::contains);
+ beamline_.def("firstElement",               &beamline_firstElement, return_value_policy<reference_existing_object>() );
+ beamline_.def("lastElement",                &beamline_lastElement,  return_value_policy<reference_existing_object>() );
+ beamline_.def("twissIsDone",                &beamline::twissIsDone);
+ beamline_.def("setTwissIsDone",             &beamline::setTwissIsDone);
+ beamline_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
+ beamline_.def("Energy",                     &beamline::Energy);
+ beamline_.def("OrbitLength",                &beamline::OrbitLength);
+ beamline_.def("accept",                     accept1);
+ //beamline_.def("flatten",&beamline::flatten,
+ //     return_value_policy<reference_existing_object>());
+ //beamline_.def("whatIsRing",               &beamline::whatIsRing)
 
 }
 
