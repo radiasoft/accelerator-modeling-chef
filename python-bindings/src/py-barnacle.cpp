@@ -1,5 +1,7 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/*******************************************************************************
+********************************************************************************
+********************************************************************************
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-barnacle.cpp
@@ -19,17 +21,26 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+********************************************************************************
+********************************************************************************
+********************************************************************************/
+
 #include <boost/python.hpp>
-#include <string>
+#include <boost/iterator/indirect_iterator.hpp>
 #include <basic_toolkit/Barnacle.h>
 #include <physics_toolkit/LattFuncSage.h>
+#include <string>
 
 using namespace boost::python;
 
-namespace {
 
-struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
+// --------------------------------------------------------------------------------
+// local definitions and wrapper code
+//---------------------------------------------------------------------------------
+
+namespace {
+  
+   struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
 
    BarnacleListIteratorWrapper( PyObject* self, BarnacleList::iterator const& it):  BarnacleList::iterator(it), self_(self) {} 
 
@@ -42,24 +53,28 @@ struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
  
 };
 
-LattFuncSage::lattFunc& lattFunc_local(PyObject* o) {
+static LattFuncSage::lattFunc& lattFunc_local(boost::any& data ) {
  
-  return boost::any_cast<LattFuncSage::lattFunc&> ( extract<boost::any&>(o) ); 
+  return boost::any_cast<LattFuncSage::lattFunc&> ( data ); 
 
 }
 
-
-BarnacleList::iterator (BarnacleList::*begin_ptr)() =  &BarnacleList::begin;
-BarnacleList::iterator (BarnacleList::*end_ptr)()   =  &BarnacleList::end;
-
-void (BarnacleList::*erase_ptr)( BarnacleList::iterator& )  =  &BarnacleList::erase;
-
 }
+
+BarnacleList::iterator         (BarnacleList::* begin_ptr  )() = &BarnacleList::begin;
+BarnacleList::iterator         (BarnacleList::* end_ptr    )() = &BarnacleList::end;
+BarnacleList::reverse_iterator (BarnacleList::* rbegin_ptr )() = &BarnacleList::rbegin;
+BarnacleList::reverse_iterator (BarnacleList::* rend_ptr   )() = &BarnacleList::rend;
+
+// --------------------------------------------------------------------------------
+// boost.python classes 
+//---------------------------------------------------------------------------------
 
 void wrap_barnacle () {
 
 class_<boost::any>("Any")
  .def( "lattFunc",  &lattFunc_local, return_value_policy<reference_existing_object>() );
+
 
 class_<Barnacle>("Barnacle", init<std::string, boost::any >() )
   .def_readwrite("id",     &Barnacle::id)
@@ -72,14 +87,14 @@ class_<BarnacleList>("BarnacleList")
  .def("eraseFirst",  &BarnacleList::eraseFirst) 
  .def("eraseAll",    &BarnacleList::eraseAll)
  .def("find",        &BarnacleList::find )
- .def("erase",       erase_ptr           )
- .def("begin",       begin_ptr           )
- .def("end",         end_ptr             )
- .def("__iter__",    range( begin_ptr, end_ptr ));
+ .def("__iter__",            range<return_value_policy<reference_existing_object> >( begin_ptr,  end_ptr  ) ) 
+ .def("iterator",            range<return_value_policy<reference_existing_object> >( begin_ptr,  end_ptr  ) )
+ .def("reverse_iterator",    range<return_value_policy<reference_existing_object> >( rbegin_ptr, rend_ptr ) );
+
+// class_<barnacle_indirect_iterator>("BarnacleListIterator")
+//  .def("id",   &BarnacleListIteratorWrapper::get_id,   return_value_policy<reference_existing_object>()  )  
+// .def("info", &BarnacleListIteratorWrapper::get_info, return_value_policy<reference_existing_object>()  ); 
 
 
- class_<BarnacleList::iterator, BarnacleListIteratorWrapper >("BarnacleListIterator")
-   .def("id",   &BarnacleListIteratorWrapper::get_id,   return_value_policy<reference_existing_object>()  )  
-   .def("info", &BarnacleListIteratorWrapper::get_info, return_value_policy<reference_existing_object>()  ); 
 }
 
