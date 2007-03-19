@@ -1,10 +1,14 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/********************************************************************************
+*********************************************************************************
+*********************************************************************************
+******
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-monitor.cpp
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
+******  Copyright (c) Fermi Research Alliance/ Fermilab    
 ******                All Rights Reserved                             
 ******
 ******  Software and documentation created under 
@@ -14,48 +18,66 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
+******  Author:    Jean-Francois Ostiguy
 ******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
+******             Fermi National Laboratory, Batavia, IL   60510
 ******             ostiguy@fnal.gov                         
 ******
-****************************************************************************/
+*********************************************************************************
+*********************************************************************************
+*********************************************************************************/
+
 #include <boost/python.hpp>
 #include <beamline/monitor.h>
 
 using namespace boost::python;
 
- struct monitorWrap: monitor {
-  monitorWrap(PyObject* self):
-       _self(self) {}
+//------------------------------------------------------------------------------
+// local code and definition
+//------------------------------------------------------------------------------
 
-  monitorWrap(PyObject* self, const char* name):
-       _self(self),monitor(name) {}
+namespace {
+
+struct monitorWrap: monitor {
+  monitorWrap(PyObject* self)
+     : self_(self) {}
+
+  monitorWrap(PyObject* self, monitor const& elm)
+     : monitor(elm),self_(self)  {}
+
+  monitorWrap(PyObject* self, const char* name)
+     : self_(self), monitor(name) {}
 
   monitorWrap(PyObject* self, const char* name, double length):
-       _self(self),monitor(name,length) {}
+       self_(self),monitor(name,length) {}
 
     bool on();  
     bool off();
     const char* version();
    
-    PyObject* _self;
+    PyObject* self_;
      
- };
+};
+
 
 bool monitorWrap::on(){ 
-return call_method<bool>(_self, "on"); }
+return call_method<bool>(self_, "on"); }
 
 bool monitorWrap::off(){ 
-return call_method<bool>(_self, "off"); }
+return call_method<bool>(self_, "off"); }
 
 const char* monitorWrap::version(){ 
-return call_method<const char*>(_self, "version"); }
+return call_method<const char*>(self_, "version"); }
+
+}
+
+//------------------------------------------------------------------------------
+// wrapper code
+//------------------------------------------------------------------------------
 
 void wrap_monitor () {
 
-
-class_<monitor, bases<bmlnElmnt>, monitorWrap, boost::noncopyable >("monitor", init<>() )
+class_<monitor, bases<bmlnElmnt>, boost::shared_ptr<monitorWrap> >("monitor", init<>() )
   .def(init<const char*>() )
   .def(init<const char*, double>() )
   .def("on",               &monitorWrap::on)  
@@ -63,18 +85,14 @@ class_<monitor, bases<bmlnElmnt>, monitorWrap, boost::noncopyable >("monitor", i
   .def("version",          &monitorWrap::version)
   .def("setDriftFraction", &monitor::setDriftFraction);
  
-
-          // operator[]( int );  // Readout of data
-
-class_<hmonitor, bases<monitor> >("hmonitor", init<>() )
-  .def( init<const char*>() )
-  .def( init<const char*, double const&>() );
+ class_<hmonitor, bases<monitor>, HMonitorPtr >("hmonitor", init<>() )
+    .def( init<const char*>() )
+    .def( init<const char*, double const&>() );
 
 
-class_<vmonitor, bases<monitor> >("vmonitor", init<>() )
+class_<vmonitor, bases<monitor>, VMonitorPtr >("vmonitor", init<>() )
   .def(init<const char*>() )
   .def(init<const char*, double const&>() );
-
  
-}
 
+}
