@@ -36,59 +36,42 @@ class PropFunc;
 
 using namespace boost::python;
 
+namespace {
 
-struct bmlnElmntWrap : bmlnElmnt {
+void   (bmlnElmnt::*propagateParticle)     (Particle&      ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
 
-    bmlnElmntWrap(PyObject* self, const char* name = "NONAME", PropFunc* pf=0):
-       self_(self),bmlnElmnt(name,pf) {}
-    
-    bmlnElmntWrap(PyObject* self,   double  length,   double  strength, PropFunc* pf=0):
-        self_(self),bmlnElmnt(length,strength,pf) {}
- 
-    bmlnElmntWrap(PyObject* self, const char* name,   double  length,   PropFunc* pf=0):
-        self_(self),bmlnElmnt(name, length,pf) {}
+void   (bmlnElmnt::*setStrength1)          (double const&  ) = &bmlnElmnt::setStrength;
 
-    bmlnElmntWrap(PyObject* self, const char* name,   double  length,   double strength,  PropFunc* pf=0):
-        self_(self),bmlnElmnt(name, length, strength, pf) {}
+double (bmlnElmnt::*setReferenceTime1)     (Particle const&) = &bmlnElmnt::setReferenceTime;
+double (bmlnElmnt::*setReferenceTime2)     (double   const&) = &bmlnElmnt::setReferenceTime;
 
-        PyObject* self_;
-    };
-
-
-
-void (bmlnElmnt::*propagateParticle)     (Particle&      ) = &bmlnElmnt::propagate;
-void (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propagate;
-void (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
-
-void (bmlnElmnt::*setStrength1)(double const&      )       = &bmlnElmnt::setStrength;
-
-double (bmlnElmnt::*setReferenceTime1)(const Particle&  )  = &bmlnElmnt::setReferenceTime;
-double (bmlnElmnt::*setReferenceTime2)(double const&)      = &bmlnElmnt::setReferenceTime;
-
+}
 
 void wrap_bmlnelmnt() {
   
-  class_<bmlnElmnt, bmlnElmntWrap, boost::noncopyable>("bmlnElmnt", no_init)
+  class_<bmlnElmnt, boost::shared_ptr<bmlnElmnt>, boost::noncopyable>("bmlnElmnt", no_init)
     .def("propagateParticle",             propagateParticle)
     .def("propagateJetParticle",          propagateJetParticle )
     .def("propagateParticleBunch",        propagateParticleBunch )
-    .def("getTag",                   &bmlnElmnt::getTag)
-    .def("setTag",                   &bmlnElmnt::setTag)
-    .def("setShunt",                 &bmlnElmnt::setShunt)
-    .def("getShunt",                 &bmlnElmnt::getShunt)        
+    .def("getTag",                        &bmlnElmnt::getTag)
+    .def("setTag",                        &bmlnElmnt::setTag)
+    .def("setShunt",                      &bmlnElmnt::setShunt)
+    .def("getShunt",                      &bmlnElmnt::getShunt)        
      /****  virtual functions ***/ 
-    .def("setLength",                &bmlnElmnt::setLength)
-    .def("Strength",                 &bmlnElmnt::Strength)
-    .def("setStrength",              setStrength1)
-    .def("setCurrent",               &bmlnElmnt::setCurrent)
-    .def("Name",                     &bmlnElmnt::Name)
-    .def("rename",                   &bmlnElmnt::rename)
-    .def("getReferenceTime",         &bmlnElmnt::getReferenceTime)
-    .def("setReferenceTime",         setReferenceTime1)
-    .def("setReferenceTime",         setReferenceTime2)
-    .def("Current",                  &bmlnElmnt::Current)
-    .def("Type",                     &bmlnElmnt::Type)
-    .def("OrbitLength",              &bmlnElmnt::OrbitLength)
-    .def_readwrite("dataHook",       &bmlnElmnt::dataHook);
+    .def("setLength",                     &bmlnElmnt::setLength)
+    .def("Strength",                      &bmlnElmnt::Strength)
+    .def("setStrength",                   setStrength1)
+    .def("setCurrent",                    &bmlnElmnt::setCurrent)
+    .def("Name",                          &bmlnElmnt::Name)
+    .def("rename",                        &bmlnElmnt::rename)
+    .def("getReferenceTime",              &bmlnElmnt::getReferenceTime)
+    .def("setReferenceTime",              setReferenceTime1)
+    .def("setReferenceTime",              setReferenceTime2)
+    .def("Current",                       &bmlnElmnt::Current)
+    .def("Type",                          &bmlnElmnt::Type)
+    .def("OrbitLength",                   &bmlnElmnt::OrbitLength)
+    .def_readwrite("dataHook",            &bmlnElmnt::dataHook);
 }  
 
