@@ -55,6 +55,11 @@
 ******
 ****** - eliminated dlist representation for (non-zero) monomials.   
 ****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
+****** Mar 2007 ostiguy@fnal.gov  
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
+****** - added STL compatible monomial term iterators   
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -503,6 +508,9 @@ public:
       , boost::forward_traversal_tag // CategoryOrTraversal
     > {
   
+    template <typename V>
+    friend class iter_;
+
     private:
         struct enabler {};  // a private type avoids misuse  
     public:
@@ -516,7 +524,7 @@ public:
        iter_(
              iter_<OtherType> const& other
              , typename boost::enable_if<
-                boost::is_convertible<OtherType*,U*>
+                boost::is_convertible<OtherType,U>
                 , enabler
                 >::type = enabler()
              )
