@@ -25,36 +25,46 @@
 #include <boost/python/numeric.hpp>
 #include <boost/python/tuple.hpp>
 #include <qnamespace.h>
-#include <qwt/qwt_curve.h>
 #include <numarray/numarray.h>
 #include <numarray/libnumarray.h>
 #include <string>
-#include <CHEFCurve.h>
 #include <CurveData.h>
 #include "py-exception.h"
 
 using namespace boost::python;
 
+namespace {
 
-class CHEFCurveWrap: public CHEFCurve 
+class CurveDataWrap: public CurveData 
 {
 
 public:
 
-  CHEFCurveWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name);
-  void setData( numeric::array& x, numeric::array& y);
+   CurveDataWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name);
+   CurveDataWrap(PyObject* self,  CurveData const&);
+
+   void setData( numeric::array& x, numeric::array& y, std::string label);
+
 
 private:
 
-    PyObject* _self; 
+    PyObject* self_; 
 };
    
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CHEFCurveWrap::CHEFCurveWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name): 
-_self(self), CHEFCurve( CurveData ( reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( x.ptr())->data ), 
-                                    reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( y.ptr())->data ), 
-                                    std::min( x.nelements(), y.nelements() )),  
-                         name)
+ CurveDataWrap::CurveDataWrap(PyObject* self,  CurveData const& data)
+  : CurveData(data), self_(self) 
+ {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CurveDataWrap::CurveDataWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name)
+   :   CurveData ( reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( x.ptr())->data ), 
+                   reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( y.ptr())->data ), 
+                   std::min( x.nelements(), y.nelements() ), name ), self_(self)
 {
 
 #if 0 
@@ -71,9 +81,10 @@ _self(self), CHEFCurve( CurveData ( reinterpret_cast<double*>( reinterpret_cast<
 
  }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-CHEFCurveWrap::setData( numeric::array& x,   numeric::array& y)
+void  CurveDataWrap::setData( numeric::array& x,   numeric::array& y,  std::string label)
 {
 
   if ( !  x.is_c_array() ) 
@@ -89,23 +100,23 @@ CHEFCurveWrap::setData( numeric::array& x,   numeric::array& y)
   double *xdata = reinterpret_cast<double*>( x_paobj ->data );
   double *ydata = reinterpret_cast<double*>( y_paobj ->data );
 
-  CHEFCurve::setData( CurveData( xdata, ydata, std::min( x.nelements(), y.nelements() ) ) );  
+  CurveData( xdata, ydata, std::min( x.nelements(), y.nelements() ) ,  label);  
 
 }
 
-void  wrap_chefplot_CHEFCurve() {
+} // anonymous namespace
 
- 
-  class_ <CHEFCurve, boost::shared_ptr<CHEFCurveWrap>,  boost::noncopyable>("CHEFCurve", init<numeric::array&, numeric::array&, const char*>() )
-  .def("setData",              &CHEFCurveWrap::setData )
-    //  .def("widgetDeletesCurve",   &CHEFCurveWrap::widgetDeletesCurve)
-     ;
-         
-  //class_ <CHEFCurve, CHEFCurveWrap, boost::noncopyable>("CHEFCurve", no_init );
-    //.def("scalemag", &CHEFCurve::scalemag )
-    // .def("setData",  &QwtCurve::setData );
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+void  wrap_CurveData() 
+{
+
+  class_ <CurveData, CurveDataWrap >("CurveData", init<numeric::array&, numeric::array&, const char*>() );
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
