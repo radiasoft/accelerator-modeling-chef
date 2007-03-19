@@ -42,8 +42,8 @@ public slots:
 
  private:
 
- void _output( std::ostream& os);
- bool _showbml;
+ void output( std::ostream& os);
+ bool showbml_;
 
 };
 

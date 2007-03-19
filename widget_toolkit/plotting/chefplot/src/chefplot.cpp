@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  CHEF:      A Qt-based Application 
+******  Chef:      A Qt-based Application 
 ******             Layered on top of of BEAMLINE.
 ******                                                                
 ******  File:      chefplot.cpp
@@ -33,11 +33,19 @@
 *************************************************************************/
 
 #include <CHEFPlot.h> 
-#include <CHEFPlotData.h>
+#include <Plot.h>
+#include <PlotData.h>
+
+
+#include <qwt_plot_picker.h>
+#include <qwt_plot_canvas.h>
+#include <qwt_plot_grid.h>
+
 
 #include <Plot.h>
+#include <PlotZoomer.h>
 #include <Lego.h>
-#include <qwt/qwt_plot_canvas.h>
+
 #include <qtoolbar.h>
 #include <qmenubar.h>
 #include <qevent.h>
@@ -48,24 +56,47 @@
 #include <string>
 #include <cmath>
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): 
 QWidget(parent,name,f) 
 {
 
-   _lego_height = 30;
+   lego_height_ = 30;
 
-   _plot   = new Plot(this);
-   _lego   = new LegoPlot(this);
+   plot_   = new Plot(this);
+   lego_   = new LegoPlot(this);
 
-    connect(_plot, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
-    connect(_plot, SIGNAL( plotResizedSignal() ),        this, SLOT( resizeLego() ) );
+
+   zoomer_left_  = new PlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
+   zoomer_left_->setEnabled(false);
+
+   zoomer_right_  = new PlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
+   zoomer_right_->setEnabled(false);
+
+   picker_left_  = new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
+   picker_left_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
+   picker_left_->setTrackerMode(QwtPicker::ActiveOnly);
+   picker_left_->setEnabled(false);
+
+   picker_right_ = new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
+   picker_right_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
+   picker_right_->setTrackerMode(QwtPicker::ActiveOnly);
+   picker_right_->setEnabled(false);
+
+
+   connect(plot_, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
+   connect(plot_, SIGNAL( plotResizedSignal() ),  this, SLOT( resizeLego() ) );
+
+   return;
 
 }
 
 
-//..........................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CHEFPlot::~CHEFPlot() {
 
@@ -75,104 +106,114 @@ CHEFPlot::~CHEFPlot() {
 }
 
 
-//............................................................................................
 
-void 
-CHEFPlot::resizeEvent (QResizeEvent* event) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::resizeEvent (QResizeEvent* event) {
   
-  _plot->setGeometry(0, _lego_height,  width(), height()-_lego_height);
+  if (!plot_) return;
+
+  plot_->setGeometry(0, lego_height_,  width(), height()-lego_height_);
 
   return;
 
 }
 
-//............................................................................................
 
-void 
-CHEFPlot::resizeLego () {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  _lego->setGeometry(_plot->canvas()->x(),  0,  _plot->canvas()->width(),  _lego_height );
+void CHEFPlot::resizeLego () 
+{
+
+  lego_->setGeometry(plot_->canvas()->x(),  0,  plot_->canvas()->width(),  lego_height_ );
 
   updateLatticeDisplay();
 
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//............................................................................................
 
-void 
-CHEFPlot::displayLattice(beamline const& bml) {
-
-  _plot->setGeometry(0, _lego_height,  width(), height()- _lego_height);
-  _lego->setGeometry(_plot->canvas()->x(), 0,  _plot->canvas()->width(),  _lego_height);
-  _lego->setBeamline(bml);
-  
-}
-
-//............................................................................................
-
-const beamline&
-CHEFPlot::getBeamline()
+void CHEFPlot::displayLattice( ConstBmlPtr bml) 
 {
 
-
-  return _lego->getBeamline();
-
-}
-
-
-//............................................................................................
-
-void 
-CHEFPlot::updateLatticeDisplay() {
-
-  double xmin =  _plot->getCurrentXmin();
-  double xmax =  _plot->getCurrentXmax();
-
-  int loffset = _plot->transform( QwtPlot::xBottom, xmin);
-  int roffset = _plot->transform( QwtPlot::xBottom, xmax);
-  
-    _lego->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
-  _lego->update();
-
-}
-
-//............................................................................................
-
-void 
-CHEFPlot::enableGrid(bool set) {
-
-  _plot->enableGridX(set);
-  _plot->enableGridY(set);
-  _plot->replot();
+  plot_->setGeometry(0, lego_height_,  width(), height()- lego_height_);
+  lego_->setGeometry(plot_->canvas()->x(), 0,  plot_->canvas()->width(),  lego_height_);
+  lego_->setBeamline(bml);
   
 }
 
-//............................................................................................
 
-void 
-CHEFPlot::enableThumbWheels(bool set) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  _plot->enableThumbWheels(set);
-  QApplication::postEvent( _plot, new QResizeEvent( QSize(_plot->width(), _plot->height()), QSize( _plot->width(), _plot->height() ) ) );
-  QApplication::postEvent( this,  new QResizeEvent( QSize(width(), height()), QSize( width(), height() ) ) );
-  _lego->repaint();
+ConstBmlPtr CHEFPlot::getBeamline()
+{
+  return lego_->getBeamline();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void  CHEFPlot::updateLatticeDisplay() 
+{
+
+  double xmin =  plot_->getCurrentXmin();
+  double xmax =  plot_->getCurrentXmax();
+
+  int loffset = plot_->transform( QwtPlot::xBottom, xmin);
+  int roffset = plot_->transform( QwtPlot::xBottom, xmax);
+  
+  lego_->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
+  lego_->update();
 
 }
 
-//............................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-CHEFPlot::enableLegoPlot(bool set) {
+void CHEFPlot::enableGrid(bool set) 
+{
+
+  plot_->grid_->enableX(set);
+  plot_->grid_->enableY(set);
+  plot_->replot();
+  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  CHEFPlot::enableThumbWheels(bool set) 
+{
+
+  plot_->enableThumbWheels(set);
+  QApplication::postEvent( plot_, new QResizeEvent( QSize(plot_->width(), plot_->height()), 
+                                                    QSize( plot_->width(), plot_->height() ) ) );
+  QApplication::postEvent( this,  new QResizeEvent( QSize(width(), height()), 
+                                                    QSize( width(), height() ) ) );
+  lego_->repaint();
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  CHEFPlot::enableLegoPlot(bool set) 
+{
 
   if (set) {
     
-    _lego_height = 30;
-    _lego->show();
+    lego_height_ = 30;
+    lego_->show();
 
   } else {
     
-    _lego_height = 0;
-    _lego->hide();
+    lego_height_ = 0;
+    lego_->hide();
   };
 
      // resize does not send a resize event when the size is unchanged.
@@ -180,42 +221,82 @@ CHEFPlot::enableLegoPlot(bool set) {
  
   QApplication::postEvent( this, new QResizeEvent( QSize(width(), height()), QSize( width(), height() ) ) );
   
-  _plot->replot();
-  _lego->repaint();
+  plot_->replot();
+  lego_->repaint();
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//............................................................................................
+void CHEFPlot::enableZoomLeftYAxis() 
+{ 
 
-void 
-CHEFPlot::zoomUseRightAxis() {
+  zoomer_left_->setEnabled(true);
+  zoomer_right_->setEnabled(false);
 
-  _plot->setZoomer(true, QwtPlot::yRight);
-  
+  zoomer_left_->setTrackerMode( QwtPicker::AlwaysOn ); 
+
+  zoomer_left_->setTrackerPen(QColor(Qt::red));
+  zoomer_left_->setRubberBandPen(QColor(Qt::red));
+
 
 }
 
-//............................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-CHEFPlot::zoomUseLeftAxis(){
-  
-  _plot->setZoomer(true, QwtPlot::yLeft);
-  
+void CHEFPlot::enableZoomRightYAxis() 
+{ 
+
+  zoomer_right_->setEnabled(true);
+  zoomer_left_->setEnabled(false);
+
+  zoomer_right_->setTrackerMode( QwtPicker::AlwaysOn ); 
+
+  zoomer_right_->setTrackerPen(QColor(Qt::red)); 
+  zoomer_right_->setRubberBandPen( QColor(Qt::red) );
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::enableZoomIn() 
+{ 
+
+
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::enableZoomOut() 
+{ 
+
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::zoomReset() 
+{ 
+
+     zoomer_left_ ->setSelectionFlags(QwtEventPattern::KeyHome); 
+     zoomer_right_ ->setSelectionFlags(QwtEventPattern::KeyHome); 
 }
 
 
-//............................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void CHEFPlot::setData(PlotData const& pltdata) {
 
-void 
-CHEFPlot::addData(CHEFPlotData& cpdata) {
-
-
-  beamline const& bml = cpdata.getBeamline(); 
+   ConstBmlPtr bml = pltdata.getBeamline(); 
    
-   if ( bml.empty() ) {
+   if ( bml ) {
       displayLattice( bml );
       enableLegoPlot( true);
 
@@ -223,37 +304,104 @@ CHEFPlot::addData(CHEFPlotData& cpdata) {
      
      enableLegoPlot(false);
    
-    }
+   }
 
-  _plot->addData(cpdata);
+  plot_->setData(pltdata);
   
 }
 
-//............................................................................................
-void 
-CHEFPlot::setLogScale( int axis) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::setLogScale( int axis) 
 {
 
-  _plot->setLogScale(axis); 
+  plot_->setLogScale(axis); 
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CHEFPlot::setLinScale( int axis) 
+{
+
+  plot_->setLinScale(axis); 
 
 }
 
-//............................................................................................
 
-void 
-CHEFPlot::setLinScale( int axis) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::clear() 
 {
 
-  _plot->setLinScale(axis); 
+  plot_->clear(); 
 
 }
 
-//............................................................................................
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void
-CHEFPlot::clear() 
+
+void CHEFPlot::zoomed(QwtDoubleRect const& pg ) 
 {
 
-  _plot->clear(); 
+  std::cout << "zoomed called " << std::endl;
+
+
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0 
+=================================
+
+void Plot::setZoomer(bool set, int axis) {
+
+  
+  if ( !left_zoomer_) { 
+     left_zoomer_ = new PlotZoomer( QwtPlot::xBottom,  QwtPlot::yLeft, canvas() ); 
+     connect( left_zoomer_,  SIGNAL( scaleChangedSignal() ), this, SLOT( scaleChanged()  ));
+  }
+  if ( !right_zoomer_){ 
+     right_zoomer_= new PlotZoomer( QwtPlot::xBottom,  QwtPlot::yRight, canvas()  ); 
+     connect( right_zoomer_,  SIGNAL( scaleChangedSignal() ), this, SLOT( scaleChanged()  ));
+  };
+  
+  switch( axis) {
+  
+   case QwtPlot::yLeft: 
+      active_zoomer_ = left_zoomer_;
+      left_zoomer_->setRubberBand(QwtPicker::NoRubberBand);
+      left_zoomer_->setTrackerMode(QwtPicker::AlwaysOff);
+      left_zoomer_->setEnabled(false);     
+      active_zoomer_ = left_zoomer_;
+      break;
+     
+   case QwtPlot::yRight: 
+      active_zoomer_ = right_zoomer_;
+      right_zoomer_->setRubberBand(QwtPicker::NoRubberBand);
+      right_zoomer_->setTrackerMode(QwtPicker::AlwaysOff);
+      right_zoomer_->setEnabled(false);     
+      break;
+  };
+  
+   // attach the Y grid lines to the axis that has the focus
+
+   grid_->setYAxis(axis);
+
+   replot();
+   
+}
+
+  plot_->setZoomer(true, QwtPlot::yRight);
+  
 
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+===========================================================
+#endif
