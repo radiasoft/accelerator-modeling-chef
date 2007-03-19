@@ -1,16 +1,36 @@
-/**********************************************************************/
-/*                                                                    */
-/* File:           DistributionWidget.cc                              */
-/*                                                                    */ 
-/* Authors:        Leo Michelotti                                     */
-/*                 michelotti@fnal.gov                                */     
-/*                                                                    */ 
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  CHEF: Library of Qt based widget classes, providing GUI   
+******             interfaces to exercise the functionality        
+******             of BEAMLINE.                                    
+******                                                                
+******  File:      DistributionWidget.cc 
+******                                                                
+******  Copyright (c) 2004  Universities Research Association, Inc.   
+******                All Rights Reserved                             
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+                                                                
+                                                                
+******  Author:    Leo Michelotti                                     
+******                                                                
+******             Fermilab                                           
+******             P.O.Box 500                                        
+******             Mail Stop 220                                      
+******             Batavia, IL   60510                                
+******                                                                
+******             Phone: (630) 840 4956                              
+******             Email: michelotti@fnal.gov                         
+******                                                                
+**************************************************************************
+*************************************************************************/
 /* Creation Date:  July 15, 2005                                      */
-/* Current rev:    July 23, 2005                                      */
-/*                                                                    */ 
-/* Copyright:      (c) URA/Fermilab                                   */
-/*                                                                    */
-/**********************************************************************/
 
 #include <iostream>
 #include <fstream>
@@ -789,7 +809,7 @@ void DistributionWidget::sample()
 
 void DistributionWidget::empty()
 {
-  if( _theSamplePtr->isEmpty() ) {
+  if( _theSamplePtr->empty() ) {
     QMessageBox::information( this, "WARNING", "A bunch with no particles"
                                                "\ncannot be emptied."
                                                "\n         -- Leo Tolstoy" );
@@ -797,7 +817,7 @@ void DistributionWidget::empty()
   }
 
   int n = _theSamplePtr->size();
-  _theSamplePtr->empty();
+  _theSamplePtr->clear();
 
   ostringstream uic;
   uic << n
