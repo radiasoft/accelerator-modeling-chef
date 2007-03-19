@@ -100,9 +100,6 @@ class IntArray;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-
-bool  MonomialOrderPredicate( IntArray const& rhs, IntArray const&  lhs);
-
 class DLLEXPORT IntArray {
 
 public:
@@ -172,7 +169,7 @@ public:
 
   // Assignment ...
 
-  void     Set              ( const int* );
+  void     Set              ( int const* );
   void     Set              ( int  );
 
   int          operator()  (  int i )  const;
@@ -188,20 +185,19 @@ public:
 
   bool          operator==     ( IntArray const& ) const;
 
-  bool          operator!=     ( IntArray const& ) const;
-  bool          operator<      ( IntArray const& ) const;
-  bool          operator<=     ( IntArray const& ) const;
-  bool          operator>=     ( IntArray const& ) const;
-
-  bool          operator>      ( IntArray const& ) const;  // WARNING: compares weights only 
+  bool          operator!=     ( IntArray const& ) const; 
+  bool          operator<      ( IntArray const& ) const; // pure **reverse** lexicographical ordering. Does not compare weights
+  bool          operator<=     ( IntArray const& ) const; // pure **reverse** lexicographical ordering. Does not compare weights
+  bool          operator>=     ( IntArray const& ) const; // pure **reverse** lexicographical ordering. Does not compare weights
+  bool          operator>      ( IntArray const& ) const; // pure **reverse** lexicographical ordering. Does not compare weights 
 
   bool          operator==     ( int ) const;
   bool          operator!=     ( int ) const;
 
   bool          IsNull         () const;
 
-  static bool   PartialEqual         ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2);
-  static bool   PartialLessThan      ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2);
+  static bool   PartialEqual         ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2); //  pure **standard** lexicographical ordering
+  static bool   PartialLessThan      ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2); //  pure **standard** lexicographical ordering
 
   IntArray      operator+( IntArray const& ) const;
 
@@ -212,7 +208,6 @@ public:
 
   // Utilities ..
 
-  friend bool   MonomialOrderPredicate( IntArray const& a1, IntArray const& a2);
   friend std::ostream& operator<<( std::ostream&, const IntArray& );
   friend std::istream& operator>>( std::istream&, IntArray& );
 
@@ -248,7 +243,7 @@ inline  IntArray::iterator IntArray::end()                          { return Int
 inline  IntArray::const_iterator IntArray::begin() const            { return IntArray::const_iterator(&comp_[0]);       }  
 inline  IntArray::const_iterator IntArray::end()   const            { return IntArray::const_iterator(&comp_[size_]);   } 
 
-inline  IntArray::reverse_iterator IntArray::rbegin()               { return IntArray::reverse_iterator(end());         } 
+inline  IntArray::reverse_iterator IntArray::rbegin()               { return IntArray::reverse_iterator(end()  );       } 
 inline  IntArray::reverse_iterator IntArray::rend()                 { return IntArray::reverse_iterator(begin());       } 
 
 inline  IntArray::const_reverse_iterator IntArray::rbegin() const   { return IntArray::const_reverse_iterator(end());   }  
@@ -294,6 +289,19 @@ inline  int     IntArray::operator()(  int i )  const
 
 
 inline  exponent_t&  IntArray::operator()  ( int  i )
+{
+  return comp_[i]; 
+}    
+
+
+inline exponent_t  IntArray::operator[](  int i )  const
+{ 
+   int value = comp_[i]; 
+   return value;
+}    
+
+
+inline  exponent_t&  IntArray::operator[]  ( int  i )
 {
   return comp_[i]; 
 }    
