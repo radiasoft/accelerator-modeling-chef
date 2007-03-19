@@ -32,7 +32,16 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-**************************************************************************
+****** REVISION HISTORY
+******
+****** Mar 2006   ostiguy@fnal.gov
+******
+******  - reference counted elements/beamlines 
+******  - eliminated references to slist/dlist
+******  - use new-style STL compatible beamline iterators
+******  - new type safe Barnacles
+******  - initialization optimizations
+********************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -53,13 +62,16 @@
 
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 #include <physics_toolkit/EdwardsTeng.h>
 
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 ETinfo::ETinfo( const ETinfo& x ) 
@@ -78,31 +90,31 @@ ETinfo::ETinfo( const ETinfo& x )
 
 
 // ... Globals:
-double          EdwardsTeng::csH, 
-                EdwardsTeng::csV, 
-                EdwardsTeng::snH, 
-                EdwardsTeng::snV;
-Mapping*        EdwardsTeng::theMap;
+double          EdwardsTeng::csH_, 
+                EdwardsTeng::csV_, 
+                EdwardsTeng::snH_, 
+                EdwardsTeng::snV_;
+Mapping         EdwardsTeng::theMap_;
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe ) 
+
+int EdwardsTeng::attachETLattFuncs( ElmPtr lbe ) 
 {
  double  dcos, cos2phi, sin2phi, tanphi;
- MatrixD mtrx;
  static MatrixD M( 2, 2 ), N( 2, 2 ), m( 2, 2 ), n( 2, 2 ),
                 D( 2, 2 ), S( "J", 2 ), A( 2, 2 ), B( 2, 2 ),
                 U( "I", 2 );
- ETinfo*   ETptr;
- Mapping   localMap;
-
+  
  BarnacleList::iterator it = lbe->dataHook.find( "EdwardsTeng" );
 
  ETinfo etinfo = boost::any_cast<ETinfo>(it->info);
  lbe->dataHook.erase(it);
 
- localMap = etinfo.map( (*EdwardsTeng::theMap)( ETptr->mapInv ) );
- mtrx = localMap.Jacobian();
+ Mapping localMap = etinfo.map(  theMap_( etinfo.mapInv ) );
+ MatrixD     mtrx = localMap.Jacobian();
  etinfo.EV = mtrx.eigenVectors(); 
 
  M( 0, 0 ) = mtrx( 0, 0 );     n( 0, 0 ) = mtrx( 0, 1 );
@@ -126,7 +138,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
 
  else {                                // Coupled lattice
 
-  if( fabs( EdwardsTeng::csH - EdwardsTeng::csV ) < 1.0e-4 ) {
+  if( fabs( csH_ - csV_ ) < 1.0e-4 ) {
     (*pcerr) << "\n"
          << "*** ERROR *** EdwardsTeng()                        \n"
          << "*** ERROR *** \"Horizontal\" and \"vertical\" tunes\n"
@@ -138,7 +150,7 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
     return 2;
   }
 
-  dcos    = EdwardsTeng::csH - EdwardsTeng::csV;
+  dcos    =  csH_ - csV_;
   cos2phi = ( M - N ).trace() / ( 2.0 *( dcos ) );
   if( fabs( cos2phi - 1.0 ) < 1.0e-4 ) cos2phi =   1.0;  // ??? Rather coarse,
   if( fabs( cos2phi + 1.0 ) < 1.0e-4 ) cos2phi = - 1.0;  // ??? isn't it?
@@ -157,9 +169,9 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
   }
 
   if( cos2phi < 0.0 ) {
-   sin2phi = EdwardsTeng::csH;  // Variable used as dummy register.
-   EdwardsTeng::csH = EdwardsTeng::csV;
-   EdwardsTeng::csV = sin2phi;
+   sin2phi =   csH_;  // Variable used as dummy register.
+   csH_    =   csV_;
+   csV_    =   sin2phi;
    dcos    = - dcos;
    cos2phi = - cos2phi;
   }
@@ -200,15 +212,15 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
 
  // ......  First the "horizontal" ......
  MatrixD JH;
- JH = A - EdwardsTeng::csH*U;
+ JH = A - csH_ * U;
  if( JH( 0, 1 ) > 0.0 )
-  EdwardsTeng::snH =   sqrt( 1.0 - EdwardsTeng::csH*EdwardsTeng::csH );
+  snH_ =   sqrt( 1.0 - csH_ * csH_ );
  else {
-  EdwardsTeng::snH = - sqrt( 1.0 - EdwardsTeng::csH*EdwardsTeng::csH );
+  snH_ = - sqrt( 1.0 - csH_ * csH_ );
  }
 
- etinfo.beta .hor = JH( 0, 1 ) / EdwardsTeng::snH;
- etinfo.alpha.hor = JH( 0, 0 ) / EdwardsTeng::snH;
+ etinfo.beta .hor = JH( 0, 1 ) / snH_;
+ etinfo.alpha.hor = JH( 0, 0 ) / snH_;
 
  // .......... A little test to keep everyone honest .....
  if( JH( 0, 0 ) != 0.0 )
@@ -231,15 +243,15 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
 
  // ......  Then  the "vertical" ......
  MatrixD JV;
- JV = B - EdwardsTeng::csV*U;
+ JV = B -  csV_ * U;
  if( JV( 0, 1 ) > 0.0 )
-  EdwardsTeng::snV =   sqrt( 1.0 - EdwardsTeng::csV*EdwardsTeng::csV );
+  snV_ =   sqrt( 1.0 - csV_*csV_ );
  else {
-  EdwardsTeng::snV = - sqrt( 1.0 - EdwardsTeng::csV*EdwardsTeng::csV );
+  snV_ = - sqrt( 1.0 - csV_*csV_ );
  }
 
- etinfo.beta .ver = JV( 0, 1 ) / EdwardsTeng::snV;
- etinfo.alpha.ver = JV( 0, 0 ) / EdwardsTeng::snV;
+ etinfo.beta .ver = JV( 0, 1 ) / snV_;
+ etinfo.alpha.ver = JV( 0, 0 ) / snV_;
 
  // .......... A little test to keep everyone honest .....
  if( JV( 0, 0 ) != 0.0 )
@@ -264,11 +276,18 @@ int EdwardsTeng::attachETLattFuncs( bmlnElmnt* lbe )
  return 0;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 EdwardsTeng::EdwardsTeng( beamline const* x ) 
 {
-  myBeamline = const_cast<beamline*>(x);
+  myBeamline_ = const_cast<beamline*>(x);
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 EdwardsTeng::~EdwardsTeng()
@@ -277,27 +296,25 @@ EdwardsTeng::~EdwardsTeng()
 }
 
 
-/* ============================================================== */
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void EdwardsTeng::eraseAll() 
 {
- DeepBeamlineIterator dbi( *myBeamline );
- bmlnElmnt* be;
- while((  be = dbi++  )) 
- {  be->dataHook.eraseAll( "EdwardsTeng" ); }
+  for (beamline::deep_iterator it  = myBeamline_->deep_begin();
+       it != myBeamline_->deep_end(); ++it ) {
+    (*it)->dataHook.eraseAll( "EdwardsTeng" ); 
+  }
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit ) 
 {
  int                  ret;
- bmlnElmnt*           be;
- DeepBeamlineIterator dbi( *myBeamline );
  double               t;
- int                  i;
- MatrixD              mtrx( BMLN_dynDim, BMLN_dynDim );
- ETtunes*             tuneptr;
-
- EdwardsTeng::theMap = new Mapping;
 
  // .......... Propagate a JetParticle element by element
  // .......... It is assumed to be on a closed orbit!!
@@ -307,34 +324,37 @@ int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit )
 
 
  double lng = 0.0;
- while ((  be = dbi++  )) {
-   lng += be->OrbitLength( particle );
-   be->propagate( jp );
+
+ for (beamline::deep_iterator it  = myBeamline_->deep_begin();  
+                              it != myBeamline_->deep_end(); ++it ) {
+
+   lng += (*it)->OrbitLength( particle );
+   (*it)->propagate( jp );
    if( !Crit ) {
     ETinfo etinfo;
     etinfo.arcLength = lng;
-    etinfo.map = jp.getState();   // ??? Change statements?  Use pointer?
+    etinfo.map = jp.getState();   
     etinfo.mapInv =etinfo.map.Inverse();
-     be->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
+     (*it)->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
-   else if( (*Crit)( be ) ) {
+   else if( (*Crit)( (*it).get() ) ) {
     ETinfo etinfo;
     etinfo.arcLength = lng;
-    etinfo.map = jp.getState();   // ??? Change statements?  Use pointer?
+    etinfo.map = jp.getState();   
     etinfo.mapInv = etinfo.map.Inverse();
-     be->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
+     (*it)->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
  }
- dbi.reset();
+
 
 
  // .......... Calculating tunes .........................
- *EdwardsTeng::theMap = jp.getState();
- mtrx = EdwardsTeng::theMap->Jacobian();
- MatrixC lambda;
- lambda = mtrx.eigenValues();
 
- for( i = 0; i < BMLN_dynDim; i++ )
+ theMap_        = jp.getState();
+ MatrixD mtrx   = EdwardsTeng::theMap_.Jacobian();
+ MatrixC lambda = mtrx.eigenValues();
+
+ for( int i=0; i < BMLN_dynDim;  ++i)
   if( fabs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
    (*pcerr) << "\n"
         << "*** ERROR ***                                     \n"
@@ -346,7 +366,6 @@ int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit )
         << "\n"
         << "*** ERROR ***                                     \n"
         << endl;
-   delete EdwardsTeng::theMap;
    eraseAll();
    return 10;
   }
@@ -360,49 +379,44 @@ int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit )
         << "*** ERROR *** The lattice may be linearly unstable.\n"
         << "*** ERROR *** Eigenvalues =                        \n"
         << "*** ERROR *** " << lambda << endl;
-   delete EdwardsTeng::theMap;
    eraseAll();
    return 11;
  }
 
- EdwardsTeng::csH = real( lambda(0) );    
- EdwardsTeng::csV = real( lambda(1) );
- // EdwardsTeng::snH = imag( lambda(0) );    
- // EdwardsTeng::snV = imag( lambda(1) );
+ csH_ = real( lambda(0) );    
+ csV_ = real( lambda(1) );
+ // EdwardsTeng::snH_ = imag( lambda(0) );    
+ // EdwardsTeng::snV_ = imag( lambda(1) );
 
  // Go through the accelerator again and attach
  // the Edwards Teng lattice info to each element.
 
- while ((  be = dbi++  )) {
+ for (beamline::deep_iterator it  = myBeamline_->deep_begin();  
+                              it != myBeamline_->deep_end(); ++it ) {
   if( !Crit ) {
-   if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
-    delete EdwardsTeng::theMap;
+   if( ( ret = attachETLattFuncs( (*it) ) ) != 0 ) {
     eraseAll();
     return ret;
    }
   }
-  else if( (*Crit)( be ) ) {
-   if( ( ret = attachETLattFuncs( be ) ) != 0 ) {
-    delete EdwardsTeng::theMap;
+  else if( (*Crit)( (*it).get() ) ) {
+   if( ( ret = attachETLattFuncs( (*it) ) ) != 0 ) {
     eraseAll();
     return ret;
    }
   }
  }
- dbi.reset();
 
 
  ETtunes tunes;
- t = atan2( EdwardsTeng::snH, EdwardsTeng::csH );
+ t = atan2( snH_, csH_ );
  if( t < 0.0 )   t += M_TWOPI;
- tuneptr->hor = ( t / M_TWOPI );
- t = atan2( EdwardsTeng::snV, EdwardsTeng::csV );
+ tunes.hor = ( t / M_TWOPI );
+ t = atan2( snV_, csV_ );
  if( t < 0.0 )   t += M_TWOPI;
- tuneptr->ver = ( t / M_TWOPI );
+ tunes.ver = ( t / M_TWOPI );
 
- myBeamline->dataHook.append( Barnacle( "Tunes", tunes ) );
-
- delete EdwardsTeng::theMap;
+ myBeamline_->dataHook.append( Barnacle( "Tunes", tunes ) );
 
  return 0;
 }
