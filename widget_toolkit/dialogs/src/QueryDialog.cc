@@ -58,214 +58,172 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
   QGridLayout* qgl = new QGridLayout( this, 2, 3, 5 );
 
   for( int i = 0; i < 4; i++ ) {
-    _queryPtr[i] = 0;
+    queryPtr_[i] = 0;
   }
 
   // Construct the operations buttons
-  _opsBoxPtr = new QVBox(this);
-    QPushButton* enterPtr = new QPushButton( "Enter", _opsBoxPtr );
+    opsBoxPtr_ = new QVBox(this);
+    QPushButton* enterPtr = new QPushButton( "Enter", opsBoxPtr_ );
     // enterPtr->setMinimumWidth( QApplication::desktop()->width()/9 );
     enterPtr->setMaximumWidth( 70 );
     connect( enterPtr, SIGNAL(pressed()),
-             this,     SLOT(_opEnter()) );
-    QPushButton* andPtr   = new QPushButton( "AND",   _opsBoxPtr );
+             this,     SLOT(opEnter()) );
+    QPushButton* andPtr   = new QPushButton( "AND",   opsBoxPtr_ );
     andPtr->setMaximumWidth( 70 );
     connect( andPtr,   SIGNAL(pressed()),
-             this,     SLOT(_opAnd()) );
-    QPushButton* orPtr    = new QPushButton( "OR",    _opsBoxPtr );
+             this,     SLOT(opAnd()) );
+    QPushButton* orPtr    = new QPushButton( "OR",    opsBoxPtr_ );
     orPtr->setMaximumWidth( 70 );
     connect( orPtr,    SIGNAL(pressed()),
-             this,     SLOT(_opOr()) );
-    QPushButton* notPtr   = new QPushButton( "NOT",   _opsBoxPtr );
+             this,     SLOT(opOr()) );
+    QPushButton* notPtr   = new QPushButton( "NOT",   opsBoxPtr_ );
     notPtr->setMaximumWidth( 70 );
     connect( notPtr,   SIGNAL(pressed()),
-             this,     SLOT(_opNot()) );
+             this,     SLOT(opNot()) );
 
-    QPushButton* applyPtr = new QPushButton( "Apply",   _opsBoxPtr );
+    QPushButton* applyPtr = new QPushButton( "Apply",   opsBoxPtr_ );
     applyPtr->setMaximumWidth( 70 );
     connect( applyPtr, SIGNAL(pressed()),
-             this,     SLOT(_doFilter()) );
-    QPushButton* closePtr = new QPushButton( "Close",   _opsBoxPtr );
+             this,     SLOT( doFilter()) );
+    QPushButton* closePtr = new QPushButton( "Close",   opsBoxPtr_ );
     closePtr->setMaximumWidth( 70 );
     connect( closePtr, SIGNAL(pressed()),
              this,     SLOT(close()) );
 
-    QWidget* opsFiller = new QWidget( _opsBoxPtr );
+    QWidget* opsFiller = new QWidget( opsBoxPtr_ );
     opsFiller->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
 
-  // REMOVE: _opsBoxPtr->setCaption( "Ops" );
-  _opsBoxPtr->setMargin(5);
-  _opsBoxPtr->setSpacing(3);
-  _opsBoxPtr->adjustSize();
+  // REMOVE: opsBoxPtr->setCaption( "Ops" );
+  opsBoxPtr_->setMargin(5);
+  opsBoxPtr_->setSpacing(3);
+  opsBoxPtr_->adjustSize();
 
 
   // Construct the Tab Dialog
-   _tabWidgetPtr = new QTabWidget(this);
+   tabWidgetPtr_ = new QTabWidget(this);
 
-   _typeTabPtr = new QListBox( _tabWidgetPtr );
-   _typeTabPtr->setMinimumWidth( QApplication::desktop()->width()/4 );
-   _typeTabPtr->insertItem( "BBLens"               );
-   _typeTabPtr->insertItem( "CF_rbend"             );
-   _typeTabPtr->insertItem( "CF_sbend"             );
-   _typeTabPtr->insertItem( "HPinger"              );
-   _typeTabPtr->insertItem( "Pinger"               );
-   _typeTabPtr->insertItem( "Slot"                 );
-   _typeTabPtr->insertItem( "VPinger"              );
-   _typeTabPtr->insertItem( "combinedFunction"     );
-   _typeTabPtr->insertItem( "drift"                );
-   _typeTabPtr->insertItem( "hkick"                );
-   _typeTabPtr->insertItem( "hmonitor"             );
-   _typeTabPtr->insertItem( "kick"                 );
-   _typeTabPtr->insertItem( "marker"               );
-   _typeTabPtr->insertItem( "monitor"              );
-   _typeTabPtr->insertItem( "octupole"             );
-   _typeTabPtr->insertItem( "quadrupole"           );
-   _typeTabPtr->insertItem( "rbend"                );
-   _typeTabPtr->insertItem( "rfcavity"             );
-   _typeTabPtr->insertItem( "sbend"                );
-   _typeTabPtr->insertItem( "sector"               );
-   _typeTabPtr->insertItem( "sextupole"            );
-   _typeTabPtr->insertItem( "srot"                 );
-   _typeTabPtr->insertItem( "thin12pole"           );
-   _typeTabPtr->insertItem( "thin14pole"           );
-   _typeTabPtr->insertItem( "thin16pole"           );
-   _typeTabPtr->insertItem( "thin18pole"           );
-   _typeTabPtr->insertItem( "thinDecapole"         );
-   _typeTabPtr->insertItem( "thinLamb"             );
-   _typeTabPtr->insertItem( "thinMultipole"        );
-   _typeTabPtr->insertItem( "thinOctupole"         );
-   _typeTabPtr->insertItem( "thinQuad"             );
-   _typeTabPtr->insertItem( "thinSeptum"           );
-   _typeTabPtr->insertItem( "thinSextupole"        );
-   _typeTabPtr->insertItem( "thinrfcavity"         );
-   _typeTabPtr->insertItem( "vkick"                );
-   _typeTabPtr->insertItem( "vmonitor"             );
-   _typeTabPtr->setSelected( 0, true );
-   _tabWidgetPtr->addTab( _typeTabPtr, "Type" );
+   typeTabPtr_ = new QListBox( tabWidgetPtr_ );
+   typeTabPtr_->setMinimumWidth( QApplication::desktop()->width()/4 );
+   typeTabPtr_->insertItem( "BBLens"               );
+   typeTabPtr_->insertItem( "CF_rbend"             );
+   typeTabPtr_->insertItem( "CF_sbend"             );
+   typeTabPtr_->insertItem( "HPinger"              );
+   typeTabPtr_->insertItem( "Pinger"               );
+   typeTabPtr_->insertItem( "Slot"                 );
+   typeTabPtr_->insertItem( "VPinger"              );
+   typeTabPtr_->insertItem( "combinedFunction"     );
+   typeTabPtr_->insertItem( "drift"                );
+   typeTabPtr_->insertItem( "hkick"                );
+   typeTabPtr_->insertItem( "hmonitor"             );
+   typeTabPtr_->insertItem( "kick"                 );
+   typeTabPtr_->insertItem( "marker"               );
+   typeTabPtr_->insertItem( "monitor"              );
+   typeTabPtr_->insertItem( "octupole"             );
+   typeTabPtr_->insertItem( "quadrupole"           );
+   typeTabPtr_->insertItem( "rbend"                );
+   typeTabPtr_->insertItem( "rfcavity"             );
+   typeTabPtr_->insertItem( "sbend"                );
+   typeTabPtr_->insertItem( "sector"               );
+   typeTabPtr_->insertItem( "sextupole"            );
+   typeTabPtr_->insertItem( "srot"                 );
+   typeTabPtr_->insertItem( "thin12pole"           );
+   typeTabPtr_->insertItem( "thin14pole"           );
+   typeTabPtr_->insertItem( "thin16pole"           );
+   typeTabPtr_->insertItem( "thin18pole"           );
+   typeTabPtr_->insertItem( "thinDecapole"         );
+   typeTabPtr_->insertItem( "thinLamb"             );
+   typeTabPtr_->insertItem( "thinMultipole"        );
+   typeTabPtr_->insertItem( "thinOctupole"         );
+   typeTabPtr_->insertItem( "thinQuad"             );
+   typeTabPtr_->insertItem( "thinSeptum"           );
+   typeTabPtr_->insertItem( "thinSextupole"        );
+   typeTabPtr_->insertItem( "thinrfcavity"         );
+   typeTabPtr_->insertItem( "vkick"                );
+   typeTabPtr_->insertItem( "vmonitor"             );
+   typeTabPtr_->setSelected( 0, true );
+   tabWidgetPtr_->addTab( typeTabPtr_, "Type" );
 
-   QVBox* nameTab = new QVBox( _tabWidgetPtr );
+   QVBox* nameTab = new QVBox( tabWidgetPtr_ );
      QString nameString; // ??? necessary???
-     _nameEdt = new QLineEdit( nameString, nameTab );
-     _nameEdt->setFixedHeight( 20 );
+     nameEdt_ = new QLineEdit( nameString, nameTab );
+     nameEdt_->setFixedHeight( 20 );
      new QLabel( nameTab );
      nameTab->setMargin(5);
      nameTab->setSpacing(3);
      nameTab->adjustSize();
-   _tabWidgetPtr->addTab( nameTab, "Name" );
+     tabWidgetPtr_->addTab( nameTab, "Name" );
 
-   QVBox* lengthTab = new QVBox( _tabWidgetPtr );
+   QVBox* lengthTab = new QVBox( tabWidgetPtr_ );
      new QLabel( "Length is ", lengthTab );
-     _lengthBtnGrp = new QHButtonGroup( lengthTab );
-       _lengthBtnGrp->setExclusive( true );
-         new QRadioButton( "<", _lengthBtnGrp );
-       ( new QRadioButton( "=", _lengthBtnGrp ) )->setChecked(true);
-         new QRadioButton( ">", _lengthBtnGrp );
-       // QRadioButton* ltButton = new QRadioButton( "<", _lengthBtnGrp );
-       // QRadioButton* eqButton = new QRadioButton( "=", _lengthBtnGrp );
-       // QRadioButton* gtButton = new QRadioButton( ">", _lengthBtnGrp );
+       lengthBtnGrp_ = new QHButtonGroup( lengthTab );
+       lengthBtnGrp_->setExclusive( true );
+         new QRadioButton( "<", lengthBtnGrp_ );
+       ( new QRadioButton( "=", lengthBtnGrp_ ) )->setChecked(true);
+         new QRadioButton( ">", lengthBtnGrp_ );
+       // QRadioButton* ltButton = new QRadioButton( "<", lengthBtnGrp_ );
+       // QRadioButton* eqButton = new QRadioButton( "=", lengthBtnGrp_ );
+       // QRadioButton* gtButton = new QRadioButton( ">", lengthBtnGrp_ );
      QString lengthString; // ??? necessary ???
-     _lengthEdt = new QLineEdit( lengthString, lengthTab );
-       _lengthEdt->setFixedHeight( 20 );
+     lengthEdt_ = new QLineEdit( lengthString, lengthTab );
+     lengthEdt_->setFixedHeight( 20 );
      new QLabel( lengthTab );
      lengthTab->setMargin(5);
      lengthTab->setSpacing(3);
      lengthTab->adjustSize();
-   _tabWidgetPtr->addTab( lengthTab, "Length" );
+     tabWidgetPtr_->addTab( lengthTab, "Length" );
 
-   QVBox* strengthTab = new QVBox( _tabWidgetPtr );
+   QVBox* strengthTab = new QVBox( tabWidgetPtr_ );
      new QLabel( "Strength is ", strengthTab );
-     _strengthBtnGrp = new QHButtonGroup( strengthTab );
-       _strengthBtnGrp->setExclusive( true );
-         new QRadioButton( "<", _strengthBtnGrp );
-       ( new QRadioButton( "=", _strengthBtnGrp ) )->setChecked(true);
-         new QRadioButton( ">", _strengthBtnGrp );
-       // QRadioButton* ltButton = new QRadioButton( "<", _strengthBtnGrp );
-       // QRadioButton* eqButton = new QRadioButton( "=", _strengthBtnGrp );
-       // QRadioButton* gtButton = new QRadioButton( ">", _strengthBtnGrp );
+      strengthBtnGrp_ = new QHButtonGroup( strengthTab );
+        strengthBtnGrp_->setExclusive( true );
+         new QRadioButton( "<", strengthBtnGrp_ );
+       ( new QRadioButton( "=", strengthBtnGrp_ ) )->setChecked(true);
+         new QRadioButton( ">", strengthBtnGrp_ );
+       // QRadioButton* ltButton = new QRadioButton( "<", strengthBtnGrp_ );
+       // QRadioButton* eqButton = new QRadioButton( "=", strengthBtnGrp_ );
+       // QRadioButton* gtButton = new QRadioButton( ">", strengthBtnGrp_ );
      QString strengthString; // ??? necessary ???
-     _strengthEdt = new QLineEdit( strengthString, strengthTab );
-       _strengthEdt->setFixedHeight( 20 );
+      strengthEdt_ = new QLineEdit( strengthString, strengthTab );
+      strengthEdt_->setFixedHeight( 20 );
      new QLabel( strengthTab );
      strengthTab->setMargin(5);
      strengthTab->setSpacing(3);
      strengthTab->adjustSize();
-   _tabWidgetPtr->addTab( strengthTab, "Strength" );
-
-   // REMOVE:   // A null string makes the OK button invisible.
-   // REMOVE:   _tabWidgetPtr->setOkButton( QString() );
-
-   // REMOVE:   _tabWidgetPtr->setApplyButton( "Select" );
-   // REMOVE:   connect( _tabWidgetPtr, SIGNAL(applyButtonPressed()),
-   // REMOVE:            this,          SLOT(_doFilter()) );
-   // REMOVE:   _tabWidgetPtr->setCancelButton( "Close" );
+     tabWidgetPtr_->addTab( strengthTab, "Strength" );
 
 
-   _tabWidgetPtr->adjustSize();
-   // REMOVE: _tabWidgetPtr->setCaption( "Filters" );
-
+     tabWidgetPtr_->adjustSize();
 
    // Construct the query display.
-   _displayPtr = new QTextEdit(this);
-   _displayPtr->setReadOnly( true );
-   // REMOVE: _displayPtr->setFixedWidth(512);
-   _displayPtr->setMinimumWidth(256);
+    displayPtr_ = new QTextEdit(this);
+    displayPtr_->setReadOnly( true );
+    displayPtr_->setMinimumWidth(256);
 
-   // REMOVE: _displayPtr->adjustSize();
-   // REMOVE: _displayPtr->setCaption( "Query buffers" );
-
-   // REMOVE:   // Arrange the widgets on the screen and show them
-   // REMOVE:   QRect geom_td = _tabDialogPtr->geometry();
-   // REMOVE:   QRect geom_ob = _opsBoxPtr->geometry();
-   // REMOVE:   QRect geom_dp = _displayPtr->geometry();
-
-   // REMOVE:   int dx = geom_td.width() + geom_dp.width();
-
-   // REMOVE:   int x = ( QApplication::desktop()->width()  - dx               ) / 2;
-   // REMOVE:   int y = ( QApplication::desktop()->height() - geom_td.height() ) / 2;
-   // REMOVE:   geom_td.moveTopLeft( QPoint(x,y) );
-   // REMOVE:   _tabDialogPtr->setGeometry( geom_td );
-
-   // REMOVE:   x += ( geom_td.width() + 10 );
-   // REMOVE:   geom_ob.moveTopLeft( QPoint(x,y) );
-   // REMOVE:   _opsBoxPtr->setGeometry( geom_ob );
-
-   // REMOVE:   y += ( geom_td.height() - geom_ob.height() );
-   // REMOVE:   // y += ( geom_ob.height() + 20 );
-   // REMOVE:   geom_dp.moveTopLeft( QPoint(x,y) );
-   // REMOVE:   _displayPtr->setGeometry( geom_dp );
 
    QWidget* fillerPtr = new QWidget( this );
    fillerPtr->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
    
    // Install the widgets into the grid
-   qgl->addMultiCellWidget( _tabWidgetPtr, 0, 1, 0, 0 );
-   qgl->addWidget( _opsBoxPtr, 0, 1 );
+   qgl->addMultiCellWidget( tabWidgetPtr_, 0, 1, 0, 0 );
+   qgl->addWidget( opsBoxPtr_, 0, 1 );
    qgl->addWidget( fillerPtr, 0, 2 );
-   qgl->addMultiCellWidget( _displayPtr, 1, 1, 1, 2 );
+   qgl->addMultiCellWidget( displayPtr_, 1, 1, 1, 2 );
 
-   // REMOVE: _tabWidgetPtr->show();
-   // REMOVE: _opsBoxPtr->show();
-   // REMOVE: _displayPtr->show();
+   updateDisplay();
 
-   _updateDisplay();
-
-   // this->setFixedSize( this->childrenRect().width(), 
-   //                     this->childrenRect().height() );
-
-   this->adjustSize();
-   this->setCaption( "Beamline Query Dialog" );
-   // this->show();
+   adjustSize();
+   setCaption( "Beamline Query Dialog" );
 }
 
 
 QueryDialog::~QueryDialog()
 {
   for( int i = 0; i < 4; i++ ) {
-    if( 0 != _queryPtr[i] )     { _queryPtr[i]->eliminate(); }
+    if( 0 != queryPtr_[i] )     { queryPtr_[i]->eliminate(); }
   }
-  if( 0 != _tabWidgetPtr ) { delete _tabWidgetPtr; }
-  if( 0 != _opsBoxPtr    ) { delete _opsBoxPtr;    }
-  if( 0 != _displayPtr   ) { delete _displayPtr;   }
+  if( tabWidgetPtr_ ) { delete  tabWidgetPtr_; }
+  if( opsBoxPtr_    ) { delete  opsBoxPtr_;    }
+  if( displayPtr_   ) { delete  displayPtr_;   }
 }
 
 
@@ -273,7 +231,7 @@ const BoolNode& QueryDialog::query()
 {
   static BoolNullNode nothing;
 
-  if( 0 == _queryPtr[0] ) {
+  if( !queryPtr_[0] ) {
     cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line " << __LINE__
          << "\n*** WARNING *** No query has been constructed. Your program"
             "\n*** WARNING *** will probably abort soon."
@@ -281,19 +239,13 @@ const BoolNode& QueryDialog::query()
     return nothing;
   }
 
-  return *(_queryPtr[0]);
+  return *( queryPtr_[0]);
 }
 
 
-// REMOVE:int QueryDialog::exec()
-// REMOVE:{ 
-// REMOVE:  if( 0 != _tabWidgetPtr ) { return _tabWidgetPtr->exec(); }
-// REMOVE:  else { return -1; }
-// REMOVE:}
-
 
 // Slots ...
-void QueryDialog::_opEnter()
+void QueryDialog::opEnter()
 {
   static QString typeLabel( "Type" );
   static QString nameLabel( "Name" );
@@ -303,145 +255,130 @@ void QueryDialog::_opEnter()
   static bool ok = false;
 
   // Shift
-  if( 0 != _queryPtr[3] ) { _queryPtr[3]->eliminate(); }
+  if( 0 != queryPtr_[3] ) { queryPtr_[3]->eliminate(); }
   for( int i = 3; i >=1; i-- ) {
-    _queryPtr[i] = _queryPtr[i-1];
+    queryPtr_[i] = queryPtr_[i-1];
   }
-  _queryPtr[0] = 0;
+  queryPtr_[0] = 0;
 
   // Process tabs
-  QString filterName( _tabWidgetPtr->tabLabel( _tabWidgetPtr->currentPage() ) );
+  QString filterName( tabWidgetPtr_->tabLabel( tabWidgetPtr_->currentPage() ) );
 
   if( filterName == typeLabel ) {
-    _queryPtr[0] = new TypeNode( (_typeTabPtr->selectedItem()->text()).ascii() );
+    queryPtr_[0] = new TypeNode( ( typeTabPtr_->selectedItem()->text()).ascii() );
     // Happily, the text is copied.
   }
 
   else if( filterName == nameLabel ) {
-    _queryPtr[0] = new NameNode( _nameEdt->text().ascii() );
+    queryPtr_[0] = new NameNode( nameEdt_->text().ascii() );
     // Happily, the text is copied.
   }
 
   else if( filterName == lengthLabel ) {
-    double l = _lengthEdt->text().toDouble(&ok);
+    double l = lengthEdt_->text().toDouble(&ok);
     if(ok) {
-      if( _lengthBtnGrp->selected()->text() == "=" ) 
-      { _queryPtr[0] = new LengthEqNode( l ); }
-      else if( _lengthBtnGrp->selected()->text() == "<" ) 
-      { _queryPtr[0] = new LengthLtNode( l ); }
-      else if( _lengthBtnGrp->selected()->text() == ">" ) 
-      { _queryPtr[0] = new LengthGtNode( l ); }
+      if(  lengthBtnGrp_->selected()->text() == "=" ) 
+      { queryPtr_[0] = new LengthEqNode( l ); }
+      else if(  lengthBtnGrp_->selected()->text() == "<" ) 
+      { queryPtr_[0] = new LengthLtNode( l ); }
+      else if(  lengthBtnGrp_->selected()->text() == ">" ) 
+      { queryPtr_[0] = new LengthGtNode( l ); }
       else 
-      { QMessageBox::information( 0, "QueryDialog::_opEnter()",
+      { QMessageBox::information( 0, "QueryDialog::opEnter()",
             "The impossible has occurred!!" ); 
       }
     }
   }
 
   else if( filterName == strengthLabel ) {
-    double s = _strengthEdt->text().toDouble(&ok);
+    double s = strengthEdt_->text().toDouble(&ok);
     if(ok) {
-      if( _strengthBtnGrp->selected()->text() == "=" ) 
-      { _queryPtr[0] = new StrengthEqNode( s ); }
-      else if( _strengthBtnGrp->selected()->text() == "<" ) 
-      { _queryPtr[0] = new StrengthLtNode( s ); }
-      else if( _strengthBtnGrp->selected()->text() == ">" ) 
-      { _queryPtr[0] = new StrengthGtNode( s ); }
+      if(  strengthBtnGrp_->selected()->text() == "=" ) 
+      { queryPtr_[0] = new StrengthEqNode( s ); }
+      else if(  strengthBtnGrp_->selected()->text() == "<" ) 
+      { queryPtr_[0] = new StrengthLtNode( s ); }
+      else if(  strengthBtnGrp_->selected()->text() == ">" ) 
+      { queryPtr_[0] = new StrengthGtNode( s ); }
       else 
-      { QMessageBox::information( 0, "QueryDialog::_opEnter()",
+      { QMessageBox::information( 0, "QueryDialog::opEnter()",
             "The impossible has occurred!!!" ); 
       }
     }
   }
 
-  // REMOVE: else if( filterName == strengthLabel ) {
-  // REMOVE:   double s = _strengthEdt->text().toDouble(&ok);
-  // REMOVE:   if(ok) { _queryPtr[0] = new StrengthEqNode( s ); }
-  // REMOVE: }
-  // REMOVE: 
   else {
     cerr << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** Unrecognized tab label: " << filterName
          << endl;
   }
 
-  _updateDisplay();
-  // REMOVE: cout << "The filter: ";
-  // REMOVE: _queryPtr[0]->writeTo(cout);
-  // REMOVE: cout << endl;
+  updateDisplay();
 }
 
 
-void QueryDialog::_opAnd()
+void QueryDialog::opAnd()
 {
   static BoolNode* temp;
   static int i;
-  if( ( 0 != _queryPtr[0] ) && ( 0 != _queryPtr[1] ) ) {
-    temp = new AndNode( *(_queryPtr[0]), *(_queryPtr[1]) );
-    _queryPtr[0] = temp;
+  if( ( 0 != queryPtr_[0] ) && ( 0 != queryPtr_[1] ) ) {
+    temp = new AndNode( *(queryPtr_[0]), *(queryPtr_[1]) );
+    queryPtr_[0] = temp;
     for( i = 1; i <=2; i++ ) {
-      _queryPtr[i] = _queryPtr[i+1];
+      queryPtr_[i] = queryPtr_[i+1];
     }
   }
 
-  _updateDisplay();
-  // REMOVE: cout << "The filter: ";
-  // REMOVE: _queryPtr[0]->writeTo(cout);
-  // REMOVE: cout << endl;
+  updateDisplay();
+
 }
 
 
-void QueryDialog::_opOr()
+void QueryDialog::opOr()
 {
   static BoolNode* temp;
   static int i;
-  if( ( 0 != _queryPtr[0] ) && ( 0 != _queryPtr[1] ) ) {
-    temp = new OrNode( *(_queryPtr[0]), *(_queryPtr[1]) );
-    _queryPtr[0] = temp;
+  if( ( 0 != queryPtr_[0] ) && ( 0 != queryPtr_[1] ) ) {
+    temp = new OrNode( *(queryPtr_[0]), *(queryPtr_[1]) );
+    queryPtr_[0] = temp;
     for( i = 1; i <=2; i++ ) {
-      _queryPtr[i] = _queryPtr[i+1];
+      queryPtr_[i] = queryPtr_[i+1];
     }
   }
 
-  _updateDisplay();
-  // REMOVE: cout << "The filter: ";
-  // REMOVE: _queryPtr[0]->writeTo(cout);
-  // REMOVE: cout << endl;
+  updateDisplay();
+
 }
 
 
-void QueryDialog::_opNot()
+void QueryDialog::opNot()
 {
   static BoolNode* temp;
-  if( 0 != _queryPtr[0] ) {
-    temp = new NotNode( *(_queryPtr[0]) );
-    _queryPtr[0] = temp;
+  if( queryPtr_[0] ) {
+    temp = new NotNode( *(queryPtr_[0]) );
+    queryPtr_[0] = temp;
   }
 
-  _updateDisplay();
-  // REMOVE: cout << "The filter: ";
-  // REMOVE: _queryPtr[0]->writeTo(cout);
-  // REMOVE: cout << endl;
+   updateDisplay();
 }
 
 
-void QueryDialog::_updateDisplay()
+void QueryDialog::updateDisplay()
 {
-  if( 0 != _displayPtr ) {
+  if( displayPtr_ ) {
     ostringstream writer;
     for( int i = 0; i < 4; i++ ) {
       writer << "Q." << i << ":  ";
-      if( 0 != _queryPtr[i] ) { _queryPtr[i]->writeTo( writer ); }
+      if( 0 != queryPtr_[i] ) { queryPtr_[i]->writeTo( writer ); }
       writer << "\n";
     }
-    _displayPtr->setText( QString(writer.str().c_str() ) );
+     displayPtr_->setText( QString(writer.str().c_str() ) );
   }
 }
 
 
-void QueryDialog::_doFilter()
+void QueryDialog::doFilter()
 {
-  if( 0 != _queryPtr[0] ) { emit _useThis( *(_queryPtr[0]) ); }
+  if( 0 != queryPtr_[0] ) { emit useThis( *(queryPtr_[0]) ); }
 }
 
 
