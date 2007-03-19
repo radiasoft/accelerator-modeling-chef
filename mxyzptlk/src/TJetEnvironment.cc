@@ -20,8 +20,11 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******  Author: Jean-Francois Ostiguy
-*****           ostiguy@fnal.gov
-******  
+******          ostiguy@fnal.gov
+******
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   rather than previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication handled via a lookup-table.
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -49,23 +52,24 @@ using FNAL::pcerr;
 template<>
 template<>
 TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> const& x):
-  _numVar(x._numVar),                              // number of variables
-  _spaceDim(x._spaceDim),                          // phase space dimensions
-  _dof(x._dof),                                    // degrees of freedom                             
-  _refPoint(new std::complex<double>[x._numVar]),  // reference point (set to zero by default)
-  _scale(new double[x._numVar]),                   // scale (set to 1.0e-3 by default) should be a Vector
-  _maxWeight(x._maxWeight),                        // maximum weight (polynomial order)
-  _pbok(x._pbok),                                  // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
-                                                   // _pbok was used as a flag to detect the presence of parameters 
-                                                   // poisson bracket OK is true only when phase space dimension is even; 
-                                                   // Consider simply checking the space dimensions before taking a PB ? 
+   numVar_(x.numVar_),                              // number of variables
+   spaceDim_(x.spaceDim_),                          // phase space dimensions
+   dof_(x.dof_),                                    // degrees of freedom                             
+   refPoint_(new std::complex<double>[x.numVar_]),   // reference point (set to zero by default)
+   scale_(new double[x.numVar_]),                   // scale (set to 1.0e-3 by default) should be a Vector
+   maxWeight_(x.maxWeight_),                        // maximum weight (polynomial order)
+   pbok_(x.pbok_),                                  // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
+                                                    // _pbok was used as a flag to detect the presence of parameters 
+                                                    // poisson bracket OK is true only when phase space dimension is even; 
+                                                    // Consider simply checking the space dimensions before taking a PB ? 
 
-  _scratch( _buildScratchPads(_maxWeight, _numVar) ) {
+  // scratch_( buildScratchPads( maxWeight_, numVar_) ) 
+ {
 
     
-  for (int i=0; i<_numVar; ++i) {   
-       _refPoint[i]   = std::complex<double>(x._refPoint[i], 0.0);
-          _scale[i]   = x._scale[i];
+  for (int i=0; i< numVar_; ++i) {   
+        refPoint_[i]   = std::complex<double>(x.refPoint_[i], 0.0);
+           scale_[i]   = x.scale_[i];
   }
 }
 
@@ -98,8 +102,8 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
  bool refpoints_are_equivalent = false;
  bool scales_are_equivalent    = false;
 
- for( env_iter  =  TJetEnvironment<std::complex<double> >::_environments.begin(); 
-      env_iter !=  TJetEnvironment<std::complex<double> >::_environments.end(); 
+ for( env_iter  =  TJetEnvironment<std::complex<double> >::environments_.begin(); 
+      env_iter !=  TJetEnvironment<std::complex<double> >::environments_.end(); 
      ++env_iter )                        { 
  
     tmppje = *env_iter; 
@@ -150,7 +154,7 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
   
      pje.swap( newpje );
 
-     TJetEnvironment<std::complex<double> >::_environments.push_back( pje );
+     TJetEnvironment<std::complex<double> >::environments_.push_back( pje );
 
      return pje;
  }
@@ -201,8 +205,8 @@ EnvPtr<double>  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, 
 
   std::list<EnvPtr<double> >::iterator env_iter;
 
-  for ( env_iter  = TJetEnvironment<double>::_environments.begin();  
-        env_iter != TJetEnvironment<double>::_environments.end(); 
+  for ( env_iter  = TJetEnvironment<double>::environments_.begin();  
+        env_iter != TJetEnvironment<double>::environments_.end(); 
         ++env_iter)
   { 
     if( (*env_iter)->numVar() != nvar ) continue; 
@@ -246,8 +250,8 @@ TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::compl
  bool refpoints_are_equivalent = false;
  bool scales_are_equivalent    = false;
 
- for( env_iter  = TJetEnvironment<double>::_environments.begin(); 
-      env_iter != TJetEnvironment<double>::_environments.end(); 
+ for( env_iter  = TJetEnvironment<double>::environments_.begin(); 
+      env_iter != TJetEnvironment<double>::environments_.end(); 
      ++env_iter )                        { 
  
     tmppje = *env_iter; 
@@ -297,7 +301,7 @@ TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::compl
   
      pje.swap( newpje );
 
-     TJetEnvironment<double>::_environments.push_back( pje );
+     TJetEnvironment<double>::environments_.push_back( pje );
 
      return pje;
  }
