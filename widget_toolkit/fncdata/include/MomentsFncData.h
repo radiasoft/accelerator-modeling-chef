@@ -36,72 +36,19 @@
 #ifndef MOMENTSFNCDATA_H
 #define MOMENTSFNCDATA_H
 
-#include <beamline.h>
-#include <LattFuncSage.h>
-#include <CHEFPlotData.h>
+#include <physics_toolkit/CovarianceSage.h>
+#include <beamline/BmlPtr.h> 
+#include <PlotData.h>
 #include <vector>
 
-class BeamlineContext;
 
-
-class MomentsFncData : public CHEFPlotData
-{
- private:
-    BeamlineContext* _bmlConPtr;
-    bool             _deleteContext;
-
-    double           _currentTune[2];
-    double           _targetHorTune;
-    double           _dnu_x;
-
-    int              _arraySize;
-
-    std::vector<double>          _azimuth;
-    std::vector<double>          _beta_H;
-    std::vector<double>          _beta_V;
-    std::vector<double>          _inv_beta_H;
-    std::vector<double>          _inv_beta_V;
-    std::vector<double>          _root_beta_H;
-    std::vector<double>          _root_beta_V;
-    std::vector<double>          _alpha_H;
-    std::vector<double>          _alpha_V;
-    std::vector<double>          _disp_H;
-    std::vector<double>          _disp_V;
-
-    enum { betaPlot=0, invPlot, rootPlot } _plotType;
-
-    long crv1, crv2, crv3, crv4;
-    long mrk1, mrk2;
+class MomentsFncData : public PlotData {
     
-
  public:
-    MomentsFncData( Particle const&,  beamline*, std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
-    MomentsFncData( BeamlineContext*, std::ostream* stdoutstream = &std::cout, std::ostream* stderrstream=&std::cerr );
-    ~MomentsFncData();
 
-    void resetErrorStream(  std::ostream* );
-    void resetOutputStream( std::ostream* );
+    MomentsFncData( std::vector<CovarianceSage::Info> const& covar_vec, ConstBmlPtr bml = ConstBmlPtr());
 
-    double getHorTune();
-    double getVerTune();
-
-    void doCalc();
-    void makeCurves();
-
- protected:
-    std::ostream* _errorStreamPtr;
-    std::ostream* _outputStreamPtr;
+   ~MomentsFncData();
 };
-
-
-inline void MomentsFncData::resetErrorStream( std::ostream* x )
-{
-  _errorStreamPtr = x;
-}
-
-inline void MomentsFncData::resetOutputStream( std::ostream* x )
-{
-  _outputStreamPtr = x;
-}
 
 #endif // MOMENTSFNDATA_H

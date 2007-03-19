@@ -31,80 +31,22 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
 #ifndef LBFNCDATA_H
 #define LBFNCDATA_H
 
-#include <qobject.h>
+#include <beamline/BmlPtr.h>
+#include <physics_toolkit/LBSage.h>
+#include <PlotData.h>
 
-#include <beamline.h>
-#include <LattFuncSage.h>
-#include <CHEFPlotData.h>
-#include <boost/shared_array.hpp>
-
-
-class BeamlineContext;
-
-class LBFncData : public CHEFPlotData
-{
- private:
-    BeamlineContext* _bmlConPtr;
-    bool             _deleteContext;
-    double           _currentTune[2];
-
-    // The following representation is named
-    //   to agree with Lebedev & Bogacz, 
-    //   "Betatron Motion with Coupling ..."
-
-    std::vector<double> _azimuth;
-    std::vector<double> _beta_1x;
-    std::vector<double> _beta_1y;
-    std::vector<double> _beta_2x;
-    std::vector<double> _beta_2y;
-    std::vector<double> _alpha_1x;
-    std::vector<double> _alpha_1y;
-    std::vector<double> _alpha_2x;
-    std::vector<double> _alpha_2y;
-    std::vector<double> _u1;
-    std::vector<double> _u2;
-    std::vector<double> _u3;
-    std::vector<double> _u4;
-    std::vector<double> _nu_1;
-    std::vector<double> _nu_2;
-
-    char*   _name;
-
+class LBFncData : public PlotData {
 
  public:
-    LBFncData( const Particle&, beamline*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
-    LBFncData( BeamlineContext*, std::ostream* = &std::cout, std::ostream* = &std::cerr);
-    ~LBFncData();
-    
-    void resetErrorStream( std::ostream* );
-    void resetOutputStream( std::ostream* );
-
-    double getHorTune();
-    double getVerTune();
-
-    void doCalc();
-    void makeCurves();
-
- protected:
-    std::ostream* _errorStreamPtr;
-    std::ostream* _outputStreamPtr;
+    LBFncData( std::vector<LBSage::Info> const& lb_vec, ConstBmlPtr bml = ConstBmlPtr() );
+   ~LBFncData();
 };
-
-
-inline void LBFncData::resetErrorStream( std::ostream* x )
-{
-  _errorStreamPtr = x;
-}
-
-
-inline void LBFncData::resetOutputStream( std::ostream* x )
-{
-  _outputStreamPtr = x;
-}
 
 #endif // LBFNCPLT_H
