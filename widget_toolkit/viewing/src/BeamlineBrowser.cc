@@ -9,9 +9,16 @@
 ******  File:      BeamlineBrowser.cc
 ******  Version:   3.3
 ******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
+******Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
-******                                                                
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +29,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal
+****** - support for reference counted elements and beamlines
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -34,33 +41,21 @@
 #include <typeinfo>
 #include <iosetup.h>
 
-// REMOVE: #include <qdir.h>
-// REMOVE: #include <qfile.h>
-// REMOVE: #include <qfileinfo.h>
 #include <qpixmap.h>
-// REMOVE: #include <qevent.h>
-// REMOVE: #include <qpoint.h>
 #include <qmessagebox.h>
 #include <qdragobject.h>
-// REMOVE: #include <qmime.h>
-// REMOVE: #include <qstrlist.h>
-// REMOVE: #include <qstringlist.h>
 #include <qapplication.h>
 #include <qheader.h>
 #include <qdialog.h>
 #include <qpushbutton.h>
-// REMOVE: #include <qradiobutton.h>
 #include <qhbox.h>
 #include <qvbox.h>
 #include <qlabel.h>
-// REMOVE: #include <qlineedit.h>
 #include <qlayout.h>
 #include <qtextbrowser.h>
 
 #include <BeamlineBrowser.h>
-// REMOVE: #include "PhysicsConstants.h>
 #include <GenericException.h>
-#include <BeamlineIterator.h>
 #include <BeamlineContext.h>
 #include <bmlfactory/MAD8Factory.h>
 #include <BeamlineExpressionTree.h>
@@ -390,16 +385,15 @@ QPixmap* BeamlineBrowser::elmntSymbol     = 0;
 // *****************************************************************************
 
 QBml::QBml( QPixmap* px, QBmlRoot* rt, const char* s1, const char* s2 )
-: QListViewItem( rt, s1, s2 ), _pix(px), _p(rt)
-{
-}
+: QListViewItem( rt, s1, s2 ), pix_(px), p_(rt)
+{}
 
 QBml::QBml( QPixmap* px, QListView* parent, const char* s1, const char* s2 )
-: QListViewItem( parent, s1, s2 ), _pix(px), _p(0)
+: QListViewItem( parent, s1, s2 ), pix_(px), p_(0)
 {
 }
 
-QBml::QBml( const QBml& x ) 
+QBml::QBml( QBml const& x ) 
 : QListViewItem( x )
 {
   QMessageBox::information( 
@@ -414,17 +408,15 @@ QBml::QBml( const QBml& x )
 
 
 QBml::~QBml()
-{
-}
+{}
 
 
 void QBml::setPixmap( QPixmap *px )
 {
-    _pix = px;
+    pix_ = px;
     setup();
     widthChanged( 0 );
     invalidateHeight();
-    // REMOVE: repaint();
 }
 
 
@@ -432,27 +424,27 @@ const QPixmap* QBml::pixmap( int i ) const
 {
     if ( i )         // What is the point of this function?
       return 0;
-    return _pix;
+    return pix_;
 }
 
 
 const QBmlRoot* QBml::bmlParent()
 {
-  return _p;
+  return p_;
 }
 
 
 const QBmlRoot* QBml::topBmlParent()
 {
   // Must not return null pointer.
-  if( !_p ) { return dynamic_cast<QBmlRoot*>(this); }
+  if( !p_ ) { return dynamic_cast<QBmlRoot*>(this); }
 
-  QBmlRoot* ret   = _p;
-  QBmlRoot* tsts  = ret->_p;
+  QBmlRoot* ret   = p_;
+  QBmlRoot* tsts  = ret->p_;
 
   while( tsts ) {
     ret = tsts;
-    tsts  = ret->_p;
+    tsts  = ret->p_;
   }
 
   return ret;
@@ -465,26 +457,24 @@ const QBmlRoot* QBml::topBmlParent()
 // *
 // *****************************************************************************
 
-QBmlElmt::QBmlElmt( QBmlRoot* parent, /* const */ bmlnElmnt* q, double& s )
-: QBml( 0, parent, q->Name(), q->Type() ),
-  _myElement(q),
-  _azimuth(s) 
+QBmlElmt::QBmlElmt( QBmlRoot* parent, ConstElmPtr const& q, double& s )
+: QBml( 0, parent, q->Name().c_str(), q->Type() ),
+   myElement_(q),
+   azimuth_(s) 
 {
   QString str;
-  str.setNum( ((double) s) );
-  this->setText( 2, str );
+  str.setNum( s );
+  setText( 2, str );
 }
 
 
 QBmlElmt::~QBmlElmt()
-{
-  // delete _myElement; ???
-}
+{}
 
 
 QString QBmlElmt::fullName() const
 {
-  return QString( _myElement->Name() );
+  return QString( myElement_->Name() );
 }
 
 
@@ -494,39 +484,39 @@ QString QBmlElmt::fullName() const
 // *
 // *****************************************************************************
 
-QBmlRoot::QBmlRoot( QListView* parent, /* const */ BeamlineContext* q, double& s )
-: QBml( 0, parent, q->name(), "beamline" ), 
-  _myBmlCon(q)
+QBmlRoot::QBmlRoot( QListView* parent, BmlContextPtr q, double& s )
+: QBml( 0, parent, q->name().c_str(), "beamline" ), 
+   myBmlCon_(q)
 {
     QString str;
     str.setNum( ((double) s) );
     this->setText( 2, str );
 
-    _myBeamline = ((beamline*) -1);
+    myBeamline_ = BmlPtr();
 }
 
 
-QBmlRoot::QBmlRoot( QListView* parent, const Particle& prt, beamline* q, double& s )
-: QBml( 0, parent, q->Name(), q->Type() ), 
-  _myBeamline(0)
+QBmlRoot::QBmlRoot( QListView* parent, Particle const& particle, BmlPtr q, double& s )
+: QBml( 0, parent, q->Name().c_str(), q->Type() ), 
+   myBeamline_()
 {
     QString str;
     str.setNum( ((double) s) );
     this->setText( 2, str );
 
-    _myBmlCon = new BeamlineContext( prt, q, true );
+    myBmlCon_ = BmlContextPtr(new BeamlineContext( particle, q) );
 }
 
 
-QBmlRoot::QBmlRoot( QBmlRoot * parent, /* const */ beamline* q, double& s )
+QBmlRoot::QBmlRoot( QBmlRoot * parent, BmlPtr q, double& s )
 : 
-   QBml( 0, parent, q->Name(), q->Type() ),
-   _myBmlCon(0),
-   _myBeamline(q) 
+   QBml( 0, parent, q->Name().c_str(), q->Type() ),
+   myBmlCon_(),
+   myBeamline_(q) 
 {
     QString str;
     str.setNum( ((double) s) );
-    this->setText( 2, str );
+    setText( 2, str );
 
     if( 0 == strcmp(q->Type(),"beamline") ) {
       setPixmap( BeamlineBrowser::bmlBlackSymbol );
@@ -538,25 +528,12 @@ QBmlRoot::QBmlRoot( QBmlRoot * parent, /* const */ beamline* q, double& s )
 
 
 QBmlRoot::~QBmlRoot()
-{
-  if( -1 != ((int) _myBeamline) )
-  { if( 0 != _myBmlCon   ) 
-    { delete _myBmlCon;   
-      if( 0 != _myBeamline ) { 
-        ostringstream uic;
-        uic << "An impossibility has occurred\nin file "
-            << __FILE__
-            << " at line " << __LINE__ ;
-        QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
-      }
-    }
-  }
-}
+  {}
 
 
 void QBmlRoot::setOpen( bool o )
 {
-  if( !_myBmlCon ) {
+  if( !myBmlCon_ ) {
     if ( o ) {
       setPixmap( BeamlineBrowser::bmlOrangeSymbol );
     }
@@ -564,7 +541,7 @@ void QBmlRoot::setOpen( bool o )
       setPixmap( BeamlineBrowser::bmlBlackSymbol );
     }
   }
-  else if( _myBmlCon->isTreatedAsRing() ) {
+  else if( myBmlCon_->isTreatedAsRing() ) {
     if ( o ) {
       setPixmap( BeamlineBrowser::bmrOrangeSymbol );
     }
@@ -593,31 +570,17 @@ void QBmlRoot::setup()
 QString QBmlRoot::fullName() const
 {
     QString s;
-    if( 0 == _p ) 
-    { s = _myBmlCon->name();
+    if( !p_ ) 
+    { s = myBmlCon_->name();
     }
     else 
-    { s = _myBeamline->Name();
+    { s = myBeamline_->Name();
     }
     return s;
 }
 
-// QString QBmlRoot::text( int column ) const
-// {
-//     static QString ret;
-//     if( column == 0 ) {
-//         return _myElement->Name();
-//     }
-//     else if( column == 1 ) {
-//         return _myElement->Type();
-//     }
-//     else {
-//         return QString( "Column 2" );
-//     }
-// }
 
-
-const QBmlElmt* QBmlRoot::findSelectedElement() const
+QBmlElmt const* QBmlRoot::findSelectedElement() const
 {
   QListViewItem* fc = this->firstChild();
 
@@ -658,9 +621,9 @@ const QBmlElmt* QBmlRoot::findSelectedElement() const
 // *
 // *****************************************************************************
 
-BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool /*sdo*/ )
+BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool sdo )
     : QListView( parent, name ), oldCurrent( 0 ),
-      dropItem( 0 ), mousePressed( FALSE ), _lastClickedRootPtr(0)
+      dropItem( 0 ), mousePressed( FALSE ), lastClickedRootPtr_(0)
 {
   this->setSorting(-1);  // prevents sorting
   this->addColumn( "Name" );
@@ -671,17 +634,17 @@ BeamlineBrowser::BeamlineBrowser( QWidget *parent, const char *name, bool /*sdo*
   autoopen_timer = new QTimer( this );
   
   if ( !BeamlineBrowser::bmlBlackSymbol ) {
-      BeamlineBrowser::driftSymbol = new QPixmap( drift_xpm );
-      BeamlineBrowser::slotSymbol = new QPixmap( slot_xpm );
-      BeamlineBrowser::bmlBlackSymbol = new QPixmap( bml_black_xpm );
+      BeamlineBrowser::driftSymbol     = new QPixmap( drift_xpm );
+      BeamlineBrowser::slotSymbol      = new QPixmap( slot_xpm );
+      BeamlineBrowser::bmlBlackSymbol  = new QPixmap( bml_black_xpm );
       BeamlineBrowser::bmlOrangeSymbol = new QPixmap( bml_orange_xpm );
-      BeamlineBrowser::bmrBlackSymbol = new QPixmap( bmr_black_xpm );
+      BeamlineBrowser::bmrBlackSymbol  = new QPixmap( bmr_black_xpm );
       BeamlineBrowser::bmrOrangeSymbol = new QPixmap( bmr_orange_xpm );
       BeamlineBrowser::sextupoleSymbol = new QPixmap( sextupole_xpm );
-      BeamlineBrowser::fquadSymbol = new QPixmap( fquad_xpm );
-      BeamlineBrowser::dquadSymbol = new QPixmap( dquad_xpm );
-      BeamlineBrowser::dipoleSymbol = new QPixmap( dipole_xpm );
-      BeamlineBrowser::elmntSymbol = new QPixmap( elmnt_xpm );
+      BeamlineBrowser::fquadSymbol     = new QPixmap( fquad_xpm );
+      BeamlineBrowser::dquadSymbol     = new QPixmap( dquad_xpm );
+      BeamlineBrowser::dipoleSymbol    = new QPixmap( dipole_xpm );
+      BeamlineBrowser::elmntSymbol     = new QPixmap( elmnt_xpm );
   }
   
   connect( this, SIGNAL( doubleClicked( QListViewItem * ) ),
@@ -712,22 +675,22 @@ BeamlineBrowser::~BeamlineBrowser()
 }
 
 
-const bmlnElmnt* BeamlineBrowser::getSelectedElement( BeamlineContext* bcPtr ) const
+ConstElmPtr BeamlineBrowser::getSelectedElement( BmlContextPtr bcPtr ) const
 {
-  if( 0 == bcPtr ) {
+  if( !bcPtr ) {
     QMessageBox::information( 
             0, 
             "BeamlineBrowser::getSelectedElement",
             "ERROR: Null pointer passed as argument."
             );
-    return 0;
+    return ConstElmPtr();
   }
 
-  QBmlRoot* fc = dynamic_cast<QBmlRoot*>( this->firstChild() );
-  bool found = ( bcPtr == fc->_myBmlCon );
+  QBmlRoot* fc = dynamic_cast<QBmlRoot*>( firstChild() );
+  bool found = ( bcPtr == fc->myBmlCon_ );
   while( !found ) {
     fc = dynamic_cast<QBmlRoot*>( fc->nextSibling() );
-    found = ( bcPtr == fc->_myBmlCon );
+    found = ( bcPtr == fc->myBmlCon_ );
   }
 
   if( !found ) {
@@ -736,11 +699,11 @@ const bmlnElmnt* BeamlineBrowser::getSelectedElement( BeamlineContext* bcPtr ) c
             "BeamlineBrowser::getSelectedElement",
             "ERROR: Did not find selected beamline."
             );
-    return 0;
+    return ConstElmPtr();
   }
 
   const QBmlElmt* qbePtr = fc->findSelectedElement();
-  if( qbePtr == 0 ) { return 0; }
+  if( !qbePtr ) { return ConstElmPtr(); }
 
   return qbePtr->cheatElementPtr();
 }
@@ -758,27 +721,22 @@ void BeamlineBrowser::slotFolderSelected( QListViewItem *i )
 void BeamlineBrowser::slotShowData( QBmlRoot* toproot, QBml* item )
 {
   infoWriter wr;
-  wr._contextPtr = toproot->_myBmlCon;
+  wr._contextPtr = toproot->myBmlCon_;
 
   if( typeid(*item)==typeid(QBmlRoot) ) {
-    if( 0 == ((QBmlRoot*) item)->_p ) {
-      (  ((QBmlRoot*) item)  ->_myBmlCon)->accept(wr);
+    
+    if( !static_cast<QBmlRoot*>(item)->p_ ) 
+    {
+         static_cast<QBmlRoot*>(item)->myBmlCon_->accept(wr);
     }
     else {
-      (  ((QBmlRoot*) item)  ->_myBeamline)->accept(wr);
+         static_cast<QBmlRoot*>(item)->myBeamline_->accept(wr);
     }
   }
 
   else if( typeid(*item)==typeid(QBmlElmt) ) {
-    (((QBmlElmt*) item)->_myElement)->accept(wr);
+     static_cast<QBmlElmt*>(item)->myElement_->accept(wr);
   }
-
-  // REMOVE: infoWriter wr;
-  // REMOVE: if( typeid(*i)==typeid(QBmlRoot) ) {
-  // REMOVE: }
-  // REMOVE: else if( typeid(*i)==typeid(QBmlElmt) ) {
-  // REMOVE:   (((QBmlElmt*) i)->_myElement)->accept(wr);
-  // REMOVE: }
 }
 
 
@@ -945,9 +903,9 @@ void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
 
   else if( e->button() == Qt::LeftButton ) 
   { if( typeid(*j) == typeid(QBmlRoot) ) 
-    { _lastClickedRootPtr = dynamic_cast<QBmlRoot*>(j);
-      if( 0 != ( ((QBmlRoot*) j) -> _myBmlCon ) ) {
-        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> _myBmlCon, ((QBmlRoot*) j) );
+    { lastClickedRootPtr_ = dynamic_cast<QBmlRoot*>(j);
+      if( 0 != ( ((QBmlRoot*) j) -> myBmlCon_ ) ) {
+        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> myBmlCon_, ((QBmlRoot*) j) );
       }
     }
     emit sig_bmlLeftClicked( j );  // No longer necessary???
@@ -1014,9 +972,9 @@ void BeamlineBrowser::setDir( const QString &s )
 }
 
 
-void BeamlineBrowser::resetPixmap( const BeamlineContext* bcPtr )
+void BeamlineBrowser::resetPixmap( ConstBmlContextPtr bcPtr )
 {
-  if( 0 == bcPtr ) {
+  if( !bcPtr ) {
     QMessageBox::information( 0, "CHEF: WARNING", 
       "Null pointer passed to BeamlineContext::resetPixmap." 
       "\nNo action will be taken." );
@@ -1024,10 +982,10 @@ void BeamlineBrowser::resetPixmap( const BeamlineContext* bcPtr )
   }
 
   QBmlRoot* ptrRoot = dynamic_cast<QBmlRoot*>( this->firstChild() );
-  bool found = ( bcPtr == ptrRoot->_myBmlCon );
+  bool found = ( bcPtr == ptrRoot->myBmlCon_ );
   while( !found ) {
     ptrRoot = dynamic_cast<QBmlRoot*>( ptrRoot->nextSibling() );
-    found = ( bcPtr == ptrRoot->_myBmlCon );
+    found = ( bcPtr == ptrRoot->myBmlCon_ );
   }
 
   if( !found ) {
@@ -1065,19 +1023,19 @@ void BeamlineBrowser::resetPixmap( const BeamlineContext* bcPtr )
 // Readers
 // 
 
-BeamlineContext* BeamlineBrowser::readMADFile( const char* fileName, 
+BmlContextPtr BeamlineBrowser::readMADFile( const char* fileName, 
                                                const char* lineName, 
                                                double      brho )
 {
   MAD8Factory bf( fileName, brho );
-  beamline* pBml = bf.create_beamline( lineName ); 
+  BmlPtr pBml = bf.create_beamline( lineName ); 
 
-  BeamlineContext* www = 0;
+  BmlContextPtr www;
   if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
-    www = new BeamlineContext( Proton(pBml->Energy()), pBml, false );
+    www = BmlContextPtr( new BeamlineContext( Proton(pBml->Energy()), pBml ) );
   }
   else if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
-    www = new BeamlineContext( Positron(pBml->Energy()), pBml, false );
+    www =  BmlContextPtr( new BeamlineContext( Positron(pBml->Energy()), pBml) );
   }
   else {
     ostringstream uic;
@@ -1090,41 +1048,14 @@ BeamlineContext* BeamlineBrowser::readMADFile( const char* fileName,
           uic.str().c_str() ) ;
   }
 
-  www->setClonedFlag( true );
   displayBeamline( www );
   emit sig_newContext( www );
   return www;
 }
 
 
-// void BeamlineBrowser::displayBeamline( const beamline* ptr )
-// {
-//   double s = 0.0;
-//   QString str1, str2;
-// 
-//   { // Begin local scope ...
-//     DeepBeamlineIterator dbi( ptr );
-//     bmlnElmnt* q;
-//     while( q = dbi++ ) {
-//       s += q->Length();
-//     }
-//   } // End local scope ...
-// 
-//   QBmlRoot* root = new QBmlRoot( this, (beamline*) ptr, s );
-//   root->setPixmap( BeamlineBrowser::bmlBlackSymbol );
-//   _topLevelItems.insert( (void*) root );
-// 
-//   str2.setNum(s);
-// 
-//   ReverseBeamlineIterator rbi( ptr );
-//   _displayLine( root, rbi, s );
-// 
-//   str1.setNum( s );
-//   root->setText( 2, str1 + "-" + str2 );
-// }
 
-
-void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
+void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
 {
   if( !ptr ) {
     ostringstream uic;
@@ -1143,19 +1074,20 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
   double s = ptr->sumLengths();
   QString str1, str2;
 
-  QBmlRoot* root = new QBmlRoot( this, (BeamlineContext*) ptr, s );
+  QBmlRoot* root = new QBmlRoot( this, boost::const_pointer_cast<BeamlineContext>(ptr), s );
   if( ptr->isTreatedAsRing() ) {
     root->setPixmap( BeamlineBrowser::bmrBlackSymbol ); 
   }
   else {
     root->setPixmap( BeamlineBrowser::bmlBlackSymbol );
   }
-  _topLevelItems.insert( (void*) root );
+  topLevelItems_.push_front( root );
 
   str2.setNum(s);
 
-  ReverseBeamlineIterator rbi( const_cast<beamline&>(*ptr->cheatBmlPtr()) );
-  _displayLine( root, rbi, s );
+  beamline::const_reverse_iterator rbi = ptr->cheatBmlPtr()->rbegin();
+
+  displayLine( root, rbi, s );
 
   str1.setNum( s );
   root->setText( 2, str1 + "-" + str2 );
@@ -1164,8 +1096,8 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
   this->setCurrentItem( root );
   this->ensureItemVisible( root );
 
-  if( 0 != ( root->_myBmlCon ) ) {
-    emit sig_bmlLeftClicked( root->_myBmlCon, root );
+  if(  root->myBmlCon_ ) {
+    emit sig_bmlLeftClicked( root->myBmlCon_, root );
   }
   else {
     ostringstream uic;
@@ -1181,21 +1113,24 @@ void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )
 }
 
 
-void BeamlineBrowser::_displayLine( QBmlRoot* root, 
-                                    ReverseBeamlineIterator& bi, 
-                                    double& s )
+void BeamlineBrowser::displayLine( QBmlRoot* root, beamline::const_reverse_iterator bi, double& s )
 {
-  static bmlnElmnt* q;
+  ElmPtr q;
   static bool firstTime = true;
   QString str1, str2;
 
-  while(( q = bi++ )) {
+  for ( ;  bi != bi.rend(); ++bi )
+  {
+    q = (*bi);
     if( 0 == strcmp("beamline",q->Type()) ) {
-      QBmlRoot* newBml = new QBmlRoot( root, (beamline*) q , s);
+
+      QBmlRoot* newBml = new QBmlRoot( root, boost::static_pointer_cast<beamline>(q) , s);
       newBml->setPixmap( BeamlineBrowser::bmlBlackSymbol );
-      ReverseBeamlineIterator newbi( *static_cast<beamline*>(q) );
+
+      beamline::const_reverse_iterator newbi = (*boost::static_pointer_cast<const beamline>(q) ).rbegin();
+
       str2.setNum(s);
-      BeamlineBrowser::_displayLine( newBml, newbi, s );
+      BeamlineBrowser::displayLine( newBml, newbi, s );
       str1.setNum( s );
       newBml->setText( 2, str1 + "-" + str2 );
     }
@@ -1245,26 +1180,28 @@ void BeamlineBrowser::_displayLine( QBmlRoot* root,
 }
 
 
-int BeamlineBrowser::removeBeamline( BeamlineContext* ptr )
+int BeamlineBrowser::removeBeamline( BmlContextPtr ptr )
 {
-  if( 0 == ptr ) { return 1; }
+  if( !ptr ) { return 1; }
   if( typeid(*ptr) != typeid(BeamlineContext) ) { return 2; }
 
-  slist_iterator getNext( _topLevelItems );
-  QBmlRoot* q;
-  QBmlRoot* w;
+  QBmlRoot* w = 0;
+
   bool notfound = true;
-  while( notfound && ( 0 != ( q = (QBmlRoot*) getNext() ) ) ) {
-    if( q->_myBmlCon == ptr ) { 
-      w = q;   // Just paranoia
+
+  for ( std::list<QBmlRoot*>::iterator it = topLevelItems_.begin(); 
+                                      it != topLevelItems_.end(); ++it) {
+
+    if( (*it)->myBmlCon_ == ptr ) { 
+      w = (*it);   // Just paranoia
       notfound = false;
     }
   }
 
   if( notfound ) { return 3; }
   else {
-    this->takeItem(w);
-    _topLevelItems.remove( (void*) w );
+    takeItem(w);
+    topLevelItems_.remove( w );
     delete w;
   }
 
@@ -1274,46 +1211,26 @@ int BeamlineBrowser::removeBeamline( BeamlineContext* ptr )
 }
 
 
-// REMOVE int BeamlineBrowser::findElement( QBml* startpoint, 
-// REMOVE                                   const QString& name )
-// REMOVE {
-// REMOVE   QBml*     qbmlPtr;
-// REMOVE   QBmlElmt* qbmlelmtPtr; 
-// REMOVE   QBmlRoot* qbmlrootPtr;
-// REMOVE 
-// REMOVE   int i = 0;
-// REMOVE   QListViewItemIterator looker( dynamic_cast<QListViewItem*>(startpoint) );
-// REMOVE   while( 0 != (  qbmlPtr = dynamic_cast<QBml*>(looker.current()) )) {
-// REMOVE     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( qbmlPtr ) )) {
-// REMOVE       if( qbmlelmtPtr->fullName() == name ) {
-// REMOVE         (*pcout) << ++i << " !  " << qbmlelmtPtr->fullName() << endl;
-// REMOVE       }
-// REMOVE       else {
-// REMOVE         (*pcout) << ++i << "    " << qbmlelmtPtr->fullName() << endl;
-// REMOVE       }
-// REMOVE     }
-// REMOVE     ++looker;
-// REMOVE   }
-// REMOVE   return 1;
-// REMOVE }
 
 int BeamlineBrowser::findElement( QBml*                startpoint, 
                                   const BoolNode*      queryPtr, 
-                                  QPtrList<bmlnElmnt>& foundElements )
+                                 std::list<ConstElmPtr>& foundElements )
 {
   return this->findElement( startpoint, *queryPtr, foundElements );
 }
 
 
 int BeamlineBrowser::findElement( QBml*                startpoint, 
-                                  const BoolNode&      query, 
-                                  QPtrList<bmlnElmnt>& foundElements )
+                                  BoolNode const&      query, 
+                                 std::list<ConstElmPtr>& foundElements )
 {
   int        ret = 1;
   QBml*      qbmlPtr;
   QBmlElmt*  qbmlelmtPtr; 
+
   // REMOVE: QBmlRoot*  qbmlrootPtr;
-  const bmlnElmnt* elementPtr;
+
+  ConstElmPtr elementPtr;
   bool started = false;
 
   QListViewItemIterator looker( dynamic_cast<QListViewItem*>(startpoint) );
@@ -1337,8 +1254,8 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
     // Apply the test and, if passed, add element pointer to the list.
     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( qbmlPtr ) )) {
       elementPtr = qbmlelmtPtr->cheatElementPtr();
-      if( query.evaluate( elementPtr ) ) {
-        foundElements.append( elementPtr );
+      if( query.evaluate( elementPtr.get() ) ) {
+        foundElements.push_back( elementPtr );
         qbmlPtr->setSelected(true);
         this->ensureItemVisible( qbmlPtr );
         qbmlPtr->repaint();  // See note below.
@@ -1369,35 +1286,12 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
   return ret;
 }
 
-// REMOVE: int BeamlineBrowser::findElement( QBml*                startpoint, 
-// REMOVE:                                   const BoolNode&      query, 
-// REMOVE:                                   QPtrList<bmlnElmnt>& foundElements )
-// REMOVE: {
-// REMOVE:   int        ret = 1;
-// REMOVE:   QBmlElmt*  qbmlelmtPtr; 
-// REMOVE:   const bmlnElmnt* elementPtr;
-// REMOVE: 
-// REMOVE:   QListViewItem* fc = dynamic_cast<QListViewItem*>(startpoint);
-// REMOVE: 
-// REMOVE:   while( 0 != fc ) {
-// REMOVE:     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( fc ) )) {
-// REMOVE:       elementPtr = qbmlelmtPtr->cheatElementPtr();
-// REMOVE:       if( query.evaluate( elementPtr ) ) {
-// REMOVE:         foundElements.append( elementPtr );
-// REMOVE:         ret = 0;
-// REMOVE:       }
-// REMOVE:       else {
-// REMOVE:       }
-// REMOVE:     }
-// REMOVE:     fc = fc->nextSibling();
-// REMOVE:   }
-// REMOVE:   return ret;
-// REMOVE: }
 
-
-QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
+std::list<ElmPtr> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
 {
-  QPtrList<bmlnElmnt> ret;
+
+  std::list<ElmPtr> ret;
+
   QBml*      qbmlPtr;
   QBmlElmt*  qbmlelmtPtr;
   bool started = false;
@@ -1430,7 +1324,7 @@ QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) con
     // Apply the test and, if passed, add element pointer to the list.
     if( qbmlPtr->isSelected() ) {
       if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>(qbmlPtr) ) ) {
-        ret.append( qbmlelmtPtr->cheatElementPtr() );
+        ret.push_back( boost::const_pointer_cast<bmlnElmnt>(qbmlelmtPtr->cheatElementPtr()) );
       }
     }
 
@@ -1446,17 +1340,17 @@ QPtrList<bmlnElmnt> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) con
 // BeamlineBrowser::infoWriter implementation
 /////////////////////////////////////////////////
 
-void BeamlineBrowser::infoWriter::visitBeamline( const beamline* x )
+void BeamlineBrowser::infoWriter::visit( beamline const& x )
 {
   QString cap( "Beamline" );
   cap += QString( " " );
-  cap += QString( x->Name() );
+  cap += QString( x.Name() );
 
   QString stl;
   QString msg;
-  msg.setNum( x->countHowManyDeeply() );
+  msg.setNum( x.countHowManyDeeply() );
   msg += QString( " elements. \nReference energy = " );
-  stl.setNum( x->Energy() );
+  stl.setNum( x.Energy() );
   msg += stl;
   msg += QString( " Gev" );
 
@@ -1464,20 +1358,20 @@ void BeamlineBrowser::infoWriter::visitBeamline( const beamline* x )
 }
 
 
-void BeamlineBrowser::infoWriter::visitBmlnElmnt( const bmlnElmnt* x )
+void BeamlineBrowser::infoWriter::visit( bmlnElmnt const& x )
 {
   // This code is similar to what appears in 
   // SiteViewer::Wndw::mousePressEvent
   // Keep it that way!
-  QString cap( x->Type() );
+  QString cap( x.Type() );
   cap += QString( " " );
-  cap += QString( x->Name() );
+  cap += QString( x.Name() );
 
   QString msg( "Length = " );
   QString stl;
-  stl.setNum( x->Length() );
+  stl.setNum( x.Length() );
   msg += stl;
-  stl.setNum( x->Strength() );
+  stl.setNum( x.Strength() );
   msg += QString( ";  Strength = " );
   msg += stl;
 
@@ -1485,7 +1379,7 @@ void BeamlineBrowser::infoWriter::visitBmlnElmnt( const bmlnElmnt* x )
 }
 
 
-void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
+void BeamlineBrowser::infoWriter::visit( drift const& x )
 {
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
   // REMOVE: QDialog* wpu = new QDialog;
@@ -1494,7 +1388,7 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( "Length [m] = ", qhb1 );
         QString stl;
-        stl.setNum( x->Length() );
+        stl.setNum( x.Length() );
         new QLabel( stl, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1514,185 +1408,16 @@ void BeamlineBrowser::infoWriter::visitDrift( const drift* x )
 
     qvb->adjustSize();
 
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
-  // REMOVE: int returnCode = wpu->exec();
-  // REMOVE: // Note: when reject is activated, wpu and all its subwidgets
-  // REMOVE: //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  // REMOVE: //       This is confirmed by changing these from pointers to objects.
-  // REMOVE: //       A warning message is issued, when exiting this scope, that
-  // REMOVE: //       the objects are deleted twice.
-
-  // REMOVE: if( returnCode == QDialog::Accepted ) {
-  // REMOVE:   editDialog edg;
-  // REMOVE:   edg._contextPtr = _contextPtr;
-  // REMOVE:   (const_cast<drift*>(x))->accept(edg);
-  // REMOVE: }
-
-  // REMOVE: delete wpu;
 }
 
 
-void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
+void BeamlineBrowser::infoWriter::visit( Slot const& x )
 {
-  /*
-  QString stl;
-  stl.setNum( x->Length() );
-  QMessageBox::information( 
-          0, 
-          QString(x->Type())+QString(": ")+QString(x->Name()),
-          QString("Length [m]: ")+stl
-          );
-  */
-
   
-  // REMOVE: { // Old version
-  // REMOVE: QString sts;
-  // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
-  // REMOVE:   QVBox* qvb = new QVBox( wpu );
-  // REMOVE:     QHBox* qhbFrames = new QHBox( qvb );
-  // REMOVE: 
-  // REMOVE:       QVBox* qvbIn = new QVBox( qhbFrames );
-  // REMOVE:         new QLabel( "Upstream frame", qvbIn );
-  // REMOVE: 
-  // REMOVE:         QHBox* qhboIn = new QHBox( qvbIn );
-  // REMOVE:           new QLabel( QString("O: "), qhboIn );
-  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (0) );
-  // REMOVE:           new QLabel( sts, qhboIn );
-  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (1) );
-  // REMOVE:           new QLabel( sts, qhboIn );
-  // REMOVE:           sts.setNum( (x->getInFrame().getOrigin()) (2) );
-  // REMOVE:           new QLabel( sts, qhboIn );
-  // REMOVE:         qhboIn->setMargin(5);
-  // REMOVE:         qhboIn->setSpacing(3);
-  // REMOVE:         qhboIn->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb3 = new QHBox( qvbIn );
-  // REMOVE:           QString sts0( "U: ( " );
-  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (0) );
-  // REMOVE:           sts0 = sts0 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (1) );
-  // REMOVE:           sts0 = sts0 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getxAxis()) (2) );
-  // REMOVE:           sts0 = sts0 + sts + " )";
-  // REMOVE:           new QLabel( sts0, qhb3 );
-  // REMOVE:         qhb3->setMargin(5);
-  // REMOVE:         qhb3->setSpacing(3);
-  // REMOVE:         qhb3->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb4 = new QHBox( qvbIn );
-  // REMOVE:           QString sts1( "V: ( " );
-  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (0) );
-  // REMOVE:           sts1 = sts1 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (1) );
-  // REMOVE:           sts1 = sts1 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getyAxis()) (2) );
-  // REMOVE:           sts1 = sts1 + sts + " )";
-  // REMOVE:           new QLabel( sts1, qhb4 );
-  // REMOVE:         qhb4->setMargin(5);
-  // REMOVE:         qhb4->setSpacing(3);
-  // REMOVE:         qhb4->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb5 = new QHBox( qvbIn );
-  // REMOVE:           QString sts2( "W: ( " );
-  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (0) );
-  // REMOVE:           sts2 = sts2 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (1) );
-  // REMOVE:           sts2 = sts2 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getInFrame().getzAxis()) (2) );
-  // REMOVE:           sts2 = sts2 + sts + " )";
-  // REMOVE:           new QLabel( sts2, qhb5 );
-  // REMOVE:         qhb5->setMargin(5);
-  // REMOVE:         qhb5->setSpacing(3);
-  // REMOVE:         qhb5->adjustSize();
-  // REMOVE: 
-  // REMOVE:       qvbIn->setMargin(5);
-  // REMOVE:       qvbIn->setSpacing(3);
-  // REMOVE:       qvbIn->adjustSize();
-  // REMOVE: 
-  // REMOVE:       QVBox* qvbOut = new QVBox( qhbFrames );
-  // REMOVE:         new QLabel( "Downstream frame", qvbOut );
-  // REMOVE: 
-  // REMOVE:         QHBox* qhbo = new QHBox( qvbOut );
-  // REMOVE:           new QLabel( QString("O: "), qhbo );
-  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (0) );
-  // REMOVE:           new QLabel( sts, qhbo );
-  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (1) );
-  // REMOVE:           new QLabel( sts, qhbo );
-  // REMOVE:           sts.setNum( (x->getOutFrame().getOrigin()) (2) );
-  // REMOVE:           new QLabel( sts, qhbo );
-  // REMOVE:         qhbo->setMargin(5);
-  // REMOVE:         qhbo->setSpacing(3);
-  // REMOVE:         qhbo->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb0 = new QHBox( qvbOut );
-  // REMOVE:           sts0 = "U: ( ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (0) );
-  // REMOVE:           sts0 = sts0 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (1) );
-  // REMOVE:           sts0 = sts0 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getxAxis()) (2) );
-  // REMOVE:           sts0 = sts0 + sts + " )";
-  // REMOVE:           new QLabel( sts0, qhb0 );
-  // REMOVE:         qhb0->setMargin(5);
-  // REMOVE:         qhb0->setSpacing(3);
-  // REMOVE:         qhb0->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb1 = new QHBox( qvbOut );
-  // REMOVE:           sts1 = "V: ( ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (0) );
-  // REMOVE:           sts1 = sts1 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (1) );
-  // REMOVE:           sts1 = sts1 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getyAxis()) (2) );
-  // REMOVE:           sts1 = sts1 + sts + " )";
-  // REMOVE:           new QLabel( sts1, qhb1 );
-  // REMOVE:         qhb1->setMargin(5);
-  // REMOVE:         qhb1->setSpacing(3);
-  // REMOVE:         qhb1->adjustSize();
-  // REMOVE:   
-  // REMOVE:         QHBox* qhb2 = new QHBox( qvbOut );
-  // REMOVE:           sts2 = "W: ( ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (0) );
-  // REMOVE:           sts2 = sts2 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (1) );
-  // REMOVE:           sts2 = sts2 + sts + ", ";
-  // REMOVE:           sts.setNum( (x->getOutFrame().getzAxis()) (2) );
-  // REMOVE:           sts2 = sts2 + sts + " )";
-  // REMOVE:           new QLabel( sts2, qhb2 );
-  // REMOVE:         qhb2->setMargin(5);
-  // REMOVE:         qhb2->setSpacing(3);
-  // REMOVE:         qhb2->adjustSize();
-  // REMOVE: 
-  // REMOVE:       qvbOut->setMargin(5);
-  // REMOVE:       qvbOut->setSpacing(3);
-  // REMOVE:       qvbOut->adjustSize();
-  // REMOVE: 
-  // REMOVE:     qhbFrames->setMargin(5);
-  // REMOVE:     qhbFrames->setSpacing(3);
-  // REMOVE:     qhbFrames->adjustSize();
-  // REMOVE: 
-  // REMOVE:     QHBox* qhb99 = new QHBox( qvb );
-  // REMOVE:       QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
-  // REMOVE:         connect( cancelBtn, SIGNAL(pressed()),
-  // REMOVE:                  wpu,       SLOT(close()) );
-  // REMOVE:     qhb99->setMargin(5);
-  // REMOVE:     qhb99->setSpacing(3);
-  // REMOVE:     qhb99->adjustSize();
-  // REMOVE: 
-  // REMOVE:   qvb->adjustSize();
-  // REMOVE: 
-  // REMOVE: wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-  // REMOVE: wpu->adjustSize();
-  // REMOVE: 
-  // REMOVE: wpu->exec();
-  // REMOVE: 
-  // REMOVE: delete wpu;
-  // REMOVE: }
-
-  { // New version
   QString xstr, ystr, zstr;
   QString lparen("( ");
   QString rparen(" )");
@@ -1713,46 +1438,46 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
          qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
          qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
 
-         xstr.setNum( (x->getInFrame().getOrigin())(0) );
-         ystr.setNum( (x->getInFrame().getOrigin())(1) );
-         zstr.setNum( (x->getInFrame().getOrigin())(2) );
+         xstr.setNum( (x.getInFrame().getOrigin())(0) );
+         ystr.setNum( (x.getInFrame().getOrigin())(1) );
+         zstr.setNum( (x.getInFrame().getOrigin())(2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 1 );
-         xstr.setNum( (x->getOutFrame().getOrigin())(0) );
-         ystr.setNum( (x->getOutFrame().getOrigin())(1) );
-         zstr.setNum( (x->getOutFrame().getOrigin())(2) );
+         xstr.setNum( (x.getOutFrame().getOrigin())(0) );
+         ystr.setNum( (x.getOutFrame().getOrigin())(1) );
+         zstr.setNum( (x.getOutFrame().getOrigin())(2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 2 );
 
-         xstr.setNum( (x->getInFrame().getxAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getxAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getxAxis()) (0) );
+         ystr.setNum( (x.getInFrame().getxAxis()) (1) );
+         zstr.setNum( (x.getInFrame().getxAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 1 );
-         xstr.setNum( (x->getInFrame().getyAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getyAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getyAxis()) (0) );
+         ystr.setNum( (x.getInFrame().getyAxis()) (1) );
+         zstr.setNum( (x.getInFrame().getyAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 1 );
-         xstr.setNum( (x->getInFrame().getzAxis()) (0) );
-         ystr.setNum( (x->getInFrame().getzAxis()) (1) );
-         zstr.setNum( (x->getInFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getzAxis()) (0) );
+         ystr.setNum( (x.getInFrame().getzAxis()) (1) );
+         zstr.setNum( (x.getInFrame().getzAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 1 );
     
-         xstr.setNum( (x->getOutFrame().getxAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getxAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getxAxis()) (0) );
+         ystr.setNum( (x.getOutFrame().getxAxis()) (1) );
+         zstr.setNum( (x.getOutFrame().getxAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 2 );
-         xstr.setNum( (x->getOutFrame().getyAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getyAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getyAxis()) (0) );
+         ystr.setNum( (x.getOutFrame().getyAxis()) (1) );
+         zstr.setNum( (x.getOutFrame().getyAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 2 );
-         xstr.setNum( (x->getOutFrame().getzAxis()) (0) );
-         ystr.setNum( (x->getOutFrame().getzAxis()) (1) );
-         zstr.setNum( (x->getOutFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getzAxis()) (0) );
+         ystr.setNum( (x.getOutFrame().getzAxis()) (1) );
+         zstr.setNum( (x.getOutFrame().getzAxis()) (2) );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 2 );
     
@@ -1768,17 +1493,17 @@ void BeamlineBrowser::infoWriter::visitSlot( const Slot* x )
 
     qvb->adjustSize();
 
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
   // REMOVE: wpu->exec();
   // REMOVE: delete wpu;
-  }
+ 
 }
 
 
-void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
+void BeamlineBrowser::infoWriter::visit( sbend const& x )
 {
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
   // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
@@ -1787,7 +1512,7 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( QString("Length [m]: "), qhb1 );
         QString stlen;
-        stlen.setNum( x->Length() );
+        stlen.setNum( x.Length() );
         new QLabel( stlen, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1796,7 +1521,7 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
       QHBox* qhb2 = new QHBox( qvb );
         new QLabel( QString("Magnetic field [T]: "), qhb2 );
         QString sts;
-        sts.setNum( x->Strength() );
+        sts.setNum( x.Strength() );
         new QLabel( sts, qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
@@ -1816,7 +1541,7 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
   //       This is confirmed by changing these from pointers to objects.
   //       A warning message is issued, when exiting this scope, that
   //       the objects are deleted twice.
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
@@ -1825,17 +1550,17 @@ void BeamlineBrowser::infoWriter::visitSbend( const sbend* x )
 }
 
 
-void BeamlineBrowser::infoWriter::visitCF_sbend( const CF_sbend* x )
+void BeamlineBrowser::infoWriter::visit( CF_sbend const& x )
 {
   QString stl;
   QString sts;
   QString stq;
-  stl.setNum( x->Length() );
-  sts.setNum( x->Strength() );
-  stq.setNum( x->getQuadrupole()/x->Length() );  
+  stl.setNum( x.Length() );
+  sts.setNum( x.Strength() );
+  stq.setNum( x.getQuadrupole()/x.Length() );  
   QMessageBox::information( 
           0, 
-          QString(x->Type())+QString(": ")+QString(x->Name()),
+          QString(x.Type())+QString(": ")+QString(x.Name()),
           QString("Length [m]: ")+stl+
           QString("  Bend field [T]: ")+sts+
           QString("  Quad gradient [T/m]: ")+stq
@@ -1843,25 +1568,8 @@ void BeamlineBrowser::infoWriter::visitCF_sbend( const CF_sbend* x )
 }
 
 
-// REMOVE: void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
-// REMOVE: {
-// REMOVE:   QString stl;
-// REMOVE:   QString sts;
-// REMOVE:   QString stq;
-// REMOVE:   stl.setNum( x->Length() );
-// REMOVE:   sts.setNum( x->Strength() );
-// REMOVE:   stq.setNum( x->getQuadrupole()/x->Length() );
-// REMOVE:   QMessageBox::information( 
-// REMOVE:           0, 
-// REMOVE:           QString(x->Type())+QString(": ")+QString(x->Name()),
-// REMOVE:           QString("Length [m]: ")+stl+
-// REMOVE:           QString("\nBend field [T]: ")+sts+
-// REMOVE:           QString("\nQuad gradient [T/m]: ")+stq
-// REMOVE:           );
-// REMOVE: }
 
-
-void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
+void BeamlineBrowser::infoWriter::visit( rbend const& x )
 {
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
   // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
@@ -1872,18 +1580,18 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
          qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
          qgl->addWidget( new QLabel( QString(" [m]: "), qwa ), 0, 1 );
            QString stlen;
-           stlen.setNum( x->Length() );
+           stlen.setNum( x.Length() );
          qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
 
          qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString(" [T]: "), qwa ), 1, 1 );
            QString sts;
-           sts.setNum( x->Strength() );
+           sts.setNum( x.Strength() );
          qgl->addWidget( new QLabel( sts, qwa ), 1, 2 );
 
          qgl->addWidget( new QLabel( QString("Nominal entry angle"), qwa ), 2, 0 );
          qgl->addWidget( new QLabel( QString(" [mrad]: "), qwa ), 2, 1 );
-           sts.setNum( 1000.0 * x->getPoleFaceAngle() );
+           sts.setNum( 1000.0 * x.getPoleFaceAngle() );
          qgl->addWidget( new QLabel( sts, qwa ), 2, 2 );
 
        qwa->adjustSize();
@@ -1903,7 +1611,7 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
 
     qvb->adjustSize();
 
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
@@ -1921,7 +1629,7 @@ void BeamlineBrowser::infoWriter::visitRbend( const rbend* x )
 
 // ??? The argument is not const. It's not supposed to be.
 // ??? Change the argument???
-void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
+void BeamlineBrowser::infoWriter::visit( CF_rbend const& x )
 {
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
   // REMOVE: QDialog* wpu = new QDialog( 0, 0, true );
@@ -1930,7 +1638,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( QString("Field [T]: "), qhb1 );
         QString sts;
-        sts.setNum( x->Strength() );
+        sts.setNum( x.Strength() );
         new QLabel( sts, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1939,7 +1647,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
       QHBox* qhb4 = new QHBox( qvb );
         new QLabel( QString("Gradient [T/m]: "), qhb4 );
         QString stg;
-        stg.setNum( x->getQuadrupole() / x->Length() );
+        stg.setNum( x.getQuadrupole() / x.Length() );
         new QLabel( stg, qhb4 );
       qhb4->setMargin(5);
       qhb4->setSpacing(3);
@@ -1947,7 +1655,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
 
       QHBox* qhb2 = new QHBox( qvb );
         new QLabel( QString("Roll angle [mrad]: "), qhb2 );
-        alignmentData ad(x->Alignment());
+        alignmentData ad(x.Alignment());
         QString str;
         str.setNum( 1000.*(ad.tilt /*[rad]*/) );
         new QLabel( str, qhb2 );
@@ -1964,7 +1672,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
       qhb3->adjustSize();
 
     qvb->adjustSize();
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
@@ -1973,7 +1681,7 @@ void BeamlineBrowser::infoWriter::visitCF_rbend( const CF_rbend* x )
 }
 
 
-void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
+void BeamlineBrowser::infoWriter::visit( quadrupole const& x )
 {
   QString theValue;
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
@@ -1982,7 +1690,7 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( QString("Gradient [T/m]: "), qhb1 );
-        theValue.setNum( x->Strength() );
+        theValue.setNum( x.Strength() );
         new QLabel( theValue, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1990,7 +1698,7 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 
       QHBox* qhb2 = new QHBox( qvb );
         new QLabel( QString("Length: "), qhb2 );
-        theValue.setNum( x->Length() );
+        theValue.setNum( x.Length() );
         new QLabel( theValue, qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
@@ -1998,7 +1706,7 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 
       QHBox* qhb3 = new QHBox( qvb );
         new QLabel( QString("Roll angle [mrad]: "), qhb3 );
-        alignmentData ad(x->Alignment());
+        alignmentData ad(x.Alignment());
         theValue.setNum( 1000.*(ad.tilt /*[rad]*/) );
         new QLabel( theValue, qhb3 );
       qhb3->setMargin(5);
@@ -2018,7 +1726,7 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
       qhb4->adjustSize();
 
     qvb->adjustSize();
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
@@ -2039,7 +1747,7 @@ void BeamlineBrowser::infoWriter::visitQuadrupole( const quadrupole* x )
 }
 
 
-void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
+void BeamlineBrowser::infoWriter::visit( thinQuad const& x )
 {
   QString theValue;
   QDialog* wpu = new QDialog(0,0,false,Qt::WDestructiveClose);
@@ -2051,12 +1759,12 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
 
          qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
          qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
-           theValue.setNum( x->Strength() );
+           theValue.setNum( x.Strength() );
          qgl->addWidget( new QLabel( theValue, qwa ), 0, 2 );
 
          qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-           theValue.setNum( 1000.*(x->Alignment().tilt /*[rad]*/) );
+           theValue.setNum( 1000.*(x.Alignment().tilt /*[rad]*/) );
          qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
       qwa->adjustSize();
 
@@ -2074,104 +1782,45 @@ void BeamlineBrowser::infoWriter::visitThinQuad( const thinQuad* x )
 
     qvb->adjustSize();
 
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
-  // REMOVE: int returnCode = wpu->exec();
-  // REMOVE: // Note: when reject is activated, wpu and all its subwidgets
-  // REMOVE: //       will be deleted, if the flag Qt::WDestructiveClose is used.
-  // REMOVE: //       This is confirmed by changing these from pointers to objects.
-  // REMOVE: //       A warning message is issued, when exiting this scope, that
-  // REMOVE: //       the objects are deleted twice.
-
-  // REMOVE: if( returnCode == QDialog::Accepted ) {
-  // REMOVE:   editDialog edg;
-  // REMOVE:   edg._contextPtr = _contextPtr;
-  // REMOVE:   ((thinQuad*) x)->accept(edg);
-  // REMOVE: }
-
-  // REMOVE: delete wpu;
 }
 
 
-void BeamlineBrowser::infoWriter::visitSextupole( const sextupole* x )
+void BeamlineBrowser::infoWriter::visit( sextupole const& x )
 {
   QString stl;
   QString sts;
-  stl.setNum( x->Length() );
-  sts.setNum( x->Strength() );
+  stl.setNum( x.Length() );
+  sts.setNum( x.Strength() );
   QMessageBox::information( 
           0, 
-          QString(x->Type())+QString(": ")+QString(x->Name()),
+          QString(x.Type())+QString(": ")+QString(x.Name()),
           QString("Length: ")+stl+QString("\nStrength [T/m**2]: ")+sts
           );
 }
 
 
-void BeamlineBrowser::infoWriter::visitMarker( const marker* x )
+void BeamlineBrowser::infoWriter::visit( marker const& x )
 {
   QString stl;
   QString sts;
-  stl.setNum( x->Length() );
-  sts.setNum( x->Strength() );
+  stl.setNum( x.Length() );
+  sts.setNum( x.Strength() );
   QMessageBox::information( 
           0, 
-          QString(x->Type())+QString(": ")+QString(x->Name()),
+          QString(x.Type())+QString(": ")+QString(x.Name()),
           "What do you expect here?\nIt's a marker!"
           );
 }
 
 
-// REMOVE:  void BeamlineBrowser::infoWriter::visitSector( const sector* x )
-// REMOVE:  {
-// REMOVE:    MatrixD M( x->getMap().Jacobian() );
-// REMOVE:  
-// REMOVE:    QString matrixElement;
-// REMOVE:    QString matrixDisplay;
-// REMOVE:    const QString spacer("  "); 
-// REMOVE:    const QString eol("\n");
-// REMOVE:  
-// REMOVE:    for( int i = 0; i < M.rows(); i++ ) {
-// REMOVE:      for( int j = 0; j < M.cols(); j++ ) {
-// REMOVE:        matrixElement.setNum( M(i,j) );
-// REMOVE:        matrixDisplay = matrixDisplay + matrixElement + spacer;
-// REMOVE:      }
-// REMOVE:      matrixDisplay = matrixDisplay + eol;
-// REMOVE:    }
-// REMOVE:  
-// REMOVE:    QDialog* wpu = new QDialog( 0, 0, true );
-// REMOVE:  
-// REMOVE:      QVBox* qvb = new QVBox( wpu );
-// REMOVE:  
-// REMOVE:        QTextView* qtv = new QTextView( matrixDisplay, QString::null, qvb );
-// REMOVE:        int drawArea = (50*QApplication::desktop()->height()*
-// REMOVE:                           QApplication::desktop()->width())/100;
-// REMOVE:        int fixedWidth = (int) sqrt( (double) drawArea );
-// REMOVE:        qtv->setFixedSize( fixedWidth, fixedWidth );
-// REMOVE:  
-// REMOVE:        QHBox* qhb3 = new QHBox( qvb );
-// REMOVE:          QPushButton* doneBtn = new QPushButton( "Done", qhb3 );
-// REMOVE:            doneBtn->setDefault( true );
-// REMOVE:            connect( doneBtn, SIGNAL(pressed()),
-// REMOVE:                     wpu,     SLOT(accept()) );
-// REMOVE:        qhb3->setMargin(5);
-// REMOVE:        qhb3->setSpacing(3);
-// REMOVE:        qhb3->adjustSize();
-// REMOVE:  
-// REMOVE:      qvb->adjustSize();
-// REMOVE:  
-// REMOVE:    wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
-// REMOVE:    wpu->adjustSize();
-// REMOVE:  
-// REMOVE:    wpu->exec();
-// REMOVE:    delete wpu;
-// REMOVE:  }
 
-
-void BeamlineBrowser::infoWriter::visitSector( const sector* x )
+void BeamlineBrowser::infoWriter::visit( sector const& x )
 {
-  Mapping theMap( x->getMap() );
+  Mapping theMap( x.getMap() );
   MatrixD M( theMap.Jacobian() );
 
   ostringstream zlorfik;
@@ -2215,7 +1864,7 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
 
     qvb->adjustSize();
 
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   wpu->show();
@@ -2224,39 +1873,10 @@ void BeamlineBrowser::infoWriter::visitSector( const sector* x )
 }
 
 
-// REMOVE: void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
-// REMOVE: {
-// REMOVE:   QString cap( "monitor: " );
-// REMOVE:   cap += QString( x->Name() );
-// REMOVE: 
-// REMOVE:   if( 6 != Particle::PSD ) {
-// REMOVE:     cap += ": *** ERROR *** ";
-// REMOVE:     QMessageBox::information( 0, cap,
-// REMOVE:                               "SORRY: Current version of software"
-// REMOVE:                               "\nrequires 6 dimensional phase space." );
-// REMOVE:     return;
-// REMOVE:   }
-// REMOVE: 
-// REMOVE:   int n = Particle::PSD;
-// REMOVE:   double w[n];
-// REMOVE:   x->getState(w);  // This is the only statement that requires
-// REMOVE:                    //   six-dimensional phase space. 
-// REMOVE: 
-// REMOVE:   ostringstream uic;
-// REMOVE:   uic << "x     [mm]  : " << 1000.0*w[ Particle::_x()  ] << endl;
-// REMOVE:   uic << "y     [mm]  : " << 1000.0*w[ Particle::_y()  ] << endl;
-// REMOVE:   uic << "p_x/p [mrad]: " << 1000.0*w[ Particle::_xp() ] << endl;
-// REMOVE:   uic << "p_y/p [mrad]: " << 1000.0*w[ Particle::_yp() ] << endl;
-// REMOVE: 
-// REMOVE:   cap += ": registers";
-// REMOVE:   QMessageBox::information( 0, cap, uic.str().c_str() );
-// REMOVE: }
-
-
-void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
+void BeamlineBrowser::infoWriter::visit( monitor const& x )
 {
   if( 6 != Particle::PSD ) {
-    QMessageBox::warning( 0, QString( "monitor: " ) + QString( x->Name() ),
+    QMessageBox::warning( 0, QString( "monitor: " ) + QString( x.Name() ),
                              "SORRY: Current version of software"
                              "\nrequires 6 dimensional phase space." );
     return;
@@ -2265,7 +1885,7 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
   // Load the coordinates into an array
   int n = Particle::PSD;
   double w[n];
-  x->getState(w);  // This is the only statement that requires
+  x.getState(w);  // This is the only statement that requires
                    //   six-dimensional phase space. 
 
   // Set up the display widget
@@ -2312,7 +1932,7 @@ void BeamlineBrowser::infoWriter::visitMonitor( const monitor* x )
       qhb4->adjustSize();
 
     qvb->adjustSize();
-  wpu->setCaption( QString(x->Type())+QString(": ")+QString(x->Name()) );
+  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
   wpu->adjustSize();
 
   // Show the information and exit
