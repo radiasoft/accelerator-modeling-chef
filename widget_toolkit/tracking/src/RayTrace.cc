@@ -11,7 +11,13 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
-******                                                                
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -27,10 +33,8 @@
 ******  June, 2005 
 ******  - Axes, grids, and tic labels added with the assistance
 ******  of Summer student employee Oleg Mokhov.
-******  
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+******  Mar 2007   ostiguy@fnal.gov
+******  -eliminated references to slist/dlist
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -61,11 +65,10 @@
 #include <QtMonitor.h>
 
 #include <GL/glut.h>
-#include <qwt/qwt_math.h>
+/// FIX ME !#include <qwt_math.h>
 
 #include <beamline/Particle.h>  // This line should not be necessary!!!
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/BeamlineContext.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
@@ -379,10 +382,11 @@ void RayDrawSpace::_computeGridBounds( double& xGridMin, double& xGridMax,
   yGridMin = 0.9 * _yLo;
   yGridMax = 0.9 * _yHi;
             
-  xInterval = qwtFloor125( ((xGridMax - xGridMin) / 2.0) / interval);
-  yInterval = qwtFloor125( ((yGridMax - yGridMin) / 2.0) / interval);
-  // xInterval = (xGridMax - xGridMin) / 2.0 / interval;
-  // yInterval = (yGridMax - yGridMin) / 2.0 / interval;
+  // FIX ME !!
+  //xInterval = qwtFloor125( ((xGridMax - xGridMin) / 2.0) / interval);
+  //yInterval = qwtFloor125( ((yGridMax - yGridMin) / 2.0) / interval);
+  xInterval = (xGridMax - xGridMin) / 2.0 / interval;
+  yInterval = (yGridMax - yGridMin) / 2.0 / interval;
 
   double xAverage = (xGridMin + xGridMax) / 2.0;
   double yAverage = (yGridMin + yGridMax) / 2.0;
@@ -396,7 +400,6 @@ void RayDrawSpace::_computeGridBounds( double& xGridMin, double& xGridMax,
 
 void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 {
-  slist_iterator getNext( x->_topRayTrace->_history );
   
   glClearColor( x->_rClr, x->_gClr, x->_bClr, x->_aClr );
   glClear( GL_COLOR_BUFFER_BIT );
@@ -417,10 +420,14 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
   m = ( x->_topRayTrace->_history ).size();
   if( m > (x->_topRayTrace->maxHistory())*n ) {
     m -= (x->_topRayTrace->maxHistory())*n;
+
     for( i = 0; i < m; i++ ) {
-      delete ((Ray*)((x->_topRayTrace->_history).get()));
+     delete x->_topRayTrace->_history.front();
+     x->_topRayTrace->_history.pop_front();
     }
   }
+
+  std::list<Ray*>::iterator it = x->_topRayTrace->_history.begin();
 
   m = ( x->_topRayTrace->_history ).size() / n;
   for( i = 0; i < m-1; i++ ) {
@@ -428,9 +435,14 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
                ((i+1)*(x->_g))/m, 
                ((i+1)*(x->_b))/m );
     glBegin( GL_LINE_STRIP );
+
+
     for( j = 0; j < n; j++ ) {
-      q = (Ray*) getNext();
+
+      q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
+
       if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
+
       else {
         ostringstream uic;
         uic << "An impossibility has occurred\nin file "
@@ -452,8 +464,11 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
     glColor3f( 1, 1, 1 );
     glLineWidth(3);
     glBegin( GL_LINE_STRIP );
+
     for( j = 0; j < n; j++ ) {
-      q = (Ray*) getNext();
+
+      q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
+
       if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
       else {
         ostringstream uic;
@@ -472,7 +487,6 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 
 void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 {
-  slist_iterator getNext( x->_topRayTrace->_history );
 
   glClearColor( x->_rClr, x->_gClr, x->_bClr, x->_aClr );
   glClear( GL_COLOR_BUFFER_BIT );
@@ -494,9 +508,12 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
   if( m > (x->_topRayTrace->maxHistory())*n ) {
     m -= (x->_topRayTrace->maxHistory())*n;
     for( i = 0; i < m; i++ ) {
-      delete ((Ray*)((x->_topRayTrace->_history).get()));
+      delete x->_topRayTrace->_history.front();
+      x->_topRayTrace->_history.pop_front();
     }
   }
+
+  std::list<Ray*>::iterator it = x->_topRayTrace->_history.begin();
 
   m = ( x->_topRayTrace->_history ).size() / n;
   for( i = 0; i < m-1; i++ ) {
@@ -504,8 +521,11 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
                ((i+1)*(x->_g))/m, 
                ((i+1)*(x->_b))/m );
     glBegin( GL_LINE_STRIP );
+
     for( j = 0; j < n; j++ ) {
-      q = (Ray*) getNext();
+
+      q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
+
       if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
       else {
         ostringstream uic;
@@ -528,8 +548,11 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
     glColor3f( 1, 1, 1 );
     glLineWidth(3);
     glBegin( GL_LINE_STRIP );
+
     for( j = 0; j < n; j++ ) {
-      q = (Ray*) getNext();
+
+      q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
+
       if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
       else {
         ostringstream uic;
@@ -570,28 +593,26 @@ void RayDrawSpace::setRange( double xl, double xh, double yl, double yh )
 // Implementation: class RayTrace
 // -----------------------------
 
-RayTrace::RayTrace( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f )
+RayTrace::RayTrace( BmlContextPtr bmlCP, QWidget* parent, const char* name, WFlags f )
 : QVBox( parent, name, f),
   _p_info(0), 
   _number(1),
   _maxHistory(64),
   _bmlConPtr( bmlCP ), 
-  _deleteContext( false ),
   _continuous(true),
   _isIterating(false)
 {
-  this->_finishConstructor();
+  _finishConstructor();
 }
 
 
-RayTrace::RayTrace( const Particle& prt, beamline* x, 
+RayTrace::RayTrace( Particle const& prt, BmlPtr x, 
                     QWidget* parent, const char* name, WFlags f )
 : QVBox(parent, name, f),
   _p_info(0), 
   _number(1),
   _maxHistory(64),
-  _bmlConPtr( 0 ), 
-  _deleteContext( true ),
+  _bmlConPtr(), 
   _continuous(true),
   _isIterating(false)
 {
@@ -601,15 +622,15 @@ RayTrace::RayTrace( const Particle& prt, beamline* x,
            "null argument passed to constructor." ) );
   }
 
-  _bmlConPtr = new BeamlineContext( prt, x, false );
-  this->_finishConstructor();
+  _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x ));
+  _finishConstructor();
 }
 
 
 void RayTrace::_finishConstructor()
 {
   // Initialize the QtMonitors
-  _n_monitor = QtMonitor::setAzimuth( _bmlConPtr->cheatBmlPtr() );
+  _n_monitor = QtMonitor::setAzimuth( *_bmlConPtr->cheatBmlPtr() );
   if( 0 == _n_monitor ) {
     (*pcerr) << "\n*** WARNING *** "
              << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
@@ -626,11 +647,11 @@ void RayTrace::_finishConstructor()
 
 
   // Connect QtMonitor signals to the _appendToHistory slot
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*_bmlConPtr->cheatBmlPtr()) );
-  bmlnElmnt* q;
-  while((  q = dbi++  )) {
-    if( typeid(*q) ==  typeid(QtMonitor) ) {
-      QObject::connect( dynamic_cast<const QtMonitor*>(q),    
+  
+  for (beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr() )->deep_begin();
+                               it != boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr() )->deep_end(); ++it ) {
+    if( typeid(**it) ==  typeid(QtMonitor) ) {
+      QObject::connect( dynamic_cast<const QtMonitor*>((*it).get()),    
                           SIGNAL(ping(double,const Vector&)),
                         this, 
                           SLOT(_appendToHistory(double,const Vector&)) 
@@ -808,12 +829,10 @@ RayTrace::~RayTrace()
   delete _p_startBtn;
   delete _p_trackBox;
 
-  Ray* q;
-  while(( q = (Ray*) _history.get() )) {
-    delete q;
+  for ( std::list<Ray*>::iterator it = _history.begin();  it != _history.end(); ++it ) {
+    delete (*it);
   }
 
-  if(_deleteContext) { delete _bmlConPtr; }
 }
 
 
@@ -834,9 +853,8 @@ void RayTrace::_edit_clear()
 {
   _isIterating = false;
 
-  Ray* q;
-  while(( q = (Ray*) _history.get() )) {
-    delete q;
+  for ( std::list<Ray*>::iterator it = _history.begin();  it != _history.end(); ++it ) {
+    delete (*it);
   }
 
   _p_leftWindow->updateGL();
@@ -1061,7 +1079,7 @@ void RayTrace::_appendToHistory( double az, const Vector& state )
   Ray* rayPtr = new Ray;
   rayPtr->s = az;
   rayPtr->z = state;
-  _history.append( rayPtr );
+  _history.push_back( rayPtr );
 }
 
 
@@ -1086,7 +1104,7 @@ void RayTrace::_iterate()
     _pushParticle(); 
   }
   else {
-    if( _bmlConPtr->particleBunchPtr_->isEmpty() ) { 
+    if( _bmlConPtr->particleBunchPtr_->empty() ) { 
       _pushParticle(); 
     }
     else                                           { 
@@ -1098,15 +1116,13 @@ void RayTrace::_iterate()
 
 void RayTrace::_pushBunch()
 {
-  const Particle* particlePtr = 0;
   ParticleBunch* pbPtr = _bmlConPtr->particleBunchPtr_;
 
   if( _isIterating ) 
   {
-    ParticleBunch::Iterator itr( *pbPtr );
-    while( 0 != ( particlePtr = (itr.next()) ) ) {
-      _bmlConPtr->setParticleState( particlePtr->State() );
-      this->_pushParticle();
+    for ( ParticleBunch::iterator it = pbPtr->begin();  it != pbPtr->end(); ++it ) {
+      _bmlConPtr->setParticleState( (*it)->State() );
+      _pushParticle();
     }
 
     // _p_leftWindow->updateGL();
@@ -1122,7 +1138,7 @@ void RayTrace::_pushBunch()
 
 void RayTrace::_pushParticle()
 {
-  beamline* bmlPtr = const_cast<beamline*>(_bmlConPtr->cheatBmlPtr());
+  BmlPtr bmlPtr = boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr());
 
   Particle* particle = _bmlConPtr->particle_;
 
@@ -1140,12 +1156,11 @@ void RayTrace::_pushParticle()
       // ??? It is written as a hack to prevent
       // ??? the program from hanging if the orbit 
       // ??? diverges.
-      DeepBeamlineIterator dbi( *bmlPtr );
-      bmlnElmnt* q = 0;
 
       for( int i = 0; i < _number; i++ ) {
-      	while( 0 != (q = dbi++) ) {
-      	  q->propagate( *particle );
+        for ( beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(bmlPtr)->deep_begin();
+                                      it != boost::const_pointer_cast<beamline>(bmlPtr)->deep_end(); ++it ) {
+      	  (*it)->propagate( *particle );
       	  if(    (0.1 < std::abs(particle->get_x())) 
       	      || (0.1 < std::abs(particle->get_y())) ) {
 
@@ -1160,7 +1175,6 @@ void RayTrace::_pushParticle()
       	    return;
       	  }
       	}
-        dbi.reset();
       }
       _p_leftWindow->updateGL();
       _p_rightWindow->updateGL();
@@ -1187,10 +1201,10 @@ void RayTrace::_pushParticle()
       // ??? It is written as a hack to prevent
       // ??? the program from hanging if the orbit 
       // ??? diverges.
-      DeepBeamlineIterator dbi( *bmlPtr );
-      bmlnElmnt* q = 0;
-      while( 0 != (q = dbi++) ) {
-        q->propagate( *particle );
+
+       for (beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(bmlPtr)->deep_begin();
+                                   it != boost::const_pointer_cast<beamline>(bmlPtr)->deep_end(); ++it ) {
+        (*it)->propagate( *particle );
         if(    (0.1 < std::abs(particle->get_x())) 
             || (0.1 < std::abs(particle->get_y())) ) {
           _p_leftWindow->updateGL();
