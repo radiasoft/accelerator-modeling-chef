@@ -48,9 +48,9 @@ Q_OBJECT
 
  public slots:
 
-   void readInputValues();
-   const LattFuncSage::lattFunc& getInitCond() const;
-   void setInitCond( const LattFuncSage::lattFunc& lf );
+   void                            readInputValues();
+   LattFuncSage::lattFunc const&   getInitCond() const;
+   void                            setInitCond( LattFuncSage::lattFunc const& lf );
   
  private:
 
