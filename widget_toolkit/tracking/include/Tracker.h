@@ -11,6 +11,14 @@
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******                                                                
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -22,10 +30,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+****** REVISION HISTORY
+****** Mar 2007 ostiguy@fnal.gov
+****** - removed references to slist/dlist
+****** - support for reference counted elements and beamlines
 **************************************************************************
 *************************************************************************/
 
@@ -45,6 +53,7 @@
 
 #include <iostream>
 
+#include <list>
 #include <qcolor.h>
 #include <qpushbutton.h>
 #include <qmenubar.h>
@@ -53,18 +62,12 @@
 #include <qlabel.h>
 #include <qgl.h>
 
-#include "slist.h"
-#include "ColorWheel.h"
-#include "VectorD.h"
+#include <basic_toolkit/ColorWheel.h>
+#include <basic_toolkit/VectorD.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <beamline/BmlPtr.h>
 
 // Predeclaration of classes...
-class beamline;
-class BeamlineContext;
-
-#ifndef LATTFUNCSAGE_H
-#include "LattFuncSage.h"
-#endif
-
 
 class DrawSpace;
 class Tracker;
@@ -75,6 +78,7 @@ typedef void (*DrawFunc) ( DrawSpace* );
 class Orbit
 {
   public: 
+
     Orbit( const Vector& );  // Arguments are always cloned.
     Orbit( const Vector* );
     Orbit( const Orbit& );   // Does a deep copy
@@ -89,31 +93,26 @@ class Orbit
     GLdouble Red() const;
     GLdouble Green() const;
     GLdouble Blue() const;
+
     void setColor( GLdouble, GLdouble, GLdouble );
 
-    class Iterator 
-    {
-      public:
-        Iterator( const Orbit& );
-        Iterator( const Orbit* );
-        Iterator( const Iterator& );
-        ~Iterator();
-      
-        const Vector* operator++( int );    // postfix increment
-        // ??? Should use PhaseSpacePoint rather than Vector.
-        void reset();
-        void goBack( int = 1 );
-      
-      private:
-        dlist_iterator* _getNext;
-    };
-    friend class Iterator;
+    typedef std::list<Vector*>::iterator             iterator;  
+    typedef std::list<Vector*>::const_iterator const_iterator;  
+
+    iterator       begin();
+    const_iterator begin() const;
+
+    iterator       end();
+    const_iterator end()   const;
+
+
+    std::list<Vector*> history_;
 
   private:
-    dlist    _history;
-    GLdouble _red;
-    GLdouble _green;
-    GLdouble _blue;
+
+    GLdouble           red_;
+    GLdouble           green_;
+    GLdouble           blue_;
 };
 
 
@@ -261,16 +260,14 @@ class Tracker : public QVBox
 Q_OBJECT
 
 public:
-  Tracker( const Particle&, beamline*, QWidget* parent=0, const char* name=0, WFlags f=0 );
-  Tracker( BeamlineContext*, QWidget* parent=0, const char* name=0, WFlags f=0 );
+  Tracker( Particle const &,  BmlPtr, QWidget* parent=0, const char* name=0, WFlags f=0 );
+  Tracker( BmlContextPtr, QWidget* parent=0, const char* name=0, WFlags f=0 );
   ~Tracker();
   int run();
 
-  slist                   _orbits;
+  std::list<Orbit*>       orbits_;
   LattFuncSage::lattFunc* _p_info;
 
-  // REMOVE void      setBeamline( const beamline* );
-  // REMOVE void      _process ( DrawSpace*, double, double );
   void setState( const Vector& );
 
   bool isIterating();
@@ -343,9 +340,8 @@ private:
   QLabel*          _p_y_label;
   QLabel*          _p_yp_label;
 
-  BeamlineContext* _bmlConPtr;
+  BmlContextPtr    _bmlConPtr;
   Particle*        _centralParticlePtr;
-  bool             _deleteContext;
   bool             _isIterating;
   Orbit*           _p_currOrb;
 };
@@ -445,17 +441,17 @@ private:
 
 inline GLdouble Orbit::Red() const
 {
-  return _red;
+  return red_;
 }
 
 inline GLdouble Orbit::Green() const
 {
-  return _green;
+  return green_;
 }
 
 inline GLdouble Orbit::Blue() const
 {
-  return _blue;
+  return blue_;
 }
 
 inline bool Tracker::isIterating()
