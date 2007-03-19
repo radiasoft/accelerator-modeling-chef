@@ -38,9 +38,6 @@
 ****** - eliminated archaic "reconstruct" member functions. 
 ******   Use placemnent new instead.                                     
 ******
-****** Mar 2006     ostiguy@fnal
-******
-****** -  refactored to take advantage of STL container/algorithms.
 **************************************************************************
 *************************************************************************/
 
@@ -150,6 +147,16 @@ inline int Cascade::index( IntArray const& e ) const
 
   return swPtr->index_;
 
+  //----------------------------------------------
+  // the code below works only with 1st order Jets
+  //----------------------------------------------
+#if  0
+  IntArrayIterator getNext( e );
+  for( int j = 0; j < _numVar; ++j ) {
+    if (getNext() != 0 ) return j+1;  
+  }
+  return 0;
+#endif
 }
 
 
