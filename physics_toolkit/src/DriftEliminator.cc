@@ -32,6 +32,14 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+****** REVISION HISTORY
+******
+****** Mar 2006   ostiguy@fnal.gov
+******
+******  - reference counted elements/beamlines 
+******  - eliminated references to slist/dlist
+******  - use new-style STL compatible beamline iterators
+******
 **************************************************************************
 *************************************************************************/
 
@@ -63,15 +71,19 @@
 #include <beamline/marker.h>
 #include <beamline/monitor.h>
 #include <beamline/Slot.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 
 using namespace std;
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 DriftEliminator::DriftEliminator()
-: _driftPtr(0), _bmlPtr(0)
 {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DriftEliminator::DriftEliminator( const DriftEliminator& )
 {
@@ -81,140 +93,149 @@ DriftEliminator::DriftEliminator( const DriftEliminator& )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 DriftEliminator::~DriftEliminator()
-{
-  if( _driftPtr ) { delete _driftPtr; }
-  if( _bmlPtr   ) { _bmlPtr->zap; delete _bmlPtr; }
-}
+{}
 
 
-void DriftEliminator::visitBeamline( const beamline* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void DriftEliminator::visit( beamline const& x )
 {
   // Quick check
-  if( 0 != _bmlPtr ) {  // Paranoid check only
+  if( !bmlPtr_ ) {  // Paranoid check only
     throw( GenericException( __FILE__, __LINE__, 
-           "void DriftEliminator::visitBeamline( const beamline* x )", 
-           "A horrible, inexplicable error has occurred!! Null _bmlPtr." ) );
+           "void DriftEliminator::visitBeamline( beamline const& x )", 
+           "A horrible, inexplicable error has occurred!! Null bmlPtr_." ) );
   }
 
 
-  // Create the new beamline
-  int n = strlen(x->Name()) + strlen("_Condensed") + 1;
-  char* nuNam = new char [n];
-  strcpy( nuNam, x->Name() );
-  strcat( nuNam, "_Condensed" );
-  if( strlen(nuNam) != n-1 ) {  // More paranoia
-    throw( GenericException( __FILE__, __LINE__, 
-           "void DriftEliminator::visitBeamline( const beamline* x )", 
-           "An inexplicable, horrible error has occurred!!" ) );
-  }
+  string nuName =  x.Name()+ string("_Condensed");
 
-  _bmlPtr = new beamline( nuNam );
-  _bmlPtr->setEnergy( x->Energy() );
-
-  delete [] nuNam;
+  bmlPtr_ = BmlPtr( new beamline( nuName.c_str()  ) );
+  bmlPtr_->setEnergy( x.Energy() );
 
 
   // Process the argument
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
-  bmlnElmnt* q;
-  while( 0 != ( q = dbi++ ) ) {
-    q->accept( *this );
+
+
+  for ( beamline::const_deep_iterator it= x.deep_begin(); it != x.deep_end(); ++it ) {
+    (*it)->accept( *this );
   }
 
 
   // Append final drift, if it exists.
-  if( 0 != _driftPtr ) {
-    if( 0.0 < _driftPtr->Length() ) {
-      _bmlPtr->append( _driftPtr->Clone() );
+  if(  driftPtr_ ) {
+    if( driftPtr_->Length() >0.0 ) {
+      bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
     }
-    delete _driftPtr;
-    _driftPtr = 0;
+    driftPtr_ = DriftPtr();
   }
 
 }
 
 
-void DriftEliminator::visitBmlnElmnt( const bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void DriftEliminator::visit( bmlnElmnt const& x )
 {
-  if( 0 != _bmlPtr ) {  // Not paranoia!
-    if( 0.0 != x->Strength() ) {
-      if( 0 != _driftPtr ) {
-        if( 0.0 < _driftPtr->Length() ) {
-          _bmlPtr->append( _driftPtr->Clone() );
+  if( bmlPtr_ ) {  // Not paranoia!
+    if( x.Strength() != 0.0  ) {
+      if( driftPtr_ ) {
+        if( driftPtr_->Length() > 0.0 ) {
+          bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
 	}
-        delete _driftPtr;
-        _driftPtr = 0;
+        driftPtr_ = DriftPtr();
       }
-      _bmlPtr->append( x->Clone() ); 
+      bmlPtr_->append( ElmPtr( x.Clone() ) ); 
     }
     else {
-      _handlePassiveElement( x );
+       handlePassiveElement( x );
     }
   }
 }
 
 
-void DriftEliminator::visitSlot( const Slot* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void DriftEliminator::visit( Slot const& x )
 {
-  if( 0 != _bmlPtr ) {  // Not paranoia!
-    if( 0 != _driftPtr ) {
-      if( 0.0 < _driftPtr->Length() ) {
-        _bmlPtr->append( _driftPtr->Clone() );
+  if(  bmlPtr_ ) {  // Not paranoia!
+
+    if( driftPtr_ ) {
+      if( driftPtr_->Length() > 0.0 ) {
+        bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
       }
-      delete _driftPtr;
-      _driftPtr = 0;
+      driftPtr_ = DriftPtr();
     }
-    _bmlPtr->append( x->Clone() ); 
+    bmlPtr_->append( ElmPtr( x.Clone() ) ); 
   }
 }
 
 
-void DriftEliminator::_handlePassiveElement( const bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void DriftEliminator::handlePassiveElement( bmlnElmnt const& x )
 {
-  if( 0 == _driftPtr ) {
-    _driftPtr = new drift( (char*) "concat_drift", x->Length() );
+  if( !driftPtr_ ) {
+    driftPtr_ = DriftPtr( new drift( (char*) "concat_drift", x.Length() ) );
   }
   else {
-    _driftPtr->setLength( x->Length() + _driftPtr->Length()  );
+    driftPtr_->setLength( x.Length() + driftPtr_->Length()  );
   }
 }
 
 
-void DriftEliminator::visitMonitor( const monitor* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void DriftEliminator::visit( monitor const& x )
 {
-  if( 0.0 == x->Strength() ) {
-    _handlePassiveElement(x);
+  if( 0.0 == x.Strength() ) {
+    handlePassiveElement(x);
   } 
   else {
-    this->visitBmlnElmnt( (const bmlnElmnt*) x );
+    visit( static_cast<bmlnElmnt const&>(x) );
   }
 }
 
-void DriftEliminator::visitMarker( const marker* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void DriftEliminator::visit( marker const& x )
 {
   // Do nothing
 }
 
-void DriftEliminator::visitDrift( const drift* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void DriftEliminator::visit( drift const& x )
 {
-  _handlePassiveElement(x);
+   handlePassiveElement(x);
 }
 
 
-beamline* DriftEliminator::beamlinePtr()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlPtr DriftEliminator::beamlinePtr()
 {
-  return _bmlPtr;
-  // Invoking routine is responsible for
-  // using this beamline before the 
-  // DriftEliminator goes out of scope.
+  return bmlPtr_;
+
 }
 
 
-beamline* DriftEliminator::clonedBeamlinePtr()
-{
-  return ((beamline*) _bmlPtr->Clone());
-  // Invoking routine is responsible for
-  // eliminating the cloned beamline.
-}
+
 
