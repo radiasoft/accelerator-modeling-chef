@@ -47,7 +47,15 @@ HEADERS	+= include/BmlSelectionDialog.h \
 	include/about.h \
 	include/appworkspace.h \
 	include/filters.h \
-	include/messages.h
+	include/messages.h \
+	include/CommandTwiss.h \
+	include/CommandPropagateTwiss.h \
+	include/CommandMoments.h \
+	include/CommandPropagateMoments.h \
+	include/CommandEdwardsTeng.h \
+	include/CommandEigenmodes.h \
+	include/CommandDispersion.h \
+	include/CommandPropagateDispersion.h
 
 SOURCES	+= src/BmlSelectionDialog.cpp \
 	src/CF_Editor.cpp \
@@ -58,7 +66,17 @@ SOURCES	+= src/BmlSelectionDialog.cpp \
 	src/builders.cpp \
 	src/chefmain.cpp \
 	src/filters.cpp \
-	src/messages.cpp
+	src/messages.cpp \
+	src/CF_rbendFinder_quad.cpp \
+	src/RollAccumulator.cpp \
+	src/CommandTwiss.cpp \
+	src/CommandPropagateTwiss.cpp \
+	src/CommandMoments.cpp \
+	src/CommandPropagateMoments.cpp \
+	src/CommandEdwardsTeng.cpp \
+	src/CommandEigenmodes.cpp \
+	src/CommandDispersion.cpp \
+	src/CommandPropagateDispersion.cpp
 
 FORMS	= src/chefguibase.ui \
 	src/bmlselectiondialogbase.ui \
@@ -93,9 +111,9 @@ LIBS    += -lqwt
 #LIBS    += -lqwt4
 LIBS    += -lglut
 LIBS    += -L$${BOOST_LIBDIR} -lboost_regex 
-LIBS    += -L$${GLIB_DIR} -lglib-2.0   
+LIBS    += -L$${GLIB_DIR} -lglib-2.0  
 
-unix:LIBS  += -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
+unix:LIBS  += -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} -Wl,-rpath,/usr/local/lib
 
 DESTDIR = .
 
