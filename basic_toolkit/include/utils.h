@@ -25,6 +25,10 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal.gov
+****** - added version of nexcom that takes an IntArray as an argument
+******
 **************************************************************************
 *************************************************************************/
 
@@ -36,6 +40,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <complex>
 
+class IntArray;
 
 extern std::complex<double>  w(std::complex<double> const& z); 
 extern std::complex<double>  erf(  std::complex<double> const& z );
@@ -43,6 +48,10 @@ extern std::complex<double>  erfc( std::complex<double> const& z );
 extern std::complex<double>  erfSeries( std::complex<double> const& z ); 
  
 extern bool nexcom( int, int, int* );            // Computes the next composition
+                                                 //  of an integer into a number of parts.
+                                                 //  Algorithm devised by Herbert Wilf.
+
+extern bool nexcom( int, int, IntArray& );       // Computes the next composition
                                                  //  of an integer into a number of parts.
                                                  //  Algorithm devised by Herbert Wilf.
 

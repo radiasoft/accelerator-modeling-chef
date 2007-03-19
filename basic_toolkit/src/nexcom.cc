@@ -30,7 +30,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal.gov
+****** - added version of nexcom that takes an IntArray as an argument
+******
 **************************************************************************
 *************************************************************************/
 
@@ -39,6 +42,7 @@
 #endif
 
 #include <iostream>
+#include <basic_toolkit/IntArray.h>
 
 //-----------------------------------------------------------------------
 // n: weight (order)
@@ -60,6 +64,45 @@
 //-----------------------------------------------------------------------
 
 bool nexcom( int n, int k, int* r ) {
+
+  static bool firstEntry  = true;
+  static bool allDone     = false;
+
+  if( allDone ) {
+    firstEntry = true;
+    allDone = false;
+    return false;
+  }
+
+  if( firstEntry ) {
+    r[0] = n;
+    if( k > 1 ) {
+      for( int i=1; i < k; ++i) r[i] = 0;
+      firstEntry = false;
+      }
+    else allDone = true;
+    return true;
+  }
+
+  int h = 0;
+  while( r[h++] == 0 ) ;
+  h--;
+
+  int t = r[h];
+  r[h] = 0;
+  r[0] = --t;
+  r[++h]++;
+
+  allDone = ( r[k-1] == n );
+
+  return true;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool nexcom( int n, int k, IntArray& r ) 
+{
 
   static bool firstEntry  = true;
   static bool allDone     = false;
