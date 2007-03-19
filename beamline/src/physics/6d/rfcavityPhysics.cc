@@ -34,7 +34,7 @@
 ******  ------------------
 ******  Revisions (a few):
 ******  ------------------
-******  Date: January 4, 2000   (Tuesday)
+******  Date: January 4, 2007   (Tuesday)
 ******  Stored in cvs repository
 ******  after major reorganization of files.
 ******  - lpjm
@@ -44,15 +44,14 @@
 ******  - lpjm
 ******
 ******  Date: December 14, 2006 (Thursday)
-******  Elimination of raw pointers; usage of reference to 
-******  particle state to eliminate one level of indirection.
-******  Changes made by Jean-Francois Ostiguy.
-******  - lpjm
+******  Elimination of raw pointers; Particles passed by reference
+******  for consistency and safety (no test for null ptr required)
+******  -jfo
 ******  
 ******  Date: February 2, 2007  (Friday)
 ******  Fixed edge focusing following recommendation of Paul Lebrun
 ******  to use actual electric field upon entry.
-******  In addition, included change to "effective length" calculation.
+******  In addition, included change to "effective length_" calculation.
 ******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
 ******  - lpjm
 ******  
@@ -85,13 +84,13 @@ void rfcavity::localPropagate( Particle& p )
 
   Vector& state = p.getState();
 
-  referenceEnergyGain = strength*sin_phi_s;
-  onaxisEnergyGain    = strength*sin( phi_s + state[2] * w_rf / PH_MKS_c );
+  referenceEnergyGain = strength_*sin_phi_s;
+  onaxisEnergyGain    = strength_*sin( phi_s + state[2] * w_rf / PH_MKS_c );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  k1 = - 0.5*(onaxisEnergyGain/length)/ E;
-  k2 =   0.5*(onaxisEnergyGain/length)/(E + referenceEnergyGain);
+  k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
+  k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
   // ??? Are the denominators correct ???
 
   // Thin lens kick upon entry
@@ -130,13 +129,13 @@ void rfcavity::localPropagate( JetParticle& p )
 
   Mapping& state = p.getState();
 
-  referenceEnergyGain = strength*sin_phi_s;
-  Jet onaxisEnergyGain( strength*sin( phi_s + state[2] * w_rf / PH_MKS_c ) );
+  referenceEnergyGain = strength_*sin_phi_s;
+  Jet onaxisEnergyGain( strength_*sin( phi_s + state[2] * w_rf / PH_MKS_c ) );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  Jet k1( - 0.5*(onaxisEnergyGain/length)/ E );
-  Jet k2(   0.5*(onaxisEnergyGain/length)/(E + referenceEnergyGain) );
+  Jet k1( - 0.5*(onaxisEnergyGain/length_)/ E );
+  Jet k2(   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain) );
   // ??? Are the denominators correct ???
 
   // Thin lens kick upon entry
@@ -174,15 +173,15 @@ void thinrfcavity::localPropagate( Particle& p )
   
   Vector& state = p.getState(); 
  
-  if( 0.0 != this->strength ) {
+  if( 0.0 != this->strength_ ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    double E = p.Energy() + ((strength*cs)*(sin( phi_s + state[2] * w_rf / PH_MKS_c )));
+    double E = p.Energy() + ((strength_*cs)*(sin( phi_s + state[2] * w_rf / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.ReferenceEnergy() + strength*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s );
     newRefP = p.ReferenceMomentum();
 
     state[3] *= ( oldRefP / newRefP );
@@ -207,15 +206,15 @@ void thinrfcavity::localPropagate( JetParticle& p )
 
   Mapping& state = p.getState(); 
 
-  if( 0.0 != this->strength ) {
+  if( 0.0 != this->strength_ ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    Jet E = p.Energy() + ((strength*cs)*(sin( phi_s + state(2) * w_rf / PH_MKS_c )));
+    Jet E = p.Energy() + ((strength_*cs)*(sin( phi_s + state(2) * w_rf / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.ReferenceEnergy() + strength*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s );
     newRefP = p.ReferenceMomentum();
     state[3] = ( oldRefP / newRefP )*state[3];
     state[4] = ( oldRefP / newRefP )*state[4];
