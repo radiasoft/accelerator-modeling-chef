@@ -31,6 +31,12 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
+****** 
+****** REVISION HISTORY
+****** Mar 2007       ostiguy@fnal.gov
+****** - interface based on Particle/JetParticle references
+****** - use stack variables for local Particles/JetParticles
+****** - visitor interface takes advantage of (reference) dynamic type
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -43,61 +49,59 @@
 
 using namespace std;
 
-QBpropVisitor::QBpropVisitor( const Particle& x )
-: particleVisitor( x )
-{
-}
+QBpropVisitor::QBpropVisitor( Particle const& p )
+: ParticleVisitor( p )
+{}
 
 
-QBpropVisitor::QBpropVisitor( const QBpropVisitor& x )
-: particleVisitor( (const particleVisitor&) x )
-{
-}
+QBpropVisitor::QBpropVisitor( QBpropVisitor const& x )
+: ParticleVisitor(x)
+{}
+
 
 QBpropVisitor::~QBpropVisitor()
-{
-}
+{}
 
 
 
-void QBpropVisitor::visitBmlnElmnt( bmlnElmnt* x )
+void QBpropVisitor::visit( bmlnElmnt& x )
 {
   static drift OO( 1. );
   static double lng;
-  if( 0.0 != ( lng = x->Length() ) )  {
+  if( 0.0 != ( lng = x.Length() ) )  {
     OO.setLength( lng );
-    OO.propagate( *particle );
+    OO.propagate( particle_ );
   }
 }
 
 
-void QBpropVisitor::visitMarker( marker* x )
+void QBpropVisitor::visit( marker& x )
 {
   // Do nothing.
 }
 
 
-void QBpropVisitor::visitDrift( drift* x )
+void QBpropVisitor::visit( drift& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitRbend( rbend* x )
+void QBpropVisitor::visit( rbend& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitSbend( sbend* x )
+void QBpropVisitor::visit( sbend& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitSector( sector* x )
+void QBpropVisitor::visit( sector& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
   cerr << "*** WARNING ***                              \n"
           "*** WARNING *** QBpropVisitor::visitSector   \n"
           "*** WARNING *** Using 1st order part of map  \n"
@@ -107,37 +111,37 @@ void QBpropVisitor::visitSector( sector* x )
 }
 
 
-void QBpropVisitor::visitQuadrupole( quadrupole* x )
+void QBpropVisitor::visit( quadrupole& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitThinQuad( thinQuad* x )
+void QBpropVisitor::visit( thinQuad& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitSlot( Slot* x )
+void QBpropVisitor::visit( Slot& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
-void QBpropVisitor::visitCF_rbend( CF_rbend* x )
+void QBpropVisitor::visit( CF_rbend& x )
 {
-  x->propagate( *particle );
+  x.propagate( particle_ );
 }
 
 
 Vector& QBpropVisitor::getState()
 {
-  return particle->getState();
+  return particle_.getState();
 }
 
 
 Vector QBpropVisitor::State()
 {
-  return particle->State();
+  return particle_.State();
 }
