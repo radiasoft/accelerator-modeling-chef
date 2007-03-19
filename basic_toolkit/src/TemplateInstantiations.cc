@@ -31,7 +31,9 @@
 ******             - segregated explicit template instantiations
 ******             - new template Vector class
 ******           
-******
+****** Mar 2007 ostiguy@fnal.gov
+******  - eliminated need for instantiating dependant classes, in particular
+******    private classes used by the STL implementation.  
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -145,7 +147,7 @@ template
 bool std::equal( IntArray::iterator, IntArray::iterator, IntArray::iterator);
 
 template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator);
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less<exponent_t> );
 
 template
 bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less_equal<exponent_t>);
@@ -154,16 +156,13 @@ template
 bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater<exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater_equal<exponent_t>);
-
-template
 IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::plus<exponent_t> );
 
 template
 bool std::equal( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator);
 
 template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator);
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less<exponent_t>);
 
 template
 bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less_equal<exponent_t>);
@@ -173,6 +172,18 @@ bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_ite
 
 template
 bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater_equal<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less<exponent_t> );
+
+template
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less_equal<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater<exponent_t>);
+
+template
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater_equal<exponent_t>);
 
 template
 void std::fill<int*, int>(int*, int*, int const&);
