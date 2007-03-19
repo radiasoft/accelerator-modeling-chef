@@ -32,14 +32,14 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
+******
 ****** REVISION HISTORY
 ******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
+****** - use std::string for string operations.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -459,27 +459,29 @@ istream& Slot::readFrom( istream& is )
 }
 
 
-void Slot::Split( double const& pct, bmlnElmnt** a, bmlnElmnt** b ) const
+void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 {
   if( pct < 0.0 || 1.0 < pct ) {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void Slot::Split( double, bmlnElmnt**, bmlnElmnt** )"
+         << "\n*** WARNING *** void Slot::Split( double, ElmPtr&, ElmPtr& )"
          << "\n*** WARNING *** Function called with first argument = " 
          << pct <<             ", outside [0,1]."
          << "\n*** WARNING *** Null pointers are being returned." 
          << endl;
-    *a = 0;
-    *b = 0;
+    a = ElmPtr();
+    b = ElmPtr();
     return;
   }
+
+  
   if( pct == 0.0 ) {
-    *a = new marker( "Null Slot" );
-    *b = new Slot( *this );
+     a = MarkerPtr( new marker( "Null Slot" ) );
+     b =   SlotPtr( new Slot( *this ) );
     return;
   }
   if( pct == 1.0 ) {
-    *a = new Slot( *this );
-    *b = new marker( "Null Slot" );
+     a = SlotPtr( new Slot( *this ) );
+     b = MarkerPtr( new marker( "Null Slot" ) );
     return;
   }
 
@@ -491,13 +493,13 @@ void Slot::Split( double const& pct, bmlnElmnt** a, bmlnElmnt** b ) const
   aOutFrame.setOrigin( in.getOrigin() + pct*d );
   Frame bOutFrame( out.relativeTo( aOutFrame ) );
 
-  *a = new Slot( aOutFrame );
-  *b = new Slot( bOutFrame );
+  a = SlotPtr( new Slot( aOutFrame ) );
+  b = SlotPtr( new Slot( bOutFrame ) );
 
   // Rename
 
-  (*a)->rename( ident_ + string("_1") );
-  (*b)->rename( ident_ + string("_2") );
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
 }
 
