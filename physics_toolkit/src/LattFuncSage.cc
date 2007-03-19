@@ -94,11 +94,11 @@ const int LattFuncSage::WRONG_COUNT      = 5;
 const int LattFuncSage::NOT_WRITTEN      = 6;
 const int LattFuncSage::TOO_MANY_VECTORS = 7;
 
-double LattFuncSage::_csH = 0.0;
-double LattFuncSage::_csV = 0.0;
-double LattFuncSage::_snH = 0.0;
-double LattFuncSage::_snV = 0.0;
-Mapping* LattFuncSage::_theMapPtr = 0;
+double LattFuncSage::csH_ = 0.0;
+double LattFuncSage::csV_ = 0.0;
+double LattFuncSage::snH_ = 0.0;
+double LattFuncSage::snV_ = 0.0;
+Mapping* LattFuncSage::theMapPtr_ = 0;
 
 
 
@@ -126,16 +126,16 @@ LattFuncSage::lattFunc::lattFunc() {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LattFuncSage::LattFuncSage( const beamline* x, bool doClone ) 
-  : Sage( x, doClone ), _dpp( 0.00005 )
+LattFuncSage::LattFuncSage( BmlPtr x ) 
+  : Sage( x ), dpp_( 0.00005 )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LattFuncSage::LattFuncSage( const beamline& x, bool doClone ) 
-  : Sage( &x, doClone ), _dpp( 0.00005 )
+LattFuncSage::LattFuncSage( beamline const& x) 
+  : Sage( x ), dpp_( 0.00005 )
 {}
 
 
@@ -147,7 +147,7 @@ LattFuncSage::LattFuncSage( const beamline& x, bool doClone )
 
 double LattFuncSage::get_dpp()
 {
-  return _dpp;
+  return dpp_;
 }
 
 
@@ -158,7 +158,7 @@ double LattFuncSage::get_dpp()
 void LattFuncSage::set_dpp( double x )
 {
   if( x > 0.0 ) {
-    _dpp = x;
+    dpp_ = x;
   }
   else {
     (*pcerr) << "*** WARNING ***                        \n"
@@ -167,7 +167,7 @@ void LattFuncSage::set_dpp( double x )
             "*** WARNING *** changed.               \n"
             "*** WARNING ***                        \n"
 	 << endl;
-    if( x != 0.0 ) _dpp = -x;
+    if( x != 0.0 ) dpp_ = -x;
   }
 }
 
@@ -199,9 +199,9 @@ LattFuncSage::lattRing const& LattFuncSage::getLattRing()
 
 int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& initialConditions )
 {
-  if( _verbose ) {
-    *_outputStreamPtr << "LattFuncSage -- Entering LattFuncSage::pushCalc" << endl;
-    _outputStreamPtr->flush();
+  if( verbose_ ) {
+    *outputStreamPtr_ << "LattFuncSage -- Entering LattFuncSage::pushCalc" << endl;
+    outputStreamPtr_->flush();
   }
 
   int ret = 0;
@@ -209,6 +209,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   const int N = prt.State().Dim();
 
   // Preserve the current Jet environment
+
   Jet__environment_ptr  storedEnv  = Jet__environment::getLastEnv();
   JetC__environment_ptr storedEnvC = JetC__environment::getLastEnv();
 
@@ -216,7 +217,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   double scale[N];
   //   scale is probably no longer needed ... oh, well ...
 
-  for( int i = 0; i < N; ++i) {
+  for( int i=0; i < N; ++i) {
     scale[i] = 0.001;
   }
 
@@ -242,7 +243,6 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   const double alpha_y_0 = initialConditions.alpha.ver;
   const double gamma_y_0 = ( 1.0 + alpha_y_0*alpha_y_0 )/beta_y_0;
 
-  double beta_x, beta_y, alpha_x, alpha_y;
 
   MatrixD mtrx(N,N,0.0);
 
@@ -253,40 +253,38 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
   const double energy = jp.ReferenceEnergy();
 
-  double arcLength = 0.0;
-  double a, b, c, d;
-
   lfvec_.clear();
 
-  for (beamline::deep_iterator it =  _myBeamlinePtr->deep_begin(); 
-                               it != _myBeamlinePtr->deep_end();  ++it) 
+  double arcLength = 0.0;
+  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
+                               it != myBeamlinePtr_->deep_end();  ++it) 
 
   {
     arcLength += (*it) -> OrbitLength( p0 );
     (*it) -> propagate( jp);
     mtrx = jp.State().Jacobian();
 
-    a = mtrx(x,x);
-    b = mtrx(x,px);
-    c = mtrx(px,x);
-    d = mtrx(px,px);
+    double a = mtrx(x,x)  ;
+    double b = mtrx(x,px) ;
+    double c = mtrx(px,x) ;
+    double d = mtrx(px,px);
 
     // I allow for the possibility of RF cavities by scaling
 
-    beta_x =  ( a*a*beta_x_0 - 2.0*a*b*alpha_x_0 + b*b*gamma_x_0 )
-             *( jp.ReferenceEnergy()/energy );
-    alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
-             *( jp.ReferenceEnergy()/energy );
+    double beta_x =  ( a*a*beta_x_0 - 2.0*a*b*alpha_x_0 + b*b*gamma_x_0 )
+                    *( jp.ReferenceEnergy()/energy );
+    double alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
+                    *( jp.ReferenceEnergy()/energy );
 
     a = mtrx(y,y);
     b = mtrx(y,py);
     c = mtrx(py,y);
     d = mtrx(py,py);
 
-    beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
-             *( jp.ReferenceEnergy()/energy );
-    alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
-             *( jp.ReferenceEnergy()/energy );
+    double beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
+                    *( jp.ReferenceEnergy()/energy );
+    double alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
+                    *( jp.ReferenceEnergy()/energy );
 
     // Output
 
@@ -311,9 +309,9 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     delete (*it);
   }
   
-  if( _verbose ) {
-    *_outputStreamPtr << "LattFuncSage -- Leaving LattFuncSage::pushCalc" << endl;
-    _outputStreamPtr->flush();
+  if( verbose_ ) {
+    *outputStreamPtr_ << "LattFuncSage -- Leaving LattFuncSage::pushCalc" << endl;
+    outputStreamPtr_->flush();
   }
 
   return ret;
@@ -327,8 +325,8 @@ void LattFuncSage::eraseAll()
 {
 
 
-  for (beamline::deep_iterator it =  _myBeamlinePtr->deep_begin(); 
-                               it != _myBeamlinePtr->deep_end();  ++it ) { 
+  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
+                               it != myBeamlinePtr_->deep_end();  ++it ) { 
     (*it)->dataHook.eraseAll( "LattFuncSage" );
   }
 }
@@ -343,14 +341,14 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   // jp  is already on the closed orbit and its
   //        state is the one-turn map.
   //
-  // *_myBeamlinePtr  is an uncoupled ring containing
+  // *myBeamlinePtr_  is an uncoupled ring containing
   //                  no Slots.
   // 
   // POSTCONDITIONS:
   // On every element filtered by Crit is attached a lattFunc
   // Barnacle.
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::Fast_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -361,8 +359,8 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   // ??? this test on or off.
   {
 
-      for (beamline::deep_iterator it =  _myBeamlinePtr->deep_begin(); 
-                                   it != _myBeamlinePtr->deep_end();  ++it) {
+      for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
+                                   it != myBeamlinePtr_->deep_end();  ++it) {
         if( strstr( "CF_rbend|rbend|Slot", (*it)->Type() ) ) {
           (*pcerr) << "*** ERROR ***                                     \n"
                   "*** ERROR *** LattFuncSage::Fast_CS_Calc          \n"
@@ -532,8 +530,8 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   lfvec_.clear();
 
-  for (beamline::deep_iterator it =  _myBeamlinePtr->deep_begin(); 
-                               it != _myBeamlinePtr->deep_end();  ++it) {
+  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
+                               it != myBeamlinePtr_->deep_end();  ++it) {
 
     lng += (*it)->OrbitLength( p_1 );
 
@@ -643,7 +641,7 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
 
   // Finished....
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Fast_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -663,13 +661,13 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   // jp     is already on the closed orbit and its
   //        state is the one-turn map.
   //
-  // *_myBeamlinePtr  is an uncoupled ring.
+  // *myBeamlinePtr_  is an uncoupled ring.
   // 
   // POSTCONDITIONS:
   // On every element filtered by Crit is attached a lattFunc
   // Barnacle.
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -688,6 +686,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   int ret = 0;
 
   // .......... Check coupling ............................
+
   MatrixD mtrx = ( jp.State() ).Jacobian();
   
   if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
@@ -716,7 +715,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   double cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
 
-  if( fabs( cs ) > 1.0 ) 
+  if( std::abs( cs ) > 1.0 ) 
   {
     (*pcerr) << "*** ERROR ***                                     \n"
             "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
@@ -743,7 +742,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_x  = mtrx( i_x, i_px ) / sn;
+  double beta_x  =   mtrx( i_x, i_px ) / sn;
   double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
 
 
@@ -806,8 +805,8 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   lfvec_.clear();
 
-  bmlnElmnt* lbe = 0;
-  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) {
+  ElmPtr lbe;
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) {
 
     lbe = (*it);
     lng += lbe->OrbitLength( prt );
@@ -823,7 +822,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
       beta_x = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
     
       alpha_x = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
-    			     mtrx(0,3)*mtrx(3,3))/beta0H;
+    			    mtrx(0,3)*mtrx(3,3))/beta0H;
     
       t = atan2(mtrx(0,3),tb);
       while(t < oldpsiH) t += M_TWOPI;
@@ -888,7 +887,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   // Finished....
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -906,13 +905,13 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
   //    jp  is already on the closed orbit and its
   //        state is the one-turn map.
   //
-  // *_myBeamlinePtr  is an uncoupled ring.
+  // *myBeamlinePtr_  is an uncoupled ring.
   // 
   // POSTCONDITIONS:
   // On every element filtered by Crit is attached a lattFunc
   // Barnacle.
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -1070,8 +1069,8 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
 
   lfvec_.clear();
 
-  bmlnElmnt* lbe = 0;
-  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) 
+  ElmPtr lbe;
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
   {
     lbe = (*it);
 
@@ -1144,7 +1143,7 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
 
 
   // Finished....
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
     (*pcout).flush();
   }
@@ -1185,7 +1184,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   //     (3.c) the object's beamline contains a barnacle
   //           with the (uncoupled) tune information
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::TuneCalc" << endl;
     (*pcout).flush();
   }
@@ -1206,24 +1205,24 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
 
   // Check for closed orbit ...
-  ClosedOrbitSage clsg( this->_myBeamlinePtr );
+  ClosedOrbitSage clsg( this->myBeamlinePtr_ );
 
   if( forceClosedOrbitCalc ) { clsg.setForcedCalc(); }
 
-  if( this->_verbose ) clsg.set_verbose();
+  if( verbose_ ) clsg.set_verbose();
   else                 clsg.unset_verbose();  // Unnecessary line.
 
 
   if( ( ret = clsg.findClosedOrbit( jp ) ) == 0 )
   {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
       (*pcout).flush();
     }
   }
   else
   {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
       (*pcout).flush();
     }
@@ -1359,14 +1358,14 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     if( t < 0.0 )   t += M_TWOPI;
     lftunes.ver = ( t / M_TWOPI );
 
-    _myBeamlinePtr->dataHook.eraseAll( "Tunes" );
-    _myBeamlinePtr->dataHook.append( Barnacle( "Tunes", lftunes ) );
+    myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+    myBeamlinePtr_->dataHook.append( Barnacle( "Tunes", lftunes ) );
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
   // Final operations ....................................
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::TuneCalc" << endl;
     (*pcout).flush();
   }
@@ -1382,7 +1381,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 {
 
-  if( _verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
     (*pcout).flush();
   }
@@ -1402,10 +1401,10 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
 
   // Preliminary steps ...
-  beamline* bml = _myBeamlinePtr;
 
-  ClosedOrbitSage clsg( _myBeamlinePtr );
-  if( this->_verbose ) {
+
+  ClosedOrbitSage clsg( myBeamlinePtr_ );
+  if( verbose_ ) {
     clsg.set_verbose();
   }
 
@@ -1414,13 +1413,13 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
   clsg.unsetForcedCalc();
 
   if( ret == 0 ) {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
       (*pcout).flush();
     }
   }
   else {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
       (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
       (*pcout).flush();
@@ -1434,7 +1433,7 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
 
   // Calculate the closed orbit for an off-momentum particle ...
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
     (*pcout).flush();
   }
@@ -1453,13 +1452,13 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
   clsg.unsetForcedCalc();
 
   if( ret == 0 ) {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
       (*pcout).flush();
     }
   }
   else {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
       (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
       (*pcout).flush();
@@ -1483,19 +1482,20 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
   lf.dPrime.ver     = d( i_py );
   lf.arcLength      = lng;
   
-  bml->dataHook.eraseAll( "Dispersion" );
-  bml->dataHook.insert( Barnacle( "Dispersion", lf ) );
+  myBeamlinePtr_->dataHook.eraseAll( "Dispersion" );
+  myBeamlinePtr_->dataHook.insert( Barnacle( "Dispersion", lf ) );
 
 
   // Attach dispersion data wherever desired ...
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
     (*pcout).flush();
   }
 
 
-  for( beamline::deep_iterator it = bml->deep_begin();  it != bml->deep_end(); ++it) {
+  for( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();  
+                               it != myBeamlinePtr_->deep_end(); ++it) {
 
     (*it)->propagate( firstParticle );
     (*it)->propagate( secondParticle );
@@ -1540,8 +1540,8 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
     latticeRing.chromaticity.hor = ( secondNu(0) - firstNu(0) ) / dpp;
     latticeRing.chromaticity.ver = ( secondNu(1) - firstNu(1) ) / dpp;
 
-    _myBeamlinePtr->dataHook.eraseAll( "Ring" );
-    _myBeamlinePtr->dataHook.insert( Barnacle( "Ring", latticeRing ) );
+    myBeamlinePtr_->dataHook.eraseAll( "Ring" );
+    myBeamlinePtr_->dataHook.insert( Barnacle( "Ring", latticeRing ) );
   }
   else {
     (*pcerr) << "*** ERROR ***                                        \n"
@@ -1558,7 +1558,7 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
   // Final operations ....................................
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
     (*pcout).flush();
   }
@@ -1572,7 +1572,7 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
 int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 {
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::Disp_Calc" << endl;
     (*pcout).flush();
   }
@@ -1599,10 +1599,9 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
 
   // Preliminary steps ...
-  beamline* bml = this->_myBeamlinePtr;
 
-  ClosedOrbitSage clsg( this->_myBeamlinePtr );
-  if( this->_verbose ) {
+  ClosedOrbitSage clsg( myBeamlinePtr_ );
+  if( verbose_ ) {
     clsg.set_verbose();
   }
 
@@ -1613,14 +1612,14 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
   }
 
   if( ret == 0 ) {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
       (*pcout).flush();
     }
   }
 
   else {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
       (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
       (*pcout).flush();
@@ -1633,7 +1632,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
 
   // Calculate the closed orbit for an off-momentum particle ...
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
     (*pcout).flush();
   }
@@ -1651,13 +1650,13 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
   clsg.unsetForcedCalc();
 
   if( ret == 0 ) {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
       (*pcout).flush();
     }
   }
   else {
-    if( this->_verbose ) {
+    if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
       (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
       (*pcout).flush();
@@ -1670,7 +1669,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
 
   // Attach dispersion data wherever desired ...
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
     (*pcout).flush();
   }
@@ -1683,7 +1682,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   std::vector<lattFunc>::iterator lf_it =  lfvec_.begin();
 
-  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it ) {
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it ) {
 
     (*it)->propagate( firstParticle );
     (*it)->propagate( secondParticle );
@@ -1738,7 +1737,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
 
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
     (*pcout).flush();
   }
@@ -1754,7 +1753,7 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
   // NOTE: This routine does not calculate chromaticity.
   // 
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Entering LattFuncSage::FAD_Disp_Calc( map ) " 
          << endl;
     (*pcout).flush();
@@ -1775,7 +1774,6 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
   int j_py  =  3;
   int j_dpp =  4;
 
-  beamline* bml = this->_myBeamlinePtr;
   MatrixD FADmap( 5, 5 );
   MatrixD firstJacobian;
 
@@ -1863,11 +1861,11 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
      lf.dPrime.ver     = real( EV( j_py, theColumn ) );
      lf.arcLength      = lng;
      
-     bml->dataHook.eraseAll( "Dispersion" );
-     bml->dataHook.insert( Barnacle( "Dispersion", lf ) );
+     myBeamlinePtr_->dataHook.eraseAll( "Dispersion" );
+     myBeamlinePtr_->dataHook.insert( Barnacle( "Dispersion", lf ) );
    
      // Attach dispersion data wherever desired ...
-     if( this->_verbose ) {
+     if( verbose_ ) {
        (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
        (*pcout).flush();
      }
@@ -1886,7 +1884,7 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
 
      firstParticle.SetReferenceMomentum( ( 1.0 + dpp )*(firstParticle.ReferenceMomentum()) );
 
-    for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it) 
+    for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
     {
        (*it)->propagate( firstParticle );
        lng += (*it)->OrbitLength( firstParticle );
@@ -1917,8 +1915,8 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
        latticeRing.tune.ver = firstNu(1);
        latticeRing.chromaticity.hor = 12345.6789;  // Nonsense value.
        latticeRing.chromaticity.ver = 12345.6789;
-       _myBeamlinePtr->dataHook.eraseAll( "Ring" );
-       _myBeamlinePtr->dataHook.insert( Barnacle( "Ring", latticeRing ) );
+       myBeamlinePtr_->dataHook.eraseAll( "Ring" );
+       myBeamlinePtr_->dataHook.insert( Barnacle( "Ring", latticeRing ) );
      }
      else {
        (*pcerr) << "*** ERROR ***                                        \n"
@@ -1935,7 +1933,7 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
 
   // Final operations ....................................
 
-  if( this->_verbose ) {
+  if( verbose_ ) {
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Disp_Calc" << endl;
     (*pcout).flush();
   }
@@ -1955,7 +1953,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
  // .... Check to see if this was done already.
 
- if ( _myBeamlinePtr->twissIsDone() ) return LattFuncSage::DONE;
+ if ( myBeamlinePtr_->twissIsDone() ) return LattFuncSage::DONE;
 
  double  t, oldpsiH, oldpsiV, lng;
 
@@ -1966,7 +1964,7 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
    // .......... Propagate a JetParticle to get transfer matrix
 
    p.setState( Vector(BMLN_dynDim) ); // set initial state to zero
-   _myBeamlinePtr->propagate( p );
+   myBeamlinePtr_->propagate( p );
 
    MatrixD mtrx =  p.getState().Jacobian();
 
@@ -2083,10 +2081,10 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
    dispVector(5,0) = 1.0;
    
    oldpsiH = oldpsiV = 0.0;
-   bmlnElmnt* be = 0;
+   ElmPtr be;
 
    int count = 0;
-   for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it, ++count) 
+   for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it, ++count) 
    {
      be = (*it);
      lng = be -> Length();
@@ -2163,12 +2161,12 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
    // .......... A little test to keep everyone honest .....
 
-   if ( count != _myBeamlinePtr->howMany() ) {
+   if ( count != myBeamlinePtr_->howMany() ) {
      (*pcerr) << "*** ERROR: beamline::twiss(JetParticle): "<< endl;
      (*pcerr) << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
      (*pcerr) << "*** ERROR: num elements seen, " << count << endl;
      (*pcerr) << "*** ERROR:  not equal to num elements expected, " 
-          << _myBeamlinePtr->howMany() << endl;
+          << myBeamlinePtr_->howMany() << endl;
      (*pcerr) << "*** ERROR: Bailing out" << endl;
 
      return LattFuncSage::WRONG_COUNT;
@@ -2176,13 +2174,13 @@ int LattFuncSage::Twiss_Calc ( JetParticle& p )
 
    // .......... Cleaning up and leaving ...................
 
-   _myBeamlinePtr->setTwissIsDone();
+   myBeamlinePtr_->setTwissIsDone();
 
-   _myBeamlinePtr->dataHook.eraseFirst( "Twiss" );
-   _myBeamlinePtr->dataHook.insert( Barnacle( "Twiss", latticeFunctions ) );
+   myBeamlinePtr_->dataHook.eraseFirst( "Twiss" );
+   myBeamlinePtr_->dataHook.insert( Barnacle( "Twiss", latticeFunctions ) );
  
-   _myBeamlinePtr->dataHook.eraseFirst( "Ring" );
-   _myBeamlinePtr->dataHook.insert( Barnacle( "Ring", latticeRing ) );
+   myBeamlinePtr_->dataHook.eraseFirst( "Ring" );
+   myBeamlinePtr_->dataHook.insert( Barnacle( "Ring", latticeRing ) );
   
  
    return LattFuncSage::DONE;
@@ -2243,9 +2241,11 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
   Particle dummyp(p);
 
   int count = 0; 
-  for( beamline::deep_iterator it = _myBeamlinePtr->deep_begin(); it != _myBeamlinePtr->deep_end(); ++it, ++count) {
+  ElmPtr be;
 
-    bmlnElmnt* be= (*it);
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it, ++count) {
+
+    be = (*it);
 
     lng = be -> OrbitLength( dummyp );
     elmntPos++;
@@ -2325,12 +2325,12 @@ int LattFuncSage::Twiss_Calc( const LattFuncSage::lattFunc& W, JetParticle& p, S
   } // end loop over the beamline elements ..............
 
   // .......... A little test to keep everyone honest .....
-  if ( count != _myBeamlinePtr->countHowMany() ) {
+  if ( count != myBeamlinePtr_->countHowMany() ) {
     (*pcerr) << "*** ERROR: beamline::twiss(LatticeFunct, JetParticle):" << endl;
     (*pcerr) << "*** ERROR: A horrible, inexplicable error has occurred!" << endl;
     (*pcerr) << "*** ERROR: num elements seen, " << count << endl;
     (*pcerr) << "*** ERROR: is not equal to num elements expected, " 
-         << _myBeamlinePtr->countHowMany() << endl;
+         << myBeamlinePtr_->countHowMany() << endl;
     (*pcerr) << "*** ERROR: Bailing out" << endl;
 
     return LattFuncSage::WRONG_COUNT;
