@@ -98,8 +98,8 @@ class_<LattFuncSage::lattRing::chromaticity_type>("chromaticity")
 
 
 
- class_<LattFuncSage,  boost::noncopyable>("LattFuncSage", init<const beamline&>())
-   .def(init<const beamline&, bool>())
+ class_<LattFuncSage,  boost::noncopyable>("LattFuncSage", init< BmlPtr >())
+   .def(init<beamline const&>())
    .def("TuneCalc",        &LattFuncSage::TuneCalc)
    .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() ) // ( JetParticle*, Sage::CRITFUNC = 0 )
       //.def("Disp_Calc_old"  ( JetParticle*, Sage::CRITFUNC = 0 )
