@@ -11,7 +11,14 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
-******                                                                
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******                                                               
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,10 +29,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal.gov
+******
+****** - removed dependencies on dlist/slist
+****** - support for reference-counted elements and beamlines 
+******                                                              
 **************************************************************************
 *************************************************************************/
 
@@ -38,10 +47,11 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qtimer.h>
-#include <qptrlist.h>
+#include <list>
 
-#include "BmlVisitor.h"
-#include "slist.h"
+#include <beamline/BmlVisitor.h>
+#include <beamline/beamline.h>
+#include <beamline/BmlPtr.h>
 
 class Particle;
 
@@ -51,12 +61,7 @@ class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
 
-class bmlnElmnt;
-class beamline;
-class BeamlineContext;
-class ReverseBeamlineIterator;
 class BoolNode;
-
 class QBmlRoot;
 
 
@@ -65,8 +70,8 @@ class QBml : public QListViewItem
 public:
   QBml( QPixmap*, QBmlRoot*,  const char*, const char* );
   QBml( QPixmap*, QListView*, const char*, const char* );
-  QBml( const QBml& );
-  ~QBml();
+  QBml( QBml const& );
+ ~QBml();
 
   const QPixmap *pixmap( int i ) const;
   void  setPixmap( QPixmap *p );
@@ -76,36 +81,36 @@ public:
   virtual QString fullName() const = 0;
 
 protected:
-  QPixmap*  _pix;
-  QBmlRoot* _p;                   // the   QBmlRoot parent
+  QPixmap*  pix_;
+  QBmlRoot* p_;                   // the   QBmlRoot parent
 };
 
 
 class QBmlElmt : public QBml
 {
 public:
-  QBmlElmt( QBmlRoot* parent, /* const */ bmlnElmnt*, double& /* azimuth */ );
-  ~QBmlElmt();
+  QBmlElmt( QBmlRoot* parent, ConstElmPtr const&, double& azimuth );
+ ~QBmlElmt();
 
-  inline double Azimuth() { return _azimuth; }
-  inline const bmlnElmnt* cheatElementPtr() const { return _myElement; }
+  double             Azimuth()         const     { return  azimuth_; }
+  ConstElmPtr        cheatElementPtr() const     { return  myElement_; }
   QString fullName() const;
 
   friend class BeamlineBrowser;
 
 private:
-  const bmlnElmnt* _myElement;
-  double           _azimuth;   // Is this necessary???
+  ConstElmPtr       myElement_;
+  double            azimuth_;   
 };
 
 
 class QBmlRoot : public QBml
 {
 public:
-    QBmlRoot( QListView* parent, /* const */ BeamlineContext*, double& );
-    QBmlRoot( QListView* parent, const Particle&, /* const */ beamline*, double& );
-    QBmlRoot( QBmlRoot*  parent, /* const */ beamline*, double& );
-    ~QBmlRoot();
+    QBmlRoot( QListView* parent, BmlContextPtr,           double& );
+    QBmlRoot( QListView* parent, Particle const&, BmlPtr, double& );
+    QBmlRoot( QBmlRoot*  parent, BmlPtr,                  double& );
+   ~QBmlRoot();
 
     // QString text( int column ) const;
     QString fullName() const;
@@ -113,16 +118,16 @@ public:
     void setOpen( bool );
     void setup();
 
-    const QBmlElmt* findSelectedElement() const;
+    QBmlElmt const* findSelectedElement() const;
 
     friend class BeamlineBrowser;
 
     // Must get rid of this eventually!!
-    inline const BeamlineContext* cheatContextPtr() const { return _myBmlCon; }
+    inline ConstBmlContextPtr cheatContextPtr() const { return myBmlCon_; }
 
 private:
-    BeamlineContext* _myBmlCon;      // if there is no QBmlRoot parent
-    beamline*        _myBeamline;    // if there is a  QBmlRoot parent
+    BmlContextPtr    myBmlCon_;      // if there is no QBmlRoot parent
+    BmlPtr           myBeamline_;    // if there is a  QBmlRoot parent
 };
 
 
@@ -135,42 +140,29 @@ public:
 // Interface for infoWriter subclass
 struct infoWriter : public ConstBmlVisitor 
 {
-  void visitBmlnElmnt  ( const bmlnElmnt*  );
-  void visitBeamline   ( const beamline*   );
-  void visitDrift      ( const drift*      );
-  void visitSlot       ( const Slot*       );
-  void visitSbend      ( const sbend*      );
-  void visitCF_sbend   ( const CF_sbend*   );
-  void visitRbend      ( const rbend*      );
-  void visitCF_rbend   ( const CF_rbend*   );
-  void visitQuadrupole ( const quadrupole* );
-  void visitThinQuad   ( const thinQuad*   );
-  void visitSextupole  ( const sextupole*  );
-  void visitMarker     ( const marker*     );
-  void visitSector     ( const sector*     );
-  void visitMonitor    ( const monitor*    );
+  void visit( bmlnElmnt  const& );
+  void visit( beamline   const& );
+  void visit( drift      const& );
+  void visit( Slot       const& );
+  void visit( sbend      const& );
+  void visit( CF_sbend   const& );
+  void visit( rbend      const& );
+  void visit( CF_rbend   const& );
+  void visit( quadrupole const& );
+  void visit( thinQuad   const& );
+  void visit( sextupole  const& );
+  void visit( marker     const& );
+  void visit( sector     const& );
+  void visit( monitor    const& );
 
-  BeamlineContext*     _contextPtr;
+  BmlContextPtr     _contextPtr;
 };
 
 
-// REMOVE: // Interface for editDialog subclass
-// REMOVE: struct editDialog : public BmlVisitor 
-// REMOVE: {
-// REMOVE:   void visitBmlnElmnt  ( bmlnElmnt*  );
-// REMOVE:   void visitDrift      ( drift*      );
-// REMOVE:   void visitSlot       ( Slot*       );
-// REMOVE:   void visitRbend      ( rbend*      );
-// REMOVE:   void visitQuadrupole ( quadrupole* );
-// REMOVE:   void visitThinQuad   ( thinQuad*   );
-// REMOVE: 
-// REMOVE:   BeamlineContext*     _contextPtr;
-// REMOVE: };
-
   BeamlineBrowser( QWidget *parent = 0, const char *name = 0, bool sdo = FALSE );
-  ~BeamlineBrowser();
+ ~BeamlineBrowser();
   
-  const bmlnElmnt* getSelectedElement( BeamlineContext* ) const;
+  ConstElmPtr  getSelectedElement( BmlContextPtr ) const;
 
   static const char* drift_xpm[19];
   static const char* slot_xpm[19];
@@ -196,24 +188,25 @@ struct infoWriter : public ConstBmlVisitor
   static QPixmap* dipoleSymbol;
   static QPixmap* elmntSymbol;
   
-  BeamlineContext* readMADFile( const char* fileName, const char* lineName, double brho );
-  // void displayBeamline( const beamline* );
-  void displayBeamline( const BeamlineContext* );
-  int removeBeamline( BeamlineContext* );   // eliminates the beamline as well
-  // REMOVE int findElement( QBml*, const QString& );
-  int findElement( QBml*, const BoolNode&, QPtrList<bmlnElmnt>& );
-  int findElement( QBml*, const BoolNode*, QPtrList<bmlnElmnt>& );
-  QPtrList<bmlnElmnt> findAllSelected( QBmlRoot* ) const;
+  BmlContextPtr readMADFile( const char* fileName, const char* lineName, double brho );
+
+  void displayBeamline( ConstBmlContextPtr );
+  int removeBeamline( BmlContextPtr );   // eliminates the beamline as well
+
+  int findElement( QBml*, const BoolNode&, std::list<ConstElmPtr>& );
+  int findElement( QBml*, const BoolNode*, std::list<ConstElmPtr>& );
+
+  std::list<ElmPtr> findAllSelected( QBmlRoot* ) const;
 
 public slots:
     void setDir( const QString & );
-    void resetPixmap( const BeamlineContext* );
+    void resetPixmap( ConstBmlContextPtr );
 
 signals:
     void folderSelected( const QString & );
-    void sig_bmlLeftClicked( BeamlineContext*, QBmlRoot* );
+    void sig_bmlLeftClicked( BmlContextPtr, QBmlRoot* );
     void sig_bmlLeftClicked( QBml* );
-    void sig_newContext( BeamlineContext* );
+    void sig_newContext( BmlContextPtr );
     void sig_browserIsEmpty();
     void sig_browserIsNotEmpty();
 
@@ -240,9 +233,10 @@ private:
     QPoint presspos;
     bool mousePressed;
 
-    static void _displayLine( QBmlRoot*, ReverseBeamlineIterator&, double& );
-    slist _topLevelItems;
-    QBmlRoot* _lastClickedRootPtr;
+    static void  displayLine( QBmlRoot*, beamline::const_reverse_iterator rit, double& );
+
+    std::list<QBmlRoot*>       topLevelItems_;
+    QBmlRoot*                  lastClickedRootPtr_;
 };
 
 
