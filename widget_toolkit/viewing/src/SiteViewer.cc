@@ -8,10 +8,17 @@
 ******                                                                
 ******  File:      SiteViewer.cc
 ******  Version:   3.2
-******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
+****** 
+******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
-******                                                                
+******
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,10 +29,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+****** REVISION HISTORY
+****** Mar 2007   ostiguy@fnal.gov
+****** - support for reference-counted elements and beamlines 
 **************************************************************************
 *************************************************************************/
 
@@ -48,7 +54,6 @@
 #include "SiteViewer.h"
 #include <beamline/beamline.h>
 #include <beamline/FramePusher.h>
-#include <beamline/BeamlineIterator.h>
 #include <physics_toolkit/BeamlineContext.h>
 
 #include "QueryDialog.h"
@@ -64,14 +69,13 @@ using namespace std;
 const BoolNullNode SiteViewer::nada;
 
 
-SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* name, WFlags f)
+SiteViewer::SiteViewer( BmlContextPtr bmlCP, QWidget* parent, const char* name, WFlags f)
 : QVBox(parent,name,f),
   _x(0), _y(0), _z(0), 
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _bmlConPtr( &bmlCP ), 
-  _deleteContext( false ),
+  _bmlConPtr(bmlCP), 
   _showStart( false ),
   _element(0),
   _filterPtr(0),
@@ -81,26 +85,25 @@ SiteViewer::SiteViewer( BeamlineContext& bmlCP, QWidget* parent, const char* nam
 }
 
 
-SiteViewer::SiteViewer( const Particle& prt, beamline* x, QWidget* parent, const char* name, WFlags f)
+SiteViewer::SiteViewer( const Particle& prt, BmlPtr x, QWidget* parent, const char* name, WFlags f)
 : QVBox(parent,name,f),
    _x(0), _y(0), _z(0), 
   _xmin(1.0e10), _xmax(-1.0e10),
   _ymin(1.0e10), _ymax(-1.0e10),
   _zmin(1.0e10), _zmax(-1.0e10),
-  _bmlConPtr( 0 ), 
-  _deleteContext( true ),
+  _bmlConPtr(), 
   _showStart( false ),
   _element(0),
   _filterPtr(0),
   _queryDialogPtr(0)
 {
-  if( 0 == x ) {
+  if( !x ) {
     QMessageBox::information( 0, "CHEF::SiteViewer",
                               "Must specify a beamline first." );
   }
   else {
-    _bmlConPtr = new BeamlineContext( prt, x, false );
-    this->_finishConstructor();
+    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x) );
+    _finishConstructor();
   }
 }
 
@@ -120,19 +123,17 @@ void SiteViewer::_finishConstructor()
   _element = new bmlnElmnt* [_n];
 
   // Find site coordinates ...
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*_bmlConPtr->cheatBmlPtr()) );
-  bmlnElmnt* q;
+
+  ElmPtr q;
   FramePusher fp;
   Vector r(3);
   int i = 0;
 
-  while( ( 0 != (q = dbi++) ) && ( i < _n ) ) {
-    // The second check, i < _n, 
-    // is simply paranoia; 
-    // it should not be necessary.
-
-    _element[i] = q;
-
+  for ( beamline::const_deep_iterator dbi = _bmlConPtr->cheatBmlPtr()->deep_begin();  dbi != _bmlConPtr->cheatBmlPtr()->deep_end(); ++dbi)
+  {
+   q = *dbi;
+    _element[i] = q.get();
+ 
     q->accept( fp );
     r = fp.getFrame().getOrigin();
     
@@ -151,7 +152,7 @@ void SiteViewer::_finishConstructor()
     if( _z[i] < _zmin ) _zmin = _z[i];
     if( _z[i] > _zmax ) _zmax = _z[i];
 
-    i++;
+    ++i;
   }
 
 
@@ -220,7 +221,6 @@ SiteViewer::~SiteViewer()
   if(_y)             { delete [] _y; }
   if(_z)             { delete [] _z; }
   if(_element)       { delete [] _element; }
-  if(_deleteContext) { delete _bmlConPtr; _bmlConPtr = 0; }
   if(_filterPtr)     { _filterPtr->eliminate(); _filterPtr = 0; }
   if(_queryDialogPtr){ delete _queryDialogPtr; _queryDialogPtr = 0; }
 }
