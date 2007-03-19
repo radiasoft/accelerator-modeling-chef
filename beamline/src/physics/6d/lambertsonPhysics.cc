@@ -46,26 +46,30 @@ void thinLamb::localPropagate( Particle& p ) { }
 
 void thinLamb::localPropagate( JetParticle& p ) { }
 
+
 void thinLamb::localPropagate( ParticleBunch& PB ) {
-  /* Mask
-  static int i;
-  static double TrState[6], dummy[6];
-  int ExtFlag;
-  ParticleBunch* ExtPB;
 
-  if (ExtBeamline == 0 ) return; 
+  /************* Mask
+
+  std::vector<double> TrState(6);
+  std::vector<double> dummy(6);
+
+
+  if ( !ExtBeamline) return; 
  
-  ExtPB = new ParticleBunch();
-  slist_iterator getNext((slist&)PB);
-  Particle *pCur, *pNxt;
-  
-  if ( !(pCur = (Particle*)getNext()) ) return; // no more particles
+  boost::scoped_ptr<ParticleBunch) ExtPB (new ParticleBunch() );
 
+  Particle *pCur;
+  Particle *pNxt;
+  
+  if ( PB.empty()  ) return; // no more particles
+
+  int ExtFlag;
   do {
     
     ExtFlag = 0;
 
-    for( i = 0; i < 6; i++ ) { 
+    for( int i= 0; i < 6; ++i) { 
       TrState[i] = pCur->state[i];
     }
 
@@ -92,7 +96,6 @@ void thinLamb::localPropagate( ParticleBunch& PB ) {
     ExtBeamline->propagate(*ExtPB);
   }
 
-  delete ExtPB;
-  */
+  *******************/
 }
 
