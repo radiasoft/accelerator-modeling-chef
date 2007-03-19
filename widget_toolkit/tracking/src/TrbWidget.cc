@@ -11,7 +11,14 @@
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
-******                                                                
+****** 
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******                                                         
 ******  Authors:   Leo Michelotti
 ******             Nadezhda Shemyakina  (Summer, 2001)
 ******             
@@ -26,9 +33,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
+****** REVISION HISTORY
+****** Mar 2007     ostiguy@fnal.gov
+****** - removed dependencies on dlist/slist
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -131,22 +138,29 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
   _z_max = - MAXFLOAT;
   
   const Orbit* orbitPtr = 0;
-  const Vector* vec;
-  slist_iterator getNext( _topTrbWidget->_myOrbits );
-  while((  0 != (orbitPtr = _topTrbWidget->nextOrbit())  )) {
-    Orbit::Iterator oit( orbitPtr );
-    while( 0 != (vec = oit++) ) {
-      if( (*vec)(0) < _x_min ) { _x_min = (*vec)(0);}
-      if( (*vec)(0) > _x_max ) { _x_max = (*vec)(0);}
-      if( (*vec)(1) < _y_min ) { _y_min = (*vec)(1);}
-      if( (*vec)(1) > _y_max ) { _y_max = (*vec)(1);}
-      if( (*vec)(2) < _z_min ) { _z_min = (*vec)(2);}
-      if( (*vec)(2) > _z_max ) { _z_max = (*vec)(2);}
+
+  for ( std::list<Orbit*>::iterator orbit_it  = _topTrbWidget->_myOrbits.begin();
+	orbit_it != _topTrbWidget->_myOrbits.end(); ++orbit_it )
+  {
+    orbitPtr = *orbit_it;
+
+    for( Orbit::const_iterator it  = orbitPtr->begin();
+	                       it != orbitPtr->end(); ++it ) {
+
+      _x_min = std::min(_x_min, (**it)(0) );
+      _x_max = std::max(_x_max, (**it)(0) );
+
+      _y_min = std::min(_y_min, (**it)(1) );
+      _y_max = std::max(_y_max, (**it)(1) );
+
+      _z_min = std::min(_z_min, (**it)(2) );
+      _z_max = std::max(_z_max, (**it)(2) );
     }
   }
 
   _x_cell_width = ( _x_max - _x_min ) / 10.0;
   _y_cell_width = ( _y_max - _y_min ) / 10.0;
+
   double zCellWidth = ( _z_max - _z_min ) / 10.0;
 
   _x_center = ( _x_min + _x_max ) / 2.0;
@@ -310,7 +324,7 @@ void TrbWidget::_do_nothing()
 }
 
 
-TrbWidget::TrbWidget( slist& theOrbits )
+TrbWidget::TrbWidget( list<Orbit*>& theOrbits )
 : QVBox(), _isIterating(false)
 {
   // The TrbWidget constructor assumes ownership
@@ -318,10 +332,9 @@ TrbWidget::TrbWidget( slist& theOrbits )
   //   it empties the list.
 
   // Process the orbits
-  slist_iterator getNext( theOrbits );
-  Orbit* q;
-  while((  q = (Orbit*) getNext()  )) {
-    _myOrbits.append( q );
+
+  for ( std::list<Orbit*>::iterator it = theOrbits.begin();  it != theOrbits.end(); ++it ) {
+     _myOrbits.push_back( *it );
   }
 
   // Separate child widgets
@@ -366,30 +379,11 @@ TrbWidget::TrbWidget( slist& theOrbits )
 
 TrbWidget::~TrbWidget()
 {
-  Orbit* q;
-  while((  q = (Orbit*) (_myOrbits.get())  )) { 
-    delete q;
+  for ( std::list<Orbit*>::iterator it = _myOrbits.begin();   it != _myOrbits.end(); ++it ){
+    delete (*it);
   }
 }
 
-
-const Orbit* TrbWidget::nextOrbit()
-{
-  static slist_iterator* iterPtr = 0;
-  static const Orbit* ret = 0;
-
-  if( 0 == iterPtr ) {
-    iterPtr = new slist_iterator( _myOrbits );
-  }
-
-  ret = (const Orbit*) (*iterPtr)();
-  if( 0 == ret ) {
-    delete iterPtr;
-    iterPtr = 0;
-  }
-
-  return ret;
-}
 
 
 void TrbWidget::_iterate()
@@ -659,19 +653,27 @@ void DrawSpace3D::paintGL()
 
   glPointSize(3);
   const Orbit* orbitPtr;
-  const Vector* vec = 0;
 
   glBegin( GL_POINTS );
-  while(( 0 != (orbitPtr = _topTrbWidget->nextOrbit())  )) {
+
+  for (std::list<Orbit*>::iterator orbit_it  =  _topTrbWidget->_myOrbits.begin();
+       orbit_it !=  _topTrbWidget->_myOrbits.end(); ++orbit_it ) 
+  {
+
+    orbitPtr = *orbit_it;
+
     glColor3f( orbitPtr->Red(), orbitPtr->Green(), orbitPtr->Blue() );
-    Orbit::Iterator oi( orbitPtr );
-    while((  vec = oi++  )) {
-      glVertex3f( ((*vec)(0) - _x_center)/_x_scale,
-                  ((*vec)(1) - _y_center)/_y_scale,
-                  ((*vec)(2) - _z_center)/_z_scale  );
+
+    for( Orbit::const_iterator it  = orbitPtr->begin();
+	                       it != orbitPtr->end(); ++it ) {
+
+      glVertex3f( ((**it)(0) - _x_center)/_x_scale,
+                  ((**it)(1) - _y_center)/_y_scale,
+                  ((**it)(2) - _z_center)/_z_scale  );
     }
   }
   glEnd();
 
   glFlush ();
 }
+ 

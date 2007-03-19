@@ -11,7 +11,13 @@
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
-******                                                                
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,10 +28,10 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
-******                                                                
+****** REVISION HISTORY
+****** Mar 2007    ostiguy@fnal.gov
+****** -  - removed dependencies on dlist/slist
+****** - support for reference-counted elements and beamlines 
 **************************************************************************
 *************************************************************************/
 
@@ -38,7 +44,6 @@
 // Date: May 24, 2001
 // 
 // ************************************
-
 
 // Problem: things get drawn over and over unnecessarily 
 // in the DrawSpace::draw functions.
@@ -71,147 +76,110 @@ using namespace std;
 // Implementation: class Orbit
 // ---------------------------
 
-Orbit::Orbit( const Vector& x ) 
-: _red(1), _green(1), _blue(1)
+Orbit::Orbit( Vector const& x ) 
+:  red_(1), green_(1), blue_(1)
 {
-  _history.append( new Vector( x ) );
+  history_.push_back( new Vector( x ) );
 }
 
-Orbit::Orbit( const Vector* x ) 
-: _red(1), _green(1), _blue(1)
+Orbit::Orbit( Vector const* x ) 
+: red_(1), green_(1), blue_(1)
 {
-  _history.append( new Vector( *x ) );
+  history_.push_back( new Vector( *x ) );
 }
 
-Orbit::Orbit( const Orbit& x ) 
-: _red(x._red), _green(x._green), _blue(x._blue)
+Orbit::Orbit( Orbit const& x ) 
+: red_(x.red_), green_(x.green_), blue_(x.blue_)
 {
-  const Vector* v = 0; 
-  Orbit::Iterator oit( x );
-  while((  v = oit++  )) {
-    _history.append( new Vector(*v) );
+  for (std::list<Vector*>::const_iterator it  = x.history_.begin(); 
+       it != x.history_.end(); ++it ) {
+    history_.push_back( new Vector(**it) );
   }
+
 }
 
 Orbit::~Orbit()
 {
-  dlist_iterator getNext( _history );
-  Vector* q;
-  while((  q = (Vector*) getNext()  )) {
-    delete q;
+  for (std::list<Vector*>::iterator it  = history_.begin(); 
+       it != history_.end(); ++it ) {
+    delete (*it);
   }
+
+  history_.clear();
+
 }
 
-void Orbit::add( const Vector& x ) 
+
+Orbit::iterator Orbit::begin()
 {
-  _history.append( new Vector( x ) );
+  return history_.begin();
+}
+ 
+Orbit::const_iterator Orbit::begin() const
+{
+   return history_.begin();
 }
 
-void Orbit::add( const Vector* x ) 
+Orbit::iterator Orbit::end()
 {
-  _history.append( new Vector( *x ) );
+  return history_.end();
+}
+ 
+Orbit::const_iterator Orbit::end() const
+{
+   return history_.end();
+}
+
+
+void Orbit::add( Vector const& x ) 
+{
+  history_.push_back( new Vector( x ) );
+}
+
+void Orbit::add( Vector const* x ) 
+{
+  history_.push_back( new Vector( *x ) );
 }
 
 const Vector* Orbit::lastPoint()
 {
-  return (const Vector*) _history.lastInfoPtr();
+  return history_.back();
 }
 
 const Vector* Orbit::firstPoint()
 {
-  return (const Vector*) _history.firstInfoPtr();
+  return history_.front();
 }
 
 
 void Orbit::setColor( GLdouble r, GLdouble g, GLdouble b )
 {
-  if( r < 0. )      _red = 0.;
-  else if( r > 1. ) _red = 1.;
-  else              _red = r;
+  if ( r < 0.0 )    red_ = 0.0;
+  else if( r > 1. ) red_ = 1.0;
+  else              red_ = r;
 
-  if( g < 0. )      _green = 0.;
-  else if( g > 1. ) _green = 1.;
-  else              _green = g;
+  if( g < 0. )      green_ = 0.0;
+  else if( g > 1. ) green_ = 1.0;
+  else              green_ = g;
 
-  if( b < 0. )      _blue = 0.;
-  else if( b > 1. ) _blue = 1.;
-  else              _blue = b;
-}
-
-
-// -------------------------------------
-// Implementation: class Orbit::Iterator
-// -------------------------------------
-
-Orbit::Iterator::Iterator( const Orbit& x )
-{
-  _getNext = new dlist_iterator( x._history );
-}
-
-
-Orbit::Iterator::Iterator( const Orbit* x )
-{
-  _getNext = new dlist_iterator( x->_history );
-}
-
-
-Orbit::Iterator::Iterator( const Iterator& x )
-{
-  static bool firstTime = true;
-  if( firstTime ) {
-    firstTime = false;
-    cerr << "*** WARNING ***                                       \n"
-            "*** WARNING *** Orbit::Iterator::Iterator( const Iterator& ) \n"
-            "*** WARNING *** Copy constructor has been called.     \n"
-            "*** WARNING ***                                       \n"
-            "*** WARNING *** This message appears once only.       \n"
-            "*** WARNING ***                                       \n"
-         << endl;
-  }
-  
-  _getNext = new dlist_iterator( *(x._getNext) );
-}
-
-
-Orbit::Iterator::~Iterator()
-{
-  delete _getNext;
+  if( b < 0. )      blue_ = 0.0;
+  else if( b > 1. ) blue_ = 1.0;
+  else              blue_ = b;
 }
 
 
 
-const Vector* Orbit::Iterator::operator++( int )
-{
-  // ??? Should use PhaseSpacePoint rather than Vector.
-  return (const Vector*) _getNext->operator()();
-}
-
-
-void Orbit::Iterator::reset()
-{
-  _getNext->Reset();
-}
-
-
-void Orbit::Iterator::goBack( int n )
-{
-  _getNext->GoBack(n);
-}
-
-
-
-// ---------------------------
+// ---------------------------------------
 // Implementation: class OrbitTransformer
-// ---------------------------
+// ---------------------------------------
 
 
 OrbitTransformer::OrbitTransformer()
 : _x_o(0.0),_xp_o(0.0),_y_o(0.0),_yp_o(0.0),_cdt_o(0.0),_dpp_o(0.0)
-{
-}
+{}
 
 
-void RectH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
+void RectH::toDynamics( Vector const& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
   *xPtr = state(Particle::xIndex());
   *yPtr = state(Particle::npxIndex());
@@ -767,9 +735,6 @@ void DrawSpace::setClearColor( GLclampf r, GLclampf g, GLclampf b, GLclampf a )
 
 void DrawSpace::paintGL()
 {
-  Orbit* q;
-
-  slist_iterator getNext( _topTracker->_orbits );
 
   glClearColor( _rClr, _gClr, _bClr, _aClr );
   glClear( GL_COLOR_BUFFER_BIT );
@@ -780,18 +745,23 @@ void DrawSpace::paintGL()
 
   const Vector* vec;
   double a, b, c;
-  while( (q = (Orbit*) getNext()) ) 
+
+  Orbit *q = 0;
+  for (  std::list<Orbit*>::iterator orb_it = _topTracker->orbits_.begin(); orb_it != _topTracker->orbits_.end(); ++orb_it ) 
   {
+    q = *orb_it;
     glColor3f( q->Red(), q->Green(), q->Blue() );
-    Orbit::Iterator oi( q );
-    while((  vec = oi++  )) {
+
+   for (Orbit::iterator it  = q->begin(); 
+                        it != q->end(); ++it ) {
+     vec = *it;
       _transformPtr->toDynamics( *vec, &a, &b, &c );
       glVertex3f( a, b, c );
     }
   }
 
   // Paint one white point
-  q = (Orbit*) ( _topTracker->_orbits ).lastInfoPtr();
+  q = _topTracker->orbits_.back();
   if(q) {
     vec = q->lastPoint();
     glColor3f( 1., 1., 1. );
@@ -856,41 +826,26 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         alphaV = ( _topTracker->_p_info->alpha ).ver;
         betaV  = ( _topTracker->_p_info->beta  ).ver;
 
-        slist orbits3D;
-        slist_iterator getNext( _topTracker->_orbits );
+        list<Orbit*> orbits3D;
         Vector z(3);
         const Vector* vec = 0;
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
 
-        if((  0 == (orbitPtr = (Orbit*) getNext())   ))
-        { return; }
+ 
+        if ( _topTracker->orbits_.empty() ) return;
 
-        while((  0 != orbitPtr )) {
-          Orbit::Iterator oit( orbitPtr );
-          vec = oit++;
+        for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
+	                                 it != _topTracker->orbits_.end(); ++it )
+        {
+          orbitPtr = *it;
 
-          // Horizontal
-          u = (*vec)(0);
-          v = alphaH*u + betaH*(*vec)(3);
-          z(0) = atan2(u,v);
-          if( z(0) > M_PI ) z(0) -= M_TWOPI;
-          // Vertical
-          u = (*vec)(1);
-          v = alphaV*u + betaV*(*vec)(4);
-          z(1) = atan2(u,v);
-          if( z(1) > M_PI ) z(1) -= M_TWOPI;
-          
-          z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
-  
-          newOrbitPtr = new Orbit( z );
-          newOrbitPtr->setColor( orbitPtr->Red(), 
-                                 orbitPtr->Green(), 
-                                 orbitPtr->Blue()   );
+            for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
+	                                       oit  != orbitPtr->history_.end(); ++oit ) {
 
-          vec = oit++;
-          while( 0 != vec ) {
+            vec = *oit;
             // Horizontal
+
             u = (*vec)(0);
             v = alphaH*u + betaH*(*vec)(3);
             z(0) = atan2(u,v);
@@ -904,11 +859,9 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
             z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
   
             newOrbitPtr->add( z );
-            vec = oit++;
           }
 
-          orbits3D.append( newOrbitPtr );
-          orbitPtr = (Orbit*) getNext();
+          orbits3D.push_back( newOrbitPtr );
         }
 
         TrbWidget* trbPtr = new TrbWidget( orbits3D );
@@ -921,23 +874,26 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
       else if( (typeid(*_transformPtr) == typeid(NormH)) ||
                (typeid(*_transformPtr) == typeid(NormV))    )
       {
-        slist orbits3D;
-        slist_iterator getNext( _topTracker->_orbits );
+        list<Orbit*> orbits3D;
         Vector z(3);
         double a, b, c;
         double xc = ( _xLo + _xHi )/2.0;
         double yc = ( _yLo + _yHi )/2.0;
         const Vector* vec = 0;
+
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
 
-        if((  0 == (orbitPtr = (Orbit*) getNext())   ))
-        { return; }
+       for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
+	     it != _topTracker->orbits_.end(); ++it )
+       {
 
-        while((  0 != orbitPtr )) {
-          Orbit::Iterator oit( orbitPtr );
-          vec = oit++;
-          while( 0 != vec ) {
+          orbitPtr = *it;
+       
+          for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
+		                             oit  != orbitPtr->history_.end(); ++oit ) {
+
+             vec = *oit;
             _transformPtr->toDynamics( *vec, &a, &b, &c );
 
             if( _xLo < a && a < _xHi && 
@@ -960,12 +916,10 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
               }
             }
 
-            vec = oit++;
           }
 
-          orbits3D.append( newOrbitPtr );
+          orbits3D.push_back( newOrbitPtr );
           newOrbitPtr = 0;
-          orbitPtr = (Orbit*) getNext();
         }
 
         TrbWidget* trbPtr = new TrbWidget( orbits3D );
@@ -974,10 +928,6 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         //   it empties the list.
         trbPtr->show();
 
-        // REMOVE: getNext.Reset(orbits3D);
-        // REMOVE: while((  0 != (orbitPtr = (Orbit*) orbits3D.get())   )) {
-        // REMOVE:   delete orbitPtr;
-        // REMOVE: }
       }
     }
   }
@@ -1130,33 +1080,31 @@ void DrawSpace::setActAngContext()
 // Implementation: class Tracker
 // -----------------------------
 
-Tracker::Tracker( BeamlineContext* bmlCP, QWidget* parent, const char* name, WFlags f)
+Tracker::Tracker( BmlContextPtr bmlCP, QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
   _p_info(0),
   _number(1),
   _myWheel(0.0),
   _bmlConPtr( bmlCP ), 
   _centralParticlePtr(0),
-  _deleteContext( false ), 
   _isIterating(false), 
   _p_currOrb(0)
   {
   // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
   _myWheel.setIncrement( 195.0 ); 
 
-  this->_finishConstructor();
+  _finishConstructor();
 }
 
 
-Tracker::Tracker( const Particle& prt, beamline* x,
+Tracker::Tracker( const Particle& prt, BmlPtr x,
                   QWidget* parent, const char* name, WFlags f)
 : QVBox(parent, name, f),
   _p_info(0), 
   _number(1),
   _myWheel(0.0),
-  _bmlConPtr( 0 ), 
+  _bmlConPtr(), 
   _centralParticlePtr(0),
-  _deleteContext( true ), 
   _isIterating(false), 
   _p_currOrb(0)
 {
@@ -1167,8 +1115,8 @@ Tracker::Tracker( const Particle& prt, beamline* x,
   else {
     // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
     _myWheel.setIncrement( 195.0 ); 
-    _bmlConPtr = new BeamlineContext( prt, x, false );
-    this->_finishConstructor();
+    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x) );
+    _finishConstructor();
   }
 }
 
@@ -1370,12 +1318,11 @@ Tracker::~Tracker()
   delete _p_startBtn;
   delete _p_trackBox;
 
-  Orbit* q;
-  while( (q = (Orbit*) _orbits.get()) ) {
-    delete q;
+  for ( std::list<Orbit*>::iterator it  = orbits_.begin();  
+                                    it != orbits_.end();  ++it ) {
+    delete (*it);
   }
 
-  if(_deleteContext) { delete _bmlConPtr; }
 }
 
 
@@ -1403,9 +1350,9 @@ void Tracker::_edit_clear()
   _isIterating = false;
   _p_currOrb = 0;
 
-  Orbit* q;
-  while(( q = (Orbit*) _orbits.get() )) {
-    delete q;
+  for ( std::list<Orbit*>::iterator it  = orbits_.begin();  
+                                    it != orbits_.end();  ++it ) {
+    delete (*it);
   }
 
   _p_leftWindow->updateGL();
@@ -1840,7 +1787,7 @@ void Tracker::_tool_pdicOrb()
   
     Vector z(w);
   
-    beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
+    ConstBmlPtr bmlPtr = _bmlConPtr->cheatBmlPtr();
     Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
     // REMOVE: double energy = dummyPtr->Energy();
 
@@ -1867,7 +1814,7 @@ void Tracker::_tool_pdicOrb()
              << endl;
         for( unsigned int i = 0; i < iterate; i++ ) {
           cout << "No." << (i+1) << endl;
-          bmlPtr->propagate( *jpPtr );
+          boost::const_pointer_cast<beamline>(bmlPtr)->propagate( *jpPtr );
         }
         cout << "End n-th Henon iterate" << endl;
   
@@ -1925,7 +1872,7 @@ void Tracker::_tool_pdicOrb()
     cout << "\nTest the results: " << endl;
     for( int j = 0; j < 10; j++ ) {
       for( unsigned int i = 0; i < iterate; i++ ) {
-        bmlPtr->propagate(*dummyPtr);
+        boost::const_pointer_cast<beamline>(bmlPtr)->propagate(*dummyPtr);
       }
       cout << dummyPtr->State() << endl;
     }
@@ -2025,7 +1972,7 @@ void Tracker::_makeNewOrbit()
     _p_currOrb = new Orbit( _bmlConPtr->getParticleState() );
     _myWheel.increment();
     _p_currOrb->setColor( _myWheel.red(), _myWheel.green(), _myWheel.blue() );
-    _orbits.append( _p_currOrb );
+    orbits_.push_back( _p_currOrb );
   }
   else {
     _p_currOrb = 0;
@@ -2057,7 +2004,7 @@ void Tracker::setState( const Vector& s )
 
 void Tracker::_iterate()
 {
-  beamline* bmlPtr = (beamline*) (_bmlConPtr->cheatBmlPtr());
+  ConstBmlPtr bmlPtr = _bmlConPtr->cheatBmlPtr();
   Particle* particle = _bmlConPtr->particle_;
 
   // ??? WARNING: TWO VERY DANGEROUS LINES! ???
@@ -2065,9 +2012,9 @@ void Tracker::_iterate()
   if( _isIterating ) 
   {
     for( int i = 0; i < _number; i++ ) {
-      bmlPtr->propagate( *particle );
+      boost::const_pointer_cast<beamline>(bmlPtr)->propagate( *particle );
       _p_currOrb->add( particle->State() );
-      // REMOVE: _history.add( particle->State() );
+      // REMOVE: history_.add( particle->State() );
     }
 
     _p_leftWindow->updateGL();
