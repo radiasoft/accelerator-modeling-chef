@@ -31,7 +31,15 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+******
+****** REVISION HISTORY
+****** 
+****** Mar 2007       ostiguy@fnal.gov 
+******
+******  - reference counted elements/beamlines 
+******  - eliminated references to slist/dlist
+******  - use new-style STL compatible beamline iterators
+******
 **************************************************************************
 *************************************************************************/
 
@@ -57,133 +65,106 @@
 #include <basic_toolkit/GenericException.h>
 #include <physics_toolkit/QuadEliminator.h>
 #include <beamline/quadrupole.h>
-#include <beamline/BeamlineIterator.h>
 #include <beamline/beamline.h>
 
 using namespace std;
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 QuadEliminator::QuadEliminator()
-: _quadPtr(0), _bmlPtr(0)
-{
-}
+: quadPtr_(), bmlPtr_()
+{}
 
 
-QuadEliminator::QuadEliminator( const QuadEliminator& )
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "QuadEliminator::QuadEliminator( const QuadEliminator& )", 
-         "Cannot copy QuadEliminator object." ) );
-}
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 QuadEliminator::~QuadEliminator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void QuadEliminator::visit( beamline const& x )
 {
-  if( 0 != _quadPtr )  { delete _quadPtr;      }
-  if( 0 != _bmlPtr   ) { _bmlPtr->zap(); delete _bmlPtr;  _bmlPtr=0;}
-}
-
-
-void QuadEliminator::visitBeamline( const beamline* x )
-{
-  // Quick check
-  if( 0 != _bmlPtr ) {  // Paranoid check only
-    throw( GenericException( __FILE__, __LINE__, 
-           "void QuadEliminator::visitBeamline( const beamline* x )", 
-           "Impossible! Horrible, inexplicable error has occurred!!" ) );
-  }
-
 
   // Create the new beamline
-  int n = strlen(x->Name()) + strlen("_QuadMerged") + 1;
-  char* nuNam = new char [n];
-  strcpy( nuNam, x->Name() );
-  strcat( nuNam, "_QuadMerged" );
-  if( strlen(nuNam) != n-1 ) {  // More paranoia
-    throw( GenericException( __FILE__, __LINE__, 
-           "void QuadEliminator::visitBeamline( const beamline* x )", 
-           "Impossible! Horrible, inexplicable error has occurred!!" ) );
-  }
 
-  _bmlPtr = new beamline( nuNam );
-  _bmlPtr->setEnergy( x->Energy() );
+  string nuNam = x.Name() + string("_QuadMerged");
 
-  delete [] nuNam;
+  bmlPtr_ = BmlPtr( new beamline( nuNam.c_str() ) );
+  bmlPtr_->setEnergy( x.Energy() );
 
 
   // Process the argument
-  DeepBeamlineIterator dbi( const_cast<beamline&>(*x) );
-  bmlnElmnt* q;
-  while( 0 != ( q = dbi++ ) ) {
-    q->accept( *this );
+ for (beamline::const_deep_iterator it  = x.deep_begin();
+                                    it != x.deep_end(); ++it )  {
+                                 
+    (*it)->accept( *this );
   }
 
 
   // Append final quad, if it exists.
-  if( 0 != _quadPtr ) {
-    _bmlPtr->append( _quadPtr->Clone() );
-    delete _quadPtr;
-    _quadPtr = 0;
+  if( quadPtr_ ) {
+    bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
+    quadPtr_ = QuadrupolePtr();
   }
 
 }
 
 
-void QuadEliminator::visitBmlnElmnt( const bmlnElmnt* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void QuadEliminator::visit( bmlnElmnt const& x )
 {
-  if( 0 != _bmlPtr )  {  // Not paranoia!
-    if( 0 != _quadPtr ) {
-      _bmlPtr->append( _quadPtr->Clone() );
-      delete _quadPtr;
-      _quadPtr = 0;
+  if( bmlPtr_ )  {  // Not paranoia!
+
+    if( quadPtr_ ) {
+
+      bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
+      quadPtr_ = QuadrupolePtr();
     }
-    _bmlPtr->append( x->Clone() ); 
+
+    bmlPtr_->append( ElmPtr( x.Clone() ) ); 
   }
 }
 
 
-void QuadEliminator::visitQuadrupole( const quadrupole* x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void QuadEliminator::visit( quadrupole const& x )
 {
-  if( 0 == _quadPtr ) {
-    _quadPtr = new quadrupole( *x );
+  if( !quadPtr_ ) {
+    quadPtr_ = QuadrupolePtr( x.Clone() );
   }
 
-  else if( ( _quadPtr->Alignment() == x->Alignment() ) &&
-           ( _quadPtr->Strength()  == x->Strength()  )    ) {
-    int nn = strlen(_quadPtr->Name()) + strlen(x->Name()) + 3;
-    char newName[nn];
-    newName[0] = '\0';
-    strcat( newName, _quadPtr->Name() );
-    strcat( newName, "+" );
-    strcat( newName, x->Name() );
+  else if( ( quadPtr_->Alignment() == x.Alignment() ) &&
+           ( quadPtr_->Strength()  == x.Strength()  )    ) {
 
-    _quadPtr->rename( newName );
-    _quadPtr->setLength( x->Length() + _quadPtr->Length() );
+    string newName =  quadPtr_->Name() + string("+") +  x.Name();
+    quadPtr_->rename( newName.c_str() );
+    quadPtr_->setLength( x.Length() + quadPtr_->Length() );
   }
 
   else {
-     _bmlPtr->append( _quadPtr->Clone() );
-     delete _quadPtr;
-     // Note: the above two lines could be replaced by
-     // _bmlPtr->append( _quadPtr );
-     // I'm not sure why I used Clone() here.
-     _quadPtr = new quadrupole( *x );
+     bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
+     quadPtr_ = QuadrupolePtr( x.Clone()  );
   }
 }
 
 
-beamline* QuadEliminator::beamlinePtr()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlPtr QuadEliminator::beamlinePtr()
 {
-  return _bmlPtr;
+  return bmlPtr_;
   // Invoking routine is responsible for
   // using this beamline before the 
   // QuadEliminator goes out of scope.
 }
 
-
-beamline* QuadEliminator::clonedBeamlinePtr()
-{
-  return ((beamline*) _bmlPtr->Clone());
-  // Invoking routine is responsible for
-  // eliminating the cloned beamline.
-}
 
