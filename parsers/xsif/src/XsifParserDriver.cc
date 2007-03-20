@@ -1261,7 +1261,7 @@ ElmPtr XsifParserDriver::make_solenoid(  double const& BRHO, std::string const& 
   if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
 
-  elm = new marker("SOLENOID");
+  elm = new drift( (label + string("SOLENOID")).c_str(), length ); // PLACEHOLDER. FIXME !!!!
   return ElmPtr(elm);
 
 }
@@ -1594,7 +1594,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string const&
   double xrerr  = 0.0; 
   double yrerr  = 0.0; 
 
-  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
+  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("XSERR"),    attributes, value) )    xserr    = any_cast<double>(value); 
   if ( eval( string("YSERR"),    attributes, value) )    yserr    = any_cast<double>(value); 
   if ( eval( string("XRERR"),    attributes, value) )    xrerr    = any_cast<double>(value); 
@@ -1656,12 +1656,19 @@ ElmPtr  XsifParserDriver::make_rfcavity(  double const& BRHO, std::string const&
 
 ElmPtr  XsifParserDriver::make_instrument(  double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes ) 
 {
-
-  
+ 
   any value;
   bmlnElmnt* elm = 0;
 
-  elm = new marker("INSTRUMENT");
+  double length = 0.0;
+  if ( eval( string("L"),   attributes,  value) )    length   = any_cast<double>(value); 
+ 
+  if (length == 0.0 ) {
+     elm = new marker( (label + string("-INSTRUMENT")).c_str() );
+  } 
+  else {
+     elm = new drift( (label+ string("-INSTRUMENT")).c_str(), length);
+  }
   return ElmPtr(elm); 
 
 }
@@ -1680,7 +1687,14 @@ ElmPtr  XsifParserDriver::make_ecollimator(  double const& BRHO, std::string con
    if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
    // elm = make_ecollimator(  label.c_str(), length );
-   elm = new marker("ECOLLIMATOR");
+
+   if (length == 0.0 ) {
+     elm = new marker( (label + string("-ECOLLIMATOR")).c_str() );
+   } 
+   else {
+     elm = new drift( (label + string("-ECOLLIMATOR")).c_str(), length);
+   }  
+
    return ElmPtr(elm); 
 }
 
@@ -1697,8 +1711,14 @@ ElmPtr  XsifParserDriver::make_rcollimator(  double const& BRHO, std::string con
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
   //elm = make_rcollimator(  label.c_str(), length );
+   if (length == 0.0 ) {
+     elm = new marker( (label + string("-RCOLLIMATOR")).c_str() );
+   } 
+   else {
+     elm = new drift( (label + string("-RCOLLIMATOR")).c_str(), length);
+   }  
 
-  elm = new marker("RCOLLIMATOR");
+
   return ElmPtr(elm); 
 }
 
@@ -1715,7 +1735,7 @@ ElmPtr  XsifParserDriver::make_yrot(  double const& BRHO, std::string const& lab
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  elm = new marker("YROT");
+  elm = new marker( (label +string("-YROT")).c_str() );
   return ElmPtr(elm); 
 }
 
@@ -1729,9 +1749,9 @@ ElmPtr  XsifParserDriver::make_srot( double const& BRHO, std::string const& labe
   bmlnElmnt* elm = 0;
 
   double angle = 0.0;
-  if ( eval( string("ANGLE"),   attributes, value) )    angle   = any_cast<double>(value); 
+  if ( eval( string( "ANGLE"),   attributes, value) )    angle   = any_cast<double>(value); 
 
-  elm =  new marker("SROT");;
+  elm =  new marker( (label+string("-SROT")).c_str() );
   return ElmPtr(elm);
 }
 
@@ -1747,7 +1767,7 @@ ElmPtr  XsifParserDriver::make_beambeam( double const& BRHO, std::string const& 
   double length = 0.0;
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  elm =  new marker("BEAMBEAM");;
+  elm =  new marker( (label+string("-BEAMBEAM")).c_str() );
   return ElmPtr(elm);
 
 }
@@ -1766,7 +1786,8 @@ ElmPtr  XsifParserDriver::make_matrix( double const& BRHO, std::string const& la
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
 
-  elm =  new marker("MATRIX");;
+  elm =  new marker( (label + string("-MATRIX")).c_str() );;
+
   return ElmPtr(elm);
 
 }
@@ -1784,7 +1805,15 @@ ElmPtr  XsifParserDriver::make_lump( double const& BRHO, std::string const& labe
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
 
-  elm =  new marker("LUMP");;
+  if (length == 0.0 ) {
+
+     elm = new marker( (label + string("-LUMP")).c_str() );
+  } 
+   else {
+     elm = new drift(  (label + string( "-LUMP")).c_str(), length);
+  }  
+
+
   return ElmPtr(elm);
 }
 
@@ -1794,8 +1823,19 @@ ElmPtr  XsifParserDriver::make_lump( double const& BRHO, std::string const& labe
 ElmPtr  XsifParserDriver::make_wire( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
 
-  bmlnElmnt* elm = new marker("WIRE");
+  any value;
+  bmlnElmnt* elm = 0;
 
+  double length = 0.0;
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
+
+  if (length == 0.0 ) {
+     elm = new marker( (label + string("-WIRE")).c_str() );
+  } 
+   else {
+     elm = new drift( (label + string("-WIRE")).c_str(), length);
+  }  
+ 
   return ElmPtr(elm);
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1803,8 +1843,18 @@ ElmPtr  XsifParserDriver::make_wire( double const& BRHO, std::string const& labe
 
 ElmPtr  XsifParserDriver::make_blmonitor( double const& BRHO, std::string const& label,  vector<attrib_pair_t> const& attributes) 
 {
+  any value;
+  bmlnElmnt* elm = 0;
 
-  bmlnElmnt* elm = new marker("BLMONITOR");
+  double length = 0.0;
+  if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
+
+  if (length == 0.0 ) {
+     elm = new marker( (label + string("-BLMONITOR")).c_str() );
+  } 
+   else {
+     elm = new drift(  (label + string("-BLMONITOR")).c_str(), length);
+  }  
  
 
   return ElmPtr(elm);
