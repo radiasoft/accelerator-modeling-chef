@@ -236,8 +236,7 @@ void   JetParticle::setState( Vector  const& u ) {    // sets the state to the i
  state_ = Mapping( "id", state_.Env() );
 
  for( int i = 0; i < state_.Dim(); ++i ) { 
-   state_[i] = state_[i] +  u[i];
-   /// state_[i] = state_[i] + ( u[i] - pje->refPoint()[i] ); 
+   state_[i] = state_[i] + ( u[i] - state_.Env()->refPoint()[i] ); 
  }
 }
 
