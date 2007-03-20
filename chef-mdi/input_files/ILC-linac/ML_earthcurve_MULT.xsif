@@ -1,0 +1,45 @@
+! ==============================================================================
+! subsystems=elin1/elin2
+! ------------------------------------------------------------------------------
+! "Kink" definitions for following the curvature of the earth in the e- main
+! linac (MAD-style)
+! ------------------------------------------------------------------------------
+
+  KMLQm : MULT, K0L=AMLKINKQ, T0
+  KMLQv : VKIC, KICK=AMLKINKQ
+  KML0m : MULT, K0L=AMLKINK0, T0
+  KML0v : VKIC, KICK=AMLKINK0
+  KML1m : MULT, K0L=AMLKINK1, T0
+  KML1v : VKIC, KICK=AMLKINK1
+  KML2m : MULT, K0L=AMLKINK2, T0
+  KML2v : VKIC, KICK=AMLKINK2
+  KML3m : MULT, K0L=AMLKINK3, T0
+  KML3v : VKIC, KICK=AMLKINK3
+  KML4m : MULT, K0L=AMLKINK4, T0
+  KML4v : VKIC, KICK=AMLKINK4
+  KML5m : MULT, K0L=AMLKINK5, T0
+  KML5v : VKIC, KICK=AMLKINK5
+  KML6m : MULT, K0L=AMLKINK6, T0
+  KML6v : VKIC, KICK=AMLKINK6
+  KML7m : MULT, K0L=AMLKINK7, T0
+  KML7v : VKIC, KICK=AMLKINK7
+  KML8m : MULT, K0L=AMLKINK8, T0
+  KML8v : VKIC, KICK=AMLKINK8
+  KML9m : MULT, K0L=AMLKINK9, T0
+  KML9v : VKIC, KICK=AMLKINK9
+
+  KMLQ : LINE=(KMLQm,KMLQv)
+  KML0 : LINE=(KML0m,KML0v)
+  KML1 : LINE=(KML1m,KML1v)
+  KML2 : LINE=(KML2m,KML2v)
+  KML3 : LINE=(KML3m,KML3v)
+  KML4 : LINE=(KML4m,KML4v)
+  KML5 : LINE=(KML5m,KML5v)
+  KML6 : LINE=(KML6m,KML6v)
+  KML7 : LINE=(KML7m,KML7v)
+  KML8 : LINE=(KML8m,KML8v)
+  KML9 : LINE=(KML9m,KML9v)
+
+! ==============================================================================
+
+  RETURN

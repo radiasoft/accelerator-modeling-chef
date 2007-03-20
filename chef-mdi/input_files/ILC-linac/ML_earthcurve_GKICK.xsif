@@ -1,0 +1,22 @@
+! ==============================================================================
+! subsystems=elin1/elin2
+! ------------------------------------------------------------------------------
+! "Kink" definitions for following the curvature of the earth in the e- main
+! linac (XSIF-style)
+! ------------------------------------------------------------------------------
+
+  KMLQ : GKICK, L=0, DYP=AMLKINKQ, T=0
+  KML0 : GKICK, L=0, DYP=AMLKINK0, T=0
+  KML1 : GKICK, L=0, DYP=AMLKINK1, T=0
+  KML2 : GKICK, L=0, DYP=AMLKINK2, T=0
+  KML3 : GKICK, L=0, DYP=AMLKINK3, T=0
+  KML4 : GKICK, L=0, DYP=AMLKINK4, T=0
+  KML5 : GKICK, L=0, DYP=AMLKINK5, T=0
+  KML6 : GKICK, L=0, DYP=AMLKINK6, T=0
+  KML7 : GKICK, L=0, DYP=AMLKINK7, T=0
+  KML8 : GKICK, L=0, DYP=AMLKINK8, T=0
+  KML9 : GKICK, L=0, DYP=AMLKINK9, T=0
+
+! ==============================================================================
+
+  RETURN

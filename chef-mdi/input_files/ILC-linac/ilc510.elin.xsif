@@ -1,0 +1,131 @@
+! ==============================================================================
+! subsystems=elin1/elin2
+! ------------------------------------------------------------------------------
+! Prerequisite files ($ILC = ILC lattice root directory):
+! one of
+!   $ILC/configurations/LET_250GeV_sigznominal.xsif
+!   $ILC/configurations/LET_250GeV_sigzLowN.xsif
+!   $ILC/configurations/LET_250GeV_sigz300A.xsif
+!   $ILC/configurations/LET_250GeV_sigz150A.xsif
+! plus
+!   $ILC/parameters/ilc000.ILC_common.xsif
+!   $ILC/parameters/ilc006.ML_common.xsif
+! ------------------------------------------------------------------------------
+! 04-OCT-2006, M. Woodley [SLAC]
+!    Change "short" cryounit at downstream end of undulator insert to "long"
+!    cryounit ... additional ~3 GeV compensates for ISR energy loss in 100 m of
+!    undulator @ 150 GeV
+! ------------------------------------------------------------------------------
+
+! energy profile parameters
+
+  Ei := E0_LIN1     !initial beam energy (GeV)
+  Ef := E0_BDS      !final beam energy (GeV)
+  Np := BunchCharge !number of particles per bunch
+
+! ==============================================================================
+! main linac cavity definition
+! ------------------------------------------------------------------------------
+
+! NMLcav : total number of cavities
+! MLcavP : cavity phase (rad/2pi)
+! Eloss  : total beam loading energy loss in linac (MeV)
+! Elossu : energy loss due to ISR in undulator (GeV) (from BCD Table 3.1,
+!          Positron Source p2, 100 m of undulator @ 150 GeV)
+! MLcavG : average cavity accelerating gradient (including overhead) (MV/m)
+! MLcavV : cavity voltage (MV)
+
+  NMLcav := N_cav_linac
+  MLcavP := -5.3/360
+  Eloss  := NMLcav*(1E-6*MLcavK*MLcavL*(Np*QELEC))
+  Elossu := 0 !3.23
+  MLcavG := 31.5
+!  MLcavG := (GEV2MEV*(Ef-Ei+Elossu)+Eloss)/(NMLcav*MLcavL*COS(TWOPI*MLcavP))
+  MLcavE := MLcavG*MLcavL
+
+  MLcav : ML9cell, DELTAE=MLcavE, PHI0=MLcavP
+
+  DMLcav : DRIF, L=MLcavL
+
+! ==============================================================================
+! quadrupoles
+! ------------------------------------------------------------------------------
+
+! match FODO cell
+
+  Kf :=  0.050639379596
+  Kd := -0.045468508059
+
+  QMLF : MLquad, K1=Kf
+  QMLD : MLquad, K1=Kd
+
+! match between cryo strings
+
+  KML001 :=  0.051534217418
+  KML002 := -0.047121431874
+  KML003 :=  0.05256226055
+  KML004 := -0.045999875653
+
+! match between cryo segments
+
+  KML013 :=  0.050223631804
+  KML014 := -0.042933511963
+  KML015 :=  0.043435434262
+  KML016 := -0.040256932375
+  KML017 :=  0.04189803359
+  KML018 := -0.041137076483
+  KML019 :=  0.046355757702
+  KML020 := -0.044726545476
+
+! match between cryo units
+
+  KML060 := -0.044730848489
+  KML061 :=  0.047134934011
+  KML062 := -0.041542487677
+  KML063 :=  0.042994189128
+  KML064 := -0.038574388805
+  KML065 :=  0.0399426354
+  KML066 := -0.043070513254
+  KML067 :=  0.046690240896
+  KML068 := -0.044216847834
+  KML069 :=  0.051250690772
+
+! ==============================================================================
+! MARKers
+! ------------------------------------------------------------------------------
+
+  BEGMLRFU  : MARK
+  ENDMLRFU  : MARK
+  BEGMLSTR  : MARK
+  ENDMLSTR  : MARK
+  BEGMLSEG  : MARK
+  ENDMLSEG  : MARK
+  BEGMLUNIT : MARK
+  ENDMLUNIT : MARK
+
+  MQF   : MARK
+  MQD   : MARK
+  MQDS1 : MARK
+  MQFS1 : MARK
+  MQDS2 : MARK
+  MQFS2 : MARK
+  MQDS3 : MARK
+  MQFS3 : MARK
+  MQDU1 : MARK
+  MQFU1 : MARK
+  MQDU2 : MARK
+  MQFU2 : MARK
+  MQDU3 : MARK
+  MQFU3 : MARK
+
+! ==============================================================================
+! LINEs
+! ------------------------------------------------------------------------------
+
+  MLFODO(QF,MF,QD,MD) : LINE=(&
+    MLCM0(DMLcav),MLCMQ0(DMLcav,QF,MF),MLCM0(DMLcav),&
+    MLCM0(DMLcav),MLCMQ0(DMLcav,QD,MD),MLCM0(DMLcav))
+
+! ==============================================================================
+
+  RETURN
