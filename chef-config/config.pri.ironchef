@@ -64,3 +64,11 @@ INSTALLS += target
 
 # libutil is needed for openpty/forkpty (glibc) on linux  
 LIBS    += -lutil
+
+# define to use a custom qtw 5.X installation   
+
+# unix:QMAKE_INCDIR_QT     = /usr/local/qwt5/include $$QMAKE_INCDIR_QT
+# unix:QMAKE_LIBDIR        = /usr/local/qwt5/lib     $$QMAKE_LIBDIR 
+
+# unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/qwt5/lib 
+# unix:QMAKE_LFLAGS_SHLIB += -Wl,-rpath,/usr/local/qwt5/lib 
