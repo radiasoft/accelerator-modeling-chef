@@ -406,8 +406,6 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   maxWeight_(w),                                        // maxWeight and numVar are duplicated here because 
   numVar_(n),                                           // they are needed to reference an existing scratch area
   maxTerms_( bcfRec( w + n, n ) ),                      // no of monomials in a polynomial of order w in n variables
-  //offset_(w,n),
-  //exponent_(new int[n]),  
   monomial_(new U[maxTerms_]),
   TJLmonomial_(new JLPtr<T>[ maxTerms_]),                // for monomials used in multinomial evaluation.  
   TJLmml_( TJLterm<T>::array_allocate( maxTerms_) ),     // for collecting terms during multiplication.
@@ -436,13 +434,6 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  // Index: ( 0, 11, 1 )
  // Index: ( 10, 0, 2 )
  // Index: ( 9, 1, 2 ) 
- // Index: ( 8, 2, 2 ) 
- // Index: ( 7, 3, 2 ) 
- // Index: ( 6, 4, 2 ) 
- // Index: ( 5, 5, 2 ) 
- // Index: ( 4, 6, 2 ) 
- // Index: ( 3, 7, 2 ) 
- // Index: ( 2, 8, 2 ) 
  // ...
  //
  //  the weight_offsets_ table contains offsets for the start of each group of terms of identical weight 
@@ -510,30 +501,35 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
                   
          exponents =  TJLmml_[i].index_ + TJLmml_[j].index_;
          if ( exponents.Sum()  <= maxWeight_ ) { 
-               // multTable_[i][j] = offset_.index(exponents);
                 multTable_[i][j] = offsetIndex(exponents);
          }
 
       }
    }
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- // ------------------------------------
- // debug multiplication table  
- //-------------------------------------
+template <typename T>
+template <typename U>
+void  TJetEnvironment<T>::ScratchArea<U>::displayMultiplicationTable() const
+{  
+      
+   for (int i=0; i < maxTerms_;  ++i ) {
+      for (int j=0; j<multTable_[i].size(); ++j ) {
 
-#if 0
-   for (int i=0; i < _maxTerms;  ++i ) {
-      for (int j=0; j < multTable_[i].size(); ++j ) {
-
-       std::cout <<  _TJLmml[i].index_ <<  " *  " <<   _TJLmml[j].index_ <<  " =  " << _TJLmml[ multTable_[i][j] ].index_ << std::endl;
+       std::cout <<  TJLmml_[i].index_ <<  " *  " 
+                 <<  TJLmml_[j].index_ <<  " =  " 
+                 <<  TJLmml_[ multTable_[i][j] ].index_ << std::endl;
 
       }
   }
-#endif
+
 }
 
-// =================================================================================================================
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 template<typename U>
@@ -559,7 +555,7 @@ TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
 namespace {
 
 template <typename T>
-bool LexicographicTermCompare( TJLterm<T> const& lhs,  IntArray const& rhs) 
+bool ReverseLexicographicTermCompare( TJLterm<T> const& lhs,  IntArray const& rhs) 
 {
      return  ( lhs.index_ <  rhs );
 }
@@ -579,7 +575,7 @@ int  TJetEnvironment<T>::ScratchArea<U>::offsetIndex(IntArray const& exp) const
 
  // look for a match to exp in the scratchpad, within monomials of same weight. 
 
- return std::lower_bound( itstart, itend, exp, &LexicographicTermCompare<U> )->offset_;
+ return std::lower_bound( itstart, itend, exp, &ReverseLexicographicTermCompare<U> )->offset_;
 
 }
 
@@ -752,18 +748,28 @@ EnvPtr<T>  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int s
 
 #if  0
 template<typename T>
-TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment&) 
+TJetEnvironment<T>::TJetEnvironment( TJetEnvironment const& env) 
+: numVar_(env.numVar_), 
+  spaceDim_(env.spaceDim_), 
+  dof_(env.dof_),
+  refPoint_(0),
+  scale_(0),
+  maxWeight_(env.maxWeight_),
+  pbok_(env.pbok_),
+  scratch_(env.scratch_)
 {
-  //-------------------------------------------------------------------------
-  // Since the copy constructor is declared private, this should 
-  // never be called. 
-  //-------------------------------------------------------------------------
+  
+  refPoint_ = new T [numVar_];
+  std::copy( &env.refPoint_[0],  &env.refPoint_[numVar_], &refPoint_[0] );
 
-    throw( GenericException( __FILE__, __LINE__, 
-           "TJetEnvironment::TJetEnvironment( const TJetEnvironment&)",
-           "Calling the copy constructor is forbidden." ) );
+  scale_ = new double[numVar_];  
+  
+  std::copy( &env.scale_[0],  &env.scale_[numVar_], &scale_[0] );
 
+  scratch_ = buildScratchPads( env.maxWeight_, env.numVar_);
 
+  return *this;
+ 
 }
 #endif
 
@@ -771,36 +777,29 @@ TJetEnvironment<T>::TJetEnvironment( const TJetEnvironment&)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetEnvironment<T>& TJetEnvironment<T>::DeepCopy( const TJetEnvironment& x ) 
-{
+TJetEnvironment<T>&  TJetEnvironment<T>::operator=( TJetEnvironment<T> const& env)
+{ 
 
-  numVar_    = x.numVar_;               // number of variables
-  spaceDim_  = x.spaceDim_;             // phase space dimensions
-  dof_       = x.dof_;                  // degrees of freedom                             
+ if ( &env == this ) return *this;
+ 
+  numVar_    = env.numVar_;               // number of variables
+  spaceDim_  = env.spaceDim_;             // phase space dimensions
+  dof_       = env.dof_;                  // degrees of freedom                             
 
   if ( refPoint_ ) delete refPoint_; 
-
-  refPoint_ = new T [numVar_];
-
-  for (int i=0; i<numVar_; ++i ) {
-     refPoint_[i] = x.refPoint_[i];                 
-  }
+  refPoint_ = new T [env.numVar_];
+  std::copy( &env.refPoint_[0],  &env.refPoint_[numVar_], &refPoint_[0] );
 
   if (scale_) delete scale_; 
-
-  scale_ = new double[numVar_];  
+  scale_ = new double[env.numVar_];  
+  std::copy( &env.scale_[0],  &env.scale_[numVar_], &scale_[0] );
   
-  for (int i=0; i< numVar_; ++i ) {
-     scale_[i] = x.scale_[i];                 
-  }
+  maxWeight_ = env.maxWeight_; 
+  pbok_      = env.pbok_;                  
 
-  maxWeight_ = x.maxWeight_; 
+  scratch_ = buildScratchPads(env.maxWeight_, env.numVar_);
 
-  pbok_     = x.pbok_;                  
-
-  scratch_ = buildScratchPads(maxWeight_, numVar_);
-
-  return *this;
+  return *this; 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1010,6 +1009,9 @@ int  TJetEnvironment<T>::offsetIndex(IntArray const& exp) const
 {
   return scratch_->offsetIndex(exp);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 
