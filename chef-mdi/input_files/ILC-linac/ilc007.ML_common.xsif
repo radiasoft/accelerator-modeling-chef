@@ -1,0 +1,275 @@
+! ==============================================================================
+! 04-OCT-2006, M. Woodley [SLAC]
+!    Update to T. Peterson's 31May06 spreadsheet; add undulator insert devices
+! 10-MAY-2006, M. Woodley [SLAC]
+!    Common parameters and definitions for main linac
+! ------------------------------------------------------------------------------
+
+! ==============================================================================
+! cryo length parameters
+! ------------------------------------------------------------------------------
+
+! from Module-CA-TP-31May06.xls
+
+  MLcavL    := (1036.2)*MM2M         !active cavity length
+  MLquadL   := ( 666  )*MM2M         !cryo quad length
+  MLmpkgL   := ( 143  )*MM2M         !BPM package length
+  MLcpkgL   := ( 391  )*MM2M         !corrector package length
+  MLcavF2C  := ( 105.6)*MM2M         !flange to cavity end
+  MLcavF2F  := (  71.8)*MM2M         !flange to flange between cavities
+  MLcmass   := (  60.6)*MM2M         !cold mass in bellows region
+  MLmodF2F  := ( 850  )*MM2M-MLcmass !flange to flange between cryo modules
+  MLendbox  := (2500  )*MM2M         !end box (end of string)
+  MLsegbox  := (2500  )*MM2M         !segmentation box (end of segment)
+  MLservbox := (2500  )*MM2M         !service box (each end of cryo unit)
+
+! ==============================================================================
+! cryo counts
+! ------------------------------------------------------------------------------
+
+  N_cav_cm        := 8 !number of cavities per cryo module
+  N_cm_rfu        := 3 !number of cryo modules per RF unit
+  N_rfu_str       := 4 !number of RF units per cryo string
+  N_str_long_seg  := 4 !number of cryo strings per long cryo segment
+  N_str_short_seg := 3 !number of cryo strings per short cryo segment
+  N_seg_unit      := 4 !number of cryo segments per cryo unit
+  N_long_unit     := 4 !number of long cryo segments in linac
+  N_short_unit    := 1 !number of short cryo segments in linac
+
+  N_cav_str        := N_cav_cm*N_cm_rfu*N_rfu_str
+  N_cav_long_seg   := N_str_long_seg*N_cav_str
+  N_cav_short_seg  := N_str_short_seg*N_cav_str
+  N_cav_long_unit  := N_cav_long_seg*N_seg_unit
+  N_cav_short_unit := N_cav_long_seg*(N_seg_unit-1.0)+N_cav_short_seg
+!  N_cav_short_unit := N_cav_long_seg*N_seg_unit-  N_cav_long_seg + N_cav_short_seg
+  N_cav_linac      := N_long_unit*N_cav_long_unit+N_short_unit*N_cav_short_unit
+
+! ==============================================================================
+! generic 9-cell cavity definition
+! ------------------------------------------------------------------------------
+
+! MLcavF : cavity frequency (MHz)
+! MLcavA : cavity iris radius (m)
+! MLcavL : cavity active length (m)
+! MLcavK : short range beam loading loss factor (V/C/m)
+! NMLcav : total number of cavities
+! MLcavP : cavity phase (rad/2pi)
+! MLcavG : average cavity accelerating gradient (including overhead) (MV/m)
+! MLcavV : cavity voltage (MV)
+
+  MLcavF := 1300
+  MLcavA := 0.078/2
+ !MLcavK := 1.4461E13
+  MLcavK := 2.0775E13 !from Lucretia
+
+  ML9cell : LCAV, FREQ=MLcavF, APERTURE=MLcavA, L=MLcavL, &
+                  ELOSS=MLcavK*MLcavL, &
+                  LFILE="ILC2005.Lwake.SR.data", TFILE="ILC2005.Twake.SR.data"
+
+! ==============================================================================
+! generic cryo quad definition
+! ------------------------------------------------------------------------------
+
+  MLquadA := 0.075/2
+
+  MLquad : QUAD, TYPE="Q_SC75L630", L=MLquadL/2, APERTURE=MLquadA
+
+! ==============================================================================
+! drift lengths associated with cryo system
+! ------------------------------------------------------------------------------
+
+  MLbpmL   := (  77  )*MM2M  !active BPM length
+  MLbpmF2M := MLmpkgL-MLbpmL !flange to BPM
+  MLcorL   := ( 335  )*MM2M  !active X/Y corrector length
+  MLcorF2C := MLcpkgL-MLcorL !corrector to flange
+  MLwarm   := (6271  )*MM2M  !space between service boxes (may be warm)
+
+  DMLbpm     : DRIF, L=MLbpmL/2
+  DMLbpmF2M  : DRIF, L=MLbpmF2M
+  DMLcor     : DRIF, L=MLcorL/2
+  DMLcorF2C  : DRIF, L=MLcorF2C
+  DMLcavF2C  : DRIF, L=MLcavF2C
+  DMLcavF2F  : DRIF, L=MLcavF2F
+  DMLmodF2F  : DRIF, L=MLmodF2F
+  DMLendbox  : DRIF, L=MLendbox
+  DMLsegbox  : DRIF, L=MLsegbox
+  DMLservbox : DRIF, L=MLservbox
+  DMLwarm    : DRIF, L=MLwarm
+
+! cryomodule lengths
+
+  LMLCM  := 8*(MLcavF2C+MLcavL+MLcavF2C)+(7*MLcavF2F)
+  LMLCMQ := 8*(MLcavF2C+MLcavL+MLcavF2C+MLcavF2F)+MLmpkgL+MLquadL+MLcpkgL
+
+! cryomodule slot lengths
+
+  LMLCMs  := LMLCM+MLmodF2F
+  LMLCMQs := LMLCMQ+MLmodF2F
+
+! LMLQ2Q is quadrupole center-to-center spacing; LMLCMQu+LMLCMQd=LMLCMQs
+
+  LMLCMQu := 4*(MLcavF2C+MLcavL+MLcavF2C+MLcavF2F)+MLmpkgL
+  LMLCMQd := MLcpkgL+(4*(MLcavF2F+MLcavF2C+MLcavL+MLcavF2C))+MLmodF2F
+  LMLQ2Q  := MLquadL/2+LMLCMQd+LMLCMs+LMLCMs+LMLCMQu+MLquadL/2
+
+! LMLY2Y is ycor center-to-center spacing; LMLCMYu+LMLCMYd=LMLCMQs
+
+  LMLCMYu := 4*(MLcavF2C+MLcavL+MLcavF2C+MLcavF2F)+MLmpkgL+MLquadL+MLcorL/2
+  LMLCMYd := (MLcorL/2)+MLcorF2C+(4*(MLcavF2F+MLcavF2C+MLcavL+MLcavF2C))+MLmodF2F
+  LMLY2Y  := LMLCMYd+LMLCMs+LMLCMs+LMLCMYu
+
+! ==============================================================================
+! earth's curvature following
+! (NOTE: the vacuum system will be "kinked" vertically at the ends of each
+!        cryomodule to follow the earth's curvature ... drift spaces between
+!        cryomodules will be perpendicular to local gravity vector)
+! ------------------------------------------------------------------------------
+
+  CURVE := 0 !switch earth's curvature following on (1) or off (0)
+  STEER := 0 !switch earth's curvature steering on (1) or off (0)
+  BUMPS := 0 !switch dispersion matching bumps on (1) or off (0)
+
+  R_earth := 6.370E6 !6370 km
+
+  LUNDINS := 1213.889368
+  LBDS    := 2550.590289442
+  TBDS    := 0.014/2
+
+  AMLCM   := ASIN((LMLCM/2)/R_earth)
+  AMLCMQ  := ASIN((LMLCMQ/2)/R_earth)
+  AUNDINS := ASIN((LUNDINS/2)/R_earth)
+  ABDS    := ASIN(LBDS*COS(TBDS)/R_earth)
+
+  AMLKINKQ := CURVE*(AMLCMQ+ASIN((MLmodF2F/2)/R_earth))
+  AMLKINK0 := CURVE*ASIN((MLservbox/2)/R_earth)
+  AMLKINK1 := CURVE*(AMLCM+ASIN((MLmodF2F/2)/R_earth))
+  AMLKINK2 := CURVE*(AMLCM+ASIN(((MLmodF2F+MLendbox)/2)/R_earth))
+  AMLKINK3 := CURVE*(AMLCM+ASIN(((MLmodF2F+MLsegbox)/2)/R_earth))
+  AMLKINK4 := CURVE*(AMLCM+ASIN(((MLmodF2F+(2*MLservbox)+MLwarm)/2)/R_earth))
+  AMLKINK5 := CURVE*(AMLCM+ASIN(((MLmodF2F+MLservbox)/2)/R_earth))
+  AMLKINK6 := CURVE*(AUNDINS+ASIN(((MLmodF2F+MLservbox)/2)/R_earth))
+  AMLKINK7 := CURVE*(AUNDINS+ASIN((MLservbox/2)/R_earth))
+  AMLKINK8 := CURVE*(AMLCM+ASIN(((MLservbox)/2)/R_earth))
+  AMLKINK9 := CURVE*(ABDS+ASIN(((MLmodF2F+MLservbox)/2)/R_earth))
+
+! (NOTE: see ML_earthcurve_MULT.xsif or ML_earthcurve_GKICK.xsif for actual
+!        link definitions ... )
+
+! generic kick for nominal vertical orbit correction
+
+  AMLY := STEER*ASIN((LMLY2Y/2)/R_earth)
+
+! ==============================================================================
+! cryomodule definitions
+! ------------------------------------------------------------------------------
+
+  BEGMLCM  : MARK
+  ENDMLCM  : MARK
+  BEGMLCMQ : MARK
+  ENDMLCMQ : MARK
+
+  MLCM(CAV,Ki,Ko) : LINE=(&
+    BEGMLCM,&
+    Ki,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,&
+    Ko,&
+    DMLmodF2F,&
+    ENDMLCM)
+
+  MLBPMPKG(B)   : LINE=(DMLbpmF2M,DMLbpm,B,DMLbpm)
+  MLCORPKG(X,Y) : LINE=(DMLcor,X,Y,DMLcor,DMLcorF2C)
+
+  MLCMQ(CAV,Q,M,X,Y,B,Ki,Ko) : LINE=(&
+    BEGMLCMQ,&
+    Ki,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    MLBPMPKG(B),Q,M,Q,MLCORPKG(X,Y),DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,&
+    Ko,&
+    DMLmodF2F,&
+    ENDMLCMQ)
+
+! for matching
+
+  MLCM0(CAV) : LINE=(&
+    BEGMLCM,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,&
+    DMLmodF2F,&
+    ENDMLCM)
+
+  DMLmpkg : DRIF, L=MLmpkgL
+  DMLcpkg : DRIF, L=MLcpkgL
+
+  MLCMQ0(CAV,Q,M) : LINE=(&
+    BEGMLCMQ,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLmpkg,Q,M,Q,DMLcpkg,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,DMLcavF2F,&
+    DMLcavF2C,CAV,DMLcavF2C,&
+    DMLmodF2F,&
+    ENDMLCMQ)
+
+! ==============================================================================
+! MPS collimation and extraction line definitions
+! ------------------------------------------------------------------------------
+
+  LQ2KLIN := 0.5 !space between QMLI05 and first kicker
+  NKLIN   := 15  !number of extraction kickers
+  LKLIN   := 2.0 !length of extraction kicker
+  LK2KLIN := 0.2 !space between kickers
+
+  DQ2KLIN : DRIF, L=LQ2KLIN
+  DK2KLIN : DRIF, L=LK2KLIN
+
+! ==============================================================================
+! undulator insert quadrupole definitions
+! ------------------------------------------------------------------------------
+
+  MLIquad1A := 0.075/2
+  MLIquad1L := 1.0+MLIquad1A !core length is 1000 mm 
+  MLIquad2A := 0.0127/2
+  MLIquad2L := 0.5           !core length is 493.65 mm
+  MLIquad3A := 0.0127/2
+  MLIquad3L := 0.9779        !core length is 991.55 mm
+
+! special narrow profile quad (TESLA "Type B")
+! - overall width < 180 mm
+! - half-aperture R=10 mm
+! - maximum pole-tip field 7.9 kG
+
+  MLIquad4A := 0.01
+  MLIquad4L := 1.5  !core length is 1490 mm
+
+  MLIquad1 : QUAD, TYPE="Q75L1000", L=MLIquad1L/2, APERTURE=MLIquad1A
+  MLIquad2 : QUAD, TYPE="Q13L490",  L=MLIquad2L/2, APERTURE=MLIquad2A
+  MLIquad3 : QUAD, TYPE="Q13L990",  L=MLIquad3L/2, APERTURE=MLIquad3A
+  MLIquad4 : QUAD, TYPE="Q20L1490", L=MLIquad4L/2, APERTURE=MLIquad4A
+
+! ------------------------------------------------------------------------------
+
+  RETURN

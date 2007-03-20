@@ -1,0 +1,44 @@
+!  TITLE "ILC e- Main Linac [M. Woodley] (ILC2006e)"
+
+  BRHO = 1.0
+  BEAM, PARTICLE=POSITRON
+
+  CALL, FILENAME="LET_250GeV_sigznominal.xsif"
+ !CALL, FILENAME="../../configurations/LET_250GeV_sigzLowN.xsif"
+ !CALL, FILENAME="../../configurations/LET_250GeV_sigz300A.xsif"
+ !CALL, FILENAME="../../configurations/LET_250GeV_sigz150A.xsif"
+
+  CALL, FILENAME="ilc000.ILC_common.xsif"
+  CALL, FILENAME="ilc007.ML_common.xsif"
+
+!  CALL, FILENAME="../../auxfiles/ML_earthcurve_MULT.xsif"
+  CALL, FILENAME="ML_earthcurve_GKICK.xsif"
+
+! ==============================================================================
+! Beamline definitions
+! ------------------------------------------------------------------------------
+
+  CALL, FILENAME="ilc510.elin.xsif"
+  CALL, FILENAME="ilc511.elin1.xsif"
+!  CALL, FILENAME="../../deckfiles/linac/ilc512.elin1d.xsif"
+!  CALL, FILENAME="../../deckfiles/linac/ilc521.eund.xsif"
+  CALL, FILENAME="ilc531.elin2.xsif"
+
+BPMLAST : MONI
+BPMFAKE : MONI
+
+
+  LINAC : LINE=(ELIN1,ELIN2,BPMLAST)
+
+! ------------------------------------------------------------------------------
+
+!BEAM_LINAC_IN : BEAM, E=14.990402211586, NPART = 2E10, &
+!                SIGT = 300E-16, SIGE = 0.00000107, &
+!                EX = 8E-6 * EMASS / 15, EY = 20E-9 * EMASS / 15
+
+!TWISS_LINAC_IN : BETA0, BETX = 1.009429903009E2, ALFX = -0.31372129251,  &
+!                          BETY = 51.470740190609, ALFY =  0.64506517098, &
+!                          DY = 0.0, DPY = 0.0,  &
+!                          Y = 0.0, PY = 0.0
+!
+RETURN
