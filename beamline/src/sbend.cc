@@ -589,9 +589,12 @@ istream& sbend::readFrom(istream& is)
 
 void sbend::enterLocalFrame( Particle& p ) const
 {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "void sbend::enterLocalFrame( Particle& p ) const",
-          "Function is obsolete. (?)" ) );
+
+  bmlnElmnt::enterLocalFrame(p);
+
+//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+//        "void sbend::enterLocalFrame( Particle& p ) const",
+//        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
 // TO BE DONE   halfAngle = this->_angle / 2.0;
 // TO BE DONE   P_Face( p,   halfAngle );
@@ -602,9 +605,12 @@ void sbend::enterLocalFrame( Particle& p ) const
 
 void sbend::enterLocalFrame( JetParticle& p ) const
 {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "void sbend::enterLocalFrame( JetParticle& p ) const",
-          "Function is obsolete. (?)" ) );
+
+ bmlnElmnt::enterLocalFrame(p);
+
+// throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+//      "void sbend::enterLocalFrame( JetParticle& p ) const",
+//     "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
 // TO BE DONE   halfAngle = this->_angle / 2.0;
 // TO BE DONE   J_Face( p,   halfAngle );
@@ -615,9 +621,12 @@ void sbend::enterLocalFrame( JetParticle& p ) const
 
 void sbend::leaveLocalFrame( Particle& p ) const
 {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "void sbend::leaveLocalFrame( Particle& p ) const",
-          "Function is obsolete. (?)" ) );
+
+  bmlnElmnt::leaveLocalFrame(p);
+
+//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+//        "void sbend::leaveLocalFrame( Particle& p ) const",
+//        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
 // TO BE DONE   halfAngle = this->_angle / 2.0;
 // TO BE DONE   P_Face( p, - halfAngle );
@@ -628,9 +637,12 @@ void sbend::leaveLocalFrame( Particle& p ) const
 
 void sbend::leaveLocalFrame( JetParticle& p ) const
 {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "void sbend::leaveLocalFrame( JetParticle& p ) const",
-          "Function is obsolete. (?)" ) );
+  bmlnElmnt::leaveLocalFrame(p);
+
+
+//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+//        "void sbend::leaveLocalFrame( JetParticle& p ) const",
+//        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
 // TO BE DONE   halfAngle = this->_angle / 2.0;
 // TO BE DONE   J_Face( p, - halfAngle );
