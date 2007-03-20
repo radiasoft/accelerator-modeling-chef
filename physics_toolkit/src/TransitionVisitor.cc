@@ -354,7 +354,7 @@ void TransitionVisitor::set_prev( bmlnElmnt const& x )
 {
   // Filters
 
-  BarnacleList::const_iterator it = x.dataHook.find("Twiss");  
+  BarnacleList::const_iterator it = const_cast<bmlnElmnt&>(x).dataHook.find("Twiss");  
  
   if( it == x.dataHook.end() ) {
     errorCode_ = NOLATTFUNC;
