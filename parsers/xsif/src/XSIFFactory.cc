@@ -60,8 +60,8 @@ XSIFFactory::XSIFFactory( string filename, const char* stringbuffer)
  
 {
 
- driver_.m_trace_scanning = true;
- driver_.m_trace_parsing  = true;
+ driver_.m_trace_scanning = false;
+ driver_.m_trace_parsing  = false;
 
  driver_.parse( filename ); 
  
