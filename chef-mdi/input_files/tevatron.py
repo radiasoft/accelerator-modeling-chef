@@ -63,7 +63,7 @@ jp = beamline.JetProton(energy)
 print "Reference BRho = ", pr.ReferenceBRho()
 
 tevatron = bfact.create_beamline("normal_tevatron", pr.ReferenceBRho() )
-lfsage = physics_toolkit.LattFuncSage(tevatron,0)
+lfsage = physics_toolkit.LattFuncSage(tevatron)
 
 # propagate the JetProton ( i.e. compute a one-turn map)
 tevatron.propagateJetParticle(jp)
@@ -104,27 +104,21 @@ ver_dPrime_array = numarray.zeros(nelm,  'Float64')
 # copy the lattice functions from the bealine elements to the arrays 
 
 i=0
-
-bit = iter(tevatron)           # get iterator
-
-try:
-    while 1:
-	be   = bit.next()       # get each item
-    	print i, be.Type()
+for  be in  tevatron.deep_iterator(): 
+#	print i, be.Type()
 	lf  = be.dataHook.find("Twiss",1).info().lattFunc() # this should return a LattFuncSage.lattFunc
- 	#print lf
-	arcLength_array[i]      = lf.arcLength
-	hor_beta_array[i]       = lf.beta.hor
-	ver_beta_array[i]       = lf.beta.ver
-	hor_alpha_array[i]      = lf.alpha.hor
-	ver_alpha_array[i]      = lf.alpha.ver
-	hor_disp_array[i]       = lf.dispersion.hor
-	ver_disp_array[i]       = lf.dispersion.ver
-	hor_dPrime_array[i]     = lf.dPrime.hor
-	ver_dPrime_array[i]     = lf.dPrime.ver
+ 	print lf
+#	arcLength_array[i]      = lf.arcLength
+#	hor_beta_array[i]       = lf.beta.hor
+#	ver_beta_array[i]       = lf.beta.ver
+#	hor_alpha_array[i]      = lf.alpha.hor
+#	ver_alpha_array[i]      = lf.alpha.ver
+#	hor_disp_array[i]       = lf.dispersion.hor
+#	ver_disp_array[i]       = lf.dispersion.ver
+#	hor_dPrime_array[i]     = lf.dPrime.hor
+#	ver_dPrime_array[i]     = lf.dPrime.ver
 	i = i+1   
 
-except StopIteration: pass  # iterator exhausted
 
 #--------------------------------------
 # plot and display the lattice functions
@@ -132,15 +126,15 @@ except StopIteration: pass  # iterator exhausted
 
 # setup curves ...
 
-betax_curve  = chefplot.CHEFCurve(arcLength_array, hor_beta_array,"Hor Beta  [m]")
-betay_curve  = chefplot.CHEFCurve(arcLength_array, ver_beta_array,"Ver Beta  [m]")
+betax_curve  = chefplot.CurveData(arcLength_array, hor_beta_array,"Hor Beta  [m]")
+betay_curve  = chefplot.CurveData(arcLength_array, ver_beta_array,"Ver Beta  [m]")
 
-dispx_curve  = chefplot.CHEFCurve(arcLength_array, hor_disp_array, "Hor Dispersion  [m]")
-dispy_curve  = chefplot.CHEFCurve(arcLength_array, ver_disp_array, "Ver Dispersion  [m]")
+dispx_curve  = chefplot.CurveData(arcLength_array, hor_disp_array, "Hor Dispersion  [m]")
+dispy_curve  = chefplot.CurveData(arcLength_array, ver_disp_array, "Ver Dispersion  [m]")
 
-# package data into a CHEFPlotData object
+# package data into a PlotData object
 
-data = chefplot.CHEFPlotData()
+data = chefplot.PlotData()
 
 data.addCurve(betax_curve)
 data.addCurve(betay_curve)
@@ -157,6 +151,7 @@ plot.show()
 #print hor_beta_array
 #print hor_disp_array
 #print hor_dPrime_array
+
 
 
 

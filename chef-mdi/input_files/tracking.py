@@ -10,24 +10,20 @@
 #  tracking.py
 #=======================================================================
 #
-# Of the following, only numarray needs to be imported explicitly when working
+# Of the following , only numarray needs to be imported explicitly when working
 # in the CHEF embedded interpreter. Note: Importing already imported modules
 # is harmless.
-#
+
 import basic_toolkit   
 import mxyzptlk       
 import beamline       
 import physics_toolkit  
 import bmlfactory      
 import chefplot
-####import chef
-#
 import numarray
 
 #
-PH_NORM_mp  = 0.938               #  [GeV]  Proton Rest Mass 
-energy = 150.0                    #  Tevatron injection energy 
-
+energy = 150.0                    #  Tevatron injection energy in GeV 
 pr = beamline.Proton( energy )
 
 #
@@ -51,6 +47,7 @@ print "Reference BRho = ", pr.ReferenceBRho()
 tevatron = bfact.create_beamline("normal_tevatron", pr.ReferenceBRho() )
 
 #set initial conditions
+
 pr.set_x(0.001)
 pr.set_y (0.0)
 pr.set_cdt(0.0)
@@ -62,26 +59,24 @@ nsamples = 1024
 x_position = numarray.zeros(nsamples, 'Float64')
 turnno     = numarray.zeros(nsamples, 'Float64')
 
-# iterate over nsamples turns
-
-# propagate the Proton ( i.e. compute a one-turn map)
+# propagate the Proton around the ring and iterate nsamples times...  
 
 for i in xrange(nsamples):
     tevatron.propagateParticle(pr)
     x_position[i] =  pr.get_x()
     turnno[i] = i
 
-#--------------------------------------
+#---------------------------------------------
 # plot and display the position
-#---------------------------------------
+#----------------------------------------------
 
-# setup curves ...
+# setup the curves ...
 
-x_curve  = chefplot.CHEFCurve(turnno, x_position,"Hor Position [m]")
+x_curve  = chefplot.CurveData(turnno, x_position,"Hor Position [m]")
 
-# package data into a CHEFPlotData object
+# package the curve data into a PlotData object
 
-data = chefplot.CHEFPlotData()
+data = chefplot.PlotData()
 data.addCurve(x_curve)
 
 # pass the data to a plot widget and display the widget !
@@ -104,9 +99,9 @@ xfftabs = numarray.zeros(nsamples, 'Float64')
 for i in xrange(nsamples):
     xfftabs[i] = xfft[i]*(xfft[i].conjugate())
 
-fftcurve  = chefplot.CHEFCurve(turnno, xfftabs, "Amplitude ")
+fftcurve  = chefplot.CurveData(turnno, xfftabs, "Amplitude ")
 
-fftdata = chefplot.CHEFPlotData()
+fftdata = chefplot.PlotData()
 
 
 fftdata.addCurve(fftcurve)
@@ -115,6 +110,7 @@ fftplot = chefplot.CHEFPlotMain()
 fftplot.addData(fftdata)
 fftplot.resize(1000,500)
 fftplot.show()
+
 
 
 
