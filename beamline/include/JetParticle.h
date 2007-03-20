@@ -96,8 +96,8 @@ protected:
   double   m_;        // mass in GeV / c^2
   double   p_;        // reference momentum in GeV / c
   double   gamma_;    // reference gamma
-  double   pn_;       // normalized reference momentum = pc/mc^2 = p/mc
   double   beta_;     // normalized reference velocity = v/c
+  double   pn_;       // normalized reference momentum = pc/mc^2 = p/mc
   double   bRho_;     // normalized reference momentum / charge
                       //                               = beta*gamma
   double   pni2_;     // ( 1/pn )^2
