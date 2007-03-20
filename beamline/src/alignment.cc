@@ -169,7 +169,7 @@ alignment& alignment::operator=(alignment const& x) {
 
 void alignment::misalign(Particle const& p, Vector& inState) {
 
-  Vector& state = p.getState();
+  Vector const& state = const_cast<Particle&>(p).getState();
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state[i];
@@ -206,7 +206,7 @@ void alignment::misalign(Particle const& p, Vector& inState) {
 void alignment::align(Particle const& p, Vector& inState) {
 
 
-  Vector& state = p.getState();
+  Vector const& state = const_cast<Particle&>(p).getState();
 
   for( int i=0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state[i];
