@@ -64,13 +64,13 @@
 
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/VectorD.h>
-// #include <basic_toolkit/Cascade.h>
 #include <basic_toolkit/TMatrix.h>
 #include <deque>
 #include <list>
 #include <ostream>
 #include <istream>
 #include <basic_toolkit/ReferenceCounter.h>
+#include <boost/shared_ptr.hpp>
 
 // Forward declarations
 
@@ -121,7 +121,6 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
     int                            maxWeight_;
     int                            numVar_;
     int                            maxTerms_;       // Maximum number of monomial terms.
-    //Cascade                        offset_;         // Switching functor for fast access to offset
     int*                           exponent_;       // Used by nexcom (as called by TJL::operator()
                                                     //   when storing monomials.
                                                     //   indices in the _TJLmonomial and _TJLmml arrays.
@@ -142,7 +141,8 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    ScratchArea( TJetEnvironment<U>* pje, int weight, int numvar);
   ~ScratchArea();
  
-   int offsetIndex(IntArray const& exp) const;
+   int  offsetIndex(IntArray const& exp) const;
+   void displayMultiplicationTable()     const; 
 
    private:
 
@@ -161,7 +161,7 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
    Exists(int maxweight, int numvar): maxWeight_(maxweight), numVar_(numvar) {}
 
-   bool operator()( const ScratchArea<U>* p ) const {
+   bool operator()( ScratchArea<U> const* p ) const {
      return ( ( p->numVar_ == numVar_ )&&(p->maxWeight_ == maxWeight_) );
    } 
  };
@@ -177,7 +177,7 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
  // Public Member functions -------------------------------------
 
- ~TJetEnvironment();
+  ~TJetEnvironment();
 
   // factory functions -------------------------------------------
 
@@ -200,7 +200,9 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
   void dispose();
 
   friend void EnvTerminate();
-                
+  
+  TJetEnvironment& operator=( TJetEnvironment<T> const& rhs);
+              
    // operators -------------------------------------------
 
 
@@ -237,8 +239,6 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    const T*        getRefPoint() const { return   refPoint_; } 
  
    T*              monomial()    const { return   scratch_->monomial_;    }
-   //int*            exponent()    const { return   scratch_->exponent_;    }
-
    JLPtr<T>*       TJLmonomial() const { return   scratch_->TJLmonomial_; }
 
    TJLterm<T>*     TJLmml()      const { return   scratch_->TJLmml_;      }
@@ -248,14 +248,17 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
                                                                                                scratch_->multTable_[rhs][lhs]; }  
 
    int             offsetIndex( IntArray const& exp) const;
-   //int             oldoffsetIndex( IntArray const& exp)    const    { return scratch_->offset_.index(exp); }  
-   //int             oldoffsetIndex(     int const* exp)     const    { return scratch_->offset_.index(exp); }  
 
    const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
    int             maxTerms() const                          { return scratch_->maxTerms_;}
 
    static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
    static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
+
+  
+   // debugging 
+
+   void displayMultiplicationTable()    const {  scratch_->displayMultiplicationTable(); }
 
    // Streams --------------------------------------------------------- 
 
@@ -282,7 +285,7 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
   bool               pbok_;                // Taking Poisson brackets is OK: the dimension of 
                                            //   phase space is even.
 
-  ScratchArea<T>*    scratch_;             // pointer to a common scratch area. Scratch is 
+  ScratchArea<T>*    scratch_;             // shared pointer to a common scratch area. Scratch is 
                                            // unique for (maxweight, nvar) 
 
 
@@ -298,9 +301,6 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
 // Private Member  functions -------------------------------------
 
-  TJetEnvironment& operator=( const TJetEnvironment& env) { return  DeepCopy(env); }
-
-  TJetEnvironment& DeepCopy( const TJetEnvironment& env);
 
   ScratchArea<T>*  buildScratchPads(int maxweight, int numvar);
 
