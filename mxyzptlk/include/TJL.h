@@ -227,6 +227,7 @@ friend class TJL;
 
   JLPtr<T>  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
 
+  double    maxAbs() const;                
 
   void printCoeffs() const;               // prints term coefficients 
   void peekAt() const;                     
@@ -464,7 +465,7 @@ friend class TJL;
 
   void initStore(int capacity);      // setup and initialize the jlterm store 
 
-  void transferFromScratchPad( );    // transfer result from scratchpad into current TJL   
+  void transferFromScratchPad();     // transfer result from scratchpad into current TJL   
   void append( TJLterm<T>  const&);  
 
   TJL( EnvPtr<T> const&,  T value = T() );
