@@ -5,7 +5,7 @@
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJL.cc
-******                                                                
+******                                                               
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
 ******
@@ -90,11 +90,13 @@ using FNAL::pcout;
 //  static data members
 //------------------------------------------------------------------------
 
-template<typename T>
-const double TJL<T>::mx_small_   = 1.0e-12;      //  abs coeff threshold for removal of a JLterm
+
 
 template<typename T>
-const int TJL<T>::mx_maxiter_ = 100;          // Maximum number of iterations allowed  
+const double TJL<T>::mx_small_     = 10.0*std::numeric_limits<double>::epsilon();
+
+template<typename T>
+const int TJL<T>::mx_maxiter_  = 100;          // Maximum number of iterations allowed  
                                               //  in iterative routines (e.g. transcendental functions)
 
 // ******  a global container for discarded Jets. 
@@ -479,9 +481,9 @@ int         old_jltermStoreCapacity   = 0;
 template<typename T>
 int TJL<T>::getCount() const { 
 
-  const double eps = 100.0*std::numeric_limits<double>::epsilon();
+  const double eps = mx_small_;
 
-  // returns the true term count 
+  // returns the "non-zero" term count 
 
   int count = count_;
 
@@ -489,11 +491,15 @@ int TJL<T>::getCount() const {
 
   TJLterm<T> const * p =jltermStore_;
 
+  //-----------------------------------------------------
   // add the non-zero *linear* terms, if any 
+  // NOTE: the trigonometric function convergence depend 
+  //       on getCount() reporting 0 ! 
+  //-----------------------------------------------------
 
   for (TJLterm<T> const * p=jltermStore_; p<jltermStore_+lterms+1; ++p ) {
 
-    if (std::abs(p->value_) > eps ) ++count;   
+    if (std::abs(p->value_) > mx_small_ ) ++count;   
 
   }   
 
@@ -937,6 +943,22 @@ T TJL<T>::operator()( Vector const& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+template<typename T>
+double TJL<T>::maxAbs( ) const {
+
+ double maxabs = 0;
+
+ for(  TJLterm<T> const* p = jltermStore_; p< jltermStoreCurrentPtr_; ++p  ) {
+   maxabs = std::max( maxabs, std::abs(p->value_) );
+ }
+
+ return maxabs;
+
+}
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 JLPtr<T> TJL<T>::filter( int const& wgtLo, int const& wgtHi ) const 
 { 
@@ -1050,8 +1072,9 @@ JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const
       product = p->value_ * q->value_;
       dummy = tjlmml[indy].value_ + product;
 
-      if( std::abs( dummy ) < mx_small_*std::abs( product ) ) {
-        tjlmml[indy].value_ = T();
+      if( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) {
+
+         tjlmml[indy].value_ = T();
       }
       else {
         tjlmml[indy].value_ = dummy;
@@ -1096,7 +1119,7 @@ std::ostream& operator<<( std::ostream& os, const TJL<T>& x )
  
  for ( TJLterm<T> const* p = x.jltermStore_; p < x.jltermStoreCurrentPtr_; ++p) {
 
-   if ( std::abs(p->value_) < 10.0*std::numeric_limits<double>::epsilon() ) continue;
+   //if ( std::abs(p->value_) < 10.0*std::numeric_limits<double>::epsilon() ) continue;
 
    os << "Index: ";
    os << p->index_ << " ";
@@ -1325,8 +1348,7 @@ template<typename T>
 JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon ) 
 { 
  
- JLPtr<T> epsq;
- epsq = epsilon*epsilon;
+ JLPtr<T> epsq = epsilon*epsilon;
  epsq->Negate();                               //   epsq = -epsilon*epsilon 
  JLPtr<T> z( epsilon->clone() );               //    z = epsilon -- deep copy 
 
@@ -1340,17 +1362,16 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
 
   int nsteps = 0;
   while( term->getCount() > 0 ) {
-   z    += term;                                // z += term;
-   term *= epsq;                                // term->multiply(epsq);
-   n1 = ++n; n2 = ++n;
-   term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;
-   
 
-   if (++nsteps > epsilon->accuWgt_) break;                            // expansion terminates after at most  epsilon->accuWgt_ steps
-
-
- }
+    z    += term;                                // z += term;
+    term *= epsq;                                // term->multiply(epsq);
+    n1 = ++n; n2 = ++n;
+    term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;
+    ++nsteps;
+  }
  
+ if ( nsteps > mx_maxiter_ ) (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsSin " << std::endl 
+                                       << "*** WARNING ***  Results may not be accurate."                         << std::endl;
  z->accuWgt_ = epsilon->accuWgt_;
 
  return z;
@@ -1366,7 +1387,7 @@ JLPtr<T> TJL<T>::epsCos( JLPtr<T> const& epsilon )
 
  JLPtr<T> z( makeTJL( epsilon->myEnv_, ((T) 1.0) ));             // z   = 1    
 
- JLPtr<T> epsq = (epsilon*epsilon);
+ JLPtr<T> epsq = epsilon*epsilon;
  epsq->Negate();                                // epsq = -epsilon*epsilon
 
  JLPtr<T> term(epsq->clone());
@@ -1377,14 +1398,18 @@ JLPtr<T> TJL<T>::epsCos( JLPtr<T> const& epsilon )
  
   int nsteps =0;
   while( term->getCount() > 0 ) {
-   z    += term;                                // z += term;
-   term *= epsq;                                // term->multiply(epsq);
-   n1    = ++n; n2 = ++n;
-   term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;  
-   if (++nsteps > epsilon->accuWgt_) break;     // expansion terminates after at most  epsilon->accuWgt_ steps
-   }
+    z    += term;                                // z += term;
+    term *= epsq;                                // term->multiply(epsq);
+    n1    = ++n; n2 = ++n;
+    term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;  
+    ++nsteps;
+  }
  
  z->accuWgt_ = epsilon->accuWgt_;
+
+ if ( nsteps > mx_maxiter_ )  (*pcerr) << "*** WARNING **** More than " << mx_maxiter_<< "iterations in epsCos " << std::endl  
+                                       << "*** WARNING **** Results may not be accurate." << std::endl; 
+
 
  return z;
 }
@@ -1872,8 +1897,6 @@ JLPtr<T> TJL<T>::asin() const
  JLPtr<T> dz; 
  JLPtr<T> x = clone();           
 
- dz = ( z->sin() - x ) / z->cos(); 	 
-
  // Setting up the iteration 	 
 
  int upperBound = 8; 	 
@@ -1882,60 +1905,50 @@ JLPtr<T> TJL<T>::asin() const
  int indy = 0; 	 
 
  double compValue; 	 
- bool repeat = true; 	 
+
  
  TJLterm<T>* const tjlmml = pje->TJLmml(); 	 
  	 
  // Iterated Newton's steps
  
- 
- while( repeat && (iter < mx_maxiter_) ) 	 
+ bool converged = false; 	 
+ while( !converged  ) 	 
  { 	 
-     while( ++iter < upperBound ) { 	 
+     for ( int idx =0; idx < 8; ++idx ) { // do 8 iterations at a time 	 
+
       // These two lines are the heart of the calculation: 	 
 
-      z  -= dz; 	 
       dz = ( z->sin() - x ) / z->cos(); 	 
-
+      z  -= dz; 	 
      }
 	 
      // The rest is just determining when to stop. 	  
-     //   This procedure could be improved, but it's better 	 
-     //   than the previous one, which was just comparing 	 
-     //   dz to zero. 	 
-     repeat = false; 	 
+     // This procedure could be improved, but it's better 	 
+     // than the previous one, which was just comparing 	 
+     // dz to zero. 	 
  
-  	 
-     // Load the monomials of the current answer into a scratchpad 	   
 
-     for (typename TJL<T>::iterator itz = z->begin(); itz != z->end(); ++itz ) { 	 
-       indy = itz->offset_; 	 
-       tjlmml[indy].value_ = itz->value_; 	 
-     } 	 
- 	 
-     // Compare to the increment monomials, one coefficient at a time 	   
-    
-     for ( typename TJL<T>::iterator itz = z->begin(); itz != z->end(); ++itz ) { 	 
-       indy = itz->offset_; 	 
-       compValue = std::abs( tjlmml[indy].value_ ); 	 
-       if( compValue < mx_small_ ) { 	 
-         if( std::abs(itz->value_) > mx_small_ ) { 	 
-           repeat = true; 	 
-           break; 	 
-         } 	 
-       } 	 
+     // compare the terms in dz to those in z.  	   
+     // NOTE: the last operation performed on z in an in-place add
+     //       involving dz. This garantees that each term in dz
+     //       has a corresponding term in z.
+  
+     
+ 
+     typename TJL<T>::iterator itz  =  z->begin(); 	 
+     typename TJL<T>::iterator itdz = dz->begin(); 	 
+
+     for ( ; itdz != dz->end(); ++itdz, ++itz ) { 	 
+
+       while ( itz->offset_ != itdz->offset_ ) ++itz;  
+       converged = ( std::abs(itz->value_)  >  mx_small_ ) ? ( std::abs( itdz->value_ ) < mx_small_* std::abs(itz->value_) ) 
+                                                           : ( std::abs( itdz->value_ ) < mx_small_                        );          
+
      } 	 
 
-     // Clean the scratchpad. 	 
+     if ( iter >= mx_maxiter_ ) break;
 
-     for ( typename TJL<T>::iterator itz = z->begin(); itz != z->end(); ++itz ) { 	 
-       indy = itz->offset_; 	 
-       tjlmml[indy].value_ = zero; 	 
-     }
- 	 
-     // And continue 	 
-     upperBound += 8; 	 
- } 	 
+} 	 
  
  // If stopped because too many iterations,
  // print a warning message
@@ -1978,20 +1991,17 @@ JLPtr<T> TJL<T>::atan() const
 {   
  
  JLPtr<T> z( clone() );      // deep copy
- JLPtr<T> c;
- JLPtr<T> dz;
-
  JLPtr<T> x( clone() ); 
 
+ JLPtr<T>   c = z->cos();                             // c = cos( z );
+ JLPtr<T>  dz = c*( z->sin() - x*c );
+
  int iter = 0;
-
- c = z->cos();                                                    // c = cos( z );
- dz = c*( z->sin() - x*c );                                       // in-place multiply would help 
-
  while( ( dz->standardPart() != T() ) && ( iter++ < mx_maxiter_ ) ) { 
   z -= dz;
-  c = z->cos();                                                   // c = cos( z );
+  c = z->cos();                                       // c = cos( z );
   dz = c*( z->sin() - x*c );
+ 
  }
 
  if( iter >= mx_maxiter_ ) {
@@ -2020,7 +2030,7 @@ void TJL<T>::printCoeffs() const {
  (*pcout) << "Reference point: " 
       << myEnv_->getRefPoint()[0];
 
- for( int i=0; i < myEnv_->numVar(); ++i) {
+ for( int i=1; i < myEnv_->numVar(); ++i) {
    (*pcout) << ", ";
    (*pcout) << myEnv_->getRefPoint()[i];
  }
@@ -2345,8 +2355,9 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  ){
  int accuWgt = x->accuWgt_; // save lhs accurate weight value before clearing it ...   
  int lowWgt  = x->lowWgt_; 
  
- x->transferFromScratchPad();
+ x->transferFromScratchPad(); 
 
+ 
  x->lowWgt_  = std::min(lowWgt,     y->lowWgt_);   
  x->accuWgt_ = std::min(accuWgt,    y->accuWgt_); 
  
@@ -2483,7 +2494,7 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 
      result  = ( std_x * py->value_ ) + ( std_y * px->value_ ); 
 
-     if( std::abs( result ) < MX_ABS_SMALL )   result = T();
+     if( std::abs( result ) < TJL<T>::mx_small_ )   result = T();
 
      pz->value_ = result;
    }
@@ -2518,14 +2529,15 @@ for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
 
      product = p->value_ * q->value_;
 
-     dummy = tjlmml[indy].value_ + product;
+     dummy =  tjlmml[indy].value_ + product;
+ 
+     if( ( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) || 
+         ( std::abs(dummy) <  TJL<T>::mx_small_ ) ) {
 
-     if( (std::abs( dummy ) < TJL<T>::mx_small_*std::abs( product )) || 
-         (std::abs( dummy ) < MX_ABS_SMALL) ) {
-       tjlmml[indy].value_ = T();
+      tjlmml[indy].value_ = T();
      } 
      else {
-       tjlmml[indy].value_ = dummy;
+        tjlmml[indy].value_ = dummy;
      }
  }}
 
@@ -2650,8 +2662,9 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
      dummy = tjlmml[indy].value_ + product;
 
-     if( (std::abs( dummy ) < TJL<T>::mx_small_*std::abs( product )) || 
-         (std::abs( dummy ) < MX_ABS_SMALL) ) {
+    if( ( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) || 
+        ( std::abs(dummy) <  TJL<T>::mx_small_ ) ) {
+
        tjlmml[indy].value_ = T();
      } 
      else {
@@ -2804,7 +2817,7 @@ JLPtr<T>   operator/( JLPtr<T> const & x,  T const& y  ){
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-void TJL<T>::transferFromScratchPad( ) {   
+void TJL<T>::transferFromScratchPad() {   
 
   clear();// clears all the terms of current TJL, including the std part ! 
 
@@ -2818,14 +2831,17 @@ void TJL<T>::transferFromScratchPad( ) {
  
   int i = 0;
   for( TJLterm<T>* p = scpad_begin;  p < scpad_begin + myEnv_->numVar() + 1; ++p, ++i) {
+
      jltermStore_[i].value_ = p->value_;
      p->value_ = T();
      
   }
 
+  // then the non-linear terms
+
   for( TJLterm<T>* p = scpad_begin + myEnv_->numVar() + 1 ;  p < scpad_end; ++p) 
   {
-   if (  p->value_ != T() )  {
+   if (  p->value_  !=  T() )  {
      append( *p ); 
      p->value_ = T();
    }
