@@ -273,10 +273,10 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BmlPtr
-MAD8Factory::create_beamline_private( const char* bmlname) { 
-
+MAD8Factory::create_beamline_private( const char* bmlname) 
+{ 
+  BRHO_ = madparser_get_brho(  mp_ );
   return create_beamline_private( bmlname, BRHO_); 
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
