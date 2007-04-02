@@ -37,7 +37,9 @@
 ******  Oct 2006   ostiguy@fnal.gov
 ******  
 ******  - new implementation based on std::vector<>
-******                                                                        
+******
+******   Mar 2007 ostiguy@fnal.gov 
+******  - exposed iterator interface                                                                        
 **************************************************************************
 *************************************************************************/
 #ifndef TVECTOR_H
@@ -82,6 +84,24 @@ private:
   static OutputFormat* m_defOFPtr;  // default OutputFormat
 
 public:
+
+  typedef typename std::vector<T>::iterator                 iterator;
+  typedef typename std::vector<T>::const_iterator     const_iterator;
+
+  typedef typename std::vector<T>::reverse_iterator             reverse_iterator;
+  typedef typename std::vector<T>::const_reverse_iterator const_reverse_iterator;
+ 
+  iterator                begin();
+  const_iterator          begin()  const;
+
+  iterator                end();
+  const_iterator          end()    const;
+
+  reverse_iterator        rbegin();
+  const_reverse_iterator  rbegin() const;
+
+  reverse_iterator        rend();
+  const_reverse_iterator  rend()   const;
 
   // Constructors and the destructor __________________________
 
