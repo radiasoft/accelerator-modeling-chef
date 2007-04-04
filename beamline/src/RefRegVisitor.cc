@@ -37,9 +37,10 @@
 ******  Mar 2007        ostiguy@fnal.gov
 ******
 ****** -use new style STL-compatible iterators
-****** -use locally defined particles defined on the stack
+****** -use locally defined particles allocated on the stack
 ****** -visitor public interface taking advantage of dynamic type
-******                                                                
+****** -RefRegVisitor now makes no implicit assumptions about flat beamlines.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -129,6 +130,7 @@ void RefRegVisitor::visit( beamline& x )
 
   // Preliminary traversal in case there are
   // RF cavities in the line.
+
   if( revolutionFrequency_ < 0 ) 
   {
     double cumulativeCdt = 0.0;
@@ -143,13 +145,15 @@ void RefRegVisitor::visit( beamline& x )
     
       momentum = copy.ReferenceMomentum();
 
-      if( (initialMomentum_ == momentum) || (! (*it)->isMagnet() ) ) continue; 
+      if( (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) ) { 
      
-      (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
+          (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
+ 
+      }
 
-      rfcavity* rfcPtr = 0;     
-      if( (rfcPtr = dynamic_cast<rfcavity*>( (*it).get() ) ) ) {
-
+      rfcavity* rfcPtr = dynamic_cast<rfcavity*>( (*it).get() );
+     
+      if ( rfcPtr ) {
         double refbeta = copy.ReferenceBeta();
         copy.SetReferenceEnergy( copy.ReferenceEnergy() + rfcPtr->Strength()*sin( rfcPtr->getPhi() ) );
         refbeta = ( refbeta + copy.ReferenceBeta() ) / 2.0;
@@ -164,11 +168,24 @@ void RefRegVisitor::visit( beamline& x )
     }
 
     // Store the total time of traversal as a frequency
+
     revolutionFrequency_ = PH_MKS_c /cumulativeCdt;
 
   }
 
-  BmlVisitor::visit( x ); // WHY ?????
+ //------------------------------------------------------------------------------------
+ // *** visit individual elements to set reference time  **** 
+ // *** NOTE: this is done here with a deep_iterator to prevent visit(beamline& ) to be 
+ // ***       called again. Calling BmlVisitor::visit version here would result in 
+ //           failure of the registration process for beamlines that are not flat.
+ //-------------------------------------------------------------------------------------
+
+ for (beamline::deep_iterator it  = x.deep_begin();
+                              it != x.deep_end(); ++it) {
+    
+        (*it)->accept( *this ); 
+ }
+
 }
 
 
@@ -225,7 +242,7 @@ void RefRegVisitor::visit( rbend& x )
 
   x.setPropFunction( &rbend::NoEdge );
   x.setEntryAngle( particle_ );
-  visit( ((bmlnElmnt&) x) );
+  visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
   x.setPropFunction( propPtr );
 }
@@ -235,7 +252,6 @@ void RefRegVisitor::visit( rfcavity& x )
 {
  
   x.acceptInner( *this );
-
 
 }
 
@@ -249,7 +265,7 @@ void RefRegVisitor::visit( thinrfcavity& x )
     }
   }
 
-  visit( (bmlnElmnt&) x);
-} 
-
+  visit( static_cast<bmlnElmnt&>(x) );
+ 
+}
 
