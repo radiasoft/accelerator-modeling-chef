@@ -77,16 +77,12 @@
 #include <vector>
 
 
-// ***  Note:
-// ***  Default max is set 8 variables (6 phase space vars + 2). 
-// ***  Increase intarray_max_variables if more variables are needed.
-
 
 // ***  Note:
 // *** The following typedef can be safely redefined without 
 // *** breaking mxyzptlk. 
  
-typedef signed char exponent_t;
+typedef int exponent_t;
 
 
 // **************************************************************************
@@ -104,46 +100,12 @@ class DLLEXPORT IntArray {
 
 public:
 
-  // Iterators ... 
 
-   template <class Value> 
-   class intarray_iter : public boost::iterator_adaptor <
-         intarray_iter<Value>                  // Derived
-       , Value*                                // Base
-       , boost::use_default                    // Value
-       , boost::random_access_traversal_tag    // CategoryOrTraversal
-    >
-  {
-   private:
-      struct enabler {};  // a private type avoids misuse
+  typedef   std::vector<exponent_t >::iterator                 iterator;
+  typedef   std::vector<exponent_t >::const_iterator     const_iterator;
 
-   public:
-      intarray_iter()
-       : intarray_iter::iterator_adaptor_(0) {}
-
-    explicit intarray_iter(Value* p)
-      : intarray_iter::iterator_adaptor_(p) {}
-
-    template <class OtherValue>
-    intarray_iter(
-        intarray_iter<OtherValue> const& other
-      , typename boost::enable_if<
-            boost::is_convertible<OtherValue*,Value*>
-          , enabler
-        >::type = enabler()
-    )
-      : intarray_iter::iterator_adaptor_(other.base()) {}
-
-    private:
-      friend class boost::iterator_core_access;
-   };
-
-
-  typedef   intarray_iter<exponent_t>                             iterator;
-  typedef   intarray_iter<exponent_t const>                 const_iterator;
-
-  typedef   boost::reverse_iterator<iterator>              reverse_iterator;
-  typedef   boost::reverse_iterator<const_iterator>  const_reverse_iterator;
+  typedef   std::vector<exponent_t >::reverse_iterator             reverse_iterator;
+  typedef   std::vector<exponent_t >::const_reverse_iterator const_reverse_iterator;
    
   iterator begin();                
   iterator end();
@@ -169,7 +131,7 @@ public:
 
   // Assignment ...
 
-  void     Set              ( int const* );
+  void     Set              ( int const* , int  n);
   void     Set              ( int  );
 
   int          operator()  (  int i )  const;
@@ -226,35 +188,29 @@ public:
 
 private:
 
-  static const int   intarray_max_variables = 8;
-
-  int           size_;         
-  exponent_t    comp_[ intarray_max_variables ];
-
-  // ~IntArray();  // WARNING: MUST NOT BE DEFINED !
+  std::vector<exponent_t>   comp_;
+  int                       weight_;
 
 };
  
 //----------------------------------------------------------------------------------------------------------
 
-inline  IntArray::iterator IntArray::begin()                        { return IntArray::iterator(&comp_[0]);             }
-inline  IntArray::iterator IntArray::end()                          { return IntArray::iterator(&comp_[size_]);         } 
+inline  IntArray::iterator IntArray::begin()                        { return comp_.begin();    }
+inline  IntArray::iterator IntArray::end()                          { return comp_.end();      } 
 
-inline  IntArray::const_iterator IntArray::begin() const            { return IntArray::const_iterator(&comp_[0]);       }  
-inline  IntArray::const_iterator IntArray::end()   const            { return IntArray::const_iterator(&comp_[size_]);   } 
+inline  IntArray::const_iterator IntArray::begin() const            { return comp_.begin();    }  
+inline  IntArray::const_iterator IntArray::end()   const            { return comp_.end();      } 
 
-inline  IntArray::reverse_iterator IntArray::rbegin()               { return IntArray::reverse_iterator(end()  );       } 
-inline  IntArray::reverse_iterator IntArray::rend()                 { return IntArray::reverse_iterator(begin());       } 
+inline  IntArray::reverse_iterator IntArray::rbegin()               { return comp_.rbegin();   } 
+inline  IntArray::reverse_iterator IntArray::rend()                 { return comp_.rend();     } 
 
-inline  IntArray::const_reverse_iterator IntArray::rbegin() const   { return IntArray::const_reverse_iterator(end());   }  
-inline  IntArray::const_reverse_iterator IntArray::rend()   const   { return IntArray::const_reverse_iterator(begin()); } 
+inline  IntArray::const_reverse_iterator IntArray::rbegin() const   { return comp_.rbegin();   }  
+inline  IntArray::const_reverse_iterator IntArray::rend()   const   { return comp_.rend();     } 
 
 
 inline IntArray::IntArray( IntArray const& x) 
- : size_(x.size_)
-{
-   std::copy ( x.begin(), x.end(), begin() ) ;
-}
+  : comp_(x.comp_), weight_(x.weight_)
+{}
 
 
 inline int IntArray::Sum() const 
@@ -277,7 +233,7 @@ inline IntArray IntArray::operator+( IntArray const& y) const
 
 inline int  IntArray::Dim() const 
 { 
-  return size_;
+  return comp_.size();
 }
 
 
