@@ -55,7 +55,7 @@
 ******
 ******  Feb 2007 ostiguy@fnal.gov
 ******  
-****** - refactored implementation. Now use STL iterators/algorithms
+****** - refactored implementation based on STL iterators/algorithms
 ******
 ******   
 *************************************************************************
@@ -113,11 +113,12 @@ const char* IntArray::GenericException::what() const throw()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 IntArray::IntArray( int n, int const* const x )
-  :size_(n)
 {
 
-  if (size_ == 0 ) return;
+  if ( n <=0 ) return;
   
+  comp_.resize(n);
+
   if (x) 
       { std::copy( x, x+n, begin() ); }
   else
@@ -129,9 +130,8 @@ IntArray::IntArray( int n, int const* const x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
-  : size_( it2 - it1 )
 {
-
+  comp_.resize( it2 - it1 );
   std::copy( it1, it2, begin() ); 
 
 }
@@ -140,10 +140,11 @@ IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
 
 // Assignment ...
 
-void IntArray::Set( const int* x )
+void IntArray::Set( int const* x, int n)
 {
 
-  std::copy( x, x + Dim(), begin() ); 
+  comp_.resize( n );
+  std::copy( x, x + n, begin() ); 
 
 }
 
@@ -166,9 +167,8 @@ IntArray& IntArray::operator= ( IntArray const& x )
 {
   if ( &x == this ) return *this;
 
-  size_ = x.size_;
-
-  std::copy( x.begin(), x.end(), begin() );
+  comp_   = x.comp_;
+  weight_ = x.weight_;
 
   return *this;
 }
