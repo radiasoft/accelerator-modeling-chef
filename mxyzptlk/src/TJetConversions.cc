@@ -80,31 +80,31 @@ using FNAL::pcerr;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJet<double> real( const TJet<complex<double> >& z ) 
+TJet<double> real(  TJet<complex<double> > const& z ) 
 {
 
-  return TJet<double>( real(z._jl) );    
+  return TJet<double>( real(z.jl_) );    
 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double> imag( const TJet<complex<double> >& z ) 
+TJet<double> imag( TJet<complex<double> > const& z ) 
 {
 
-  return TJet<double>( imag(z._jl) );    
+  return TJet<double>( imag(z.jl_) );    
 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double> fabs( const TJet<double>& x )
+TJet<double> fabs( TJet<double> const& x )
 {
  double u;
 
- if( (x._jl)->getCount() == 0 ) {
+ if( (x.jl_)->getCount() == 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "Jet fabs( const Jet& ) { ",
           "Argument is zero." ) );
