@@ -4,8 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      TJetEnvironment.cc
-******  Version:   2.0
+******  File:      TJetEnvironment.tcc
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab   
 ******                All Rights Reserved                             
@@ -30,7 +29,7 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Revision History:
+******  REVISION HISTORY:
 ******
 ******  Feb  2005 - Jean-Francois Ostiguy
 ******              ostiguy@fnal.gov
@@ -58,10 +57,12 @@
 ****** - EnvPtr<> is now a true class rather than a typedef wrapper 
 ****** - template syntax declaration cleanup to better conform to standard. 
 ******   Code now compiles cleanly with g++ 4.X   
+******
 ****** Mar 2007   ostiguy@fnal.gov
-****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
-****** - monomial multiplication handled via a lookup-table.
+******
+****** - Introduced new compact monomial indexing scheme based on monomial 
+******   ordering to replace previous scheme based explicitly on monomial exponents.
+****** - monomial multiplication now handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
 ****** - eliminated dependence on class Cascade     
 ******      
@@ -135,7 +136,6 @@ template<typename T>
 std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >&  TJetEnvironment<T>::scratch_areas_ 
                = * (new std::list<typename TJetEnvironment<T>::template ScratchArea<T>* >() ); 
   
-
 template<typename T> int                       TJetEnvironment<T>::tmp_maxWeight_ = 0;
 
 
@@ -407,8 +407,8 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   numVar_(n),                                           // they are needed to reference an existing scratch area
   maxTerms_( bcfRec( w + n, n ) ),                      // no of monomials in a polynomial of order w in n variables
   monomial_(new U[maxTerms_]),
-  TJLmonomial_(new JLPtr<T>[ maxTerms_]),                // for monomials used in multinomial evaluation.  
-  TJLmml_( TJLterm<T>::array_allocate( maxTerms_) ),     // for collecting terms during multiplication.
+  TJLmonomial_(new JLPtr<U>[ maxTerms_]),               // for monomials used in multinomial evaluation.  
+  TJLmml_( maxTerms_ ),                                 // the actual scratchpad 
   allZeroes_(n)
 {
 
@@ -441,19 +441,20 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  //-------------------------------------------------------------------------------------------------------------
 
  for( int i = 0; i< maxTerms_;  ++i) {
-    TJLmonomial_[i] = JLPtr<T>( TJL<T>::makeTJL( EnvPtr<T>(pje), T()) );     // NOTE: the anonymous constructor is not suitable for an array.  
+    TJLmonomial_[i] = JLPtr<T>( TJL<U>::makeTJL( EnvPtr<U>(pje), U()) );     // NOTE: the anonymous constructor is not suitable for an array.  
                                                                             //        it causes problems with static variables. 
  }
    
  IntArray exponents(numVar_);
- T startValue(0.0);
+ U startValue(0.0);
 
 
  weight_offsets_.resize( maxWeight_+2 );
+ index_table_.resize(maxTerms_);
 
- new ( &TJLmml_[0] ) TJLterm<T>( exponents, startValue, 0 );
-
+ new ( &TJLmml_[0] ) TJLterm<U>( startValue, exponents.Sum(), 0 );
  weight_offsets_[0] = 0; 
+ index_table_[0]    = exponents;
 
  int i = 1;
  for( int wd = 1; wd <= maxWeight_; ++wd ) {
@@ -462,7 +463,8 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
    while( nexcom( wd, n, exponents ) ) {
      if( i <  maxTerms_ ) {
-       new ( &TJLmml_[i]) TJLterm<T>( exponents, startValue, i );
+       new ( &TJLmml_[i])TJLterm<U>(  startValue, exponents.Sum(), i );
+       index_table_[i]    = exponents;
      }
      else {
        throw( GenericException( __FILE__, __LINE__, 
@@ -474,14 +476,12 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
    } // end while
  } // end for
 
-  weight_offsets_[ maxWeight_+1] = i; // points to 1 location beyond the last element in the scrachpad.  
+  weight_offsets_[ maxWeight_+1] = i; // points to 1 location beyond the last element in the scratchpad.  
 
 
  //------------------------------------
  // build monomial multiplication table  
  //-------------------------------------
-   
-   // multTable_ = new std::vector<int>[maxTerms_];   
    
    multTable_.resize(maxTerms_);
 
@@ -490,7 +490,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
    for (int i=0; i < maxTerms_;  ++i ) {
 
-      if ( wgt  >  ( maxWeight_ - TJLmml_[i].index_.Sum() ) ) {
+      if ( wgt  >  ( maxWeight_ - index_table_[i].Sum() ) ) {
           --wgt;  
           maxidx        =  bcfRec( wgt + numVar_, numVar_ ); 
       }
@@ -499,7 +499,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
       for (int j=0; j < maxidx; ++j ) {
                   
-         exponents =  TJLmml_[i].index_ + TJLmml_[j].index_;
+         exponents =  index_table_[i]  +  index_table_[j];
          if ( exponents.Sum()  <= maxWeight_ ) { 
                 multTable_[i][j] = offsetIndex(exponents);
          }
@@ -513,17 +513,33 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
 
 template <typename T>
 template <typename U>
-void  TJetEnvironment<T>::ScratchArea<U>::displayMultiplicationTable() const
+void  TJetEnvironment<T>::ScratchArea<U>::debug() const
 {  
       
    for (int i=0; i < maxTerms_;  ++i ) {
       for (int j=0; j<multTable_[i].size(); ++j ) {
 
-       std::cout <<  TJLmml_[i].index_ <<  " *  " 
-                 <<  TJLmml_[j].index_ <<  " =  " 
-                 <<  TJLmml_[ multTable_[i][j] ].index_ << std::endl;
+       std::cout <<  index_table_[i] <<  " *  " 
+                 <<  index_table_[j] <<  " =  " 
+                 <<  index_table_[ multTable_[i][j] ] << std::endl;
 
       }
+  }
+
+  
+  for (int i=0; i < maxTerms_;  ++i ) {
+    
+    std::cout <<  "offset : " <<  TJLmml_[i].offset_  << "  " 
+              <<  "index : "  <<  index_table_[i]     << "  " 
+              <<  "weight : " <<  TJLmml_[i].weight_  << "  " 
+              <<  "value : "  <<  TJLmml_[i].value_   << std::endl;
+  } 
+
+
+  for (int i=0; i < maxTerms_;  ++i ) {
+    
+    std::cout <<  "offset: " << i << " index : "  << index_table_[i]   << std::endl; 
+
   }
 
 }
@@ -533,19 +549,13 @@ void  TJetEnvironment<T>::ScratchArea<U>::displayMultiplicationTable() const
 
 template<typename T>
 template<typename U>
-TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
+ TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
 {
 
 
   if(  monomial_   )  { delete []  monomial_;     monomial_    = 0; }
 
   if(  TJLmonomial_ ) { delete []  TJLmonomial_;  TJLmonomial_ = 0; }
-
-  if(  TJLmml_     )  { TJLterm<T>::array_deallocate( TJLmml_ );      
-                        TJLmml_ = 0;      
-                     }
-  //if(  exponent_   )  { delete [] exponent_;    exponent_ = 0;    }
-
 
 }
 
@@ -555,10 +565,23 @@ TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
 namespace {
 
 template <typename T>
-bool ReverseLexicographicTermCompare( TJLterm<T> const& lhs,  IntArray const& rhs) 
-{
-     return  ( lhs.index_ <  rhs );
-}
+class ReverseLexicographicTermCompare {
+
+public:
+
+ ReverseLexicographicTermCompare( typename TJetEnvironment<T>::template ScratchArea<T> const& scratch ): scratch_(scratch) {}
+
+
+ bool operator()(TJLterm<T> const& lhs,  IntArray const& rhs)  const
+ {
+     return  ( scratch_.index_table_[lhs.offset_] <  rhs );
+ }
+
+private:
+
+ typename TJetEnvironment<T>::template ScratchArea<T> const& scratch_;
+
+};
 
 }
 //---------------------------------------------------------------------------------------------------------
@@ -570,12 +593,12 @@ int  TJetEnvironment<T>::ScratchArea<U>::offsetIndex(IntArray const& exp) const
 
  int weight = exp.Sum(); 
 
- TJLterm<U> const* itstart = &TJLmml_[0] + weight_offsets_[weight]; 
- TJLterm<U> const* itend   = &TJLmml_[0] + weight_offsets_[weight+1];
+TJLterm<T> const* itstart = &TJLmml_[0] + weight_offsets_[weight]; 
+TJLterm<T> const* itend   = &TJLmml_[0] + weight_offsets_[weight+1];
 
  // look for a match to exp in the scratchpad, within monomials of same weight. 
 
- return std::lower_bound( itstart, itend, exp, &ReverseLexicographicTermCompare<U> )->offset_;
+ return std::lower_bound( itstart, itend, exp, ReverseLexicographicTermCompare<T>(*this) )->offset_;
 
 }
 
@@ -824,7 +847,7 @@ bool TJetEnvironment<T>::operator==( const TJetEnvironment& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool TJetEnvironment<T>::approxEq( const TJetEnvironment& x, const Vector& tolerance ) const
+bool TJetEnvironment<T>::approxEq( TJetEnvironment const& x,  Vector const& tolerance ) const
 {
 
   if( x.numVar_    !=  numVar_ )    return false;

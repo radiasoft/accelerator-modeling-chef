@@ -514,17 +514,12 @@ void TJL1<T>::setVariable( const int& j,  EnvPtr<T> const& theEnv )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL1<T>::insert( const TJLterm<T>& a) 
+void TJL1<T>::insert( TJLterm<T> const& a) 
 {
 
  if (a.weight_ > 1 ) return;  // weight > 1,  do nothing
  
- if (a.weight_ == 0) terms_[0] = a.value_;
-
- for (int i=0; i< a.index_.Dim(); ++i) { 
-  if (a.index_(i) == 1 ) jcb_[i] = a.value_;
-  break;
- }
+ jcb_[a.offset_] = a.value_;
 
 }
 
@@ -617,30 +612,20 @@ TJLterm<T> TJL1<T>::firstTerm() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL1<T>::append(const TJLterm<T>& a) 
+void TJL1<T>::append(TJLterm<T> const& a) 
 {
 
  if (a.weight_ >  1) return; 
 
- if (a.weight_ == 0) {
-   terms_[0] = a.value_;
-   return;
- }
-
- if (a.weight_ ==  1) {
-   for (int i=0; i< a.index_.Dim(); ++i) { 
-     if (a.index_(i) == 1) { 
-       jcb_[i] = a.value_; 
-       break;
-     }
-   }
-    weight_  = std::max(weight_, a.weight_);
-   return;
+ if (a.offset_ == 0 ) { 
+    terms_[0] = a.value_;
+ } 
+ else { 
+   jcb_[a.offset_] = a.value_; 
  }
  
+ return;
 }
-
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -651,22 +636,16 @@ void TJL1<T>::addTerm(const TJLterm<T>& a)
 
  if (a.weight_ >  1) return; 
 
- if (a.weight_ == 0) {
-   terms_[0] += a.value_;
-   return;
- }
+ if (a.offset_ == 0 ) {
+    terms_[0] += a.value_;
+ } 
+ else {
+    jcb_[a.offset_] += a.value_;
+ } 
 
- if (a.weight_ ==  1) {
-   for (int i=0; i< a.index_.Dim(); ++i) { 
-     if (a.index_(i) == 1) { 
-       jcb_[i] += a.value_; 
-       break;
-     }
-   }
-    weight_  = std::max(weight_, a.weight_);
-   return;
- }
+ weight_  = std::max(weight_, a.weight_);
  
+ return;
 }
 
 
@@ -831,7 +810,7 @@ JL1Ptr<T> TJL1<T>::filter( const int& wgtLo, const int& wgtHi ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JL1Ptr<T> TJL1<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
+JL1Ptr<T> TJL1<T>::filter( bool (*f) ( IntArray const&, const T& ) ) const 
 { 
 
  JL1Ptr<T> z(makeTJL(myEnv_) );

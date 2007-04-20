@@ -53,7 +53,7 @@
 ****** 
 ****** Mar 2007 
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
+******   to replace previous scheme based explicitly on monomial exponents tuples.
 ****** - monomial multiplication handled via a lookup-table.
 ******
 **************************************************************************
@@ -74,6 +74,9 @@ template<typename T>
 class TJetEnvironment;
 
 template<typename T>
+class ScratchArea;
+
+template<typename T>
 class TJLterm;
 
 template<typename T> 
@@ -92,7 +95,6 @@ std::ostream& operator<<(std::ostream& os, TJLterm<T> const&);
 // ********************************************************************************************************************
 
 
-
 template<typename T>
 class DLLEXPORT TJLterm
 {
@@ -100,39 +102,31 @@ class DLLEXPORT TJLterm
  public:
 
   T        value_;      //  The value associated with the JLterm.
+
   int      weight_;     //  The sum of the values in index.  For the above example, 
                         //  this would be 4.
-  int      offset_;     //  The offset of this term in the scratchpad  
-  IntArray index_;      //  An integer array giving the derivatives associated
-                        //  with the JLterm.  For example, ( 1, 1, 0, 2 )
-                        //  would correspond to D_1^1 D_2^1 D_4^2 .
 
+  int      offset_;     //  The offset of this term in the scratchpad  
 
 
 
   // Constructors and destructors
 
-  TJLterm( int nvar=6);
-
-  TJLterm( EnvPtr<T> const&  pje );     // pje = null implies a constant term 
+  TJLterm();
   TJLterm( IntArray  const&, const T&,  EnvPtr<T> const& pje );
 
-  TJLterm( IntArray const&, T const&, int offset );
+  TJLterm( T const&, int const& weight, int const& offset );
   TJLterm( TJLterm  const& );
 
   template<typename U>
   TJLterm( TJLterm<U> const& );
 
-  TJLterm& operator=( TJLterm const& );
-  TJLterm  operator*( TJLterm const& );
-  TJLterm  operator+( TJLterm const& );
-  
-  // Accessors
-  IntArray& exponents()         { return index_; }
-  IntArray  exponents()   const { return index_; }
-  T&        coefficient()       { return value_; }
-  T         coefficient() const { return value_; }
-  T         coeff()       const { return value_; }  // old
+  TJLterm& operator=(TJLterm<T> const& x ); 
+
+  bool    operator<( TJLterm<T> const& rhs) const;
+
+  T         coefficient()                    { return value_; }
+  IntArray  exponents( EnvPtr<T> const& env) { return env->exponents( offset_); }
 
   // JLterm array allocation functions
 
@@ -183,6 +177,7 @@ class DLLEXPORT TJLterm
 
 } ;
 
+
 //-----------------------------------------------------------------------------------
 // specializations
 //-----------------------------------------------------------------------------------
@@ -198,19 +193,16 @@ TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
 
 template<typename T>
-inline TJLterm<T>::TJLterm( TJLterm<T> const& x ) 
-{
+inline TJLterm<T>::TJLterm( TJLterm<T> const& x ):
+  value_(x.value_), weight_(x.weight_), offset_(x.offset_)  
+{}
 
- // this copy constructor is called **furiously**. 
- // It must be as efficient as possible !!! 
 
- memcpy((void *) this, (const void *) &x, sizeof( TJLterm<T>) );
 
-}
+
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
 #include <mxyzptlk/TJLterm.tcc>
 #endif
 
 #endif // TJLTERM_H
-
