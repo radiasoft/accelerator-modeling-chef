@@ -5,7 +5,6 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJetEnvironment.h
-******  Version:   2.0
 ******                                                               
 ******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -51,12 +50,14 @@
 ****** - EnvPtr<> is now a true class rather than a typedef wrapper 
 ****** - template syntax declaration cleanup to better conform to standard. 
 ******   Code now compiles cleanly with g++ 4.X   
-****** Mar 2007 ostiguy@fnal.gov  
+******
+******  Mar 2007 ostiguy@fnal.gov  
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
-****** - monomial multiplication handled via a lookup-table.
+******   to replace previous scheme based explicitly on monomial exponents tuples.
+****** - monomial multiplication now handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
-****** - eliminated dependence on class Cascade     
+****** - eliminated dependence on class Cascade 
+******    
 *************************************************************************
 *************************************************************************/
 #ifndef TJETENV_H
@@ -104,6 +105,8 @@ std::ostream& operator<<( std::ostream& os, const TJetEnvironment<T>& pje);
 template<typename T> 
 std::istream& streamIn(std::istream&, EnvPtr<T>& pje );
 
+//----------------------------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------------------------
 // class TJetEnvironment
@@ -115,34 +118,29 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
 
  public:
  
- template<typename U> 
-
- struct ScratchArea { 
-    int                            maxWeight_;
-    int                            numVar_;
-    int                            maxTerms_;       // Maximum number of monomial terms.
-    int*                           exponent_;       // Used by nexcom (as called by TJL::operator()
-                                                    //   when storing monomials.
-                                                    //   indices in the _TJLmonomial and _TJLmml arrays.
-    U*                             monomial_;       // Storage area for monomials used in multinomial
-                                                    // evaluation. 
-    JLPtr<U>*                      TJLmonomial_;    // Storage area for TJL monomials used in concatenation.
+template <typename U>
+struct ScratchArea { 
+    int                                maxWeight_;
+    int                                numVar_;
+    int                                maxTerms_;       // Maximum number of monomial terms.
+    U*                                 monomial_;       // Storage area for monomials used in multinomial
+                                                        // evaluation. 
+    JLPtr<U>*                          TJLmonomial_;    // Storage area for TJL monomials used in concatenation.
  
-    TJLterm<U>*                    TJLmml_;         // Same as above, but used for collecting terms
-                                                    //   during multiplication.
-    std::vector<std::vector<int> > multTable_;      // monomial multiplication table 
-    std::vector<int>               weight_offsets_; // Offsets of the weights groups within the scratchpad     
+    std::vector<TJLterm<U> >           TJLmml_;         // Same as above, but used for collecting terms
+                                                        //   during multiplication.
+    std::vector<IntArray>              index_table_;    // table of monomial exponents ( offset = ordering index)  
+    std::vector<std::vector<int> >     multTable_;      // monomial multiplication table 
+    std::vector<int>                   weight_offsets_; // Offsets of the weights groups within the scratchpad     
 
-    const IntArray                 allZeroes_;      // An integer array containing zeroes.  Used to 
-                                                    //   filter the standard part of a variable.
-
-
+    const IntArray                     allZeroes_;      // An integer array containing zeroes.  Used to 
+                                                        //   filter the standard part of a variable.
 
    ScratchArea( TJetEnvironment<U>* pje, int weight, int numvar);
   ~ScratchArea();
  
    int  offsetIndex(IntArray const& exp) const;
-   void displayMultiplicationTable()     const; 
+   void debug()     const; 
 
    private:
 
@@ -241,13 +239,15 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
    T*              monomial()    const { return   scratch_->monomial_;    }
    JLPtr<T>*       TJLmonomial() const { return   scratch_->TJLmonomial_; }
 
-   TJLterm<T>*     TJLmml()      const { return   scratch_->TJLmml_;      }
+   std::vector<TJLterm<T> >&  TJLmml()  const { return   scratch_->TJLmml_; }
 
    int             multOffset    (int const& lhs, int const& rhs)  const    
                                     { return  ( rhs >  scratch_->multTable_[lhs].size()-1 ) ?  scratch_->multTable_[lhs][rhs]:  
                                                                                                scratch_->multTable_[rhs][lhs]; }  
 
    int             offsetIndex( IntArray const& exp) const;
+   int             weight( int const& offset )       const  { return scratch_->TJLmml_[offset].weight_; }
+   IntArray        exponents( int const& offset )    const  { return scratch_->index_table_[offset]; }
 
    const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
    int             maxTerms() const                          { return scratch_->maxTerms_;}
@@ -258,7 +258,7 @@ class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
   
    // debugging 
 
-   void displayMultiplicationTable()    const {  scratch_->displayMultiplicationTable(); }
+   void debug()              const                        { scratch_->debug(); }
 
    // Streams --------------------------------------------------------- 
 

@@ -53,7 +53,7 @@
 ******   Use placement new syntax instead.
 ****** Mar 2007 ostiguy@fnal.gov 
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
+******   to replace previous scheme based explicitly on monomial exponents tuples.
 ****** - monomial multiplication handled via a lookup-table.
 **************************************************************************
 **************************************************************************
@@ -96,16 +96,8 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLt
 //      Implementation of Class TJLterm<T>
 
 template<typename T>
-TJLterm<T>::TJLterm( int nvar) 
-:value_(T()),  weight_(0), offset_(0), index_(nvar)
-{}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T>::TJLterm(  EnvPtr<T> const& pje ) 
-: value_( T() ), weight_(0), offset_(0), index_( pje->numVar() )
+TJLterm<T>::TJLterm() 
+:value_(T()),  weight_(0), offset_(0)
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -113,120 +105,29 @@ TJLterm<T>::TJLterm(  EnvPtr<T> const& pje )
 
 template<typename T>
 TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-value_(x), weight_(l.Sum()), offset_(0), index_( l )
+value_(x), weight_(0) , offset_(0)
 {
-   if( !pje ) return; 
-   if (l.Dim() != pje->numVar() ) {
-       throw( GenericException( __FILE__, __LINE__, 
-              "TJLterm<T>::TJLterm<T>( IntArray const &, T const&, EnvPtr<T> const&)",
-              "Dimensions are inconsistent.") );
-   }
-
-   offset_ = pje->offsetIndex(l);  
+  
+   offset_  = pje->offsetIndex(l);  
+   weight_  = pje->weight(offset_);
 
 } 
 
-//------------------------------------------------------------------------------------------------------
-// The code below has been commented out for efficiency. It performs sanity checks and can be re-enabled
-// for debugging purpose.
-// Remember: TJLterm<>::TJLterm() is called on a massive scale ! 
-//------------------------------------------------------------------------------------------------------
-#if 0
-{
-
- // I think that it is not necessary to use a try block
- // with this constructor, even though it throws exceptions,
- // because the destructor does no subsidiary garbage collection.
- // - Leo Michelotti
- //   Thursday, January 22, 2004
-
-
- int i, dpt;
-
- if( pje ) {
-
-   int n = l.Dim();
-
-   if( n != pje->numVar() ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Dimensions are wrong.") );
-   }
-  
-   // ??? These checks could be removed for speed.
-   dpt = 0;
-   for( i = 0; i < n; ++i ) {
-     if( (l(i) < 0) ) {
-       throw( GenericException( __FILE__, __LINE__, 
-              "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-              "Bad index in JLTerm.") );
-     }
-     dpt += l(i);
-   }
-  
-   if( dpt > pje->maxWeight() ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Attempt to load a JLTerm with too large a weight.") );
-   }
-   
-   // ??? REMOVE: index_ = l;
-   weight_ = dpt;
-   value_ = x;
- }
-
- else {
-   if( l.Dim() != 1 ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Inconsistency between l and pje") );
-   }
-   if( l(0) != 0 ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJLterm<T>::TJLterm<T>( const IntArray&, const T&, TJetEnvironment<T>*",
-            "Bad value of the index when pje = 0.") );
-   }
-
-   index_ = l;
-   weight_ = l.Sum();
-   value_ = x;
- }
-}
-#endif
-//--------------------------------------------------------------------------------------------------------
-// end of commented out code
-//---------------------------------------------------------------------------------------------------------
-
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm(  IntArray const& l, const T& x , int offset)
-: value_(x), weight_(l.Sum()), offset_(offset), index_(l)
-{}
+TJLterm<T>::TJLterm(  T const& x , int const& weight, int const& offset)
+: value_(x), weight_(weight), offset_(offset) 
+{ }
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// This destructor should **never** be called 
-// doing so will break the specialized allocation.
-
-#if  0
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-template<typename T>
-TJLterm<T>::~TJLterm<T>() 
-{
- 
-
-}
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#endif 
 
 template<typename T>
 TJLterm<T>* TJLterm<T>::array_allocate(int n) {
-
 
 
 // ----------------------------------------------------------------------
@@ -306,59 +207,20 @@ TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x )
  weight_  = x.weight_;
  value_   = x.value_;
  offset_  = x.offset_;
- index_   = x.index_;
 
  return *this;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) 
-{
- TJLterm<T> z(*this);
-
-#if 0 
-
- if((  ( n = this->index_.Dim() ) != y.index_.Dim()  )) {
-   throw( typename TJLterm<T>::BadDimension( this->index_.Dim(), y.index_.Dim(),
-                            __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
-                            "Inconsistent number of coordinates." ) );
- }
-#endif
-
- std::cout << " TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) called " << std::endl;
- 
- // DANGER: this function has no knowledge of the environment .... so it does not know how to set the
- //         offset_ field  
-
- z.weight_   = this->weight_ + y.weight_;
- z.index_    = this->index_  + y.index_;  // overloaded + from IntArray
- z.value_    = this->value_  * y.value_;
- return z;
-}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T> TJLterm<T>::operator+( TJLterm<T> const& y ) 
+bool TJLterm<T>::operator<( TJLterm<T> const& rhs ) const 
 {
 
-#if  0
- if( this->index_ != y.index_ ) {
-   throw( typename TJLterm<T>::BadDimension( this->index_.Dim(), y.index_.Dim(),
-                            __FILE__, __LINE__, 
-                            "TJLterm<T> TJLterm<T>::operator*( TJLterm<T> const& y ) ",
-                            "Inconsistent number of coordinates." ) );
- }
-#endif
+ return ( offset_ < rhs.offset_); 
 
- TJLterm<T> z(*this);
- z.value_ += y.value_;
- return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -367,9 +229,9 @@ TJLterm<T> TJLterm<T>::operator+( TJLterm<T> const& y )
 template<typename T>
 bool operator==( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
- if( a.weight_ != b.weight_ ) return false;
- if( a.value_  != b.value_  ) return false;
- if( a.index_  != b.index_  ) return false;
+
+ if( a.offset_ != b.offset_  ) return false;
+ if( a.value_  != b.value_   ) return false;
  
  return true;
 
@@ -391,16 +253,8 @@ template<typename T>
 bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
 
- if( a.index_.Dim() != b.index_.Dim() ) {
-   throw( typename TJLterm<T>::BadDimension( a.index_.Dim(), b.index_.Dim(), 
-          __FILE__, __LINE__, 
-          "char operator<=( TJLterm<T> const&, TJLterm<T> const& )",
-          "Dimensions don't match.") );
- }
+ return (a.offset_ <= b.offset_); 
 
- if( a.weight_ != b.weight_ ) { return ( a.weight_ < b.weight_ ); }
- 
- return (a.index_ <= b.index_); // overloaded operator: exponents *reverse* lexicographical ordering 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -409,8 +263,8 @@ bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T>
 bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
- if( a.weight_ != b.weight_ ) return false;
- return a.index_ == b.index_;
+
+   return a.offset_ == b.offset_;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -420,7 +274,8 @@ bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T> 
 std::ostream& operator<<(std::ostream& os, TJLterm<T> const& term) {
 
- os << " Index:  "  << term.index_  
+ os << " Offset: "  << term.offset_  
+    << " Index:  "  << "FIX ME ! " 
     << " Weight: "  << term.weight_ 
     << " Value:  "  << term.value_;
 
@@ -469,4 +324,7 @@ const char* TJLterm<T>::BadDimension::what() const throw()
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
 #endif // TJLTERM_TCC

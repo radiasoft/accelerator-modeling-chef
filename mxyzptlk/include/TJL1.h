@@ -201,7 +201,8 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
                                           // **non-zero** term of lowest weight.
 
   void addTerm( TJLterm<T> const& );      
- 
+  T const& getCoefficient( IntArray const& ) const;      
+
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
 
