@@ -46,7 +46,7 @@ using FNAL::pcout;
 
 using namespace std;
 
-Matrix sqrt( Matrix& x )
+Matrix SVDFitPL::sqrt( Matrix& x )
 {
   int r = x.rows();
   int c = x.cols();
@@ -69,7 +69,7 @@ Matrix sqrt( Matrix& x )
     // probably the slowest possible way to do this.
     double aaa;
     for( int j = 0; j < c; j++ ) {
-      aaa = sqrt(W(j));
+      aaa = std::sqrt(W(j));
       for( int i = 0; i < r; i++ ) {
         U(i,j) *= aaa;
       }
@@ -98,7 +98,7 @@ Matrix sqrt( Matrix& x )
 }
 
 
-SVDFit::SVDFit()
+SVDFitPL::SVDFitPL()
 : _rows(3)
 , _cols(2)
 , _response(3,2)
@@ -110,6 +110,7 @@ SVDFit::SVDFit()
 , _xU(3,2)
 , _xW(2)
 , _xV(2,2)
+, _limW(0)
 , _applyWeights(false)
 , _ready(false)
 {
@@ -117,7 +118,7 @@ SVDFit::SVDFit()
 }
 
 
-void SVDFit::_reconstruct( int r, int c )
+void SVDFitPL::_reconstruct( int r, int c )
 {
   _rows         = r;
   _cols         = c;
@@ -137,7 +138,7 @@ void SVDFit::_reconstruct( int r, int c )
 }
 
 
-void SVDFit::_finishConstruction()
+void SVDFitPL::_finishConstruction()
 {
   for( int i = 0; i < _rows; i++ ) {
     for( int j = 0; j < _rows; j++ ) {
@@ -151,12 +152,12 @@ void SVDFit::_finishConstruction()
 }
 
 
-SVDFit::~SVDFit()
+SVDFitPL::~SVDFitPL()
 {
 }
 
 
-void SVDFit::setLinearResponse( const Matrix& x )
+void SVDFitPL::setLinearResponse( const Matrix& x )
 {
   if( _rows != x.rows() || _cols != x.cols() ) { 
     _reconstruct( x.rows(), x.cols() ); 
@@ -166,7 +167,7 @@ void SVDFit::setLinearResponse( const Matrix& x )
 }
 
 
-void SVDFit::setErrorCovariance( const Matrix& E )
+void SVDFitPL::setErrorCovariance( const Matrix& E )
 {
   // NOTE: The efficiency of this should be improved
   // if it is to be used frequently.
@@ -179,9 +180,9 @@ void SVDFit::setErrorCovariance( const Matrix& E )
 
     for( int i = 0; i < _rows; i++ ) {
       _cov(i,i) = fabs( E(i,0) );
-      _sig(i,i) = sqrt( fabs( E(i,0) ) );
+      _sig(i,i) = std::sqrt( fabs( E(i,0) ) );
       _covInv(i,i) = 1.0/fabs( E(i,0) );
-      _sigInv(i,i) = 1.0/sqrt( fabs( E(i,0) ) );
+      _sigInv(i,i) = 1.0/std::sqrt( fabs( E(i,0) ) );
     }
 
     _applyWeights = true;
@@ -190,7 +191,7 @@ void SVDFit::setErrorCovariance( const Matrix& E )
 
   else if( _rows == E.rows() && _rows == E.cols() ) {
     _cov = 0.5*( E + E.transpose() );  // Forces symmetry
-    _sig = sqrt(_cov);
+    _sig = this->sqrt(_cov);
     _covInv = _cov.inverse();
     _sigInv = _sig.inverse();
 
@@ -201,13 +202,13 @@ void SVDFit::setErrorCovariance( const Matrix& E )
   else if( E.rows() != E.cols() ) {
     (*pcerr) << "\n*** WARNING *** " 
              << "\n*** WARNING *** " << __FILE__ << "," << __LINE__
-             << "\n*** WARNING *** void SVDFit::setErrorCovariance( const Matrix& )"
+             << "\n*** WARNING *** void SVDFitPL::setErrorCovariance( const Matrix& )"
              << "\n*** WARNING *** ------------------------------------------------"
              << "\n*** WARNING *** Oh, please ..."
              << "\n*** WARNING *** Your argument isn't even square: it is "
              <<                    E.rows() << " x " << E.cols() << "."
              << "\n*** WARNING *** " 
-             << "\n*** WARNING *** No change will be made to SVDFit object." 
+             << "\n*** WARNING *** No change will be made to SVDFitPL object." 
              << "\n*** WARNING *** " 
              << endl;
   }
@@ -215,27 +216,30 @@ void SVDFit::setErrorCovariance( const Matrix& E )
   else {
     (*pcerr) << "\n*** WARNING *** " 
              << "\n*** WARNING *** " << __FILE__ << "," << __LINE__
-             << "\n*** WARNING *** void SVDFit::setErrorCovariance( const Matrix& )"
+             << "\n*** WARNING *** void SVDFitPL::setErrorCovariance( const Matrix& )"
              << "\n*** WARNING *** ------------------------------------------------"
              << "\n*** WARNING *** How long must I endure this?"
              << "\n*** WARNING *** The argument is " << E.rows() << " x " << E.cols()
              << "\n*** WARNING *** but the current response matrix has " << _rows << " rows."
              << "\n*** WARNING *** Either set a new response matrix or use another error matrix."
              << "\n*** WARNING *** " 
-             << "\n*** WARNING *** No change will be made to SVDFit object." 
+             << "\n*** WARNING *** No change will be made to SVDFitPL object." 
              << "\n*** WARNING *** " 
              << endl;
   }
 }
 
+Vector SVDFitPL::getSingularValue() const { return _xW;}
+Matrix SVDFitPL::getVMatrix() const { return _xV;}
+Matrix SVDFitPL::getUMatrix() const { return _xU;}
 
-void SVDFit::setWeighted( bool x )
+void SVDFitPL::setWeighted( bool x )
 {
   _applyWeights = x; 
 }
 
 
-void SVDFit::_buildSolver()
+void SVDFitPL::_buildSolver()
 {
   if( _applyWeights ) {
     (_sigInv*_response).SVD( _xU, _xW, _xV );
@@ -243,8 +247,17 @@ void SVDFit::_buildSolver()
   else {
     _response.SVD( _xU, _xW, _xV );
   }
-
+  // Removal of nullSpace 
+  // Get the maximum w
+  double wMax = -1.0; 
+  for( int j = 0; j < _cols; j++ ) 
+    if (std::abs(_xW(j)) > wMax) 
+      wMax = std::abs(_xW(j)); 
   
+  for( int j = 0; j < _cols; j++ ) {
+     if (std::abs(_xW(j))/wMax < _limW) 
+       for (int i=0; i < _rows; i++) _xU(i,j) = 0.; 
+  } 
   // Next to using a diagonal matrix, this is
   // probably the slowest possible way to do this.
   double aaa;
@@ -267,7 +280,7 @@ void SVDFit::_buildSolver()
 
 
 
-Matrix SVDFit::solve( const Matrix& theData ) const
+Matrix SVDFitPL::solve( const Matrix& theData ) const
 {
   if( _ready ) 
   {
@@ -284,7 +297,7 @@ Matrix SVDFit::solve( const Matrix& theData ) const
           << " instead.";
       (*pcerr) << "\n*** ERROR *** " 
                << "\n*** ERROR *** " << __FILE__ << "," << __LINE__
-               << "\n*** ERROR *** Matrix SVDFit::solve( const Matrix& ) const"
+               << "\n*** ERROR *** Matrix SVDFitPL::solve( const Matrix& ) const"
                << "\n*** ERROR *** -------------------------------------------"
                << "\n*** ERROR *** You are obviously a moron."
                << "\n*** ERROR *** The argument must have "
@@ -295,7 +308,7 @@ Matrix SVDFit::solve( const Matrix& theData ) const
                << "\n*** ERROR *** " 
                << endl;
       throw GenericException( __FILE__, __LINE__, 
-                              "Matrix SVDFit::solve( const Matrix& theData )",
+                              "Matrix SVDFitPL::solve( const Matrix& theData )",
                               uic.str().c_str() );
     }
   }
@@ -303,19 +316,20 @@ Matrix SVDFit::solve( const Matrix& theData ) const
   else 
   {
     throw GenericException( __FILE__, __LINE__, 
-                            "Matrix SVDFit::solve( const Matrix& theData )"
+                            "Matrix SVDFitPL::solve( const Matrix& theData )"
                             "Idiot!\nYou first must establish a response matrix." );
   }
 }
 
 
-Matrix SVDFit::getStateCovariance() const
+Matrix SVDFitPL::getStateCovariance() const
 {
   return ( _solver * _cov *  _solver.transpose() );
 }
 
 
-bool SVDFit::getWeighted() const
+bool SVDFitPL::getWeighted() const
 {
   return _applyWeights;
 }
+
