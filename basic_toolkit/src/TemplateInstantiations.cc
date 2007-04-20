@@ -119,8 +119,8 @@ namespace {
 template
 void std::fill( IntArray::iterator, IntArray::iterator, int const&); 
 
-template
-void std::fill (IntArray::iterator, IntArray::iterator, exponent_t const&);
+//template
+//void std::fill (IntArray::iterator, IntArray::iterator, exponent_t const&);
 
 template
 int std::accumulate( IntArray::iterator, IntArray::iterator,  int);
