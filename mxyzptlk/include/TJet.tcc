@@ -53,8 +53,8 @@
 ******
 ****** Mar 2007 ostiguy@fnal.gov  
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
-****** - monomial multiplication handled via a lookup-table.
+******   to replace previous scheme based explicitly on monomial exponents tuple.
+****** - monomial multiplication now handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
 ******  
 **************************************************************************
@@ -95,7 +95,7 @@ using FNAL::pcout;
 //
 
 template<typename T>
-TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : _jl( jl) 
+TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : jl_( jl) 
 {}
 
 
@@ -104,14 +104,14 @@ TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : _jl( jl)
 
 
 template<typename T>
-TJet<T>::TJet( EnvPtr<T> const& pje ) :  _jl(   tjl_t::makeTJL( pje ) ){}
+TJet<T>::TJet( EnvPtr<T> const& pje ) :  jl_(   tjl_t::makeTJL( pje ) ){}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
-TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
+TJet<T>::TJet( T x, EnvPtr<T> const& pje ): jl_(  tjl_t::makeTJL( pje,x ) ){}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -119,7 +119,7 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): _jl(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<typename T>
-TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), _jl( x._jl ) {}
+TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), jl_( x.jl_ ) {}
 // NOTE: ref count is incremented when JLPtr is instantiated. 
 
 
@@ -140,11 +140,11 @@ template<typename T>
 void TJet<T>::setEnvTo( const TJet& x )
 {
  
-  if( _jl->getEnv() != x._jl->getEnv() ) 
+  if( jl_->getEnv() != x.jl_->getEnv() ) 
   {
-    if (_jl->count() > 1 ) _jl = _jl->clone();  
+    if (jl_->count() > 1 ) jl_ = jl_->clone();  
 
-    _jl->setEnv(x._jl->getEnv());
+    jl_->setEnv(x.jl_->getEnv());
   }
 }
 
@@ -155,10 +155,10 @@ void TJet<T>::setEnvTo( const TJet& x )
 template<typename T>
 void TJet<T>::setEnvTo( EnvPtr<T> const& pje )
 {
-  if( _jl->getEnv() != pje ) 
+  if( jl_->getEnv() != pje ) 
   {
-     if (_jl->count() > 1 )  _jl = _jl->clone();
-    _jl->setEnv(pje);
+     if (jl_->count() > 1 )  jl_ = jl_->clone();
+    jl_->setEnv(pje);
   }
 }
 
@@ -173,7 +173,7 @@ void TJet<T>::getReference( T* r ) const
 // the vector r which is is expected to 
 // have dimension numVar. 
 
- _jl->getReference( r );
+ jl_->getReference( r );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -181,11 +181,11 @@ void TJet<T>::getReference( T* r ) const
 
 template<typename T>
 void TJet<T>::setVariable( const T& x,
-                               const int& j, 
+                               int const& j, 
                                EnvPtr<T> const& pje )
 {
-  if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl->setVariable( x, j, pje );  
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->setVariable( x, j, pje );  
 
 }
 
@@ -195,9 +195,9 @@ void TJet<T>::setVariable( const T& x,
 
 template<typename T>
 void TJet<T>::setVariable( const T& x,
-                               const int& j )
+                               int const& j )
 {
-   _jl->setVariable( x, j);   // DANGER !! Alters the environment!
+   jl_->setVariable( x, j);   // DANGER !! Alters the environment!
 }
 
 
@@ -206,22 +206,22 @@ void TJet<T>::setVariable( const T& x,
 
 
 template<typename T>
-void TJet<T>::setVariable( const int& j, EnvPtr<T> const& pje ) 
+void TJet<T>::setVariable( int const& j, EnvPtr<T> const& pje ) 
 {
 
-  if (_jl.count() > 1 ) _jl = _jl->clone();
-    _jl->setVariable( j, pje );
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+    jl_->setVariable( j, pje );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJet<T>::setVariable( const int& j )
+void TJet<T>::setVariable( int const& j )
 {
 
-  if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl->setVariable( j, _jl->getEnv() );
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_->setVariable( j, jl_->getEnv() );
 
 }
 
@@ -231,8 +231,8 @@ void TJet<T>::setVariable( const int& j )
 template<typename T>
 void  TJet<T>::setStandardPart( T const& std ) { 
 
-  if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl->setStandardPart(std);     
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->setStandardPart(std);     
 
 } 
 
@@ -245,7 +245,7 @@ TJet<T>& TJet<T>::operator=( const TJet& x )
 
   if (&x == this) return *this;
   
-  _jl = x._jl;
+  jl_ = x.jl_;
   return *this;
 
 }
@@ -259,7 +259,7 @@ template<typename T>
 TJet<T>& TJet<T>::operator=( const T& x ) 
 {
 
- _jl = jl_t(tjl_t:: makeTJL( _jl->getEnv(), x)); 
+ jl_ = jl_t(tjl_t:: makeTJL( jl_->getEnv(), x)); 
  return *this; 
 
 }
@@ -271,10 +271,21 @@ TJet<T>& TJet<T>::operator=( const T& x )
 template<typename T>
 void TJet<T>::addTerm( const TJLterm<T>& a) 
 {
-  if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl->addTerm( TJLterm<T>(a) );
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_->addTerm( TJLterm<T>(a) );
 }
 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+T TJet<T>::getCoefficient(IntArray const& exp) const
+{
+
+  return jl_->getCoefficient(exp);
+
+} 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -285,18 +296,18 @@ istream& operator>>( istream& is,  TJet<T>& x )
 {
 //  streams a TJet from into an existing instance
 
-  x._jl = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(x->getEnv()) );
+  x.jl_ = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(x->getEnv()) );
   
- return operator>>( is, *(x._jl) );
+ return operator>>( is, *(x.jl_) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-ostream& operator<<( ostream& os, const TJet<T>& x ) 
+ostream& operator<<( ostream& os, TJet<T> const& x ) 
 {
- return operator<<( os, *(x._jl) );
+ return operator<<( os, *(x.jl_) );
 }
 
 // ***************************************************************
@@ -308,7 +319,7 @@ ostream& operator<<( ostream& os, const TJet<T>& x )
 //**************************************************************** 
 
 template<typename T>
-Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
+Tcoord<T>::Tcoord( T x ) : TJet<T>(0.0, EnvPtr<T>() ), refpt_(x) {
   
   // Note: passing a null env pointer to the TJet constructor
   //       results in a null JLPtr. Tcoord is not fully formed 
@@ -329,9 +340,9 @@ void Tcoord<T>::instantiate( int index, EnvPtr<T> const& pje) {
            "Instantiating a coordinate requires a fully formed environment object." ) );
  }
 
- this->_index = index;
- this->_jl    = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
- this->_jl->setVariable( _refpt, index );  
+ this->index_ = index;
+ this->jl_    = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
+ this->jl_->setVariable( refpt_, index );  
 
 } 
 
@@ -351,7 +362,7 @@ Tcoord<T>::~Tcoord()
 // ***************************************************************
  
 template<typename T>
-Tparam<T>::Tparam( T x ) : TJet<T>(0.0, EnvPtr<T>() ), _refpt(x) {
+Tparam<T>::Tparam( T x ) : TJet<T>(0.0, EnvPtr<T>() ), refpt_(x) {
  
   // Note: passing a null env pointer to the TJet constructor
   //       results in a null JLPtr. Tcoord is not fully formed 
@@ -383,9 +394,9 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
            "Instantiating a coordinate requires a fully formed environment object." ) );
   }
 
-  this->_index = index;
-  this->_jl   = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
-  this->_jl->setVariable( _refpt, index );  
+  this->index_ = index;
+  this->jl_   = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
+  this->jl_->setVariable( refpt_, index );  
 } 
 
 //
@@ -403,11 +414,16 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator+=( const TJet<T>& y ) 
+TJet<T>& TJet<T>::operator+=( TJet<T> const& y ) 
 {
 
-  if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl += y._jl; 
+//  if (jl_.count() > 1 ) jl_ = jl_->clone();
+//  jl_ += y.jl_; 
+
+// At the moment, there is no in-place add operator defined for TJL<T>
+
+     jl_  = jl_ + y.jl_;
+
   return *this;
  
 }
@@ -417,13 +433,17 @@ TJet<T>& TJet<T>::operator+=( const TJet<T>& y )
 
 
 template<typename T>
-TJet<T>& TJet<T>::operator-=( const TJet<T>& y ) 
+TJet<T>& TJet<T>::operator-=( TJet<T> const& y ) 
 {
 
-    if (_jl.count() > 1 ) _jl = _jl->clone();
-    _jl +=( -y._jl );
-    return *this; 
+//    if (jl_.count() > 1 ) jl_ = jl_->clone();
+//    jl_ +=( -y.jl_ );
 
+// At the moment, there is no in-place add operator defined for TJL<T>
+
+     jl_  = jl_ - y.jl_;
+
+    return *this; 
 
 }
 
@@ -431,11 +451,11 @@ TJet<T>& TJet<T>::operator-=( const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator*=( const TJet<T>& y ) 
+TJet<T>& TJet<T>::operator*=( TJet<T> const& y ) 
 {
 
- if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl = _jl * y._jl;
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_ = jl_ * y.jl_;
  return *this;
 
 }
@@ -444,14 +464,14 @@ TJet<T>& TJet<T>::operator*=( const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator/=( const TJet<T>& y ) 
+TJet<T>& TJet<T>::operator/=( TJet<T> const& y ) 
 {
 
 // no in-place division yet ...
 // use std operator instead
 
- if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl = _jl / (y._jl);  
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_ = jl_ / (y.jl_);  
  return *this;
 
 }
@@ -462,8 +482,8 @@ TJet<T>& TJet<T>::operator/=( const TJet<T>& y )
 template<typename T>
 TJet<T>& TJet<T>::operator/=( const T& y ) 
 {
- if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl->scaleBy( ((T) 1.0)/ y);
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->scaleBy( ((T) 1.0)/ y);
   return *this;
 
 }
@@ -471,30 +491,30 @@ TJet<T>& TJet<T>::operator/=( const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 template<typename T> 
-bool operator==( const TJet<T>& x, const TJet<T>& y ) 
+bool operator==( TJet<T> const& x, TJet<T> const& y ) 
 {
 
- return *(x._jl) == *(y._jl);
+ return *(x.jl_) == *(y.jl_);
 
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-bool operator==( const TJet<T>& x, const T& y)
+bool operator==( TJet<T> const& x, const T& y)
 {
 
- return *(x._jl) == y;
+ return *(x.jl_) == y;
 
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-bool operator==( const T& x, const TJet<T>& y)
+bool operator==( const T& x, TJet<T> const& y)
 {
 
- return *(y._jl) == x;
+ return *(y.jl_) == x;
 
 }
 #if 0 
@@ -504,9 +524,9 @@ bool operator==( const T& x, const TJet<T>& y)
 
 
 template<typename T>
-bool TJet<T>::operator==( const TJet<T>& y ) const
+bool TJet<T>::operator==( TJet<T> const& y ) const
 {
- return *(this->_jl) == *(y._jl);
+ return *(this->jl_) == *(y.jl_);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -515,7 +535,7 @@ bool TJet<T>::operator==( const TJet<T>& y ) const
 template<typename T>
 bool TJet<T>::operator==( const T& y ) const
 {
- return *(this->_jl) == y;
+ return *(this->jl_) == y;
 }
 
 #endif
@@ -524,7 +544,7 @@ bool TJet<T>::operator==( const T& y ) const
 
 
 template<typename T>
-bool operator!=( const TJet<T>& x, const TJet<T>& y ) 
+bool operator!=( TJet<T> const& x, TJet<T> const& y ) 
 {
  return !( x == y );
 }
@@ -533,7 +553,7 @@ bool operator!=( const TJet<T>& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const TJet<T>& x, const T& y ) 
+bool operator!=( TJet<T> const& x, const T& y ) 
 {
  return !( x == y );
 }
@@ -542,7 +562,7 @@ bool operator!=( const TJet<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool operator!=( const T& x, const TJet<T>& y ) 
+bool operator!=( const T& x, TJet<T> const& y ) 
 {
  return !( x == y );
 }
@@ -554,8 +574,8 @@ template<typename T>
 TJet<T>& TJet<T>::operator+=( const T& x ) 
 {   
 
- if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl->operator+=(x);
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->operator+=(x);
 
  return *this;
 }
@@ -567,8 +587,8 @@ template<typename T>
 TJet<T>& TJet<T>::operator-=( const T& x ) 
 {
 
- if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl->operator+=(-x);
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_->operator+=(-x);
  return *this;
 
 }
@@ -580,8 +600,8 @@ template<typename T>
 TJet<T>& TJet<T>::operator*=( const T& x ) 
 {
 
- if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl->scaleBy(x); 
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_->scaleBy(x); 
  return *this;
 }
 
@@ -590,20 +610,20 @@ TJet<T>& TJet<T>::operator*=( const T& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator+( const TJet<T>& x, const TJet<T>& y ) 
+TJet<T> operator+( TJet<T> const& x, TJet<T> const& y ) 
 { 
 
-  return TJet<T>( x._jl + y._jl);
+  return TJet<T>( x.jl_ + y.jl_);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator+( const TJet<T>& x, const T& y ) 
+TJet<T> operator+( TJet<T> const& x, const T& y ) 
 {
 
- return TJet<T>( x._jl + typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( x->getEnv(), y)) );    
+ return TJet<T>( x.jl_ + typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( x->getEnv(), y)) );    
 
 }
 
@@ -611,7 +631,7 @@ TJet<T> operator+( const TJet<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator+( const T& x, const TJet<T>& y ) 
+TJet<T> operator+( const T& x, TJet<T> const& y ) 
 {
 
  return  operator+(y,  x);
@@ -622,7 +642,7 @@ TJet<T> operator+( const T& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator-( const TJet<T>& x, const T& y ) 
+TJet<T> operator-( TJet<T> const& x, const T& y ) 
 {
  return operator+(x, (-y) );
 }
@@ -631,7 +651,7 @@ TJet<T> operator-( const TJet<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator-( const T& x, const TJet<T>& y ) 
+TJet<T> operator-( const T& x, TJet<T> const& y ) 
 {
  return operator+( (-y), x );
 }
@@ -640,9 +660,9 @@ TJet<T> operator-( const T& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-TJet<T> operator-( const TJet<T>& x) // Unary form of minus 
+TJet<T> operator-( TJet<T> const& x) // Unary form of minus 
 {
-  typename TJet<T>::jl_t jl( (x._jl)->clone() );
+  typename TJet<T>::jl_t jl( (x.jl_)->clone() );
   jl->Negate();
   return TJet<T>( jl );
 
@@ -654,8 +674,8 @@ TJet<T> operator-( const TJet<T>& x) // Unary form of minus
 template<typename T>
 void TJet<T>::Negate()    // ??? What is this for ???
 {
-  if (_jl.count() > 1 ) _jl = _jl->clone();
-  _jl->Negate();
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->Negate();
 
 }
 
@@ -666,8 +686,8 @@ template<typename T>
 void TJet<T>::Mult( const T& x ) // ??? What is this for ???
 {
 
-  if (_jl.count() > 1 ) _jl = _jl->clone();
- _jl->scaleBy(x);
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_->scaleBy(x);
 
 }
 
@@ -675,7 +695,7 @@ void TJet<T>::Mult( const T& x ) // ??? What is this for ???
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator-( const TJet<T>& x, const TJet<T>& y ) 
+TJet<T> operator-( TJet<T> const& x, TJet<T> const& y ) 
 {  
   return ( x + (-y) );
 }
@@ -684,10 +704,10 @@ TJet<T> operator-( const TJet<T>& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator*( const TJet<T>& x, const TJet<T>& y ) 
+TJet<T> operator*( TJet<T> const& x, TJet<T> const& y ) 
 {
 
- return TJet<T>( x._jl * y._jl );
+ return TJet<T>( x.jl_ * y.jl_ );
 }
 
 
@@ -695,11 +715,11 @@ TJet<T> operator*( const TJet<T>& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator*( const TJet<T>& x, const T& y ) 
+TJet<T> operator*( TJet<T> const& x, const T& y ) 
 {
 
 
- return TJet<T>( x._jl* y );
+ return TJet<T>( x.jl_* y );
 
 
 }
@@ -708,7 +728,7 @@ TJet<T> operator*( const TJet<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator*( const T& x, const TJet<T>& y ) 
+TJet<T> operator*( const T& x, TJet<T> const& y ) 
 {  
  
  return operator*( y, x);
@@ -719,7 +739,7 @@ TJet<T> operator*( const T& x, const TJet<T>& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator*( const TJet<T>& x, const int& j ) 
+TJet<T> operator*( TJet<T> const& x, int const& j ) 
 {  
   return operator*( x, T(j) );
 }
@@ -728,7 +748,7 @@ TJet<T> operator*( const TJet<T>& x, const int& j )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator*( const int& j, const TJet<T>& x ) 
+TJet<T> operator*( int const& j, TJet<T> const& x ) 
 { 
   return operator*( x, T(j));
 }
@@ -738,7 +758,7 @@ TJet<T> operator*( const int& j, const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator/( const TJet<T>& x, const T& y ) 
+TJet<T> operator/( TJet<T> const& x, const T& y ) 
 { 
   return operator*( x, (1.0/y) );
 }
@@ -747,7 +767,7 @@ TJet<T> operator/( const TJet<T>& x, const T& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator/( const TJet<T>& x, const int& j ) 
+TJet<T> operator/( TJet<T> const& x, int const& j ) 
 { 
  
   return ( operator*( x, 1.0/T(j) ) );
@@ -757,10 +777,10 @@ TJet<T> operator/( const TJet<T>& x, const int& j )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> operator/( const T& a, const TJet<T>& b ) 
+TJet<T> operator/( const T& a, TJet<T> const& b ) 
 {
 
- return TJet<T>( typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(b._jl->getEnv(), a) )/ b._jl  );    
+ return TJet<T>( typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL(b.jl_->getEnv(), a) )/ b.jl_  );    
 
 } 
 
@@ -770,10 +790,10 @@ TJet<T> operator/( const T& a, const TJet<T>& b )
 
 
 template<typename T>
-TJet<T> operator/( const TJet<T>& wArg, const TJet<T>& uArg ) 
+TJet<T> operator/( TJet<T> const& wArg, TJet<T> const& uArg ) 
 { 
 
- return TJet<T>( wArg._jl/  uArg._jl );
+ return TJet<T>( wArg.jl_/  uArg.jl_ );
 
 
 }
@@ -842,7 +862,7 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> acos( const TJet<T>& x ) 
+TJet<T> acos( TJet<T> const& x ) 
 {
   // Returns answer in (0,pi) if asin returns (-pi/2,pi/2).
   return ( ((T) M_PI_2) - asin(x) );
@@ -852,10 +872,10 @@ TJet<T> acos( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> asin( const TJet<T>& x ) 
+TJet<T> asin( TJet<T> const& x ) 
 { 
 
- return TJet<T>(x._jl->asin() );
+ return TJet<T>(x.jl_->asin() );
 
 }
  
@@ -863,10 +883,10 @@ TJet<T> asin( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> atan( const TJet<T>& x ) 
+TJet<T> atan( TJet<T> const& x ) 
 {   
  
- return TJet<T>(x._jl->atan() );
+ return TJet<T>(x.jl_->atan() );
 
 }
  
@@ -874,9 +894,9 @@ TJet<T> atan( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> cos( const TJet<T>& x ) 
+TJet<T> cos( TJet<T> const& x ) 
 { 
- return TJet<T>( x._jl->cos() ); // Note:: TJL<T>::cos() does not affect its argument 
+ return TJet<T>( x.jl_->cos() ); // Note:: TJL<T>::cos() does not affect its argument 
                                  // and returns a cloned jl.   
 }
 
@@ -884,7 +904,7 @@ TJet<T> cos( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> cosh( const TJet<T>& x ) 
+TJet<T> cosh( TJet<T> const& x ) 
 { 
  TJet<T> z = exp(x);
  z = ( z + ( 1.0 / z ) ) / 2.0;
@@ -895,7 +915,7 @@ TJet<T> cosh( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> exp( const TJet<T>& x ) 
+TJet<T> exp( TJet<T> const& x ) 
 { 
  
  return   TJet<T>( x->exp() ); // x->exp() returns a new instance
@@ -906,7 +926,7 @@ TJet<T> exp( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> log ( const TJet<T>& x ) 
+TJet<T> log ( TJet<T> const& x ) 
 { 
 
   return   TJet<T>( x->log() ); // x->log() returns a new instance
@@ -917,7 +937,7 @@ TJet<T> log ( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> log10( const TJet<T>& x ) 
+TJet<T> log10( TJet<T> const& x ) 
 {
  static const T logE = 0.4342944819032518276511289;
  return  logE*log(x);
@@ -927,7 +947,7 @@ TJet<T> log10( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> pow( const TJet<T>& x, const double& s ) 
+TJet<T> pow( TJet<T> const& x, const double& s ) 
 { 
 
  return TJet<T>( x->pow(s)); // pow(s) creates a new JL
@@ -939,7 +959,7 @@ TJet<T> pow( const TJet<T>& x, const double& s )
 
 
 template<typename T>
-TJet<T> pow( const TJet<T>& x, int n ) 
+TJet<T> pow( TJet<T> const& x, int n ) 
 { 
 
  return TJet<T>( x->pow(n)); // pow(h) creates a new JL
@@ -950,9 +970,9 @@ TJet<T> pow( const TJet<T>& x, int n )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> sin( const TJet<T>& x ) 
+TJet<T> sin( TJet<T> const& x ) 
 { 
-  return TJet<T> ( x._jl->sin() ); // Note:: TJL<T>::sin() clones its argument 
+  return TJet<T> ( x.jl_->sin() ); // Note:: TJL<T>::sin() clones its argument 
 
 }
 
@@ -960,7 +980,7 @@ TJet<T> sin( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> sinh( const TJet<T>& x ) 
+TJet<T> sinh( TJet<T> const& x ) 
 {
  TJet<T> z;
  z = exp(x);
@@ -971,9 +991,9 @@ TJet<T> sinh( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> sqrt( const TJet<T>& x ) 
+TJet<T> sqrt( TJet<T> const& x ) 
 {
-  return TJet<T>( x._jl->sqrt() ); // sqrt returns a copy 
+  return TJet<T>( x.jl_->sqrt() ); // sqrt returns a copy 
   
 }
 
@@ -981,7 +1001,7 @@ TJet<T> sqrt( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> tan( const TJet<T>& x ) 
+TJet<T> tan( TJet<T> const& x ) 
 { 
  return sin(x) / cos(x) ;
 }
@@ -990,7 +1010,7 @@ TJet<T> tan( const TJet<T>& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> tanh( const TJet<T>& x ) 
+TJet<T> tanh( TJet<T> const& x ) 
 { 
  return sinh(x) / cosh(x);
 }
@@ -1001,7 +1021,7 @@ TJet<T> tanh( const TJet<T>& x )
 
 
 template<typename T>
-TJet<T>  erfc( const TJet<T>& z ) 
+TJet<T>  erfc( TJet<T> const& z ) 
 {
   return ( ((T) 1.0) - erf( z ) );
 }
@@ -1024,8 +1044,8 @@ TJet<T>  erfc( const TJet<T>& z )
 template<typename T>
 typename TJet<T>::iterator        TJet<T>::begin()       
 {  
-   if (_jl.count() > 1) _jl = _jl->clone();
-   return       iterator(  _jl->begin() ); 
+   if (jl_.count() > 1) jl_ = jl_->clone();
+   return       iterator(  jl_->begin() ); 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1034,7 +1054,7 @@ typename TJet<T>::iterator        TJet<T>::begin()
 template<typename T>
 typename TJet<T>::const_iterator  TJet<T>::begin() const 
 { 
-   return const_iterator( static_cast<TJL<T> const&>(*_jl).begin() ); 
+   return const_iterator( static_cast<TJL<T> const&>(*jl_).begin() ); 
 
 }
 
@@ -1044,8 +1064,8 @@ typename TJet<T>::const_iterator  TJet<T>::begin() const
 template<typename T>
 typename TJet<T>::iterator        TJet<T>::end()         
 {  
-  if (_jl.count() > 1) _jl = _jl->clone();
-  return       iterator( _jl->end() );   
+  if (jl_.count() > 1) jl_ = jl_->clone();
+  return       iterator( jl_->end() );   
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1054,7 +1074,7 @@ typename TJet<T>::iterator        TJet<T>::end()
 template<typename T>
 typename TJet<T>::const_iterator  TJet<T>::end() const { 
 
-  return const_iterator(  static_cast<TJL<T> const&>(*_jl).end() );   
+  return const_iterator(  static_cast<TJL<T> const&>(*jl_).end() );   
 
 }
 
@@ -1065,7 +1085,7 @@ typename TJet<T>::const_iterator  TJet<T>::end() const {
 template<typename T>
 void TJet<T>::peekAt() const 
 {
-_jl->peekAt( );
+jl_->peekAt( );
 
 }
 
@@ -1075,7 +1095,7 @@ template<typename T>
 void TJet<T>::printCoeffs() const 
 {
 
- _jl->printCoeffs();
+ jl_->printCoeffs();
 
 }
 
@@ -1094,7 +1114,7 @@ void TJet<T>::writeToFile( char* fileName ) const
 template<typename T>
 void TJet<T>::writeToFile( ofstream& outStr ) const 
 {
- _jl->writeToFile( outStr );
+ jl_->writeToFile( outStr );
 }
 
 
@@ -1105,8 +1125,8 @@ void TJet<T>::writeToFile( ofstream& outStr ) const
 template<typename T>
 void TJet<T>::clear() 
 {
- if (_jl.count() > 1) _jl = _jl->clone();
- _jl->clear();
+ if (jl_.count() > 1) jl_ = jl_->clone();
+ jl_->clear();
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1115,7 +1135,7 @@ void TJet<T>::clear()
 template<typename T>
 T TJet<T>::weightedDerivative( const int* ind ) const 
 {
- return _jl->weightedDerivative( ind );
+ return jl_->weightedDerivative( ind );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1124,17 +1144,17 @@ T TJet<T>::weightedDerivative( const int* ind ) const
 template<typename T>
 T TJet<T>::derivative( const int* ind ) const 
 {
- return _jl->derivative( ind );
+ return jl_->derivative( ind );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::filter( const int& wgtLo, const int& wgtHi ) const 
+TJet<T> TJet<T>::filter( int const& wgtLo, int const& wgtHi ) const 
 { 
 
- return TJet<T>( _jl->filter(wgtLo,wgtHi) ); 
+ return TJet<T>( jl_->filter(wgtLo,wgtHi) ); 
 
 }
 
@@ -1142,10 +1162,10 @@ TJet<T> TJet<T>::filter( const int& wgtLo, const int& wgtHi ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const 
+TJet<T> TJet<T>::filter( bool (*f) ( IntArray const&, T const& ) ) const 
 { 
 
- return TJet<T>( _jl->filter(f) ); 
+ return TJet<T>( jl_->filter(f) ); 
 
 }
 
@@ -1153,10 +1173,10 @@ TJet<T> TJet<T>::filter( bool (*f) ( const IntArray&, const T& ) ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::operator() ( const TJetVector<T>& y ) const 
+TJet<T> TJet<T>::operator() ( TJetVector<T> const& y ) const 
 {
  
- int n = _jl->getEnv()->numVar();   
+ int n = jl_->getEnv()->numVar();   
 
  TJet<T> z;      // ??? so as to be self-contained.
 
@@ -1178,14 +1198,14 @@ template<typename T>
 TJet<T> TJet<T>::operator() ( const TJet<T>* y ) const 
 { 
 
- jl_t yjl[ _jl->getEnv()->numVar() ];
+ jl_t yjl[ jl_->getEnv()->numVar() ];
 
- for(int i=0; i< _jl->getEnv()->numVar(); ++i) {
+ for(int i=0; i< jl_->getEnv()->numVar(); ++i) {
 
-    yjl[i] = y[i]._jl;
+    yjl[i] = y[i].jl_;
  }
 
- return TJet<T>( _jl->compose( yjl ) ); 
+ return TJet<T>( jl_->compose( yjl ) ); 
 
 }
 
@@ -1193,9 +1213,9 @@ TJet<T> TJet<T>::operator() ( const TJet<T>* y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::operator() ( const Vector& x ) const 
+T TJet<T>::operator() ( Vector const& x ) const 
 {
- return _jl->operator()( x );
+ return jl_->operator()( x );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1204,7 +1224,7 @@ T TJet<T>::operator() ( const Vector& x ) const
 template<typename T>
 T TJet<T>::operator() ( const T* x ) const 
 {
- return _jl->operator()( x );
+ return jl_->operator()( x );
 }
 
 
@@ -1215,7 +1235,7 @@ template<typename T>
 TJet<T> TJet<T>::D( const int* n ) const 
 {
 
- return TJet<T> ( _jl->D(n) ); 
+ return TJet<T> ( jl_->D(n) ); 
 
 } 
 
@@ -1223,7 +1243,7 @@ TJet<T> TJet<T>::D( const int* n ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::D( const IntArray& n ) const 
+TJet<T> TJet<T>::D( IntArray const& n ) const 
 {
 
   int narray[ n.Dim()];
@@ -1231,7 +1251,7 @@ TJet<T> TJet<T>::D( const IntArray& n ) const
                                                   // this needs to be done because the 
                                                   // internal representation of the array
                                                   // involve shorter ints    
-  return TJet<T>( _jl->D(narray) );  
+  return TJet<T>( jl_->D(narray) );  
 
 }
 
