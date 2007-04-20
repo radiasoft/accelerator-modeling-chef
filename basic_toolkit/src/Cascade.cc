@@ -285,7 +285,7 @@ void Cascade::finishConstructor()
   for( int i=1; i <= maxWeight_; ++i) {
 
     while( nexcom( i, numVar_, f) ) { 
-      e.Set(f);
+      e.Set(f, numVar_ );
       if( verbose_ ) { (*pcout) << "Making: " << e << endl; }
       if( swPtr < upperBound ) {
         new (swPtr) Switch(  maxWeight_, counter++, e );
@@ -499,7 +499,7 @@ int Cascade::selfTest() const
   // Do the first monomial by hand
 
   for( int i=0; i< numVar_; ++i ) { f[i] = 0; }
-  e.Set(f);
+  e.Set(f, numVar_);
 
   if( verbose_ ) { (*pcout) << e << endl; }
 
@@ -525,7 +525,7 @@ int Cascade::selfTest() const
   for( int i=1; i <= maxWeight_; ++i) {
 
     while( nexcom( i, numVar_, f) ) {
-      e.Set(f);
+      e.Set(f, numVar_);
 
       if( verbose_ ) { (*pcout) << e << endl; }
 
@@ -555,7 +555,7 @@ int Cascade::selfTest() const
 
   for( int i=0; i < numVar_; ++i) { f[i] = 0; }
 
-  e.Set(f);
+  e.Set(f, numVar_);
   if( e != (this->exponents(e)) ) {
     (*pcerr) << "Type 1 error: " << e << " != " << (this->exponents(e)) << endl;
     ret = 1;
@@ -573,7 +573,7 @@ int Cascade::selfTest() const
 
   for( int i = 1; i <= maxWeight_; ++i) {
     while( nexcom( i, numVar_, f) ) {
-      e.Set(f);
+      e.Set(f, numVar_);
       if( e != exponents(e) ) {
         (*pcerr) << "Type 1 error: " << e << " != " << exponents(e) << endl;
         ret = 1;
