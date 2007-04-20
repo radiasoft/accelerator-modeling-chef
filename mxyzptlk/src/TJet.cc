@@ -78,7 +78,7 @@ template<>
 template<>
 TJet<std::complex<double> >::TJet( TJet<double> const& x) {
   
-  _jl    =  makeJL( x._jl );
+  jl_    =  makeJL( x.jl_ );
 
 }
 
