@@ -54,10 +54,10 @@
 ****** 
 ******  - New implementation. TJetVector is now based on a vector<Jet>
 ******    container. The previous version was based on a dynamically allocated 
-******    raw array of Jet*. Since a Jet is now basically an envelope for a 
-******    smart ptr to implementation, its mem footprint is negligible. 
-******    This fact enables the use of value semantics for
-******    the stored Jet components and vastly simplifies memory management.       
+******    array of Jet*. Since a Jet is now basically an envelope for a 
+******    smart ptr to implementation, its memory footprint is negligible. 
+******    This fact enables the use of value semantics for Jet components 
+******    and vastly simplifies memory management.       
 ******  
 **************************************************************************
 *************************************************************************/
