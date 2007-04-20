@@ -59,7 +59,7 @@
 ****** Mar 2007  ostiguy@fnal.gov
 ******
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
+******   to replace previous scheme based explicitly on monomial exponents tuple.
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators    
 ******
@@ -130,9 +130,6 @@ std::istream& operator>>( std::istream& is, TJL<T>& x );
 template <typename T>
 JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  );  
 
-template <typename T>
-JLPtr<T>&  operator+=(JLPtr<T>& x,       JLPtr<T> const& y  );  
-
 //..............................................................................................................................
 
 template <typename T>
@@ -140,9 +137,6 @@ JLPtr<T>   operator-(JLPtr<T> const &x);
 
 template <typename T>
 JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  );  
-
-template <typename T>
-JLPtr<T>&  operator-=(JLPtr<T>& x,        JLPtr<T> const& y  );  
 
 // ..........................................................................
 
@@ -238,7 +232,9 @@ friend class TJL;
                                           // to the top term,
                                           // which should be the one of lowest weight.
 
-  void addTerm( TJLterm<T> const& );      
+  void addTerm( TJLterm<T> const& ); 
+     
+  T    getCoefficient( IntArray const& ) const;      
  
   void removeTerm( TJLterm<T> const& a);  // remove term a; 
  
@@ -254,17 +250,11 @@ friend class TJL;
   friend JLPtr<T>  
          operator+<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
 
-  friend JLPtr<T>& 
-         operator+= <>(JLPtr<T>& x,      JLPtr<T> const& y  );  
-
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x );  
 
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
-
-  friend JLPtr<T>&  
-         operator-=<>(JLPtr<T>& x,       JLPtr<T> const& y  );  
 
   friend JLPtr<T>  
          operator*<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
@@ -333,7 +323,6 @@ friend class TJL;
   TJL& operator=( TJL const& );
   TJL& operator=( T   const& );
 
-  TJL& operator+=( TJL const& );
   TJL& operator+=( T   const& );
 
 
@@ -344,8 +333,8 @@ friend class TJL;
   template <typename U>
   class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::forward_traversal_tag > {
   
-  template<typename V>
-  friend class iter_;
+    template<typename V>
+    friend class iter_;
 
     private:
       struct enabler {};
@@ -494,11 +483,6 @@ friend class TJL;
 
   template< void T_function( T&, T const&) >
   static JLPtr<T>          add(  JLPtr<T> const&, JLPtr<T> const&); 
-
-  template<void T_function( T&, T const&) >
-  static JLPtr<T>& inplace_add(  JLPtr<T>&,       JLPtr<T> const&);
-
-
 
 };
 
