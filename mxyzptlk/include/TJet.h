@@ -5,7 +5,6 @@
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJet.h
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
@@ -55,11 +54,13 @@
 ******
 ****** - eliminated dlist representation for (non-zero) monomials.   
 ****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
+******
 ****** Mar 2007 ostiguy@fnal.gov  
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   rather than previous scheme based explicitly on monomial exponents tuple.
+******   to replace previous scheme based explicitly on monomial exponents tuple.
 ****** - monomial multiplication handled via a lookup-table.
-****** - added STL compatible monomial term iterators   
+****** - added STL compatible monomial term iterators
+****** - added getCoefficient member to retrieve a specific monomial coefficient
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -313,11 +314,11 @@ class TJet: public gms::FastAllocator  {
 
 protected:
 
-  mutable jl_t   _jl; 
+  mutable jl_t   jl_; 
 
  private:
 
-  TJet _epsInverse() const;  // Calculates the inverse of
+  TJet  epsInverse() const;  // Calculates the inverse of
                              // nilpotent Jets.
 
   friend TJet<double > fabs( TJet<double> const& ); // ?????
@@ -328,7 +329,7 @@ protected:
 
 protected:
 
-  typename TJet::jl_t & operator->() const { return _jl; }
+  typename TJet::jl_t & operator->() const { return jl_; }
 
 public:
 
@@ -362,8 +363,8 @@ public:
 
   // Public member functions__________________________________________
 
-  void addTerm( TJLterm<T> const& ); 
-  // void appendTerm( TJLterm<T> const& ); 
+  void      addTerm( TJLterm<T> const& ); 
+  T         getCoefficient(IntArray const& exp) const; 
 
   bool isNilpotent() const;
 
@@ -388,7 +389,7 @@ public:
   void setVariable( int const& );
 
   void     setStandardPart( T const& std ); 
-  T        standardPart() const            { return _jl->standardPart();    }
+  T        standardPart() const            { return jl_->standardPart();    }
 
   void     clear();
   T        weightedDerivative( int  const* ) const;  // FIXME !
@@ -567,8 +568,8 @@ public:
  ~Tcoord();
 
 
-  int Index() const { return _index; } 
-  T   value() const { return _refpt; };  
+  int Index() const { return index_; } 
+  T   value() const { return refpt_; };  
    
   void instantiate(int index, EnvPtr<T> const& pje);
  
@@ -577,8 +578,8 @@ public:
   Tcoord( Tcoord const& );                  // forbidden 
   Tcoord& operator=( Tcoord const& );       // forbidden
 
-  int       _index;  
-  T         _refpt; 
+  int       index_;  
+  T         refpt_; 
 
 };
 
@@ -592,15 +593,15 @@ public:
   explicit Tparam( T = T() );
  ~Tparam();
 
-  int Index()       { return _index; } 
-  T   value() const { return _refpt; };  
+  int Index()       { return index_; } 
+  T   value() const { return refpt_; };  
 
   void instantiate(int index, EnvPtr<T> const& pje);
 
  private:
 
-  int       _index; // the parameter index  ( > numVar )
-  T         _refpt; 
+  int       index_; // the parameter index  ( > numVar )
+  T         refpt_; 
 
   Tparam( Tparam const& );                 // forbidden - no implementation
   Tparam& operator=( Tparam const& );      // forbidden - no implementation
@@ -614,63 +615,63 @@ public:
 template<typename T>
 inline EnvPtr<T> TJet<T>::Env() const
 {
-  return _jl->getEnv();
+  return jl_->getEnv();
 }
 
 template<typename T>
 inline void TJet<T>::Env(  EnvPtr<T> const& pje ) const
 {
-  _jl->setEnv(pje);;
+  jl_->setEnv(pje);;
 }
 
 
 template<typename T>
 inline int TJet<T>::intEnv() const   // what is this for ????
 {  
-  return int( _jl->getEnv().get() );
+  return int( jl_->getEnv().get() );
 }
 
 
 template<typename T>
 inline int TJet<T>::termCount() const
 {
-  return _jl->getCount();
+  return jl_->getCount();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvNumVar() const 
 {
-  return _jl->getEnv()->numVar();
+  return jl_->getEnv()->numVar();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvSpaceDim() const 
 {
-  return _jl->getEnv()->spaceDim();
+  return jl_->getEnv()->spaceDim();
 }
 
 template<typename T>
 inline int TJet<T>::getEnvMaxWeight() const 
 {
-  return _jl->getEnv()->maxWeight();
+  return jl_->getEnv()->maxWeight();
 }
 
 template<typename T>
 inline int TJet<T>::getWeight() const 
 {
-  return _jl->getWeight();
+  return jl_->getWeight();
 }
 
 template<typename T>
 inline int TJet<T>::getAccuWgt() const 
 {
-  return _jl->getAccuWgt();
+  return jl_->getAccuWgt();
 }
 
 template<typename T>
 inline bool TJet<T>::isNilpotent() const 
 {
-  return _jl->isNilpotent();
+  return jl_->isNilpotent();
 }
 
 // ================================================================
