@@ -68,23 +68,6 @@ template JLPtr<std::complex<double> > TJL<std::complex<double> >::makeTJL(TJL<st
 //=============================================================================================
 
 template 
-JLPtr<double>&  
-TJL<double>::inplace_add<TJL<double>::op_add >(JLPtr<double>& x, JLPtr<double> const& y  );  
-
-template 
-JLPtr<std::complex<double> >&  
-TJL<std::complex<double> >::inplace_add<TJL<std::complex<double> >::op_add>(JLPtr<std::complex<double> >& x, JLPtr<std::complex<double> > const& y  );  
-
-template 
-JLPtr<double>&  
-TJL<double>::inplace_add<TJL<double>::op_sub>(JLPtr<double>& x, JLPtr<double> const& y  );  
-
-template 
-JLPtr<std::complex<double> >&  
-TJL<std::complex<double> >::inplace_add<TJL<std::complex<double> >::op_sub >(JLPtr<std::complex<double> >& x, JLPtr<std::complex<double> > const& y  );  
-
-
-template 
 JLPtr<double>                 
 TJL<double>::add<TJL<double>::op_add>(JLPtr<double> const & x, JLPtr<double> const& y  );  
 
@@ -109,11 +92,6 @@ template
 JLPtr<std::complex<double> >   operator+(JLPtr<std::complex<double> > const & x, JLPtr<std::complex<double> > const& y  );  
 
 template
-JLPtr<double>&  operator+=(JLPtr<double>& x,      JLPtr<double> const& y  );  
-template
-JLPtr<std::complex<double> >&  operator+=(JLPtr<std::complex<double> >& x,      JLPtr<std::complex<double> > const& y  );  
-
-template
 JLPtr<double>   operator-(JLPtr<double> const &x);  
 template
 JLPtr<std::complex<double> >   operator-(JLPtr<std::complex<double> > const &x);  
@@ -122,11 +100,6 @@ template
 JLPtr<double>   operator-(JLPtr<double> const & x,  JLPtr<double> const& y  );  
 template
 JLPtr<std::complex<double> >   operator-(JLPtr<std::complex<double> > const & x,  JLPtr<std::complex<double> > const& y  );  
-
-template
-JLPtr<double>&  operator-=(JLPtr<double>& x,      JLPtr<double> const& y  );  
-template
-JLPtr<std::complex<double> >&  operator-=(JLPtr<std::complex<double> >& x,      JLPtr<std::complex<double> > const& y  );  
 
 
 template
