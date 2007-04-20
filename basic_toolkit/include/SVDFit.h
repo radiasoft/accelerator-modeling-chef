@@ -35,17 +35,17 @@
 **************************************************************************
 *************************************************************************/
 
-#ifndef SVDFIT_H
-#define SVDFIT_H
+#ifndef SVDFITPLPL_H
+#define SVDFITPLPL_H
 
 #include <basic_toolkit/Matrix.h>
 #include <basic_toolkit/VectorD.h>
 
-class SVDFit
+class SVDFitPL
 {
   public: 
-    SVDFit();
-    ~SVDFit();
+    SVDFitPL();
+    ~SVDFitPL();
 
     void setLinearResponse( const Matrix& );
     void setErrorCovariance( const Matrix& );
@@ -55,6 +55,11 @@ class SVDFit
 
     Matrix getStateCovariance()   const;
     bool   getWeighted() const;
+    Vector getSingularValue() const;
+    Matrix getVMatrix() const;
+    Matrix getUMatrix() const;
+    inline double getLimitNullSpace() const  {return _limW;}
+    inline void setLimitNullSpace(double l) {_limW = l;}
 
   private:
     int    _rows;
@@ -73,10 +78,13 @@ class SVDFit
 
     bool   _applyWeights;
     bool   _ready;
+    
+    double _limW;
 
     void _finishConstruction();
     void _reconstruct( int, int );
     void _buildSolver();
+    Matrix sqrt( Matrix& x );
 };
 
-#endif // SVDFIT_H
+#endif // SVDFITPL_H
