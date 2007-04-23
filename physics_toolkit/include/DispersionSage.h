@@ -126,6 +126,8 @@ public:
       //   initial conditions and "pushes" a dispersion
       //   calculation down the beamline.
 
+  int pushCalc2( const JetParticle&, Info const& );
+
   DispersionSage::GlobalInfo getGlobalInfo() const;
 
   DispersionSage::Info const& getInfo() const;

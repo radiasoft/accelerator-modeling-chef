@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                                                
 ******  File:      DispersionSage.cc
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -39,14 +38,17 @@
 ******    
 ******  - interface based on Particle& rather than ptrs. 
 ******    Stack allocated local Particle objects.
-******  - changes to accomodate new boost::any based Barnacle objects.
+******  - changes to accomodate new style boost::any based Barnacle objects.
 ******  - use new style STL-compatible beamline iterators
 ******  - calcs_ array is now an STL vector. LF are now returned by 
 ******    returning a const reference to the entire vector.
-******  - misc cleanup.  
-****** Mar 2006   ostiguy@fnal.gov
+******  - misc cleanups.  
+******
+******  Mar 2007   ostiguy@fnal.gov
+******
 ******  - eliminated references to slist/dlist
-******  - use new-style STL compatible beamline iterators
+******  - fixed dispersion scaling in presence of acceleration in dispersion computation
+******  - added new method to push dispersion using Jets
 ******
 **************************************************************************
 *************************************************************************/
@@ -113,7 +115,7 @@ DispersionSage::Options::Options()
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
-  dpp_( 0.00005 ), 
+  dpp_( 0.001), 
   ignoreErrors_( false ),
   calcs_()
   {}
@@ -123,7 +125,7 @@ DispersionSage::DispersionSage( BmlPtr x )
 
 DispersionSage::DispersionSage( beamline const& x )
 : Sage( x ), 
-  dpp_( 0.00005 ), 
+  dpp_( 0.001 ), 
   ignoreErrors_( false ),
   calcs_()
 {}
@@ -430,7 +432,7 @@ int DispersionSage::fullCalc( JetParticle& jp, beamline::Criterion& )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int DispersionSage::pushCalc( Particle const& prt, const Info& initialConditions )
+int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions )
 {
 
 
@@ -454,20 +456,19 @@ int DispersionSage::pushCalc( Particle const& prt, const Info& initialConditions
   double lng = 0.0;
 
   Particle firstParticle(prt);
-  double energy   = firstParticle.ReferenceEnergy();
-  double mass     = firstParticle.Mass();
-  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp_ );
-         energy   = sqrt( momentum*momentum + mass*mass );
-
   Particle secondParticle(prt);
-  secondParticle.SetReferenceEnergy( energy );
 
-  secondParticle.set_x   (prt.get_x()   + (initialConditions.dispersion.hor)*dpp_);
-  secondParticle.set_y   (prt.get_y()   + (initialConditions.dispersion.ver)*dpp_);
-  secondParticle.set_npx (prt.get_npx() + (initialConditions.dPrime.hor)*dpp_);
-  secondParticle.set_npy (prt.get_npy() + (initialConditions.dPrime.ver)*dpp_);
+  secondParticle.set_ndp( firstParticle.get_ndp() + dpp_  );
+ 
+  secondParticle.set_x   ( initialConditions.dispersion.hor  * dpp_ );
+  secondParticle.set_npx ( initialConditions.dPrime.hor      * dpp_ );
+
+  secondParticle.set_y   ( initialConditions.dispersion.ver  * dpp_ );
+  secondParticle.set_npy ( initialConditions.dPrime.ver      * dpp_ );
  
   eraseAll();
+
+  double start_momentum = firstParticle.Momentum();
 
   DispersionSage::Info info;
   for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin();  it != myBeamlinePtr_->deep_end(); ++it ) {
@@ -476,13 +477,13 @@ int DispersionSage::pushCalc( Particle const& prt, const Info& initialConditions
       (*it)->propagate( secondParticle );
 
       lng += (*it)->OrbitLength( firstParticle );
-
-      d = ( secondParticle.State() - firstParticle.State() ) / dpp_;
+   
+      d = ( secondParticle.State() - firstParticle.State() ) /  (secondParticle.get_ndp()- firstParticle.get_ndp() ) ;
   
       info.dispersion.hor  = d( i_x  );
-      info.dPrime.hor      = d( i_px );
+      info.dPrime.hor      = d( i_px ) / firstParticle.get_npz();
       info.dispersion.ver  = d( i_y  );
-      info.dPrime.ver      = d( i_py );
+      info.dPrime.ver      = d( i_py ) / firstParticle.get_npz();
       info.arcLength       = lng;
       calcs_.push_back(info);
 
@@ -495,6 +496,65 @@ int DispersionSage::pushCalc( Particle const& prt, const Info& initialConditions
     *outputStreamPtr_ << "DispersionSage -- Leaving DispersionSage::pushCalc" << std::endl;
     outputStreamPtr_->flush();
   }
+
+  return ret;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditions )
+{
+
+  int ret = 0;
+
+  const int i_x   =  Particle::xIndex();
+  const int i_y   =  Particle::yIndex();
+  const int i_z   =  Particle::cdtIndex();
+  const int i_px  =  Particle::npxIndex();
+  const int i_py  =  Particle::npyIndex();
+  const int i_dpp =  Particle::ndpIndex();
+
+  double lng = 0.0;
+
+  Particle    particle(p);
+
+  JetParticle jparticle(p);
+
+  Mapping& state = jparticle.getState();
+
+  IntArray exp_d(6);
+  exp_d[5]  = 1;
+
+  state[i_x ].setTermCoefficient(initialConditions.dispersion.hor, exp_d );
+  state[i_px].setTermCoefficient(initialConditions.dispersion.ver, exp_d );
+  state[i_y ].setTermCoefficient(initialConditions.dPrime.hor,     exp_d );
+  state[i_py].setTermCoefficient(initialConditions.dPrime.ver,     exp_d );
+ 
+  eraseAll();
+
+  const double start_momentum = particle.Momentum();
+
+  DispersionSage::Info info;
+
+  for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin();  it != myBeamlinePtr_->deep_end(); ++it ) {
+
+      (*it)->propagate(jparticle);
+      lng += (*it)->OrbitLength( particle );
+
+      double scale  =  jparticle.Momentum().standardPart()/start_momentum;
+ 
+      info.dispersion.hor = jparticle.getState()[i_x ].getTermCoefficient(exp_d ) * scale;
+      info.dPrime.hor     = jparticle.getState()[i_px].getTermCoefficient(exp_d ) * scale; 
+      info.dispersion.ver = jparticle.getState()[i_y ].getTermCoefficient(exp_d ) * scale;
+      info.dPrime.ver     = jparticle.getState()[i_py].getTermCoefficient(exp_d ) * scale; 
+      info.arcLength      = lng;
+
+      calcs_.push_back(info);
+
+  }
+
+  // Clean up before leaving .............................................
 
   return ret;
 }
