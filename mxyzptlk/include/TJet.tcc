@@ -119,8 +119,76 @@ TJet<T>::TJet( T x, EnvPtr<T> const& pje ): jl_(  tjl_t::makeTJL( pje,x ) ){}
 
 
 template<typename T>
-TJet<T>::TJet( TJet<T> const& x ): gms::FastAllocator(), jl_( x.jl_ ) {}
+TJet<T>::TJet( TJet<T> const& x )
+: gms::FastAllocator(), jl_( x.jl_ ) 
+{}
 // NOTE: ref count is incremented when JLPtr is instantiated. 
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJet<T>::TJet( TJet<T> const& arg,  EnvPtr<T> const&  env)
+ : gms::FastAllocator()
+{
+   //-------------------------------------------------------------
+   // Conversion between two jets with different environments
+   // i.e. different number of variables, orders and/or reference
+   // points. 
+   //--------------------------------------------------------------
+
+   if ( arg.Env() == env ) { jl_ = arg.jl_; return; } 
+
+   jl_ = tjl_t::makeTJL( env );
+
+   const int numvar = std::min( env->numVar(), arg.Env()->numVar() );
+
+   std::vector<T> refshift( arg.Env()->numVar(), T() ); 
+
+   
+   bool shift_required = false;
+
+   for ( int i=0; i< numvar; ++i) {
+
+     refshift[i] = (  env->refPoint()[i] - arg.Env()->refPoint()[i] );
+
+     if ( refshift[i] != T() ) shift_required = true;
+
+   }  
+
+
+   for ( typename TJet<T>::const_iterator it  = arg.begin();  
+                                          it != arg.end();  ++it ) 
+   {
+
+     IntArray argexp( it->exponents( arg.Env() ) ); 
+     IntArray exp(jl_->getEnv()->numVar() );    
+
+     if ( argexp.Dim() == exp.Dim() ) { exp = argexp; }
+
+     std::copy( argexp.begin(), argexp.begin() + std::min(exp.Dim(),argexp.Dim()), exp.begin() );
+     
+     jl_->addTerm( TJLterm<T>( exp, it->value_, jl_->getEnv() ) );
+
+   }
+
+
+   if (!shift_required) return;
+
+
+   // -----------------------
+   // shift reference point 
+   //------------------------
+   
+   // ... this is not implemented yet !!!!  
+   if (shift_required) 
+
+    std::cout << "****WARNING****  TJet<T>::TJet( TJet<T> const& arg,  EnvPtr<T> const&  env) "                      << std::endl;    
+    std::cout << "****WARNING****  Attempt to initialize a Jet from another one with a different reference point ! " << std::endl;  
+    std::cout << "****WARNING****  This feature is not implemented yet. Proceeding, nontheless. "                    << std::endl;  
+
+}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -134,7 +202,6 @@ TJet<T>::~TJet()
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 void TJet<T>::setEnvTo( const TJet& x )
@@ -161,7 +228,6 @@ void TJet<T>::setEnvTo( EnvPtr<T> const& pje )
     jl_->setEnv(pje);
   }
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -197,6 +263,7 @@ template<typename T>
 void TJet<T>::setVariable( const T& x,
                                int const& j )
 {
+   if (jl_.count() > 1 ) jl_ = jl_->clone();
    jl_->setVariable( x, j);   // DANGER !! Alters the environment!
 }
 
@@ -209,7 +276,7 @@ template<typename T>
 void TJet<T>::setVariable( int const& j, EnvPtr<T> const& pje ) 
 {
 
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
+    if (jl_.count() > 1 ) jl_ = jl_->clone();
     jl_->setVariable( j, pje );
 }
 
@@ -220,7 +287,7 @@ template<typename T>
 void TJet<T>::setVariable( int const& j )
 {
 
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
  jl_->setVariable( j, jl_->getEnv() );
 
 }
@@ -240,12 +307,13 @@ void  TJet<T>::setStandardPart( T const& std ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator=( const TJet& x ) 
+TJet<T>& TJet<T>::operator=( TJet const& x ) 
 {
 
   if (&x == this) return *this;
   
   jl_ = x.jl_;
+
   return *this;
 
 }
@@ -256,7 +324,7 @@ TJet<T>& TJet<T>::operator=( const TJet& x )
 
 
 template<typename T>
-TJet<T>& TJet<T>::operator=( const T& x ) 
+TJet<T>& TJet<T>::operator=( T const& x ) 
 {
 
  jl_ = jl_t(tjl_t:: makeTJL( jl_->getEnv(), x)); 
@@ -269,10 +337,10 @@ TJet<T>& TJet<T>::operator=( const T& x )
 
 
 template<typename T>
-void TJet<T>::addTerm( const TJLterm<T>& a) 
+void TJet<T>::addTerm( TJLterm<T> const& a) 
 {
   if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_->addTerm( TJLterm<T>(a) );
+  jl_->addTerm( TJLterm<T>(a) );
 }
 
 
@@ -280,10 +348,23 @@ void TJet<T>::addTerm( const TJLterm<T>& a)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::getCoefficient(IntArray const& exp) const
+T TJet<T>::getTermCoefficient(IntArray const& exp) const
 {
 
-  return jl_->getCoefficient(exp);
+  return jl_->getTermCoefficient(exp);
+
+} 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+void TJet<T>::setTermCoefficient(T const& value, IntArray const& exp) 
+{
+
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->setTermCoefficient(value, exp);
 
 } 
 
