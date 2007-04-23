@@ -113,6 +113,11 @@ const char* thinLamb::Type() const
   return "thinLamb"; 
 }
 
+bool     thinLamb::isMagnet() const
+{
+  return false;
+}
+
 
 ostream& thinLamb::writeTo(ostream& os) 
 {

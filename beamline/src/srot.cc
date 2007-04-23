@@ -83,6 +83,12 @@ const char* srot::Type() const
 }
 
 
+bool   srot::isMagnet() const
+{
+  return false; 
+}
+
+
 void srot::accept( BmlVisitor& v ) 
 {
   v.visit(*this);

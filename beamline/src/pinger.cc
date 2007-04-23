@@ -100,6 +100,14 @@ const char* Pinger::Type() const
   return "Pinger"; 
 }
 
+
+bool  Pinger::isMagnet() const
+{
+  return false;
+}
+
+
+
 istream& Pinger::readFrom(istream& is) {
   is >> kick_direction_ >> counter_;
   return is;
@@ -146,6 +154,14 @@ const char* HPinger::Type() const
   return "HPinger"; 
 }
 
+
+bool  HPinger::isMagnet() const
+{
+  return false;
+}
+
+
+
 void HPinger::accept( BmlVisitor& v ) { 
   v.visit( *this ); 
 }
@@ -177,6 +193,14 @@ const char* VPinger::Type() const
 { 
   return "VPinger"; 
 }
+
+
+bool  VPinger::isMagnet() const
+{
+  return false;
+}
+
+
 
 void VPinger::accept( BmlVisitor& v ) { 
   v.visit( *this ); 
