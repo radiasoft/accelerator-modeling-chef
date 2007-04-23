@@ -60,6 +60,8 @@ class XSIFFactory: public bmlfactory {
     bool    variableIsDefined(const char* varname) const;
     double  getVariableValue(const char* varname) const;   
 
+    void dumpVariables() const;
+   
 
   private:
  
