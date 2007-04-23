@@ -256,33 +256,40 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   lfvec_.clear();
 
   double arcLength = 0.0;
+
+  double eref = jp.ReferenceEnergy();
+
   for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
                                it != myBeamlinePtr_->deep_end();  ++it) 
 
   {
+
     arcLength += (*it) -> OrbitLength( p0 );
     (*it) -> propagate( jp);
     mtrx = jp.State().Jacobian();
 
-    double a = mtrx(x,x)  ;
-    double b = mtrx(x,px) ;
-    double c = mtrx(px,x) ;
-    double d = mtrx(px,px);
+
+    double a = mtrx(  x,  x);
+    double b = mtrx(  x, px);
+    double c = mtrx( px,  x);
+    double d = mtrx( px, px);
 
     // I allow for the possibility of RF cavities by scaling
 
     double beta_x =  ( a*a*beta_x_0 - 2.0*a*b*alpha_x_0 + b*b*gamma_x_0 )
                     *( jp.ReferenceEnergy()/energy );
+
     double alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
                     *( jp.ReferenceEnergy()/energy );
 
-    a = mtrx(y,y);
-    b = mtrx(y,py);
-    c = mtrx(py,y);
-    d = mtrx(py,py);
+    a = mtrx( y,   y);
+    b = mtrx( y,  py);
+    c = mtrx( py,  y);
+    d = mtrx( py, py);
 
     double beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
                     *( jp.ReferenceEnergy()/energy );
+
     double alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
                     *( jp.ReferenceEnergy()/energy );
 
@@ -297,6 +304,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     lf.alpha.ver = alpha_y;
 
     lfvec_.push_back(lf);
+
 
   } // end loop over the beamline elements ..............
 
