@@ -87,10 +87,13 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
-  const char* Type() const;
+  const char* Type()       const;
+  bool        isMagnet()   const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
+
+
 };
 
 
@@ -98,10 +101,10 @@ public:
 class DLLEXPORT vkick : public bmlnElmnt {
 
 public:
-  vkick();                                               // Assumes zero kick
-  vkick( double const& );                                       // kick size in radians
-  vkick( const char* );                                  // name; assumes zero kick
-  vkick( const char* name, double const& kick);                  // kick size in radians
+  vkick();                                                             // Assumes zero kick
+  vkick( double const& );                                              // kick size in radians
+  vkick( const char* );                                                // name; assumes zero kick
+  vkick( const char* name, double const& kick);                        // kick size in radians
   vkick( const char*,     double const& length, double const& kick );  // kick size in radians
   vkick( const vkick& );
 
@@ -118,7 +121,8 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  const char* Type() const;
+  const char* Type()       const;
+  bool        isMagnet()   const;
 };
 
 
@@ -150,11 +154,14 @@ public:
         double& horizontalStrength() { return horizontalKick_; }
         double& verticalStrength()   { return verticalKick_; }
 
-        const char* Type() const;
+        const char* Type()       const;
+        bool        isMagnet()   const;
 
 private:
+
         double horizontalKick_;
         double verticalKick_;
+
         std::istream& readFrom(std::istream&);
         std::ostream& writeTo(std::ostream&);
 

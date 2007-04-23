@@ -100,7 +100,8 @@ class DLLEXPORT Slot : public bmlnElmnt
 
    void Split( double const& s, ElmPtr&, ElmPtr& ) const;
 
-   const char*  Type()  const;
+   bool         isMagnet()  const;
+   const char*  Type()      const;
 
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );

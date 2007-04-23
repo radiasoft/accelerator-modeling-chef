@@ -120,7 +120,8 @@ public:
   void accept( BmlVisitor& v );            
   void accept( ConstBmlVisitor& v ) const; 
 
-  const char* Type() const;
+  const char* Type()     const;
+  bool        isMagnet() const;
 
   Vector Beta();
   void GetSigma( double* );

@@ -91,6 +91,7 @@ public:
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
+  bool    isMagnet() const;
   const char* Type() const;
 
 private:

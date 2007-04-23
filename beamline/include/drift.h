@@ -71,7 +71,7 @@ public:
 
   drift* Clone() const { return new drift( *this ); }
 
-  virtual ~drift();
+ ~drift();
 
   void localPropagate(Particle&    p) { bmlnElmnt::localPropagate(p); }
   void localPropagate(JetParticle& p) { bmlnElmnt::localPropagate(p); }
@@ -81,6 +81,7 @@ public:
 
 
   const char* Type() const;
+  bool    isMagnet() const;
 
  private:
 

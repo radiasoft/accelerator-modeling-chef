@@ -114,7 +114,9 @@ public:
   void accept( ConstBmlVisitor& v ) const;
   
   inline bool State() const { return _onOffSwitch; }
-  const char* Type() const;
+
+  const char* Type()     const;
+  bool        isMagnet() const;
 
 private:
 
@@ -152,7 +154,8 @@ class DLLEXPORT hmonitor : public monitor {
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  const char* Type() const;
+  const char* Type()     const;
+  bool        isMagnet() const;
 
  } ;
 
@@ -177,7 +180,8 @@ public:
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
-  const char* Type() const;
+  const char* Type()     const;
+  bool        isMagnet() const;
 
 };
 
