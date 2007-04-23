@@ -49,74 +49,75 @@
 using FNAL::pcerr;
 using FNAL::pcout;
 
-
 #ifdef MADPHYSICS
 
 void bmlnElmnt::localPropagate( Particle& p ) {
 
- static char firstCall = 1;
+ static bool firstCall = true;
  if( firstCall ) {
   (*pcout) << "*** WARNING ***  bmlnElmnt::localPropagate( Particle& ): This\n"
             << "*** WARNING ***  routine was written using a linear\n"
             << "*** WARNING ***  approximation." << std::endl;
-  firstCall = 0;
+  firstCall = false;
  }
 
- p.state[0] += length_ * p.state[3];
- p.state[1] += length_ * p.state[4];
- p.state[2] += length_/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
+ Vector& state = p.getState();
+
+ state[0] += length_ * state[3];
+ state[1] += length_ * state[4];
+ state[2] += length_/(p.Beta()*p.Gamma()*p.Gamma() ) * state[5];
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void bmlnElmnt::localPropagate( JetParticle& p ) {
 
- static char firstCall = 1;
+ static bool firstCall = true;
  if( firstCall ) {
   (*pcout) << "*** WARNING ***  bmlnElmnt::localPropagate( JetParticle& ): This\n"
             << "*** WARNING ***  routine was written using a linear\n"
             << "*** WARNING ***  approximation." << std::endl;
-  firstCall = 0;
+  firstCall = false;
  }
 
- Jet  dummy = p.state[0] + length_ * p.state[3];
- ( p.state ).SetComponent( 0, dummy );
- dummy = p.state[1] + length_ * p.state[4];
- ( p.state ).SetComponent( 1, dummy );
- dummy = p.state[2] + length_/p.Beta()/p.Gamma()/p.Gamma() * p.state[5];
- ( p.state ).SetComponent( 2, dummy );
+ Mapping & state = p.getState();
+
+ Jet  dummy = state[0] + length_ * state[3];
+ state.SetComponent( 0, dummy );
+ dummy = state[1] + length_ * state[4];
+ state.SetComponent( 1, dummy );
+ dummy = state[2] + length_/(p.Beta()*p.Gamma()*p.Gamma()) * state[5];
+ state.SetComponent( 2, dummy );
 
 }
 
-void bmlnElmnt::localPropagate( ParticleBunch& b ) {
-  Particle* p;
-  ParticleBunch::Iterator get( b );
-  while((  p = (Particle*) get.next()  )) this->localPropagate( *p );
-}
- 
 #endif
 
 /* ------------------------------------------------------ */
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #ifndef MADPHYSICS
 
 void bmlnElmnt::localPropagate( Particle& p ) {
 
- double /* x, y, */ D, p3divpbar;
- double xpr, ypr;
 
  Vector& state = p.getState();
 
- p3divpbar = sqrt( ( 1.0 + state[5] ) * ( 1.0 + state[5] )
-                 - state[3]*state[3] 
-                 - state[4]*state[4] );
+ double p3divpbar = sqrt( ( 1.0 + state[5] ) * ( 1.0 + state[5] )
+                    - state[3]*state[3] 
+                    - state[4]*state[4] );
 
- xpr = state[3] / p3divpbar;
- ypr = state[4] / p3divpbar; 
+ double xpr = state[3] / p3divpbar;
+ double ypr = state[4] / p3divpbar; 
 
  state[0] += length_ * xpr;
  state[1] += length_ * ypr;
 
- D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+ double D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
  state[2] += ( D / p.Beta() ) - ctRef_;
 }
@@ -126,32 +127,30 @@ void bmlnElmnt::localPropagate( Particle& p ) {
 
 void bmlnElmnt::localPropagate( JetParticle& p ) {
 
- Jet /* x, y, */ D, p3divpbar;
- Jet dummy;
- Jet xpr, ypr;
-
  Mapping& state = p.getState();
 
- p3divpbar = sqrt( ( 1.0 + state(5) ) * ( 1.0 + state(5) )
+ Jet p3divpbar = sqrt( ( 1.0 + state(5) ) * ( 1.0 + state(5) )
                  - state(3)*state(3) 
                  - state(4)*state(4) );
 
- xpr = state(3) / p3divpbar;
- ypr = state(4) / p3divpbar;
+ Jet xpr = state(3) / p3divpbar;
+ Jet ypr = state(4) / p3divpbar;
 
- dummy = state(0) + length_ * xpr;
+ Jet dummy = state(0) + length_ * xpr;
  state.SetComponent( 0, dummy );
 
  dummy = state(1) + length_ * ypr;
  state.SetComponent( 1, dummy );
 
- D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+ Jet D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
  dummy = state(2) + ( D / p.Beta() ) - ctRef_;
  state.SetComponent( 2, dummy );
 
 }
 
+
+#endif
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -163,5 +162,4 @@ void bmlnElmnt::localPropagate( ParticleBunch& b ) {
 
 }
 
-#endif
 

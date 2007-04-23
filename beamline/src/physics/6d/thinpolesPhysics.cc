@@ -32,7 +32,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                         
-******                                                                
+****** REVISION HISTORY
+******
+****** Apr 2007  ostiguy@fnal.gov
+******
+****** - fixed propagator for thin2pole which previously did not alter
+******   the reference frame.
+****** - efficiency improvements: get Particle/JetParticle states by reference. 
+******   avoid empty initializations.                                                              
+******
 **************************************************************************
 *************************************************************************/
 
@@ -45,227 +53,231 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 
-
 static const std::complex<double> complex_i(0.0,1.0);
 
-void thin2pole::localPropagate( Particle& p ) {
+void thin2pole::localPropagate( Particle& p ) 
+{
+
+ if (strength_ == 0.0 ) return;
 
  Vector& state = p.getState();
+
+ const double angle =  strength_/p.ReferenceBRho();
+
+ state[3]  -= angle;
+
+ //----------------------------------------
+ // thin2pole rotates the reference frame 
+ //----------------------------------------
  
- if(strength_ != 0) {
-   state[3] -= strength_/p.ReferenceBRho();
- }
+ state[3]   = cos( angle )*state[3] + sin( angle ) * p.get_npz();
+
+
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thin2pole::localPropagate( JetParticle& p ) {
 
+ if (strength_ == 0.0 ) return;
+
  Mapping& state = p.getState();
 
-  if(strength_ != 0) {
-    state[3] -= strength_/p.ReferenceBRho();
-  }
+ const double angle =  strength_/p.ReferenceBRho();
+
+ state[3] -= angle;
+
+ //----------------------------------------
+ // thin2pole rotates the reference frame 
+ //----------------------------------------
+
+ state[3]  = cos( angle )*state[3] + sin(angle ) * p.get_npz();
+
 }
 
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void thin12pole::localPropagate( Particle& p ) {
- double x, y, k;
  
+ if(strength_ == 0.0) return;
+
  Vector& state = p.getState();
 
- if(strength_ != 0) {
-   k = strength_/p.ReferenceBRho();
-   x = state[0];
-   y = state[1];
+
+ double k = strength_/p.ReferenceBRho();
    
-   std::complex<double>  z( x, y );
-   std::complex<double>  z2 = z*z;
-   z = z2*z2*z;
+ std::complex<double>  z( state[0], state[1] );
+ std::complex<double>  z2 = z*z;
+ 
+ z *= z2*z2;
    
-   state[3] -= k * real(z);
-   state[4] += k * imag(z);
- }
+ state[3] -= k * real(z);
+ state[4] += k * imag(z);
+ 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void thin12pole::localPropagate( JetParticle& p ) {
 
+  if(strength_ == 0.0) return;
+
   Mapping& state = p.getState();
 
-  if(strength_ != 0) {
-    Jet  k, x, y, s;
-    JetC z, z2;
-    
-    k = strength_/p.ReferenceBRho();
-    x = state(0);
-    y = state(1);
-    
-    z = x + complex_i*y;
-    z2 = z*z;
-    z = z2*z2*z;
+  Jet k = strength_/p.ReferenceBRho();
+
+  JetC  z = state(0) + complex_i*state(1);
+  JetC z2  = z*z;
+        z *= z2*z2;
 
    state[3] -= k * real(z);
    state[4] += k * imag(z);
 
-  }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thin14pole::localPropagate( Particle& p ) {
- double x, y, k;
+
+void thin14pole::localPropagate( Particle& p ) 
+{
+  if(strength_ == 0.0)  return;
+
+  Vector& state = p.getState();
  
- Vector& state = p.getState();
-
-  if(strength_ != 0) {
-    k = strength_/p.ReferenceBRho();
-    x = state[0];
-    y = state[1];
+  double k = strength_/p.ReferenceBRho();
  
-    std::complex<double>  z( x, y );
-    z = z*z*z;
-    z = z*z;
+  std::complex<double>  z( state[0], state[1] );
+  z *= z*z;
+  z *= z;
 
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
-  }
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thin14pole::localPropagate( JetParticle& p ) {
 
+  if(strength_ == 0.0 ) return;
+
   Mapping& state = p.getState();
-
-  if(strength_ != 0) {
-    Jet  k, x, y, s;
-    JetC z;
+  
+  Jet k = strength_/p.ReferenceBRho();
  
-    k = strength_/p.ReferenceBRho();
-    x = state(0);
-    y = state(1);
- 
-    z = x + complex_i*y;
-    z = z*z*z;
-    z = z*z;
+  JetC z = state(0) + complex_i*state(1);
+       z *= z*z;
+       z *= z;
 
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
 
-
-  }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thin16pole::localPropagate( Particle& p ) {
- double x, y, k;
+
+void thin16pole::localPropagate( Particle& p ) 
+{
  
- Vector& state = p.getState();
+  if(strength_ == 0.0) return;
 
-  if(strength_ != 0) {
-    k = strength_/p.ReferenceBRho();
-    x = state[0];
-    y = state[1];
+  Vector& state = p.getState();
+
+  double k = strength_/p.ReferenceBRho();
  
-    std::complex<double>  z( x, y );
-    std::complex<double>  u = z;
-    z = z*z*z;
-    z = z*z*u;
+  std::complex<double>  z( state[0], state[1] );
+  std::complex<double>  u = z;
+  z *= z*z;
+  z *= z*u;
     
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
-  }
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
+
 }
 
-void thin16pole::localPropagate( JetParticle& p ) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thin16pole::localPropagate( JetParticle& p ) 
+{
+
+  if(strength_ == 0.0) return;
 
   Mapping& state = p.getState();
 
-  if(strength_ != 0) {
-    Jet  k, x, y, s;
-    JetC z, u;
+  Jet k = strength_/p.ReferenceBRho();
  
-    k = strength_/p.ReferenceBRho();
-    x = state(0);
-    y = state(1);
- 
-    z = x + complex_i*y;
-    u = z;
-    z = z*z*z;
-    z = z*z*u;
+  JetC z = state(0) + complex_i* state(1);
+  JetC u = z;
 
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
+  z *= z*z;
+  z *= z*u;
 
-  }
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
+
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thin18pole::localPropagate( Particle& p ) {
- double x, y, k;
+
+void thin18pole::localPropagate( Particle& p ) 
+{
  
- Vector& state = p.getState();
+  if(strength_ == 0.0) return;
 
-  if(strength_ != 0) {
-    k = strength_/p.ReferenceBRho();
-    x = state[0];
-    y = state[1];
- 
-    std::complex<double>  z( x, y );
-    z = z*z;
-    z = z*z;
-    z = z*z;
+  Vector& state = p.getState();
 
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
-  }
+  double k = strength_/p.ReferenceBRho();
+
+  std::complex<double> z( state[0], state[1]);
+
+  z *= z;
+  z *= z;
+  z *= z;
+
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
 }
 
-void thin18pole::localPropagate( JetParticle& p ) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- Mapping& state = p.getState();
 
-  if(strength_ != 0) {
-    Jet  k, x, y, s;
-    JetC z;
+void thin18pole::localPropagate( JetParticle& p ) 
+{
+
+  if(strength_ == 0.0) return;
+
+  Mapping& state = p.getState();
+
+  Jet k = strength_/p.ReferenceBRho();
+  Jet x = state(0);
+  Jet y = state(1);
  
-    k = strength_/p.ReferenceBRho();
-    x = state(0);
-    y = state(1);
- 
-    z = x + complex_i*y;
-    z = z*z;
-    z = z*z;
-    z = z*z;
+  JetC z = state(0) + complex_i* state(1);
 
-    state[3] -= k * real(z);
-    state[4] += k * imag(z);
+  z *= z; // z**2
+  z *= z; // z**4
+  z *= z; // z**8
 
-  }
+  state[3] -= k * real(z);
+  state[4] += k * imag(z);
+
 }
 
 
-void thinMultipole::localPropagate( Particle& p ) {
- static char firstCall = 1;
- if( firstCall ) {
-  printf( "\n" );
-  printf( "*** SORRY ***                               \n" );
-  printf( "*** SORRY *** thinMultipole::localPropagate \n" );
-  printf( "*** SORRY *** Thin multipoles are being     \n" );
-  printf( "*** SORRY *** treated as identity elements. \n" );
-  printf( "*** SORRY ***                               \n" );
-  firstCall = 0;
- }
-}
-
-void thinMultipole::localPropagate( JetParticle& p ) {
- static char firstCall = 1;
- if( firstCall ) {
-  printf( "\n" );
-  printf( "*** SORRY ***                               \n" );
-  printf( "*** SORRY *** thinMultipole::localPropagate \n" );
-  printf( "*** SORRY *** Thin multipoles are being     \n" );
-  printf( "*** SORRY *** treated as identity elements. \n" );
-  printf( "*** SORRY ***                               \n" );
-  firstCall = 0;
- }
-}
