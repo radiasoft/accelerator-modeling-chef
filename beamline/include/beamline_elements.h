@@ -44,7 +44,9 @@
 // ****************
 
 #include <beamline/kick.h>
+#include <beamline/gkick.h>
 #include <beamline/rfcavity.h>
+#include <beamline/LinacCavity.h>
 #include <beamline/srot.h>
 #include <beamline/monitor.h>
 #include <beamline/marker.h>
@@ -59,6 +61,7 @@
 #include <beamline/octupole.h>
 #include <beamline/decapole.h>
 #include <beamline/thinpoles.h>
+#include <beamline/thinMultipole.h>
 #include <beamline/BBLens.h>
 #include <beamline/septum.h>
 #include <beamline/lambertson.h>
