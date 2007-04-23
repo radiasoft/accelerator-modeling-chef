@@ -136,19 +136,21 @@ void RefRegVisitor::visit( beamline& x )
     double cumulativeCdt = 0.0;
     Particle copy(particle_);
 
-
+    //---------------------------------------------------
     // Adjust the strength of all magnetic elements
     //   if the reference particle has been accelerated.
+    //---------------------------------------------------
 
     for (beamline::deep_iterator it  = x.deep_begin(); 
                                  it != x.deep_end(); ++it) {
     
       momentum = copy.ReferenceMomentum();
 
+
+
       if( (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) ) { 
-     
-          (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
- 
+  
+        (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
       }
 
       rfcavity* rfcPtr = dynamic_cast<rfcavity*>( (*it).get() );

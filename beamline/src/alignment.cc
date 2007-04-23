@@ -53,14 +53,16 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData::alignmentData(): xOffset(0.0), yOffset(0.0), tilt(0.0) {}
+alignmentData::alignmentData(): xOffset(0.0), yOffset(0.0), tilt(0.0) 
+{}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData::alignmentData( alignmentData const& x)
-: xOffset(x.xOffset), yOffset(x.yOffset), tilt(x.tilt) {}
+alignmentData::alignmentData( alignmentData const& data)
+: xOffset(data.xOffset), yOffset(data.yOffset), tilt(data.tilt) 
+{}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -71,22 +73,25 @@ alignmentData::~alignmentData() {}
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData& alignmentData::operator=(alignmentData const& x) 
+alignmentData& alignmentData::operator=(alignmentData const& data) 
 {
-  xOffset = x.xOffset;
-  yOffset = x.yOffset;
-  tilt    = x.tilt;
+  if ( &data == this ) return *this;
+
+  xOffset = data.xOffset;
+  yOffset = data.yOffset;
+  tilt    = data.tilt;
+
   return *this;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool alignmentData::operator==( alignmentData const& x ) const
+bool alignmentData::operator==( alignmentData const& data ) const
 {
-  return ( (yOffset == x.yOffset) && 
-           (xOffset == x.xOffset) && 
-           (tilt    == x.tilt   ) );
+  return ( (yOffset == data.yOffset) && 
+           (xOffset == data.xOffset) && 
+           (tilt    == data.tilt   ) );
 }
 
 
@@ -111,15 +116,16 @@ alignment::alignment(double x, double y, double t )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment::alignment( alignment const& x) 
-: xOffset(x.xOffset), yOffset(x.yOffset), tilt(x.tilt), 
-  cosTilt(x.cosTilt), sinTilt(x.sinTilt) {}
+alignment::alignment( alignment const& a) 
+: xOffset(a.xOffset), yOffset(a.yOffset), tilt(a.tilt), 
+  cosTilt(a.cosTilt), sinTilt(a.sinTilt) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment::alignment(alignmentData const& x)
-  :  xOffset(x.xOffset), yOffset(x.yOffset), tilt(x.tilt) 
+alignment::alignment(alignmentData const& a)
+  :  xOffset(a.xOffset), yOffset(a.yOffset), tilt(a.tilt) 
 {
   cosTilt = cos(tilt);
   sinTilt = sin(tilt);
@@ -143,23 +149,27 @@ bool alignment::isNull() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool alignment::operator==( alignment const& x ) const
+bool alignment::operator==( alignment const& a ) const
 {
-  return ( (yOffset == x.yOffset) && 
-           (xOffset == x.xOffset) && 
-           (tilt    == x.tilt   ) );
+  return ( (yOffset == a.yOffset) && 
+           (xOffset == a.xOffset) && 
+           (tilt    == a.tilt   ) );
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment& alignment::operator=(alignment const& x) {
-  xOffset = x.xOffset;
-  yOffset = x.yOffset;
-  tilt    = x.tilt;
-  cosTilt = x.cosTilt;
-  sinTilt = x.sinTilt;
+alignment& alignment::operator=(alignment const& a) {
+
+  if ( &a == this) return *this;
+
+  xOffset = a.xOffset;
+  yOffset = a.yOffset;
+  tilt    = a.tilt;
+  cosTilt = a.cosTilt;
+  sinTilt = a.sinTilt;
+
   return *this;
 }
 
@@ -188,12 +198,15 @@ void alignment::misalign(Particle const& p, Vector& inState) {
   
   if(tilt != 0.0) {
     double result[4];
-    result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
-    result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+     result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
+     result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+
     inState[0] = result[0];
     inState[1] = result[1];
+ 
     result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
     result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+
     inState[3] = result[2];
     inState[4] = result[3];
   }
@@ -214,14 +227,17 @@ void alignment::align(Particle const& p, Vector& inState) {
 
  if(tilt != 0.0) {
    double result[4];
-   result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-   result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
-   inState[0] = result[0];
-   inState[1] = result[1];
-   result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
-   result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
-   inState[3] = result[2];
-   inState[4] = result[3];
+     result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
+     result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+
+    inState[0] = result[0];
+    inState[1] = result[1];
+
+     result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
+     result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+
+    inState[3] = result[2];
+    inState[4] = result[3];
  }
 
   inState[0] += xOffset;
@@ -250,12 +266,15 @@ void alignment::align(Vector& p, Vector& inState) {
 
  if(tilt != 0.0) {
    double result[4];
-   result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-   result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+    result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
+    result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+   
    inState[0] = result[0];
    inState[1] = result[1];
+
    result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
    result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+
    inState[3] = result[2];
    inState[4] = result[3];
  }
@@ -299,10 +318,13 @@ void alignment::misalign(JetParticle& p, Mapping& inState) {
     Jet result[4];
     result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
     result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+
     inState[0] = result[0];
     inState[1] = result[1];
+
     result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
     result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+
     inState[3] = result[2];
     inState[4] = result[3];
   }
@@ -324,8 +346,10 @@ void alignment::align(JetParticle& p, Mapping& inState) {
    Jet result[4];
    result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
    result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+
    inState[0] = result[0];
    inState[1] = result[1];
+
    result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
    result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
    inState[3] = result[2];
@@ -358,10 +382,13 @@ void alignment::align(JetVector& p, Mapping& inState) {
    Jet result[4];
    result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
    result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+
    inState[0] = result[0];
    inState[1] = result[1];
+
    result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
    result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+
    inState[3] = result[2];
    inState[4] = result[3];
  }
@@ -382,15 +409,22 @@ void alignment::align(JetVector& p, Mapping& inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::setAlignment(const alignmentData& x) {
-  xOffset = x.xOffset;
-  yOffset = x.yOffset;
-  tilt    = x.tilt;
+void alignment::setAlignment(alignmentData const& data) 
+{
+
+  xOffset = data.xOffset;
+  yOffset = data.yOffset;
+
+  tilt    = data.tilt;
   cosTilt = cos(tilt);
   sinTilt = sin(tilt);
 }
 
-alignmentData alignment::getAlignment()  const {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+alignmentData alignment::getAlignment()  const 
+{
   alignmentData z;
 
   z.xOffset = xOffset;
