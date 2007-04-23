@@ -63,33 +63,40 @@ using FNAL::pcout;
 //   class sbend
 // **************************************************
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sbend::sbend() 
-: bmlnElmnt( 1.0, 1.0, &sbend::Exact )
-  , _angle(0.001)
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(0.0)
-  , _dsAngle(0.0)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+: bmlnElmnt( 0.0, 0.0, &sbend::Exact )
+  , angle_(0.000)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(0.0)
+  , dsAngle_(0.0)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
- _calcPropParams();
+  calcPropParams();
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
-  , _angle(alpha)
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(0.0)
-  , _dsAngle(0.0)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , angle_(alpha)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  ,     usAngle_(0.0)
+  ,     dsAngle_(0.0)
+  ,       usTan_(0.0)
+  ,       dsTan_(0.0)
 {
- if ( fabs( alpha ) < 1.0e-9 ) {
+ if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf )",
           uic.str().c_str() ) );
@@ -105,33 +112,36 @@ sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* p
            "\n*** WARNING *** Sign of the bend angle will be changed."
            "\n*** WARNING *** "
         << endl;
-   _angle = - _angle;
+   angle_ = - angle_;
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if( !pf ) {
    propfunc_ = &sbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( double const& l, double const& s, double const& alpha, 
               double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
-  , _angle(alpha)
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(us)
-  , _dsAngle(-ds)
-  , _usTan(tan(us))
-  , _dsTan(-tan(ds))
+  ,       angle_(alpha)
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  ,     usAngle_(us)
+  ,     dsAngle_(-ds)
+  ,       usTan_(tan(us))
+  ,       dsTan_(-tan(ds))
 {
  static bool firstTime = true;
- if ( fabs( alpha ) < 1.0e-9 ) {
+ if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double const& l, double const& s, ... )",
           uic.str().c_str() ) );
@@ -147,18 +157,18 @@ sbend::sbend( double const& l, double const& s, double const& alpha,
            "\n*** WARNING *** Sign of the bend angle will be changed."
            "\n*** WARNING *** "
         << endl;
-   _angle = - _angle;
+   angle_ = - angle_;
  }
- if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
-   _usEdgeAngle = 0.0;
-   _usAngle = 0.0;
-   _usTan = 0.0;
+ if ( (0.0 < std::abs(us)) && (std::abs( us ) < 1.0e-6) ) {
+   usEdgeAngle_ = 0.0;
+   usAngle_     = 0.0;
+   usTan_       = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
-          << fabs(us) 
+          << std::abs(us) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -166,16 +176,17 @@ sbend::sbend( double const& l, double const& s, double const& alpha,
      firstTime = false;
    }
  }
- if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
-   _dsEdgeAngle = 0.0;
-   _dsAngle = 0.0;
-   _dsTan = 0.0;
+ if ( (0.0 < std::abs(ds)) && ( std::abs( ds ) < 1.0e-6) ) {
+   dsEdgeAngle_ = 0.0;
+       dsAngle_ = 0.0;
+         dsTan_ = 0.0;
+
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
-          << fabs(ds) 
+          << std::abs(ds) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -185,27 +196,29 @@ sbend::sbend( double const& l, double const& s, double const& alpha,
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if( !pf ) {
    propfunc_ = &sbend::Exact;
  }
 
- _calcPropParams();
+  calcPropParams();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
-  , _angle(alpha)
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(0.0)
-  , _dsAngle(0.0)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  ,       angle_(alpha)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  ,     usAngle_(0.0)
+  ,     dsAngle_(0.0)
+  ,       usTan_(0.0)
+  ,       dsTan_(0.0)
 {
- if ( fabs( alpha ) < 1.0e-9 ) {
+ if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( char* n, double const& l, double const& s, double const& alpha, PropFunc* pf )",
           uic.str().c_str() ) );
@@ -221,28 +234,32 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
            "\n*** WARNING *** Sign of the bend angle will be changed."
            "\n*** WARNING *** "
         << endl;
-   _angle = - _angle;
+   angle_ = - angle_;
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if( !pf) {
    propfunc_ = &sbend::Exact;
  }
 
- _calcPropParams();
+  calcPropParams();
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, 
               double const& us_arg, double const& ds_arg, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
-  , _angle(alpha)
-  , _usEdgeAngle(us_arg)
-  , _dsEdgeAngle(ds_arg)
-  , _usAngle(us_arg)
-  , _dsAngle(-ds_arg)
-  , _usTan(tan(us_arg))
-  , _dsTan(-tan(ds_arg))
+  ,       angle_(alpha)
+  , usEdgeAngle_(us_arg)
+  , dsEdgeAngle_(ds_arg)
+  ,     usAngle_(us_arg)
+  ,     dsAngle_(-ds_arg)
+  ,       usTan_(tan(us_arg))
+  ,       dsTan_(-tan(ds_arg))
 {
 
   // Note: us and ds are modified below ...  
@@ -250,9 +267,9 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
   double ds = ds_arg;
  
  static bool firstTime = true;
- if ( fabs( alpha ) < 1.0e-9 ) {
+ if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
-   uic  << "| bend angle | = " << fabs(alpha) << " < 1 nanoradian.";
+   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double const& l, double const& s, ... )",
           uic.str().c_str() ) );
@@ -268,19 +285,19 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
            "\n*** WARNING *** Sign of the bend angle will be changed."
            "\n*** WARNING *** "
         << endl;
-   _angle = - _angle;
+   angle_ = - angle_;
  }
- if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
+ if ( (0.0 < std::abs(us)) && (std::abs( us ) < 1.0e-6) ) {
    us = 0.0;
-   _usEdgeAngle = 0.0;
-   _usAngle = 0.0;
-   _usTan = 0.0;
+   usEdgeAngle_ = 0.0;
+       usAngle_ = 0.0;
+         usTan_ = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
-          << fabs(us) 
+          << std::abs(us) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -288,17 +305,19 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
      firstTime = false;
    }
  }
- if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < std::abs(ds)) && ( std::abs( ds ) < 1.0e-6) ) {
+
    ds = 0.0;
-   _dsEdgeAngle = 0.0;
-   _dsAngle = 0.0;
-   _dsTan = 0.0;
+   dsEdgeAngle_ = 0.0;
+       dsAngle_ = 0.0;
+         dsTan_ = 0.0;
+
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
-          << fabs(ds) 
+          << std::abs(ds) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -308,102 +327,127 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if( !pf) {
    propfunc_ = &sbend::Exact;
  }
 
- _calcPropParams();
+  calcPropParams();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::_calcPropParams()
+void sbend::calcPropParams()
 {
   // For edge focussing kludge
-  _usTan = tan( _usAngle );
-  _dsTan = tan( _dsAngle );
+   usTan_ = tan(  usAngle_ );
+   dsTan_ = tan(  dsAngle_ );
 
   // Geometric parameters
-  double psi = _angle - (_usEdgeAngle + _dsEdgeAngle);
-  _dphi = - psi;
-  _propPhase = std::complex<double> ( cos(psi), sin(psi) );
+  double psi = angle_ - ( usEdgeAngle_ + dsEdgeAngle_ );
+       dphi_ = - psi;
+  propPhase_ = std::complex<double> ( cos(psi), sin(psi) );
 
-  double rho = this->Length()/_angle;
-  // Note: _angle and rho have the same sign.
-  _propTerm =     std::complex<double> ( 0.0, rho )
-                * std::complex<double> ( 1.0 - cos(_angle), -sin(_angle) )
-                * std::complex<double> ( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
+  double rho = Length()/angle_;
 
-  this->setupPropFunc();
+  // Note: angle_ and rho have the same sign.
+
+   propTerm_ =      std::complex<double> ( 0.0, rho )
+                  * std::complex<double> ( 1.0 - cos(angle_), -sin(angle_) )
+                  * std::complex<double> ( cos( dsEdgeAngle_),-sin(dsEdgeAngle_) );
+
+   setupPropFunc();
 }
 
 
-sbend::sbend( const sbend& x )
-:   bmlnElmnt( (bmlnElmnt&) x )
-  , _angle(x._angle)
-  , _usEdgeAngle(x._usEdgeAngle)
-  , _dsEdgeAngle(x._dsEdgeAngle)
-  , _usAngle(x._usAngle)
-  , _dsAngle(x._dsAngle)
-  , _usTan(x._usTan)
-  , _dsTan(x._dsTan)
-  , _dphi(x._dphi)
-  , _propPhase(x._propPhase)
-  , _propTerm(x._propTerm)
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sbend::sbend( sbend const& x )
+:   bmlnElmnt( x )
+  ,      angle_(x.angle_)
+  ,usEdgeAngle_(x.usEdgeAngle_)
+  ,dsEdgeAngle_(x.dsEdgeAngle_)
+  ,    usAngle_(x.usAngle_)
+  ,    dsAngle_(x.dsAngle_)
+  ,      usTan_(x.usTan_)
+  ,      dsTan_(x.dsTan_)
+  ,       dphi_(x.dphi_)
+  ,  propPhase_(x.propPhase_)
+  ,   propTerm_(x.propTerm_)
 {
-  this->setupPropFunc();
+  setupPropFunc();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::~sbend() 
 {
-  this->releasePropFunc();
+  releasePropFunc();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double sbend::setEntryAngle( const Particle& p )
 {
-  return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double sbend::setExitAngle( const Particle& p )
 {
-  return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double sbend::setEntryAngle( double const& phi /* radians */ )
 {
-  double ret = _usAngle;
-  _usAngle = phi;
-  _calcPropParams();
+  double ret = usAngle_;
+
+  usAngle_ = phi;
+  calcPropParams();
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double sbend::setExitAngle( double const& phi /* radians */ )
 {
-  double ret = _dsAngle;
-  _dsAngle = phi;  
-  _calcPropParams();
+  double ret = dsAngle_;
+  dsAngle_ = phi;  
+  calcPropParams();
   return ret;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool sbend::hasParallelFaces() const
 {
-  return ( std::abs( _usEdgeAngle - _dsEdgeAngle ) <  1.0e-9 );
+  return ( std::abs( usEdgeAngle_ - dsEdgeAngle_ ) <  1.0e-9 );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool sbend::hasStandardFaces() const
 {
-  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
+  return ( (std::abs( usEdgeAngle_) < 1.0e-9) && (std::abs( dsEdgeAngle_) < 0.5e-9) );
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::releasePropFunc()
 {
@@ -411,17 +455,25 @@ void sbend::releasePropFunc()
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void sbend::setupPropFunc()
 {
   // Nothing need to be done.
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool sbend::isMagnet() const
 {
   return true;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
@@ -460,47 +512,47 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\n*** WARNING *** "
          << endl;
      a = SBendPtr( new sbend( pc*length_, strength_,
-                    pc*_usAngle,  // this is surely the wrong thing to do
+                    pc* usAngle_,  // this is surely the wrong thing to do
                     propfunc_ ) ); // but THERE IS NO RIGHT THING
      b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_,
-                    (1.0 - pc)*_usAngle,
+                    (1.0 - pc)*usAngle_,
                      propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
-     a = SBendPtr( new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ ) );
-     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ ) );
+     a = SBendPtr( new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
+     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    a =  SBendPtr ( sbptr = new sbend( pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::InEdge ) );
+    a =  SBendPtr ( sbptr = new sbend( pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::InEdge ) );
     sbptr->setEntryAngle( this->getEntryAngle() );
     sbptr->setExitAngle( 0.0 );    // Should not matter
-    b =  SBendPtr(  sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::OutEdge ) );
+    b =  SBendPtr(  sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::OutEdge ) );
     sbptr->setEntryAngle( 0.0 );   // Should not matter
     sbptr->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    a = SBendPtr( sbptr = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ ) );
+    a = SBendPtr( sbptr = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
     sbptr->setEntryAngle( this->getEntryAngle() );
     sbptr->setExitAngle( 0.0 );    // Should not matter
-    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge ) );
+    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
-    a = SBendPtr( new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge ) );
-    b = SBendPtr( sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ ) );
+    a = SBendPtr( new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::NoEdge ) );
+    b = SBendPtr( sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
     sbptr->setEntryAngle( 0.0 );   // Should not matter
     sbptr->setExitAngle( this->getExitAngle() );
   }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::RealInEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::RealOutEdge );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::RealInEdge );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::RealOutEdge );
   // TO BE DONE: }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, propfunc_ );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, &sbend::NoEdge );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::NoEdge );
   // TO BE DONE: }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*_angle,  _usEdgeAngle, 0.0, &sbend::NoEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle,  0.0, _dsEdgeAngle, propfunc_ );
+  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::NoEdge );
+  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ );
   // TO BE DONE: }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -511,8 +563,8 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\n*** WARNING *** It's all your fault."
             "\n*** WARNING *** "
          << endl;
-    a = SBendPtr( new sbend( pc*length_,         strength_,         pc*_angle, _usEdgeAngle, 0.0 ) );
-    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_angle, 0.0, _dsEdgeAngle ) );
+    a = SBendPtr( new sbend( pc*length_,         strength_,         pc*angle_, usEdgeAngle_, 0.0 ) );
+    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_, 0.0, dsEdgeAngle_ ) );
   }
 
   // Rename
@@ -523,13 +575,16 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& sbend::writeTo(ostream& os)
 {
-  os << OSTREAM_DOUBLE_PREC << _angle << " "
-     << OSTREAM_DOUBLE_PREC << _usEdgeAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsEdgeAngle << endl;
-  os << OSTREAM_DOUBLE_PREC << _usAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
+  os << OSTREAM_DOUBLE_PREC << angle_ << " "
+     << OSTREAM_DOUBLE_PREC << usEdgeAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsEdgeAngle_ << endl;
+  os << OSTREAM_DOUBLE_PREC << usAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsAngle_ << endl;
 
   // Determine which propogators are being used, and make a note of it.
   if ( propfunc_ ==            &sbend::Exact )
@@ -550,10 +605,13 @@ ostream& sbend::writeTo(ostream& os)
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 istream& sbend::readFrom(istream& is)
 {
-  is >> _angle >> _usEdgeAngle >> _dsEdgeAngle;
-  is >> _usAngle >> _dsAngle;
+  is >> angle_ >> usEdgeAngle_ >> dsEdgeAngle_;
+  is >> usAngle_ >> dsAngle_;
 
   char prop_fun[100], jet_prop_fun[100];
   is >> prop_fun >> jet_prop_fun;
@@ -577,11 +635,13 @@ istream& sbend::readFrom(istream& is)
       setPropFunction(&sbend::Exact);
     }
   
-  _calcPropParams();
+  calcPropParams();
 
   return is;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
 //   Frame functions
@@ -596,12 +656,15 @@ void sbend::enterLocalFrame( Particle& p ) const
 //        "void sbend::enterLocalFrame( Particle& p ) const",
 //        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->_angle / 2.0;
+// TO BE DONE   halfAngle = this->angle_ / 2.0;
 // TO BE DONE   P_Face( p,   halfAngle );
 // TO BE DONE   bmlnElmnt::enterLocalFrame( p );
 // TO BE DONE   P_Face( p, - halfAngle );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::enterLocalFrame( JetParticle& p ) const
 {
@@ -612,12 +675,15 @@ void sbend::enterLocalFrame( JetParticle& p ) const
 //      "void sbend::enterLocalFrame( JetParticle& p ) const",
 //     "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->_angle / 2.0;
+// TO BE DONE   halfAngle = this->angle_ / 2.0;
 // TO BE DONE   J_Face( p,   halfAngle );
 // TO BE DONE   bmlnElmnt::enterLocalFrame( p );
 // TO BE DONE   J_Face( p, - halfAngle );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::leaveLocalFrame( Particle& p ) const
 {
@@ -628,12 +694,15 @@ void sbend::leaveLocalFrame( Particle& p ) const
 //        "void sbend::leaveLocalFrame( Particle& p ) const",
 //        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->_angle / 2.0;
+// TO BE DONE   halfAngle = this->angle_ / 2.0;
 // TO BE DONE   P_Face( p, - halfAngle );
 // TO BE DONE   bmlnElmnt::leaveLocalFrame( p );
 // TO BE DONE   P_Face( p,   halfAngle );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::leaveLocalFrame( JetParticle& p ) const
 {
@@ -644,12 +713,15 @@ void sbend::leaveLocalFrame( JetParticle& p ) const
 //        "void sbend::leaveLocalFrame( JetParticle& p ) const",
 //        "Function is obsolete. (?)" ) );
 // TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->_angle / 2.0;
+// TO BE DONE   halfAngle = angle_ / 2.0;
 // TO BE DONE   J_Face( p, - halfAngle );
 // TO BE DONE   bmlnElmnt::leaveLocalFrame( p );
 // TO BE DONE   J_Face( p,   halfAngle );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // TO BE DONE void sbend::P_Face( Particle& p, const double& psi ) const
 // TO BE DONE {
@@ -749,21 +821,32 @@ void sbend::leaveLocalFrame( JetParticle& p ) const
 // TO BE DONE }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* sbend::Type() const 
 { 
   return "sbend"; 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::accept( BmlVisitor& v ) 
 { 
  v.visit( *this ); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void sbend::accept( ConstBmlVisitor& v ) const 
 { 
   v.visit( *this ); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
 //   classes sbend::XXXEdge_Prop
@@ -772,61 +855,82 @@ void sbend::accept( ConstBmlVisitor& v ) const
 // --- rbend::NoEdge_Prop -----------------------
 
 sbend::NoEdge_Prop::NoEdge_Prop()
-{
-}
+{}
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sbend::NoEdge_Prop::~NoEdge_Prop()
-{
-}
+{}
  
 // --- sbend::Exact_Prop -----------------------
 
 sbend::Exact_Prop::Exact_Prop()
 {
-  _myPropagator = &sbend::NoEdge;
+  myPropagator_ = &sbend::NoEdge;
 }
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sbend::Exact_Prop::~Exact_Prop()
-{
-}
+{}
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void sbend::Exact_Prop::setPropagator( NoEdge_Prop* x )
 {
-  _myPropagator = x;
+  myPropagator_ = x;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // --- sbend::InEdge_Prop -----------------------
 
 sbend::InEdge_Prop::InEdge_Prop()
 {
-  _myPropagator = &sbend::NoEdge;
+  myPropagator_ = &sbend::NoEdge;
 }
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sbend::InEdge_Prop::~InEdge_Prop()
-{
-}
+{}
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void sbend::InEdge_Prop::setPropagator( NoEdge_Prop* x )
 {
-  _myPropagator = x;
+  myPropagator_ = x;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // --- sbend::OutEdge_Prop -----------------------
 
 sbend::OutEdge_Prop::OutEdge_Prop()
 {
-  _myPropagator = &sbend::NoEdge;
+  myPropagator_ = &sbend::NoEdge;
 }
  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 sbend::OutEdge_Prop::~OutEdge_Prop()
-{
-}
+{}
  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void sbend::OutEdge_Prop::setPropagator( NoEdge_Prop* x )
 {
-  _myPropagator = x;
+  myPropagator_ = x;
 }
 
 

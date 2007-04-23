@@ -131,11 +131,13 @@ quadrupole::~quadrupole()
 
 void quadrupole::setStrength( double const& s ) {
 
- strength_                  = s - getShunt()*IToField();
- double integratedStrength = strength_*length_;
 
- if( p_bml_ != 0 ) 
- {
+  strength_                  = s - getShunt()*IToField();
+
+  double integratedStrength = strength_*length_;
+
+  if( p_bml_) 
+  {
    int counter = 0;
 
    for ( beamline::iterator it  = p_bml_->begin();
@@ -143,13 +145,14 @@ void quadrupole::setStrength( double const& s ) {
      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
    }
 
-   if( counter <= 0.0 ) {
+
+   if( counter <= 0 ) {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void quadrupole::setStrength( double const& s ) {", 
             "No thin quads in the internal beamline." ) );
    }
    else if( counter == 1) {
-     if(bml_e_ != 0) 
+     if(bml_e_) 
      {
        bml_e_->setStrength( integratedStrength );
      }
@@ -162,14 +165,14 @@ void quadrupole::setStrength( double const& s ) {
    }
    else {
 
-       for ( beamline::iterator it  = p_bml_->begin();
-	                    it != p_bml_->end(); ++it ) {
+       for ( beamline::iterator it  = p_bml_->begin(); it != p_bml_->end(); ++it ) {
        if( typeid(**it) == typeid(thinQuad) ) {
            (*it)->setStrength( integratedStrength/counter );
        }
      }
    }
  }
+
 }
 
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
