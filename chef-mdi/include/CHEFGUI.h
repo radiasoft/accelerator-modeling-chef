@@ -371,20 +371,6 @@ signals:
 
  private:
 
-#if  0
-  Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > command_computeTwiss_; 
-  Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&, LattFuncSage::lattFunc const&) > command_propagateTwiss_; 
-
-  Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > command_computeMoments_; 
-  Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr& , LattFuncSage::lattFunc const&)> command_propagateMoments_; 
-
-  Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > command_computeEdwardsTeng_; 
-  Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > command_computeEigenmodes_; 
-
-  Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > command_computeDispersion_; 
-  Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&, LattFuncSage::lattFunc const&) > command_propagateDispersion_; 
-#endif
-
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeTwiss_; 
   boost::function<QWidget*( QWidget*, BmlContextPtr&, LattFuncSage::lattFunc const&) > command_propagateTwiss_; 
 
