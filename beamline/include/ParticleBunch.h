@@ -45,7 +45,7 @@
 #define PARTBUNCH_H
 
 #include <stdlib.h>
-#include <list>
+#include <vector>
 #include <algorithm>
 
 #include <basic_toolkit/globaldefs.h>
@@ -63,8 +63,7 @@ typedef boost::shared_ptr<Positron>       PositronPtr;
 typedef boost::shared_ptr<Positron const> ConstPositronPtr;
 
 
-class ParticleBunch 
-{
+class ParticleBunch {
 
 friend std::istream& operator >>( std::istream &is, ParticleBunch& bunch);
 
@@ -83,8 +82,8 @@ public:
   };
 
   
-  typedef std::list<ParticlePtr >::iterator       iterator;  
-  typedef std::list<ParticlePtr >::const_iterator const_iterator;
+  typedef std::vector<ParticlePtr >::iterator       iterator;  
+  typedef std::vector<ParticlePtr >::const_iterator const_iterator;
 
 
 // Public member functions
@@ -111,7 +110,7 @@ public:
 
   // Modifier functions
 
-  void append( const Particle& );  //  The Particle is cloned   
+  void append( Particle const& );  //  The Particle is cloned   
   void append( ParticlePtr p);     //  Particle is NOT cloned. Shared ownership with caller; 
                                    // caller can safely delete.
 
@@ -121,9 +120,7 @@ public:
   const_iterator begin() const;
   const_iterator end()   const;
 
-  // void remove( const Particle* );
-
-  std::list<ParticlePtr> remove( Discriminator& );
+  std::vector<ParticlePtr> remove( Discriminator& );
 
   void clear();
    
@@ -140,7 +137,7 @@ protected:
 
   virtual Particle*  makeParticle(double energy, Vector const& state) = 0;
 
-  std::list<ParticlePtr> bunch_;
+  std::vector<ParticlePtr> bunch_;
 
 };
 
