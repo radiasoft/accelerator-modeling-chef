@@ -62,6 +62,8 @@
 ******   to replace previous scheme based explicitly on monomial exponents tuple.
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators    
+****** - added get/setTermCoefficient to efficiently get/set a specific monomial
+******   coefficient.
 ******
 ******  
 **************************************************************************
@@ -234,8 +236,9 @@ friend class TJL;
 
   void addTerm( TJLterm<T> const& ); 
      
-  T    getCoefficient( IntArray const& ) const;      
- 
+  T    getTermCoefficient( IntArray const& ) const;      
+  void setTermCoefficient( T const& value, IntArray const& exp); 
+
   void removeTerm( TJLterm<T> const& a);  // remove term a; 
  
 
