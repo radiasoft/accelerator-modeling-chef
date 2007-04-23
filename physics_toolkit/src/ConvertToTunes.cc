@@ -385,7 +385,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           (*pcerr) << "WARNING: " << __FILE__ << ", Line " << __LINE__ << endl;
           (*pcerr) << "WARNING: ConvertNToTunes              " << endl;
           (*pcerr) << "WARNING: Reality check was violated for exponent "
-                   << it->exponents()
+                   << it->exponents( y.Env())
                    << ".  " << endl;
           (*pcerr) << "WARNING: Offending ratio is "
                    << "| " << real(v) << " / " << imag(v) << " |  = " ;
@@ -399,7 +399,7 @@ int ConvertNtoTunes( MappingC& nu, /* const */ CLieOperator& N )
           returnValue = 140;
         }
 
-        ndx = it->exponents();
+        ndx = it->exponents(y.Env());
         ndx(i) -= 1;
         for( int j=0; j < sd2; j++ ) {
           if( ndx(j) != ndx(j+sd2) ) {
