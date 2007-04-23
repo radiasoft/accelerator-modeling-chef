@@ -87,12 +87,12 @@ class MappingWrapper: public TMapping<T> {
     for (int i = 0; i<6; ++i) {
       for ( Jet::iterator it = this->operator()(i).begin();  it != this->operator()(i).end(); ++it ) {
         tuple term = make_tuple(it->coefficient(),
-                                make_tuple(it->exponents()(0),
-                                           it->exponents()(1),
-                                           it->exponents()(2),
-                                           it->exponents()(3),
-                                           it->exponents()(4),
-                                           it->exponents()(5)));
+                                make_tuple(it->exponents(this->Env())(0),
+                                           it->exponents(this->Env())(1),
+                                           it->exponents(this->Env())(2),
+                                           it->exponents(this->Env())(3),
+                                           it->exponents(this->Env())(4),
+                                           it->exponents(this->Env())(5)));
         terms[i].append(term);
       }
     }
