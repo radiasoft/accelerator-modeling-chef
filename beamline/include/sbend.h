@@ -76,15 +76,11 @@ public:
 
     NoEdge_Prop();
     virtual ~NoEdge_Prop();
-    // REMOVE: char isApproximate();
-    // REMOVE: void makeApproximate();
-    // REMOVE: void makeExact();
+
   private:
 
     double _fastArcsin( double const& x     ) const;
     Jet    _fastArcsin( const Jet& x ) const;
-
-    // REMOVE: char   _approx;
   };
   static NoEdge_Prop NoEdge;
 
@@ -99,7 +95,7 @@ public:
     virtual ~Exact_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
-    NoEdge_Prop* _myPropagator;
+    NoEdge_Prop* myPropagator_;
   };
   static Exact_Prop Exact;
 
@@ -114,7 +110,7 @@ public:
     virtual ~InEdge_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
-    NoEdge_Prop* _myPropagator;
+    NoEdge_Prop* myPropagator_;
   };
   static InEdge_Prop InEdge;
 
@@ -129,7 +125,7 @@ public:
     virtual ~OutEdge_Prop();
     void setPropagator( NoEdge_Prop* );
   private:
-    NoEdge_Prop* _myPropagator;
+    NoEdge_Prop* myPropagator_;
   };
   static OutEdge_Prop OutEdge;
 
@@ -186,11 +182,11 @@ public:
 
 
   // Public methods
-  double setAngle(double const& a) { return (_angle = a); }
-  double getAngle() const   { return _angle; }
+  double setAngle(double const& a) { return (angle_ = a); }
+  double getAngle() const   { return angle_; }
   // aliased
-  double setBendAngle(double const& a) { return (_angle = a); }
-  double getBendAngle() const   { return _angle; }
+  double setBendAngle(double const& a) { return (angle_ = a); }
+  double getBendAngle() const   { return angle_; }
   
 
   // Note: entry and exit angles are not arguments
@@ -199,12 +195,12 @@ public:
 
   double setEntryAngle( const Particle& ); 
   double  setExitAngle( const Particle& ); 
-  double getEntryAngle()              const { return _usAngle; }
-  double getExitAngle()               const { return _dsAngle; }
+  double getEntryAngle()              const { return usAngle_; }
+  double getExitAngle()               const { return dsAngle_; }
   double setEntryAngle( double const& radians); 
   double setExitAngle( double const&  radians); 
-  double getEntryEdgeAngle()          const { return _usEdgeAngle; }
-  double getExitEdgeAngle()           const { return _dsEdgeAngle; }
+  double getEntryEdgeAngle()          const { return usEdgeAngle_; }
+  double getExitEdgeAngle()           const { return dsEdgeAngle_; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
@@ -237,27 +233,27 @@ private:
 
   // bmlnElmnt::strength -> magnetic field [T]
 
-  double _angle;            // [radians] bend angle
-  double _usEdgeAngle, _dsEdgeAngle;
+  double angle_;            // [radians] bend angle
+  double usEdgeAngle_, dsEdgeAngle_;
                             // [radians] as defined in MAD for sbends.
-  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+  double usAngle_, dsAngle_;// [radians] entry (upstream) and exit (downstream) 
                             // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. If no
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+  double usTan_, dsTan_;    // tangents of the entry and exit angles:
                             // px/pz of a reference particle at the
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
                             // sgn( _usTan ) = - sgn( _dsTan )
-  double _dphi;             // angle between in- and out-frames: a derived 
+  double dphi_;             // angle between in- and out-frames: a derived 
                             // quantity
-  std::complex<double> _propPhase, _propTerm;
+  std::complex<double> propPhase_, propTerm_;
                             // Used to propagate through constant magnetic
                             // field using bend angle and edge angle data.
 
-  void _calcPropParams();
+  void calcPropParams();
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
