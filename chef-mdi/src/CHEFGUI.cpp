@@ -337,33 +337,6 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
     // define the commands
     //--------------------------------------------------------------------------
 
-
-#if  0
-    command_computeTwiss_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_2(QWidget*, BmlContextPtr&)  >  ( CommandTwiss()                ); 
-
-    command_propagateTwiss_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_3(QWidget*,  BmlContextPtr&, LattFuncSage::lattFunc const& )    >    ( CommandPropagateTwiss() ); 
-
-    command_computeMoments_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandMoments()              );  
-    command_propagateMoments_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)    >    ( CommandPropagateMoments() );  
-
-    command_computeEdwardsTeng_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandEdwardsTeng()          ); 
-
-    command_computeEigenmodes_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandEigenmodes()           ); 
-
-    command_computeDispersion_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_2( QWidget*, BmlContextPtr&) > ( CommandDispersion()           ); 
-    command_propagateDispersion_ = 
-          Loki::Functor<QWidget*, LOKI_TYPELIST_3( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)  >      ( CommandPropagateDispersion()  ); 
-
-#endif
-
-
     command_computeTwiss_ = 
           boost::function<QWidget* (QWidget*, BmlContextPtr&)  >                                        ( CommandTwiss() ); 
 
