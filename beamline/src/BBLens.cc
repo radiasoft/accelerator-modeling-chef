@@ -519,6 +519,14 @@ const char* BBLens::Type() const
 }
 
 
+bool  BBLens::isMagnet() const
+{
+
+  return false;
+
+}
+
+
 Vector BBLens::Beta() 
 {
   static char firstCall = 1;
