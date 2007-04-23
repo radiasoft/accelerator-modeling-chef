@@ -65,7 +65,8 @@ XSIFFactory::XSIFFactory( string filename, const char* stringbuffer)
 
  driver_.parse( filename ); 
  
-
+ // *** uncomment for debugging *** 
+ // dumpVariables();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -172,8 +173,8 @@ double XSIFFactory::getEnergy() const
 
   return driver_.m_energy;
 
-}
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+}//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double XSIFFactory::getBrho() const
@@ -185,4 +186,13 @@ double XSIFFactory::getBrho() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void XSIFFactory::dumpVariables() const
+{
 
+ for ( expr_map_t::const_iterator it  = driver_.m_variables.begin();   
+                                  it != driver_.m_variables.end(); ++it ) {
+   std::cout.precision(14);
+   std::cout << it->first << " = " << std::scientific << it->second.evaluate() << std::endl; 
+ }
+
+}
