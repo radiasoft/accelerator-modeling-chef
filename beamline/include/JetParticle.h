@@ -55,7 +55,8 @@
 ******    change state. There is no significant penalty, if any.       
 ******  - use empty core_access class as access control mechanism 
 ******                                                                
-**************************************************************************                                                      **************************************************************************
+**************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #ifndef JETPARTICLE_H
@@ -178,8 +179,7 @@ public:
 
 
 
-  static void createStandardEnvironments( int = 1 );
-  // Input: argument = degree (or "order")
+  static void createStandardEnvironments( int order = 1 );
 
   MatrixD SymplecticTest();  // Tests the state for the
                              // symplectic condition, 1 = - MJM^t; 

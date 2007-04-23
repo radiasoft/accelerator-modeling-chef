@@ -362,22 +362,22 @@ class particle_core_access
 
 
   inline double  Particle::Energy()                   const   { double p = Momentum(); 
-                                                                return sqrt( p*p + m_*m_ );     }
+                                                                return sqrt( p*p + m_*m_ );       }
 
-  inline double  Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );}
-  inline double  Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );     }
-  inline double  Particle::Mass()                     const   { return m_;                      }
-  inline double  Particle::Gamma()                    const   { return Energy() / m_;           }
-  inline double  Particle::Beta()                     const   { return Momentum() / Energy();   }
-  inline double  Particle::ReferenceBRho()            const   { return bRho_;                   }
-  inline double  Particle::ReferenceBeta()            const   { return beta_;                   }
-  inline double  Particle::ReferenceGamma()           const   { return gamma_;                  }
-  inline double  Particle::ReferenceMomentum()        const   { return p_;                      }
-  inline double  Particle::PNI2()                     const   { return pni2_;                   }
-  inline double  Particle::ReferenceEnergy()          const   { return E_;                      }
-  inline double  Particle::Weight()                   const   { return wgt_;                    }
-  inline double  Particle::Charge()                   const   { return q_;                      }
-  inline double  Particle::BRho()                     const   {return bRho_*( 1.0 + state_[5] );}
+  inline double  Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );  }
+  inline double  Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );       }
+  inline double  Particle::Mass()                     const   { return m_;                        }
+  inline double  Particle::Gamma()                    const   { return Energy() / m_;             }
+  inline double  Particle::Beta()                     const   { return Momentum() / Energy();     }
+  inline double  Particle::ReferenceBRho()            const   { return bRho_;                     }
+  inline double  Particle::ReferenceBeta()            const   { return beta_;                     }
+  inline double  Particle::ReferenceGamma()           const   { return gamma_;                    }
+  inline double  Particle::ReferenceMomentum()        const   { return p_;                        }
+  inline double  Particle::PNI2()                     const   { return pni2_;                     }
+  inline double  Particle::ReferenceEnergy()          const   { return E_;                        }
+  inline double  Particle::Weight()                   const   { return wgt_;                      } 
+  inline double  Particle::Charge()                   const   { return q_;                        }
+  inline double  Particle::BRho()                     const   { return bRho_*( 1.0 + state_[5] ); }
 
 
 
