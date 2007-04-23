@@ -163,12 +163,12 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   // by default. Otherwise, use one of the following.
   double setEntryAngle( const Particle& ); 
   double setExitAngle( const Particle& ); 
-  double getEntryAngle() const { return _usAngle; }
-  double getExitAngle() const { return _dsAngle; }
+  double getEntryAngle() const { return usAngle_; }
+  double getExitAngle() const { return dsAngle_; }
   double setEntryAngle( double const& /* radians */ ); 
   double setExitAngle( double const& /* radians */ ); 
-  double getEntryEdgeAngle() const { return _usEdgeAngle; }
-  double getExitEdgeAngle() const { return _dsEdgeAngle; }
+  double getEntryEdgeAngle() const { return  usEdgeAngle_; }
+  double getExitEdgeAngle() const { return   dsEdgeAngle_; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
@@ -216,26 +216,26 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
  private:
 
-  bmlnElmnt** _u;           // Address of first internal bmlElmnt pointer
-  bmlnElmnt** _v;           // Address of final internal bmlElmnt pointer
+  bmlnElmnt** u_;           // Address of first internal bmlElmnt pointer
+  bmlnElmnt** v_;           // Address of final internal bmlElmnt pointer
 
 
-  double _usEdgeAngle, _dsEdgeAngle;
+  double usEdgeAngle_, dsEdgeAngle_;
                             // [radians] as defined in MAD for rbends.
-  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
+  double usAngle_, dsAngle_;// [radians] entry (upstream) and exit (downstream) 
                             // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. If no
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  double _usTan, _dsTan;    // tangents of the entry and exit angles:
+  double usTan_, dsTan_;    // tangents of the entry and exit angles:
                             // px/pz of a reference particle at the
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
-                            // sgn( _usTan ) = - sgn( _dsTan )
+                            // sgn( usTan_ ) = - sgn( dsTan_ )
 
-  void _calcPropParams();
-  void _finishConstructor( int /* number of element blocks*/ );
+  void calcPropParams();
+  void finishConstructor( int /* number of element blocks*/ );
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
