@@ -118,8 +118,9 @@ void ParticleBunch::append( ParticlePtr p )
 } 
 
 
-list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
+std::vector<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 {
+#if  0
   //list<Particle*>::iterator collector 
   //    = remove_if ( bunch_.begin(), bunch_.end(), dsc );
 
@@ -148,6 +149,7 @@ list<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
   }
   
   return marked;
+#endif
 }
 
 
