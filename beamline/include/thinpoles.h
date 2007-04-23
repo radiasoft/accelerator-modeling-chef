@@ -40,6 +40,7 @@
 ******  - Clone() using covariant return type
 ******  - adapted to new beamline container based on shared_ptr
 ******  - member signatures based on reference types.
+******
 ******  Mar 2007 
 ******  - added support for reference counted elements
 ******                                           
@@ -60,7 +61,6 @@ class thin12pole;
 class thin14pole;
 class thin16pole;
 class thin18pole;
-class thinMultipole;
 
 typedef boost::shared_ptr<thin2pole>                Thin2polePtr;
 typedef boost::shared_ptr<thin2pole  const>    ConstThin2polePtr;
@@ -77,21 +77,20 @@ typedef boost::shared_ptr<thin16pole const>   ConstThin16polePtr;
 typedef boost::shared_ptr<thin18pole>              Thin18polePtr;
 typedef boost::shared_ptr<thin18pole const>   ConstThin18polePtr;
 
-typedef boost::shared_ptr<thinMultipole>            ThinMultipolePtr;
-typedef boost::shared_ptr<thinMultipole const> ConstThinMultipolePtr;
-
 
 class DLLEXPORT thin2pole : public bmlnElmnt {
 
 public:
 
   thin2pole();
-  thin2pole( double const& /* strength = BL */ );
-  thin2pole( const char*  /* name */,
-             double const& /* strength */ );
-  thin2pole( const thin2pole& );
+  thin2pole( double const&      integrated_strength );
+  thin2pole( char const*  name, double const& integrated_strength);
+  thin2pole( thin2pole const& );
+
   thin2pole* Clone() const { return new thin2pole( *this ); }
-  virtual ~thin2pole();
+
+ ~thin2pole();
+
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -103,7 +102,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-} ;
+};
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -134,8 +133,8 @@ public:
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class DLLEXPORT thin14pole : public bmlnElmnt
-{
+class DLLEXPORT thin14pole : public bmlnElmnt {
+
 public:
   thin14pole();
   thin14pole( double const& /* strength */ );
@@ -160,8 +159,8 @@ public:
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class DLLEXPORT thin16pole : public bmlnElmnt
-{
+class DLLEXPORT thin16pole : public bmlnElmnt {
+
 public:
   thin16pole();
   thin16pole( double const& /* strength */ );
@@ -186,8 +185,8 @@ public:
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-class DLLEXPORT thin18pole : public bmlnElmnt
-{
+class DLLEXPORT thin18pole : public bmlnElmnt {
+
 public:
   thin18pole();
   thin18pole( double const& /* strength */ );
@@ -207,32 +206,10 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-} ;
+};
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class DLLEXPORT thinMultipole : public bmlnElmnt
-{
-public:
-  thinMultipole();
-  thinMultipole( double const& /* strength */ );
-  thinMultipole( const char*  /* name */,
-                double const& /* strength */ );
-  thinMultipole( thinMultipole const& );
-  thinMultipole* Clone() const { return new thinMultipole( *this ); }
-  virtual ~thinMultipole();
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v );
-  void accept( ConstBmlVisitor& v ) const;
-
-  const char* Type() const;
-  bool isMagnet() const;
-
-} ;
 
 #endif // THINPOLES_H
