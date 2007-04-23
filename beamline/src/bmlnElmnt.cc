@@ -225,13 +225,15 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
 
  if(a.pAperture_ != 0) pAperture_ = a.pAperture_->Clone();
  
- if(a.align_ != 0) {
+ if( a.align_ ) {
    alignmentData data = a.align_->getAlignment();
-   if((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))
+   if ((data.xOffset != 0.0) || (data.yOffset != 0.0) || (data.tilt != 0.0))  {
      align_         = new alignment(*a.align_);
- } 
- else align_ = 0;
-
+   } 
+   else { 
+     align_ = 0;
+   }
+ }
  // ---------------------------------------------------------------------------------
  // If neither the beamline or the "element of interest" bml_e_ are  defined, 
  // we are done, just return.  
@@ -632,15 +634,6 @@ bool bmlnElmnt::hasStandardFaces() const
 bool bmlnElmnt::isSimple() const
 {
   return ( (0 == p_bml_) && (0 == bml_e_)  );
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool bmlnElmnt::isMagnet() const
-{
-  return false;
 }
 
 
@@ -1074,7 +1067,7 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
   bool ret = true;
   alignment* nuAlignPtr = new alignment(a);
 
-  this->realign();
+  realign();
 
   if( nuAlignPtr->isNull() ) {
     delete nuAlignPtr;
@@ -1087,7 +1080,7 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
       }
     }
     else if( this->hasStandardFaces() ) {
-      this->align_ = nuAlignPtr;
+      align_ = nuAlignPtr;
     }
     else { 
       ret = false;
@@ -1140,28 +1133,26 @@ alignmentData bmlnElmnt::Alignment() const {
 
 void bmlnElmnt::enterLocalFrame( Particle& p ) const
 {
-  double temp;
-  double cs, sn;
 
-  cs = align_->cos_roll();
-  sn = align_->sin_roll();
+  double cs = align_->cos_roll();
+  double sn = align_->sin_roll();
 
-  Vector inState = p.getState();
+  Vector& state = p.getState();
 
-  inState[0] -= align_->x_offset();
-  inState[1] -= align_->y_offset();
+  state[0] -= align_->x_offset();
+  state[1] -= align_->y_offset();
 
   if( align_->roll() != 0.0) {
-    double temp       = inState[0] * cs + inState[1] * sn;
-    inState[1] = inState[1] * cs - inState[0] * sn;
-    inState[0] = temp;
 
-    temp       = inState[3] * cs + inState[4] * sn;
-    inState[4] = inState[4] * cs - inState[3] * sn;
-    inState[3] = temp;
+    double temp  = state[0] * cs + state[1] * sn;
+    state[1]     = state[1] * cs - state[0] * sn;
+    state[0]     = temp;
+
+    temp       = state[3] * cs + state[4] * sn;
+    state[4]   = state[4] * cs - state[3] * sn;
+    state[3]   = temp;
   }
  
-  p.setState( inState ) ;
 }
 
 
@@ -1170,27 +1161,26 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
 
 void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 {
-  double    cs, sn;
 
-  cs = align_->cos_roll();
-  sn = align_->sin_roll();
+  double cs = align_->cos_roll();
+  double sn = align_->sin_roll();
 
-  JetVector inState = p.getState();
+  JetVector& state = p.getState();
 
-  inState(0) -= align_->x_offset();
-  inState(1) -= align_->y_offset();
+  state(0) -= align_->x_offset();
+  state(1) -= align_->y_offset();
 
   if( align_->roll() != 0.0) {
-    Jet temp       = inState(0) * cs + inState(1) * sn;
-    inState(1) = inState(1) * cs - inState(0) * sn;
-    inState(0) = temp;
+    Jet temp   = state(0) * cs + state(1) * sn;
+    state(1)   = state(1) * cs - state(0) * sn;
+    state(0)   = temp;
 
-    temp       = inState(3) * cs + inState(4) * sn;
-    inState(4) = inState(4) * cs - inState(3) * sn;
-    inState(3) = temp;
+    temp       = state(3) * cs + state(4) * sn;
+    state(4)   = state(4) * cs - state(3) * sn;
+    state(3)   = temp;
   }
 
-  p.setState( inState );
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1199,27 +1189,25 @@ void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 void bmlnElmnt::leaveLocalFrame( Particle& p ) const
 {
 
-  static double cs, sn;
 
-  cs = align_->cos_roll();
-  sn = align_->sin_roll();
+  double cs = align_->cos_roll();
+  double sn = align_->sin_roll();
 
-  Vector outState = p.getState();
+  Vector& state = p.getState();
 
   if( align_->roll() != 0.0) {
-    double temp        = outState[0] * cs - outState[1] * sn;
-    outState[1] = outState[1] * cs + outState[0] * sn;
-    outState[0] = temp;
+    double temp   = state[0] * cs - state[1] * sn;
+    state[1]      = state[1] * cs + state[0] * sn;
+    state[0]      = temp;
 
-    temp        = outState[3] * cs - outState[4] * sn;
-    outState[4] = outState[4] * cs + outState[3] * sn;
-    outState[3] = temp;
+    temp        = state[3] * cs - state[4] * sn;
+    state[4]    = state[4] * cs + state[3] * sn;
+    state[3]    = temp;
   }
 
-  outState[0] += align_->x_offset();
-  outState[1] += align_->y_offset();
+  state[0] += align_->x_offset();
+  state[1] += align_->y_offset();
 
-  p.setState( outState );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1231,22 +1219,22 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  JetVector outState = p.getState();
+  JetVector& state = p.getState();
 
   if( align_->roll() != 0.0) {
-    Jet temp    = outState[0] * cs - outState[1] * sn;
-    outState[1] = outState[1] * cs + outState[0] * sn;
-    outState[0] = temp;
+    Jet temp   = state[0] * cs - state[1] * sn;
+    state[1]   = state[1] * cs + state[0] * sn;
+    state[0]   = temp;
 
-    temp        = outState[3] * cs - outState[4] * sn;
-    outState[4] = outState[4] * cs + outState[3] * sn;
-    outState[3] = temp;
+    temp     = state[3] * cs - state[4] * sn;
+    state[4] = state[4] * cs + state[3] * sn;
+    state[3] = temp;
   }
 
-  outState[0] += align_->x_offset();
-  outState[1] += align_->y_offset();
+  state[0] += align_->x_offset();
+  state[1] += align_->y_offset();
 
-  p.setState( outState );
+
 }
 
 
