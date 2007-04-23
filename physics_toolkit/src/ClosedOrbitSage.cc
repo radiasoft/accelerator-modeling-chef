@@ -63,6 +63,7 @@
 #include <physics_toolkit/FPSolver.h>
 #include <beamline/RefRegVisitor.h>
 #include <mxyzptlk/Jet__environment.h>
+#include <beamline/rfcavity.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <list>
@@ -150,8 +151,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
   for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin(); 
                                 it != myBeamlinePtr_->deep_end(); ++it )
   {
-    if(    ( 0 == strcmp( "rfcavity",     (*it)->Type() ) )
-        |  ( 0 == strcmp( "thinrfcavity", (*it)->Type() ) ) )
+    if(         ( dynamic_cast<rfcavity*>( (*it).get() ) )
+	     || ( dynamic_cast<rfcavity*>( (*it).get() ) ) )
     {
       strengthData sd;
       sd.address = (*it);
@@ -349,10 +350,10 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
   // *** CHANGE *** Shouldn't the stopping criterion be the same
   // *** CHANGE *** as was used by the FPSolver fp?
 
-  if( ( std::abs( co(i_x)  - prt.State(i_x)  ) > 1.0e-6 ) ||
-      ( std::abs( co(i_y)  - prt.State(i_y)  ) > 1.0e-6 ) ||
-      ( std::abs( co(i_px) - prt.State(i_px) ) > 1.0e-6 ) ||
-      ( std::abs( co(i_py) - prt.State(i_py) ) > 1.0e-6 )
+  if( ( std::abs( co(i_x)  - prt.State(i_x)  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_y)  - prt.State(i_y)  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_px) - prt.State(i_px) ) > 2.0e-6 ) ||
+      ( std::abs( co(i_py) - prt.State(i_py) ) > 2.0e-6 )
   ){
     *errorStreamPtr_
          << "\n*** WARNING ***"
