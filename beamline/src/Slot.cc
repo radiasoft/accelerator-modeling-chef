@@ -263,6 +263,11 @@ const char*  Slot::Type()  const
   return "Slot"; 
 }
 
+bool Slot::isMagnet()  const  
+{ 
+  return false; 
+}
+
  int Slot::setInFrame( const Frame& frm )
 {
    int ret = checkFrame( frm );
@@ -534,8 +539,6 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
     // This is never deleted.
   }
 
-  double temp;
-  double cs, sn;
 
   // Yaw -------------------------------------
   if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
@@ -564,33 +567,31 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
   
     // Momentum transformation
 
-    double p1( p.State( xp ) );
-    double p2( p.State( yp ) );
+    double p1( state[ xp ] );
+    double p2( state[ yp ] );
     double p3divpbar = sqrt( ( 1.0 + state[dpop] ) * ( 1.0 + state[dpop] )
                               - p1*p1 - p2*p2 );
   
-    state[xp] = cs*p.State( xp ) + sn*p3divpbar;
+    state[xp] = cs* state[ xp ] + sn*p3divpbar;
   }
 
 
   // Roll ------------------------------------
   else if( ( frm.getAxis(2) == u_z ) && ( frm.getAxis(1) != u_y ) ) 
   {
-    cs = ( frm.getAxis(0) )(0);
-    sn = ( frm.getAxis(1) )(0); // ??? right?
+    double cs = ( frm.getAxis(0) )(0);
+    double sn = ( frm.getAxis(1) )(0); // ??? right?
     // sin of angle by which magnet is rolled
 
-    Vector inState  = p.State();
   
-    temp       = inState[0] * cs + inState[1] * sn;
-    inState[1] = inState[1] * cs - inState[0] * sn;
-    inState[0] = temp;
+    double temp     = state[0] * cs + state[1] * sn;
+    state[1]        = state[1] * cs - state[0] * sn;
+    state[0]        = temp;
   
-    temp       = inState[3] * cs + inState[4] * sn;
-    inState[4] = inState[4] * cs - inState[3] * sn;
-    inState[3] = temp;
+    temp       = state[3] * cs + state[4] * sn;
+    state[4]   = state[4] * cs - state[3] * sn;
+    state[3]   = temp;
    
-    p.setState( inState) ;
 
   }
 
@@ -620,9 +621,6 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
    
   Mapping&  state = p.getState();
 
-  double    cs, sn;
-
-
 
   // Yaw -------------------------------------
   if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
@@ -637,7 +635,8 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
     double sn = e_3(0);
 
     // Coordinate transformation.
-    JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+
+    JetVector r        ( state[x]*e_1 + state[y]*e_2 );
     JetVector dummy    ( p.VectorBeta() );
     JetVector beta     ( dummy(0)*e_1 +
                          dummy(1)*e_2 +
@@ -645,37 +644,36 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
   
     Jet tau            ( - r(2) / beta(2) );
   
-    state.SetComponent( x,   r(0) + tau*beta(0) );
-    state.SetComponent( y,   r(1) + tau*beta(1) );
-    state.SetComponent( cdt, state(cdt) + tau );
+    state[x]    =   r(0) + tau*beta(0);
+    state[y]    =   r(1) + tau*beta(1);
+    state[cdt] +=   tau ;
   
     // Momentum transformation
-    Jet p1( p.State( xp ) );
-    Jet p2( p.State( yp ) );
-    Jet p3divpbar = sqrt( ( 1.0 + state(dpop) ) * ( 1.0 + state(dpop) )
+    Jet p1( state[xp] );
+    Jet p2( state[yp] );
+    Jet p3divpbar = sqrt( ( 1.0 + state[dpop] ) * ( 1.0 + state[dpop] )
                               - p1*p1 - p2*p2 );
   
-     state.SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
+     state[xp] =  cs*state[xp] + sn*p3divpbar ;
   }
 
   // Roll ------------------------------------
   else if( ( frm.getAxis(2) == u_z ) && ( frm.getAxis(1) != u_y ) ) 
   {
-    cs = ( frm.getAxis(0) )(0);
-    sn = ( frm.getAxis(1) )(0); // ??? right?
+    double cs = ( frm.getAxis(0) )(0);
+    double sn = ( frm.getAxis(1) )(0); // ??? right?
+
     // sin of angle by which magnet is rolled
 
-    Mapping  inState = p.State();
   
-    Jet temp     = inState(0) * cs + inState(1) * sn;
-    inState(1)   = inState(1) * cs - inState(0) * sn;
-    inState(0)   = temp;
+    Jet temp   = state[0] * cs + state[1] * sn;
+    state[1]   = state[1] * cs - state[0] * sn;
+    state[0]   = temp;
 
-    temp       = inState(3) * cs + inState(4) * sn;
-    inState(4) = inState(4) * cs - inState(3) * sn;
-    inState(3) = temp;
+    temp      = state[3] * cs + state[4] * sn;
+    state[4]  = state[4] * cs - state[3] * sn;
+    state[3]  = temp;
 
-    p.setState( inState) ;
   }
 
 }
