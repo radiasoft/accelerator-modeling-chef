@@ -101,12 +101,19 @@ std::ostream& operator<<(std::ostream& os, beamline_list_t   const& bl);
 std::ostream& operator<<(std::ostream& os, elements_map_t    const& em);
 
 
-typedef std::pair<std::string, boost::any> attrib_pair_t;
- 
 class XsifParserDriver {
 
  public:
  
+  struct ElmData {
+     ElmPtr                            elm;
+     std::map<std::string, boost::any> attributes;
+
+     ElmData ( ElmPtr const& e, std::map<std::string, boost::any> const& a ): elm(e), attributes(a) {}
+     ElmData () {}
+  };
+
+
   friend std::ostream& operator<<(std::ostream& os, expr_map_t        const& xm);
   friend std::ostream& operator<<(std::ostream& os, values_map_t      const& vm);
   friend std::ostream& operator<<(std::ostream& os, beamline_list_t   const& bl);
@@ -135,51 +142,23 @@ class XsifParserDriver {
   std::vector<std::string>* 
             instantiateAnonymousLine( xsif_yy::location const& yyloc, std::vector<std::string> const & elements, int ntimes=1); 
 
-  ElmPtr    instantiateElement( xsif_yy::location const& yyloc, std::string const &label,  std::vector<attrib_pair_t> const& attributes); 
-  void      addElmToDictionary( std::string const& label, ElmPtr& bml); 
+  ElmPtr    instantiateElement( xsif_yy::location const& yyloc, std::string const &label,  std::string const& type, std::map<std::string, boost::any> const& attributes); 
+  void      addElmToDictionary( std::string const& label, ElmPtr& bml , std::map<std::string, boost::any> const& attributes); 
 
   double    getElmAttributeVal( xsif_yy::location const& yyloc, std::string const& elm, std::string const& attrib) const; 
 
   BmlPtr    getLine(std::string label);
 
-  void      command_BEAM  (  xsif_yy::location const& yyloc,  std::vector<attrib_pair_t> const& attributes);
-  void      command_CALL  (  xsif_yy::location      & yyloc,  std::vector<attrib_pair_t> const& attributes, yyscan_t yyscanner);
+  void      command_BEAM  (  xsif_yy::location const& yyloc,  std::map<std::string, boost::any> const& attributes);
+  void      command_CALL  (  xsif_yy::location      & yyloc,  std::map<std::string, boost::any> const& attributes, yyscan_t yyscanner);
   void      command_RETURN(  xsif_yy::location      & yyloc,  yyscan_t yyscanner);
 
   void init(); 
 
-  static ElmPtr        make_drift(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr       make_marker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr        make_sbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr        make_rbend(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr   make_quadrupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr    make_sextupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_octupole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr    make_multipole(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_solenoid(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr       make_kicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr      make_vkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr      make_hkicker(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_rfcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr      make_monitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_hmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_vmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr     make_beambeam(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr         make_srot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr         make_yrot(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr         make_lump(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr      make_lcavity(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr       make_matrix(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr  make_ecollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr  make_rcollimator(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr   make_instrument(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr    make_blmonitor(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-  static ElmPtr         make_wire(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
-
  
  // data members (public) _____________________________________________________________________________________________
 
-  typedef  ElmPtr (*make_fnc_ptr)(double const&, std::string const& label, std::vector<attrib_pair_t> const& attributes );
+  typedef  ElmPtr (*make_fnc_ptr)(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
 
   std::string                                       m_file;
   const char*                                       m_buffer;              // read from a text buffer instead of a file 
@@ -197,9 +176,9 @@ class XsifParserDriver {
 
   std::map<std::string, BmlPtr>                     m_lines;
   std::map<std::string, std::vector<std::string> >  m_line_macros;
-  std::map<std::string, ElmPtr>                     m_elements;
+  std::map<std::string, ElmData>                    m_elements;
 
-  std::vector<attrib_pair_t>                        m_attributes;
+  std::map<std::string,boost::any>                  m_attributes;
   std::map<std::string,make_fnc_ptr>                m_makefncs;
 
   yyscan_t                                          m_yyscanner; 
@@ -217,6 +196,40 @@ class XsifParserDriver {
   ParserException( std::string file, int lineno, const char* fnc_name= "", const char* msg= "" )
     :  GenericException(file,lineno,fnc_name,msg) {} 
   };
+
+
+ private:
+
+  static ElmPtr        make_drift(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr       make_marker(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr        make_sbend(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr        make_rbend(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr   make_quadrupole(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr    make_sextupole(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_octupole(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr    make_multipole(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_solenoid(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr       make_kicker(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr      make_vkicker(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr      make_hkicker(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_rfcavity(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr      make_monitor(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_hmonitor(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_vmonitor(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr     make_beambeam(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr         make_srot(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr         make_yrot(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr         make_lump(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr      make_lcavity(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr       make_matrix(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr  make_ecollimator(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr  make_rcollimator(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr   make_instrument(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr    make_blmonitor(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr         make_wire(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr        make_gkick(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  static ElmPtr        make_beta0(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+
 
 };
 
