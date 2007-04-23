@@ -165,7 +165,7 @@ blk             [ \t]
 <EXPRESSION>(COS|cos){blk}*\(                            { unput('('); return token::XSIF_COS;         }
 <EXPRESSION>(TAN|tan){blk}*\(                            { unput('('); return token::XSIF_TAN;         }
 <EXPRESSION>(ASIN|asin){blk}*\(                          { unput('('); return token::XSIF_ASIN;        }
-<EXPRESSION>(ACOS|acos){blk}*\(                          { unput('('); return token::XSIF_COS;         }
+<EXPRESSION>(ACOS|acos){blk}*\(                          { unput('('); return token::XSIF_ACOS;        }
 <EXPRESSION>(ATAN|atan){blk}*\(                          { unput('('); return token::XSIF_ATAN;        }
 <EXPRESSION>(RANF|ranf){blk}*\(                          { unput('('); return token::XSIF_RANF;        } /* random number, uniformly distributed in [0,1]      */ 
 <EXPRESSION>(GAUSS|gauss){blk}*\(                        { unput('('); return token::XSIF_GAUSS;       } /* random number, gaussian distribution with          */
@@ -246,10 +246,16 @@ XsifParserDriver::scan_begin( yyscan_t yyscanner ) {
     error( std::string("Cannot open ") + m_file );
   
   string file_dir_path             = m_file;
+
   std::string::size_type slash_pos = file_dir_path.find_last_of("/");
-  file_dir_path.erase(slash_pos); 
-   
-  chdir (file_dir_path.c_str() ); // set current dir to that associated with input_file
+
+  // if the input file string includes a path, set current dir to that path
+  // and strip it from the name 
+
+  if( slash_pos !=  std::string::npos ) {
+      file_dir_path.erase(slash_pos); 
+      chdir (file_dir_path.c_str() ); 
+  }
 
   if (m_input_is_file)
     xsif_yy_switch_to_buffer ( xsif_yy_create_buffer( input_file, YY_BUF_SIZE, yyscanner), yyscanner);
@@ -289,13 +295,13 @@ void XsifParserDriver::scan_end( yyscan_t yyscanner ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void XsifParserDriver::command_CALL( xsif_yy::location& yylloc, std::vector<attrib_pair_t> const& attributes, yyscan_t yyscanner)
+void XsifParserDriver::command_CALL( xsif_yy::location& yylloc, std::map<std::string,boost::any> const& attributes, yyscan_t yyscanner)
 {
 
   yyguts_t* yyg =  (yyguts_t*) yyscanner;
  
-  std::string filename = boost::any_cast<std::string const>( attributes.front().second );  
-  
+  std::string filename = boost::any_cast<std::string const>( attributes[string("FILENAME")] ); 
+
   filename = trim(filename);  
 
   FILE* fp = fopen( filename.c_str(), "r");
