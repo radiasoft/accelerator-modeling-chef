@@ -312,7 +312,7 @@ public:
   virtual bool hasStandardFaces() const;
 
   virtual bool isSimple() const;
-  virtual bool isMagnet() const;
+  virtual bool isMagnet() const = 0;
 
 
   // ... Tagging methods
