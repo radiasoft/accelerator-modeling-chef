@@ -26,9 +26,9 @@
 **************************************************************************
 **************************************************************************/
 
-/*----------------------------------------------*/
-/* A yacc (bison) parser for xsif input files  */
-/*----------------------------------------------*/
+/*-----------------------------------------------------*/
+/* A yacc (bison) parser grammar for xsif input files  */
+/*-----------------------------------------------------*/
 
   /**** this should be defined only for debugging ***/
 
@@ -152,7 +152,6 @@ program:
        program XSIF_RETURN XSIF_EOL                                                  { driver.command_RETURN( yylloc, driver.m_yyscanner);
                                                                                        driver.m_attributes.clear(); 
                                                                                      } 
-       |
        ;
 
 statement:
@@ -170,6 +169,11 @@ statement:
        ;
 
 action: 
+
+   XSIF_IDENTIFIER ':' XSIF_BEAM   ',' attributes                                    { /*** do nothing ***/ 
+                                                                                       driver.m_attributes.clear(); 
+                                                                                     }
+   |                                                                                  
    XSIF_BEAM   ',' attributes                                                        { driver.command_BEAM( yylloc, driver.m_attributes);
                                                                                        driver.m_attributes.clear(); 
                                                                                      } 
@@ -229,12 +233,14 @@ arguments:
        arguments ',' XSIF_IDENTIFIER                                                      { *$<sval>1 += std::string(",");
                                                                                             *$<sval>1 += *$<sval>3;
                                                                                             $<sval>$ = $<sval>1;
-                                                                                            delete $<sval>3; }
+                                                                                            delete $<sval>3; 
+                                                                                           }
  
        | 
        XSIF_IDENTIFIER                                                                     {  $<sval>$ = new std::string; 
                                                                                             *$<sval>$ = *$<sval>1; 
-                                                                                             delete $<sval>1; }
+                                                                                             delete $<sval>1; 
+                                                                                           }
        ;
 
 element_list:                                                                              { driver.error(yylloc, std::string("Line cannot be empty."));}
@@ -355,9 +361,16 @@ anonymous_line_declaration:
 
 
 element_declaration:
-       XSIF_IDENTIFIER ':' attributes                                                        { ElmPtr elm = driver.instantiateElement( yylloc, *$<sval>1,  driver.m_attributes);
-                                                                                               driver.addElmToDictionary( *$<sval>1, elm );
+       XSIF_IDENTIFIER ':' XSIF_IDENTIFIER                                                 { driver.instantiateElement( yylloc, *$<sval>1, *$<sval>3,  driver.m_attributes);
                                                                                                delete $<sval>1;  
+                                                                                               delete $<sval>3;  
+                                                                                               driver.m_attributes.clear();
+                                                                                            }  
+       |
+                                                                                              
+       XSIF_IDENTIFIER ':' XSIF_IDENTIFIER ',' attributes                                   { driver.instantiateElement( yylloc, *$<sval>1, *$<sval>3,  driver.m_attributes);
+                                                                                               delete $<sval>1;  
+                                                                                               delete $<sval>3;  
                                                                                                driver.m_attributes.clear(); 
                                                                                              } 
        ;
@@ -371,29 +384,27 @@ attributes:
 
 
 attribute:
-       XSIF_IDENTIFIER                                                                       { 
-                                                                                               driver.m_attributes.push_back( attrib_pair_t( *$<sval>1, boost::any() ) ); 
-                                                                                               delete $<sval>1; 
+       
+       XSIF_IDENTIFIER                                                                      {  /* empty attribute value e.g. TILT */
+                                                                                                driver.m_attributes[*$<sval>1] = boost::any(); 
+                                                                                                delete $<sval>1; 
                                                                                              }
        |
+
        XSIF_IDENTIFIER '=' XSIF_STRING_VALUE                                                 {  
-                                                                                                driver.m_attributes.push_back( attrib_pair_t(*$<sval>1, *$<sval>3 ) ); 
+                                                                                                driver.m_attributes[*$<sval>1] = *$<sval>3; 
                                                                                                 delete $<sval>1; 
                                                                                                 delete $<sval>3;
                                                                                              }
        |
-       XSIF_TYPE_ATTRIBUTE '=' XSIF_IDENTIFIER                                               { 
-                                                                                               driver.m_attributes.push_back( attrib_pair_t(std::string("TYPE"), *$<sval>3));
+
+       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
+                                                                                               driver.m_attributes[string("PARTICLE")] = *$<sval>3;
                                                                                                delete $<sval>3;
                                                                                              }
        |
-       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
-                                                                                            driver.m_attributes.push_back( attrib_pair_t(std::string("PARTICLE"), *$<sval>3));
-                                                                                            delete $<sval>3;
-                                                                                             }
-       |
        XSIF_IDENTIFIER '='vexpr                                                              { 
-                                                                                               driver.m_attributes.push_back( attrib_pair_t(*$<sval>1, *$<pexp>3) );  
+                                                                                               driver.m_attributes[*$<sval>1] = *$<pexp>3;  
                                                                                                delete $<sval>1;
                                                                                                delete $<pexp>3; 
                                                                                              } 
