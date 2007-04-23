@@ -160,6 +160,11 @@ const char* monitor::Type() const
   return "monitor"; 
 }
 
+bool monitor::isMagnet() const 
+{ 
+  return false; 
+}
+
 
 double monitor::operator[]( int n ) 
 {
@@ -234,6 +239,11 @@ const char* vmonitor::Type() const
   return "vmonitor"; 
 }
 
+bool vmonitor::isMagnet() const 
+{ 
+  return false; 
+}
+
 
 // **************************************************
 //   class hmonitor 
@@ -271,6 +281,12 @@ double hmonitor::operator[]( int n )
 const char* hmonitor::Type() const 
 { 
   return "hmonitor"; 
+}
+
+
+bool hmonitor::isMagnet() const 
+{ 
+  return false; 
 }
 
 

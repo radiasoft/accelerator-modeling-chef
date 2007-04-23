@@ -309,6 +309,14 @@ istream& sector::readFrom( istream& is )
   return is;
 }
 
+
+bool  sector::isMagnet() const 
+{
+
+  return false;  
+
+}
+
 void  sector::accept( BmlVisitor& v )
 {
   v.visit(*this);
