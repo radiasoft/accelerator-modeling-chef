@@ -125,8 +125,8 @@ class DLLEXPORT TJLterm
 
   bool    operator<( TJLterm<T> const& rhs) const;
 
-  T         coefficient()                    { return value_; }
-  IntArray  exponents( EnvPtr<T> const& env) { return env->exponents( offset_); }
+  T         coefficient()                    const { return value_; }                   
+  IntArray  exponents( EnvPtr<T> const& env) const { return env->exponents( offset_); } 
 
   // JLterm array allocation functions
 
