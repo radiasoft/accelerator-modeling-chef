@@ -65,9 +65,10 @@ public:
   Pinger( Pinger const& );
   Pinger* Clone() const { return new Pinger( *this ); }
 
-  virtual ~Pinger(); 
+ ~Pinger(); 
 
-  const char* Type() const;
+  const char* Type()     const;
+  bool        isMagnet() const;
 
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
@@ -92,21 +93,26 @@ protected:
   int    counter_;              /* Counts number of turns before firing. */};
 
 class DLLEXPORT HPinger : public Pinger {
+
  public:
   HPinger( double const& kick_rad,  int count= -1);
   HPinger( char const* name);                  // Assumes zero kick 
   HPinger( char const* name, double const& kick_rad = 0.0, int cont = -1);
   HPinger( HPinger const& );
-  virtual ~HPinger();
+
+  HPinger* Clone() const { return new HPinger( *this ); }
+
+ ~HPinger();
 
   const char* Type() const;
-  HPinger* Clone() const { return new HPinger( *this ); }
+  bool        isMagnet() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 };
 
 class DLLEXPORT VPinger : public Pinger {
+
  public:
   VPinger( double const& kick_rad , int count = -1 );
   VPinger( char const* name ); //Assumes zero kick 
@@ -115,9 +121,10 @@ class DLLEXPORT VPinger : public Pinger {
 
   VPinger* Clone() const { return new VPinger( *this ); }
 
-  virtual ~VPinger();
+ ~VPinger();
 
   const char* Type() const;
+  bool        isMagnet() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

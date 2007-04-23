@@ -64,6 +64,7 @@ typedef boost::shared_ptr<thinrfcavity const> ConstThinRFCavityPtr;
 
 class rfcavity : public bmlnElmnt {
 
+  friend class LinacCavity;
 
 public:
   rfcavity( const char* = "NONAME" ); // Name
@@ -100,11 +101,13 @@ public:
   void acceptInner( RefRegVisitor& v );
 
   const char* Type() const;
-  inline double getPhi() const { return phi_s; }
-  inline double getFrequency() const { return w_rf; }
-  inline double getQ() const { return Q; }
-  inline double getR() const { return R; }
-  inline double getHarmonicNumber() const { return h; }
+  bool    isMagnet() const;
+
+  inline double getPhi()            const { return phi_s_; }
+  inline double getFrequency()      const { return w_rf_; }
+  inline double getQ()              const { return Q_; }
+  inline double getR()              const { return R_; }
+  inline double getHarmonicNumber() const { return h_; }
 
   void setHarmonicNumber( int );
   void setHarmonicNumber( double const& );
@@ -116,24 +119,24 @@ public:
   void setStrength( double const& );  // eV
 
 private:
-  double w_rf;                  // RF frequency [Hz]
-  double phi_s;                 // synchronous phase
-  double sin_phi_s;             // sine of synchronous phase
+  double w_rf_;                  // RF frequency [Hz]
+  double phi_s_;                 // synchronous phase
+  double sin_phi_s_;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
-  double Q;                     // quality factor
-  double R;                     // shunt impedance
-  double h;                     // harmonic number 
+  double Q_;                     // quality factor
+  double R_;                     // shunt impedance
+  double h_;                     // harmonic number 
                                 //   = ratio cavity frequency to
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
-  bmlnElmnt** _u;               // Address of first internal bmlElmnt pointer
-  bmlnElmnt** _v;               // Address of final internal bmlElmnt pointer
+  bmlnElmnt** u_;               // Address of first internal bmlElmnt pointer
+  bmlnElmnt** v_;               // Address of final internal bmlElmnt pointer
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
-  void _finishConstructor();
+  void finishConstructor();
 };
 
 
@@ -174,12 +177,13 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
+  bool    isMagnet() const;
 
-  inline double getPhi()            const { return phi_s; }
-  inline double getFrequency()      const { return w_rf; }
-  inline double getQ()              const { return Q; }
-  inline double getR()              const { return R; }
-  inline double getHarmonicNumber() const { return h; }
+  inline double getPhi()            const { return phi_s_; }
+  inline double getFrequency()      const { return w_rf_; }
+  inline double getQ()              const { return Q_; }
+  inline double getR()              const { return R_; }
+  inline double getHarmonicNumber() const { return h_; }
 
   void            setHarmonicNumber( int );
   void            setHarmonicNumber( double const& );
@@ -190,17 +194,17 @@ public:
   void                       setPhi( double const& );  // radians
 
 private:
-  double w_rf;                  // RF frequency [Hz]
-  double phi_s;                 // synchronous phase
-  double sin_phi_s;             // sine of synchronous phase
+  double w_rf_;                  // RF frequency [Hz]
+  double phi_s_;                 // synchronous phase
+  double sin_phi_s_;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
-  double Q;                     // quality factor
-  double R;                     // shunt impedance
-  double h;                     // harmonic number 
-                                //   = ratio cavity frequency to
-                                //     revolution frequency of a ring
-                                //   Note: this is *NOT* a cavity attribute,
-                                //   but is included for convenience.
+  double Q_;                     // quality factor
+  double R_;                     // shunt impedance
+  double h_;                     // harmonic number 
+                                 //   = ratio cavity frequency to
+                                 //     revolution frequency of a ring
+                                 //   Note: this is *NOT* a cavity attribute,
+                                 //   but is included for convenience.
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 };
