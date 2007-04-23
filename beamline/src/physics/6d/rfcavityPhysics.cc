@@ -31,27 +31,24 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  ------------------
-******  Revisions (a few):
-******  ------------------
-******  Date: January 4, 2007   (Tuesday)
+******  REVISION HISTORY
+******
+******  December 2006 ostiguy@fnal.gov 
+******  -Efficiency improvements. Particle state pased by reference.
+******  
+******  January 4, 2007   (Tuesday)
 ******  Stored in cvs repository
 ******  after major reorganization of files.
 ******  - lpjm
 ******
-******  Date: January 13, 2006  (Friday)
+******  January 13, 2007  (Friday)
 ******  Upgrades: preparation for use in ILC studies.
 ******  - lpjm
 ******
-******  Date: December 14, 2006 (Thursday)
-******  Elimination of raw pointers; Particles passed by reference
-******  for consistency and safety (no test for null ptr required)
-******  -jfo
-******  
-******  Date: February 2, 2007  (Friday)
+******  February 2, 2007  (Friday)
 ******  Fixed edge focusing following recommendation of Paul Lebrun
 ******  to use actual electric field upon entry.
-******  In addition, included change to "effective length_" calculation.
+******  In addition, included change to "effective length" calculation.
 ******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
 ******  - lpjm
 ******  
@@ -62,6 +59,7 @@
 #include <config.h>
 #endif
 
+#include <math.h>
 #include <beamline/rfcavity.h>
 
 #include <basic_toolkit/PhysicsConstants.h>
@@ -75,46 +73,107 @@ using FNAL::pcout;
 
 void rfcavity::localPropagate( Particle& p ) 
 {
+
+  if( strength_ == 0.0 ) { // zero strength + zero loss cavity is a drift 
+     ctRef_   = length_;
+     bmlnElmnt::localPropagate( p ); 
+     return;
+  }
+
   double E( p.ReferenceEnergy() );
 
   double oldRefP, newRefP;
-  double referenceEnergyGain, onaxisEnergyGain;
-  double w;
-  double k1, k2;
 
   Vector& state = p.getState();
 
-  referenceEnergyGain = strength_*sin_phi_s;
-  onaxisEnergyGain    = strength_*sin( phi_s + state[2] * w_rf / PH_MKS_c );
+  double referenceEnergyGain        = strength_*sin_phi_s_;
+  double const oldLength            = length_;
+  double onaxisEnergyGain           = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
-  k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
-  // ??? Are the denominators correct ???
+
+  double k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
+  double k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
 
   // Thin lens kick upon entry
+
   state[3] += k1*state[0];
   state[4] += k1*state[1];
 
-  // Propagate through the inner structures
-  double x_in = state[0];
-  double y_in = state[1];
-  w = (onaxisEnergyGain/2.0) / p.Energy();
-  if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
-  else                       { w = 1.0;           }
+  // Free space propagation through "effective half length"
+  // of the cavity.
 
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*(x++))->localPropagate( p );
+  length_  = (oldLength)/2.0;
+
+  double w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+  if( fabs(w) > 1.0e-8 ) {
+    length_ *= (log(1.+w)/w);
+  }
+  
+  ctRef_   = length_;
+  bmlnElmnt::localPropagate( p ); // propagate through a drift of length = effective half-length
+
+  // Cavity increases energy and momentum of the particle (changes angles ! )
+
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+
+  double   m  = p.Mass();
+  double   pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
+  //----------------------------------------------------------------------------------------------------------  
+  // ************************** Put transverse wake field kick here ... ********************************
+  //----------------------------------------------------------------------------------------------------------  
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+  length_  = (oldLength)/2.0;
+
+   w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+   if( fabs(w) > 1.0e-8 ) {
+     length_ *= (log(1.+w)/w);
   }
 
-  state[0] = ( 1.0 - w )*x_in + w*state[0];
-  state[1] = ( 1.0 - w )*y_in + w*state[1];
+  ctRef_   = length_;
+  bmlnElmnt::localPropagate( p );
+
+  // Cavity increases energy and momentum of the particle
+  
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  m  = p.Mass();
+  pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
 
   // Thin lens kick upon exit
+
   state[3] += k2*state[0];
   state[4] += k2*state[1];
+
+  // Restore length before returning.
+
+  length_ = oldLength;
+  ctRef_  = length_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -122,45 +181,108 @@ void rfcavity::localPropagate( Particle& p )
 
 void rfcavity::localPropagate( JetParticle& p ) 
 {
-  double E( p.ReferenceEnergy() ); 
+
+  if( strength_ == 0.0 ) { // zero strength + zero loss cavity is a drift 
+     ctRef_   = length_;
+     bmlnElmnt::localPropagate( p ); 
+     return;
+  }
+
+  Jet E( p.ReferenceEnergy() );
 
   double oldRefP, newRefP;
-  double referenceEnergyGain;
 
   Mapping& state = p.getState();
 
-  referenceEnergyGain = strength_*sin_phi_s;
-  Jet onaxisEnergyGain( strength_*sin( phi_s + state[2] * w_rf / PH_MKS_c ) );
+  double referenceEnergyGain        = strength_*sin_phi_s_;
+  double const oldLength            = length_;
+  Jet onaxisEnergyGain              = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
   // Assign focal lengths for effective kicks that
   // model first order edge focussing.
-  Jet k1( - 0.5*(onaxisEnergyGain/length_)/ E );
-  Jet k2(   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain) );
-  // ??? Are the denominators correct ???
+
+  Jet k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
+  Jet k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
 
   // Thin lens kick upon entry
-  state[3] = state[3] + k1*state[0];
-  state[4] = state[4] + k1*state[1];
 
-  // Propagate through the inner structures
-  Jet x_in( state[0] );
-  Jet y_in( state[1] );
-  Jet w( (onaxisEnergyGain/2.0) / p.Energy() );
+  state[3] += k1*state[0];
+  state[4] += k1*state[1];
 
-  if( std::abs(w.standardPart()) > 1.0e-8 ) { w = (log(1.+w)/w); }
-  else                                      { w = 1.0;           }
+  // Free space propagation through "effective half length"
+  // of the cavity.
 
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
-    (*(x++))->localPropagate( p );
+  length_  = (oldLength)/2.0;
+
+  double w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+  if( fabs(w) > 1.0e-8 ) {
+    length_ *= (log(1.+w)/w);
   }
 
-  state[0] = ( 1.0 - w )*x_in + w*state[0];
-  state[1] = ( 1.0 - w )*y_in + w*state[1];
+  ctRef_   = length_;
+  bmlnElmnt::localPropagate( p ); // propagate through a drift of length = effective half-length
+
+  // Cavity increases energy and momentum of the particle
+
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  double   m  = p.Mass();
+  double   pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+  
+
+  // Put transverse wake field kick here ...
+  
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+
+  length_ = (oldLength)/2.0;
+
+   w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+   if( fabs(w) > 1.0e-8 ) {
+     length_ *= (log(1.+w)/w);
+  }
+
+  ctRef_   = length_;
+  bmlnElmnt::localPropagate( p );
+
+  // Cavity increases energy and momentum of the particle
+
+  
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  m  = p.Mass();
+  pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
 
   // Thin lens kick upon exit
-  state[3] =  state[3] + k2*state[0];
-  state[4] =  state[4] + k2*state[1];
+
+  state[3] += k2*state[0];
+  state[4] += k2*state[1];
+
+  // Restore length before returning.
+
+  length_ = oldLength;
+  ctRef_  = length_;
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -173,15 +295,15 @@ void thinrfcavity::localPropagate( Particle& p )
   
   Vector& state = p.getState(); 
  
-  if( 0.0 != this->strength_ ) {
+  if( 0.0 != strength_ ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    double E = p.Energy() + ((strength_*cs)*(sin( phi_s + state[2] * w_rf / PH_MKS_c )));
+    double E = p.Energy() + ((strength_*cs)*(sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
     newRefP = p.ReferenceMomentum();
 
     state[3] *= ( oldRefP / newRefP );
@@ -206,22 +328,230 @@ void thinrfcavity::localPropagate( JetParticle& p )
 
   Mapping& state = p.getState(); 
 
-  if( 0.0 != this->strength_ ) {
+  if( 0.0 != strength_ ) {
     px = p.get_npx();
     py = p.get_npy();
     denom = 1.0 + p.get_ndp();
     cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-    Jet E = p.Energy() + ((strength_*cs)*(sin( phi_s + state(2) * w_rf / PH_MKS_c )));
+    Jet E = p.Energy() + ((strength_*cs)*(sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c )));
 
     oldRefP = p.ReferenceMomentum();
-    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s );
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
     newRefP = p.ReferenceMomentum();
     state[3] = ( oldRefP / newRefP )*state[3];
     state[4] = ( oldRefP / newRefP )*state[4];
 
-     double   m  = p.Mass();
-     double   pr = p.ReferenceMomentum();
+    double   m  = p.Mass();
+    double   pr = p.ReferenceMomentum();
 
-     state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0 ;
+    state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0 ;
   }
 }
+
+
+#if 0 
+=============================================================================================================================
+The code that follows is a simplified rfcavity propagator meant for debugging. 
+=============================================================================================================================
+
+void rfcavity::localPropagate( Particle& p ) 
+{
+
+  if( strength_ == 0.0 ) return;
+
+  double E( p.ReferenceEnergy() );
+
+  double oldRefP, newRefP;
+
+  Vector& state = p.getState();
+
+  double referenceEnergyGain        = strength_*sin_phi_s_;
+  double const oldLength            = length_;
+  double onaxisEnergyGain           = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
+
+  // Assign focal lengths for effective kicks that
+  // model first order edge focussing.
+
+  double k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
+  double k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
+
+  // Thin lens kick upon entry
+
+  state[3] += k1*state[0];
+  state[4] += k1*state[1];
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+  length_  = (oldLength)/2.0;
+
+  double w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+  if( fabs(w) > 1.0e-8 ) {
+    length_ *= (log(1.+w)/w);
+  }
+
+  bmlnElmnt::localPropagate( p ); // propagate through a drift of length = effective half-length
+
+  // Cavity increases energy and momentum of the particle
+
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  double   m  = p.Mass();
+  double   pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+  
+
+  // Put transverse wake field kick here ...
+  
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+
+  length_ = (oldLength)/2.0;
+
+   w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+   if( fabs(w) > 1.0e-8 ) {
+     length_ *= (log(1.+w)/w);
+  }
+
+  bmlnElmnt::localPropagate( p );
+
+  // Cavity increases energy and momentum of the particle
+
+  
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  m  = p.Mass();
+  pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
+
+  // Thin lens kick upon exit
+
+  state[3] += k2*state[0];
+  state[4] += k2*state[1];
+
+  // Restore length before returning.
+
+  length_ = oldLength;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::localPropagate( JetParticle& p ) 
+{
+
+  if( strength_ == 0.0 ) return;
+
+  Jet E( p.ReferenceEnergy() );
+
+  double oldRefP, newRefP;
+
+  Mapping& state = p.getState();
+
+  double referenceEnergyGain        = strength_*sin_phi_s_;
+  double const oldLength            = length_;
+  Jet onaxisEnergyGain              = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
+
+  // Assign focal lengths for effective kicks that
+  // model first order edge focussing.
+
+  Jet k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
+  Jet k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
+
+  // Thin lens kick upon entry
+
+  state[3] += k1*state[0];
+  state[4] += k1*state[1];
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+  length_  = (oldLength)/2.0;
+
+  double w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+  if( fabs(w) > 1.0e-8 ) {
+    length_ *= (log(1.+w)/w);
+  }
+
+  bmlnElmnt::localPropagate( p ); // propagate through a drift of length = effective half-length
+
+  // Cavity increases energy and momentum of the particle
+
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  double   m  = p.Mass();
+  double   pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+  
+
+  // Put transverse wake field kick here ...
+  
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+
+  length_ = (oldLength)/2.0;
+
+   w = (referenceEnergyGain/2.0) / p.ReferenceEnergy();
+   if( fabs(w) > 1.0e-8 ) {
+     length_ *= (log(1.+w)/w);
+  }
+
+  bmlnElmnt::localPropagate( p );
+
+  // Cavity increases energy and momentum of the particle
+
+  
+  E = p.Energy() + 0.5*onaxisEnergyGain;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  m  = p.Mass();
+  pr = p.ReferenceMomentum();
+
+  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
+
+
+  // Thin lens kick upon exit
+
+  state[3] += k2*state[0];
+  state[4] += k2*state[1];
+
+  // Restore length before returning.
+
+  length_ = oldLength;
+
+}
+
+#endif
