@@ -316,8 +316,9 @@ void normalForm( const Mapping& theMapping, /* input */
 
     for( int j=0; j < 6; ++j) {
      temp = complex_1 / lambda(j);
-     
-     for( int l=0;  l < it->exponents()(j); ++l) {
+     IntArray exponents =  it->exponents( doc(i).Env() ) ;
+
+     for( int l=0;  l < exponents(j); ++l) {
       factor *= temp;
      }
      // REMOVE: factor *= pow( complex_1 / lambda(j), it->exponents()(j) );
@@ -328,10 +329,12 @@ void normalForm( const Mapping& theMapping, /* input */
     // Either absorption or resonance subtraction ... 
     denom = factor - complex_1;
     if( abs( denom ) <= 1.0e-7 ) {
-      N[k](i).addTerm( JLCterm( it->exponents(), - it->coefficient(), CL1.Env() ) );
+      //N[k](i).addTerm( JLCterm( it->exponents(), - it->coefficient(), CL1.Env() ) );
+      N[k](i).addTerm( JLCterm( - it->coefficient(), it->weight_, it->offset_ ) );
     }
     else {
-      T[k](i).addTerm( JLCterm( it->exponents(), it->coefficient()/denom, CL1.Env() ) );
+      //T[k](i).addTerm( JLCterm( it->exponents(), it->coefficient()/denom, CL1.Env() ) );
+      T[k](i).addTerm( JLCterm( it->coefficient()/denom, it->weight_, it->offset_ ) );
     }
    }
   }
