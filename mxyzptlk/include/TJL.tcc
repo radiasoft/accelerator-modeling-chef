@@ -58,10 +58,11 @@
 ****** 
 ****** Mar 2007 ostiguy@fnal.gov  
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   to replace previous scheme based explicitly on monomial exponent tuples.
+******   to replace previous scheme based on explicit monomial exponent tuples.
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators    
-****** - added getCoefficient() to find specific monomial coefficient
+****** - added get/setTermCoefficient() to get/set specific monomial coefficient
+******
 **************************************************************************
 *************************************************************************/
 #ifndef TJL_TCC
@@ -593,7 +594,7 @@ void TJL<T>::addTerm( TJLterm<T> const& a )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T  TJL<T>::getCoefficient( IntArray const& exp ) const
+T  TJL<T>::getTermCoefficient( IntArray const& exp ) const
 {
 
    // Note: the monomial terms are always sorted w/r to offset index !
@@ -605,14 +606,29 @@ T  TJL<T>::getCoefficient( IntArray const& exp ) const
    std::pair<typename TJL<T>::const_iterator, typename TJL<T>::const_iterator> 
       result = std::equal_range( begin(), end(), term);
    
-   if (result.first == result.second) return T(); // empty range;
 
+   if (result.first == result.second ) {
+    return T(); // empty range;
+   }
 
    return result.first->value_; 
    
 }
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJL<T>::setTermCoefficient( T   const&   value, IntArray const& exp) 
+{
+
+  T oldvalue =  getTermCoefficient( exp );
+
+  addTerm( TJLterm<T>( exp, (-oldvalue + value), myEnv_ ) );
+
+}
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 
 
@@ -732,7 +748,7 @@ TJL<T>& TJL<T>::Negate( ) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)
+void TJL<T>::setVariable(  T const& x, int const& j, EnvPtr<T> const& pje)
 {
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
@@ -824,7 +840,7 @@ void TJL<T>::setVariable( int const& j, EnvPtr<T> const& theEnv )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+ 
 template<typename T>
 void TJL<T>::clear() 
 {

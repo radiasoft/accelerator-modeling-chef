@@ -59,8 +59,7 @@
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
 ******   to replace previous scheme based explicitly on monomial exponents tuple.
 ****** - monomial multiplication handled via a lookup-table.
-****** - added STL compatible monomial term iterators
-****** - added getCoefficient member to retrieve a specific monomial coefficient
+****** - added STL compatible monomial term iterators   
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -165,8 +164,8 @@ TJet<T> operator/( T const&,       TJet<T> const& );
 template<typename T> 
 TJet<T> operator/( TJet<T> const&, const int& ); 
 
-TJet<std::complex<double> > operator/( TJet<double >               const & x,     TJet<std::complex<double> > const& y );
-TJet<std::complex<double> > operator/( TJet<std::complex<double> > const & x,     TJet<double >               const& y );
+TJet<std::complex<double> > operator/( TJet<double >               const& x,      TJet<std::complex<double> > const& y );
+TJet<std::complex<double> > operator/( TJet<std::complex<double> > const& x,      TJet<double >               const& y );
 TJet<std::complex<double> > operator/( std::complex<double>        const& x,      TJet<double >               const& y );
 TJet<std::complex<double> > operator/( TJet<double >               const& y,      std::complex<double>        const& x );
 TJet<std::complex<double> > operator/( TJet<std::complex<double> > const& x,      double                      const& y );
@@ -340,6 +339,8 @@ public:
 
   TJet( TJet<T> const& );
 
+  explicit TJet( TJet<T> const& ,  EnvPtr<T> const&  env); // converter 
+
   template<typename U>
   TJet( TJet<U> const& );
 
@@ -354,17 +355,14 @@ public:
   void setEnvTo( TJet const& );                   // Changes environment to
   void setEnvTo( EnvPtr<T> const& );              // that of the argument.
 
-  int intEnv() const;                             // Returns integer representation
-                                                  // of the environment pointer.
-
-  EnvPtr<T> Env() const;                          // ??? DANGER!!! These two break
-  void Env( EnvPtr<T> const& env ) const;         // ??? DANGER!!! protection!!
+  EnvPtr<T> Env() const;                          
 
 
   // Public member functions__________________________________________
 
   void      addTerm( TJLterm<T> const& ); 
-  T         getCoefficient(IntArray const& exp) const; 
+  T         getTermCoefficient(IntArray const& exp) const; 
+  void      setTermCoefficient(T const& value, IntArray const& exp); 
 
   bool isNilpotent() const;
 
@@ -387,6 +385,7 @@ public:
   void setVariable( int const&,              EnvPtr<T> const& pje );
   void setVariable( T   const&,  int const& );
   void setVariable( int const& );
+
 
   void     setStandardPart( T const& std ); 
   T        standardPart() const            { return jl_->standardPart();    }
@@ -618,18 +617,11 @@ inline EnvPtr<T> TJet<T>::Env() const
   return jl_->getEnv();
 }
 
-template<typename T>
-inline void TJet<T>::Env(  EnvPtr<T> const& pje ) const
-{
-  jl_->setEnv(pje);;
-}
-
-
-template<typename T>
-inline int TJet<T>::intEnv() const   // what is this for ????
-{  
-  return int( jl_->getEnv().get() );
-}
+//template<typename T>
+//inline void TJet<T>::Env(  EnvPtr<T> const& pje ) const
+//{
+//  jl_->setEnv(pje);
+//}
 
 
 template<typename T>
