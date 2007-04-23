@@ -267,8 +267,8 @@ TMapping<T> TMapping<T>::inverse() const
  if( zero_mapped_into_zero ) return _epsInverse( (this->myEnv_) );
 
  // --------------------------------------
- // Otherwise,onstruct an idempotent 
- // and compute its inverse and susequently
+ // Otherwise, construct an idempotent 
+ // ompute its inverse and subsequently
  // set the constant terms 
  // --------------------------------------
 
