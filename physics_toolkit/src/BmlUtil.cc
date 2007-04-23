@@ -118,6 +118,7 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
   if ( typeid(x) == typeid(hkick)         )   { return true; }
   if ( typeid(x) == typeid(vkick)         )   { return true; }
   if ( typeid(x) == typeid(kick)          )   { return true; }
+  if ( typeid(x) == typeid(gkick)          )  { return true; }
   if ( typeid(x) == typeid(thinLamb)      )   { return true; }
   if ( typeid(x) == typeid(monitor)       )   { return true; }
   if ( typeid(x) == typeid(hmonitor)      )   { return true; }
@@ -128,6 +129,7 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
   if ( typeid(x) == typeid(HPinger)       )   { return true; }
   if ( typeid(x) == typeid(VPinger)       )   { return true; }
   if ( typeid(x) == typeid(rfcavity)      )   { return true; }
+  if ( typeid(x) == typeid(LinacCavity)   )   { return true; }
   if ( typeid(x) == typeid(thinrfcavity)  )   { return true; }
   if ( typeid(x) == typeid(sector)        )   { return true; }
   if ( typeid(x) == typeid(thinSeptum)    )   { return true; }
@@ -149,6 +151,7 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
 void BmlUtil::writeAsTransport( Mapping const& map )
 {
 
+#if 0
   int d = map.Dim();
   int e;
   IntArray exps(d);
@@ -172,6 +175,7 @@ void BmlUtil::writeAsTransport( Mapping const& map )
       *outputStreamPtr_ << " } = " << it->coefficient() << endl;
     }
   }
+#endif
 }
 
 
