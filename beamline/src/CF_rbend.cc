@@ -67,65 +67,79 @@ using FNAL::pcout;
 using FNAL::pcerr;
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 CF_rbend::CF_rbend()
-: bmlnElmnt( 1.0, 0.0 )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+: bmlnElmnt( 0.0, 0.0 )
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  ,     usAngle_(M_TWOPI)
+  ,     dsAngle_(-M_TWOPI)
+  ,       usTan_(0.0)
+  ,       dsTan_(0.0)
 {
-  _finishConstructor(1);
+  finishConstructor(1);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( double const&        lng,  // length      [ meter    ]
                     double const&        fld,  // field       [ tesla    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  ,  usEdgeAngle_(0.0)
+  ,  dsEdgeAngle_(0.0)
+  ,      usAngle_(M_TWOPI)
+  ,      dsAngle_(-M_TWOPI)
+  ,        usTan_(0.0)
+  ,        dsTan_(0.0)
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double const&        lng,  // length      [ meter    ]
                     double const&        fld,  // field       [ tesla    ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  ,  usEdgeAngle_(0.0)
+  ,  dsEdgeAngle_(0.0)
+  ,      usAngle_(M_TWOPI)
+  ,      dsAngle_(-M_TWOPI)
+  ,        usTan_(0.0)
+  ,        dsTan_(0.0)
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( double const&        lng,  // length      [ meter    ]
                     double const&        fld,  // field       [ tesla    ]
                     double const&        ang,  // entry angle [ radians  ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(ang)
-  , _dsAngle(-ang)
-  , _usTan(tan(ang))
-  , _dsTan(-tan(ang))
+  ,  usEdgeAngle_(0.0)
+  ,  dsEdgeAngle_(0.0)
+  ,      usAngle_(ang)
+  ,      dsAngle_(-ang)
+  ,        usTan_(tan(ang))
+  ,        dsTan_(-tan(ang))
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double const&        lng,  // length      [ meter    ]
@@ -133,16 +147,19 @@ CF_rbend::CF_rbend( const char*   nm,   // name
                     double const&        ang,  // entry angle [ radians  ]
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(ang)
-  , _dsAngle(-ang)
-  , _usTan(tan(ang))
-  , _dsTan(-tan(ang))
+  ,usEdgeAngle_(0.0)
+  ,dsEdgeAngle_(0.0)
+  ,    usAngle_(ang)
+  ,    dsAngle_(-ang)
+  ,      usTan_(tan(ang))
+  ,      dsTan_(-tan(ang))
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
@@ -152,16 +169,19 @@ CF_rbend::CF_rbend( double const&        lng,  // length     [ meter    ]
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  ,  usEdgeAngle_(us)
+  ,  dsEdgeAngle_(ds)
+  ,      usAngle_(M_TWOPI)
+  ,      dsAngle_(-M_TWOPI)
+  ,        usTan_(0.0)
+  ,        dsTan_(0.0)
 {
-  _finishConstructor(n);
+   finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double const&        lng,  // length     [ meter    ]
@@ -172,16 +192,19 @@ CF_rbend::CF_rbend( const char*   nm,   // name
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  ,     usAngle_(M_TWOPI)
+  ,     dsAngle_(-M_TWOPI)
+  ,       usTan_(0.0)
+  ,       dsTan_(0.0)
 {
-  _finishConstructor(n);
+   finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( double const&        lng,  // length      [meter]
                     double const&        fld,  // field       [tesla]
@@ -192,16 +215,19 @@ CF_rbend::CF_rbend( double const&        lng,  // length      [meter]
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( lng, fld )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(ang + us)
-  , _dsAngle(-(ang + ds))
-  , _usTan(tan(ang + us))
-  , _dsTan(-tan(ang + ds))
+  ,  usEdgeAngle_(us)
+  ,  dsEdgeAngle_(ds)
+  ,      usAngle_(ang + us)
+  ,      dsAngle_(-(ang + ds))
+  ,        usTan_(tan(ang + us))
+  ,        dsTan_(-tan(ang + ds))
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double const&        lng,  // length      [meter]
@@ -213,37 +239,42 @@ CF_rbend::CF_rbend( const char*   nm,   // name
                                         // are as defined for rbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
 : bmlnElmnt( nm, lng, fld )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(ang + us)
-  , _dsAngle(-(ang + ds))
-  , _usTan(tan(ang + us))
-  , _dsTan(-tan(ang + ds))
+  ,  usEdgeAngle_(us)
+  ,  dsEdgeAngle_(ds)
+  ,      usAngle_(ang + us)
+  ,      dsAngle_(-(ang + ds))
+  ,        usTan_(tan(ang + us))
+  ,        dsTan_(-tan(ang + ds))
 {
-  _finishConstructor(n);
+  finishConstructor(n);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_rbend::CF_rbend( const CF_rbend& x )
-: bmlnElmnt( (const bmlnElmnt&) x )
-  , _usEdgeAngle(x._usEdgeAngle)
-  , _dsEdgeAngle(x._dsEdgeAngle)
-  , _usAngle(x._usAngle)
-  , _dsAngle(x._dsAngle)
-  , _usTan(x._usTan)
-  , _dsTan(x._dsTan)
+
+CF_rbend::CF_rbend( CF_rbend const& x )
+: bmlnElmnt( x )
+  ,  usEdgeAngle_(x.usEdgeAngle_)
+  ,  dsEdgeAngle_(x.dsEdgeAngle_)
+  ,      usAngle_(x.usAngle_)
+  ,      dsAngle_(x.dsAngle_)
+  ,        usTan_(x.usTan_)
+  ,        dsTan_(x.dsTan_)
 {
-  int m = 1 + ( ( int(x._v) - int(x._u) )/sizeof( bmlnElmnt* ) );
-  _u = new bmlnElmnt* [ m ];
-  _v = &( _u[m-1] );
+  int m = 1 + ( ( int(x.v_) - int(x.u_) )/sizeof( bmlnElmnt* ) );
+  u_ = new bmlnElmnt* [ m ];
+  v_ = &( u_[m-1] );
   
-  for( int k = 0; k < m; k++ ) {
-    _u[k] = ( x._u[k] )->Clone();
+  for( int k = 0; k < m;  ++k) {
+    u_[k] = ( x.u_[k] )->Clone();
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::_finishConstructor(int n)
+void CF_rbend::finishConstructor(int n)
 {
 // NOTE: If this code is ever modified, you 
 // must also modify CF_rbend::readFrom and
@@ -265,58 +296,58 @@ void CF_rbend::_finishConstructor(int n)
   double frontLength =  (6.0*(this->length_/4.0)/15.0)/((double) n);
   double sepLength   = (16.0*(this->length_/4.0)/15.0)/((double) n);
 
-  rbend inEdge    ( frontLength,     field, _usEdgeAngle, 0.0, &rbend::InEdge  );
-  rbend outEdge   ( frontLength,     field, 0.0, _dsEdgeAngle, &rbend::OutEdge );
+  rbend inEdge    ( frontLength,     field, usEdgeAngle_, 0.0, &rbend::InEdge  );
+  rbend outEdge   ( frontLength,     field, 0.0, dsEdgeAngle_, &rbend::OutEdge );
   rbend separator ( 2.0*frontLength, field, 0.0,          0.0, &rbend::NoEdge  );
   rbend body      ( sepLength,       field, 0.0,          0.0, &rbend::NoEdge  );
 
   thinSextupole ts( 0.0 );
   thinQuad      tq( 0.0 );
 
-  _u = new bmlnElmnt* [ 121 ];    // Paranoia: should need only 109
-  _v = _u;
+  u_ = new bmlnElmnt* [ 121 ];    // Paranoia: should need only 109
+  v_ = u_;
 
-  *(_v  ) = new rbend          ( inEdge  );
-  dynamic_cast<rbend*>(*_v)->setEntryAngle( _usAngle );
-    _v++;
-  *(_v++) = new thinSextupole  ( ts      );
-  *(_v++) = new thinQuad       ( tq      );
-  *(_v++) = new rbend          ( body    );
-  *(_v++) = new thinSextupole  ( ts      );
-  *(_v++) = new thinQuad       ( tq      );
-  *(_v++) = new rbend          ( body    );
-  *(_v++) = new thinSextupole  ( ts      );
-  *(_v++) = new thinQuad       ( tq      );
-  *(_v++) = new rbend          ( body    );
-  *(_v++) = new thinSextupole  ( ts      );
-  *(_v++) = new thinQuad       ( tq      );
+  *(v_  ) = new rbend          ( inEdge  );
+  dynamic_cast<rbend*>(*v_)->setEntryAngle( usAngle_ );
+    v_++;
+  *(v_++) = new thinSextupole  ( ts      );
+  *(v_++) = new thinQuad       ( tq      );
+  *(v_++) = new rbend          ( body    );
+  *(v_++) = new thinSextupole  ( ts      );
+  *(v_++) = new thinQuad       ( tq      );
+  *(v_++) = new rbend          ( body    );
+  *(v_++) = new thinSextupole  ( ts      );
+  *(v_++) = new thinQuad       ( tq      );
+  *(v_++) = new rbend          ( body    );
+  *(v_++) = new thinSextupole  ( ts      );
+  *(v_++) = new thinQuad       ( tq      );
 
   for( int i = 1; i < n; i++ ) {
-    *(_v++) = new rbend          ( separator );
-    *(_v++) = new thinSextupole  ( ts      );
-    *(_v++) = new thinQuad       ( tq      );
-    *(_v++) = new rbend          ( body    );
-    *(_v++) = new thinSextupole  ( ts      );
-    *(_v++) = new thinQuad       ( tq      );
-    *(_v++) = new rbend          ( body    );
-    *(_v++) = new thinSextupole  ( ts      );
-    *(_v++) = new thinQuad       ( tq      );
-    *(_v++) = new rbend          ( body    );
-    *(_v++) = new thinSextupole  ( ts      );
-    *(_v++) = new thinQuad       ( tq      );
+    *(v_++) = new rbend          ( separator );
+    *(v_++) = new thinSextupole  ( ts      );
+    *(v_++) = new thinQuad       ( tq      );
+    *(v_++) = new rbend          ( body    );
+    *(v_++) = new thinSextupole  ( ts      );
+    *(v_++) = new thinQuad       ( tq      );
+    *(v_++) = new rbend          ( body    );
+    *(v_++) = new thinSextupole  ( ts      );
+    *(v_++) = new thinQuad       ( tq      );
+    *(v_++) = new rbend          ( body    );
+    *(v_++) = new thinSextupole  ( ts      );
+    *(v_++) = new thinQuad       ( tq      );
   }
 
-  *(_v  ) = new rbend          ( outEdge );
-  dynamic_cast<rbend*>(*_v)->setExitAngle( _dsAngle );
+  *(v_  ) = new rbend          ( outEdge );
+  dynamic_cast<rbend*>(*v_)->setExitAngle( dsAngle_ );
 
   // Paranoid test.
-  if( (12*n + 1) != (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) )) ) {
+  if( (12*n + 1) != (1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) )) ) {
     (*pcerr) << "*** ERROR ***                                         \n"
             "*** ERROR *** CF_rbend constructor                    \n"
             "*** ERROR *** Impossible! "
          << (11*n + 2)
          << " != " 
-         << (1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) ))
+         << (1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) ))
          << "\n*** ERROR *** Constructor is aborting program.        \n"
             "*** ERROR ***                                         \n"
          << endl;
@@ -325,14 +356,17 @@ void CF_rbend::_finishConstructor(int n)
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 CF_rbend::~CF_rbend()
 {
   // NOTE: If this code is ever modified, you 
   // must also modify CF_rbend::readFrom.
-  while( _v >= _u ) {
-    delete (*(_v--));
+  while( v_ >= u_ ) {
+    delete (*(v_--));
   }
-  delete [] _u;
+  delete [] u_;
 }
 
 
@@ -345,27 +379,27 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
               
   bmlnElmnt::operator=( rhs );
 
-  _usEdgeAngle =  rhs._usEdgeAngle;  
-  _dsEdgeAngle =  rhs._dsEdgeAngle;
+  usEdgeAngle_ =  rhs.usEdgeAngle_;  
+  dsEdgeAngle_ =  rhs.dsEdgeAngle_;
 
-  _usAngle     =  rhs._usAngle;
-  _dsAngle     =  rhs._dsAngle;
+  usAngle_     =  rhs.usAngle_;
+  dsAngle_     =  rhs.dsAngle_;
 
-  _usTan       =  rhs._usTan;
-  _dsTan       =  rhs._dsTan;
+  usTan_       =  rhs.usTan_;
+  dsTan_       =  rhs.dsTan_;
 
-  if  (!_v ) { _u = _v = 0; return *this; } 
+  if  (!v_ ) { u_ = v_ = 0; return *this; } 
 
-  int nelm = 1 + (rhs._v - rhs._u)/sizeof(bmlnElmnt*);
+  int nelm = 1 + (rhs.v_ - rhs.u_)/sizeof(bmlnElmnt*);
 
-  _u = new bmlnElmnt*[nelm];
+  u_ = new bmlnElmnt*[nelm];
   
   for ( int i=0; i < nelm; ++i)
   {
-    _u[i] = rhs._u[i]->Clone();   
+    u_[i] = rhs.u_[i]->Clone();   
   }
 
-  _v = _u + nelm-1;       
+  v_ = u_ + nelm-1;       
   
   return *this;
 }
@@ -375,21 +409,26 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 
 void CF_rbend::localPropagate( Particle& p )
 {
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
+  bmlnElmnt** x = u_;
+  while( x <= v_ ) {
     (*(x++))->localPropagate( p );
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::localPropagate( JetParticle& p )
 {
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
+  bmlnElmnt** x = u_;
+  while( x <= v_ ) {
     (*(x++))->localPropagate( p );
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_rbend::setEntryAngle( const Particle& p )
 {
@@ -398,6 +437,9 @@ double CF_rbend::setEntryAngle( const Particle& p )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::setExitAngle( const Particle& p )
 {
   return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
@@ -405,34 +447,43 @@ double CF_rbend::setExitAngle( const Particle& p )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::setEntryAngle( double const& phi /* radians */ )
 {
-  double ret = _usAngle;
-  _usAngle = phi;
-  _usTan = tan(phi);
-  dynamic_cast<rbend*>(*_u)->setEntryAngle(phi);
+  double ret = usAngle_;
+  usAngle_ = phi;
+  usTan_   = tan(phi);
+  dynamic_cast<rbend*>(*u_)->setEntryAngle(phi);
   return ret;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_rbend::setExitAngle( double const& phi /* radians */ )
 {
-  double ret = _dsAngle;
-  _dsAngle = phi;  
-  _dsTan  = tan(phi);
-  dynamic_cast<rbend*>(*_v)->setExitAngle(phi);
+  double ret = dsAngle_;
+  dsAngle_ = phi;  
+  dsTan_  = tan(phi);
+  dynamic_cast<rbend*>(*v_)->setExitAngle(phi);
   return ret;
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int CF_rbend::setOctupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
       // w[++counter] = dynamic_cast<thinOctupole*>(*x);
       w[++counter] = (thinOctupole*)(*x);
@@ -454,14 +505,17 @@ int CF_rbend::setOctupole( double const& arg_x )
   return 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int CF_rbend::setSextupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinSextupole" ) ) {
       // w[++counter] = dynamic_cast<thinSextupole*>(*x);
       w[++counter] = (thinSextupole*)(*x);
@@ -484,26 +538,35 @@ int CF_rbend::setSextupole( double const& arg_x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool CF_rbend::hasParallelFaces() const
 {
-  return ( std::abs( _usEdgeAngle + _dsEdgeAngle ) <  1.0e-9 );
+  return ( std::abs( usEdgeAngle_ + dsEdgeAngle_ ) <  1.0e-9 );
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool CF_rbend::hasStandardFaces() const
 {
-  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
+  return ( (std::abs(usEdgeAngle_) < 1.0e-9) && (std::abs(dsEdgeAngle_) < 0.5e-9) );
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int CF_rbend::setQuadrupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
       // w[++counter] = dynamic_cast<thinQuad*>(*x);
       w[++counter] = (thinQuad*)(*x);
@@ -526,16 +589,19 @@ int CF_rbend::setQuadrupole( double const& arg_x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int CF_rbend::setDipoleField( double const& arg_x )
 {
   this->strength_ = arg_x;
 
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   rbend** w = new rbend* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "rbend" ) ) {
       // w[++counter] = dynamic_cast<rbend*>(*x);
       w[++counter] = (rbend*)(*x);
@@ -557,26 +623,32 @@ int CF_rbend::setDipoleField( double const& arg_x )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void CF_rbend::setStrength( double const& s )
 {
-  double ratio = s / this->getDipoleField();
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
+  double ratio = s / getDipoleField();
+  bmlnElmnt** x = u_;
+  while( x <= v_ ) {
     (*x)->setStrength( ratio*((*x)->Strength()) );
-    x++;
+    ++x;
   }
-  this->strength_ = s;
+  strength_ = s;
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::getOctupole() const
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinOctupole** w = new thinOctupole* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
       // w[++counter] = dynamic_cast<thinOctupole*>(*x);
       w[++counter] = (thinOctupole*)(*x);
@@ -590,7 +662,7 @@ double CF_rbend::getOctupole() const
   }
   
   double ret = 0.0;
-  for( int i = 0; i <= counter; i++ ) {
+  for( int i=0; i <= counter; ++i) {
     ret += w[i]->Strength();
   }
   
@@ -599,14 +671,17 @@ double CF_rbend::getOctupole() const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::getSextupole() const
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinSextupole** w = new thinSextupole* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinSextupole" ) ) {
       // w[++counter] = dynamic_cast<thinSextupole*>(*x);
       w[++counter] = (thinSextupole*)(*x);
@@ -620,7 +695,7 @@ double CF_rbend::getSextupole() const
   }
   
   double ret = 0.0;
-  for( int i = 0; i <= counter; i++ ) {
+  for( int i=0; i <= counter; ++i) {
     ret += w[i]->Strength();
   }
   
@@ -628,14 +703,17 @@ double CF_rbend::getSextupole() const
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::getQuadrupole() const
 {
-  int m = 1 + ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   thinQuad** w = new thinQuad* [ m ];
   int counter = -1;
-  bmlnElmnt** x = _u;
+  bmlnElmnt** x = u_;
 
-  while( x <= _v ) {
+  while( x <= v_ ) {
     if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
       // w[++counter] = dynamic_cast<thinQuad*>(*x);
       w[++counter] = (thinQuad*)(*x);
@@ -658,11 +736,17 @@ double CF_rbend::getQuadrupole() const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::getDipoleField() const
 {
-  return this->strength_;
+  return strength_;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
@@ -701,11 +785,11 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   CF_rbend* p_a = 0;
   CF_rbend* p_b = 0;
 
-  a =  CFRbendPtr( p_a = new CF_rbend(         pc*length_, strength_, _usEdgeAngle, 0.0 ) );
+  a =  CFRbendPtr( p_a = new CF_rbend(         pc*length_, strength_, usEdgeAngle_, 0.0 ) );
   p_a->setEntryAngle( this->getEntryAngle() );
   p_b->setExitAngle( 0.0 );    // Will matter
 
-  b =  CFRbendPtr ( p_b =new CF_rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle ) );
+  b =  CFRbendPtr ( p_b =new CF_rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_ ) );
 
   p_b->setEntryAngle( 0.0 );   // Will matter
   p_b->setExitAngle( this->getExitAngle() );
@@ -724,6 +808,9 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::peekAt( double& s, Particle const& prt ) 
 {
@@ -744,9 +831,12 @@ void CF_rbend::peekAt( double& s, Particle const& prt )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& CF_rbend::writeTo( ostream& os )
 {
-  int n = ( ( int(_v) - int(_u) )/sizeof( bmlnElmnt* ) );
+  int n = ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
   if( 0 != n%12 ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "ostream& CF_rbend::writeTo( ostream& os )", 
@@ -754,10 +844,10 @@ ostream& CF_rbend::writeTo( ostream& os )
   }
 
   os << (n/12) << "  ";
-  os << OSTREAM_DOUBLE_PREC << _usEdgeAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsEdgeAngle << endl;
-  os << OSTREAM_DOUBLE_PREC << _usAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
+  os << OSTREAM_DOUBLE_PREC << usEdgeAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsEdgeAngle_ << endl;
+  os << OSTREAM_DOUBLE_PREC << usAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsAngle_ << endl;
   os << OSTREAM_DOUBLE_PREC << getQuadrupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getOctupole() << " ";
@@ -765,6 +855,9 @@ ostream& CF_rbend::writeTo( ostream& os )
   return os;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& CF_rbend::readFrom( istream& is )
 {
@@ -774,38 +867,41 @@ istream& CF_rbend::readFrom( istream& is )
   int    n            = 0;
 
   is >> n
-     >> (this->_usEdgeAngle)
-     >> (this->_dsEdgeAngle)
-     >> (this->_usAngle)
-     >> (this->_dsAngle)
+     >> usEdgeAngle_
+     >> dsEdgeAngle_
+     >> usAngle_
+     >> dsAngle_
      >> quadStrength 
      >> sextStrength
      >> octStrength;
 
-  _usTan = tan(_usAngle);
-  _dsTan = tan(_dsAngle);
+  usTan_ = tan( usAngle_ );
+  dsTan_ = tan( dsAngle_ );
 
   // Rebuild basic element ...
   // ... First deconstruct (identical to CF_rbend destructor)
-  while( _v >= _u ) {
-    delete (*(_v--));
+  while( v_ >= u_ ) {
+    delete (*(v_--));
   }
-  delete [] _u;
-  _v = 0;
-  _u = 0;
+  delete [] u_;
+  v_ = 0;
+  u_ = 0;
 
   // ... Then reconstruct
-  _finishConstructor(n);
+  finishConstructor(n);
 
 
   // Set multipoles
-  this->setQuadrupole( quadStrength );
-  this->setSextupole( sextStrength );
+  setQuadrupole( quadStrength );
+  setSextupole( sextStrength );
 
 
   return is;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* CF_rbend::Type() const  
 { 
@@ -813,11 +909,17 @@ const char* CF_rbend::Type() const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool CF_rbend::isMagnet() const
 {
   return true;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_rbend::OrbitLength( const Particle& x )
 {
@@ -825,6 +927,9 @@ double CF_rbend::OrbitLength( const Particle& x )
   return tworho * asin( length_ / tworho );
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_rbend::AdjustPosition( const Particle& arg_p )
 {
@@ -836,9 +941,12 @@ double CF_rbend::AdjustPosition( const Particle& arg_p )
 }
 
 
-double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 {
-  if( ( 0.0 != _usEdgeAngle ) || ( 0.0 != _dsEdgeAngle ) ) {
+  if( ( 0.0 != usEdgeAngle_ ) || ( 0.0 != dsEdgeAngle_ ) ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
            "In this version: only implemented for parallel faces." ) );
@@ -1000,37 +1108,47 @@ double CF_rbend::AdjustPosition( const JetParticle& arg_jp )
   return z;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void CF_rbend::acceptInner( BmlVisitor& v )
 {
   ctRef_ = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
+  bmlnElmnt** x = u_;
+  while( x <= v_ ) {
     (*x)->accept( v );
     ctRef_ += (*x)->getReferenceTime();
     x++;
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::acceptInner( ConstBmlVisitor& v )
 {
   ctRef_ = 0.0;
-  bmlnElmnt** x = _u;
-  while( x <= _v ) {
+  bmlnElmnt** x = u_;
+  while( x <= v_ ) {
     (*x)->accept( v );
     ctRef_ += (*x)->getReferenceTime();
     x++;
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::accept( BmlVisitor& v ) 
 {
   v.visit(*this);
 } 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::accept( ConstBmlVisitor& v ) const
 {
