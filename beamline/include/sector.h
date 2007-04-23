@@ -103,7 +103,8 @@ public:
   void setFrequency( Jet (*)( Jet const& ) );
   void setLength( double const& );
 
-  const char* Type() const;
+  const char* Type()     const;
+  bool        isMagnet() const;
 
 private:
 

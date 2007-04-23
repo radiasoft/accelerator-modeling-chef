@@ -72,7 +72,8 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  char const* Type() const;
+  bool        isMagnet() const;
+  char const*     Type() const;
 };
 
 #endif // SROT_H
