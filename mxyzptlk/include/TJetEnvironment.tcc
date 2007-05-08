@@ -87,7 +87,9 @@
 #include <mxyzptlk/JLPtr.h>
 #include <iostream>
 #include <algorithm>
+#include <functional>
 #include <mxyzptlk/TMapping.h>
+#include <mxyzptlk/EnvPtr.h>
 
 using namespace std;
 
@@ -305,71 +307,72 @@ void TJet<T>::EnlargeEnvironment( const TJetEnvironment<T>* pje )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif
 
-template<typename T>
-class heldPtrsAreEqual {
-  
- private:
-    
-  TJetEnvironment<T>* _pje_raw; 
-
- public:
-
-  heldPtrsAreEqual( TJetEnvironment<T>* pje_raw ): _pje_raw(pje_raw) {} 
-  bool operator()( EnvPtr<T>& pje) { 
-               return (_pje_raw == pje.get() ); 
-  }  
-
-}; 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+namespace { 
+
+  template <typename U>
+  struct EnvCompare {
+    EnvCompare( TJetEnvironment<U> const * env )
+       : env_(env) {}
+
+    bool operator()( EnvPtr<U> const& rhs ) const 
+       { return (env_ == rhs.get()); } 
+ 
+    TJetEnvironment<U> const * const env_;
+  };
+}
+
+//--------------------------------------------------------------------------------------------------------
 
 template<typename T>
 void TJetEnvironment<T>::dispose() {
+ 
+  static bool disposed = false; 
 
-
-  TJetEnvironment* pje = 0;
+  if ( disposed ) { disposed = false; return; }
 
   typename std::list<EnvPtr<T> >::iterator iter;
-  
+
+  // restore the true reference count.
+
+  this->add_ref();
+
+  EnvPtr<T> dummy( this, false);   
   iter =  std::find_if(  TJetEnvironment<T>::environments_.begin(),  
-                         TJetEnvironment<T>::environments_.end(), 
-                         heldPtrsAreEqual<T>(this) );
+                         TJetEnvironment<T>::environments_.end(), EnvCompare<T>( this ) );
  
   if (iter == TJetEnvironment<T>::environments_.end() ) {
-    (*pcerr) << "Error, env not found !" << std::endl; 
+    (*pcerr) << "**ERROR***  Environment not found !" << std::endl; 
      return;
   }
-   
-  pje = (*iter).get();             // save the raw pointer. 
-
+  
+  //------------------------------------------------------------------
   //                   ****** NOTE ******* 
   // remove() returns the container's new 'end()' (which just
   // happens to be the first element that was removed); this value
   // is then used in the container's 'erase()' call.
+  //------------------------------------------------------------------
 
-  // remove all instances of  *this from the env list ... 
+  // remove EnvPtr(this) from the env list ... 
+ 
+   disposed = true; // The erase operation below will result in another call to dispose() because
+                     // the ref count will go from 1 to 0 after erasure. 
+                     // Setting this static flag prevents double deletion. 
 
-  environments_.erase(remove(environments_.begin(), environments_.end(), *iter), environments_.end()) ;   
+   environments_.erase(remove(environments_.begin(), environments_.end(), *iter), environments_.end()) ;   
+
+   return;
   
-  
- //                        **** NOTE ****  
- // The erase operation above is safe because intrusive_ptr_release() 
- // decrements the reference count from 0 to -1. As a result, 
- // dispose() is **not** called. dispose() is called only 
- // when unless the reference reaches 0 as a result of a decrement 
- // operation..
-
-  // it is now safe to delete the raw pointer ;-) ...  
-
-  if (pje) delete pje;
-
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJetEnvironment<T>::TJetEnvironment(int maxweight, int numvar, int spacedim, T* refpoint, double* scale) : 
-
+  ReferenceCounter<TJetEnvironment<T> >(),
   numVar_(numvar),                // number of variables
   spaceDim_(spacedim),            // phase space dimensions
   dof_(spacedim/2),               // degrees of freedom                             
@@ -382,16 +385,17 @@ TJetEnvironment<T>::TJetEnvironment(int maxweight, int numvar, int spacedim, T* 
                                   // Consider simply checking the space dimensions before taking a PB ? 
 
  {
+
+
   scratch_ = buildScratchPads(maxweight, numvar);
 
-  
-
-    
   for (int i=0; i<numVar_; ++i) {   
         refPoint_[i]   = refpoint[i];
            scale_[i]   = scale[i];
   } 
 
+  
+  return;
 }
  
 
@@ -406,8 +410,8 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   maxWeight_(w),                                        // maxWeight and numVar are duplicated here because 
   numVar_(n),                                           // they are needed to reference an existing scratch area
   maxTerms_( bcfRec( w + n, n ) ),                      // no of monomials in a polynomial of order w in n variables
-  monomial_(new U[maxTerms_]),
-  TJLmonomial_(new JLPtr<U>[ maxTerms_]),               // for monomials used in multinomial evaluation.  
+  monomial_( maxTerms_),
+  TJLmonomial_(maxTerms_ ),
   TJLmml_( maxTerms_ ),                                 // the actual scratchpad 
   allZeroes_(n)
 {
@@ -440,11 +444,6 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  //  
  //-------------------------------------------------------------------------------------------------------------
 
- for( int i = 0; i< maxTerms_;  ++i) {
-    TJLmonomial_[i] = JLPtr<T>( TJL<U>::makeTJL( EnvPtr<U>(pje), U()) );     // NOTE: the anonymous constructor is not suitable for an array.  
-                                                                            //        it causes problems with static variables. 
- }
-   
  IntArray exponents(numVar_);
  U startValue(0.0);
 
@@ -452,7 +451,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  weight_offsets_.resize( maxWeight_+2 );
  index_table_.resize(maxTerms_);
 
- new ( &TJLmml_[0] ) TJLterm<U>( startValue, exponents.Sum(), 0 );
+ new ( &TJLmml_[0] ) TJLterm<U>( startValue, 0, 0 );
  weight_offsets_[0] = 0; 
  index_table_[0]    = exponents;
 
@@ -462,8 +461,9 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
    weight_offsets_[wd] = i;
 
    while( nexcom( wd, n, exponents ) ) {
+
      if( i <  maxTerms_ ) {
-       new ( &TJLmml_[i])TJLterm<U>(  startValue, exponents.Sum(), i );
+       new ( &TJLmml_[i])TJLterm<U>(  startValue, i , exponents.Sum());
        index_table_[i]    = exponents;
      }
      else {
@@ -500,12 +500,14 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
       for (int j=0; j < maxidx; ++j ) {
                   
          exponents =  index_table_[i]  +  index_table_[j];
-         if ( exponents.Sum()  <= maxWeight_ ) { 
+         if ( exponents.Sum()  <= maxWeight_ ) 
+         { 
                 multTable_[i][j] = offsetIndex(exponents);
          }
 
       }
    }
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -516,6 +518,34 @@ template <typename U>
 void  TJetEnvironment<T>::ScratchArea<U>::debug() const
 {  
       
+
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+   std::cout << " monomial table " << std::endl;
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+
+  for (int i=0; i < maxTerms_;  ++i ) {
+    
+    std::cout <<  "offset : " <<  TJLmml_[i].offset_       << "  " 
+              <<  "index : "  <<  index_table_[i]          << "  " 
+              <<  "weight : " <<  index_table_[i].Weight() << "  " 
+              <<  "value : "  <<  TJLmml_[i].value_        << std::endl;
+  }
+
+
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+   std::cout << " weight offsets table " << std::endl;
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+
+   for (int i=0; i < maxWeight_+1;  ++i ) {
+ 
+   std::cout << "weight " << i << "  start: " << weight_offsets_[i] 
+                               << "  end:   " << weight_offsets_[i+1] << std::endl;
+   }
+
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+   std::cout << " multiplication table " << std::endl;
+   std::cout << " ------------------------------------------------------------------------------" << std::endl;
+
    for (int i=0; i < maxTerms_;  ++i ) {
       for (int j=0; j<multTable_[i].size(); ++j ) {
 
@@ -524,25 +554,10 @@ void  TJetEnvironment<T>::ScratchArea<U>::debug() const
                  <<  index_table_[ multTable_[i][j] ] << std::endl;
 
       }
-  }
-
-  
-  for (int i=0; i < maxTerms_;  ++i ) {
-    
-    std::cout <<  "offset : " <<  TJLmml_[i].offset_  << "  " 
-              <<  "index : "  <<  index_table_[i]     << "  " 
-              <<  "weight : " <<  TJLmml_[i].weight_  << "  " 
-              <<  "value : "  <<  TJLmml_[i].value_   << std::endl;
-  } 
-
-
-  for (int i=0; i < maxTerms_;  ++i ) {
-    
-    std::cout <<  "offset: " << i << " index : "  << index_table_[i]   << std::endl; 
-
-  }
+   }
 
 }
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -550,14 +565,7 @@ void  TJetEnvironment<T>::ScratchArea<U>::debug() const
 template<typename T>
 template<typename U>
  TJetEnvironment<T>::ScratchArea<U>::~ScratchArea()
-{
-
-
-  if(  monomial_   )  { delete []  monomial_;     monomial_    = 0; }
-
-  if(  TJLmonomial_ ) { delete []  TJLmonomial_;  TJLmonomial_ = 0; }
-
-}
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -593,8 +601,8 @@ int  TJetEnvironment<T>::ScratchArea<U>::offsetIndex(IntArray const& exp) const
 
  int weight = exp.Sum(); 
 
-TJLterm<T> const* itstart = &TJLmml_[0] + weight_offsets_[weight]; 
-TJLterm<T> const* itend   = &TJLmml_[0] + weight_offsets_[weight+1];
+ TJLterm<T> const* itstart = &TJLmml_[0] + weight_offsets_[weight]; 
+ TJLterm<T> const* itend   = &TJLmml_[0] + weight_offsets_[weight+1];
 
  // look for a match to exp in the scratchpad, within monomials of same weight. 
 
@@ -727,15 +735,6 @@ EnvPtr<T>  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int s
     }
     if ( !refpoints_are_equivalent )   continue; 
 
-#if 0
-===============================================================
-    scales_are_equivalent = true;
-    for (int i=0; i<nvar; ++i ) {
-      scales_are_equivalent = scales_are_equivalent && ( tmppje->scale()[i] == tmp_scale[i] );
-    }
-    if ( ! scales_are_equivalent )              continue; 
-==================================================================
-#endif
   
     // -----------------------------------------------------------
     // if we got here, a suitable environment already exists
@@ -744,26 +743,24 @@ EnvPtr<T>  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int s
      break;
  }
 
- if  (pje.get()) { // pje is not null 
+ if  ( pje ) { // pje is not null 
+
      return pje;
+
  } else  {
 
-     // NOTE: the 2nd argument (default=true) in the smart pointer constructor invocation is set to false. This
-     //       prevents the reference count to be incremented. The effect is that the reference count will go to 0 when 
-     //       the only instance of the smart ptr is the one left in the _environment list. When the ref count reaches 
-     //       0, the custom deleter (dispose()) removes the env from the list.   
+     // NOTE: The reference count will go to 0 when the only instance of the smart ptr is the one left in 
+     //       the environment list_. When that happens, the custom deleter (dispose()) removes the env from the list.   
   
-     // NOTE: The swap function here is used here to prevent the ref count of newly created env ptr to go from 1 to zero 
-     //       and be prematurely deleted. Normally this is not a problem, but here the pointer is created (execeptionally)
-     //         with an initial ref count of 0.
 
-     EnvPtr<T> newpje( new TJetEnvironment<T>( maxweight, nvar, spacedim, tmp_refpoints.get(), tmp_scale.get()), false);
-     pje.swap( newpje );
+      EnvPtr<T> newpje( new TJetEnvironment<T>( maxweight, nvar, spacedim, tmp_refpoints.get(), tmp_scale.get()) );
+      TJetEnvironment<T>::environments_.push_back( newpje );
 
-     TJetEnvironment<T>::environments_.push_back( pje );
+      newpje->release(); // do *not* count the instance that is in the environments_ list !!!!
 
-     return pje;
+      return newpje;
  }
+
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -772,14 +769,14 @@ EnvPtr<T>  TJetEnvironment<T>::makeJetEnvironment(int maxweight, int nvar, int s
 #if  0
 template<typename T>
 TJetEnvironment<T>::TJetEnvironment( TJetEnvironment const& env) 
-: numVar_(env.numVar_), 
+:   numVar_(env.numVar_), 
   spaceDim_(env.spaceDim_), 
-  dof_(env.dof_),
+       dof_(env.dof_),
   refPoint_(0),
-  scale_(0),
-  maxWeight_(env.maxWeight_),
-  pbok_(env.pbok_),
-  scratch_(env.scratch_)
+     scale_(0),
+ maxWeight_(env.maxWeight_),
+      pbok_(env.pbok_),
+   scratch_(env.scratch_)
 {
   
   refPoint_ = new T [numVar_];
@@ -830,7 +827,7 @@ TJetEnvironment<T>&  TJetEnvironment<T>::operator=( TJetEnvironment<T> const& en
 
 
 template<typename T>
-bool TJetEnvironment<T>::operator==( const TJetEnvironment& x ) const
+bool TJetEnvironment<T>::operator==( TJetEnvironment const& x ) const
 {
   if( x.numVar_    !=  numVar_ )    return false;
   if( x.spaceDim_  !=  spaceDim_ )  return false;
@@ -962,7 +959,7 @@ bool TJetEnvironment<T>::operator!=( const TJetEnvironment& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-ostream& operator<<( ostream& os, const TJetEnvironment<T>& x )
+ostream& operator<<( ostream& os, TJetEnvironment<T> const& x )
 {
   os << x.numVar_   << endl;
   os << x.spaceDim_ << endl;
@@ -1022,21 +1019,6 @@ std::istream& streamIn( std::istream& is, EnvPtr<T>& pje )
 
   return is;
 }
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-int  TJetEnvironment<T>::offsetIndex(IntArray const& exp) const
-{
-  return scratch_->offsetIndex(exp);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 
 #endif // TJETENVIRONMENT_TCC
