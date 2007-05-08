@@ -71,7 +71,6 @@
 #include <ostream>
 #include <istream>
 #include <basic_toolkit/ReferenceCounter.h>
-#include <boost/shared_ptr.hpp>
 
 // Forward declarations
 
@@ -123,10 +122,8 @@ struct ScratchArea {
     int                                maxWeight_;
     int                                numVar_;
     int                                maxTerms_;       // Maximum number of monomial terms.
-    U*                                 monomial_;       // Storage area for monomials used in multinomial
-                                                        // evaluation. 
-    JLPtr<U>*                          TJLmonomial_;    // Storage area for TJL monomials used in concatenation.
- 
+    std::vector<U>                     monomial_;       // Storage area for monomials used in multinomial evaluation. 
+    std::vector<JLPtr<U> >             TJLmonomial_;    // Storage area for TJL monomials used in concatenation.
     std::vector<TJLterm<U> >           TJLmml_;         // Same as above, but used for collecting terms
                                                         //   during multiplication.
     std::vector<IntArray>              index_table_;    // table of monomial exponents ( offset = ordering index)  
@@ -134,12 +131,16 @@ struct ScratchArea {
     std::vector<int>                   weight_offsets_; // Offsets of the weights groups within the scratchpad     
 
     const IntArray                     allZeroes_;      // An integer array containing zeroes.  Used to 
-                                                        //   filter the standard part of a variable.
+                                                        // filter the standard part of a variable.
 
    ScratchArea( TJetEnvironment<U>* pje, int weight, int numvar);
   ~ScratchArea();
  
+   int  multOffset( int const& rhs, int const& lhs) const 
+                { return ( rhs > multTable_[lhs].size()-1 ) ?  multTable_[lhs][rhs]: multTable_[rhs][lhs]; }  
+
    int  offsetIndex(IntArray const& exp) const;
+
    void debug()     const; 
 
    private:
@@ -236,21 +237,19 @@ struct ScratchArea {
    const double*   scale()       const { return   scale_;        }
    const T*        getRefPoint() const { return   refPoint_; } 
  
-   T*              monomial()    const { return   scratch_->monomial_;    }
-   JLPtr<T>*       TJLmonomial() const { return   scratch_->TJLmonomial_; }
+   std::vector<T>&            monomial()        const { return   scratch_->monomial_;    }
+   std::vector<TJLterm<T> >&  TJLmml()          const { return   scratch_->TJLmml_;      }
+   std::vector<JLPtr<T> >&    TJLmonomial()     const { return   scratch_->TJLmonomial_; }
 
-   std::vector<TJLterm<T> >&  TJLmml()  const { return   scratch_->TJLmml_; }
+   int             multOffset    (int const& lhs, int const& rhs)  const   { return  scratch_->multOffset(lhs, rhs); }
 
-   int             multOffset    (int const& lhs, int const& rhs)  const    
-                                    { return  ( rhs >  scratch_->multTable_[lhs].size()-1 ) ?  scratch_->multTable_[lhs][rhs]:  
-                                                                                               scratch_->multTable_[rhs][lhs]; }  
 
-   int             offsetIndex( IntArray const& exp) const;
-   int             weight( int const& offset )       const  { return scratch_->TJLmml_[offset].weight_; }
+   int             offsetIndex( IntArray const& exp) const; 
+   int             weight( int const& offset )       const;
    IntArray        exponents( int const& offset )    const  { return scratch_->index_table_[offset]; }
 
    const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
-   int             maxTerms() const                          { return scratch_->maxTerms_;}
+   int             maxTerms()  const                         { return scratch_->maxTerms_;}
 
    static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
    static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
@@ -308,8 +307,8 @@ struct ScratchArea {
 
   TJetEnvironment(TJetEnvironment const&);
 
-  template<typename U>
-  TJetEnvironment(TJetEnvironment<U> const&);
+  //  template<typename U>
+  //TJetEnvironment(TJetEnvironment<U> const&);
 
 
 };
@@ -318,9 +317,9 @@ struct ScratchArea {
 // specializations
 //------------------------------------------------------------------------------------------------------------
 
-template<>
-template<>
-TJetEnvironment<std::complex<double> >::TJetEnvironment( TJetEnvironment<double> const& );
+//template<>
+//template<>
+//TJetEnvironment<std::complex<double> >::TJetEnvironment( TJetEnvironment<double> const& );
 
 template<>
 template<>
@@ -331,6 +330,29 @@ template<>
 template<>
 EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( EnvPtr<std::complex<double> > const& );
 
+
+
+//------------------------------------------------------------------------------------------------------------
+// inline members
+//------------------------------------------------------------------------------------------------------------
+
+
+template <typename T>
+inline int  TJetEnvironment<T>::offsetIndex(IntArray const& exp) const
+{
+  return scratch_->offsetIndex(exp);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template <typename T>
+inline int      TJetEnvironment<T>::weight( int const& offset )       const  
+{ 
+   return scratch_->index_table_[offset].Weight(); 
+
+}
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES
