@@ -118,13 +118,13 @@ template<typename T>
 TLieOperator<T>::TLieOperator( TJet<T> const& x ) 
 : TJetVector<T>( (x.Env())->spaceDim(), x.Env() )
 { 
- int i = 0;
+
  EnvPtr<T> pje = x.Env();
 
  int s = pje->spaceDim();
  
- int n = pje->numVar();
- int* ndx = new int [n];
+ int n        = pje->numVar();
+ IntArray ndx(n,0);
 
  if( s == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -140,26 +140,25 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
           uic.str().c_str() ) );
  }
 
- for( i = 0; i < n; i++ ) ndx[i] = 0;
+ for( int i=0; i < n; ++i) ndx[i] = 0;
 
- for( i = 0; i < s/2; i++ ) {
+ for( int i=0; i < s/2; ++i) {
   ndx[i + s/2] = 1;
   TLieOperator<T>::comp_[i] = x.D( ndx );
   ndx[i + s/2] = 0;
  }
 
- for( i = s/2; i < s; i++ ) {
+ for( int i=s/2; i < s; ++i) {
   ndx[i - s/2] = 1;
   TLieOperator<T>::comp_[i] = - x.D( ndx );
   ndx[i - s/2] = 0;
  }
 
- for( i = s; i < n; i++ ) {
+ for( int i=s; i< n; ++i) {
   TLieOperator<T>::comp_[i].setEnvTo( pje );
   TLieOperator<T>::comp_[i] = T();
  }
 
- delete [] ndx;
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
