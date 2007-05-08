@@ -118,7 +118,6 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
   if ( typeid(x) == typeid(hkick)         )   { return true; }
   if ( typeid(x) == typeid(vkick)         )   { return true; }
   if ( typeid(x) == typeid(kick)          )   { return true; }
-  if ( typeid(x) == typeid(gkick)          )  { return true; }
   if ( typeid(x) == typeid(thinLamb)      )   { return true; }
   if ( typeid(x) == typeid(monitor)       )   { return true; }
   if ( typeid(x) == typeid(hmonitor)      )   { return true; }
