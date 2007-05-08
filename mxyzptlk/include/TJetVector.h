@@ -52,13 +52,17 @@
 ******
 ******  Dec 2006 ostiguy@fnal.gov    
 ****** 
-******  - New implementation. TJetVector is now based on a vector<Jet>
-******    container. The previous version was based on a dynamically allocated 
-******    array of Jet*. Since a Jet is now basically an envelope for a 
-******    smart ptr to implementation, its memory footprint is negligible. 
-******    This fact enables the use of value semantics for Jet components 
-******    and vastly simplifies memory management.       
+******  - New implementation. TJetVector is now based on a std::vector<Jet>
+******    container (the previous version was based on a dynamically allocated 
+******    array of raw Jet*). Since Jet is now basically an envelopp for a 
+******    a smart ptr to implementation, its memory footprint is negligible. 
+******    Use of value semantics for Jet components vastly simplifies memory 
+******    management.       
 ******  
+******  Apr 2007 ostiguy@fnal.gov
+******
+******   - added STL-style iterators
+****** 
 **************************************************************************
 *************************************************************************/
 #ifndef TJETVECTOR_H
@@ -123,6 +127,25 @@ protected:
   std::vector< TJet<T> >          comp_;
 
 public:
+
+  typedef typename std::vector<TJet<T> >::iterator             iterator;
+  typedef typename std::vector<TJet<T> >::const_iterator const_iterator;
+
+  typedef typename std::vector<TJet<T> >::reverse_iterator             reverse_iterator;
+  typedef typename std::vector<TJet<T> >::const_reverse_iterator const_reverse_iterator;
+
+  iterator                begin();
+  const_iterator          begin()  const;
+
+  iterator                end();
+  const_iterator          end()    const;
+
+  reverse_iterator        rbegin();
+  const_reverse_iterator  rbegin() const;
+
+  reverse_iterator        rend();
+  const_reverse_iterator  rend()   const;
+
 
   TJetVector( int n ,  EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) );
 
@@ -206,8 +229,8 @@ public:
 
 
   // Functions related to differentiation
-  void weightedDerivative( int*, T* );
-  void derivative( int*, T* );
+  void weightedDerivative( IntArray const&, T* );
+  void derivative( IntArray const&,  T* );
   
 
   // Queries ...

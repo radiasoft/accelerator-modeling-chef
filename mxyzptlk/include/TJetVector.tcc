@@ -5,7 +5,6 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TJetVector.cc
-******  Version:   1.0                    
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -59,6 +58,10 @@
 ******    This fact enables the use of value semantics for
 ******    the stored Jet components and vastly simplifies memory management.       
 ******  
+******  Apr 2007 ostiguy@fnal.gov
+******
+******   - added STL-style iterators
+****** 
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -971,7 +974,7 @@ TJetVector<T> TJetVector<T>::filter( int lower, int upper ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJetVector<T>::weightedDerivative( int* m, T* x ) 
+void TJetVector<T>::weightedDerivative( IntArray const& m, T* x ) 
 {
 
  for( int i=0;  i<comp_.size(); i++ ) x[i] = comp_[i].weightedDerivative( m );
@@ -980,7 +983,7 @@ void TJetVector<T>::weightedDerivative( int* m, T* x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJetVector<T>::derivative( int* m, T* x ) 
+void TJetVector<T>::derivative( IntArray const& m, T* x ) 
 {
 
  for( int i = 0; i < comp_.size(); i++ ) x[i] = comp_[i].derivative( m );
@@ -1064,6 +1067,43 @@ TVector<T> TJetVector<T>::getReference() const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJetVector<T>::iterator  TJetVector<T>::begin() 
+{
+  return comp_.begin();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJetVector<T>::const_iterator  TJetVector<T>::begin() const
+{
+  return comp_.begin();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJetVector<T>::iterator        TJetVector<T>::end()
+{
+  return comp_.end();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJetVector<T>::const_iterator  TJetVector<T>::end()   const
+{
+  return comp_.end();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 #endif // TJETVECTOR_TCC
 
