@@ -32,6 +32,7 @@
 ******             - new template Vector class
 ******           
 ****** Mar 2007 ostiguy@fnal.gov
+******
 ******  - eliminated need for instantiating dependant classes, in particular
 ******    private classes used by the STL implementation.  
 ******                                                                
@@ -50,6 +51,7 @@
 #include <sstream>
 #include <numeric>
 #include <functional>
+#include <algorithm>
 
 #include <basic_toolkit/complexAddon.h>
 #include <basic_toolkit/TMatrix.h>
@@ -58,13 +60,19 @@
 #include <basic_toolkit/Distribution.h> // for drand48
 #endif
 
-#include <basic_toolkit/TMatrix.tcc>
-#include <basic_toolkit/TML.tcc>
-#include <basic_toolkit/TVector.tcc>
 #include <gms/FastPODAllocator.h>
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/Cascade.h>
+
+#include <basic_toolkit/TMatrix.tcc>
+#include <basic_toolkit/TML.tcc>
+#include <basic_toolkit/TVector.tcc>
+#include <basic_toolkit/FFTWAllocator.h>
+#include <basic_toolkit/FFTFunctor.h>
+#include <basic_toolkit/FFTFunctor.tcc>
+#include <basic_toolkit/ConvolutionFunctor.h>
+#include <basic_toolkit/ConvolutionFunctor.tcc>
 
 using namespace std;
 using std::ostringstream;
@@ -230,7 +238,6 @@ template complex<double> std::inner_product(std::vector<complex<double> >::const
                                             std::vector<complex<double> >::const_iterator, 
                                             complex<double>, 
                                             std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
-
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
@@ -436,6 +443,40 @@ template class MLPtr<std::complex<double> >;
 
 template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
+// ----------------------------------------------------------------------------
+// Instantiations related to class ConvolutionFunctor
+// ----------------------------------------------------------------------------
+
+template class
+std::vector<double>;
+
+template class
+std::vector<std::complex<double> >;
+
+template class FFTFunctor<double,                     std::complex<double>, fft_forward>;
+template class FFTFunctor<std::complex<double>,       double,               fft_backward>;
+
+template class FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >;
+template class FFTFunctor<std::complex<double>, std::complex<double>, fft_backward >;
+
+template
+FFTFunctor<double, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<double, std::complex<double>, fft_forward>&);
+
+template
+FFTFunctor<std::complex<double>, double, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, double, fft_backward>&);
+
+template
+FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>&);
+
+template
+FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>&);
+
+
+template class ConvolutionFunctor<double>;
+template class ConvolutionFunctor<std::complex<double> >;
+
+template class std::vector<double,               FFTWAllocator<double> >;
+template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
 
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
