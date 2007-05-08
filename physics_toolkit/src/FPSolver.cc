@@ -62,7 +62,8 @@ using FNAL::pcerr;
 
 using namespace std;
 
-void mygaussj( MatrixD, int, MatrixD, int );
+void mygaussj( MatrixD&, int, MatrixD&, int );
+void mygaussj( MatrixD&, int, VectorD&);
 
 #define FORALL(q)  for ( int q = 0; q < dimension_; q++ )
 
@@ -70,7 +71,7 @@ void mygaussj( MatrixD, int, MatrixD, int );
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FPinfo::FPinfo( const double& s, Vector const& u )
+FPinfo::FPinfo( double const& s, Vector const& u )
 : arclength(s), state( u ) { }
 
 
@@ -480,35 +481,33 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 {
   dimension_ = 6;
   
-  int m[dimension_];
-  double zero[dimension_];
+  IntArray m(dimension_, 0);
+
+  IntArray zero(dimension_,0);
  
-  for(int i=0; i<dimension_; i++) {
-     zero[i] = 0.0;
-  }
-  
   Jet     y;
   int     jumpTest, zeroTest;
   int      iterCount;
   
   iterCount = 0;
+
   MatrixD hessian(dimension_,dimension_);
-  MatrixD eps(dimension_,1);
+  Vector eps(dimension_);
   
   MatrixD zzhessian(dimension_,dimension_);
-  MatrixD zzeps(dimension_,1);
-  MatrixD zzx(dimension_);
-  
+
+  Vector zzeps(dimension_);
+  Vector zzx(dimension_);
 
   Mapping w(dimension_);
 
   Vector particleCoord = p.getState().standardPart();
 
-  FORALL(i) eps(i,0) = 0.0;
+  FORALL(i) eps[i] = 0.0;
 
   do{
 
-    FORALL(i) particleCoord[i] += eps(i,0);
+    FORALL(i) particleCoord[i] += eps[i];
 
     FORALL(i) {
       y.setVariable( i, p.State().Env() );
@@ -522,7 +521,6 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
     w = p.State(); // get a copy of the state
 
 
-
     Vector u = w.standardPart();
 
     FORALL(i) m[i] = 0;
@@ -534,7 +532,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 
     FORALL(i) {
       hessian(i,i) -= 1.0;
-      eps(i,0) = particleCoord[i] - u[i];
+      eps[i] = particleCoord[i] - u[i];
     }
 
 
@@ -543,7 +541,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
     FORALL(i) 
       jumpTest = jumpTest || 
         (  
-          ( std::abs( eps(i,0) ) >
+          ( std::abs( eps[i] ) >
           jumpScale_[i]*std::max(std::abs( particleCoord[i] ),std::abs(u[i])) )  
         );
 
@@ -555,14 +553,14 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 
 
     // --- Iterative step ----------------------------------------------
-    for( int i = 0; i < dimension_; i++ ) {
-      for( int j = 0; j < dimension_; j++ ) 
+    for( int i=0; i < dimension_; ++i ) {
+      for( int j=0; j < dimension_; ++j ) 
         zzhessian(i,j) = 0.0;
     }
     zzeps = eps;
-    zzx = eps;
+    zzx   = eps;
     zzhessian = hessian;
-    mygaussj( zzhessian, dimension_, zzeps, 1 );
+    mygaussj( zzhessian, dimension_, zzeps);
     
     eps = zzeps;
     
