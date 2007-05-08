@@ -391,8 +391,11 @@ public:
   T        standardPart() const            { return jl_->standardPart();    }
 
   void     clear();
-  T        weightedDerivative( int  const* ) const;  // FIXME !
-  T                derivative( int  const*  ) const; // FIXME !
+  T        weightedDerivative( IntArray const&  ) const;  
+  T                derivative( IntArray const&  ) const; 
+
+  // T        weightedDerivative( int  const* ) const;  // FIXME !
+  // T                derivative( int  const*  ) const; // FIXME !
 
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 
@@ -402,17 +405,13 @@ public:
                                    // argument is satisfied.
 
   T        operator() ( Vector const& ) const;
-  T        operator() ( T      const*)  const;	   
-                                   // Performs a multinomial evaluation of 
-				   // the Jet variable.  Essentially acts as a 
-				   // power series expansion.
+  T        operator() ( std::vector<T>  const&)  const;	// multinomial evaluation of the Jet variable.
 
-  TJet     operator() ( TJetVector<T> const& ) const;       // Self explanatory ...
-  TJet     operator() ( TJet<T> const* y )     const;       // Self explanatory .    FIXME !     
+  TJet     operator() (  TJetVector<T>        const&   )  const;       // Self explanatory ...
+  TJet     operator() ( std::vector<TJet<T> > const& y )  const;       // Self explanatory .    FIXME !     
 
 
-  TJet     D( int      const* ) const ;	   // Performs differentiation of a Jet variable.
-  TJet     D( IntArray const& ) const ;   
+  TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
 
 
   // Operators________________________________________________________
@@ -502,10 +501,10 @@ public:
   template <class U>
   class iter_
   : public boost::iterator_adaptor<
-        iter_<U>                     // Derived
-      , U                            // Base
-      , boost::use_default           // Value
-      , boost::forward_traversal_tag // CategoryOrTraversal
+        iter_<U>                         // Derived
+      , U                                // Base
+      , boost::use_default               // Value
+      , boost::bidirectional_traversal_tag // CategoryOrTraversal
     > {
   
     template <typename V>
@@ -534,12 +533,21 @@ public:
 
   typedef iter_< typename TJL<T>::iterator>             iterator;
   typedef iter_< typename TJL<T>::const_iterator> const_iterator;
+
+  typedef boost::reverse_iterator<iter_< typename TJL<T>::iterator> >              reverse_iterator;
+  typedef boost::reverse_iterator<iter_< typename TJL<T>::const_iterator> >  const_reverse_iterator;
  
   iterator       begin();
   const_iterator begin() const;
 
   iterator       end();
   const_iterator end()   const;
+
+  reverse_iterator       rbegin();
+  const_reverse_iterator rbegin() const;
+
+  reverse_iterator       rend();
+  const_reverse_iterator rend()   const;
 
 };
 

@@ -900,37 +900,30 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
  EnvPtr<T> theEnv(x.Env());
  TJet<T>   z (theEnv);
 
- int*  m = new int [ theEnv->numVar() ];
- int*  n = new int [ theEnv->numVar() ];
+ IntArray m( theEnv->numVar(), 0);
+ IntArray n( theEnv->numVar(), 0);
 
- if( 0 == theEnv->spaceDim()%2 ) {
-   for( int i = 0; i < theEnv->numVar(); i++ ) {
-     m[i] = 0;
-     n[i] = 0;
-   }
- 
-   for( int i = 0; i < theEnv->dof(); i++ ) {
-     m[ i ] = 1;
-     n[ i + theEnv->dof() ] = 1;
-
- 
-     z += ( ( x.D(m) * y.D(n) ) - ( x.D(n) * y.D(m) ) );
- 
-     m[ i ] = 0;
-     n[ i + theEnv->dof() ] = 0;
-   }
- 
-   delete [] m;
-   delete [] n;
-   return z;
- }
- else {
-   delete [] m;
-   delete [] n;
+ if( theEnv->spaceDim()%2 != 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
           "TJet<T> operator^( TJet<T> const&, TJet<T> const& )",
           "Environment not correct for performing bracket." ) );
+  }
+
+   
+ for( int i=0; i< theEnv->dof(); ++i) {
+
+    m[ i ] = 1;
+    n[ i + theEnv->dof() ] = 1;
+
+ 
+    z += ( ( x.D(m) * y.D(n) ) - ( x.D(n) * y.D(m) ) );
+ 
+    m[ i ] = 0;
+    n[ i + theEnv->dof() ] = 0;
  }
+
+ return z;
+
 }
 
 // **************************************************************
@@ -1162,6 +1155,43 @@ typename TJet<T>::const_iterator  TJet<T>::end() const {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+typename TJet<T>::reverse_iterator   TJet<T>::rbegin() 
+{
+  return boost::make_reverse_iterator( end() );
+
+}
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::const_reverse_iterator  TJet<T>::rbegin() const
+{
+  return boost::make_reverse_iterator( end() );
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::reverse_iterator        TJet<T>::rend()
+{
+  return boost::make_reverse_iterator( begin() );
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::const_reverse_iterator  TJet<T>::rend()   const
+{
+  return boost::make_reverse_iterator( begin() );
+
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 void TJet<T>::peekAt() const 
@@ -1214,7 +1244,7 @@ void TJet<T>::clear()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::weightedDerivative( const int* ind ) const 
+T TJet<T>::weightedDerivative( IntArray const& ind ) const 
 {
  return jl_->weightedDerivative( ind );
 }
@@ -1223,7 +1253,7 @@ T TJet<T>::weightedDerivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::derivative( const int* ind ) const 
+T TJet<T>::derivative( IntArray const& ind ) const 
 {
  return jl_->derivative( ind );
 }
@@ -1257,17 +1287,9 @@ template<typename T>
 TJet<T> TJet<T>::operator() ( TJetVector<T> const& y ) const 
 {
  
- int n = jl_->getEnv()->numVar();   
+ std::vector<TJet<T> > u( y.begin(), y.end() );
 
- TJet<T> z;      // ??? so as to be self-contained.
-
- TJet<T>* u =  new TJet<T> [ n ];
-
- for( int i = 0; i < n; i++ ) u[i] = y(i);
- 
- z = operator()( u );
-
- delete[] u;
+ TJet<T> z = operator()( u );
 
  return z;
 }
@@ -1276,10 +1298,10 @@ TJet<T> TJet<T>::operator() ( TJetVector<T> const& y ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::operator() ( const TJet<T>* y ) const 
+TJet<T> TJet<T>::operator() ( std::vector<TJet<T> > const& y ) const 
 { 
 
- jl_t yjl[ jl_->getEnv()->numVar() ];
+ std::vector<jl_t> yjl( jl_->getEnv()->numVar() );
 
  for(int i=0; i< jl_->getEnv()->numVar(); ++i) {
 
@@ -1303,7 +1325,7 @@ T TJet<T>::operator() ( Vector const& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::operator() ( const T* x ) const 
+T TJet<T>::operator() ( std::vector<T> const&  x ) const 
 {
  return jl_->operator()( x );
 }
@@ -1313,7 +1335,7 @@ T TJet<T>::operator() ( const T* x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::D( const int* n ) const 
+TJet<T> TJet<T>::D( IntArray const& n ) const 
 {
 
  return TJet<T> ( jl_->D(n) ); 
@@ -1322,19 +1344,6 @@ TJet<T> TJet<T>::D( const int* n ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJet<T> TJet<T>::D( IntArray const& n ) const 
-{
-
-  int narray[ n.Dim()];
-  for (int i=0; i<n.Dim(); ++i) narray[i] = n(i); // copy the IntArray. 
-                                                  // this needs to be done because the 
-                                                  // internal representation of the array
-                                                  // involve shorter ints    
-  return TJet<T>( jl_->D(narray) );  
-
-}
 
 
 #endif // TJET_TCC
