@@ -133,10 +133,11 @@ DistributionWidget::DistributionWidget( BeamlineContext& x, QWidget* parent, con
 void DistributionWidget::_finishConstructor()
 {
   // Determine the particle type first
-  if( typeid(*_theSamplePtr) == typeid(ProtonBunch) ) {
+
+  if( typeid(_theSamplePtr->getReferenceParticle()) == typeid(Proton) ) {
     _flavor = DistributionWidget::proton;
   }
-  else if( typeid(*_theSamplePtr) == typeid(PositronBunch) ) {
+  else if( typeid(_theSamplePtr->getReferenceParticle()) == typeid(Positron) ) {
     _flavor = DistributionWidget::positron;
   }
   else {
