@@ -160,7 +160,7 @@ JLPtr<double> real( JLPtr<std::complex<double> > const& z )
 
   for ( TJLterm<std::complex<double> >* p = z->jltermStore_; p < z->jltermStoreCurrentPtr_; ++p) {
 
-     new ( x->storePtr() )  TJLterm<double>( std::real( p->value_ ),  z->myEnv_->weight(p->offset_),  p->offset_ );
+     new ( x->storePtr() )  TJLterm<double>( std::real( p->value_ ),  p->offset_, p->weight_ );
   }
  
   // Set the maximum accurate weight_.
@@ -196,7 +196,7 @@ JLPtr<double> imag( const JLPtr<std::complex<double> >& z )
 
   for ( TJLterm<std::complex<double> >* p = z->jltermStore_; p < z->jltermStoreCurrentPtr_; ++p) {
 
-    new (x->storePtr() )  TJLterm<double>( std::imag( p->value_ ), z->myEnv_->weight(p->offset_), p->offset_ );
+    new (x->storePtr() )  TJLterm<double>( std::imag( p->value_ ), p->offset_ , p->weight_);
   }
  
   // Set the maximum accurate weight_.
