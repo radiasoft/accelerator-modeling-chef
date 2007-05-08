@@ -38,8 +38,8 @@
 #endif
 
 
+#include <string.h>
 #include <stdio.h>
-#include <strings.h>
 
 #define term_char_size 80   /* Number of characters in a terminal line.    */
 #define maxchar 1300        /* Max number of characters in a file line.    */
