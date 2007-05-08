@@ -127,10 +127,10 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   // --------------------------------
  
   if( typeid(w) == typeid(Proton) ) {
-    particleBunchPtr_ = new ProtonBunch;
+    particleBunchPtr_ = new ParticleBunch( *particle_);
   }
   else if( typeid(w) == typeid(Positron) ) {
-    particleBunchPtr_ = new PositronBunch;
+    particleBunchPtr_ = new ParticleBunch( *particle_);
   }
   else {
     throw GenericException( __FILE__, __LINE__, 
