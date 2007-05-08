@@ -113,7 +113,8 @@ const char* IntArray::GenericException::what() const throw()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 IntArray::IntArray( int n, int const* const x )
-{
+  : weight_(0), weight_is_valid_(false)
+ {
 
   if ( n <=0 ) return;
   
@@ -123,16 +124,19 @@ IntArray::IntArray( int n, int const* const x )
       { std::copy( x, x+n, begin() ); }
   else
       { std::fill(begin(), end(), exponent_t() ); }
-      
+
+  Sum(); // this sets weight_ and   weight_is_valid to true;     
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
+  : weight_(0), weight_is_valid_(false)
 {
   comp_.resize( it2 - it1 );
   std::copy( it1, it2, begin() ); 
+  Sum(); // this sets weight_ and   weight_is_valid to true;     
 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -146,6 +150,8 @@ void IntArray::Set( int const* x, int n)
   comp_.resize( n );
   std::copy( x, x + n, begin() ); 
 
+  Sum(); // this sets weight_ and   weight_is_valid to true;     
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -155,6 +161,7 @@ void IntArray::Set( int x )
 {
 
   std::fill( begin(), end(), x); 
+  Sum(); // this sets weight_ and   weight_is_valid to true;     
 
 }
 
@@ -167,8 +174,9 @@ IntArray& IntArray::operator= ( IntArray const& x )
 {
   if ( &x == this ) return *this;
 
-  comp_   = x.comp_;
-  weight_ = x.weight_;
+  comp_            = x.comp_;
+  weight_          = x.weight_;
+  weight_is_valid_ = x.weight_is_valid_;
 
   return *this;
 }
@@ -283,6 +291,23 @@ bool IntArray::operator!= ( int x ) const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+IntArray IntArray::operator+( IntArray const& y) const 
+{
+     
+     IntArray ret( *this );
+
+     std::transform( begin(), end(), y.begin(), ret.begin(), std::plus<exponent_t>());
+
+     ret.weight_is_valid_ = false;  
+     ret.Sum();  // forces recomputation of the weight
+   
+     return ret;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 bool IntArray::IsNull() const
 {
