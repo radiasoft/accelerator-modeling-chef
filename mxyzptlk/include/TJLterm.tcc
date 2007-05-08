@@ -97,28 +97,25 @@ __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLt
 
 template<typename T>
 TJLterm<T>::TJLterm() 
-:value_(T()),  weight_(0), offset_(0)
+: offset_(0), value_(T()), weight_(0) 
 {}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) :   
-value_(x), weight_(0) , offset_(0)
+TJLterm<T>::TJLterm( IntArray const& l, T const& x, EnvPtr<T> const& pje ) 
+  : offset_(0), value_(x), weight_( l.Sum() )
 {
-  
    offset_  = pje->offsetIndex(l);  
-   weight_  = pje->weight(offset_);
-
 } 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJLterm<T>::TJLterm(  T const& x , int const& weight, int const& offset)
-: value_(x), weight_(weight), offset_(offset) 
+TJLterm<T>::TJLterm(  T const& x, int const& offset, int const& weight )
+  : offset_(offset), value_(x), weight_(weight) 
 { }
 
 
@@ -204,9 +201,9 @@ TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x )
 
  if (&x == this) return *this;
 
- weight_  = x.weight_;
- value_   = x.value_;
  offset_  = x.offset_;
+ value_   = x.value_;
+ weight_  = x.weight_;
 
  return *this;
 }
@@ -325,6 +322,15 @@ const char* TJLterm<T>::BadDimension::what() const throw()
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+template<typename T>
+IntArray  TJLterm<T>::exponents( EnvPtr<T> const& env) const
+{ 
+ 
+ 
+  return env->exponents( offset_); 
+
+} 
 
 
 #endif // TJLTERM_TCC
