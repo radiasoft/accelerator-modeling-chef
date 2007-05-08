@@ -86,6 +86,7 @@
 #include <mxyzptlk/TJLterm.h>
 
 #include<boost/iterator/iterator_facade.hpp>
+#include<boost/iterator/reverse_iterator.hpp>
 #include <vector>
 
 #define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
@@ -299,8 +300,7 @@ friend class TJL;
   JLPtr<T> pow(int)           const;
   JLPtr<T> pow(double const&) const;
   JLPtr<T> log()              const;
-  JLPtr<T> compose(JLPtr<T> const y[ ]) const; 
-  JLPtr<T> D( int const* n )  const; 
+  JLPtr<T> D( IntArray const& n ) const; 
 
 
   void setVariable( T   const&,   int const& );
@@ -310,16 +310,13 @@ friend class TJL;
   T    standardPart()                 const  { return jltermStore_[0].value_; }
   void setStandardPart( T const& std)        { jltermStore_[0].value_ = std;  } 
 
-  T weightedDerivative( int const* ) const;
-  T derivative( int const* )         const;
+  T weightedDerivative( IntArray const& ) const;
+  T derivative( IntArray const& )         const;
 
   T operator()( Vector const& ) const;
-  T operator()( T const* )      const;
-                       // Performs a multinomial evaluation of
-                       // the TJL variable.  Essentially acts as a
-                       // power series expansion.
-  TJL& operator()( const TJL* ) const;
-                       // Self explanatory ...
+  T operator()( std::vector<T> const& ) const; // multinomial evaluation of the TJL variable.  
+
+  JLPtr<T> compose( std::vector<JLPtr<T> > const& y ) const; 
 
   // Arithmetic operators // some of these may no longer be needed ... FIXME !
 
@@ -334,7 +331,7 @@ friend class TJL;
 
 
   template <typename U>
-  class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::forward_traversal_tag > {
+  class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::bidirectional_traversal_tag > {
   
     template<typename V>
     friend class iter_;
@@ -359,8 +356,12 @@ friend class TJL;
 
       U&   dereference() const  { return *m_node; }  
         
-      void increment()          { ++m_node; } 
-        
+      void            increment()                                   { ++m_node;          } 
+      void            decrement()                                   { --m_node;          } 
+      void            advance( typename iter_::difference_type n )  { m_node += n;       }   
+      typename iter_::difference_type 
+                      distanceto( iter_ const&  j)                  { return m_node - j; }   
+ 
       bool equal( iter_ const& other) const 
             {
               return this->m_node == other.m_node;
@@ -371,13 +372,21 @@ friend class TJL;
 
   typedef iter_<TJLterm<T> >             iterator;
   typedef iter_<TJLterm<T> const>  const_iterator;
+
+  typedef boost::reverse_iterator< iter_< TJLterm<T> > >             reverse_iterator;
+  typedef boost::reverse_iterator< iter_< TJLterm<T> const > > const_reverse_iterator;
   
+  iterator               begin();
+  const_iterator         begin()  const;
 
-  iterator       begin();
-  const_iterator begin() const;
+  iterator               end();
+  const_iterator         end()   const;
 
-  iterator       end();
-  const_iterator end()   const;
+  reverse_iterator       rbegin();
+  const_reverse_iterator rbegin() const;
+
+  reverse_iterator       rend();
+  const_reverse_iterator rend()   const;
 
 
   // Exception subclasses____________________________________________
@@ -548,7 +557,7 @@ inline void TJL<T>::append( TJLterm<T> const& a)
   TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(a); 
   ++count_;
 
-  weight_      = std::max(weight_,     p->weight_);
+  weight_      = std::max(weight_,     p->weight_ );
 
 }
 
