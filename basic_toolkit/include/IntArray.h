@@ -165,8 +165,9 @@ public:
 
   // Queries ...
 
-   int  Dim() const;
-   int  Sum() const;
+   int  Dim()    const;
+   int  Sum()    const;
+   int  Weight() const;
 
   // Utilities ..
 
@@ -189,7 +190,8 @@ public:
 private:
 
   std::vector<exponent_t>   comp_;
-  int                       weight_;
+  mutable int               weight_;
+  mutable bool              weight_is_valid_;
 
 };
  
@@ -209,25 +211,25 @@ inline  IntArray::const_reverse_iterator IntArray::rend()   const   { return com
 
 
 inline IntArray::IntArray( IntArray const& x) 
-  : comp_(x.comp_), weight_(x.weight_)
+  : comp_(x.comp_), weight_(x.weight_), weight_is_valid_ (x.weight_is_valid_)
 {}
 
 
 inline int IntArray::Sum() const 
 {
-    
-    return std::accumulate( begin(), end(), int());
+  if (weight_is_valid_) {
+    return weight_;
+  }
+  else{ 
+    weight_is_valid_ = true;
+    return ( weight_ = std::accumulate( begin(), end(), int()) );
+  }
 }
 
 
-inline IntArray IntArray::operator+( IntArray const& y) const 
+inline int IntArray::Weight() const
 {
-     
-     IntArray ret( *this );
-
-     std::transform( begin(), end(), y.begin(), ret.begin(), std::plus<exponent_t>());
-  
-     return ret;
+  return Sum(); 
 }
 
 
@@ -246,6 +248,7 @@ inline  int     IntArray::operator()(  int i )  const
 
 inline  exponent_t&  IntArray::operator()  ( int  i )
 {
+  weight_is_valid_ = false;
   return comp_[i]; 
 }    
 
@@ -259,6 +262,7 @@ inline exponent_t  IntArray::operator[](  int i )  const
 
 inline  exponent_t&  IntArray::operator[]  ( int  i )
 {
+  weight_is_valid_ = false;
   return comp_[i]; 
 }    
 
