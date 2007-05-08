@@ -330,11 +330,11 @@ void normalForm( const Mapping& theMapping, /* input */
     denom = factor - complex_1;
     if( abs( denom ) <= 1.0e-7 ) {
       //N[k](i).addTerm( JLCterm( it->exponents(), - it->coefficient(), CL1.Env() ) );
-      N[k](i).addTerm( JLCterm( - it->coefficient(), it->weight_, it->offset_ ) );
+      N[k](i).addTerm( JLCterm( - it->coefficient(), it->offset_, it->weight_ ) );
     }
     else {
       //T[k](i).addTerm( JLCterm( it->exponents(), it->coefficient()/denom, CL1.Env() ) );
-      T[k](i).addTerm( JLCterm( it->coefficient()/denom, it->weight_, it->offset_ ) );
+      T[k](i).addTerm( JLCterm( it->coefficient()/denom, it->offset_, it->weight_ ) );
     }
    }
   }
