@@ -46,11 +46,16 @@ using FNAL::pcout;
 
 using namespace std;
 
-Matrix SVDFitPL::sqrt( Matrix& x )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+Matrix SVDFit::sqrt( Matrix& x )
 {
   int r = x.rows();
   int c = x.cols();
+
   if( r == c ) {
+
     Matrix U(r,c);
     Vector W(c);
     Matrix V(c,c);
@@ -97,118 +102,140 @@ Matrix SVDFitPL::sqrt( Matrix& x )
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-SVDFitPL::SVDFitPL()
-: _rows(3)
-, _cols(2)
-, _response(3,2)
-, _solver(2,3)
-, _cov(3,3)
-, _covInv(3,3)
-, _sig(3,3)
-, _sigInv(3,3)
-, _xU(3,2)
-, _xW(2)
-, _xV(2,2)
-, _limW(0)
-, _applyWeights(false)
-, _ready(false)
+
+SVDFit::SVDFit()
+:  rows_(3)
+,  cols_(2)
+,  response_(3,2)
+,  solver_(2,3)
+,  cov_(3,3)
+,  covInv_(3,3)
+,  sig_(3,3)
+,  sigInv_(3,3)
+,  xU_(3,2)
+,  xW_(2)
+,  xV_(2,2)
+,  limW_(0)
+,  applyWeights_(false)
+,  ready_(false)
 {
-  _finishConstruction();
+  finishConstruction();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-void SVDFitPL::_reconstruct( int r, int c )
+
+void SVDFit::reconstruct( int r, int c )
 {
-  _rows         = r;
-  _cols         = c;
-  _response     = Matrix( r, c );
-  _solver       = Matrix( c, r );
-  _cov          = Matrix( r, r );
-  _covInv       = Matrix( r, r );
-  _sig          = Matrix( r, r );
-  _sigInv       = Matrix( r, r );
-  _xU           = Matrix( r, c );
-  _xW           = Vector( c    );
-  _xV           = Matrix( c, c );
-  _applyWeights = false;
-  _ready        = false;
+  rows_         = r;
+  cols_         = c;
+  response_     = Matrix( r, c );
+  solver_       = Matrix( c, r );
+  cov_          = Matrix( r, r );
+  covInv_       = Matrix( r, r );
+  sig_          = Matrix( r, r );
+  sigInv_       = Matrix( r, r );
+  xU_           = Matrix( r, c );
+  xW_           = Vector( c    );
+  xV_           = Matrix( c, c );
+  applyWeights_ = false;
+  ready_        = false;
 
-  _finishConstruction();
+  finishConstruction();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-void SVDFitPL::_finishConstruction()
+
+void SVDFit::finishConstruction()
 {
-  for( int i = 0; i < _rows; i++ ) {
-    for( int j = 0; j < _rows; j++ ) {
-      if( i == j ) { _cov(i,j) = 1.0; }
-      else         { _cov(i,j) = 0.0; }
+  for( int i=0; i < rows_; ++i ) {
+    for( int j=0; j < rows_; ++j ) {
+
+      if( i == j ) { cov_(i,j) = 1.0; }
+      else         { cov_(i,j) = 0.0; }
     }
   }
-  _covInv = _cov;
-  _sig    = _cov;
-  _sigInv = _cov;
+  covInv_ = cov_;
+  sig_    = cov_;
+  sigInv_ = cov_;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-SVDFitPL::~SVDFitPL()
+
+SVDFit::~SVDFit()
+{}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+void SVDFit::setLinearResponse( Matrix const& x )
 {
-}
-
-
-void SVDFitPL::setLinearResponse( const Matrix& x )
-{
-  if( _rows != x.rows() || _cols != x.cols() ) { 
-    _reconstruct( x.rows(), x.cols() ); 
+  if( rows_ != x.rows() || cols_ != x.cols() ) { 
+     reconstruct( x.rows(), x.cols() ); 
   }
-  _response = x;
-  _buildSolver();
+  response_ = x;
+  buildSolver();
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-void SVDFitPL::setErrorCovariance( const Matrix& E )
+
+void SVDFit::setErrorCovariance( const Matrix& E )
 {
+
   // NOTE: The efficiency of this should be improved
   // if it is to be used frequently.
 
-  if( _rows == E.rows() && 1 == E.cols() ) {  // Uncorrelated errors
-    _cov = Matrix( _rows, _rows );
-    _sig = Matrix( _rows, _rows );
-    _covInv = Matrix( _rows, _rows );
-    _sigInv = Matrix( _rows, _rows );
+  if( rows_ == E.rows() && 1 == E.cols() ) {  // Uncorrelated errors
 
-    for( int i = 0; i < _rows; i++ ) {
-      _cov(i,i) = fabs( E(i,0) );
-      _sig(i,i) = std::sqrt( fabs( E(i,0) ) );
-      _covInv(i,i) = 1.0/fabs( E(i,0) );
-      _sigInv(i,i) = 1.0/std::sqrt( fabs( E(i,0) ) );
+     cov_    = Matrix( rows_, rows_ );
+     sig_    = Matrix( rows_, rows_ );
+     covInv_ = Matrix( rows_, rows_ );
+     sigInv_ = Matrix( rows_, rows_ );
+
+    for( int i=0;  i < rows_; ++i) {
+
+         cov_(i,i) = std::abs( E(i,0) );
+         sig_(i,i) = std::sqrt( fabs( E(i,0) ) );
+      covInv_(i,i) = 1.0/std::abs( E(i,0) );
+      sigInv_(i,i) = 1.0/std::sqrt( fabs( E(i,0) ) );
     }
 
-    _applyWeights = true;
-    _buildSolver();
+    applyWeights_ = true;
+    buildSolver();
   }
 
-  else if( _rows == E.rows() && _rows == E.cols() ) {
-    _cov = 0.5*( E + E.transpose() );  // Forces symmetry
-    _sig = this->sqrt(_cov);
-    _covInv = _cov.inverse();
-    _sigInv = _sig.inverse();
+  else if( rows_ == E.rows() && rows_ == E.cols() ) {
 
-    _applyWeights = true;
-    _buildSolver();
+     cov_    = 0.5*( E + E.transpose() );  // Forces symmetry
+     sig_    = this->sqrt(cov_);
+     covInv_ = cov_.inverse();
+     sigInv_ = sig_.inverse();
+
+     applyWeights_ = true;
+     buildSolver();
   }
 
   else if( E.rows() != E.cols() ) {
     (*pcerr) << "\n*** WARNING *** " 
              << "\n*** WARNING *** " << __FILE__ << "," << __LINE__
-             << "\n*** WARNING *** void SVDFitPL::setErrorCovariance( const Matrix& )"
+             << "\n*** WARNING *** void SVDFit::setErrorCovariance( const Matrix& )"
              << "\n*** WARNING *** ------------------------------------------------"
-             << "\n*** WARNING *** Oh, please ..."
              << "\n*** WARNING *** Your argument isn't even square: it is "
              <<                    E.rows() << " x " << E.cols() << "."
              << "\n*** WARNING *** " 
-             << "\n*** WARNING *** No change will be made to SVDFitPL object." 
+             << "\n*** WARNING *** No change will be made to SVDFit object." 
              << "\n*** WARNING *** " 
              << endl;
   }
@@ -216,120 +243,164 @@ void SVDFitPL::setErrorCovariance( const Matrix& E )
   else {
     (*pcerr) << "\n*** WARNING *** " 
              << "\n*** WARNING *** " << __FILE__ << "," << __LINE__
-             << "\n*** WARNING *** void SVDFitPL::setErrorCovariance( const Matrix& )"
+             << "\n*** WARNING *** void SVDFit::setErrorCovariance( const Matrix& )"
              << "\n*** WARNING *** ------------------------------------------------"
-             << "\n*** WARNING *** How long must I endure this?"
              << "\n*** WARNING *** The argument is " << E.rows() << " x " << E.cols()
-             << "\n*** WARNING *** but the current response matrix has " << _rows << " rows."
+             << "\n*** WARNING *** but the current response matrix has " << rows_ << " rows."
              << "\n*** WARNING *** Either set a new response matrix or use another error matrix."
              << "\n*** WARNING *** " 
-             << "\n*** WARNING *** No change will be made to SVDFitPL object." 
+             << "\n*** WARNING *** No change will be made to SVDFit object." 
              << "\n*** WARNING *** " 
              << endl;
   }
 }
 
-Vector SVDFitPL::getSingularValue() const { return _xW;}
-Matrix SVDFitPL::getVMatrix() const { return _xV;}
-Matrix SVDFitPL::getUMatrix() const { return _xU;}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-void SVDFitPL::setWeighted( bool x )
+Vector SVDFit::getSingularValue() const 
+{ 
+  return xW_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+Matrix SVDFit::getVMatrix() const 
+{ 
+  return xV_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+Matrix SVDFit::getUMatrix() const 
+{ 
+  return xU_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+void SVDFit::setWeighted( bool x )
 {
-  _applyWeights = x; 
+  applyWeights_ = x; 
 }
 
 
-void SVDFitPL::_buildSolver()
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+void SVDFit::buildSolver()
 {
-  if( _applyWeights ) {
-    (_sigInv*_response).SVD( _xU, _xW, _xV );
+  if( applyWeights_ ) {
+    ( sigInv_* response_).SVD( xU_, xW_, xV_ );
   }
   else {
-    _response.SVD( _xU, _xW, _xV );
+    response_.SVD( xU_, xW_, xV_ );
   }
+
   // Removal of nullSpace 
   // Get the maximum w
+
   double wMax = -1.0; 
-  for( int j = 0; j < _cols; j++ ) 
-    if (std::abs(_xW(j)) > wMax) 
-      wMax = std::abs(_xW(j)); 
-  
-  for( int j = 0; j < _cols; j++ ) {
-     if (std::abs(_xW(j))/wMax < _limW) 
-       for (int i=0; i < _rows; i++) _xU(i,j) = 0.; 
+
+  for( int j=0; j < cols_; ++j) {
+    if (std::abs( xW_(j)) > wMax ) 
+      wMax = std::abs( xW_(j)); 
   } 
+
+  for( int j=0;  j< cols_; ++j) {
+     if (std::abs( xW_(j))/wMax < limW_) 
+       for (int i=0; i < rows_; ++i) xU_(i,j) = 0.; 
+  } 
+
   // Next to using a diagonal matrix, this is
   // probably the slowest possible way to do this.
+
   double aaa;
-  for( int j = 0; j < _cols; j++ ) {
-    aaa = 1.0/_xW(j);
-    for( int i = 0; i < _cols; i++ ) {
-      _xV(i,j) *= aaa;
+
+  for( int j=0; j < cols_; ++j) {
+    aaa = 1.0/ xW_(j);
+    for( int i=0; i < cols_; ++i) {
+       xV_(i,j) *= aaa;
     }
   }
 
-  if( _applyWeights ) {
-    _solver = ( _xV * _xU.transpose() ) * _sigInv;
+  if( applyWeights_ ) {
+    solver_ = ( xV_ * xU_.transpose() ) * sigInv_;
   }
   else {
-    _solver = ( _xV * _xU.transpose() );
+    solver_ = ( xV_ * xU_.transpose() );
   }
 
-  _ready = true;
+  ready_ = true;
 }
 
 
 
-Matrix SVDFitPL::solve( const Matrix& theData ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+Matrix SVDFit::solve( const Matrix& theData ) const
 {
-  if( _ready ) 
-  {
-    if( _rows == theData.rows() ) {
-      return ( _solver*theData );
-    }
-    else {
+  
+ if( !ready_ ) {
+    throw GenericException( __FILE__, __LINE__, 
+                            "Matrix SVDFit::solve( const Matrix& theData )"
+                            "\nYou first must establish a response matrix." );
+ }  
+
+
+  if( rows_ == theData.rows() ) {
+      return ( solver_*theData );
+  }
+  else {
       ostringstream uic;
-      uic <<   "You are obviously a moron."
-          << "\nThe argument must have "
-          << _cols 
+      uic << "The argument must have "
+          << cols_ 
           << " components but has "
           << theData.rows()
           << " instead.";
       (*pcerr) << "\n*** ERROR *** " 
                << "\n*** ERROR *** " << __FILE__ << "," << __LINE__
-               << "\n*** ERROR *** Matrix SVDFitPL::solve( const Matrix& ) const"
+               << "\n*** ERROR *** Matrix SVDFit::solve( const Matrix& ) const"
                << "\n*** ERROR *** -------------------------------------------"
-               << "\n*** ERROR *** You are obviously a moron."
                << "\n*** ERROR *** The argument must have "
-                                << _cols 
+                                << cols_ 
                                 << " components but has "
                                 << theData.rows()
                                 << " instead."
                << "\n*** ERROR *** " 
                << endl;
       throw GenericException( __FILE__, __LINE__, 
-                              "Matrix SVDFitPL::solve( const Matrix& theData )",
+                              "Matrix SVDFit::solve( const Matrix& theData )",
                               uic.str().c_str() );
-    }
-  }
-
-  else 
-  {
-    throw GenericException( __FILE__, __LINE__, 
-                            "Matrix SVDFitPL::solve( const Matrix& theData )"
-                            "Idiot!\nYou first must establish a response matrix." );
   }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-Matrix SVDFitPL::getStateCovariance() const
+
+Matrix SVDFit::getStateCovariance() const
 {
-  return ( _solver * _cov *  _solver.transpose() );
+  return ( solver_ * cov_ *  solver_.transpose() );
 }
 
 
-bool SVDFitPL::getWeighted() const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+bool SVDFit::getWeighted() const
 {
-  return _applyWeights;
+  return applyWeights_;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
