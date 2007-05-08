@@ -47,13 +47,12 @@ sector::JET_Prop sector::defaultPropagate;
 
 int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
 
- static int    i, j; 
- static double inState[ BMLN_dynDim ];
- static double dummyState[ BMLN_dynDim ];
+ std::vector<double> inState(BMLN_dynDim);
+ std::vector<double> dummyState(BMLN_dynDim);
  
  sector* s = dynamic_cast<sector*>(b);
  
- for( i = 0; i < BMLN_dynDim; i++  ) {
+ for( int i= 0; i < BMLN_dynDim; ++i  ) {
    dummyState[i] = inState[i] = p.State(i);
    inState[i] = p.State(i);
  }
@@ -74,9 +73,9 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
  } 
  else
  {
-   for( i = 0; i < BMLN_dynDim; i++  ) {
+   for( int i = 0; i < BMLN_dynDim; i++  ) {
      dummyState[i] = 0.0;
-     for( j = 0; j < BMLN_dynDim; j++  ) 
+     for( int j = 0; j < BMLN_dynDim; j++  ) 
        dummyState[i] += s->mapMatrix[i][j]*inState[j];
    }
    p.set_x  ( dummyState[ p.xIndex() ]   );
@@ -87,9 +86,9 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
    p.set_ndp( dummyState[ p.ndpIndex()] );
    
 
-   // for( i = 0; i < BMLN_dynDim; i++  ) {
+   // for( int i = 0; i < BMLN_dynDim; i++  ) {
    //   p.state[i] = 0.0;
-   //   for( j = 0; j < BMLN_dynDim; j++  ) 
+   //   for( int j = 0; j < BMLN_dynDim; j++  ) 
    //     p.state[i] += s->mapMatrix[i][j]*inState[j];
    // }
 
@@ -103,8 +102,8 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
 
 
 int sector::JET_Prop::operator()( bmlnElmnt* b, JetParticle& p ) {
- int  i, j; 
- Jet  inState  [BMLN_dynDim];
+
+ std::vector<Jet>  inState( BMLN_dynDim );
  Jet  outState;
  Jet  zero( p.State().Env() );
 
@@ -116,15 +115,15 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, JetParticle& p ) {
  {
    // for( i = 0; i < BMLN_dynDim; i++  ) 
    //   inState[i] = p.state(i);
-   for( i = 0; i < BMLN_dynDim; i++  ) 
+   for( int i=0; i < BMLN_dynDim; ++i) 
      inState[i] = p.State(i);
    
    zero = 0.0;
    // ??? REMOVE zero.fixReferenceAtStart( p.state );
 
-   for( i = 0; i < BMLN_dynDim; i++  ) {
+   for( int i = 0; i < BMLN_dynDim; ++i) {
      outState = zero;
-     for( j = 0; j < BMLN_dynDim; j++  ) {
+     for( int j = 0; j < BMLN_dynDim; ++j  ) {
        outState = outState + s->mapMatrix[i][j]*inState[j];
      }
      // ( p.state ).SetComponent( i, outState );
