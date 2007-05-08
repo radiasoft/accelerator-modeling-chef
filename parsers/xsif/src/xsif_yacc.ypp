@@ -283,7 +283,7 @@ element_list:                                                                   
                                                                                              delete $<sval>3; }
        |
        element_list ',' anonymous_line_declaration                                         {  $<pstrvec>$ = $<pstrvec>1;
-                                                                                              for ( vector<string>::iterator it  = $<pstrvec>3->begin();
+                                                                                              for ( std::vector<std::string>::iterator it  = $<pstrvec>3->begin();
                                                                                                                              it != $<pstrvec>3->end(); ++it ) {
                                                                                                      $<pstrvec>$->push_back(*it);
                                                                                               }
@@ -399,7 +399,7 @@ attribute:
        |
 
        XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
-                                                                                               driver.m_attributes[string("PARTICLE")] = *$<sval>3;
+                                                                                               driver.m_attributes[std::string("PARTICLE")] = *$<sval>3;
                                                                                                delete $<sval>3;
                                                                                              }
        |

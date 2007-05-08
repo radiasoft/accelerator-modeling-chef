@@ -245,7 +245,7 @@ XsifParserDriver::scan_begin( yyscan_t yyscanner ) {
   if ( !(  input_file = fopen(m_file.c_str(), "r")))
     error( std::string("Cannot open ") + m_file );
   
-  string file_dir_path             = m_file;
+  std::string file_dir_path             = m_file;
 
   std::string::size_type slash_pos = file_dir_path.find_last_of("/");
 
@@ -300,13 +300,13 @@ void XsifParserDriver::command_CALL( xsif_yy::location& yylloc, std::map<std::st
 
   yyguts_t* yyg =  (yyguts_t*) yyscanner;
  
-  std::string filename = boost::any_cast<std::string const>( attributes[string("FILENAME")] ); 
+  std::string filename = boost::any_cast<std::string const>( attributes[std::string("FILENAME")] ); 
 
   filename = trim(filename);  
 
   FILE* fp = fopen( filename.c_str(), "r");
  
-  if (!fp) error( yylloc, string( "Error opening file: ") + filename ); 
+  if (!fp) error( yylloc, std::string( "Error opening file: ") + filename ); 
 
   yyin = fp;
 
