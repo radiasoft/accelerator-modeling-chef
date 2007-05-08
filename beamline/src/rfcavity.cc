@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rfcavity.cc
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -30,8 +29,15 @@
 ******             Batavia, IL   60510                                
 ******                                                                
 ******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
+******             Email: michelotti@fnal.gov       
+******
+****** REVISION HISTORY:
+******                   
+****** April 2007  ostiguy@fnal.gov
+******
+****** - support for reference counted elements 
+****** - visitor interface takes advantage of compiler dynamic typing
+******                                                                 
 **************************************************************************
 *************************************************************************/
 
@@ -296,17 +302,15 @@ void rfcavity::setFrequency( double const& f )
 
 void rfcavity::setFrequencyRelativeTo( double const& f )
 {
-
   thinrfcavity* q = 0;
 
-  double freq = 0.0;
-  if( (f >0 ) && (h_ > 0) ) {
-    freq = MATH_TWOPI* h_* f;
+  if( (0 < f) && (0 < h_) ) {
+    w_rf_ = MATH_TWOPI*h_*f;
   }
 
   for( bmlnElmnt** i = u_; i <= v_; ++i ) {
     if( (q=dynamic_cast<thinrfcavity*>(*i) ) ) 
-             q->setFrequencyRelativeTo( freq );
+             q->setFrequencyRelativeTo( f );
   }
 }
 
