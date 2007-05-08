@@ -37,16 +37,14 @@
 #include <config.h>
 #endif
 
-
 #include <cmath>
 #include <iostream>
 #include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/VectorD.h>
 
 using namespace std;
 
-#define SWAP(a,b) { temp=(a);(a)=(b);(b)=temp;}
-
-void mygaussj(MatrixD a,int n,MatrixD b,int m)
+void mygaussj(MatrixD& a, int n, MatrixD& b, int m )
 {
   int i,icol,irow,j,k,l,ll;
   double big,dum,pivinv;
@@ -55,6 +53,7 @@ void mygaussj(MatrixD a,int n,MatrixD b,int m)
   int indxc[n];
   int indxr[n];
   int ipiv[n];
+
   for (j=0;j<n;j++) ipiv[j]=0;
   for (i=0;i<n;i++) {
     big=0.0;
@@ -72,8 +71,8 @@ void mygaussj(MatrixD a,int n,MatrixD b,int m)
 	}
     ++(ipiv[icol]);
     if (irow != icol) {
-      for (l=0;l<n;l++) SWAP(a(irow,l),a(icol,l))
-	for (l=0;l<m;l++) SWAP(b(irow,l),b(icol,l))
+      for (l=0;l<n;l++) std::swap(a(irow,l),a(icol,l) );
+      for (l=0;l<m;l++) std::swap( b(irow,l),b(icol,l) );
     }
     indxr[i]=irow;
     indxc[i]=icol;
@@ -94,8 +93,22 @@ void mygaussj(MatrixD a,int n,MatrixD b,int m)
   for (l=n-1;l>=0;l--) {
     if (indxr[l] != indxc[l])
       for (k=0;k<n;k++)
-	SWAP(a(k,indxr[l]),a(k,indxc[l]));
+	std::swap(a(k,indxr[l]),a(k,indxc[l]));
   }
 }
 
-#undef SWAP
+
+void mygaussj(MatrixD& a, int n, Vector& b)
+{
+
+  MatrixD btmp(b.Dim(), 1);
+
+  for (int i=0; i<b.Dim(); ++i ) btmp(i,0) = b[i]; 
+
+  mygaussj( a, n, btmp, 1); 
+
+  for (int i=0; i<b.Dim(); ++i ) b[i] = btmp(i,0); 
+  
+}
+
+
