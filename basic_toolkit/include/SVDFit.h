@@ -35,56 +35,60 @@
 **************************************************************************
 *************************************************************************/
 
-#ifndef SVDFITPLPL_H
-#define SVDFITPLPL_H
+#ifndef SVDFIT_H
+#define SVDFIT_H
 
 #include <basic_toolkit/Matrix.h>
 #include <basic_toolkit/VectorD.h>
 
-class SVDFitPL
+class SVDFit
 {
   public: 
-    SVDFitPL();
-    ~SVDFitPL();
 
-    void setLinearResponse( const Matrix& );
-    void setErrorCovariance( const Matrix& );
+    SVDFit();
+   ~SVDFit();
+
+    void setLinearResponse( Matrix const& );
+    void setErrorCovariance( Matrix const& );
     void setWeighted( bool );
 
-    Matrix solve( const Matrix& ) const;
+    Matrix solve( Matrix const& ) const;
 
-    Matrix getStateCovariance()   const;
-    bool   getWeighted() const;
-    Vector getSingularValue() const;
-    Matrix getVMatrix() const;
-    Matrix getUMatrix() const;
-    inline double getLimitNullSpace() const  {return _limW;}
-    inline void setLimitNullSpace(double l) {_limW = l;}
+    Matrix getStateCovariance()  const;
+    bool   getWeighted()         const;
+    Vector getSingularValue()    const;
+    Matrix getVMatrix()          const;
+    Matrix getUMatrix()          const;
+
+    inline double getLimitNullSpace()        const  { return limW_; }
+    inline void   setLimitNullSpace(double l)       { limW_   = l;  }
 
   private:
-    int    _rows;
-    int    _cols;
-    Matrix _response;
-    Matrix _solver;
 
-    Matrix _cov;
-    Matrix _covInv;
-    Matrix _sig;
-    Matrix _sigInv;
+    int    rows_;
+    int    cols_;
+    Matrix response_;
+    Matrix solver_;
 
-    Matrix _xU;
-    Vector _xW;
-    Matrix _xV;
+    Matrix  cov_;
+    Matrix  covInv_;
+    Matrix  sig_;
+    Matrix  sigInv_;
 
-    bool   _applyWeights;
-    bool   _ready;
+    Matrix  xU_;
+    Vector  xW_;
+    Matrix  xV_;
+
+    bool   applyWeights_;
+    bool   ready_;
     
-    double _limW;
+    double limW_;
 
-    void _finishConstruction();
-    void _reconstruct( int, int );
-    void _buildSolver();
+    void  finishConstruction();
+    void  reconstruct( int, int );
+    void  buildSolver();
+
     Matrix sqrt( Matrix& x );
 };
 
-#endif // SVDFITPL_H
+#endif // SVDFIT_H
