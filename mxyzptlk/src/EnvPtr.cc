@@ -29,10 +29,9 @@
 #include <mxyzptlk/TJetEnvironment.h>
 #include <mxyzptlk/EnvPtr.h>
 
-
 template<>
 template<>
-EnvPtr<double>::operator EnvPtr<std::complex<double> >() const
+EnvPtr<double>::operator EnvPtr<std::complex<double> >()
 {
   return TJetEnvironment<std::complex<double> >::makeJetEnvironment( *this );
 }
