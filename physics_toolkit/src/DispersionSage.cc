@@ -47,8 +47,6 @@
 ******  Mar 2007   ostiguy@fnal.gov
 ******
 ******  - eliminated references to slist/dlist
-******  - fixed dispersion scaling in presence of acceleration in dispersion computation
-******  - added new method to push dispersion using Jets
 ******
 **************************************************************************
 *************************************************************************/
@@ -527,8 +525,9 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
   exp_d[5]  = 1;
 
   state[i_x ].setTermCoefficient(initialConditions.dispersion.hor, exp_d );
-  state[i_px].setTermCoefficient(initialConditions.dispersion.ver, exp_d );
-  state[i_y ].setTermCoefficient(initialConditions.dPrime.hor,     exp_d );
+  state[i_px].setTermCoefficient(initialConditions.dPrime.hor,     exp_d );
+
+  state[i_y ].setTermCoefficient(initialConditions.dispersion.ver, exp_d );
   state[i_py].setTermCoefficient(initialConditions.dPrime.ver,     exp_d );
  
   eraseAll();
