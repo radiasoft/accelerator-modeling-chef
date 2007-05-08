@@ -199,21 +199,20 @@ void operator*=( TMapping<T>& x, TMapping<T> const& y ) {
 template<typename T>
 TMatrix<T> TMapping<T>::jacobian() const 
 {
- int            nv = (this->myEnv_)->numVar();   // ??? Is this right?
- //int*           d = new int[ nv ];
- int           d[ nv ];
- TMatrix<T>    M( (this->comp_.size()), nv,  T() );
+ int           nv = (this->myEnv_)->numVar();   
+ IntArray      d(nv, 0);
 
- for( int i=0; i<nv; ++i) d[i] = 0;
+ int dim =     this->comp_.size();
+ TMatrix<T>    M( dim, nv,  T() );
+
  for( int j=0; j<nv; ++j) {
   d[j] = 1;
-  for( int i=0; i< (this->comp_.size()); ++i)  {
+  for( int i=0; i<dim; ++i)  {
       M( i, j ) = (this->comp_)[i].derivative( d );
   }
   d[j] = 0;
  }
 
- // delete [] d;
  return M;
 }
 
