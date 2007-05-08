@@ -66,8 +66,8 @@
 #include <ostream>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
-#include <mxyzptlk/EnvPtr.h>
 #include <basic_toolkit/IntArray.h>
+#include <mxyzptlk/EnvPtr.h>
 
  
 template<typename T>
@@ -101,21 +101,17 @@ class DLLEXPORT TJLterm
 
  public:
 
+  int      offset_;     //  The offset of this term in the scratchpad  
   T        value_;      //  The value associated with the JLterm.
-
   int      weight_;     //  The sum of the values in index.  For the above example, 
                         //  this would be 4.
-
-  int      offset_;     //  The offset of this term in the scratchpad  
-
-
 
   // Constructors and destructors
 
   TJLterm();
   TJLterm( IntArray  const&, const T&,  EnvPtr<T> const& pje );
 
-  TJLterm( T const&, int const& weight, int const& offset );
+  TJLterm( T const&, int const& offset, int const& weight );
   TJLterm( TJLterm  const& );
 
   template<typename U>
@@ -125,10 +121,10 @@ class DLLEXPORT TJLterm
 
   bool    operator<( TJLterm<T> const& rhs) const;
 
-  T         coefficient()                    const { return value_; }                   
-  IntArray  exponents( EnvPtr<T> const& env) const { return env->exponents( offset_); } 
+  T         coefficient()                    const { return value_; }             
+  IntArray  exponents( EnvPtr<T> const& env) const;
 
-  // JLterm array allocation functions
+ // JLterm array allocation functions
 
   static TJLterm<T>*       array_allocate(int n);
   static void              array_deallocate(TJLterm<T>* p);
@@ -193,11 +189,9 @@ TJLterm<std::complex<double> >::TJLterm( TJLterm<double> const& );
 
 
 template<typename T>
-inline TJLterm<T>::TJLterm( TJLterm<T> const& x ):
-  value_(x.value_), weight_(x.weight_), offset_(x.offset_)  
+inline TJLterm<T>::TJLterm( TJLterm<T> const& x )
+  : offset_(x.offset_), value_(x.value_), weight_( x. weight_ )  
 {}
-
-
 
 
 
