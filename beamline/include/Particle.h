@@ -23,7 +23,7 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ****** 
 ******                                                                
-******  Authors:   Leo Michelotti (Original version)                                    
+******  Authors:   Leo Michelotti (Original version)
 ******             Jean-Francois Ostiguy 
 ******
 ******             Fermilab                                           
@@ -66,6 +66,8 @@
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/Matrix.h>
+#include <boost/shared_ptr.hpp>
+#include <gms/FastAllocator.h>
 
 // Forward declaration
 
@@ -80,6 +82,38 @@ class JetAntiProton;
 class JetPositron;
 class JetAntiMuon;
 
+class Particle;
+
+class Proton;
+class Electron;
+class Muon;
+
+class AntiProton;
+class Positron;
+class AntiMuon;
+
+typedef boost::shared_ptr<Particle>           ParticlePtr;
+typedef boost::shared_ptr<Particle const>     ConstParticlePtr;
+
+typedef boost::shared_ptr<Proton>             ProtonPtr;
+typedef boost::shared_ptr<Proton const>       ConstProtonPtr;
+
+typedef boost::shared_ptr<AntiProton>         AntiProtonPtr;
+typedef boost::shared_ptr<AntiProton const>   ConstAntiProtonPtr;
+
+typedef boost::shared_ptr<Positron>           PositronPtr;
+typedef boost::shared_ptr<Positron const>     ConstPositronPtr;
+
+typedef boost::shared_ptr<Electron>           ElectronPtr;
+typedef boost::shared_ptr<Electron const>     ConstElectronPtr;
+
+typedef boost::shared_ptr<Muon>               MuonPtr;
+typedef boost::shared_ptr<Muon const>         ConstMuonPtr;
+
+typedef boost::shared_ptr<AntiMuon>           AntiMuonPtr;
+typedef boost::shared_ptr<AntiMuon const>     ConstAntiMuonPtr;
+
+
 class particle_core_access; 
 
 
@@ -88,7 +122,7 @@ const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
 
 // .............................. Particle classes
 
-class DLLEXPORT Particle {
+class DLLEXPORT Particle : public gms::FastAllocator {
 
   friend class JetParticle;
   friend class particle_core_access;  
@@ -130,7 +164,7 @@ public:
 
   virtual ~Particle();
 
-  virtual Particle* Clone() const;
+  virtual Particle* Clone( void* p=0) const;
 
   Particle&    operator=(Particle const&);
 
@@ -173,7 +207,9 @@ public:
   Vector  State()                   const;  // Returns the state as a Vector object.
   double  State( int i )            const;
   void    setState(Vector const& );
+
   Vector& getState();
+  Vector  const& getState()         const;
 
 
   double Energy()                   const;
@@ -222,7 +258,7 @@ public:
 
   Proton&   operator=(Proton const&);
 
-  Proton*   Clone()  const;
+  Proton*   Clone(void* p=0)  const;
 
 };
 
@@ -239,7 +275,7 @@ public:
 
   AntiProton&   operator=(AntiProton const&);
 
-  AntiProton*    Clone() const;
+  AntiProton*    Clone(void* p=0) const;
 };
 
 
@@ -257,7 +293,7 @@ public:
   Electron&   operator=(Electron const&);
 
 
-  Electron*    Clone() const;
+  Electron*    Clone(void* p=0) const;
 };
 
 class DLLEXPORT  Positron : public Particle {
@@ -273,7 +309,7 @@ public:
 
   Positron&   operator=(Positron const&);
 
-  Positron*    Clone() const;
+  Positron*    Clone(void* p=0) const;
 };
 
 class DLLEXPORT Muon : public Particle {
@@ -289,7 +325,7 @@ public:
 
   Muon&   operator=(Muon const&);
 
-  Muon*    Clone() const;
+  Muon*    Clone(void* p=0) const;
 };
 
 class DLLEXPORT  AntiMuon : public Particle {
@@ -305,7 +341,7 @@ public:
 
   AntiMuon&   operator=(AntiMuon const&);
 
-  AntiMuon*    Clone() const;
+  AntiMuon*    Clone(void* p=0) const;
 };
 
 
@@ -326,8 +362,6 @@ class particle_core_access
 };
 
 // -------------------------------  Inline members --------------------------------------------------------------
-
-  inline Particle*   Particle::Clone() const  { return new Particle(*this); }
 
   inline int  Particle::xIndex()     { return 0; }
   inline int  Particle::yIndex()     { return 1; }
@@ -378,15 +412,5 @@ class particle_core_access
   inline double  Particle::Weight()                   const   { return wgt_;                      } 
   inline double  Particle::Charge()                   const   { return q_;                        }
   inline double  Particle::BRho()                     const   { return bRho_*( 1.0 + state_[5] ); }
-
-
-
-  inline Proton*           Proton::Clone()    const { return new Proton( *this );     }
-  inline AntiProton*   AntiProton::Clone()    const { return new AntiProton( *this ); }
-  inline Electron*       Electron::Clone()    const { return new Electron( *this );   }
-  inline Positron*       Positron::Clone()    const { return new Positron( *this );   }
-  inline Muon*               Muon::Clone()    const { return new Muon( *this );       }
-  inline AntiMuon*       AntiMuon::Clone()    const { return new AntiMuon( *this );   }
-
 
 #endif // PARTICLE_H
