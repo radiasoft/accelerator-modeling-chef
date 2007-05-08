@@ -23,7 +23,7 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ****** 
 ******                                                                
-******  Authors:   Leo Michelotti (original version)                                     
+******  Authors:   Leo Michelotti (original version)
 ******             Jean-Francois Ostiguy
 ******                                                   
 ******             Fermilab                                           
@@ -37,7 +37,7 @@
 ******
 ******  REVISION HISTORY:
 ******
-******  Dec 2006 ostiguy@fnal.gov                                                                
+******  Dec 2006 ostiguy@fnal.gov
 ******
 ******  Major revision 
 ****** 
@@ -71,6 +71,7 @@
 #include <mxyzptlk/Mapping.h>
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
+#include <boost/shared_ptr.hpp>
 
 
 class Particle;
@@ -81,6 +82,36 @@ class Muon;
 class AntiProton;
 class Positron;
 class AntiMuon;
+
+class JetParticle;
+class JetProton;
+class JetElectron;
+class JetMuon;
+
+class JetAntiProton;
+class JetPositron;
+class JetAntiMuon;
+
+typedef boost::shared_ptr<JetParticle>           JetParticlePtr;
+typedef boost::shared_ptr<JetParticle const>     ConstJetParticlePtr;
+
+typedef boost::shared_ptr<JetProton>             JetProtonPtr;
+typedef boost::shared_ptr<JetProton const>       ConstJetProtonPtr;
+
+typedef boost::shared_ptr<JetAntiProton>         JetAntiProtonPtr;
+typedef boost::shared_ptr<JetAntiProton const>   ConstJetAntiProtonPtr;
+
+typedef boost::shared_ptr<JetPositron>           JetPositronPtr;
+typedef boost::shared_ptr<JetPositron const>     ConstJetPositronPtr;
+
+typedef boost::shared_ptr<JetElectron>           JetElectronPtr;
+typedef boost::shared_ptr<JetElectron const>     ConstJetElectronPtr;
+
+typedef boost::shared_ptr<JetMuon>               JetMuonPtr;
+typedef boost::shared_ptr<JetMuon const>         ConstJetMuonPtr;
+
+typedef boost::shared_ptr<JetAntiMuon>           JetAntiMuonPtr;
+typedef boost::shared_ptr<JetAntiMuon const>     ConstJetAntiMuonPtr;
 
 
 class JetParticle {
@@ -151,7 +182,8 @@ public:
   void     setState( Mapping const& );
   void     setState( Vector  const& );    // sets the state to the identity Map. Vector elements define ref point. 
 
-  Mapping& getState();
+  Mapping&       getState();
+  Mapping const& getState() const;
 
   Mapping  State()  const;
   Jet&     State( int );
