@@ -399,7 +399,7 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   // .......... Check coupling ............................
 
-  MatrixD mtrx = ( jp.State() ).Jacobian();
+  MatrixD mtrx =  jp.getState().Jacobian();
   
   if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       ( mtrx( i_x,  i_y  ) != 0.0 )  ||
@@ -1197,10 +1197,6 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     (*pcout).flush();
   }
 
-  MatrixD mtrx;
-  MatrixC lambda;
-  MatrixD M(2,2);
-  double  snH, csH, snV, csV;
 
   int i_x   =  jp.xIndex();
   int i_y   =  jp.yIndex();
@@ -1218,7 +1214,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   if( forceClosedOrbitCalc ) { clsg.setForcedCalc(); }
 
   if( verbose_ ) clsg.set_verbose();
-  else                 clsg.unset_verbose();  // Unnecessary line.
+  else           clsg.unset_verbose();  // Unnecessary line.
 
 
   if( ( ret = clsg.findClosedOrbit( jp ) ) == 0 )
@@ -1233,17 +1229,18 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     if( verbose_ ) {
       (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
       (*pcout).flush();
+      return ret;
     }
   }
 
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 )
-  {
-    // .......... Calculating tunes .........................
-    // .......... (lifted from EdwardsTeng) .................
-    mtrx = ( jp.State() ).Jacobian();
+ 
+  // .......... Calculating tunes .........................
+  // .......... (lifted from EdwardsTeng) .................
+  
+  MatrixD mtrx = jp.getState().Jacobian();
 
     if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       	( mtrx( i_x,  i_y  ) != 0.0 )  ||
@@ -1267,13 +1264,16 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
 
     // Calculation in horizontal plane
-    M( 0, 0 ) = mtrx( i_x,  i_x  );
-    M( 0, 1 ) = mtrx( i_x,  i_px );
-    M( 1, 0 ) = mtrx( i_px, i_x  );
-    M( 1, 1 ) = mtrx( i_px, i_px );
+   
+   MatrixD M(2,2);
+   M( 0, 0 ) = mtrx( i_x,  i_x  );
+   M( 0, 1 ) = mtrx( i_x,  i_px );
+   M( 1, 0 ) = mtrx( i_px, i_x  );
+   M( 1, 1 ) = mtrx( i_px, i_px );
 
-    lambda = M.eigenValues();
-    if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+   MatrixC lambda = M.eigenValues();
+
+   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -1284,41 +1284,42 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "\n"
            << "*** ERROR ***                                     \n"
            << endl;
-      ret = 10;
-    }
-  }
+      ret = 10; return ret;
+   }
+
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) {
-    if( ( abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
-    {
+
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
   	     << "*** ERROR *** Conjugacy condition has been violated\n"
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
-  	ret = 11;
-    }
+  	ret = 11; return ret;
   }
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) {
-    csH = real( lambda(0) );
-    snH = sqrt( 1.0 - csH*csH );
-    if( M(0,1) < 0.0 ) snH = - snH;
+   double csH = real( lambda(0) );
+   double snH = sqrt( 1.0 - csH*csH );
+
+   if( M(0,1) < 0.0 ) snH = - snH;
     
 
     // Calculation in vertical plane
-    M( 0, 0 ) = mtrx( i_y,  i_y  );
-    M( 0, 1 ) = mtrx( i_y,  i_py );
-    M( 1, 0 ) = mtrx( i_py, i_y  );
-    M( 1, 1 ) = mtrx( i_py, i_py );
 
-    lambda = M.eigenValues();
-    if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+   M( 0, 0 ) = mtrx( i_y,  i_y  );
+   M( 0, 1 ) = mtrx( i_y,  i_py );
+   M( 1, 0 ) = mtrx( i_py, i_y  );
+   M( 1, 1 ) = mtrx( i_py, i_py );
+
+   lambda = M.eigenValues();
+   if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -1329,46 +1330,44 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "\n"
            << "*** ERROR ***                                     \n"
            << endl;
-      ret = 12;
-    }
+       ret = 12; return ret;
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) {
-    if( ( abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
-    {
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
   	     << "*** ERROR *** Conjugacy condition has been violated\n"
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
-  	ret = 13;
-    }
+         ret = 13; return ret;
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) {
-    csV = real( lambda(0) );
-    snV = sqrt( 1.0 - csV*csV );
-    if( M(0,1) < 0.0 ) snV = - snV;
+  double csV = real( lambda(0) );
+  double snV = sqrt( 1.0 - csV*csV );
+
+  if( M(0,1) < 0.0 ) snV = - snV;
+
     
-    // Attach data to the beamline
+  // Attach data to the beamline
 
-    LattFuncSage::tunes  lftunes;
+  LattFuncSage::tunes  lftunes;
 
-    double t = atan2( snH, csH );
-    if( t < 0.0 )   t += M_TWOPI;
-    lftunes.hor = ( t / M_TWOPI );
-    t = atan2( snV, csV );
-    if( t < 0.0 )   t += M_TWOPI;
-    lftunes.ver = ( t / M_TWOPI );
+  double t = atan2( snH, csH );
+  if( t < 0.0 )   t += M_TWOPI;
+  lftunes.hor = ( t / M_TWOPI );
+  t = atan2( snV, csV );
+  if( t < 0.0 )   t += M_TWOPI;
+  lftunes.ver = ( t / M_TWOPI );
 
-    myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-    myBeamlinePtr_->dataHook.append( Barnacle( "Tunes", lftunes ) );
-  }
+  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
+  myBeamlinePtr_->dataHook.append( Barnacle( "Tunes", lftunes ) );
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
