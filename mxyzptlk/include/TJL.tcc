@@ -314,12 +314,12 @@ TJL<T>::TJL( IntArray const& e, const T& x, EnvPtr<T> const& pje ) :
 
  int indy = 0;
 
- if (term.weight_ == 0) {  
+ if ( term.weight_ == 0) {  
   jltermStore_[0].value_ = x;
   return;
  }
    
- if (term.weight_ == 1) {  
+ if ( term.weight_ == 1) {  
    jltermStore_[term.offset_].value_ = x; 
    return; 
  }
@@ -333,7 +333,7 @@ TJL<T>::TJL( IntArray const& e, const T& x, EnvPtr<T> const& pje ) :
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 template<typename T>
- JLPtr<T> TJL<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje ) 
+ JLPtr<T> TJL<T>::makeTJL( IntArray const& e, T const& x, EnvPtr<T> const& pje ) 
 {
 
   if (!pje) return JLPtr<T>();  // cannot create a TJL without a properly constructed environemnt 
@@ -354,17 +354,17 @@ template<typename T>
 
   p->appendLinearTerms( pje->numVar() );
 
-  if (term.weight_ == 0) {  
+  if ( term.weight_ == 0) {  
    p->jltermStore_[0].value_ = x;
    return JLPtr<T>(p);
   }
    
-  if (term.weight_ == 1) {  
+  if ( term.weight_ == 1) {  
     p->jltermStore_[term.offset_].value_ = x; 
     return  JLPtr<T>(p);
   }
  
-  if ( term.weight_ > 1) {  
+  if ( term.weight_  > 1 ) {  
      p->append( term ); 
   }
 
@@ -582,7 +582,7 @@ void TJL<T>::addTerm( TJLterm<T> const& a )
  // adding a term may increase the maximum weight 
  // however, max accurate weight remains unchanged.
 
-  weight_ =   std::max( weight,  a.weight_);  
+  weight_ =   std::max( weight,  a.weight_ );  
   accuWgt_ =  accuWgt;
 
  return;
@@ -601,7 +601,7 @@ T  TJL<T>::getTermCoefficient( IntArray const& exp ) const
 
    int offset = myEnv_->offsetIndex(exp);
 
-   TJLterm<T> term( T(), exp.Sum(), offset );
+   TJLterm<T> term( T(), offset, exp.Sum() );
 
    std::pair<typename TJL<T>::const_iterator, typename TJL<T>::const_iterator> 
       result = std::equal_range( begin(), end(), term);
@@ -703,7 +703,7 @@ void TJL<T>::peekAt() const {
  for ( TJLterm<T> const* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) { 
 
    (*pcout) << "Weight: "
-        << p -> weight_
+        << p->weight_
         << "   Value: "
         << p -> value_
         << " || ";
@@ -723,7 +723,8 @@ template<typename T>
 void TJL<T>::scaleBy( T y ) 
 { 
 
- for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
+ const_iterator pend = end();
+ for ( iterator p = begin(); p != pend; ++p ) {
    p->value_ *= y;               
  }
 
@@ -736,9 +737,11 @@ void TJL<T>::scaleBy( T y )
 template<typename T>
 TJL<T>& TJL<T>::Negate( ) {
 
- for(  TJLterm<T>* p = jltermStore_; p< jltermStoreCurrentPtr_; ++p  ) {
+ const_iterator pend = end();
+ for ( iterator p = begin(); p != pend; ++p ) {
    p->value_ = -p->value_;
  }
+
  return *this;
 
 }
@@ -857,14 +860,14 @@ void TJL<T>::clear()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJL<T>::weightedDerivative( const int* ind ) const 
+T TJL<T>::weightedDerivative( IntArray const& ind ) const 
 {
 
  for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
    
    bool theOne = true; 
    for ( int i=0;  i < myEnv_->numVar(); ++i ) {
-      theOne  = theOne && ( myEnv_->exponents(p->offset_)(i) == ind[i] );
+      theOne  = theOne && ( myEnv_->exponents(p->offset_)[i] == ind[i] );
    }
    if (theOne) return p->value_;
  }
@@ -878,7 +881,7 @@ T TJL<T>::weightedDerivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJL<T>::derivative( const int* ind ) const 
+T TJL<T>::derivative( IntArray const& ind ) const 
 {
  T d = weightedDerivative( ind );
  if ( d == T() ) return 0.0;
@@ -898,22 +901,16 @@ T TJL<T>::derivative( const int* ind ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJL<T>::operator()( const T* x )  const 
+T TJL<T>::operator()( std::vector<T> const &x )  const 
 {
+
  // This routine is linked to double TJL<T>::operator()( const Vector& x ) const
  // Any change made to this must be reflected in the other.
 
- TJLterm<T>* p = 0;
-   T v   = T();
- int w   = 0;
- int i   = 0;
- T term  = T();
- T* u    = 0;
- 
- u = new T[ myEnv_->numVar() ];
+ std::vector<T> u( myEnv_->numVar() );
  
  // Subtract off the reference point.
- for( i = 0; i < myEnv_->numVar(); ++i ) u[i] = x[i] - myEnv_->refPoint()[i];
+ for( int i=0; i < myEnv_->numVar(); ++i ) { u[i] = x[i] - myEnv_->refPoint()[i]; }
  
  // Evaluate and store _monomials.
  
@@ -924,7 +921,9 @@ T TJL<T>::operator()( const T* x )  const
  IntArray exponents( myEnv_->numVar() );
  
  // For all higher weights ...
- for( w = 1; w <= weight_; w++ )
+
+ int i   = 0;
+ for( int w=1; w <= weight_; ++w )
  
    // Get the next set of _exponents of weight w.
    while( nexcom( w, myEnv_->numVar(), exponents ) ) {
@@ -940,7 +939,7 @@ T TJL<T>::operator()( const T* x )  const
 
      exponents[i]--;
 
-     term = (myEnv_->monomial())[ myEnv_->offsetIndex( exponents ) ];
+     T term = (myEnv_->monomial())[ myEnv_->offsetIndex( exponents ) ];
 
      exponents[i]++;
 
@@ -951,13 +950,12 @@ T TJL<T>::operator()( const T* x )  const
  // Monomials have been now stored at this point.
  // Now traverse the JL variable and evaluate.
  
- v = T();
+ T v = T();
  
  for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
    v += ( p->value_ ) * ( myEnv_->monomial()[ p->offset_ ] );
  }
  
- delete [] u;
  
  return v;
  
@@ -969,11 +967,8 @@ T TJL<T>::operator()( const T* x )  const
 template<typename T>
 T TJL<T>::operator()( Vector const& x ) const 
 {
-  int n = x.Dim();
-  T newarg [n];
-  for( int i=0; i<n; ++i ) {
-    newarg[i] = x(i);
-  }
+  std::vector<T> newarg ( x.begin(), x.end() );
+
   return this->operator()( newarg );
 }
 
@@ -1100,7 +1095,7 @@ JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const
     for ( TJLterm<T> const* q = thisstart; q < thisend; q++ ) {
 
       if( ( p->weight_ + q->weight_ ) > wl ) continue;
-
+      
       indy = myEnv_->multOffset( p->offset_ , q->offset_ );
 
    // Will work even when the exponents are all zero.
@@ -1765,21 +1760,21 @@ JLPtr<T> TJL<T>::log() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const 
+JLPtr<T> TJL<T>::compose( std::vector<JLPtr<T> > const& y ) const 
 {
 
  //-------------------------------------------------
  //  **** Composition operator ****
  //-------------------------------------------------
 
- JLPtr<T>  u[ myEnv_->numVar() ];
+ std::vector<JLPtr<T> > u( myEnv_->numVar() );
 
  //------------------------------------------------
  // Check consistency of reference points and
  // subtract reference point prior to concatenation.
  //-------------------------------------------------
 
- for( int i= 0; i< myEnv_->numVar(); ++i ) {
+ for( int i=0; i< myEnv_->numVar(); ++i ) {
  
   if( y[i]->myEnv_ !=  y[0]->myEnv_ ) {
      throw( GenericException( __FILE__, __LINE__, 
@@ -1791,9 +1786,7 @@ JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const
  }
 
 
- JLPtr<T> term( makeTJL(myEnv_) ) ; // Initializing term should not be necessary. 
-
- JLPtr<T>* tjlmonomial = myEnv_->TJLmonomial();
+ std::vector<JLPtr<T> >& tjlmonomial = myEnv_->TJLmonomial(); // for monomials used in multinomial evaluation.  
 
  IntArray exponents( myEnv_->numVar() );
 
@@ -1808,15 +1801,13 @@ JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const
  // For all higher weights ...
 
  int  i = 0;
- int  w = 1;
-
- 
- for( w=1; w <= accuWgt_; w++ ) {
+ for( int w=1; w <= accuWgt_; w++ ) {
 
   // Get the next set of exponents of weight w.
 
    while( nexcom( w, myEnv_->numVar(), exponents ) ) {
-      // Find the first non-zero exponent.
+   
+     // Find the first non-zero exponent.
      i = 0;
      
      while( !(exponents[i++]) ) ;
@@ -1828,7 +1819,7 @@ JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const
 
      (exponents[i])--;
      
-     term = tjlmonomial[ myEnv_->offsetIndex( exponents ) ];
+     JLPtr<T> term = tjlmonomial[ myEnv_->offsetIndex( exponents ) ];
 
      exponents[i]++;
 
@@ -1849,7 +1840,7 @@ JLPtr<T> TJL<T>::compose( JLPtr<T> const y[ ]) const
 
     if( p->weight_ > accuWgt_ ) break;
 
-    z = z +  ( tjlmonomial[ p->offset_ ] *  (p->value_) );
+    z = z + ( tjlmonomial[ p->offset_ ] *  (p->value_) ); 
  } 
  
  // Finish...
@@ -1910,7 +1901,7 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
             x.jltermStore_[term.offset_].value_ = value;
     }  
     if ( term.weight_ >  1)  {
-        x.append(term);
+         x.append(term);
     }
   }
 
@@ -1975,7 +1966,10 @@ JLPtr<T> TJL<T>::asin() const
      typename TJL<T>::iterator itz  =  z->begin(); 	 
      typename TJL<T>::iterator itdz = dz->begin(); 	 
 
-     for ( ; itdz != dz->end(); ++itdz, ++itz ) { 	 
+     const_iterator dzend = dz->end();
+
+
+     for ( ; itdz != dzend; ++itdz, ++itz ) { 	 
 
        while ( itz->offset_ != itdz->offset_ ) ++itz;  
        converged = ( std::abs(itz->value_)  >  mx_small_ ) ? ( std::abs( itdz->value_ ) < mx_small_* std::abs(itz->value_) ) 
@@ -2095,7 +2089,7 @@ void TJL<T>::printCoeffs() const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::D( const int* n ) const 
+JLPtr<T> TJL<T>::D( IntArray const& n ) const 
 {
 
  //----------------------------- 
@@ -2162,10 +2156,10 @@ JLPtr<T> TJL<T>::D( const int* n ) const
      //    absorb it into the answer.
 
      (q->value_)   *= f;              
-     (q->weight_ ) -= w;
+     (q->weight_)  -= w;              
      (q->offset_)   = myEnv_->offsetIndex(exponents); 
    
-     if (q->weight_ < 2 ) {
+     if ( q->weight_ < 2 ) {
       z->jltermStore_[q->offset_].value_ = q->value_;  
      }
        else {  
@@ -2240,21 +2234,21 @@ JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  )
      if ( px->offset_  ==  py->offset_) { 
           value  =  px->value_;  
           T_function( value, py->value_);  
-          z->append( TJLterm<T>( value, px->weight_, px->offset_) ); 
+          z->append( TJLterm<T>( value, px->offset_, px->weight_) ); 
           ++px;  ++py;
           continue; 
      }
             
 
      if ( px->offset_  <   py->offset_) { 
-          z->append( TJLterm<T>(px->value_, px->weight_, px->offset_) ); 
+          z->append( TJLterm<T>(px->value_, px->offset_, px->weight_) ); 
           ++px; 
           continue; 
      }   
 
 
      if ( px->offset_  >   py->offset_)  { 
-          z->append( TJLterm<T>(py->value_, py->weight_, py->offset_) );    
+          z->append( TJLterm<T>(py->value_, py->offset_, py->weight_) );    
           ++py; 
           continue; 
      }   
@@ -2263,13 +2257,13 @@ JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  )
    
   while ( px<xend ) 
   {
-       z->append( TJLterm<T>(px->value_, px->weight_, px->offset_ )); 
+       z->append( TJLterm<T>(px->value_, px->offset_, px->weight_ )); 
        ++px; 
   }   
 
   while  ( py<yend ) 
   {
-       z->append( TJLterm<T>(py->value_, py->weight_, py->offset_ )); 
+       z->append( TJLterm<T>(py->value_, py->offset_, py->weight_ )); 
        ++py; 
   }   
 
@@ -2419,8 +2413,8 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
   for(   TJLterm<T> const* q = xstart; q < xend; ++q  ) {
 
-
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
+
      indy = pje->multOffset( p->offset_ , q->offset_ );
 
      // Will work even when the exponents are all zero. 
@@ -2432,7 +2426,7 @@ for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
      if( ( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) || 
          ( std::abs(dummy) <  TJL<T>::mx_small_ ) ) {
 
-      tjlmml[indy].value_ = T();
+        tjlmml[indy].value_ = T();
      } 
      else {
         tjlmml[indy].value_ = dummy;
@@ -2552,6 +2546,7 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
 
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
+
      indy = pje->multOffset( p->offset_ , q->offset_ );
 
      // Will work even when the exponents are all zero.
@@ -2752,8 +2747,11 @@ void TJL<T>::transferFromScratchPad() {
   //---------------------------------------------------------------------
   // **** Look for and set the weight of the lowest non-zero monomial ***
   //---------------------------------------------------------------------
+  
+  const_iterator itend = end();
 
-  for( typename std::vector<TJLterm<T> >::iterator it=scpad_begin;  it != scpad_end; ++it) {
+  lowWgt_ = 0; 
+  for( iterator it=begin();  it != itend; ++it) {
      if ( it->value_ != T() ) { 
         lowWgt_ = it->weight_; 
   	break;
@@ -2764,12 +2762,8 @@ void TJL<T>::transferFromScratchPad() {
   // **** Look for and set the maximum weight present
   // -------------------------------------------------  	 
 
-  for( typename std::vector<TJLterm<T> >::reverse_iterator rit=scpad_rbegin;  rit != scpad_rend; ++rit) {
-      if ( rit->value_ != T() ) {
-  	 weight_ = rit->weight_;
-  	break;
-      }
-   }  
+  weight_ = ( begin() == itend ) ? 0 : ( itend-1 )->weight_;
+ 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2784,6 +2778,7 @@ void TJL<T>::appendLinearTerms( int numvar ) {
 
    term.offset_   = 0;  
    term.weight_   = 0;  
+
    TJLterm<T>* p = new( this->storePtr() ) TJLterm<T>(term); 
 
   // -- append weight == 1 terms 
@@ -2791,7 +2786,7 @@ void TJL<T>::appendLinearTerms( int numvar ) {
   for (int i=0; i< myEnv_->numVar(); ++i) {  // terms of weight 1
 
    term.offset_   = i+1;                 // DANGER ! NOTE that the offset here is i+1, not 1  ! 
-   term.weight_   = 1;                   // DANGER ! 
+   term.weight_   = 1;                   // DANGER ! NOTE that the weight must be set here !
 
    p = new( this->storePtr() ) TJLterm<T>(term); 
 
@@ -2845,5 +2840,43 @@ typename TJL<T>::const_iterator TJL<T>::end()  const
   return const_iterator( jltermStoreCurrentPtr_ );
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
+template<typename T>
+typename TJL<T>::reverse_iterator    TJL<T>::rbegin() 
+{
+
+  return boost::make_reverse_iterator( end() );
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJL<T>::const_reverse_iterator    TJL<T>::rbegin()  const
+{
+
+  return  boost::make_reverse_iterator( end() );
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJL<T>::reverse_iterator    TJL<T>::rend() 
+{
+  return  boost::make_reverse_iterator( begin() );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJL<T>::const_reverse_iterator    TJL<T>::rend()  const
+{
+  return  boost::make_reverse_iterator( begin() );
+}
+
 
 #endif // TJL_TCC
