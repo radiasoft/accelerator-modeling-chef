@@ -49,7 +49,7 @@ class DLLEXPORT EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
   explicit EnvPtr(TJetEnvironment<T>* p, bool add_ref=true): boost::intrusive_ptr<TJetEnvironment<T> >(p,add_ref) {}
 
  template<typename U>
- operator EnvPtr<U>() const; 
+ operator EnvPtr<U>(); 
 
 
 };
@@ -60,7 +60,7 @@ class DLLEXPORT EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
 
 template<>
 template<>
-EnvPtr<double>::operator EnvPtr<std::complex<double> >() const; 
+EnvPtr<double>::operator EnvPtr<std::complex<double> >(); 
 
 
 #endif // ENVPTR_H
