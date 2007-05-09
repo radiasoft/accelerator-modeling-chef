@@ -56,6 +56,11 @@
 ******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
 ******  - lpjm
 ******  
+******  Date: May 9, 2007
+******  A minor bug fix; produces minimal effect.  Another major overhaul
+******  will be coming soon anyway.
+******  - lpjm
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -132,7 +137,6 @@ void rfcavity::localPropagate( JetParticle& p )
 
   Jet k1( - 0.5*(onaxisEnergyGain/length_)/ E );
   Jet k2(   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain) );
-
   // ??? Are the denominators correct ???
 
   // Thin lens kick upon entry
@@ -170,11 +174,7 @@ void thinrfcavity::localPropagate( Particle& p )
 
   Vector& state = p.getState(); 
  
-  double px = p.get_npx();
-  double py = p.get_npy();
-  double denom = 1.0 + p.get_ndp();
-  double cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-  double E = p.Energy() + ((strength_*cs)*(sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c )));
+  double E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
   double oldRefP = p.ReferenceMomentum();
   p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
@@ -200,11 +200,7 @@ void thinrfcavity::localPropagate( JetParticle& p )
 
   Mapping& state = p.getState(); 
 
-  Jet px = p.get_npx();
-  Jet py = p.get_npy();
-  Jet denom = 1.0 + p.get_ndp();
-  Jet cs = sqrt( 1.0 - ( ( px*px + py*py ) / ( denom*denom ) ) );
-  Jet E = p.Energy() + ((strength_*cs)*(sin( phi_s_ + state(2) * w_rf_ / PH_MKS_c )));
+  Jet E = p.Energy() + strength_*sin( phi_s_ + state(2) * w_rf_ / PH_MKS_c );
 
   double oldRefP = p.ReferenceMomentum();
   p.SetReferenceEnergy( p.ReferenceEnergy() + strength_ *sin_phi_s_ );
