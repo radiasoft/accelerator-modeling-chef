@@ -109,22 +109,22 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
   // -----------------------------------------------------------------------------------------------------
  
 
-  int m = _nrows;
-  int n = _ncols;
+  int m = nrows_;
+  int n = ncols_;
 
  
-  if ((UPtr->_nrows == _nrows) || (UPtr->_ncols == _ncols) ) { 
-    memcpy ( UPtr->_mdata[0], _mdata[0], _nrows*_ncols*sizeof(double) );  // dimensions are OK. just copy current matrix data into U. No need to reallocate. 
+  if ((UPtr->nrows_ == nrows_) || (UPtr->ncols_ == ncols_) ) { 
+    memcpy ( UPtr->mdata_[0], mdata_[0], nrows_*ncols_*sizeof(double) );  // dimensions are OK. just copy current matrix data into U. No need to reallocate. 
   }     
   else {
     UPtr = MLPtr<double>( new TML<double>( *this) );      // reallocates U and copy current matrix into it 
   }
 
-  if ((VPtr->_nrows != _ncols) || (VPtr->_ncols != _ncols) ) {
-    VPtr = MLPtr<double>( new TML<double>( _ncols, _ncols ));  
+  if ((VPtr->nrows_ != ncols_) || (VPtr->ncols_ != ncols_) ) {
+    VPtr = MLPtr<double>( new TML<double>( ncols_, ncols_ ));  
   }
 
-  if ( W.Dim() != _ncols ) W = Vector( _ncols );
+  if ( W.Dim() != ncols_ ) W = Vector( ncols_ );
 
   TML<double> &U = *UPtr;
   TML<double> &V = *VPtr;
@@ -254,7 +254,7 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
       }
 
       if (its == 30) { 
-        throw( _nrows, _ncols, 
+        throw( nrows_, ncols_, 
                "void TML<double>::SVD (  MLPtr<double>& U, Vector& W, MLPtr<double>& V) const",
                "No convergence in 30 SVDCMP iterations." );
       }
@@ -338,12 +338,12 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
    
   double sum = 0.0;
 
-  int      m =  U->_nrows;
-  int      n =  U->_ncols;
+  int      m =  U->nrows_;
+  int      n =  U->ncols_;
   
   Vector xtmp(n);
   
-  double** mdata = U->_mdata;
+  double** mdata = U->mdata_;
  
   //  **** xtmp  = U.transpose()*rhs;
 
@@ -381,7 +381,7 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
   //  V*xtmp;
 
   Vector x(n);
-  mdata =   V->_mdata;
+  mdata =   V->mdata_;
   for( int row=0; row< n; ++row) {
 
     sum = 0.0;

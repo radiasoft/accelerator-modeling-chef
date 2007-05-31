@@ -50,7 +50,7 @@
 
 using namespace std;
 
-template<typename T> double TML<T>::_tiny                = 1.0e-20; // pivot threshold
+template<typename T> double TML<T>::tiny_                = 1.0e-20; // pivot threshold
 
 
 
@@ -59,14 +59,14 @@ template<typename T> double TML<T>::_tiny                = 1.0e-20; // pivot thr
 
 
 template<typename T>
-TML<T>::TML(): _mdata(0), _nrows(0), _ncols(0)  { } // default: an empty matrix
+TML<T>::TML(): mdata_(0), nrows_(0), ncols_(0)  { } // default: an empty matrix
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TML<T>::TML(const char* flag, int dimension ): _nrows(dimension), _ncols(dimension)
+TML<T>::TML(const char* flag, int dimension ): nrows_(dimension), ncols_(dimension)
 {
 
   if( ( (dimension%2) != 0) &&
@@ -76,21 +76,21 @@ TML<T>::TML(const char* flag, int dimension ): _nrows(dimension), _ncols(dimensi
                      , "Dimension must be even for J matrix") );
   }
 
-  _mdata = new T* [_nrows];
+  mdata_ = new T* [nrows_];
 
   int i=0;
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
 
-  for( i=0; i<_nrows; ++i ) { 
-    _mdata[i] = dataPtr;
-    dataPtr += _ncols;
+  for( i=0; i<nrows_; ++i ) { 
+    mdata_[i] = dataPtr;
+    dataPtr += ncols_;
   }
 
    // reset dataPtr
 
-   dataPtr = _mdata[0];
+   dataPtr = mdata_[0];
  
    for( i=0;  i<sz;  ++i) {
       (*dataPtr) = T(); 
@@ -100,12 +100,12 @@ TML<T>::TML(const char* flag, int dimension ): _nrows(dimension), _ncols(dimensi
 
   if (flag[0]  == 'I') {
     for ( i=0; i<dimension; ++i) {
-       _mdata[i][i] = T(1); 
+       mdata_[i][i] = T(1.0); 
     }
   } else if (flag[0] == 'J') {
     for (i = dimension/2; i< dimension; i++) {
-      _mdata[i-dimension/2][i] = T(1); 
-      _mdata[i][i-dimension/2] = T(-1);
+      mdata_[i-dimension/2][i] = T(1.0); 
+      mdata_[i][i-dimension/2] = T(-1.0);
     }
   } else {
       throw( GenericMatrixException( dimension, dimension
@@ -118,20 +118,20 @@ TML<T>::TML(const char* flag, int dimension ): _nrows(dimension), _ncols(dimensi
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TML<T>::TML(int rows, int columns, T initval): _nrows(rows), _ncols(columns)
+TML<T>::TML(int rows, int columns, T initval): nrows_(rows), ncols_(columns)
 {
 
-  _mdata = new T* [_nrows];
+  mdata_ = new T* [nrows_];
  
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
 
-  for( int i=0; i<_nrows; ++i ) { 
-    _mdata[i] = dataPtr;
-    dataPtr += _ncols;
+  for( int i=0; i<nrows_; ++i ) { 
+    mdata_[i] = dataPtr;
+    dataPtr += ncols_;
   }
 
-   T* colptr = _mdata[0];
+   T* colptr = mdata_[0];
  
    for( int i=0;  i<sz;  ++i) {
       (*colptr) = initval; 
@@ -144,18 +144,18 @@ TML<T>::TML(int rows, int columns, T initval): _nrows(rows), _ncols(columns)
 
 
 template<typename T>
-TML<T>::TML(int rows, int columns, const T* values): _nrows(rows), _ncols(columns)
+TML<T>::TML(int rows, int columns, const T* values): nrows_(rows), ncols_(columns)
 {
-  _mdata = new T* [_nrows];
+  mdata_ = new T* [nrows_];
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
-  for( int i=0; i < _nrows; ++i) { 
-    _mdata[i] = dataPtr;
-    dataPtr += _ncols;
+  for( int i=0; i < nrows_; ++i) { 
+    mdata_[i] = dataPtr;
+    dataPtr += ncols_;
   }
 
-  memcpy( (void*) (_mdata[0]), (void*) values, sz*sizeof(T) );
+  memcpy( (void*) (mdata_[0]), (void*) values, sz*sizeof(T) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -163,20 +163,20 @@ TML<T>::TML(int rows, int columns, const T* values): _nrows(rows), _ncols(column
 
 
 template<typename T>
-TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), _nrows(X._nrows), _ncols(X._ncols)
+TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), nrows_(X.nrows_), ncols_(X.ncols_)
 {
 
-  _mdata = new T* [_nrows];
+  mdata_ = new T* [nrows_];
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
 
-  for( int i=0; i<_nrows; ++i) { 
-     _mdata[i] = dataPtr;
-     dataPtr += _ncols;
+  for( int i=0; i<nrows_; ++i) { 
+     mdata_[i] = dataPtr;
+     dataPtr += ncols_;
   }
 
-  memcpy( (void*) (_mdata[0]), (void*) ((X._mdata)[0]), sz*sizeof(T) );
+  memcpy( (void*) (mdata_[0]), (void*) ((X.mdata_)[0]), sz*sizeof(T) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -186,14 +186,14 @@ TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), _nrows(X._nrows), _
 template<typename T>
 TML<T>::~TML() {
  
-  _nrows = 0;
-  _ncols = 0;
+  nrows_ = 0;
+  ncols_ = 0;
 
-  if (!_mdata) return; // valid to delete a 0x0 matrix ... 
+  if (!mdata_) return; // valid to delete a 0x0 matrix ... 
    
-  if (_mdata[0]) delete [] _mdata[0];
+  if (mdata_[0]) delete [] mdata_[0];
   
-  delete [] _mdata;
+  delete [] mdata_;
   
 }
 
@@ -204,9 +204,9 @@ TML<T>::~TML() {
 template<typename T>
 void TML<T>::clear() {
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
 
-  T* dataptr = _mdata[0];
+  T* dataptr = mdata_[0];
 
   for( int i=0;  i<sz;  ++i) {
     *dataptr = T(); 
@@ -225,17 +225,17 @@ MLPtr<T> TML<T>::Square() const
 {
 
   int d = 0;
-  if( _nrows < _ncols ) {
-     d = _nrows;
+  if( nrows_ < ncols_ ) {
+     d = nrows_;
   } else {                  
-     d = _ncols;
+     d = ncols_;
   }
 
   MLPtr<T> z(  new TML<T>(d, d, T()) ); 
 
   for( int i=0; i<d; ++i )
     for( int j=0; j<d; ++j )
-      z->_mdata[i][j] = _mdata[i][j];
+      z->mdata_[i][j] = mdata_[i][j];
 
   return z;
 }
@@ -248,11 +248,11 @@ MLPtr<T> TML<T>::Square() const
 template<typename T>
 MLPtr<T> TML<T>::transpose() const 
 {
-  MLPtr<T> zPtr( new TML<T>( _ncols,_nrows, T()) ); 
+  MLPtr<T> zPtr( new TML<T>( ncols_,nrows_, T()) ); 
 
-  for (int row=0; row<_nrows;  ++row)  {
-    for(int col=0; col<_ncols; ++col)  {
-      zPtr->_mdata[col][row] = _mdata[row][col];
+  for (int row=0; row<nrows_;  ++row)  {
+    for(int col=0; col<ncols_; ++col)  {
+      zPtr->mdata_[col][row] = mdata_[row][col];
     }
   }
   return zPtr;
@@ -266,12 +266,12 @@ MLPtr<T> TML<T>::transpose() const
 template<typename T>
 T TML<T>::trace() const {
   
-  if( _nrows != _ncols) throw( NotSquare( _nrows, _ncols, "T TMatrix<T>::trace()" )  );
+  if( nrows_ != ncols_) throw( NotSquare( nrows_, ncols_, "T TMatrix<T>::trace()" )  );
 
   T temp = T();
 
-  for (int i=0; i<_nrows; ++i)  { 
-    temp += _mdata[i][i];  
+  for (int i=0; i<nrows_; ++i)  { 
+    temp += mdata_[i][i];  
   }  
 
   return temp;
@@ -285,13 +285,13 @@ T TML<T>::trace() const {
 template<typename T>
 bool TML<T>::isOrthogonal() const
 {
- if( _nrows != _ncols ) { return false; }
+ if( nrows_ != ncols_ ) { return false; }
 
   MLPtr<T> self( new TML<T>(*this) ); // deepcopy  
 
   MLPtr<T> W( multiply<T>( self, self->transpose() ));
 
-  int n = _nrows;
+  int n = nrows_;
 
   for( int i=0; i<n; ++i ) {
     for( int j=0; j<n; ++j ) {
@@ -320,19 +320,19 @@ template<typename T>
 T TML<T>::determinant() const
 {
   T det = T();
-  if( _nrows != _ncols) {
-    throw( NotSquare( _nrows, _ncols, "TML<T>::determinant()" )  );
+  if( nrows_ != ncols_) {
+    throw( NotSquare( nrows_, ncols_, "TML<T>::determinant()" )  );
   }
   else {
-    int* indx = new int[_ncols];  // create the "index vector
+    int* indx = new int[ncols_];  // create the "index vector
                               // see pp 38. in Numerical Recipes
     int d;
     // perform the decomposition once:
 
-    MLPtr<T> decomp(_lu_decompose(indx,d));
+    MLPtr<T> decomp( lu_decompose(indx,d));
     det = d;
-    for(int i=0; i<_ncols ; ++i)
-      det *= decomp->_mdata[i][i];
+    for(int i=0; i<ncols_ ; ++i)
+      det *= decomp->mdata_[i][i];
     delete [] indx;
   }
   return det;
@@ -346,24 +346,24 @@ template<typename T>
 MLPtr<T> TML<T>::inverse() const 
 {
 
-  if( _nrows  != _ncols ) {
-    throw( NotSquare( _nrows, _ncols, "TML<T>::inverse()" )  );
+  if( nrows_  != ncols_ ) {
+    throw( NotSquare( nrows_, ncols_, "TML<T>::inverse()" )  );
   }
   else {
   
-    MLPtr<T> Y( new TML<T>("I",_nrows) );   // create an identity TMatrix<T>
-    int* indx = new int[_ncols];                           // create the "index vector"
-    MLPtr<T> B( new TML<T>( _ncols, _ncols, T()) );       // see Press & Flannery
+    MLPtr<T> Y( new TML<T>("I",nrows_) );   // create an identity TMatrix<T>
+    int* indx = new int[ncols_];                           // create the "index vector"
+    MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );       // see Press & Flannery
     int d;
 
     // perform the decomposition once:
 
-    MLPtr<T> decomp (_lu_decompose(indx,d));
+    MLPtr<T> decomp (lu_decompose(indx,d));
 
-    for(int col = 0; col < _ncols; ++col){
-      B->_copy_column(Y,col,0);
-      decomp->_lu_back_subst(indx,B);
-      Y->_copy_column(B,0,col);
+    for(int col = 0; col < ncols_; ++col){
+      B->copy_column(Y,col,0);
+      decomp->lu_back_subst(indx,B);
+      Y->copy_column(B,0,col);
     }
     delete []indx;
     return Y;
@@ -378,13 +378,13 @@ template<typename T>
 T& TML<T>::operator()(int i, int j) 
 {
 
-  if((i >= _nrows) || (j >= _ncols) ||
+  if((i >= nrows_) || (j >= ncols_) ||
      (i < 0      ) || (j < 0      )    ) { 
-       throw( IndexRange( i, j, _nrows-1, _ncols-1,
+       throw( IndexRange( i, j, nrows_-1, ncols_-1,
                        "T& TML<T>::operator()(int i, int j)" ) );
   }
   else { 
-    return _mdata[i][j]; 
+    return mdata_[i][j]; 
   }
 }
 
@@ -396,13 +396,13 @@ template<typename T>
 T  TML<T>::operator()(int i, int j) const 
 {
   
-  if((i >= _nrows) || (j >= _ncols) ||
+  if((i >= nrows_) || (j >= ncols_) ||
      (i < 0      ) || (j < 0      )    )
-  { throw( IndexRange( i, j, _nrows-1, _ncols-1,
+  { throw( IndexRange( i, j, nrows_-1, ncols_-1,
                        "T TML<T>::operator()(int i, int j) const" ) );
   }
   else { 
-    return _mdata[i][j]; 
+    return mdata_[i][j]; 
   }
 }
 
@@ -416,26 +416,26 @@ T& TML<T>::operator()(int i)
   // This body must stay in synch with
   // T TMatrix<T>::operator()(int i) const
 
-  if( _nrows == 1 ) {
-    if( i >= 0 && i < _ncols ) {
-      return _mdata[0][i];
+  if( nrows_ == 1 ) {
+    if( i >= 0 && i < ncols_ ) {
+      return mdata_[0][i];
     }
     else {
-      throw( IndexRange( 0, i, 0, _ncols-1,
+      throw( IndexRange( 0, i, 0, ncols_-1,
                        "T& TML<T>::operator()(int i)" ) );
     }
   }
-  else if( _ncols== 1 ) {
-    if( i >= 0 && i < _nrows ) {
-      return _mdata[i][0];
+  else if( ncols_== 1 ) {
+    if( i >= 0 && i < nrows_ ) {
+      return mdata_[i][0];
     }
     else {
-      throw( IndexRange( i, 0, _nrows-1, 0,
+      throw( IndexRange( i, 0, nrows_-1, 0,
                        "T& TML<T>::operator()(int i)" ) );
     }
   }
   else {
-    throw( NotVector( i, _nrows, _ncols,
+    throw( NotVector( i, nrows_, ncols_,
                       "T& TML<T>::operator()(int i)" ) );
   }
 }
@@ -449,26 +449,26 @@ T TML<T>::operator()(int i) const
 {
   // This body must stay in synch with
   // T& TMatrix<T>::operator()(int i)
-  if( _nrows == 1 ) {
-    if( i >= 0 && i < _ncols ) {
-      return _mdata[0][i];
+  if( nrows_ == 1 ) {
+    if( i >= 0 && i < ncols_ ) {
+      return mdata_[0][i];
     }
     else {
-      throw( IndexRange( 0, i, 0, _ncols-1,
+      throw( IndexRange( 0, i, 0, ncols_-1,
                        "T& TML<T>::operator()(int i)" ) );
     }
   }
-  else if( _ncols == 1 ) {
-    if( i >= 0 && i < _nrows ) {
-      return _mdata[i][0];
+  else if( ncols_ == 1 ) {
+    if( i >= 0 && i < nrows_ ) {
+      return mdata_[i][0];
     }
     else {
-      throw( IndexRange( i, 0, _nrows-1, 0,
+      throw( IndexRange( i, 0, nrows_-1, 0,
                        "T& TMatrix<T>::operator()(int i)" ) );
     }
   }
   else {
-    throw( NotVector( i, _nrows, _ncols,
+    throw( NotVector( i, nrows_, ncols_,
                       "T& TMatrix<T>::operator()(int i)" ) );
   }
 }
@@ -481,10 +481,10 @@ template<typename T>
 std::ostream& operator<<( std::ostream& os, const TML<T>& x)
 {
 
-  for(int i=0; i< x._nrows; i++) {
+  for(int i=0; i< x.nrows_; i++) {
     os << "( ";
-    for(int j=0; j< x._ncols; j++) {
-      os  << x._mdata[i][j] << ", ";
+    for(int j=0; j< x.ncols_; j++) {
+      os  << x.mdata_[i][j] << ", ";
     }
     os << " )\n";
   }
@@ -500,24 +500,23 @@ template<typename T>
 MLPtr<T> add( MLPtr<T> const& x, MLPtr<T> const& y) 
 {
 
-  MLPtr<T> z( new TML<T>(x->_nrows, x->_ncols, T()) );
+  MLPtr<T> z( new TML<T>(x->nrows_, x->ncols_, T()) );
 
-  if( ( x->_nrows != y->_nrows ) || ( x->_ncols != y->_ncols ) ) {
-    throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y->_nrows, y->_ncols,
+  if( ( x->nrows_ != y->nrows_ ) || ( x->ncols_ != y->ncols_ ) ) {
+    throw( typename TML<T>::Incompatible( x->nrows_, x->ncols_, y->nrows_, y->ncols_,
            "TML<T> add(MLPtr<T> const& x, MLPtr<T>TMatrix<T> const& y)" ));
   }
 
-  int sz = z->_nrows * z->_ncols;
+  int sz = z->nrows_ * z->ncols_;
   
-  T* const *const xp = x->_mdata; 
-  T* const *const yp=  y->_mdata; 
-  T** zp            =  z->_mdata;
+  T* const *const xp = x->mdata_; 
+  T* const *const yp=  y->mdata_; 
+  T** zp            =  z->mdata_;
   
-  for(int i=0;  i<x->_nrows; ++i) {
-    for(int j=0;  j<x->_ncols; ++j) {
+  for(int i=0;  i<x->nrows_; ++i) {
+    for(int j=0;  j<x->ncols_; ++j) {
 
       zp[i][j] = xp[i][j]  + yp[i][j];
-      //if(std::abs(zp[i][j]) < M_SMALL*std::abs(yp[i][j]) ) zp[i][j] = T();
     }
   }
 
@@ -534,8 +533,8 @@ MLPtr<T> add(MLPtr<T> const& x, const T& y)
   MLPtr<T> z( new TML<T>( *x ) ); // deep copy
  
 
-  for(int i=0;  i< x->_nrows; ++i) {
-    z->_mdata[i][i] += y;
+  for(int i=0;  i< x->nrows_; ++i) {
+    z->mdata_[i][i] += y;
   }
 
   return z;
@@ -551,9 +550,9 @@ MLPtr<T> Negate( MLPtr<T> const& x) // unary minus
 {
   MLPtr<T> z( new TML<T>( *x) ); //deep copy
 
-  T* p = z->_mdata[0];
+  T* p = z->mdata_[0];
 
-  int sz = z->_nrows * z->_ncols;
+  int sz = z->nrows_ * z->ncols_;
 
   for( int i=0; i<sz; ++i ) { (*p) = -(*p); ++p; }
 
@@ -567,25 +566,23 @@ MLPtr<T> Negate( MLPtr<T> const& x) // unary minus
 template<typename T>
 MLPtr<T> subtract(MLPtr<T> const& x, MLPtr<T> const& y) 
 {
-  MLPtr<T> z( new TML<T>(x->_nrows, x->_ncols ,T()) );
+  MLPtr<T> z( new TML<T>(x->nrows_, x->ncols_ ,T()) );
 
-  if(( x->_nrows != y->_nrows ) || (x->_ncols != y->_ncols )) {
-    throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y->_nrows, y->_ncols,
+  if(( x->nrows_ != y->nrows_ ) || (x->ncols_ != y->ncols_ )) {
+    throw( typename TML<T>::Incompatible( x->nrows_, x->ncols_, y->nrows_, y->ncols_,
            "subtract(MLPtr<T> const& x, MLPtr<T> const& y) " ));
   }
 
  
-  T** zp             = z->_mdata;
-  const T* const* xp = x->_mdata;
-  const T* const* yp = y->_mdata;
+  T** zp             = z->mdata_;
+  const T* const* xp = x->mdata_;
+  const T* const* yp = y->mdata_;
 
 
-  for( int i=0; i<x->_nrows; ++i ) {
-    for( int j=0; j<x->_ncols; ++j ) {
+  for( int i=0; i<x->nrows_; ++i ) {
+    for( int j=0; j<x->ncols_; ++j ) {
 
        zp[i][j] = xp[i][j] - yp[i][j];
-       //if(std::abs(zp[i][j]) < M_SMALL*std::abs(yp[i][j]) ) (zp[i][j]) = T();
-
     }
   } 
   return z;
@@ -601,8 +598,8 @@ MLPtr<T> multiply( MLPtr<T> const& x, T const& y)
   
   MLPtr<T> z( new TML<T>( *x ) );
 
-  T* p = z->_mdata[0];
-  int sz = x->_nrows * x->_ncols;
+  T* p = z->mdata_[0];
+  int sz = x->nrows_ * x->ncols_;
   
   for(int i=0; i<sz; ++i) {
         (*p) *= y;              
@@ -619,22 +616,22 @@ MLPtr<T> multiply( MLPtr<T> const& x, T const& y)
 template<typename T>
 MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y)  
 {
-  MLPtr<T> z( new TML<T>( x->_nrows, y->_ncols, T()) );
+  MLPtr<T> z( new TML<T>( x->nrows_, y->ncols_, T()) );
 
-  if( x->_ncols != y->_nrows) {
-    throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y->_nrows, y->_ncols,
+  if( x->ncols_ != y->nrows_) {
+    throw( typename TML<T>::Incompatible( x->nrows_, x->ncols_, y->nrows_, y->ncols_,
            "multiply(MLPtr<T> const& x, MLPtr<T> const& y)" ) );
   }
 
   T sum;
 
-  for( int row=0; row< x->_nrows; ++row) {
-    for(int col=0; col <y->_ncols; ++col) {
+  for( int row=0; row< x->nrows_; ++row) {
+    for(int col=0; col <y->ncols_; ++col) {
       sum = T();
-      for(int i=0; i<x->_ncols; ++i) {
-        sum += x->_mdata[row][i] * y->_mdata[i][col];
+      for(int i=0; i<x->ncols_; ++i) {
+        sum += x->mdata_[row][i] * y->mdata_[i][col];
       }
-      z->_mdata[row][col] = sum;
+      z->mdata_[row][col] = sum;
     }
   }
   return z;
@@ -647,21 +644,21 @@ template<typename T>
 MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector multiply
 
 
-  MLPtr<T> z( new TML<T>( x->_nrows, 1 , T()) );
+  MLPtr<T> z( new TML<T>( x->nrows_, 1 , T()) );
 
-  if ( x->_ncols != y.Dim() ) {
-    throw( typename TML<T>::Incompatible( x->_nrows, x->_ncols, y.Dim(), 1,
+  if ( x->ncols_ != y.Dim() ) {
+    throw( typename TML<T>::Incompatible( x->nrows_, x->ncols_, y.Dim(), 1,
            "multiply(MLPtr<T> const& x, Vector const& y)" ) );
   }
 
   T sum;
 
-  for( int row=0; row< x->_nrows; ++row) {
+  for( int row=0; row< x->nrows_; ++row) {
       sum = T();
-      for(int i=0; i<x->_ncols; ++i) {
-        sum += x->_mdata[row][i] * y(i);
+      for(int i=0; i<x->ncols_; ++i) {
+        sum += x->mdata_[row][i] * y(i);
       }
-      z->_mdata[row][0] = sum;
+      z->mdata_[row][0] = sum;
   }
   return z;
 
@@ -674,10 +671,10 @@ MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector mult
 template<typename T> MLPtr<T> 
 multiply( TVector<T>  const& x, MLPtr<T> const& y) {        // left vector multiply 
 
-  MLPtr<T> z( new TML<T>( 1 , y->_ncols, T()) );
+  MLPtr<T> z( new TML<T>( 1 , y->ncols_, T()) );
 
-  if( x.Dim() != y->_nrows) {
-    throw( typename TML<T>::Incompatible( 1, x.Dim(), y->_nrows, y->_ncols,
+  if( x.Dim() != y->nrows_) {
+    throw( typename TML<T>::Incompatible( 1, x.Dim(), y->nrows_, y->ncols_,
            "multiply(Vector const& x, MLPtr<T> const& y)" ) );
   }
 
@@ -685,10 +682,10 @@ multiply( TVector<T>  const& x, MLPtr<T> const& y) {        // left vector multi
 
     for(int col=0; col < x.Dim(); ++col) {
       sum = T();
-      for(int i=0; i< y->_nrows; ++i) {
-        sum += x(i) * y->_mdata[i][col];
+      for(int i=0; i< y->nrows_; ++i) {
+        sum += x(i) * y->mdata_[i][col];
       }
-      z->_mdata[0][col] = sum;
+      z->mdata_[0][col] = sum;
     }
  
   return z;
@@ -706,10 +703,10 @@ MLPtr<T> divide (MLPtr<T> const& x, T const& y)
   if(y == T())
     (*FNAL::pcerr) << "TMatrix<T>:operator/ divide by zero" << endl;
 
-  for(int i=0;  i<x->_nrows ; ++i) {
-     for(int j=0; j< x->_ncols; ++j) {
+  for(int i=0;  i<x->nrows_ ; ++i) {
+     for(int j=0; j< x->ncols_; ++j) {
 
-      z->_mdata[i][j] /= y;
+      z->mdata_[i][j] /= y;
 
     }
   }
@@ -745,15 +742,15 @@ MLPtr<T> divide( MLPtr<T> const& y, MLPtr<T> const& x)
 // copy the from_col of mm to the to_col of "this"
 
 template<typename T>
-void TML<T>::_copy_column(MLPtr<T> const& mm, int from_col, int to_col)
+void TML<T>::copy_column(MLPtr<T> const& mm, int from_col, int to_col)
 {
-  if(_nrows  != mm->_nrows) {
-    throw( Incompatible( _nrows, _ncols, mm->_nrows, mm->_ncols,
-       "void TML<T>::_copy_column(MLPtr<T> const& mm, int from_col, int to_col)" )  );
+  if(nrows_  != mm->nrows_) {
+    throw( Incompatible( nrows_, ncols_, mm->nrows_, mm->ncols_,
+       "void TML<T>::copy_column(MLPtr<T> const& mm, int from_col, int to_col)" )  );
   }
   else {
-    for(int row=0; row < _nrows; ++row)
-      _mdata[row][to_col] = mm->_mdata[row][from_col];
+    for(int row=0; row < nrows_; ++row)
+      mdata_[row][to_col] = mm->mdata_[row][from_col];
   }
 }
 
@@ -762,22 +759,22 @@ void TML<T>::_copy_column(MLPtr<T> const& mm, int from_col, int to_col)
 
 
 template<typename T>
-void TML<T>::_switch_columns(int col1, int col2) 
+void TML<T>::switch_columns(int col1, int col2) 
 {
   
-  MLPtr<T> temp( new TML<T>(_nrows, 1, T()) );
+  MLPtr<T> temp( new TML<T>(nrows_, 1, T()) );
 
-  for(int row=0; row< _nrows; ++row) {
+  for(int row=0; row< nrows_; ++row) {
     // temporarily store col 1:
-    temp->_mdata[row][0] = _mdata[row][col1];
+    temp->mdata_[row][0] = mdata_[row][col1];
   }
 
-  for(int row=0; row< _nrows; ++row) {
-    _mdata[row][col1] = _mdata[row][col2];    // move col2 to col1
+  for(int row=0; row< nrows_; ++row) {
+    mdata_[row][col1] = mdata_[row][col2];    // move col2 to col1
   }
 
-  for(int row=0;  row< _nrows; ++row) {
-    _mdata[row][col2] = temp->_mdata[row][0]; // move temp to col2
+  for(int row=0;  row< nrows_; ++row) {
+    mdata_[row][col2] = temp->mdata_[row][0]; // move temp to col2
  }
 }
 
@@ -786,21 +783,21 @@ void TML<T>::_switch_columns(int col1, int col2)
 
 
 template<typename T>
-void TML<T>::_switch_rows(int row1, int row2) 
+void TML<T>::switch_rows(int row1, int row2) 
 {
-  MLPtr<T> temp( new TML<T>(1,_ncols, T()) );
+  MLPtr<T> temp( new TML<T>(1,ncols_, T()) );
 
-  for(int col=0; col < _ncols; ++col) {
+  for(int col=0; col < ncols_; ++col) {
     // temporarily store row 1:
-    temp->_mdata[0][col] = _mdata[row1][col];
+    temp->mdata_[0][col] = mdata_[row1][col];
   }
 
-  for(int col=0; col < _ncols; ++col) {
-    _mdata[row1][col] = _mdata[row2][col];    // move row2 to row1
+  for(int col=0; col < ncols_; ++col) {
+    mdata_[row1][col] = mdata_[row2][col];    // move row2 to row1
   }
 
-  for(int col=0; col < _ncols; ++col) {
-    _mdata[row2][col] = temp->_mdata[0][col]; // move temp to row2
+  for(int col=0; col < ncols_; ++col) {
+    mdata_[row2][col] = temp->mdata_[0][col]; // move temp to row2
   }
 }
 
@@ -810,37 +807,37 @@ void TML<T>::_switch_rows(int row1, int row2)
 // scale a matrix (used in L-U decomposition)
 
 template<typename T>
-MLPtr<T> TML<T>::_scale() const 
+MLPtr<T> TML<T>::scale() const 
 {
-  if (_nrows <= 0 || _ncols <= 0) {
-    throw( GenericMatrixException( _nrows, _ncols
-                   , "TMatrix<T> TMatrix<T>::_scale()"
-                   , "Bad TMatrix<T> for _scale()" ) );
+  if (nrows_ <= 0 || ncols_ <= 0) {
+    throw( GenericMatrixException( nrows_, ncols_
+                   , "TMatrix<T> TMatrix<T>::scale()"
+                   , "Bad TMatrix<T> for scale()" ) );
   }
-  if (_nrows != _ncols) {
-    throw( NotSquare( _nrows, _ncols, "TMatrix<T> TMatrix<T>::_scale()" )  );
+  if (nrows_ != ncols_) {
+    throw( NotSquare( nrows_, ncols_, "TMatrix<T> TMatrix<T>::scale()" )  );
   }
 
-  MLPtr<T> scale_vector( new TML<T>( _ncols, 1, T()) );
+  MLPtr<T> scale_vector( new TML<T>( ncols_, 1, T()) );
 
   double maximum = 0.0;
-  for (int row=0; row< _nrows; ++row){
+  for (int row=0; row< nrows_; ++row){
 
     maximum = 0.0;
 
-    for(int col=0; col< _ncols; ++col) {
-      maximum = std::max( maximum, std::abs(_mdata[row][col]) );
+    for(int col=0; col< ncols_; ++col) {
+      maximum = std::max( maximum, std::abs(mdata_[row][col]) );
     }
 
     if(maximum == 0.0 ) {
       (*FNAL::pcerr) << "\n*** ERROR *** Matrix = \n" << *this << endl;
-      throw( GenericMatrixException( _nrows, _ncols
-                     , "TML<T>::_scale()"
+      throw( GenericMatrixException( nrows_, ncols_
+                     , "TML<T>::scale()"
                      , "Matrix is singular." ) );
     }
     // save scaling
 
-    scale_vector->_mdata[row][0] = ((T) 1)/ maximum;
+    scale_vector->mdata_[row][0] = ((T) 1)/ maximum;
   }
   return scale_vector;
 }
@@ -850,18 +847,18 @@ MLPtr<T> TML<T>::_scale() const
 
 
 template<typename T>
- MLPtr<T> TML<T>::_lu_decompose(int* indx, int& d ) const
+ MLPtr<T> TML<T>::lu_decompose(int* indx, int& d ) const
 {
   // Returns the L-U decomposition of a matrix. indx is an ouput
   // vector which records the row permutation affected by the
   // partial pivoting, d is output as +-1 depending on whether the
   // number of row interchanges was even or odd, respectively.
-  // This routine is used in combination with _lu_back_subst to
+  // This routine is used in combination with lu_back_subst to
   // solve linear equations or invert a matrix.
 
-  if(_nrows  != _ncols) {
-    throw( NotSquare( _nrows, _ncols,
-      "TML<T>::_lu_decompose(int* indx, int& d ) const " )  );
+  if(nrows_  != ncols_) {
+    throw( NotSquare( nrows_, ncols_,
+      "TML<T>::lu_decompose(int* indx, int& d ) const " )  );
   }
   d = 1; // parity check
   T dum; // from the book - I don't know signj
@@ -873,23 +870,23 @@ template<typename T>
   MLPtr<T> lu_decomp( new TML<T>( *this) );
 
   // scale the matrix
-  MLPtr<T> scale_vector = lu_decomp->_scale(); 
+  MLPtr<T> scale_vector = lu_decomp->scale(); 
 
   // The loop over columns of Crout's method:
 
   int col_max; 
   int i,j,k; 
-  for( j=0; j< _nrows; ++j) {
+  for( j=0; j< nrows_; ++j) {
     if (j > 0) {
       // eqn 2.3.12 except for j=i:
       for (i=0; i<= j-1; ++i) {
-        sum = lu_decomp->_mdata[i][j];
+        sum = lu_decomp->mdata_[i][j];
         if(i > 0) {
           for(k=0; k <= i-1; ++k) {
-            tmp = lu_decomp->_mdata[i][k]*lu_decomp->_mdata[k][j];
+            tmp = lu_decomp->mdata_[i][k]*lu_decomp->mdata_[k][j];
             sum -= tmp;
           }
-          lu_decomp->_mdata[i][j] = sum;
+          lu_decomp->mdata_[i][j] = sum;
         }
       }
     }
@@ -897,18 +894,18 @@ template<typename T>
 // Initialize the search for the largest pivot element:
     maximum = T();
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
-    for(i=j; i <= _ncols-1; ++i) {
-      sum = lu_decomp->_mdata[i][j];
+    for(i=j; i <= ncols_-1; ++i) {
+      sum = lu_decomp->mdata_[i][j];
 
       if(j > 0) {
         for(k=0; k <= j-1; ++k) {
-          tmp =  lu_decomp->_mdata[i][k] * lu_decomp->_mdata[k][j];
+          tmp =  lu_decomp->mdata_[i][k] * lu_decomp->mdata_[k][j];
           sum -= tmp;
         }
-        lu_decomp->_mdata[i][j] = sum;
+        lu_decomp->mdata_[i][j] = sum;
       }
       // figure of merit for pivot:
-      dum = scale_vector->_mdata[i][0] * std::abs(sum);
+      dum = scale_vector->mdata_[i][0] * std::abs(sum);
       if ( std::abs(dum) > std::abs(maximum) ){
         // is it better than the best so far ?
         col_max = i;
@@ -918,32 +915,32 @@ template<typename T>
     // Do we need to interchange rows?
 
     if(j != col_max)  {
-      lu_decomp->_switch_rows(col_max,j); // Yes, do so ...
+      lu_decomp->switch_rows(col_max,j); // Yes, do so ...
       d *= -1;  // ... and change the parity of d
       // also interchange the scale factor:
-      dum = scale_vector->_mdata[col_max][0];
-      scale_vector->_mdata[col_max][0] = scale_vector->_mdata[j][0];
-      scale_vector->_mdata[j][0] = dum;
+      dum = scale_vector->mdata_[col_max][0];
+      scale_vector->mdata_[col_max][0] = scale_vector->mdata_[j][0];
+      scale_vector->mdata_[j][0] = dum;
     }
 
     indx[j] = col_max;
     // Now, finally, divide by the pivot element:
-    if(j != _nrows -1){
+    if(j != nrows_ -1){
       // If the pivot element is .zero the matrix is
       // singular (at least to the precision of the
       // algorithm). For some applications on singular
-      // matrices, it is desirable to substitute _tiny for 0
-      if(lu_decomp->_mdata[j][j] == T())
-        lu_decomp->_mdata[j][j] = T(_tiny); /// this may not work for all types
+      // matrices, it is desirable to substitute tiny_ for 0
+      if(lu_decomp->mdata_[j][j] == T())
+        lu_decomp->mdata_[j][j] = T(tiny_); /// this may not work for all types
                                             
-      dum = T(1)/lu_decomp->_mdata[j][j];
-      for(i=j+1; i <= _ncols-1; i++)
-        lu_decomp->_mdata[i][j] *= dum;
+      dum = T(1)/lu_decomp->mdata_[j][j];
+      for(i=j+1; i <= ncols_-1; i++)
+        lu_decomp->mdata_[i][j] *= dum;
     }
 
   }
-  if(lu_decomp->_mdata[_nrows-1][_ncols-1] == T())
-    lu_decomp->_mdata[_nrows-1][_ncols-1] = T(_tiny);
+  if(lu_decomp->mdata_[nrows_-1][ncols_-1] == T())
+    lu_decomp->mdata_[nrows_-1][ncols_-1] = T(tiny_);
 
   return lu_decomp;
 }
@@ -953,56 +950,56 @@ template<typename T>
 
 
 template<typename T>
-void TML<T>::_lu_back_subst(int* indx, MLPtr<T>& b)  
+void TML<T>::lu_back_subst(int* indx, MLPtr<T>& b)  
 {
 // Solves the set of N linear equations A*X = B. Here "this"
 // is the LU-decomposition of the matrix A, determined by the
-// routine _lu_decompose(). Indx is input as the permutation
-// vector returned  by _lu_decompose(). B is input as the
+// routine lu_decompose(). Indx is input as the permutation
+// vector returned  by lu_decompose(). B is input as the
 // right-hand side vector B, and returns with the solution
 // vector X. This routine takes into  account the possibility
 // that B will begin with many zero elements, so it is efficient
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
 
-  if(_nrows  != _ncols) {
-    throw( NotSquare( _nrows, _ncols,
-      "void TML<T>::_lu_back_subst(int* indx, MLPtr<T>& b)" )  );
+  if(nrows_  != ncols_) {
+    throw( NotSquare( nrows_, ncols_,
+      "void TML<T>::lu_back_subst(int* indx, MLPtr<T>& b)" )  );
   }
-  if(_nrows  != b->_nrows) {
-    throw( Incompatible( _nrows, _ncols, b->_nrows, b->_ncols,
-      "void TML<T>::_lu_back_subst(int* indx,MLPt<T>& b)" )  );
+  if(nrows_  != b->nrows_) {
+    throw( Incompatible( nrows_, ncols_, b->nrows_, b->ncols_,
+      "void TML<T>::lu_back_subst(int* indx,MLPt<T>& b)" )  );
   }
-//  if(_nrows  != indx->_nrows)
-//    error("wrong size indx vector passed to _lu_back_subst()");
+//  if(nrows_  != indx->nrows_)
+//    error("wrong size indx vector passed to lu_back_subst()");
   int i,j,ip;
   int ii = -1;
   T sum;
   T tmp;
 
-  for(i=0; i< _nrows; ++i){
+  for(i=0; i< nrows_; ++i){
     ip = indx[i];
-    sum = b->_mdata[ip][0];
-    b->_mdata[ip][0] = b->_mdata[i][0];
+    sum = b->mdata_[ip][0];
+    b->mdata_[ip][0] = b->mdata_[i][0];
     if (ii >= 0) {
       for(j = ii; j <= i-1; j++) {
-        tmp = _mdata[i][j] * b->_mdata[j][0];
+        tmp = mdata_[i][j] * b->mdata_[j][0];
         sum -= tmp;
        }
     } else if(sum != T() )
       ii = i;
-    b->_mdata[i][0] = sum;
+    b->mdata_[i][0] = sum;
   }
-  for(i = _nrows-1; i >= 0; --i){
-    sum = b->_mdata[i][0];
-    if (i < _ncols -1) {
-      for (j = i+1; j <= _nrows-1; ++j) {
-        tmp = _mdata[i][j] * b->_mdata[j][0];
+  for(i = nrows_-1; i >= 0; --i){
+    sum = b->mdata_[i][0];
+    if (i < ncols_ -1) {
+      for (j = i+1; j <= nrows_-1; ++j) {
+        tmp = mdata_[i][j] * b->mdata_[j][0];
         sum -= tmp;
       }
     }
     // store a component of the soln vector X:
-    b->_mdata[i][0] = sum/_mdata[i][i];
+    b->mdata_[i][0] = sum/mdata_[i][i];
   }
 }
 
@@ -1022,21 +1019,21 @@ TML<T>& TML<T>::operator=(const TML& x)
  
   this->~TML(); // call the destructor. 
 
-  _nrows = x._nrows;
-  _ncols = x._ncols;
-  _mdata = new T* [_nrows];
+  nrows_ = x.nrows_;
+  ncols_ = x.ncols_;
+  mdata_ = new T* [nrows_];
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
-  for( int i = 0; i< _nrows; ++i) { 
-      _mdata[i] = dataPtr;
-      dataPtr += _ncols;
+  for( int i = 0; i< nrows_; ++i) { 
+      mdata_[i] = dataPtr;
+      dataPtr += ncols_;
   }
 
-  for (int i=0; i< _nrows; ++i) {
-      for (int j=0; j< _ncols; ++j) {
+  for (int i=0; i< nrows_; ++i) {
+      for (int j=0; j< ncols_; ++j) {
 
-      _mdata[i][j] = x._mdata[i][j];
+      mdata_[i][j] = x.mdata_[i][j];
 
       }
   }
@@ -1051,10 +1048,10 @@ TML<T>& TML<T>::operator=(const TML& x)
 template<typename T>
 bool TML<T>::operator==(const TML<T>& x)
 {
-  if((x._nrows != _nrows) || (x._ncols != _ncols)) { return false; }
-  for(int i=0; i < _nrows; ++i) {
-    for(int j=0; j < _ncols; ++j) {
-      if(x._mdata[i][j] != _mdata[i][j]) { return false; }
+  if((x.nrows_ != nrows_) || (x.ncols_ != ncols_)) { return false; }
+  for(int i=0; i < nrows_; ++i) {
+    for(int j=0; j < ncols_; ++j) {
+      if(x.mdata_[i][j] != mdata_[i][j]) { return false; }
     }
   }
   return true;
@@ -1068,11 +1065,11 @@ bool TML<T>::operator==(const TML<T>& x)
 template<typename T>
 bool TML<T>::operator==(const T& x) 
 {
-  if(_nrows != _ncols) return false;
-  for(int i=0; i< _nrows; i++) {
-    if(_mdata[i][i] != x) return false;
-    for(int j =0; j < _ncols; j++) {
-      if((i != j) && (_mdata[i][j] != 0.0)) { return false; }
+  if(nrows_ != ncols_) return false;
+  for(int i=0; i< nrows_; i++) {
+    if(mdata_[i][i] != x) return false;
+    for(int j =0; j < ncols_; j++) {
+      if((i != j) && (mdata_[i][j] != 0.0)) { return false; }
     }
   }
   return true;
@@ -1085,8 +1082,8 @@ bool TML<T>::operator==(const T& x)
 template<typename T>
 TML<T>& TML<T>::operator+=( const T& x) 
 {
-  for(int i=0;  i<_nrows; ++i) {
-    _mdata[i][i] += x;
+  for(int i=0;  i<nrows_; ++i) {
+    mdata_[i][i] += x;
   }
   return *this;
 }
@@ -1099,9 +1096,9 @@ TML<T>& TML<T>::operator+=( const T& x)
 template<typename T>
 bool operator==(const TML<T>& x, const TML<T>& y) 
 {
-  if((x->_nrows != y->_nrows) || (x->_ncols != y->_ncols)) { return false; }
-  for(int i=0;  i< x->_nrows; ++i) {
-    for(int j=0;  j<x->_ncols; ++j) {
+  if((x->nrows_ != y->nrows_) || (x->ncols_ != y->ncols_)) { return false; }
+  for(int i=0;  i< x->nrows_; ++i) {
+    for(int j=0;  j<x->ncols_; ++j) {
 
       if(x.m[i][j] != y.m[i][j]) return false;
     }

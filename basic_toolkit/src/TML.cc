@@ -64,24 +64,24 @@ static std::complex<double> complex_0(0.0, 0.0);
 
 template<>
 template<>
-TML<std::complex<double> >::TML( TML<double> const& ml): _nrows(ml._nrows), _ncols(ml._ncols)  { 
+TML<std::complex<double> >::TML( TML<double> const& ml): nrows_(ml.nrows_), ncols_(ml.ncols_)  { 
   
-  _mdata = new std::complex<double>* [_nrows];
+  mdata_ = new std::complex<double>* [nrows_];
 
-  int sz = _nrows*_ncols;
+  int sz = nrows_*ncols_;
 
   std::complex<double>* dataPtr = new std::complex<double> [ sz ];
 
-  for( int i=0; i<_nrows; ++i) { 
-     _mdata[i] = dataPtr;
-     dataPtr += _ncols;
+  for( int i=0; i<nrows_; ++i) { 
+     mdata_[i] = dataPtr;
+     dataPtr += ncols_;
   }
 
   // note: we do not use memcopy() because of the type conversion.
 
-  for( int i=0; i< _nrows; ++i ) {
-    for( int j=0; j< _ncols; ++j ) {
-      _mdata[i][j] = std::complex<double>( ml._mdata[i][j], 0.0 );
+  for( int i=0; i< nrows_; ++i ) {
+    for( int j=0; j< ncols_; ++j ) {
+      mdata_[i][j] = std::complex<double>( ml.mdata_[i][j], 0.0 );
     }
   }
   
@@ -97,9 +97,9 @@ TML<std::complex<double> >::dagger() const {
 
   MLPtr<std::complex<double> >  z( new  TML<std::complex<double> >(*this) );
 
-  for(int row=0;  row<_nrows; ++row) {
-    for(int col=0; col < _ncols; ++col) {
-      z->_mdata[col][row] = conj(_mdata[row][col]);
+  for(int row=0;  row<nrows_; ++row) {
+    for(int col=0; col < ncols_; ++col) {
+      z->mdata_[col][row] = conj(mdata_[row][col]);
     }
   }
   return z;
@@ -113,12 +113,12 @@ TML<std::complex<double> >::dagger() const {
 
 MLPtr<double> real_part( MLPtr<std::complex<double> > const& x )
 {
-  int sz =  x->_nrows * x->_ncols; 
+  int sz =  x->nrows_ * x->ncols_; 
 
-  MLPtr<double> ret( new TML<double>(x->_nrows, x->_ncols, 0.0) );
+  MLPtr<double> ret( new TML<double>(x->nrows_, x->ncols_, 0.0) );
   
-  std::complex<double>* p =   x->_mdata[0];
-  double*               q = ret->_mdata[0];
+  std::complex<double>* p =   x->mdata_[0];
+  double*               q = ret->mdata_[0];
 
   for(  int i=0; i< sz; ++i ) {
    
@@ -133,12 +133,12 @@ MLPtr<double> real_part( MLPtr<std::complex<double> > const& x )
 
 MLPtr<double> imag_part( MLPtr<std::complex<double> > const& z )
 {
-  int sz =  z->_nrows * z->_ncols; 
+  int sz =  z->nrows_ * z->ncols_; 
 
-  MLPtr<double> x( new TML<double>(z->_nrows, z->_ncols, 0.0) );
+  MLPtr<double> x( new TML<double>(z->nrows_, z->ncols_, 0.0) );
   
-  std::complex<double>* p =   z->_mdata[0];
-  double*               q =   x->_mdata[0];
+  std::complex<double>* p =   z->mdata_[0];
+  double*               q =   x->mdata_[0];
 
   for(  int i=0; i< sz; ++i ) {
    
@@ -156,28 +156,28 @@ template<>
 MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
 {
 
-  double* wr = new double[_ncols];
-  double* wi = new double[_ncols];
+  double* wr = new double[ncols_];
+  double* wi = new double[ncols_];
 
-  int* iv1        = new int[_ncols];
-  double* fv1     = new double[_ncols];
-  double* b       = new double[_nrows*_ncols];
-  double* c       = new double[_nrows*_ncols];
+  int* iv1        = new int[ncols_];
+  double* fv1     = new double[ncols_];
+  double* b       = new double[nrows_*ncols_];
+  double* c       = new double[nrows_*ncols_];
 
   int i,j;
 
-  MLPtr<std::complex<double> > eigenvectors ( new TML<std::complex<double> >(_nrows,_ncols,complex_0) );
-  MLPtr<std::complex<double> > eigenvalues  ( new TML<std::complex<double> >(1,_ncols,complex_0)      );
+  MLPtr<std::complex<double> > eigenvectors ( new TML<std::complex<double> >(nrows_,ncols_,complex_0) );
+  MLPtr<std::complex<double> > eigenvalues  ( new TML<std::complex<double> >(1,ncols_,complex_0)      );
 
-  int nrows  = _nrows;
-  int ncols  = _ncols;
+  int nrows  = nrows_;
+  int ncols  = ncols_;
   int ierr   = 0;
   int matz   = 1;
 
   int k = 0;
-  for( i=0; i< _nrows; ++i) {
-    for( j=0; j< _ncols; ++j) {
-      b[k] = _mdata[j][i];       // the rg_ routine uses the transpose
+  for( i=0; i< nrows_; ++i) {
+    for( j=0; j< ncols_; ++j) {
+      b[k] = mdata_[j][i];       // the rg_ routine uses the transpose
       ++k;
     }
   }
@@ -216,18 +216,18 @@ MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
     if(wi[i] == 0.0){  // real eigenvalue, get corresponding eigenventor directly
       ++realCount;
       for(j=0; j<ncols; ++j) {
-        eigenvectors->_mdata[j][k] = std::complex<double>( c[ j+i*ncols], 0.0);// **** note conversion from fortran to c storage order ***  
+        eigenvectors->mdata_[j][k] = std::complex<double>( c[ j+i*ncols], 0.0);// **** note conversion from fortran to c storage order ***  
       }
-      eigenvalues->_mdata[0][k] = std::complex<double>(wr[i],0.0);
+      eigenvalues->mdata_[0][k] = std::complex<double>(wr[i],0.0);
       ++k; 
       ++i;
     } else { // *** complex eigenvalues *** , need to form eigenvector using combinations of c[i][j] and c[i+i][j]
 
-      eigenvalues->_mdata[0][k]   = std::complex<double>(wr[i],  wi[i]);
-      eigenvalues->_mdata[0][k+1] = std::complex<double>(wr[i+1],wi[i+1]);
+      eigenvalues->mdata_[0][k]   = std::complex<double>(wr[i],  wi[i]);
+      eigenvalues->mdata_[0][k+1] = std::complex<double>(wr[i+1],wi[i+1]);
       for(j = 0; j<ncols; j++) {
-        eigenvectors->_mdata[j][k]   = std::complex<double>(c[j+i*ncols],  c[ j+(i+1)*ncols ]);
-        eigenvectors->_mdata[j][k+1] = std::complex<double>(c[j+i*ncols], -c[ j+(i+1)*ncols ]);
+        eigenvectors->mdata_[j][k]   = std::complex<double>(c[j+i*ncols],  c[ j+(i+1)*ncols ]);
+        eigenvectors->mdata_[j][k+1] = std::complex<double>(c[j+i*ncols], -c[ j+(i+1)*ncols ]);
       }
       k += 2;
       i += 2;
@@ -254,29 +254,29 @@ MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
 template<>
 MLPtr<std::complex<double> > TML<double>::eigenValues() const
 {
-  int nrows = _nrows;
-  int ncols = _ncols;
+  int nrows = nrows_;
+  int ncols = ncols_;
 
   int matz = 1;
 
-  double* wr = new double[_ncols];
-  double* wi = new double[_ncols];
+  double* wr = new double[ncols_];
+  double* wi = new double[ncols_];
 
-  int*    iv1   = new int[_ncols];
-  double* fv1   = new double[_ncols];
-  double* b     = new double[_nrows*_ncols];
-  double* c     = new double[_nrows*_ncols];
+  int*    iv1   = new int[ncols_];
+  double* fv1   = new double[ncols_];
+  double* b     = new double[nrows_*ncols_];
+  double* c     = new double[nrows_*ncols_];
 
   int oddEven   = nrows/2;
   int realCount = 0;
 
-  MLPtr<std::complex<double> > eigenvectors(  new TML<std::complex<double> >(_nrows, _ncols, complex_0));
-  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >(1, _ncols, complex_0));
+  MLPtr<std::complex<double> > eigenvectors(  new TML<std::complex<double> >(nrows_, ncols_, complex_0));
+  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >(1, ncols_, complex_0));
 
   int k = 0;
-  for(int i=0;  i< _nrows; ++i) {
-    for(int j=0; j<_ncols; ++j) {
-      b[k] = _mdata[j][i];  // the rg_ routine uses the transpose  
+  for(int i=0;  i< nrows_; ++i) {
+    for(int j=0; j<ncols_; ++j) {
+      b[k] = mdata_[j][i];  // the rg_ routine uses the transpose  
       k++;
     }
   }
@@ -303,18 +303,18 @@ MLPtr<std::complex<double> > TML<double>::eigenValues() const
     if(wi[i] == 0){
       ++realCount;
       for(j=0; j<ncols; ++j) {
-        eigenvectors->_mdata[j][k] = std::complex<double>( c[j+i*ncols], 0.0);
+        eigenvectors->mdata_[j][k] = std::complex<double>( c[j+i*ncols], 0.0);
       }
-      eigenvalues->_mdata[0][k] = std::complex<double>(wr[i],0.0);
+      eigenvalues->mdata_[0][k] = std::complex<double>(wr[i],0.0);
       ++k;
       ++i;
     } else {
-      eigenvalues->_mdata[0][k]   =  std::complex<double>(wr[i],  wi[i]);
-      eigenvalues->_mdata[0][k+1] =  std::complex<double>(wr[i+1],wi[i+1]);
+      eigenvalues->mdata_[0][k]   =  std::complex<double>(wr[i],  wi[i]);
+      eigenvalues->mdata_[0][k+1] =  std::complex<double>(wr[i+1],wi[i+1]);
 
       for(j=0; j<ncols; j++) {
-        eigenvectors->_mdata[j][k]   =  std::complex<double>(c[ j + i*ncols],  c[j + (i+1)*ncols]);  
-        eigenvectors->_mdata[j][k+1] =  std::complex<double>(c[ j + i*ncols], -c[j + (i+1)*ncols]);
+        eigenvectors->mdata_[j][k]   =  std::complex<double>(c[ j + i*ncols],  c[j + (i+1)*ncols]);  
+        eigenvectors->mdata_[j][k+1] =  std::complex<double>(c[ j + i*ncols], -c[j + (i+1)*ncols]);
       }
       k += 2;
       i += 2;
@@ -347,30 +347,30 @@ MLPtr<std::complex<double> > TML<double>::eigenValues() const
 template<>
 MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const { 
 
-  int nm   = _nrows;
-  int n    = _ncols;
+  int nm   = nrows_;
+  int n    = ncols_;
   int matz = 1;       // eigenvectors needed ?
 
-  double* wr   = new double[_ncols];
-  double* wi   = new double[_ncols];
-  double* fv1  = new double[_ncols];
-  double* fv2  = new double[_ncols];
-  double* fv3  = new double[_ncols];
-  double* br   = new double[_nrows*_ncols];
-  double* bi   = new double[_nrows*_ncols];
-  double* cr   = new double[_nrows*_ncols];
-  double* ci   = new double[_nrows*_ncols];
+  double* wr   = new double[ncols_];
+  double* wi   = new double[ncols_];
+  double* fv1  = new double[ncols_];
+  double* fv2  = new double[ncols_];
+  double* fv3  = new double[ncols_];
+  double* br   = new double[nrows_*ncols_];
+  double* bi   = new double[nrows_*ncols_];
+  double* cr   = new double[nrows_*ncols_];
+  double* ci   = new double[nrows_*ncols_];
 
   int ierr,i,j,k;
   int oddEven = nm/2;
-  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >( 1, _ncols, complex_0));
+  MLPtr<std::complex<double> > eigenvalues( new TML<std::complex<double> >( 1, ncols_, complex_0));
 
   k = 0;
-  for(i = 0; i < _nrows; ++i) {
-    for(j = 0; j< _ncols; ++j) {
+  for(i = 0; i < nrows_; ++i) {
+    for(j = 0; j< ncols_; ++j) {
 
-      br[k] = std::real(_mdata[j][i]); // the cg_ routine uses the transpose
-      bi[k] = std::imag(_mdata[j][i]); // the cg_ routine uses the transpose
+      br[k] = std::real(mdata_[j][i]); // the cg_ routine uses the transpose
+      bi[k] = std::imag(mdata_[j][i]); // the cg_ routine uses the transpose
       ++k;
     }
   }
@@ -391,13 +391,13 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
     delete []ci;
     return eigenvalues;
   }
-  for(i = 0; i< _ncols; ++i)
-    eigenvalues->_mdata[0][i] = std::complex<double>( wr[i],wi[i] );
+  for(i = 0; i< ncols_; ++i)
+    eigenvalues->mdata_[0][i] = std::complex<double>( wr[i],wi[i] );
  
  k = 0;
- for( i=0; i < _nrows; i++) {
-    for( j=0; j< _ncols; j++) {
-      eigenvectors->_mdata[j][i] = std::complex<double>( cr[k++],ci[k++] );  // NOTE transposition
+ for( i=0; i < nrows_; i++) {
+    for( j=0; j< ncols_; j++) {
+      eigenvectors->mdata_[j][i] = std::complex<double>( cr[k++],ci[k++] );  // NOTE transposition
     }
   }
 
@@ -416,13 +416,13 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
   while ((sortFlag == 1)&& (counter < 10)) {
     sortFlag = 0;
     for(i=1; i < oddEven; i++) {
-      if(abs( eigenvectors->_mdata[0][0]) < abs(eigenvectors->_mdata[0][i])) {
-         eigenvectors->_switch_columns(0,i);
-        eigenvalues->_switch_columns(0,i);
+      if(abs( eigenvectors->mdata_[0][0]) < abs(eigenvectors->mdata_[0][i])) {
+         eigenvectors->switch_columns(0,i);
+        eigenvalues->switch_columns(0,i);
         sortFlag = 1;
         if((oddEven*2) == nm)
-           eigenvectors->_switch_columns(oddEven,oddEven+i);
-          eigenvalues->_switch_columns(oddEven,oddEven+i);
+           eigenvectors->switch_columns(oddEven,oddEven+i);
+          eigenvalues->switch_columns(oddEven,oddEven+i);
       }
     }
     counter++;
@@ -431,12 +431,12 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
     (*pcerr) << "TMatrix<std::complex<double> >: Something is wrong with the eigenValue sort" << std::endl;
 
   for(i=2; i < oddEven; i++) {
-    if(abs(eigenvectors->_mdata[1][1]) < abs(eigenvectors->_mdata[1][i])) {
-       eigenvectors->_switch_columns(1,i);
-      eigenvalues->_switch_columns(1,i);
+    if(abs(eigenvectors->mdata_[1][1]) < abs(eigenvectors->mdata_[1][i])) {
+       eigenvectors->switch_columns(1,i);
+      eigenvalues->switch_columns(1,i);
       if((oddEven*2) == nm)
-	 eigenvectors->_switch_columns(1+oddEven,oddEven+i);   
-        eigenvalues->_switch_columns(1+oddEven,oddEven+i); 
+	 eigenvectors->switch_columns(1+oddEven,oddEven+i);   
+        eigenvalues->switch_columns(1+oddEven,oddEven+i); 
     }
   }
   return eigenvalues;
@@ -449,29 +449,29 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
 template<>
 MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
 
-  int nm   = _nrows;
-  int n    = _ncols;
+  int nm   = nrows_;
+  int n    = ncols_;
   int matz = 1;
 
-  double* wr    = new double[_ncols];
-  double* wi    = new double[_ncols];
-  double* fv1   = new double[_ncols];
-  double* fv2   = new double[_ncols];
-  double* fv3   = new double[_ncols];
-  double* br    = new double[_nrows*_ncols];
-  double* bi    = new double[_nrows*_ncols];
-  double* cr    = new double[_nrows*_ncols];
-  double* ci    = new double[_nrows*_ncols];
+  double* wr    = new double[ncols_];
+  double* wi    = new double[ncols_];
+  double* fv1   = new double[ncols_];
+  double* fv2   = new double[ncols_];
+  double* fv3   = new double[ncols_];
+  double* br    = new double[nrows_*ncols_];
+  double* bi    = new double[nrows_*ncols_];
+  double* cr    = new double[nrows_*ncols_];
+  double* ci    = new double[nrows_*ncols_];
 
   int ierr,i,j,k;
   int oddEven = nm/2;
 
   k = 0;
-  for(i = 0; i < _nrows; ++i) {
-    for(j = 0; j< _ncols; ++j) {
+  for(i = 0; i < nrows_; ++i) {
+    for(j = 0; j< ncols_; ++j) {
 
-      br[k] = std::real(_mdata[j][i]); // the cg_ routine uses the transpose
-      bi[k] = std::imag(_mdata[j][i]); // the cg_ routine uses the transpose
+      br[k] = std::real(mdata_[j][i]); // the cg_ routine uses the transpose
+      bi[k] = std::imag(mdata_[j][i]); // the cg_ routine uses the transpose
       ++k;
     }
   }
@@ -495,9 +495,9 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
   }
 
   k = 0;
-  for(i=0;  i< _nrows; ++i) {
-    for(j = 0; j< _ncols; ++j) {
-      eigenvectors->_mdata[j][i] = std::complex<double>(cr[k],ci[k]); // NOTE transposition !
+  for(i=0;  i< nrows_; ++i) {
+    for(j = 0; j< ncols_; ++j) {
+      eigenvectors->mdata_[j][i] = std::complex<double>(cr[k],ci[k]); // NOTE transposition !
       ++k; 
    }
   }
@@ -517,11 +517,11 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
   while ((sortFlag == 1)&& (counter < 10)) {
     sortFlag = 0;
     for(i=1; i < oddEven; ++i) {
-      if(abs(eigenvectors->_mdata[0][0]) < abs(eigenvectors->_mdata[0][i])) {
-        eigenvectors->_switch_columns(0,i);
+      if(abs(eigenvectors->mdata_[0][0]) < abs(eigenvectors->mdata_[0][i])) {
+        eigenvectors->switch_columns(0,i);
         sortFlag = 1;
         if((oddEven*2) == nm)
-          eigenvectors->_switch_columns(oddEven,oddEven+i);
+          eigenvectors->switch_columns(oddEven,oddEven+i);
       }
     }
     ++counter;
@@ -529,10 +529,10 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
   if(counter >= 10)
     (*pcerr) << "TMatrix<std::complex<double> >: Something is wrong with the eigenVector sort" << std::endl;
   for(i=2; i < oddEven; i++) {
-    if(abs(eigenvectors->_mdata[1][1]) < abs(eigenvectors->_mdata[1][i])) {
-      eigenvectors->_switch_columns(1,i);
+    if(abs(eigenvectors->mdata_[1][1]) < abs(eigenvectors->mdata_[1][i])) {
+      eigenvectors->switch_columns(1,i);
       if((oddEven*2) == nm)
-        eigenvectors->_switch_columns(1+oddEven,oddEven+i);
+        eigenvectors->switch_columns(1+oddEven,oddEven+i);
     }
   }
   return eigenvectors;
@@ -599,12 +599,12 @@ TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigen
 // 
 //------------------------------------------------------------------------------------------------------
 
-if(    (eigenvectors->_nrows == PHASESPACE) 
-    && (eigenvectors->_ncols == PHASESPACE)) {
+if(    (eigenvectors->nrows_ == PHASESPACE) 
+    && (eigenvectors->ncols_ == PHASESPACE)) {
   
    int realCount = 0;
-   for (int i=0; i<eigenvalues->_ncols; ++i){
-      if ( std::imag(eigenvalues->_mdata[0][i]) == 0.0 ) ++realCount;
+   for (int i=0; i<eigenvalues->ncols_; ++i){
+      if ( std::imag(eigenvalues->mdata_[0][i]) == 0.0 ) ++realCount;
    } 
  
 
@@ -612,69 +612,69 @@ if(    (eigenvectors->_nrows == PHASESPACE)
   if(realCount == 0) {                                            // all eigenvalues are complex
 //-------------------------------------------------------------
 
-      eigenvectors->_switch_columns(3,4);
-      eigenvectors->_switch_columns(1,2);
-      eigenvectors->_switch_columns(2,3);
-      eigenvalues->_switch_columns(3,4);
-      eigenvalues->_switch_columns(1,2);
-      eigenvalues->_switch_columns(2,3);
+      eigenvectors->switch_columns(3,4);
+      eigenvectors->switch_columns(1,2);
+      eigenvectors->switch_columns(2,3);
+      eigenvalues->switch_columns(3,4);
+      eigenvalues->switch_columns(1,2);
+      eigenvalues->switch_columns(2,3);
 }
 //-------------------------------------------------------------
-  if( std::imag(eigenvalues->_mdata[0][0]) == 0.0) {          //   0:real  1:?     2:?        3:?        4:?        5:? 
+  if( std::imag(eigenvalues->mdata_[0][0]) == 0.0) {          //   0:real  1:?     2:?        3:?        4:?        5:? 
 //-------------------------------------------------------------
  
-    if( std::imag(eigenvalues->_mdata[0][1]) == 0.0)         {  //  0:real, 1:real, 2:complex, 3:complex, 4: complex, 5: complex          
-        eigenvectors->_switch_columns(0,2); 
-        eigenvectors->_switch_columns(1,4); 
-        eigenvectors->_switch_columns(4,5);
-        eigenvalues->_switch_columns(0,2); 
-        eigenvalues->_switch_columns(1,4); 
-        eigenvalues->_switch_columns(4,5);
+    if( std::imag(eigenvalues->mdata_[0][1]) == 0.0)         {  //  0:real, 1:real, 2:complex, 3:complex, 4: complex, 5: complex          
+        eigenvectors->switch_columns(0,2); 
+        eigenvectors->switch_columns(1,4); 
+        eigenvectors->switch_columns(4,5);
+        eigenvalues->switch_columns(0,2); 
+        eigenvalues->switch_columns(1,4); 
+        eigenvalues->switch_columns(4,5);
 
-     } else if( std::imag(eigenvalues->_mdata[0][3]) == 0.0) {   //  0:real, 1:complex, 2:complex, 3:real, 4: complex, 5: complex 
-        eigenvectors->_switch_columns(2,3);                       
-        eigenvectors->_switch_columns(0,1);
-        eigenvectors->_switch_columns(2,4);
-        eigenvectors->_switch_columns(4,5);
-        eigenvalues->_switch_columns(2,3);                       
-        eigenvalues->_switch_columns(0,1);
-        eigenvalues->_switch_columns(2,4);
-        eigenvalues->_switch_columns(4,5);
+     } else if( std::imag(eigenvalues->mdata_[0][3]) == 0.0) {   //  0:real, 1:complex, 2:complex, 3:real, 4: complex, 5: complex 
+        eigenvectors->switch_columns(2,3);                       
+        eigenvectors->switch_columns(0,1);
+        eigenvectors->switch_columns(2,4);
+        eigenvectors->switch_columns(4,5);
+        eigenvalues->switch_columns(2,3);                       
+        eigenvalues->switch_columns(0,1);
+        eigenvalues->switch_columns(2,4);
+        eigenvalues->switch_columns(4,5);
 
-     } else if( std::imag(eigenvalues->_mdata[0][5]) == 0.0) {   //   0:real, 1:complex, 2:complex, 3:complex, 4:complex, 5:real   
-        eigenvectors->_switch_columns(2,3);
-        eigenvectors->_switch_columns(0,1);
-        eigenvectors->_switch_columns(1,2);
-        eigenvalues->_switch_columns(2,3);
-        eigenvalues->_switch_columns(0,1);
-        eigenvalues->_switch_columns(1,2);
+     } else if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {   //   0:real, 1:complex, 2:complex, 3:complex, 4:complex, 5:real   
+        eigenvectors->switch_columns(2,3);
+        eigenvectors->switch_columns(0,1);
+        eigenvectors->switch_columns(1,2);
+        eigenvalues->switch_columns(2,3);
+        eigenvalues->switch_columns(0,1);
+        eigenvalues->switch_columns(1,2);
      }
 //-------------------------------------------------------------
-  }   else if( std::imag(eigenvalues->_mdata[0][2]) == 0.0) {    //   0:complex, 1:complex, 2:real, 3:?,  4: ?,       5: ?    
+  }   else if( std::imag(eigenvalues->mdata_[0][2]) == 0.0) {    //   0:complex, 1:complex, 2:real, 3:?,  4: ?,       5: ?    
 //-------------------------------------------------------------
 
-     if( std::imag(eigenvalues->_mdata[0][5]) == 0.0) {         //   0:complex, 1:complex, 2:real, 3:complex, 4: complex, 5: real    
-        eigenvectors->_switch_columns(1,3);
-        eigenvalues->_switch_columns(1,3);
-     } else if( std::imag(eigenvalues->_mdata[0][3]) == 0.0) {  //   0:complex, 1:complex, 2:real, 3:real,    4: complex, 5: complex    
-        eigenvectors->_switch_columns(4,5);
-        eigenvectors->_switch_columns(1,5);
-        eigenvectors->_switch_columns(3,5);
-        eigenvalues->_switch_columns(4,5);
-        eigenvalues->_switch_columns(1,5);
-        eigenvalues->_switch_columns(3,5);
+     if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {         //   0:complex, 1:complex, 2:real, 3:complex, 4: complex, 5: real    
+        eigenvectors->switch_columns(1,3);
+        eigenvalues->switch_columns(1,3);
+     } else if( std::imag(eigenvalues->mdata_[0][3]) == 0.0) {  //   0:complex, 1:complex, 2:real, 3:real,    4: complex, 5: complex    
+        eigenvectors->switch_columns(4,5);
+        eigenvectors->switch_columns(1,5);
+        eigenvectors->switch_columns(3,5);
+        eigenvalues->switch_columns(4,5);
+        eigenvalues->switch_columns(1,5);
+        eigenvalues->switch_columns(3,5);
      }
 
 //-------------------------------------------------------------
-  } else if( std::imag(eigenvalues->_mdata[0][4]) == 0.0) {    //   0:complex, 1:complex, 2:complex, 3:complex, 4: real, 5: real
+  } else if( std::imag(eigenvalues->mdata_[0][4]) == 0.0) {    //   0:complex, 1:complex, 2:complex, 3:complex, 4: real, 5: real
 //-------------------------------------------------------------
     
-      eigenvectors->_switch_columns(3,4);
-      eigenvectors->_switch_columns(1,2);
-      eigenvectors->_switch_columns(2,3);
-      eigenvalues->_switch_columns(3,4);
-      eigenvalues->_switch_columns(1,2);
-      eigenvalues->_switch_columns(2,3);
+      eigenvectors->switch_columns(3,4);
+      eigenvectors->switch_columns(1,2);
+      eigenvectors->switch_columns(2,3);
+      eigenvalues->switch_columns(3,4);
+      eigenvalues->switch_columns(1,2);
+      eigenvalues->switch_columns(2,3);
   }
 
 } // If PHASESPASE
@@ -689,19 +689,19 @@ if(    (eigenvectors->_nrows == PHASESPACE)
 
 int sortFlag = 1;
 int counter  = 0;
-int oddEven  = eigenvectors->_nrows/2;
-int nrows    = eigenvectors->_nrows;
+int oddEven  = eigenvectors->nrows_/2;
+int nrows    = eigenvectors->nrows_;
 
 while ((sortFlag == 1)&& (counter < 10)) {
   sortFlag = 0;
   for(int i=1; i < oddEven; ++i) {
-    if(abs(eigenvectors->_mdata[0][0]) < abs(eigenvectors->_mdata[0][i])) { // put the eigenvector with the largest "x" component first
-      eigenvectors->_switch_columns(0,i);
-      eigenvalues->_switch_columns(0,i);
+    if(abs(eigenvectors->mdata_[0][0]) < abs(eigenvectors->mdata_[0][i])) { // put the eigenvector with the largest "x" component first
+      eigenvectors->switch_columns(0,i);
+      eigenvalues->switch_columns(0,i);
       sortFlag = 1;
       if((oddEven*2) == nrows) { // true = the no of columns is even        // switch the order of corresponding conjugate coordinate
-        eigenvectors->_switch_columns(oddEven,oddEven+i);
-        eigenvalues->_switch_columns(oddEven,oddEven+i);
+        eigenvectors->switch_columns(oddEven,oddEven+i);
+        eigenvalues->switch_columns(oddEven,oddEven+i);
       }
     }
   }
@@ -713,13 +713,13 @@ while ((sortFlag == 1)&& (counter < 10)) {
   }
 
   for(int i=2; i < oddEven; ++i) {
-    if(abs(eigenvectors->_mdata[1][1]) < abs(eigenvectors->_mdata[1][i])) {
-      eigenvectors->_switch_columns(1,i);
-      eigenvalues->_switch_columns(1,i);
+    if(abs(eigenvectors->mdata_[1][1]) < abs(eigenvectors->mdata_[1][i])) {
+      eigenvectors->switch_columns(1,i);
+      eigenvalues->switch_columns(1,i);
 
       if((oddEven*2) == nrows) {
-        eigenvectors->_switch_columns(1+oddEven,oddEven+i);
-        eigenvalues->_switch_columns(1+oddEven, oddEven+i);
+        eigenvectors->switch_columns(1+oddEven,oddEven+i);
+        eigenvalues->switch_columns(1+oddEven, oddEven+i);
       }
     }
 

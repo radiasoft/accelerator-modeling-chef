@@ -67,6 +67,7 @@ class SVDFit
 
     int    rows_;
     int    cols_;
+
     Matrix response_;
     Matrix solver_;
 

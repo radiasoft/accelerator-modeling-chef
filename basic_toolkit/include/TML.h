@@ -98,17 +98,18 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
  private:
 
-  T** _mdata;      // matrix data
-  int _nrows;      // number of rows
-  int _ncols;      // number of columns
+  T** mdata_;      // matrix data
+  int nrows_;      // number of rows
+  int ncols_;      // number of columns
 
-  void                    _copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
-  void                    _switch_rows(int row1, int row2); 
-  MLPtr<T> _scale() const; 
-  MLPtr<T> _lu_decompose(int* indx, int& d ) const;
-  void                    _lu_back_subst(int* indx, MLPtr<T>& b);  
+  void       copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
+  void       switch_rows(int row1, int row2); 
 
-  static double _tiny;     // pivot threshold
+  MLPtr<T>   scale() const; 
+  MLPtr<T>   lu_decompose(int* indx, int& d ) const;
+  void       lu_back_subst(int* indx, MLPtr<T>& b);  
+
+  static double tiny_;     // pivot threshold
 
  public:
 
@@ -133,10 +134,10 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   // Public member functions__________________________________________
 
-  void                    _switch_columns(int col1, int col2); 
+  void       switch_columns(int col1, int col2); 
 
-  inline int rows() const { return _nrows;}
-  inline int cols() const { return _ncols;}
+  inline int rows() const { return nrows_;}
+  inline int cols() const { return ncols_;}
 
   void                 clear(); 
 
@@ -258,6 +259,10 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
 // TML Specializations
 
+
+
+
+
 template<>
 template<>
 TML<std::complex<double> >::TML(const TML<double>&);
@@ -280,6 +285,7 @@ template<> void TML<double>::SVD (MLPtr<double>& U, Vector& W, MLPtr<double>& V 
 
 template<> TVector<double>  TML<double>::backSubstitute( MLPtr<double> const& U, TVector<double> const& W, MLPtr<double> const& V, 
                                                          TVector<double> const& rhs, double threshold);  
+
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <basic_toolkit/TML.tcc>
