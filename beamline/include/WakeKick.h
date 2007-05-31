@@ -34,6 +34,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/ConvolutionFunctor.h>
+#include <boost/bind.hpp>
 #include <beamline/bmlnElmnt.h>
 
 class BmlVisitor;
@@ -44,12 +45,17 @@ class WakeKick;
 typedef boost::shared_ptr<WakeKick>        WakeKickPtr;
 typedef boost::shared_ptr<WakeKick const>  ConstWakeKickPtr;
 
+
 class DLLEXPORT WakeKick : public bmlnElmnt {
 
   public:
 
-   WakeKick(                         int nsamples = 1024, double convolution_interval = -1.0);      
-   WakeKick( char const* name = "",  int nsamples = 1024, double convolution_interval = -1.0);      
+   template <typename Propagator>  
+   WakeKick( Propagator propagator);      
+
+   template <typename Propagator>  
+   WakeKick( char const* name, Propagator propagator);      
+
    WakeKick( WakeKick const&         );
 
    WakeKick* Clone() const { return new WakeKick( *this ); }
@@ -70,11 +76,24 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
    void init();
 
-   ConvolutionFunctor<double>   hor_twake_; 
-   ConvolutionFunctor<double>   ver_twake_; 
-   ConvolutionFunctor<double>   lwake_; 
-   int                          nsamples_;
-   double                       interval_;
+   boost::function< void( ParticleBunch& ) > propagator_;
+
 } ;
+
+
+template <typename Propagator>  
+WakeKick::WakeKick( char const* name,  Propagator propagator )      
+ : bmlnElmnt(name, 0.0, 0.0),
+   propagator_(propagator)
+{}
+
+
+template <typename Propagator>  
+WakeKick::WakeKick( Propagator propagator)      
+ : bmlnElmnt("", 0.0, 0.0),
+   propagator_(propagator)
+{}
+
+
 
 #endif // WAKEKICK_H
