@@ -1727,25 +1727,30 @@ JLPtr<T> TJL<T>::log() const
 
    }
 
-   JLPtr<T> z( clone() );
-   JLPtr<T> u( makeTJL(myEnv_) );
-   JLPtr<T> w( makeTJL(myEnv_) );
    
+   //---------------------------------------------------------------
+   // We use here the formulae 
+   //
+   //  ln( s + e )   = ln s + ln( 1 + e/s ), and
+   //
+   //  ln( 1 + e/s ) = ln( 1 - ( -e/s )) = - sum ( - e/s )^n / n
+   //----------------------------------------------------------------
+
+   JLPtr<T> z( clone() );
    z->setStandardPart( T() );         //   zero out the standard part 
+   z->scaleBy(  -1.0/standardPart() );
 
-   z->scaleBy( - 1.0/ standardPart() );
+   JLPtr<T> u(z->clone() );  // initial value : -e/s                                        
+   JLPtr<T> w(z->clone() );  // initial value : -e/s
 
-   w = z;
-   u = z;                                         // We use here the formulae
-
-   double n = 1.0;                                // ln( s + e )   = ln s + ln( 1 + e/s ), and
-   while( u->getCount() > 0 ) {                       // ln( 1 + e/s ) = ln( 1 - ( -e/s )) 
-     u *= z;                                      //  = - sum ( - e/s )^n / n
-     w = w + (u / static_cast<T>(++n));              // w += ( u / ++n );
+   double n = 1.0;  
+   while( u->getCount() > 0 ) { 
+     u *= z;                                  // u =  (-e/s)^n  
+     w  = w + ( u / static_cast<T>(++n) );    // w =  sum  (-e/s)^n / n   
    }
    
    JLPtr<T> tmp( makeTJL(myEnv_, std::log(standardPart()) ));
-   return ( tmp - w );     // std::log(standardPart()) - w
+   return ( tmp - w );                            // std::log(standardPart()) - w
  
    }
  else                                 // operand has zero standard part
