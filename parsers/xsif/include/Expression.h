@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <boost/any.hpp>
+#include <boost/shared_ptr.hpp>
 #include <sequential_tree.h>
 #include <XsifParser_ypp.hh>
 
@@ -40,11 +41,17 @@
 class Token {
 
  public:
-  Token(xsif_yy::XsifParser::token_type  t ) : m_token(t)         {}
-  bool operator==(Token const& rhs)       { return m_token == rhs.m_token;    } 
-  operator int() const                    { return static_cast<int>(m_token); }
+  Token(xsif_yy::XsifParser::token_type  t ) 
+   : m_token(t) {}
 
-  friend std::ostream& operator<<( std::ostream&  os, Token const& token) { os << static_cast<char>(token.m_token); return os; } 
+  bool operator==(Token const& rhs)       
+     { return m_token == rhs.m_token;    } 
+
+  operator int() const                    
+     { return static_cast<int>(m_token); }
+
+  friend std::ostream& operator<<( std::ostream&  os, Token const& token) 
+     { os << static_cast<char>(token.m_token); return os; } 
 
  private:
 
@@ -52,11 +59,7 @@ class Token {
 
 };
 
-
-class ExprData;
-std::ostream& operator<<(std::ostream &os, const ExprData & expr);
-
-
+//--------------------------------------------------------------------------------------
 class ExprData {
 
 friend  std::ostream& operator<<(std::ostream &os, const ExprData & expr);
@@ -69,40 +72,60 @@ public:
 
   boost::any      value;
 
-
 };
 
+std::ostream& operator<<(std::ostream &os, const ExprData & expr);
 
+//--------------------------------------------------------------------------------------
 
-typedef  sequential_tree<ExprData>::iterator             expr_iterator_t;
-typedef  sequential_tree<ExprData>::const_iterator const_expr_iterator_t;
+class Expression : public sequential_tree<ExprData> {
 
-class Expression;
-
-std::ostream&  operator<<( std::ostream& os, Expression const& exp);
-
-
-class Expression: public sequential_tree<ExprData> {
-
-friend std::ostream&  operator<<( std::ostream& os, Expression const& exp);
-friend  std::ostream& operator<<(std::ostream &os, const ExprData & expr);
+ friend  std::ostream&  operator<<( std::ostream& os, Expression const& exp);
+ friend  std::ostream&  operator<<( std::ostream &os, ExprData   const& expr);
 
 public:
 
+  typedef sequential_tree<ExprData>::iterator                                 iterator; 
+  typedef sequential_tree<ExprData>::const_iterator                     const_iterator; 
 
-  Expression():                       sequential_tree<ExprData>()      { }                               
-  Expression(Expression const& expr): sequential_tree<ExprData>(expr)  { }                               
+  typedef sequential_tree<ExprData>::pre_order_iterator              pre_order_iterator;
+  typedef sequential_tree<ExprData>::const_pre_order_iterator  const_pre_order_iterator;
 
-  double evaluate( ) const;
+  Expression() {} ;
+  Expression(Expression const& expr) 
+   : sequential_tree<ExprData>( expr ){ }
+
+  double evaluate() const;
 
   template<typename T>  
-  static bool is_type(const boost::any & operand) { return operand.type() == typeid(T); }
+  static bool is_type( boost::any  const& operand) { return operand.type() == typeid(T); }
+
+
+  iterator       begin() ; 
+  const_iterator begin() const; 
+
+  iterator       end() ; 
+  const_iterator end() const; 
+
+
+  pre_order_iterator        pre_order_begin(); 
+  const_pre_order_iterator  pre_order_begin()  const; 
+
+  pre_order_iterator          pre_order_end(); 
+  const_pre_order_iterator    pre_order_end()  const; 
+
 
 private:
   
-  double evaluate( const_expr_iterator_t ) const;
+  double evaluate ( const_iterator ) const;
 
 };
+
+
+//--------------------------------------------------------------------------------------------------
+
+
+
 
 
 #endif  // EXPRESSION_H

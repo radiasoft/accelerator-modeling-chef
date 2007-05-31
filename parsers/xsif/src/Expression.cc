@@ -87,8 +87,8 @@ std::ostream&  operator<<( std::ostream& os, Expression const& exp) {
 double 
 Expression::evaluate( ) const                         
 { 
-  const_expr_iterator_t theIterator( this->begin() ); 
-  return evaluate(  const_expr_iterator_t( theIterator ) ); 
+  const_iterator    theIterator(  begin() ); 
+  return evaluate(  const_iterator( theIterator ) ); 
 }
 
 
@@ -96,7 +96,7 @@ Expression::evaluate( ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double 
-Expression::evaluate( const_expr_iterator_t  arg ) const  
+Expression::evaluate( Expression::const_iterator  arg ) const  
 {
 
     typedef xsif_yy::XsifParser::token_type token_type; 
@@ -104,7 +104,7 @@ Expression::evaluate( const_expr_iterator_t  arg ) const
 
     double result = 0;
  
-    const_expr_iterator_t q;
+    const_iterator q;
 
     if ( is_type<Token>(arg->value) ) {  
 
@@ -131,7 +131,7 @@ Expression::evaluate( const_expr_iterator_t  arg ) const
 
 	    case token::XSIF_IDENTIFIER:   q = arg.node()->begin(); result = evaluate(q); break;
 
-            default :  std::cerr << "Expression::evaluate( expr_iterator_t  arg ): Unknown operator = " 
+            default :  std::cerr << "Expression::evaluate( Expression::const_iterator arg ): Unknown operator = " 
                        << arg->value.type().name() << std::endl; 
 	 }
     } else if ( is_type<double>(arg->value) ) {  
@@ -141,11 +141,75 @@ Expression::evaluate( const_expr_iterator_t  arg ) const
            result =  boost::any_cast<int>(arg->value);
 
     } else { 
- 	 std::cerr << "Error: Expression::evaluate( expr_iterator_t  arg ): Unknown type = " 
+ 	 std::cerr << "Error: Expression::evaluate(  Expression::const_iterator arg ): Unknown type = " 
                    << arg->value.type().name() << std::endl; 
     }
 
      return result;
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::iterator  Expression::begin()
+{
+  return sequential_tree<ExprData>::begin();
+}  
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::const_iterator Expression::begin() const
+{
+  return sequential_tree<ExprData>::begin();
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Expression::iterator       Expression::end() 
+{ 
+  return sequential_tree<ExprData>::end();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::const_iterator Expression::end() const
+{ 
+  return sequential_tree<ExprData>::end();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::pre_order_iterator        Expression::pre_order_begin()
+{ 
+  return sequential_tree<ExprData>::pre_order_begin();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::const_pre_order_iterator  Expression::pre_order_begin()  const
+{ 
+  return sequential_tree<ExprData>::pre_order_begin();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::pre_order_iterator          Expression::pre_order_end()
+{ 
+  return sequential_tree<ExprData>::pre_order_end();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Expression::const_pre_order_iterator    Expression::pre_order_end()  const
+{
+  return sequential_tree<ExprData>::pre_order_end();
+} 
 
 
