@@ -35,55 +35,20 @@
 #include <beamline/WakeKick.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/WakeFunctions.h>
+#include <beamline/BunchProjector.h>
+#include <iomanip>
+#include <iostream>
+#include <boost/bind.hpp>
 
 using namespace std;
 
-
-// **************************************************
-//   class WakeKick 
-// **************************************************
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-WakeKick::WakeKick( int nsamples, double interval )      
-  : bmlnElmnt(""), nsamples_(nsamples), interval_(interval)  
-{ 
-  init();
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-WakeKick::WakeKick( char const* name, int nsamples, double interval)      
-  : bmlnElmnt(name), nsamples_(nsamples), interval_(interval)  
-{ 
-  init();
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 WakeKick::WakeKick( WakeKick const& x )
-  : bmlnElmnt(x), nsamples_(x.nsamples_), interval_(x.interval_), 
-                  hor_twake_(x.hor_twake_),  ver_twake_(x.ver_twake_), lwake_(x.lwake_) 
+  : bmlnElmnt(x), propagator_(x.propagator_)
 { }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void WakeKick::init()
-{ 
-
-  double ds = interval_/ (nsamples_-1); 
-
-  lwake_     = ConvolutionFunctor<double>( nsamples_,  ds, ShortRangeLWakeFunction(), true); 
-  hor_twake_ = ConvolutionFunctor<double>( nsamples_,  ds, ShortRangeTWakeFunction(), true); 
-  ver_twake_ = ConvolutionFunctor<double>( nsamples_,  ds, ShortRangeTWakeFunction(), true); 
-
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -104,9 +69,7 @@ const char* WakeKick::Type() const
 
 bool     WakeKick::isMagnet() const
 {
-
   return false;
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -124,3 +87,19 @@ void WakeKick::accept( ConstBmlVisitor& v ) const
 { 
    v.visit(*this ); 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::localPropagate( ParticleBunch& bunch )
+{
+
+  propagator_(bunch);
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
