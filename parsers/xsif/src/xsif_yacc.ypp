@@ -483,7 +483,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
        |
        '-' vexpr %prec NEG              { 
                                           Expression* p  = $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token( token::NEG )));
+                                          Expression::iterator q = p->insert(ExprData(Token( token::NEG )));
                                           q.node()->insert( *( $<pexp>2->begin().node() )  );
                                           delete ($<pexp>2);
                                           
@@ -491,7 +491,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
        |
         vexpr '+' vexpr                 { 
                                           Expression* p  = $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('+'))));
+                                          Expression::iterator q = p->insert(ExprData(Token(token_type('+'))));
                                           q.node()->insert( *( $<pexp>1->begin().node() ) );
                                           q.node()->insert( *( $<pexp>3->begin().node() ) );
                                           delete ($<pexp>1);
@@ -500,7 +500,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
        |                                                                               
         vexpr '-' vexpr                 { 
                                           Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('-'))));
+                                          Expression::iterator q = p->insert(ExprData(Token(token_type('-'))));
                                           q.node()->insert( *( ($<pexp>1)->begin().node() ) );
                                           q.node()->insert( *( ($<pexp>3)->begin().node() ) );
                                           delete ($<pexp>1);
@@ -509,7 +509,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
                                         }
        | 
         vexpr '*' vexpr                 { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('*'))));
+                                          Expression::iterator q = p->insert(ExprData(Token(token_type('*'))));
                                           q.node()->insert( *( ($<pexp>1)->begin().node() ) );
                                           q.node()->insert( *( ($<pexp>3)->begin().node() ) );
                                           delete ($<pexp>1);
@@ -518,7 +518,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
        |   
         vexpr '/' vexpr                 { 
                                           Expression* p  =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('/'))));
+                                          Expression::iterator q = p->insert(ExprData(Token(token_type('/'))));
                                           q.node()->insert( *($<pexp>1->begin().node() ) );
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>1);
@@ -529,7 +529,7 @@ vexpr: XSIF_INT_VALUE                   { Expression* p = $<pexp>$ = new Express
         vexpr '^' vexpr                 {
                                           $<pexp>$ = new Expression();                      
                                           Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token_type('^'))));
+                                          Expression::iterator q = p->insert(ExprData(Token(token_type('^'))));
                                           q.node()->insert( *($<pexp>1->begin().node() ) );
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>1);
@@ -545,79 +545,79 @@ vfunction:
 
         XSIF_SQRT '(' vexpr ')'         {                                           
                                           Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_SQRT)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_SQRT)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
         XSIF_SIN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_SIN)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_SIN)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
         XSIF_COS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_COS)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_COS)));
                                           q.node()->insert( *( $<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
         XSIF_TAN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_TAN)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_TAN)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |        
        XSIF_ASIN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ASIN)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_ASIN)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |        
        XSIF_ACOS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ACOS)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_ACOS)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |        
        XSIF_ATAN '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_ATAN)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_ATAN)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_EXP '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_EXP)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_EXP)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_LOG '(' vexpr ')'           { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_LOG)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_LOG)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_LOG10 '(' vexpr ')'         { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_LOG10)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_LOG10)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_GAUSS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_GAUSS)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_GAUSS)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_TGAUSS '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_TGAUSS)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_TGAUSS)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
        |
        XSIF_RANF '(' vexpr ')'          { Expression* p     =  $<pexp>$  = new Expression();       
-                                          expr_iterator_t q = p->insert(ExprData(Token(token::XSIF_RANF)));
+                                          Expression::iterator q = p->insert(ExprData(Token(token::XSIF_RANF)));
                                           q.node()->insert( *($<pexp>3->begin().node() ) );
                                           delete ($<pexp>3);
                                         }
