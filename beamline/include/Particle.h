@@ -122,7 +122,7 @@ const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
 
 // .............................. Particle classes
 
-class DLLEXPORT Particle : public gms::FastAllocator {
+class DLLEXPORT Particle {
 
   friend class JetParticle;
   friend class particle_core_access;  
@@ -218,6 +218,9 @@ public:
   double Mass()                     const;
   double Gamma()                    const;
   double Beta()                     const;
+  double BetaX()                    const;
+  double BetaY()                    const;
+  double BetaZ()                    const;
   double ReferenceBRho()            const;
   double ReferenceBeta()            const;
   double ReferenceGamma()           const;
@@ -403,6 +406,9 @@ class particle_core_access
   inline double  Particle::Mass()                     const   { return m_;                        }
   inline double  Particle::Gamma()                    const   { return Energy() / m_;             }
   inline double  Particle::Beta()                     const   { return Momentum() / Energy();     }
+  inline double  Particle::BetaX()                    const   { return (get_npx()*ReferenceMomentum())/Energy(); }
+  inline double  Particle::BetaY()                    const   { return (get_npy()*ReferenceMomentum())/Energy(); }
+  inline double  Particle::BetaZ()                    const   { return (get_npz()*ReferenceMomentum())/Energy(); }
   inline double  Particle::ReferenceBRho()            const   { return bRho_;                     }
   inline double  Particle::ReferenceBeta()            const   { return beta_;                     }
   inline double  Particle::ReferenceGamma()           const   { return gamma_;                    }
