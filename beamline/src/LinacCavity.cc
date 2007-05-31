@@ -25,11 +25,8 @@
 ******             ostiguy@fnal.gov                                                   
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <iomanip>
 #include <beamline/LinacCavity.h>
@@ -43,23 +40,21 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LinacCavity::LinacCavity( const char* name_arg, // name
-                          double const& lng_arg,    // length [m]
-                          double const& f_arg,      // rf frequency 
-                          double const& eV_arg,     // rf voltage 
-                          double const& phi_s_arg,  // synchronous phase 
-                          double const& Q_arg,      // Quality factor 
-                          double const& R_arg )     // Shunt Impedance 
- : rfcavity( name_arg, lng_arg, f_arg, eV_arg, (M_PI/2.0 + phi_s_arg*(2.0*M_PI)), Q_arg, R_arg )
+LinacCavity::LinacCavity( const char* name,         // name
+                          double const& length,     // length [m]
+                          double const& f,          // rf frequency 
+                          double const& eV,         // rf voltage 
+                          double const& phi_s)      // synchronous phase 
+ : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
+
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
-:   rfcavity( x ) 
+ : bmlnElmnt( x.ident_.c_str(), x.length_, x.strength_), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
 {}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -71,15 +66,11 @@ LinacCavity::~LinacCavity()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 ostream& LinacCavity::writeTo(ostream& os) 
 {
   os << OSTREAM_DOUBLE_PREC 
-     << (w_rf_/MATH_TWOPI)
-     << " " << phi_s_
-     << " " << Q_
-     << " " << R_
-     << " " << h_
+     << " " << getRadialFrequency()/ MATH_TWOPI
+     << " " << getPhi()
      << '\n';
   return os;
 }
@@ -90,15 +81,10 @@ ostream& LinacCavity::writeTo(ostream& os)
 
 istream& LinacCavity::readFrom(istream& is) 
 {
-  double w;
-  is >> w 
-     >> phi_s_ 
-     >> Q_ 
-     >> R_
-     >> h_;
-  w_rf_      = w*MATH_TWOPI;
-  sin_phi_s_ = sin(phi_s_);
-  rfcavity::finishConstructor();
+  double w, phi_s;
+  is >> w_rf_
+     >> phi_s_; 
+
   return is;
 }
 
@@ -111,6 +97,14 @@ const char* LinacCavity::Type() const
   return "LinacCavity"; 
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool    LinacCavity::isMagnet() const
+{
+  return false;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -131,20 +125,63 @@ void LinacCavity::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::acceptInner( BmlVisitor& v ) {
-
-  rfcavity::acceptInner(v);
-
-}  
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void LinacCavity::acceptInner( ConstBmlVisitor& v ) const 
+double const&  LinacCavity::getPhi()  const
 {
-
-  rfcavity::acceptInner(v);
-
+  return phi_s_;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double LinacCavity::getDesignEnergyGain()   const
+{
+  return strength_* cos(phi_s_); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void   LinacCavity::setFrequency( double const& freq)
+{
+
+  w_rf_ = 2.0*M_PI*freq;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   LinacCavity::getFrequency() const
+{
+  return w_rf_/(2.0*M_PI);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const& LinacCavity::getRadialFrequency() const
+{
+
+  return w_rf_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+ void  LinacCavity::setPhi( double const& radians)
+{
+
+  phi_s_ = radians;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void  LinacCavity::setStrength( double const& eV)
+{
+
+  strength_ = eV*1.0e-9; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
