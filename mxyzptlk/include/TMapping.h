@@ -79,6 +79,8 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   TMapping( TMapping const& );
 
+  TMapping( typename TJetVector<T>::const_iterator itstart,  typename TJetVector<T>::const_iterator itend);
+
   TMapping( TJetVector<T> const& );
 
   explicit TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
