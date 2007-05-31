@@ -81,6 +81,9 @@ template<typename T>
 class EnvPtr;
 
 template<typename T> 
+class ConstEnvPtr;
+
+template<typename T> 
 class TJet;
 
 template<typename T> 
@@ -188,7 +191,7 @@ struct ScratchArea {
   static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const&,  double* scale=0);
 
   template<typename U>
-  static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const&);
+  static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const& );
 
   template<typename U>
   static EnvPtr<double>   makeRealJetEnvironment( EnvPtr<U> const& );
@@ -307,29 +310,16 @@ struct ScratchArea {
 
   TJetEnvironment(TJetEnvironment const&);
 
-  //  template<typename U>
-  //TJetEnvironment(TJetEnvironment<U> const&);
-
-
 };
 
 //------------------------------------------------------------------------------------------------------------
 // specializations
 //------------------------------------------------------------------------------------------------------------
 
-//template<>
-//template<>
-//TJetEnvironment<std::complex<double> >::TJetEnvironment( TJetEnvironment<double> const& );
 
 template<>
 template<>
 EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const&);
-
-
-template<>
-template<>
-EnvPtr<double>  TJetEnvironment<std::complex<double> >::makeRealJetEnvironment( EnvPtr<std::complex<double> > const& );
-
 
 
 //------------------------------------------------------------------------------------------------------------
