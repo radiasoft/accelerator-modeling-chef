@@ -237,6 +237,9 @@ public:
   JetVector VectorMomentum() const;
   JetVector NormalizedVectorMomentum() const;
   Jet Beta()                 const;
+  Jet BetaX()                const;
+  Jet BetaY()                const;
+  Jet BetaZ()                const;
   Jet BRho()                 const; 
 
  };
@@ -379,22 +382,25 @@ class jetparticle_core_access
   inline void JetParticle::set_ndp ( Jet const& u )  { state_[5] = u; }
 
 
-  inline Jet    JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ );                 }
-  inline Jet    JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                                   } 
-  inline Jet    JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                                       }
-  inline double JetParticle::Mass()               const { return m_;                                                       }
-  inline double JetParticle::ReferenceBRho()      const { return bRho_;                                                    }
-  inline double JetParticle::ReferenceBeta()      const { return beta_;                                                    }
-  inline double JetParticle::ReferenceGamma()     const { return gamma_;                                                   }
-  inline Jet    JetParticle::Gamma()              const { return Energy() / m_;                                            }
-  inline double JetParticle::ReferenceMomentum()  const { return p_;                                                       }
-  inline double JetParticle::PNI2()               const { return pni2_;                                                    }
-  inline double JetParticle::ReferenceEnergy()    const { return E_;                                                       } 
-  inline double JetParticle::Weight()             const { return wgt_;                                                     }
-  inline double JetParticle::Charge()             const { return q_;                                                       }
+  inline Jet    JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ ); }
+  inline Jet    JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                   } 
+  inline Jet    JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                       }
+  inline double JetParticle::Mass()               const { return m_;                                       }
+  inline double JetParticle::ReferenceBRho()      const { return bRho_;                                    }
+  inline double JetParticle::ReferenceBeta()      const { return beta_;                                    }
+  inline Jet    JetParticle::Beta()               const { return Momentum() / Energy();                    }
+  inline Jet    JetParticle::BetaX()              const { return (get_npx()*ReferenceMomentum())/Energy(); }
+  inline Jet    JetParticle::BetaY()              const { return (get_npy()*ReferenceMomentum())/Energy(); }
+  inline Jet    JetParticle::BetaZ()              const { return (get_npz()*ReferenceMomentum())/Energy(); }
+  inline double JetParticle::ReferenceGamma()     const { return gamma_;                                   }
+  inline Jet    JetParticle::Gamma()              const { return Energy() / m_;                            }
+  inline double JetParticle::ReferenceMomentum()  const { return p_;                                       }
+  inline double JetParticle::PNI2()               const { return pni2_;                                    }
+  inline double JetParticle::ReferenceEnergy()    const { return E_;                                       } 
+  inline double JetParticle::Weight()             const { return wgt_;                                     }
+  inline double JetParticle::Charge()             const { return q_;                                       }
 
-  inline Jet       JetParticle::Beta()            const { return Momentum() / Energy();                                    }
-  inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                                }
+  inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                }
 
 
   inline JetProton*         JetProton::Clone()             const { return new     JetProton( *this ); }
