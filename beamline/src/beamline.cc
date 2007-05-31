@@ -47,8 +47,10 @@
 ****** - eliminated all references to old-style BeamlineIterator, DeepBeamlineIterator etc ..
 ******
 ****** Jan-Mar 2007
+******
 ****** - added support for reference counted elements 
 ****** - eliminated unneeded dynamic casts             
+******
 **************************************************************************
 *************************************************************************/
 
@@ -2242,8 +2244,8 @@ void beamline::enterLocalFrame( Particle& p ) const
 
   for (beamline::const_iterator it = begin() ; it != end(); ++it) {
 
-    if( (typeid( *(*it).get() ) == typeid(sbend) ) ||
-        (typeid( *(*it).get() ) == typeid(rbend) ) ) {    
+    if( (typeid( *(*it) ) == typeid(sbend) ) ||
+        (typeid( *(*it) ) == typeid(rbend) ) ) {    
 
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( Particle& p ) const", 
@@ -2263,8 +2265,8 @@ void beamline::enterLocalFrame( JetParticle& p ) const
 
   for (beamline::const_iterator it = begin() ; it != end(); ++it) {
 
-    if( (typeid( *(*it).get() ) == typeid(sbend) )||
-        (typeid( *(*it).get() ) == typeid(rbend) )  ) {
+    if( (typeid( *(*it) ) == typeid(sbend) )||
+        (typeid( *(*it) ) == typeid(rbend) )  ) {
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( JetParticle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
