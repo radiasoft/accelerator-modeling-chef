@@ -438,11 +438,11 @@ void bmlnElmnt::propagate( ParticleBunch& x )
   }
   else {
 
-    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( **it ); }
+    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
 
     localPropagate  ( x );
 
-    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( **it ); }
+    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
 
   }
 }
@@ -484,7 +484,7 @@ void bmlnElmnt::setLength( double const& x ) {
 
 void bmlnElmnt::setStrength( double const& s ) {
   strength_ = s - getShunt()*IToField(); 
-  if( 0 != propfunc_ ) { this->setupPropFunc(); }
+  if(propfunc_ ) { setupPropFunc(); }
 }
 
 
@@ -530,11 +530,11 @@ void bmlnElmnt::setupPropFunc()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc* a ) 
+bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( PropFunc const* a ) 
 { 
   bmlnElmnt::PropFunc* ret = this->propfunc_;
 
-  if( 0 == a ) {
+  if( !a ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "bmlnElmnt::setPropFunction(const PropFunc* a)",
            "Argument is null." ) );
@@ -582,31 +582,18 @@ void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::equivTo( const bmlnElmnt& x ) const 
+bool bmlnElmnt::equivTo( bmlnElmnt const& x ) const 
 {
-  static double maxLength;
-  static double maxStrength;
 
   if( typeid(*this) !=  typeid(x) ) {
     return false;
   }
 
-  if( length_   < x.length_   ) { maxLength   = x.length_;   }
-  else                        { maxLength   =   length_;   }
-  if( strength_ < x.strength_ ) { maxStrength = x.strength_; }
-  else                        { maxStrength =   strength_; }
+  double maxLength   = std::max(length_,   x.length_  );
+  double maxStrength = std::max(strength_, x.strength_);
 
-  return ( ( fabs( length_   - x.length_   ) < 1.0e-6 * maxLength   )  &&
-           ( fabs( strength_ - x.strength_ ) < 1.0e-6 * maxStrength )     );
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool bmlnElmnt::equivTo( const bmlnElmnt* x ) const 
-{
-  return this->equivTo( *x );
+  return ( ( std::abs( length_   - x.length_   ) < 1.0e-6 * maxLength   )  &&
+           ( std::abs( strength_ - x.strength_ ) < 1.0e-6 * maxStrength )     );
 }
 
 
@@ -633,7 +620,7 @@ bool bmlnElmnt::hasStandardFaces() const
 
 bool bmlnElmnt::isSimple() const
 {
-  return ( (0 == p_bml_) && (0 == bml_e_)  );
+  return ( (!p_bml_) && ( !bml_e_)  );
 }
 
 
@@ -651,7 +638,7 @@ bool bmlnElmnt::alignRelX( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
-    if( 0 == align_ ) {
+    if( !align_ ) {
       align_ = new alignment(u, 0.0, 0.0);
     }
     else {
@@ -683,8 +670,8 @@ bool bmlnElmnt::alignRelX( double const& u )
 bool bmlnElmnt::alignRelY( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() ) {
-    if( 0 == align_ ) {
+  if( hasParallelFaces() ) {
+    if( !align_ ) {
       align_ = new alignment(0.0, u, 0.0);
     }
     else {
@@ -717,7 +704,7 @@ bool bmlnElmnt::alignAbsX( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
-    if( 0 == align_ ) {
+    if( !align_ ) {
       align_ = new alignment(u, 0.0, 0.0);
     }
     else {
@@ -750,7 +737,7 @@ bool bmlnElmnt::alignAbsY( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() ) {
-    if( 0 == align_ ) {
+    if( !align_ ) {
       align_ = new alignment(0.0, u, 0.0);
     }
     else {
@@ -781,7 +768,7 @@ bool bmlnElmnt::alignAbsY( double const& u )
 
 bool bmlnElmnt::alignRelXmm( double const& u )
 {
-  return (this->alignRelX( 0.001*u ));
+  return  alignRelX( 0.001*u );
 }
 
 
@@ -790,7 +777,7 @@ bool bmlnElmnt::alignRelXmm( double const& u )
 
 bool bmlnElmnt::alignRelYmm( double const& u )
 {
-  return (this->alignRelY( 0.001*u ));
+  return alignRelY( 0.001*u );
 }
 
 
@@ -799,7 +786,7 @@ bool bmlnElmnt::alignRelYmm( double const& u )
 
 bool bmlnElmnt::alignAbsXmm( double const& u )
 {
-  return (this->alignAbsX( 0.001*u ));
+  return alignAbsX( 0.001*u );
 }
 
 
@@ -808,7 +795,7 @@ bool bmlnElmnt::alignAbsXmm( double const& u )
 
 bool bmlnElmnt::alignAbsYmm( double const& u )
 {
-  return (this->alignAbsY( 0.001*u ));
+  return alignAbsY( 0.001*u );
 }
 
 
@@ -819,7 +806,7 @@ bool bmlnElmnt::alignRelRoll( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() && this->hasStandardFaces() ) {
-    if( 0 == align_ ) {
+    if( !align_ ) {
       align_ = new alignment(0.0, 0.0, u);
     }
     else {
@@ -852,7 +839,7 @@ bool bmlnElmnt::alignAbsRoll( double const& u )
 {
   bool ret = true;
   if( this->hasParallelFaces() && this->hasStandardFaces() ) {
-    if( 0 == align_ ) {
+    if( !align_ ) {
       align_ = new alignment(0.0, 0.0, u);
     }
     else {
@@ -883,7 +870,7 @@ bool bmlnElmnt::alignAbsRoll( double const& u )
 
 bool bmlnElmnt::alignRelRollmrad( double const& u )
 {
-  return (this->alignRelRoll( 0.001*u ));
+  return  alignRelRoll( 0.001*u );
 }
 
 
@@ -1252,23 +1239,6 @@ void bmlnElmnt::setAperture( Aperture* pAperture_in ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double bmlnElmnt::setReferenceTime( const Particle& prtn )
-{
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** double bmlnElmnt::setReferenceTime( const Particle& )"
-            "\n*** WARNING *** Invoked on base class. Nothing will happen."
-            "\n*** WARNING *** This warning is issued only once."
-            "\n*** WARNING *** "
-         << endl;
-    firstTime = false;
-  }
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double bmlnElmnt::getReferenceTime() const
 {
@@ -1281,13 +1251,13 @@ double bmlnElmnt::getReferenceTime() const
 
 double bmlnElmnt::setReferenceTime( double const& x )
 {
-  double xtmp = x;
-
   double oldValue = ctRef_;
-  if( fabs(xtmp) < 1.0e-12 ) { xtmp = 0.0; }
-  ctRef_ = xtmp;
-  if( p_bml_   ) {   p_bml_->setReferenceTime( xtmp ); }
-  if( bml_e_ ) { bml_e_->setReferenceTime( xtmp ); }
+
+  ctRef_ = x;
+
+  // ************ ??????? ********* if( p_bml_   ) {    p_bml_->setReferenceTime( x ); }  
+  // ************ ??????? ********* if( bml_e_ )   {    bml_e_->setReferenceTime( x ); }
+
   return oldValue;
 }
 
