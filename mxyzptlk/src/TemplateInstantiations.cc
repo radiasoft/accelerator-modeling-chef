@@ -44,9 +44,6 @@
 #include <mxyzptlk/TLieOperator.h>
 #include <mxyzptlk/TLieOperator.tcc>
 
-#include <basic_toolkit/TMatrix.tcc>
-#include <basic_toolkit/TML.tcc>
-
 #include <gms/FastPODAllocator.h>
 #include <gms/FastAllocator.h>
 #include <boost/functional/hash/hash.hpp>
