@@ -37,23 +37,23 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def( init<const char*>() )
   .def( init<double,double,double,double,double,double>() )    
   .def( init<char*, double,double,double,double,double,double>() )    
-  .def("getPhi",       &rfcavity::getPhi)
-  .def("setPhi",       &rfcavity::setPhi)
-  .def("getFrequency", &rfcavity::getFrequency )
-  .def("getQ",         &rfcavity::getQ)
-  .def("getR",         &rfcavity::getR)
-  .def("Type",         &rfcavity::Type);
+  .def("getPhi",             &rfcavity::getPhi,             return_value_policy<copy_const_reference>())
+  .def("setPhi",             &rfcavity::setPhi)
+  .def("getRadialFrequency", &rfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
+  .def("getQ",               &rfcavity::getQ,               return_value_policy<copy_const_reference>())
+  .def("getR",               &rfcavity::getR,               return_value_policy<copy_const_reference>())
+  .def("Type",               &rfcavity::Type);
 
 
 class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<char *>() )
   .def(init< double,   double, double, double, double> () )    
-  .def(init< char*,  double,   double, double, double, double> () )    
-  .def("getPhi",       &thinrfcavity::getPhi)
-  .def("setPhi",       &thinrfcavity::setPhi)
-  .def("getFrequency", &thinrfcavity::getFrequency )
-  .def("getQ",         &thinrfcavity::getQ)
-  .def("getR",         &thinrfcavity::getR)
-  .def("Type",         &thinrfcavity::Type);
+  .def(init< char*,    double,   double, double, double, double> () )    
+  .def("getPhi",             &thinrfcavity::getPhi,             return_value_policy<copy_const_reference>())
+  .def("setPhi",             &thinrfcavity::setPhi)
+  .def("getRadialFrequency", &thinrfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
+  .def("getQ",               &thinrfcavity::getQ,               return_value_policy<copy_const_reference>())
+  .def("getR",               &thinrfcavity::getR,               return_value_policy<copy_const_reference>())
+  .def("Type",               &thinrfcavity::Type);
 
 }
 
