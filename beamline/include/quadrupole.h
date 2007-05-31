@@ -133,8 +133,6 @@ private:
 
 
 
-
-
 class DLLEXPORT thinQuad : public bmlnElmnt
 {
 

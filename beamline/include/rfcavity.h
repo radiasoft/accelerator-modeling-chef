@@ -34,6 +34,7 @@
 ******                                                                
 ******                                                                
 ****** REVISION HISTORY
+******
 ****** Mar 2007            ostiguy@fnal.gov
 ******
 ****** - use covariant return types
@@ -64,9 +65,10 @@ typedef boost::shared_ptr<thinrfcavity const> ConstThinRFCavityPtr;
 
 class rfcavity : public bmlnElmnt {
 
-  friend class LinacCavity;
-
+  friend class elm_core_access;
+     
 public:
+
   rfcavity( const char* = "NONAME" ); // Name
   rfcavity( double const&,   // length [m]
             double const&,   // RF frequency [Hz]
@@ -86,7 +88,7 @@ public:
   rfcavity( const rfcavity& );
 
   rfcavity* Clone() const { return new rfcavity( *this ); }
-  virtual ~rfcavity();
+ ~rfcavity();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -103,29 +105,40 @@ public:
   const char* Type() const;
   bool    isMagnet() const;
 
-  inline double getPhi()            const { return phi_s_; }
-  inline double getFrequency()      const { return w_rf_; }
-  inline double getQ()              const { return Q_; }
-  inline double getR()              const { return R_; }
-  inline double getHarmonicNumber() const { return h_; }
+  double const&  getPhi()                const;
+  double const&  getRadialFrequency()    const;
+  double         getDesignEnergyGain()   const;
+  double const&  getQ()                  const;
+  double const&  getR()                  const;
+  double const&  getHarmonicNumber()     const;
 
-  void setHarmonicNumber( int );
-  void setHarmonicNumber( double const& );
-  void setFrequency( double const& );
+  void      setHarmonicNumber( int );
+  void      setHarmonicNumber( double const& );
+  void           setFrequency( double const& );
   void setFrequencyRelativeTo( double const& );
-  void setRadialFrequency( double const& );
-  void setRadialFrequencyRelativeTo( double const& );
-  void setPhi( double const& );  // radians
-  void setStrength( double const& );  // eV
+  void     setRadialFrequency( double const& );
+  void  setRadialFrequencyRelativeTo( double const& );
+  void                 setPhi( double const& radians);  
+  void                   setQ( double const& Q);
+  void                   setR( double const& R);
+  void            setStrength( double const& eV);  
 
 private:
+
+  void finishConstructor();
+
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
+
+
   double w_rf_;                  // RF frequency [Hz]
   double phi_s_;                 // synchronous phase
   double sin_phi_s_;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
   double Q_;                     // quality factor
   double R_;                     // shunt impedance
-  double h_;                     // harmonic number 
+
+  double h_;                    // harmonic number 
                                 //   = ratio cavity frequency to
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
@@ -133,10 +146,6 @@ private:
   bmlnElmnt** u_;               // Address of first internal bmlElmnt pointer
   bmlnElmnt** v_;               // Address of final internal bmlElmnt pointer
 
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
-
-  void finishConstructor();
 };
 
 
@@ -169,21 +178,11 @@ public:
 
   virtual ~thinrfcavity();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
-  void accept( BmlVisitor& v );
-  void accept( ConstBmlVisitor& v ) const;
-
-  const char* Type() const;
-  bool    isMagnet() const;
-
-  inline double getPhi()            const { return phi_s_; }
-  inline double getFrequency()      const { return w_rf_; }
-  inline double getQ()              const { return Q_; }
-  inline double getR()              const { return R_; }
-  inline double getHarmonicNumber() const { return h_; }
+  double const& getPhi()              const; 
+  double const& getRadialFrequency()  const; 
+  double const& getQ()                const; 
+  double const& getR()                const; 
+  double const& getHarmonicNumber()   const; 
 
   void            setHarmonicNumber( int );
   void            setHarmonicNumber( double const& );
@@ -193,7 +192,19 @@ public:
   void setRadialFrequencyRelativeTo( double const& );
   void                       setPhi( double const& );  // radians
 
+  const char* Type() const;
+  bool    isMagnet() const;
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
+
+
 private:
+
   double w_rf_;                  // RF frequency [Hz]
   double phi_s_;                 // synchronous phase
   double sin_phi_s_;             // sine of synchronous phase

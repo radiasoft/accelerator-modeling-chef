@@ -49,7 +49,7 @@
 ******
 ****** - fixed (possibly long standing) memory corruption problems in bmlnElmnt destructor.  
 ******   for many element types.   
-******   Introduced core_access empty class to manage Propagator access privileges.
+******   Introduced elm_core_access empty class to grant Propagators access privileges to element private data.
 ****** - cleanup of constructor code
 ****** - eliminated raw c-style strings 
 ****** - Eliminated obsolete tagging functions 
@@ -114,7 +114,7 @@ class TJet;
 typedef TVector<double> VectorD;
 typedef TJet<double>    Jet;
 
-class bmlnElmnt_core_access;
+class elm_core_access;
 
 bmlnElmnt* read_istream(std::istream&);
 
@@ -123,7 +123,7 @@ class DLLEXPORT bmlnElmnt
 {
 
   friend class beamline; 
-  friend class bmlnElmnt_core_access; 
+  friend class elm_core_access; 
 
  public:
 
@@ -306,7 +306,6 @@ public:
   virtual void  peekAt( double& s, Particle const& ) const;
 
   virtual bool equivTo( bmlnElmnt const& ) const;
-  virtual bool equivTo( bmlnElmnt const* ) const;
 
   virtual bool hasParallelFaces() const;
   virtual bool hasStandardFaces() const;
@@ -333,9 +332,8 @@ public:
 
 
 
-  virtual double getReferenceTime() const;
-  virtual double setReferenceTime( Particle const& );         // returns ctRef_
-  virtual double setReferenceTime( double const& );           // returns previous ctRef_
+  virtual double getReferenceTime()                    const;     // returns ctRef_
+  virtual double setReferenceTime( double const& );               // returns previous ctRef_
 
 
   // ... Query functions 
@@ -424,7 +422,7 @@ public:
 //   bmlnElmnt_core_access class
 //---------------------------------------------------------------------------------
 
- class  bmlnElmnt_core_access { 
+ class  elm_core_access { 
 
  public:
 
