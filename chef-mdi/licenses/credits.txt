@@ -1,47 +1,46 @@
-
 CHEF (an acronym for Collaborative Hierachical Expansible Framework, 
-if you must really know) is being developed at the Fermi National 
-Accelerator Laboratory in the Accelerator Integration Department. 
+if you must really know) is being developed at the 
+Fermi National Accelerator Laboratory.
+. 
 The authors are 
 
 Leo Michelotti            michelotti@fnal.gov
 Jean-Francois Ostiguy        ostiguy@fnal.gov
 
-working under the supervision of 
+CHEF is layered on a set of (C++) class libraries, originally 
+authored by Leo Michelotti. In recent years Jean-Francois Ostiguy
+made significant contributions. The libraries continue to be 
+jointly developed.
 
-Valeri Lebedev                   val@fnal.gov
-
-CHEF is layered on a set of (C++) class libraries, authored by 
-Leo Michelotti:
-
-basic_toolkit:       foundations classes (e.g linear algebra, lists etc)
-mxyzptlk:            automatic differentiation
-beamline:            beamline elements, hierarchical beamline containers 
+basic_toolkit:       Foundations Classes 
+mxyzptlk:            A full-featured  automatic differentiation engine
+beamline:            Beamline elements, hierarchical beamline containers 
                      and associated operations 
 physics_toolkit:     Accelerator Physics related calculations.
-aesop:               not really a library, but an early application. 
-                     Some of its widgets have been reused. 
+bmlfactory:          parsing 
  
-Over the years various people, including Jean-Francois Ostiguy, 
-Elliot McCrory,  James Holt and Andrew Braun exercised the libraries 
-in various contexts, identified bugs, helped diagnose inefficiencies 
-and shortcomings, suggested and implemented improvements. 
-Jean-Francois Ostiguy with the help of Enrico Ng (as a summer intern) 
-put together an automated build system. 
+Enrico Ng (as a summer intern) helped putting together the 
+automated build system. 
+
+Jim Amundson contributed a series of python-based tests.
 
 MAD format parsing is provided by the bmlfactory class library. 
-The parser is based on Lex/Yacc and was authored by Dmitri Mokhov 
+A parser based on Lex/Yacc was authored by Dmitri Mokhov 
 (a summer intern now working for Intel Corp.) and Oleg  Krivosheev 
 (then a Post Doc, now working in the medical instruments industry). 
-Various improvements were contributed by Jean-Francois Ostiguy, 
-including fixes for memory leaks.  
+Many bug fixes and improvements were contributed by 
+Jean-Francois Ostiguy. Recently, a new XSIF parser (MAD8 + support 
+for linacs) was added and will likely supersede the old one. 
 
-Jim Amundson (CD) diagnosed and provided a fix for a long 
-standing bug in the yacc grammar definition. 
+The authors would also like to acknowledge contributions from many 
+people, incluing James Holt, Elliot McCrory, Andrew Braun, Jim Amundson, 
+Mike Martens, and Paul Lebrun, who  exercised the libraries in various 
+contexts, identified bugs, helped diagnose inefficiencies 
+and shortcomings and suggested and/or contributed improvements. 
 
-The authors would like to thank David McGinnis, 
-Associate Division Head for Accelerator Systems and Head of the 
-Integration Department for his continued support.
+Finally, the authors would like to express their gratitute to
+the management of the Accelerator and Computing Divisions 
+for their continued support.
 
 
 
