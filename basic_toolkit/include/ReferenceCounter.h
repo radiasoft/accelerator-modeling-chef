@@ -69,6 +69,13 @@ void intrusive_ptr_add_ref(ReferenceCounter<T>* p);
 template<typename T>
 void intrusive_ptr_release(ReferenceCounter<T>* p);
 
+template<typename T>
+void intrusive_ptr_add_ref(ReferenceCounter<T> const* p) 
+{ intrusive_ptr_add_ref(const_cast<ReferenceCounter<T>*>(p) ); }
+
+template<typename T>
+void intrusive_ptr_release(ReferenceCounter<T> const* p)
+{ intrusive_ptr_release( const_cast<ReferenceCounter<T>*>(p) ); }
 
 
 template<typename T>
