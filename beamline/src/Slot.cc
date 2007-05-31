@@ -81,7 +81,7 @@ Slot::Slot( const char* nm )
 }
 
 
-Slot::Slot( const Frame& y )
+Slot::Slot( Frame const& y )
 : bmlnElmnt(), out(y)
 {
   if( !out.isOrthonormal() )
@@ -300,9 +300,8 @@ bool Slot::isMagnet()  const
   static const Frame zero;
   static const int y = 1;
   static const int z = 2;
-  static  int ret;
-
-  ret = 0;
+ 
+  int ret = 0;
 
   if( !f.isOrthonormal() ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
@@ -333,23 +332,22 @@ double Slot::setReferenceTime( double const& x )
 {
   double oldValue = ctRef_;
   ctRef_ = x;
-  if( fabs(ctRef_) < 1.0e-12 ) { ctRef_ = 0.0; }
   return oldValue;
 }
 
 
-double Slot::setReferenceTime( const Particle& prtn )
+double Slot::setReferenceTime( Particle const& p)
 {
   // This probably should never be used.
   // Code copied from Slot::localPropagate
   // and edited slightly. The two functions
   // must stay synchronized.
 
-  Particle* localParticle = prtn.Clone();
+  Particle localParticle(p);
 
   // This part correlates with bmlnElmnt.h
-  if( this->align_ != 0 ) {
-    this->enterLocalFrame( *localParticle );
+  if( align_ != 0 ) {
+    enterLocalFrame( localParticle );
   }
 
   // This assumes the in face corresponds to the
@@ -357,11 +355,11 @@ double Slot::setReferenceTime( const Particle& prtn )
   // of the previous element.
 
   Vector r(3);
-  r(0) = localParticle->get_x();
-  r(1) = localParticle->get_y();
+  r(0) = localParticle.get_x();
+  r(1) = localParticle.get_y();
   // r(2) = 0.0, set in constructor
 
-  Vector beta ( localParticle->VectorBeta() );
+  Vector beta ( localParticle.VectorBeta() );
   Vector u_3  ( out.getAxis(2) );
   Vector q    ( out.getOrigin() );
   double betaParallel = beta * u_3;
@@ -378,14 +376,13 @@ double Slot::setReferenceTime( const Particle& prtn )
     (*pcerr) << "\n*** WARNING *** " << this->Name();
     (*pcerr) << "\n*** WARNING *** " << in;
     (*pcerr) << "\n*** WARNING *** " << out;
-    (*pcerr) << "\n*** WARNING *** " << "VectorBeta(): " << localParticle->VectorBeta();
+    (*pcerr) << "\n*** WARNING *** " << "VectorBeta(): " << localParticle.VectorBeta();
     (*pcerr) << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
     (*pcerr) << endl;
 
     ctRef_ = 0.0;
   }
 
-  delete localParticle;
   return ctRef_;
 }
 
@@ -829,7 +826,7 @@ void Slot::localPropagate( ParticleBunch& x )
   else if( bml_e_ )   { bml_e_->propagate( x ); }
   else {
     for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it )  
-    { localPropagate( **it ); }
+    { localPropagate( *it ); }
   }
 }
 

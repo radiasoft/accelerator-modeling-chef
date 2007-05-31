@@ -52,77 +52,81 @@ BunchProjector::SliceData::SliceData( int n, double x, double y, double x2, doub
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool LPositionOrder( ParticlePtr const& lhs,  ParticlePtr const& rhs )
-{ 
-  return  ( lhs->get_cdt() < rhs->get_cdt() ); 
+namespace { 
+ struct  LPositionOrder {
+
+  typedef  Particle const& first_argument_type;
+  typedef  Particle const& second_argument_type;
+  typedef  bool     result_type;
+
+  bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
+   { 
+      return  ( lhs.get_cdt() < rhs.get_cdt() ); 
+   }
+ };
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BunchProjector::BunchProjector( ParticleBunch& bunch, int nbins )
-  :  histogram_( nbins, SliceData() ), 
-      monopole_( nbins, double()    ), 
-    dipole_hor_( nbins, double()    ),     
-    dipole_ver_( nbins, double()    )
+BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
+  :  histogram_( nsamples, SliceData() ), 
+      monopole_( nsamples, double()    ), 
+    dipole_hor_( nsamples, double()    ),     
+    dipole_ver_( nsamples, double()    )
 {
 
-   std::sort(  bunch.begin(), bunch.end(), &LPositionOrder );
+   bunch.sort( LPositionOrder() );
 
-   cdt_min_     =    (*bunch.begin()  )->get_cdt(); 
-   cdt_max_     =    (* --bunch.end() )->get_cdt();  
+   cdt_min_     =    (bunch.begin()  )->get_cdt(); 
+   cdt_max_     =    ( --bunch.end() )->get_cdt();  
   
-   populateHistograms( bunch, cdt_min_, cdt_max_, nbins);  
+   populateHistograms( bunch, cdt_min_, cdt_max_, nsamples);  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int nbins )
-  :  histogram_( nbins, SliceData() ), 
-      monopole_( nbins, double()    ), 
-    dipole_hor_( nbins, double()    ),     
-    dipole_ver_( nbins, double()    )
+BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int nsamples )
+  :  histogram_( nsamples, SliceData() ), 
+      monopole_( nsamples, double()    ), 
+    dipole_hor_( nsamples, double()    ),     
+    dipole_ver_( nsamples, double()    )
 {
 
-   std::sort(  bunch.begin(), bunch.end(), &LPositionOrder );
+   bunch.sort( LPositionOrder() );
 
-   cdt_min_     =    (*bunch.begin()  )->get_cdt(); 
+   cdt_min_     =    (bunch.begin())->get_cdt(); 
    cdt_max_     =    cdt_min_ + length;
   
-   populateHistograms( bunch, cdt_min_, cdt_min_ + length, nbins);  
+   populateHistograms( bunch, cdt_min_, cdt_min_ + length, nsamples);  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smin,  double const& smax, int nbins)
+void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smin,  double const& smax, int nsamples)
 {
-   double position = smin; 
-   double binsize  = (smax-smin) / nbins;
+   double binsize  = (smax-smin) / ( nsamples-1 );
+   double position = smin - (0.5*binsize);     //  Note: the first bin is the interval  ] smin-0.5*binsize, smin+0.5*binsize ]  
 
    std::vector<SliceData>::iterator  itslice         =  histogram_.begin();
    std::vector<double>::iterator     it_monopole     =   monopole_.begin();
    std::vector<double>::iterator     it_dipole_hor   = dipole_hor_.begin();
    std::vector<double>::iterator     it_dipole_ver   = dipole_ver_.begin();
 
-   ParticleBunch::iterator itb = bunch.begin(); 
+   ParticleBunch::const_iterator itb = bunch.begin(); 
 
    while ( itb != bunch.end() ) {
 
-    ParticlePtr p = *itb;
+    position  += binsize; 
 
-    position  += cdt_binsize_; 
+    while (  itb->get_cdt() <=  position )  { 
 
-    while (  p->get_cdt() <=  position )  { 
-
-       p = *itb;
- 
        ++(itslice->npart);
 
-       itslice->xbar += p->get_x();
-       itslice->ybar += p->get_y();
+       itslice->xbar += itb->get_x();
+       itslice->ybar += itb->get_y();
 
 #if 0
 ============================================================
@@ -229,6 +233,22 @@ std::vector<double> const& BunchProjector::dipoleVerLineDensity() const
 BunchProjector::~BunchProjector()
 { }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BunchProjector::cdt_min()
+{
+  return cdt_min_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BunchProjector::cdt_max()
+{
+  return cdt_max_;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
