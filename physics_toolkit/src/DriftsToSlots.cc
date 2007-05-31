@@ -484,16 +484,16 @@ beamline* DriftsToSlots( beamline const& argbml )
         else if( d2S_rbendLike(*c) ) {
           arcFrame.reset();  
           if( c_sb ) {
-            arcFrame.rotate( - ((sbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( - boost::static_pointer_cast<sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else if( c_CFsb ) {
-            arcFrame.rotate( - ((CF_sbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( - boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else if( c_rb ) {
-            arcFrame.rotate( - ((rbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( -  boost::static_pointer_cast<rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else if( c_CFrb ) {
-            arcFrame.rotate( - ((CF_rbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( -  boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
           }
           else {
             (*pcerr) << "\n*** WARNING: *** "
@@ -542,16 +542,16 @@ beamline* DriftsToSlots( beamline const& argbml )
           fd(z) = elPtr->Length();
           arcFrame.translate(fd);
           if( a_sb ) {
-            arcFrame.rotate( ((sbend*) (a.get()))->getExitAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( boost::static_pointer_cast<sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else if( a_CFsb ) {
-            arcFrame.rotate( ((CF_sbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( boost::static_pointer_cast<CF_sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else if( a_rb ) {
-            arcFrame.rotate( ((rbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( boost::static_pointer_cast<rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else if( a_CFrb ) {
-            arcFrame.rotate( ((CF_rbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+            arcFrame.rotate( boost::static_pointer_cast<CF_rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
           }
           else {
             (*pcerr) << "\n*** WARNING: *** "
@@ -593,16 +593,16 @@ beamline* DriftsToSlots( beamline const& argbml )
           arcFrame.reset();  
           if( d2S_rbendLike(*c) ) {
             if( c_sb ) {
-              arcFrame.rotate( - ((sbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate( - boost::static_pointer_cast<sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else if( c_CFsb ) {
-              arcFrame.rotate( - ((CF_sbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate( -  boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else if( c_rb ) {
-              arcFrame.rotate( - ((rbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate( -  boost::static_pointer_cast<rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else if( c_CFrb ) {
-              arcFrame.rotate( - ((CF_rbend*) c.get())->getEntryAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate( - boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
             }
             else {
               (*pcerr) << "\n*** WARNING: *** "
@@ -621,16 +621,16 @@ beamline* DriftsToSlots( beamline const& argbml )
           arcFrame.translate(fd);
           if( d2S_rbendLike( *a) ) {
             if( a_sb ) {
-              arcFrame.rotate( ((sbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate(  boost::static_pointer_cast<sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else if( a_CFsb ) {
-              arcFrame.rotate( ((CF_sbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate(  boost::static_pointer_cast<CF_sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else if( a_rb ) {
-              arcFrame.rotate( ((rbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate( boost::static_pointer_cast<rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else if( a_CFrb ) {
-              arcFrame.rotate( ((CF_rbend*) a.get())->getExitAngle(), arcFrame.getyAxis() );
+              arcFrame.rotate(  boost::static_pointer_cast<CF_rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
             }
             else {
               (*pcerr) << "\n*** WARNING: *** "
