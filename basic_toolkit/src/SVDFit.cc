@@ -84,14 +84,12 @@ Matrix SVDFit::sqrt( Matrix& x )
   }
   else {
    ostringstream uic;
-   uic <<   "Do try to stay focused!"
-       << "\nThe argument of sqrt must be a square matrix."
+   uic <<   "The argument of sqrt must be a square matrix."
        << "\nYours is " << r << " x " << c << ".";
    (*pcerr) << "\n*** ERROR *** " 
             << "\n*** ERROR *** " << __FILE__ << "," << __LINE__
             << "\n*** ERROR *** Matrix sqrt( const Matrix& x )"
             << "\n*** ERROR *** ------------------------------"
-            << "\n*** ERROR *** Do try to stay focused!"
             << "\n*** ERROR *** The argument of sqrt must be a square matrix."
             << "\n*** ERROR *** Yours is " << r << " x " << c << "."
             << "\n*** ERROR *** "
@@ -191,7 +189,7 @@ void SVDFit::setLinearResponse( Matrix const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-void SVDFit::setErrorCovariance( const Matrix& E )
+void SVDFit::setErrorCovariance( Matrix const& E )
 {
 
   // NOTE: The efficiency of this should be improved

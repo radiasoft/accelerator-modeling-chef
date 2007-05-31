@@ -58,41 +58,40 @@ template <typename T> class TMatrix;
 
 // Friend functions
 
-TMatrix<double> real( const TMatrix<std::complex<double> >& x );
-TMatrix<double> imag( const TMatrix<std::complex<double> >& x );
+TMatrix<double> real( TMatrix<std::complex<double> > const& x );
+TMatrix<double> imag( TMatrix<std::complex<double> > const& x );
 
 template<typename T> std::ostream& operator<<(std::ostream&, TMatrix<T> const&);
 template<typename T> TMatrix<T> operator+(TMatrix<T> const&, TMatrix<T> const&);
-template<typename T> TMatrix<T> operator+(TMatrix<T> const&, T const&); 
-template<typename T> TMatrix<T> operator+(T const&,          TMatrix<T> const&); 
+template<typename T> TMatrix<T> operator+(TMatrix<T> const&, T          const&); 
+template<typename T> TMatrix<T> operator+(T          const&, TMatrix<T> const&); 
 
 template<typename T> TMatrix<T> operator-(TMatrix<T> const&); 
 template<typename T> TMatrix<T> operator-(TMatrix<T> const&, TMatrix<T> const&); 
-template<typename T> TMatrix<T> operator-(TMatrix<T> const&, T const&); 
-template<typename T> TMatrix<T> operator-(T const&,          TMatrix<T> const&); 
+template<typename T> TMatrix<T> operator-(TMatrix<T> const&, T          const&); 
+template<typename T> TMatrix<T> operator-(T          const&, TMatrix<T> const&); 
 
 template<typename T> TMatrix<T>  operator*(TMatrix<T> const&, TMatrix<T> const&); 
-template<typename T> TMatrix<T>  operator*(TMatrix<T> const&, T const&);
-template<typename T> TMatrix<T>  operator*(T const&,          TMatrix<T> const&);
+template<typename T> TMatrix<T>  operator*(TMatrix<T> const&, T          const&);
+template<typename T> TMatrix<T>  operator*(T          const&, TMatrix<T> const&);
 
-TMatrix<std::complex<double> >  operator*(const TMatrix<std::complex<double> >& x, const TMatrix<double>& y);
-TMatrix<std::complex<double> >  operator*(const TMatrix<double>& y,                const TMatrix<std::complex<double> >& x);
+TMatrix<std::complex<double> >  operator*( TMatrix<std::complex<double> > const& x, TMatrix<double>                const& y);
+TMatrix<std::complex<double> >  operator*( TMatrix<double>                const& y, TMatrix<std::complex<double> > const& x);
 
 template<typename T> TMatrix<T> operator*(TMatrix<T>  const&,  TVector<T> const&); // right multiply
 template<typename T> TMatrix<T> operator*(TVector<T>  const&,  TMatrix<T> const&);  // left multiply
 
 
-template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     T const&);
-template<typename T> TMatrix<T> operator/(T const&,              TMatrix<T> const&);
+template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     T          const&);
+template<typename T> TMatrix<T> operator/(T          const&,     TMatrix<T> const&);
 template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     TMatrix<T> const&);
 
 template<typename T> bool operator==( TMatrix<T> const&, TMatrix<T> const& );
-template<typename T> bool operator==( TMatrix<T> const&, T const& );
-template<typename T> bool operator==( T const&,          TMatrix<T> const& );
-template<typename T> void operator-=( TMatrix<T>&,       TMatrix<T> const& );
+template<typename T> bool operator==( TMatrix<T> const&, T          const& );
+template<typename T> bool operator==( T          const&, TMatrix<T> const& );
 template<typename T> bool operator!=( TMatrix<T> const&, TMatrix<T> const& );
-template<typename T> bool operator!=( TMatrix<T> const&, T const& );
-template<typename T> bool operator!=( T const&,          TMatrix<T> const& );
+template<typename T> bool operator!=( TMatrix<T> const&, T          const& );
+template<typename T> bool operator!=( T          const&, TMatrix<T> const& );
 
 template<typename T>
 
@@ -103,17 +102,17 @@ class DLLEXPORT TMatrix {
 
 protected:
 
-  MLPtr<T> _ml;
+  MLPtr<T> ml_;
 
   // Functions used by the eigenroutines.
 
  private:
 
-  void       _copy_column(TMatrix<T>& x, int, int );
-  void       _switch_rows( int, int );
-  TMatrix    _scale();
-  TMatrix    _lu_decompose( int*, int& ) const;
-  void       _lu_back_subst( int*, TMatrix<T>& );
+  void       copy_column(TMatrix<T>& x, int, int );
+  void       switch_rows( int, int );
+  TMatrix    scale() const;
+  TMatrix    lu_decompose( int*, int& ) const;
+  void       lu_back_subst( int*, TMatrix<T>& );
 
 public:
 
@@ -143,8 +142,8 @@ public:
 
   void      switch_columns( int, int ); // used by SurveyMatcher
 
-  inline int rows() const { return _ml->rows();}
-  inline int cols() const { return _ml->cols();}
+  inline int rows() const { return ml_->rows();}
+  inline int cols() const { return ml_->cols();}
 
   TMatrix                        transpose()    const; 
   TMatrix                        dagger()       const;

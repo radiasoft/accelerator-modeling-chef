@@ -68,7 +68,7 @@ template<>
 template<>
 TMatrix<std::complex<double> >::TMatrix( TMatrix<double> const& m){ 
 
-  _ml = m._ml; // implicit conversion
+  ml_ = m.ml_; // implicit conversion
 
   return; 
 
@@ -84,7 +84,7 @@ TMatrix<double> TMatrix<double>::dagger() const {
 //  are the same
 
   
-  MLPtr<double> p ( _ml->transpose() );
+  MLPtr<double> p ( ml_->transpose() );
   return TMatrix<double>( p );
 
 }
@@ -97,7 +97,7 @@ template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::dagger() const
 {
 
-  MLPtr<std::complex<double> > p ( _ml->dagger() );
+  MLPtr<std::complex<double> > p ( ml_->dagger() );
   return TMatrix<std::complex<double> >( p );
 
 }
@@ -110,7 +110,7 @@ TMatrix<double> real( const TMatrix<std::complex<double> >& x )
 {
 
 
-  MLPtr<double> p( real_part(x._ml ) ); 
+  MLPtr<double> p( real_part(x.ml_ ) ); 
   return TMatrix<double>( p ); 
 
 }
@@ -121,7 +121,7 @@ TMatrix<double> real( const TMatrix<std::complex<double> >& x )
 TMatrix<double> imag( const TMatrix<std::complex<double> >& x ) 
 {
 
-  MLPtr<double> p( imag_part(x._ml ) ); 
+  MLPtr<double> p( imag_part(x.ml_ ) ); 
   return TMatrix<double>( p ); 
 
 }
@@ -133,7 +133,7 @@ template<>
 TMatrix<std::complex<double> > TMatrix<double>::eigenValues() const
 {
  
-  MLPtr<std::complex<double> > p( _ml->eigenValues() ); 
+  MLPtr<std::complex<double> > p( ml_->eigenValues() ); 
   return  TMatrix<std::complex<double> >( p ); 
 
 }
@@ -145,7 +145,7 @@ template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues() const 
 {
 
-  MLPtr<std::complex<double> > p( _ml->eigenValues() ); 
+  MLPtr<std::complex<double> > p( ml_->eigenValues() ); 
   return  TMatrix<std::complex<double> >( p ); 
 
 }
@@ -158,7 +158,7 @@ template<>
 TMatrix<std::complex<double> > TMatrix<double>::eigenVectors() const
 {
 
-  MLPtr<std::complex<double> > p( _ml->eigenVectors() ); 
+  MLPtr<std::complex<double> > p( ml_->eigenVectors() ); 
   return  TMatrix<std::complex<double> >(p); 
 
 }
@@ -171,7 +171,7 @@ template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const
 {
 
-  MLPtr<std::complex<double> > p( _ml->eigenVectors() ); 
+  MLPtr<std::complex<double> > p( ml_->eigenVectors() ); 
   return  TMatrix<std::complex<double> >(p); 
 
 }
@@ -183,7 +183,7 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() co
 template<>
 void TMatrix<double>::SVD( TMatrix<double>& U, Vector& W, TMatrix<double>& V) 
 {
-  _ml->SVD( U._ml, W, V._ml);
+  ml_->SVD( U.ml_, W, V.ml_);
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -194,7 +194,7 @@ TMatrix<std::complex<double>  > operator*(const TMatrix<std::complex<double>  >&
  
   TMatrix<std::complex<double> > z = y; //implicit conversion 
 
-  MLPtr<std::complex<double>  > p(  multiply<std::complex<double> >(x._ml, z._ml) ); 
+  MLPtr<std::complex<double>  > p(  multiply<std::complex<double> >(x.ml_, z.ml_) ); 
   return TMatrix<std::complex<double>  >(p); 
 }
 
@@ -207,7 +207,7 @@ TMatrix<std::complex<double> > operator*(const TMatrix<double>& x, const TMatrix
 
   TMatrix<std::complex<double> > z = x; //implicit conversion 
 
-  MLPtr<std::complex<double>  > p(   multiply<std::complex<double> >(z._ml, y._ml) ); 
+  MLPtr<std::complex<double>  > p(   multiply<std::complex<double> >(z.ml_, y.ml_) ); 
   return TMatrix<std::complex<double>  >( p ); 
 
 }
@@ -221,7 +221,7 @@ template<>
 Vector 
 TMatrix<double>::backSubstitute(TMatrix<double> const& U, Vector const& W, TMatrix<double> const& V, Vector const& rhs, double threshold) { 
 
-  return TML<double>::backSubstitute(U._ml, W, V._ml, rhs, threshold);
+  return TML<double>::backSubstitute(U.ml_, W, V.ml_, rhs, threshold);
  
 }
 
