@@ -127,6 +127,14 @@ TVector<T>::TVector( TVector const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+TVector<T>::TVector( const_iterator first,  const_iterator last)
+ : m_theVector(first, last), m_ofPtr(0) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
 TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
 {
 

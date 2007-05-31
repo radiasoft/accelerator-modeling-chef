@@ -106,6 +106,7 @@ public:
   // Constructors and the destructor __________________________
 
   TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
+  TVector( const_iterator first,  const_iterator last);
   TVector( TVector const& );
   TVector( TMatrix<T> const& m); // implicit conversion
 
@@ -120,7 +121,7 @@ public:
   void        Set                   ( T const* );
   T           operator()            ( int )       const; // return component
   T&          operator()            ( int );              // set    component
-  T           operator[]            ( int idx)    const { return m_theVector[idx]; }
+  T const&    operator[]            ( int idx)    const { return m_theVector[idx]; }
   T&          operator[]            ( int idx)          { return m_theVector[idx]; }
 
   // Algebraic functions ___________________________
