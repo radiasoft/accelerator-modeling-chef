@@ -40,19 +40,44 @@
 template<typename T>
 class TJetEnvironment;
 
+//-------------------------------------------------------------------------------------
+
 template<typename T>
 class DLLEXPORT EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
  
  public: 
 
   EnvPtr():     boost::intrusive_ptr<TJetEnvironment<T> >() {}
-  explicit EnvPtr(TJetEnvironment<T>* p, bool add_ref=true): boost::intrusive_ptr<TJetEnvironment<T> >(p,add_ref) {}
 
- template<typename U>
- operator EnvPtr<U>(); 
-
+  explicit EnvPtr(TJetEnvironment<T>* p, bool add_ref=true)
+    : boost::intrusive_ptr<TJetEnvironment<T> >(p,add_ref) {}
+ 
+  template<typename U>
+  operator EnvPtr<U>(); 
 
 };
+
+//-------------------------------------------------------------------------------------
+
+template<typename T>
+class DLLEXPORT ConstEnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> const> { 
+ 
+ public: 
+
+  ConstEnvPtr():boost::intrusive_ptr<TJetEnvironment<T> const>() {}
+
+  explicit ConstEnvPtr(TJetEnvironment<T> const* p, bool add_ref=true)
+    : boost::intrusive_ptr<TJetEnvironment<T> const >(p,add_ref) {}
+
+  ConstEnvPtr(EnvPtr<T> const & env)
+    : boost::intrusive_ptr<TJetEnvironment<T> const >(env) {}
+
+  template<typename U>
+  operator ConstEnvPtr<U>(); 
+};
+
+
+//-------------------------------------------------------------------------------------
 
 //--------------------------------
 // specializations
@@ -61,6 +86,10 @@ class DLLEXPORT EnvPtr: public boost::intrusive_ptr<TJetEnvironment<T> > {
 template<>
 template<>
 EnvPtr<double>::operator EnvPtr<std::complex<double> >(); 
+
+template<>
+template<>
+ConstEnvPtr<double>::operator ConstEnvPtr<std::complex<double> >(); 
 
 
 #endif // ENVPTR_H
