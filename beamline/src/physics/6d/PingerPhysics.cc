@@ -92,7 +92,7 @@ void Pinger::localPropagate( ParticleBunch& b ) {
 
       for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
       {
-        Vector& state = (*it)->getState();
+        Vector& state = it->getState();
         state[3] += cos(kick_direction_)*strength_;
         state[4] += sin(kick_direction_)*strength_;
       }
