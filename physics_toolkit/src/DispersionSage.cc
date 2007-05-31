@@ -113,7 +113,7 @@ DispersionSage::Options::Options()
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
-  dpp_( 0.001), 
+  dpp_( 0.00001), 
   ignoreErrors_( false ),
   calcs_()
   {}
@@ -123,7 +123,7 @@ DispersionSage::DispersionSage( BmlPtr x )
 
 DispersionSage::DispersionSage( beamline const& x )
 : Sage( x ), 
-  dpp_( 0.001 ), 
+  dpp_( 0.00001 ), 
   ignoreErrors_( false ),
   calcs_()
 {}
@@ -516,7 +516,6 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
   double lng = 0.0;
 
   Particle    particle(p);
-
   JetParticle jparticle(p);
 
   Mapping& state = jparticle.getState();
@@ -532,7 +531,7 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
  
   eraseAll();
 
-  const double start_momentum = particle.Momentum();
+  const double start_momentum = particle.ReferenceMomentum();
 
   DispersionSage::Info info;
 
@@ -541,7 +540,7 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
       (*it)->propagate(jparticle);
       lng += (*it)->OrbitLength( particle );
 
-      double scale  =  jparticle.Momentum().standardPart()/start_momentum;
+      double scale  =  jparticle.ReferenceMomentum()/start_momentum;
  
       info.dispersion.hor = jparticle.getState()[i_x ].getTermCoefficient(exp_d ) * scale;
       info.dPrime.hor     = jparticle.getState()[i_px].getTermCoefficient(exp_d ) * scale; 
