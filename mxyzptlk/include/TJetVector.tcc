@@ -151,24 +151,31 @@ TJetVector<T>::TJetVector( TVector<T> const& x , EnvPtr<T>  const& env)
 
 template<typename T>
 TJetVector<T>::TJetVector( TJetVector<T> const& x )
-: myEnv_(x.myEnv_), comp_(x.comp_) { }
+: myEnv_(x.myEnv_), comp_(x.comp_) 
+{ }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::TJetVector( TJetVector<T> const& x,  int i1, int i2 ): myEnv_(x.myEnv_)  
-{
-
- comp_ = std::vector<TJet<T> >( x.comp_.begin()+ i1,  x.comp_.begin() + i2 ); 
-
-}
+TJetVector<T>::TJetVector( const_iterator itstart,  const_iterator itend)
+ : myEnv_(itstart->Env()), comp_(itstart,itend) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::~TJetVector(){ }
+TJetVector<T>::TJetVector( TJetVector<T> const& x,  int i1, int i2 )
+ : myEnv_(x.myEnv_), comp_( x.comp_.begin()+ i1,  x.comp_.begin() + i2 ) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TJetVector<T>::~TJetVector()
+{ }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

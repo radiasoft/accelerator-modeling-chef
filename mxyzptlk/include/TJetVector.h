@@ -151,9 +151,11 @@ public:
 
   TJetVector( EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) ); // dimension set to numVar 
 
-  explicit TJetVector( TVector<T> const&,                   EnvPtr<T>  const& env    = (TJetEnvironment<T>::getLastEnv()) );
+  explicit TJetVector( TVector<T> const&,               EnvPtr<T>  const& env    = (TJetEnvironment<T>::getLastEnv()) );
 
   TJetVector( TJetVector const& );
+
+  TJetVector( const_iterator itstart, const_iterator itend ); 
 
   TJetVector( TJetVector<T> const&, int i1, int i2 ); // subrange
 
@@ -166,7 +168,7 @@ public:
   // Assignment ...
   void             SetComponent    ( int idx, TJet<T> const& );
 
-  TJet<T>          operator[]      ( int idx) const { return comp_[idx]; } 
+  TJet<T> const&   operator[]      ( int idx) const { return comp_[idx]; } 
   TJet<T>&         operator[]      ( int idx)       { return comp_[idx]; }  
 
   TJet<T>          operator()      ( int ) const; 

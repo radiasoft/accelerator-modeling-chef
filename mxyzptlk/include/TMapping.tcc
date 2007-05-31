@@ -112,6 +112,13 @@ TMapping<T>::TMapping( TMapping<T> const& x )
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+template<typename T>
+TMapping<T>::TMapping( typename TJetVector<T>::const_iterator itstart,  typename TJetVector<T>::const_iterator itend)
+ : TJetVector<T>(itstart, itend) 
+{}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( TJetVector<T> const& x ) 
