@@ -103,7 +103,7 @@ void thinSextupole::localPropagate( JetParticle& p ) {
 
  class thinSextupole;
 
- class ThinSextupolePropagator: public bmlnElmnt_core_access,
+ class ThinSextupolePropagator: public elm_core_access,
                                 public particle_core_access,
                                 public jetparticle_core_access {
 
@@ -123,7 +123,7 @@ void thinSextupole::localPropagate( JetParticle& p ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ThinSextupolePropagator::ThinSextupolePropagator()
-: bmlnElmnt_core_access(), particle_core_access(), jetparticle_core_access() 
+: elm_core_access(), particle_core_access(), jetparticle_core_access() 
 {}
 
 
