@@ -29,7 +29,7 @@
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
 
-#include <beamline/rfcavity.h>
+#include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
@@ -43,8 +43,9 @@ typedef boost::shared_ptr<LinacCavity>            LinacCavityPtr;
 typedef boost::shared_ptr<LinacCavity const> ConstLinacCavityPtr;
 
 
-class LinacCavity : public rfcavity {
+class LinacCavity: public bmlnElmnt {
 
+  friend class elm_core_access;
 
 public:
 
@@ -52,32 +53,43 @@ public:
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
-               double const& syncphase_rad,    // synchronous phase [radians]
-               double const& Q,                // Q
-               double const& R                 // R shunt impedance
-              );
+               double const& syncphase_rad);   // synchronous phase [radians]
 
-  LinacCavity( const LinacCavity& );
+  LinacCavity( LinacCavity const& );
 
   LinacCavity* Clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
 
-  //void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  //void localPropagate( Particle& );
-  //void localPropagate( JetParticle& );
+  double const&  getPhi()                const;
+  double         getDesignEnergyGain()   const;
 
+  void                   setFrequency( double const& );
+  double                 getFrequency() const;
+  double const&    getRadialFrequency() const;
+  void                 setPhi( double const& radians);  
+  void            setStrength( double const& eV);  
+
+
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+  
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v ) const;
-
-  void acceptInner( RefRegVisitor& v );
-
   const char* Type() const;
+  bool    isMagnet() const;
+
+private:
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
+
+  // The energy gain per pass [MV] is represented by bmlnELmnt::strength_
+
+  double                w_rf_;          // RF frequency [Hz]
+  double                phi_s_;         // synchronous phase
+
 };
 
 
