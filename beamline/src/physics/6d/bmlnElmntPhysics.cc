@@ -107,15 +107,13 @@ void bmlnElmnt::localPropagate( Particle& p ) {
 
  Vector& state = p.getState();
 
- double p3divpbar = sqrt( ( 1.0 + state[5] ) * ( 1.0 + state[5] )
-                    - state[3]*state[3] 
-                    - state[4]*state[4] );
+ double npz = p.get_npz();
 
- double xpr = state[3] / p3divpbar;
- double ypr = state[4] / p3divpbar; 
+ double xpr = state[3] / npz;
+ double ypr = state[4] / npz;
 
- state[0] += length_ * xpr;
- state[1] += length_ * ypr;
+ state[0] += (length_ * xpr);
+ state[1] += (length_ * ypr);
 
  double D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
@@ -129,23 +127,17 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 
  Mapping& state = p.getState();
 
- Jet p3divpbar = sqrt( ( 1.0 + state(5) ) * ( 1.0 + state(5) )
-                 - state(3)*state(3) 
-                 - state(4)*state(4) );
+ Jet npz = p.get_npz(); 
 
- Jet xpr = state(3) / p3divpbar;
- Jet ypr = state(4) / p3divpbar;
+ Jet xpr = state(3) / npz;
+ Jet ypr = state(4) / npz;
 
- Jet dummy = state(0) + length_ * xpr;
- state.SetComponent( 0, dummy );
-
- dummy = state(1) + length_ * ypr;
- state.SetComponent( 1, dummy );
+ state[0] += (length_ * xpr);
+ state[1] += (length_ * ypr);
 
  Jet D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
- dummy = state(2) + ( D / p.Beta() ) - ctRef_;
- state.SetComponent( 2, dummy );
+ state[2] += ( D / p.Beta() ) - ctRef_;
 
 }
 
@@ -158,7 +150,7 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 void bmlnElmnt::localPropagate( ParticleBunch& b ) {
 
  for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
- {  localPropagate( **it ); }
+ {  localPropagate( *it ); }
 
 }
 
