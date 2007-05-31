@@ -48,7 +48,7 @@ class BunchProjector {
 
  public:
 
-    BunchProjector( ParticleBunch& bunch, int nbins=128 );  
+    BunchProjector( ParticleBunch& bunch, int nsamples=128 );  
     BunchProjector( ParticleBunch& bunch, double const& interval, int nbins=128 );  
    ~BunchProjector();
 
@@ -58,13 +58,15 @@ class BunchProjector {
 
     void debug( ParticleBunch const& bunch) const;
 
+    double cdt_min();
+    double cdt_max();
+
  private:
 
-    void populateHistograms( ParticleBunch& bunch, double const& smin, double const& smax, int nbins );
+    void populateHistograms( ParticleBunch& bunch, double const& smin, double const& smax, int nsamples );
  
     double cdt_min_;
     double cdt_max_;
-    double cdt_binsize_;
 
     std::vector<SliceData>             histogram_;
     std::vector<double>                monopole_;
