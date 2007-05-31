@@ -36,8 +36,9 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/Distribution.h>
 #include <beamline/Particle.h>
-
-#include <boost/shared_ptr.hpp>
+#include <boost/pool/pool.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/ptr_container/indirect_fun.hpp>
 
 class ParticleBunch;
 
@@ -55,19 +56,20 @@ class ParticleBunch {
 
 public:
   
-  typedef std::vector<ParticlePtr>::iterator             iterator;  
-  typedef std::vector<ParticlePtr>::const_iterator const_iterator;
+  typedef  boost::ptr_vector<Particle>::iterator                iterator;  
+  typedef  boost::ptr_vector<Particle>::const_iterator    const_iterator;
 
   enum PhaseSpaceProjection { x_npx=0, y_npy, ct_dpp };
 
-  ParticleBunch( Particle const& reference, int nparticles=0);
+  ParticleBunch( Particle const& reference, int nparticles=0, double const& population=0.0);
  ~ParticleBunch();
   
   void append( Particle    const& p );  
-  void append( ParticlePtr const& p );  
 
   void            setReferenceParticle ( Particle const& p);
   Particle const& getReferenceParticle () const;
+
+  double Population() const;
 
   void populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
   void populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
@@ -78,27 +80,35 @@ public:
 
   void clear();
 
-  std::vector<ParticlePtr> remove( );
-   
+  template <typename Predicate_t>
+  void sort( Predicate_t );          
+
   int size()   const;
   bool empty() const;
 
   // iterators 
  
-  iterator begin();
-  iterator end();
+  iterator                   begin();
+  const_iterator             begin()          const;
 
-  const_iterator begin() const;
-  const_iterator end()   const;
+  iterator                   end();
+  const_iterator             end()            const;
 
 
 private:
 
-  std::vector<ParticlePtr>  bunch_;
-  ParticlePtr               reference_;
+  ParticleBunch (ParticleBunch const&);
+
+  Particle*                    reference_;       // use pointer to preserve dynamic type 
+  double                       population_;      // actual population (as opposed to no of pseudo-particles)
+
+  boost::ptr_vector<Particle,  boost::view_clone_allocator>  bunch_;
+  boost::pool<>                                              pool_;
 
 };
 
+template <typename Predicate_t>
+void ParticleBunch::sort( Predicate_t predicate ) { bunch_.sort( predicate ); }          
 
 
-#endif // PARTBUNCH_H
+#endif // PARTICLEBUNCH_H
