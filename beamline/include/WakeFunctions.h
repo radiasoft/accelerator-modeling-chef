@@ -33,16 +33,18 @@
 #define WAKEFUNCTIONS_H
 
 class ShortRangeLWakeFunction {
-
+     
   public:
-   double operator()( double const& s) const;
+
+   double operator()( int i, double const& ds, double const& cutoff) const;
 
 } ;
 
 class ShortRangeTWakeFunction {
 
   public:
-   double operator()( double const& s) const;
+
+   double operator()( int i, double const& ds, double const& cutoff ) const;
 
 };
 
