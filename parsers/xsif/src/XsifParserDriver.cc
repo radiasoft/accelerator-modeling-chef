@@ -21,10 +21,9 @@
 ******            ostiguy@fnal.gov                                      
 ******            Fermilab                                           
 ******
-**********************************************************************************
-**********************************************************************************
-*********************************************************************************/
-
+******************************************************************************
+******************************************************************************
+******************************************************************************/
 #include "XsifParserDriver.h"
 
 #include <iomanip>
@@ -32,6 +31,7 @@
 #include <sstream>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <basic_toolkit/PhysicsConstants.h>
@@ -42,6 +42,11 @@
 #include <cstdlib>
 #include <sstream>
 
+#if USE_SQLITE
+#include <sqlite/connection.hpp>
+#include <sqlite/execute.hpp>
+#include <sqlite/query.hpp>
+#endif
 
 using namespace std;
 using namespace boost;
@@ -51,6 +56,9 @@ using namespace boost::algorithm;
 using std::setw;
 using std::left;
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 std::map<std::string, boost::any> merge_attributes(std::map<std::string, boost::any> const&  old_attributes,  
                                                    std::map<std::string, boost::any> const&  new_attributes )
@@ -92,9 +100,10 @@ bool eval( string const& attribute,map<string,boost::any> const& attributes, any
 
   if (attributes.empty()) return false; 
 
- map<string,boost::any>::const_iterator it;
+  map<string,boost::any>::const_iterator it;
 
-  if ( (it = find_if(attributes.begin(), attributes.end(), AttributesEqual(attribute) )) ==  attributes.end()  ) return false;
+  if ( (it = find_if(attributes.begin(), attributes.end(), AttributesEqual(attribute) )) ==  attributes.end()  ) 
+     return false;
 
   result = it->second;
 
@@ -162,7 +171,11 @@ ostream& operator<<(ostream& os, expr_map_t  const& xm) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-XsifParserDriver::XsifParserDriver(): m_trace_scanning(false), m_trace_parsing(false)
+XsifParserDriver::XsifParserDriver()
+ : m_trace_scanning(false), m_trace_parsing(false)
+#if USE_SQLITE
+, db_(":memory:")
+#endif
 {
 
 
@@ -179,23 +192,129 @@ XsifParserDriver::XsifParserDriver(): m_trace_scanning(false), m_trace_parsing(f
   m_constants["CLIGHT"]   = 2.99792458e8;       // speed of light in m/s
   m_constants["QELECT"]   = 1.602176462e-19;    // elementary charge  in A-s
    
-  init(); // intialize jump table
+  init();    // initialize jump table
 
+#if USE_SQLITE
+  db_init(); // initialize database
+#endif
 
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if USE_SQLITE
+
+void XsifParserDriver::init_db()
+{
+  
+ //---------------------------------------------------- 
+ // initialize sqlite3 database
+ //----------------------------------------------------
+
+ //--------------------------------------------------------------
+ // copy the contents of xsif.db 
+ //--------------------------------------------------------------
+
+ // load the existing default database
+ //-----------------------------------
+ 
+ sqlite::execute(db_, "ATTACH DATABASE 'xsif.db' as xsif", true);
+
+ // copy each table to the target ( in this case, the in-memory db ":memory:")
+ //---------------------------------------------------------------------------
+
+ sqlite::query q1(db_, "SELECT name FROM xsif.sqlite_master WHERE type =\'table\'");
+ sqlite::result_type res1 = q1.emit_result();
+ 
+ do {
+   string tname = res1->get_string(0); to_lower(tname);
+    if ( tname.find(string("sqlite_")) != string::npos ) continue; // skip system tables    
+    string sql = "CREATE TABLE " + tname +  " AS SELECT * FROM xsif." + tname;
+    sqlite::execute(db_, sql, true);
+  }
+  while(res1->next_row());
+
+  // create indices (if any) in loaded table
+  //-----------------------------------------
+
+  sqlite::query q2(db_, "SELECT sql FROM xsif.sqlite_master WHERE type =\'index\'");
+  sqlite::result_type res2 = q2.emit_result();
+
+  if  ( res2->get_row_count() != 0 ) 
+  {
+    do {  
+      string sql = res2->get_string(0);
+      sqlite::execute(db_, sql, true);
+    }
+    while(res2->next_row());
+  }
+
+  sqlite::execute( db_, "DETACH xsif", true);
+ 
+ // done. at this point, the default data has been copied. 
+
+ //-----------------------------------------------------------------------------------------------------------------------------------
+
+ // create additional internal tables  
+
+  sqlite::execute(db_, "CREATE TABLE elements (  id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE )", true);
+  sqlite::execute(db_, "CREATE TABLE beamlines(  id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE)", true); 
+  sqlite::execute(db_, "CREATE TABLE attributes( id INTEGER, attribute TEXT NOT NULL COLLATE NOCASE," 
+                                                 "INTEGER datatype, value BLOB, FOREIGN KEY(id) REFERENCES elements)", true); 
+}
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 XsifParserDriver::~XsifParserDriver() 
 {
 
   xsif_yylex_destroy(m_yyscanner);
-
+  //dumpDatabase();
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if USE_SQLITE
+void XsifParserDriver::dumpDatabase() 
+{
+  //-------------------------------------------------------- 
+  // dump the contents of the database. Used for debugging
+  //-------------------------------------------------------
+
+  sqlite::query q( db_, "SELECT * FROM beamlines");
+
+  sqlite::result_type res = q.emit_result();
+  do{
+      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
+  }
+  while(res->next_row());
+
+
+  sqlite::query q1( db_, "SELECT * FROM elements");
+
+  res = q1.emit_result();
+  do{
+      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
+  }
+  while(res->next_row());
+
+  sqlite::query q2( db_, "SELECT * FROM attributes");
+  res = q2.emit_result();
+  do{
+      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
+  }
+  while(res->next_row());
+
+
+}
+#endif
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -346,7 +465,10 @@ vector<string>* XsifParserDriver::instantiateAnonymousLine( xsif_yy::location co
 BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const& name, vector<string> const & elements ) 
 { 
 
-  
+#if USE_SQLITE
+  db_insert_beamline( name,elements );
+ #endif
+
   beamline* bl = new beamline( name.c_str() ); 
   bl->setEnergy( m_energy); 
 
@@ -466,8 +588,13 @@ void XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string co
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) { 
+BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) 
+{ 
 
+#if USE_SQLITE
+  sqlite::execute(db_, string("INSERT INTO beamlines(name) VALUES('") +  name_and_args + string("')"), true );  
+#endif
+  
   //-------------------------------------------------------------------------------------------------------------------------------------
   // Recursively expands the line defined by the macro call 'name_and_args', which includes the parentheses and 
   // comma separated arguments. If the line does not exists it is created; otherwise, the existing one is cloned. 
@@ -771,7 +898,11 @@ namespace {
 ElmPtr
 XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string const& label, string const& type,  map<string,boost::any> const & attributes ) 
 {
-   
+
+#if USE_SQLITE
+   db_insert_element( label, type, attributes); 
+#endif
+
  // ------------------------------------------------------------------------------------------
  // search for a match for type among the existing elements. 
  // If found, retrieve previous attributes and override with 
@@ -828,7 +959,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
     }
 
     double BRHO   = m_variables["BRHO"].evaluate();
-    elm = m_makefncs[result.first->first]( user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
+    elm = m_makefncs[result.first->first](user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
  }
  else {
 
@@ -846,8 +977,17 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ElmPtr XsifParserDriver::make_drift( ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr XsifParserDriver::make_drift(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
+ 
+#if 0
+   for ( std::map<string,boost::any>::const_iterator it = attributes.begin();  it != attributes.end(); ++it )
+   {
+      string tmp("DRIFT");
+      std::cout << it->first << "  " << "attribute_is_valid_attribute = " <<  attribute_is_valid( tmp, it->first ) << std::endl; 
+
+   }
+#endif
 
    any value;
    drift* elm = 0; 
@@ -867,7 +1007,7 @@ ElmPtr XsifParserDriver::make_drift( ConstElmPtr& udelm, double const& BRHO, std
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
-ElmPtr XsifParserDriver::make_marker( ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr XsifParserDriver::make_marker(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
       marker* elm = 0;
 
@@ -885,7 +1025,7 @@ ElmPtr XsifParserDriver::make_marker( ConstElmPtr& udelm, double const& BRHO, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
-ElmPtr  XsifParserDriver::make_sbend( ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
   //---------------------------------------------------------------------
   // valid attributes for type SBEND  
@@ -975,7 +1115,7 @@ ElmPtr  XsifParserDriver::make_sbend( ConstElmPtr& udelm, double const& BRHO, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_rbend(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
 
   //---------------------------------------------------------------------
@@ -1072,7 +1212,7 @@ ElmPtr  XsifParserDriver::make_rbend(  ConstElmPtr& udelm, double const& BRHO, s
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_quadrupole(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 { 
 
   //---------------------------------------------------------------------
@@ -1123,7 +1263,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(  ConstElmPtr& udelm, double const& BR
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_sextupole(  ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
+ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
 { 
 
   //---------------------------------------------------------------------
@@ -1174,7 +1314,7 @@ ElmPtr  XsifParserDriver::make_sextupole(  ConstElmPtr& udelm,  double const& BR
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_octupole(  ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
+ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
 {
   //---------------------------------------------------------------------
   // valid attributes for type SEXTUPOLE
@@ -1224,7 +1364,7 @@ ElmPtr  XsifParserDriver::make_octupole(  ConstElmPtr& udelm,  double const& BRH
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_multipole(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
+ElmPtr  XsifParserDriver::make_multipole(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
 {
 
 //---------------------------------------------------------------------
@@ -1332,7 +1472,7 @@ return elm;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr XsifParserDriver::make_solenoid(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )  
+ElmPtr XsifParserDriver::make_solenoid(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )  
 {
 
   //---------------------------------------------------------------------
@@ -1371,7 +1511,7 @@ ElmPtr XsifParserDriver::make_solenoid(  ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_hkicker(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
 
  //---------------------------------------------------------------------
@@ -1415,7 +1555,7 @@ ElmPtr  XsifParserDriver::make_hkicker(  ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_vkicker(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  //---------------------------------------------------------------------
  // valid attributes for type VKICK
@@ -1458,7 +1598,7 @@ ElmPtr  XsifParserDriver::make_vkicker(  ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_kicker(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
 
  //---------------------------------------------------------------------
@@ -1510,7 +1650,7 @@ ElmPtr  XsifParserDriver::make_kicker(   ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr XsifParserDriver::make_lcavity(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
   
  //----------------------------------------------------------------------------------------------
@@ -1538,7 +1678,7 @@ ElmPtr XsifParserDriver::make_lcavity(   ConstElmPtr& udelm, double const& BRHO,
   ******************/
 
   any value;
-  bmlnElmnt* elm   = 0;
+  LinacCavity* elm   = 0;
 
   double length    =  0.0;    bool attribute_length = false;       
   double e0        =  0.0;    bool attribute_e0     = false; 
@@ -1562,25 +1702,23 @@ ElmPtr XsifParserDriver::make_lcavity(   ConstElmPtr& udelm, double const& BRHO,
   //----------------------------------------------------------------------------------------------------------
 
 
-  elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0, 0, 0);
+   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*2*M_PI);
 
-  //elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity();
-
-  //elm->rename( label.c_str() );
-  //elm->setLength(length);
-  //elm->setFrequency(length);
-  //elm->setDeltaE(deltae*1.0e6);
-  //elm->setPhi(phi0);
+   elm->rename( label.c_str() );
+   elm->setLength(length);
+   elm->setFrequency(freq*1.0e6);
+   elm->setStrength(deltae*1.0e6);
+   elm->setPhi(phi0*2.0*M_PI);
      
-  elm->setTag("LCAVITY");
-  return ElmPtr(elm);
+   elm->setTag("LCAVITY");
+   return ElmPtr(elm);
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_rfcavity( ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type RFCAVITY
@@ -1654,7 +1792,7 @@ ElmPtr  XsifParserDriver::make_rfcavity( ConstElmPtr& udelm,  double const& BRHO
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- ElmPtr  XsifParserDriver::make_monitor(  ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_monitor(    ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type HMONITOR
@@ -1698,7 +1836,7 @@ ElmPtr  XsifParserDriver::make_rfcavity( ConstElmPtr& udelm,  double const& BRHO
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- ElmPtr  XsifParserDriver::make_hmonitor(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_hmonitor(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
  // valid attributes for type HMONITOR
@@ -1744,7 +1882,7 @@ ElmPtr  XsifParserDriver::make_rfcavity( ConstElmPtr& udelm,  double const& BRHO
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- ElmPtr  XsifParserDriver::make_vmonitor(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ ElmPtr  XsifParserDriver::make_vmonitor(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
  {
 
  //----------------------------------------------------------------------------------------------
@@ -1790,7 +1928,7 @@ ElmPtr  XsifParserDriver::make_rfcavity( ConstElmPtr& udelm,  double const& BRHO
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_instrument( ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_instrument(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  
   any value;
@@ -1815,7 +1953,7 @@ ElmPtr  XsifParserDriver::make_instrument( ConstElmPtr& udelm, double const& BRH
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_ecollimator(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_ecollimator(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
 {
 
   
@@ -1842,7 +1980,7 @@ ElmPtr  XsifParserDriver::make_ecollimator(  ConstElmPtr& udelm, double const& B
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_rcollimator(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_rcollimator(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
 {
   
   any value;
@@ -1866,7 +2004,7 @@ ElmPtr  XsifParserDriver::make_rcollimator(  ConstElmPtr& udelm, double const& B
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_yrot(   ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_yrot(     ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
   
   any value;
@@ -1890,7 +2028,7 @@ ElmPtr  XsifParserDriver::make_yrot(   ConstElmPtr& udelm, double const& BRHO, s
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_srot(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
+ElmPtr  XsifParserDriver::make_srot(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
   
   any value;
@@ -1910,7 +2048,7 @@ ElmPtr  XsifParserDriver::make_srot(  ConstElmPtr& udelm, double const& BRHO, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_beambeam(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_beambeam(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
 {
   
   any value;
@@ -1933,7 +2071,7 @@ ElmPtr  XsifParserDriver::make_beambeam(  ConstElmPtr& udelm, double const& BRHO
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_matrix(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_matrix(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
 {
 
   
@@ -1957,7 +2095,7 @@ ElmPtr  XsifParserDriver::make_matrix(  ConstElmPtr& udelm, double const& BRHO, 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_lump(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_lump(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes) 
 {
 
   any value;
@@ -1979,7 +2117,7 @@ ElmPtr  XsifParserDriver::make_lump(  ConstElmPtr& udelm, double const& BRHO, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_wire(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_wire(    ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
 {
 
   any value;
@@ -2000,7 +2138,7 @@ ElmPtr  XsifParserDriver::make_wire(  ConstElmPtr& udelm, double const& BRHO, st
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_blmonitor(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_blmonitor(    ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
 {
   any value;
   drift* elm = 0;
@@ -2022,7 +2160,7 @@ ElmPtr  XsifParserDriver::make_blmonitor(  ConstElmPtr& udelm, double const& BRH
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_gkick(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
+ElmPtr  XsifParserDriver::make_gkick(    ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
 {
   /*******************************************************************************
          l        is the length.
@@ -2090,7 +2228,7 @@ ElmPtr  XsifParserDriver::make_gkick(  ConstElmPtr& udelm, double const& BRHO, s
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_beta0( ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
+ElmPtr  XsifParserDriver::make_beta0(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
 				      map<string,boost::any> const& attributes) 
 {
 
@@ -2101,3 +2239,188 @@ ElmPtr  XsifParserDriver::make_beta0( ConstElmPtr& udelm, double const& BRHO, st
    
 
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+#if USE_SQLITE
+bool  XsifParserDriver::attribute_is_valid( std::string const& elm, std::string const& attribute )
+{ 
+
+  sqlite::query q(db_, "SELECT COUNT(*) FROM valid_attributes_t WHERE ( typeid = (SELECT typeid from valid_elm_types_t WHERE type= ? ) AND attribute = ? )" );
+
+  q % elm % attribute;
+    
+  sqlite::result_type result = q.emit_result();
+
+  return ( result->get_row_count() == 1 ) ? true : false;    
+
+}
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if USE_SQLITE
+bool  XsifParserDriver::attribute_is_set( std::string const& elm, std::string const& attribute )
+{ 
+
+  sqlite::query q(db_, "SELECT * FROM attributes WHERE ( id = (SELECT id FROM elements WHERE name = ? ) AND attribute = ? )" );
+
+  q % elm % attribute;
+    
+  sqlite::result_type result = q.emit_result();
+
+  return ( result->empty() ) ? false : true;    
+
+}
+#endif
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+#if USE_SQLITE
+void XsifParserDriver::db_insert_element( string const& label, string const& type,  map<string,boost::any> const & attributes ) 
+{
+
+  // ------------------------------------------------------------------------------------------
+  // search for a match for type among the existing elements. 
+  // If found, retrieve previous attributes. Override with new ones if necessary
+  // ------------------------------------------------------------------------------------------
+
+   sqlite::query q_match(db_, string("SELECT * FROM elements WHERE ( name = ? ) ") );  
+
+   q_match %  type ;
+
+   std::cout << "searching for : "<< type << std::endl;
+
+   sqlite::result_type res = q_match.emit_result();
+
+   int eid = res->get_int( get_column_idx(res,"id") );
+
+    if ( res->empty() ) { 
+
+     // ----------------------------------------------------------------------------------------
+     // No exact match found. Try best match with basic element type 
+     //-----------------------------------------------------------------------------------------
+
+      sqlite::query q_match_basic(db_, "SELECT * FROM valid_elm_types_t WHERE (type LIKE ? )" );  
+      q_match_basic % (  type.empty() ? type : (type + "%") );
+ 
+      sqlite::result_type res = q_match_basic.emit_result();
+
+      string btype = res->get_string(0); 
+ 
+      std::cout << " inserting new element.  basic type = " << btype   << std::endl;
+
+      sqlite::execute(db_, string("INSERT INTO elements(name) VALUES('" )+  label + string("')"), true);  
+      int rowid = db_.last_insert_rowid();
+
+      sqlite::query ins(db_, "INSERT INTO attributes(id, attribute ) VALUES(?, ?)");
+
+      for ( std::map<string,boost::any>::const_iterator it  = attributes.begin(); 
+                                                        it != attributes.end(); ++it )
+      { 
+        
+	std::cout << " inserting attribute = " <<  rowid << "  " << it->first << std::endl;
+        ins %  rowid % it->first;
+        ins();
+        ins.clear();
+      }
+   }
+
+   else  {    
+
+       // The element is defined from an already user defined one
+       // Copy the existing attributes 
+
+       
+       sqlite::execute(db_, string("INSERT INTO elements(name) VALUES('" )+  label + string("')"), true);  
+       int newid = db_.last_insert_rowid();
+
+       sqlite::query q_attr(db_, "SELECT attribute FROM attributes WHERE ( id = ? )" ); 
+       q_attr % eid; 
+
+       sqlite::result_type res_attrib = q_attr.emit_result();
+
+       sqlite::query ins(db_, "INSERT INTO attributes (id, attribute) VALUES( ? , ? )" );  
+
+       while( !(res_attrib->empty()) ) {
+          ins % newid % res_attrib->get_string(0);
+          ins();
+          ins.clear();
+          res_attrib->next_row(); 
+       }
+
+       //----------------------------------------------
+       // Now override old attributes with the new ones
+       //----------------------------------------------
+
+
+        for ( std::map<string,boost::any>::const_iterator it  = attributes.begin(); 
+                                                          it != attributes.end(); ++it )
+        { 
+
+	  // std::cout << " updating attribute = " <<  newid << "  " << it->first << std::endl;
+
+         sqlite::query q(db_, "SELECT * FROM attributes WHERE ( (id = ? )  AND ( attribute = ?) )" );
+	 q % newid % it->first;
+	 sqlite::result_type res = q.emit_result(); 
+
+	 if ( res->empty() ) {
+	  std::cout << "attribute " <<  it->first << "was *not* previously  defined " << std::endl;
+          sqlite::query ins(db_, "INSERT INTO attributes(id, attribute)  VALUES( ?, ? )" ); 
+          ins % newid % it->first;
+          ins();
+          ins.clear();
+          continue;
+         }
+
+         sqlite::query upd (db_, "UPDATE attributes SET (value = ?) WHERE  (id = ? ) and ( attribute = attribute) VALUES( ? , ? )" );  
+	 // std::cout << "attribute " <<  it->first << "was previously  defined " << std::endl;
+        } 
+
+   }
+
+}
+#endif 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+#if USE_SQLITE
+void XsifParserDriver::db_insert_beamline ( std::string const& name, std::vector<std::string> const& elements) 
+{
+
+  sqlite::execute( db_, string("INSERT INTO beamlines(name) VALUES('" )+  name + string("')"), true);  
+
+}
+#endif
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if USE_SQLITE
+int XsifParserDriver::get_column_idx(sqlite::result_type& res, std::string const& cname) 
+{
+
+  int cols = res->get_column_count();
+  
+  for (int i=0; i<cols; ++i ) {
+    
+    if ( boost::algorithm::iequals(cname, res->get_column_name(i) ) ) return i;  
+
+  }
+
+  return -1; 
+
+}
+#endif
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+ 

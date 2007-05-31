@@ -30,6 +30,9 @@
 #ifndef XSIFPARSERDRIVER_H
 #define XSIFPARSERDRIVER_H
 
+
+#define USE_SQLITE 0
+
 #include <string>
 #include <sstream>
 #include <map>
@@ -43,6 +46,11 @@
 #include <parsers/xsif/Expression.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/BmlPtr.h>
+
+#if USE_SQLITE
+#include <sqlite/connection.hpp>
+#include <sqlite/result.hpp>
+#endif
 
 class bmlnElmnt; 
 class beamline; 
@@ -155,7 +163,23 @@ class XsifParserDriver {
 
   void init(); 
 
- 
+ #if USE_SQLITE
+
+  void      db_init();
+
+  bool      attribute_is_valid( std::string const& elm,   std::string const& attribute );
+  bool      attribute_is_set( std::string const& elm, std::string const& attribute );
+
+  int       get_column_idx( sqlite::result_type& res, std::string const& cname); 
+
+  void      db_insert_element(  std::string const& label, std::string const& type,  std::map<std::string,boost::any> const& attributes ); 
+  void      db_insert_beamline( std::string const& name,   std::vector<std::string> const& elements ); 
+
+
+  void      dumpDatabase(); 
+
+#endif
+
  // data members (public) _____________________________________________________________________________________________
 
   typedef  ElmPtr (*make_fnc_ptr)(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
@@ -187,7 +211,9 @@ class XsifParserDriver {
   double                                            m_energy;
   std::string                                       m_particle_type_name;
 
- 
+#if USE_SQLITE
+  sqlite::connection                                db_;
+#endif 
 
   class ParserException: public GenericException {
 
