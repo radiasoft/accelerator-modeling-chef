@@ -24,12 +24,10 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                                                   
+******
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <beamline/ParticleBunch.h>
 
@@ -50,7 +48,7 @@ using FNAL::pcerr;
 
 namespace {
 
-typedef  boost::rand48         base_generator_type;
+typedef  boost::rand48    base_generator_type;
 
 base_generator_type generator1((int32_t) 117u);
 base_generator_type generator2((int32_t) 137u);
@@ -72,8 +70,8 @@ std::ostream& operator<<( std::ostream &os, ParticleBunch const& bunch)
 
   for (ParticleBunch::const_iterator it = bunch.begin(); it != bunch.end(); ++it )
   {
-    const Vector state = (*it)->State(); 
-    os << setw(16) << (*it)->ReferenceEnergy() << "  ";
+    const Vector state = it->State(); 
+    os << setw(16) << it->ReferenceEnergy() << "  ";
     for (int i=0; i<6; ++i )
       os << setw(16) << state[i] << "  ";
     os << std::endl;
@@ -107,20 +105,28 @@ std::istream& operator >>( std::istream &is, ParticleBunch& bunch)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ParticleBunch::ParticleBunch(Particle const& p, int nparticles)
+ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& population)
 :
-  bunch_( nparticles, ParticlePtr() ), reference_( ParticlePtr( p.Clone()) )  
+  reference_(  p.Clone() ), 
+  population_(population ), 
+  bunch_(),
+  pool_( sizeof(Particle) , (nparticles*110/100) ) 
+
 {
 
-  //-------------------------------------------------------------------------------
-  // For performance, particles should be allocated *contiguously* in memory !!!!!
-  // FIX ME !
-  //-------------------------------------------------------------------------------
-  for ( iterator it  = bunch_.begin();  it != bunch_.end(); ++it )  {
+ //--------------------------------------------------------------------------------
+ // For performance, particles objects need to be allocated as contiguously 
+ // as possible in memory. This is accomplished here by allocating particles 
+ // from a dedicated pool with am intial 10% reserve. Note that if more particles 
+ // are appended, the pool will automatically grow. The Particle Clone function 
+ // argument implies that placement new is used when the clone object is 
+ // instantiated.
+ //---------------------------------------------------------------------------------
   
-   *it = ParticlePtr( p.Clone());
-
- }
+  for (int i =0; i< nparticles; ++i )
+  {
+    bunch_.push_back(  p.Clone( pool_.malloc() ) ); 
+  }
 
 }
 
@@ -128,7 +134,9 @@ ParticleBunch::ParticleBunch(Particle const& p, int nparticles)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ParticleBunch::~ParticleBunch() 
-{}
+{
+  delete reference_;
+}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -169,17 +177,10 @@ ParticleBunch:: const_iterator  ParticleBunch::end() const
 
 void ParticleBunch::append( Particle const& x )
 {
-  bunch_.push_back( ParticlePtr( x.Clone()) ); 
+
+  bunch_.push_back(  x.Clone( pool_.malloc() ) ); 
+
 }
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ParticleBunch::append( ParticlePtr const&  p )
-{
-  bunch_.push_back( p ); 
-} 
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -188,6 +189,14 @@ void ParticleBunch::append( ParticlePtr const&  p )
 //std::vector<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
 //{}
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double ParticleBunch::Population() const
+{
+  return population_;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -304,14 +313,14 @@ void ParticleBunch::populateBinomial ( PhaseSpaceProjection psid, double M, doub
     u     = a*cos(alpha);
     v     = a*sin(alpha);
 
-    Vector& state = (*it)->getState(); 
+    Vector& state = it->getState(); 
  
     state[0+psid]    += x_lim*u;
     state[3+psid]    += px_lim*(u*sin(chi) + v*cos(chi)); 
 
  }
 
-  return;
+ return;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -320,7 +329,9 @@ void ParticleBunch::populateBinomial ( PhaseSpaceProjection psid, double M, doub
 void ParticleBunch::setReferenceParticle ( Particle const& p)
 {
 
-  reference_ = ParticlePtr(new Particle(p));
+  if (reference_) delete reference_;
+
+  reference_ = p.Clone();       // use Clone() to preserve dynamic type
 
 }
 
@@ -328,12 +339,7 @@ void ParticleBunch::setReferenceParticle ( Particle const& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Particle const& ParticleBunch::getReferenceParticle () const
-
 {
-
   return *reference_;
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
