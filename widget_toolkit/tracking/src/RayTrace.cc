@@ -1121,7 +1121,7 @@ void RayTrace::_pushBunch()
   if( _isIterating ) 
   {
     for ( ParticleBunch::iterator it = pbPtr->begin();  it != pbPtr->end(); ++it ) {
-      _bmlConPtr->setParticleState( (*it)->State() );
+      _bmlConPtr->setParticleState(  it->State() );
       _pushParticle();
     }
 
