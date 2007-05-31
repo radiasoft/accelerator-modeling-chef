@@ -95,6 +95,9 @@ void BmlVisitor::visit( thinrfcavity& x )
 void BmlVisitor::visit( rfcavity& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
+void BmlVisitor::visit( LinacCavity& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
 void BmlVisitor::visit( srot& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
