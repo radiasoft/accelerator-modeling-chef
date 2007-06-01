@@ -43,8 +43,7 @@ void   (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propa
 void   (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
 
 void   (bmlnElmnt::*setStrength1)          (double const&  ) = &bmlnElmnt::setStrength;
-
-double (bmlnElmnt::*setReferenceTime1)     (Particle const&) = &bmlnElmnt::setReferenceTime;
+  //double (bmlnElmnt::*setReferenceTime1)     (Particle const&) = &bmlnElmnt::setReferenceTime;
 double (bmlnElmnt::*setReferenceTime2)     (double   const&) = &bmlnElmnt::setReferenceTime;
 
 }
@@ -67,7 +66,7 @@ void wrap_bmlnelmnt() {
     .def("Name",                          &bmlnElmnt::Name)
     .def("rename",                        &bmlnElmnt::rename)
     .def("getReferenceTime",              &bmlnElmnt::getReferenceTime)
-    .def("setReferenceTime",              setReferenceTime1)
+//    .def("setReferenceTime",              setReferenceTime1)
     .def("setReferenceTime",              setReferenceTime2)
     .def("Current",                       &bmlnElmnt::Current)
     .def("Type",                          &bmlnElmnt::Type)
