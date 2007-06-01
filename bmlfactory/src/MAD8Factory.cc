@@ -233,11 +233,11 @@ MAD8Factory::~MAD8Factory() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BmlPtr 
-MAD8Factory::create_beamline( std::string bmlname) {   // *** DEPRECATED ***
+MAD8Factory::create_beamline( std::string bmlname) {   
   
- BmlPtr bml = create_beamline_private(bmlname.c_str());
+ BmlPtr bml = create_beamline_private(bmlname.c_str() );
 
- if ( bml == 0)
+ if ( !bml )
  { 
    throw GenericException(__FILE__, __LINE__, 
                                 "MAD8Factory::create_beamline( const char* bmlname)",
@@ -273,10 +273,12 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BmlPtr
-MAD8Factory::create_beamline_private( const char* bmlname) 
-{ 
-  BRHO_ = madparser_get_brho(  mp_ );
+MAD8Factory::create_beamline_private( const char* bmlname) { 
+ 
+  BRHO_ = madparser_get_brho( mp_ ); 
+
   return create_beamline_private( bmlname, BRHO_); 
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
