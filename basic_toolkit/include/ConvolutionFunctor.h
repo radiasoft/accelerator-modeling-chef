@@ -76,7 +76,7 @@ class ConvolutionFunctorImpl {
   ConvolutionFunctorImpl( int sample, bool measure);
 
   template<typename Fnct>
-  ConvolutionFunctorImpl(  int nsamples, double ds, Fnct lhs, bool measure); 
+  ConvolutionFunctorImpl(  int nsamples, Fnct lhs, bool measure); 
 
  ~ConvolutionFunctorImpl();
 
@@ -109,8 +109,8 @@ class ConvolutionFunctor {
     { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, measure) ); }
 
   template<typename Fnct>
-  ConvolutionFunctor(  int nsamples, double ds, Fnct lhs, bool measure=true ) 
-    { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, ds, lhs, measure) ); }
+  ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure=true ) 
+    { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, lhs, measure) ); }
 
   ~ConvolutionFunctor() { }
 
@@ -141,7 +141,7 @@ ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int array
 
 template<>
 template<typename Fnct>
-ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, double ds, Fnct lhs, bool measure )
+ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, Fnct lhs, bool measure )
   : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
 {
   
@@ -157,7 +157,7 @@ ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, double ds,
   int i = 0;
   for (  double* it  = &lhsdata_[0];  
                  it != &lhsdata_[0] + fft_input_array_size_;  ++it, ++i ) {
-    *it = lhs(i*ds);
+   (*it) = lhs(i);
   }
 
   forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
@@ -169,7 +169,7 @@ ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, double ds,
 
 template<>
 template<typename Fnct>
-ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamples, double ds, Fnct lhs, bool measure)
+ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamples, Fnct lhs, bool measure)
   : nsamples_(nsamples),  fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples)  
 {
   
@@ -183,7 +183,7 @@ ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamp
   int i = 0;
   for ( std::complex<double>* it  = ( std::complex<double>* ) &lhsdata_[0];  
                               it != ( std::complex<double>* ) &lhsdata_[0]+ fft_input_array_size_ ;  ++it, ++i) {
-    *it = lhs(i*ds);
+    (*it) = lhs(i);
   };
 
   forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
