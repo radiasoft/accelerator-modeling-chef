@@ -39,6 +39,7 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** - Use stack-based local Particle/jetparticle
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -76,38 +77,60 @@ combinedFunction::combinedFunction()
   p_bml_ = BmlPtr( new beamline );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
 {
   p_bml_ =  BmlPtr( new beamline );
 }
 
-combinedFunction::combinedFunction( const char* n, const beamline& b ) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+combinedFunction::combinedFunction( const char* n, beamline const& b ) 
 : bmlnElmnt(n) 
 {
   p_bml_ = BmlPtr( b.Clone() );
   length_ = b.Length();
 }
 
-combinedFunction::combinedFunction( const beamline& b ) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+combinedFunction::combinedFunction( beamline const& b ) 
 : bmlnElmnt(b.Name().c_str())
 {
   p_bml_ =  BmlPtr( b.Clone() );
   length_ = b.Length();
 }
 
-combinedFunction::~combinedFunction() {
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-combinedFunction::combinedFunction( const combinedFunction& x ) 
+combinedFunction::~combinedFunction() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+combinedFunction::combinedFunction( combinedFunction const& x ) 
 : bmlnElmnt( x )
 {
   p_bml_ =  BmlPtr(  x.p_bml_->Clone() );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 //combinedFunction& combinedFunction::operator=(const combinedFunction& x) {
 //  bmlnElmnt::operator=(x);	// This operator needs to be fixed.
 //  p_bml_ = (beamline*)x.p_bml_->Clone();
 //}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void combinedFunction::append(bmlnElmnt& x) {
   p_bml_->append( ElmPtr( x.Clone() ));
@@ -115,8 +138,10 @@ void combinedFunction::append(bmlnElmnt& x) {
 }
 
 
-void combinedFunction::setField( bmlnElmnt::CRITFUNC crit, 
-                                 double s )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void combinedFunction::setField( bmlnElmnt::CRITFUNC crit, double s )
 {
 
   std::list<ElmPtr>  foundElements;
@@ -155,7 +180,7 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
   double newstrength;
   std::list<ElmPtr> foundElements;
 
-  for (beamline::deep_iterator it= p_bml_->deep_begin();
+  for (beamline::deep_iterator it  = p_bml_->deep_begin();
                                it !=  p_bml_->deep_end(); ++it ) {
     element = *it; 
 
@@ -507,31 +532,25 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
 {
   enum { x = 0, y, cdt, xp, yp, dpop };
 
-  JetParticle* myJPPtr = arg_jp.Clone();
-  Particle*      p_myP = new Particle(*myJPPtr);
-  // This is deleted before returning.
-
-  double x_i  = p_myP->State( x  );
-  double xp_i = p_myP->State( xp );
+  JetParticle jetparticle(arg_jp);
+  Particle    particle(jetparticle);
 
   Vector inState;
-  inState[x]  = x_i;
-  inState[xp] = xp_i;
+  double x_i  = inState[x]  = particle.State( x  );
+  double xp_i = inState[xp] = particle.State( xp );
 
-  myJPPtr->setState( inState );
-  p_myP->setState( inState );
+  jetparticle.setState( inState );
+  particle.setState( inState );
 
-  this->propagate( *myJPPtr );
+  propagate( jetparticle );
 
   double f, m, z;
 
-  m = ( myJPPtr->State().Jacobian() )( x, x );
+  m = ( jetparticle.State().Jacobian() )( x, x );
   m -= 1.0;
-  if( fabs(m) < 1.0e-12 ) {
-    delete p_myP;   p_myP   = 0;
-    delete myJPPtr; myJPPtr = 0;
+  if( std::abs(m) < 1.0e-12 ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "double combinedFunction::AdjustPosition( const JetParticle& arg_jp )", 
+           "double combinedFunction::AdjustPosition( JetParticle const& arg_jp )", 
            "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
@@ -540,31 +559,26 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
   int i;
   for( i = 0; i < 75; i++ ) {
     inState[x] = z;
-    p_myP->setState( inState );
-    this->propagate( *p_myP );
-    f = ( p_myP->State() )( x ) - z;
+    particle.setState( inState );
+    propagate( particle );
+    f = ( particle.State() )( x ) - z;
     z -= m*f;
   }
 
 
   // Set the alignment of the internal beamline.
-  // this->align->getAlignment().xOffset -= z;
+  // align->getAlignment().xOffset -= z;
   alignmentData v;	// Assumes zero alignment constructed this way.
-  if ( align_ != 0 )
+  if ( align_ )
     v = align_->getAlignment();
   v.xOffset -= z;
   // ??? Does not work: p_bml_->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
   // ??? parallel.
-  this->setAlignment( v );
+  setAlignment( v );
   // ??? This will work only if the in and out faces
   // ??? of the combinedFunction element are parallel.
-
-
-  // Clean up and return.
-  delete p_myP;   p_myP   = 0;
-  delete myJPPtr; myJPPtr = 0;
 
   return z;
 }
