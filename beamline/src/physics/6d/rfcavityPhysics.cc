@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******                                    
@@ -31,6 +31,7 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******  REVISION HISTORY
 ******  ------------------
 ******  Revisions (a few):
 ******  ------------------
@@ -43,24 +44,24 @@
 ******  Upgrades: preparation for use in ILC studies.
 ******  - lpjm
 ******
-******  Date: December 14, 2006 (Thursday)
-******  Elimination of raw pointers; usage of reference to 
-******  particle state to eliminate one level of indirection.
-******  Changes made by Jean-Francois Ostiguy.
-******  - lpjm
-******  
+******  December 2006 ostiguy@fnal.gov 
+******  -Efficiency improvements. 
+******  -Particle state passed by reference.
+******
 ******  Date: February 2, 2007  (Friday)
 ******  Fixed edge focusing following recommendation of Paul Lebrun
 ******  to use actual electric field upon entry.
 ******  In addition, included change to "effective length" calculation.
 ******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
 ******  - lpjm
-******  
+******
 ******  Date: May 9, 2007
 ******  A minor bug fix; produces minimal effect.  Another major overhaul
 ******  will be coming soon anyway.
 ******  - lpjm
+******
 ******  
+******
 **************************************************************************
 *************************************************************************/
 
@@ -68,56 +69,135 @@
 #include <config.h>
 #endif
 
-#include <beamline/rfcavity.h>
+#include <math.h>
 
 #include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
+#include <beamline/rfcavity.h>
+#include <beamline/OpticalStateAdaptor.h>
+
+#include <basic_toolkit/TMatrix.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 void rfcavity::localPropagate( Particle& p ) 
 {
-  double E( p.ReferenceEnergy() );
 
-  Vector& state = p.getState();
+  double const ctr       = ctRef_;
+  if( 0 == strength_ ) { 
+    ctRef_ = length_/ p.ReferenceBeta();
+    bmlnElmnt::localPropagate( p ); 
+    ctRef_ = ctr;
+    return;
+  }
 
-  double referenceEnergyGain = strength_*sin_phi_s_;
-  double onaxisEnergyGain    = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
+  double const oldLength = length_;
+  double const m         = p.Mass();
+  double const p_i       = p.get_npz() * p.ReferenceMomentum();
+  double const E_i       = p.Energy();
+  double const cdt_i     = p.get_cdt();
 
-  // Assign focal lengths for effective kicks that
-  // model first order edge focussing.
-  double k1 = - 0.5*(onaxisEnergyGain/length_)/ E;
-  double k2 =   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain);
-  // ??? Are the denominators correct ???
+  Vector& state   = p.getState();
+
+  double const referenceEnergyGain = strength_*sin_phi_s_;
+  double const onaxisEnergyGain    = strength_ * sin ( phi_s_ + state[2] * w_rf_ / PH_MKS_c );  // ??? Improve!
+  double const eE_z                = onaxisEnergyGain / oldLength;
 
   // Thin lens kick upon entry
-  state[3] += k1*state[0];
-  state[4] += k1*state[1];
+  double k  = - ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
 
-  // Propagate through the inner structures
-  double x_in = state[0];
-  double y_in = state[1];
+  state[3] += k*state[0];  // ??? Improve!
+  state[4] += k*state[1];
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+  double x_in  = state[0];
+  double y_in  = state[1];
+  double ct_in = state[2];
+
+  length_  = oldLength/2.0;
+  bmlnElmnt::localPropagate( p );
 
   double w = (onaxisEnergyGain/2.0) / p.Energy();
   if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
   else                       { w = 1.0;           }
 
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
-  }
-
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
 
-  // Thin lens kick upon exit
+  // Cavity increases energy and momentum of the particle
+  double E  = p.Energy() + onaxisEnergyGain/2.0;
 
-  state[3] += k2*state[0];
-  state[4] += k2*state[1];
+  double oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  double newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5]  = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+
+
+  //--------------------------------------
+  // PUT TRANSVERSE WAKE FIELD KICK HERE...
+  //--------------------------------------
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+
+  x_in  = state[0];
+  y_in  = state[1];
+  ct_in = state[2];
+
+  length_  = oldLength/2.0;
+  bmlnElmnt::localPropagate( p );
+
+  w = (onaxisEnergyGain/2.0) / p.Energy();
+  if( std::abs(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
+  else                       { w = 1.0;           }
+
+  state[0] = ( 1.0 - w )*x_in + w*state[0];
+  state[1] = ( 1.0 - w )*y_in + w*state[1];
+  state[2] = ct_in;
+
+
+  // Cavity increases energy and momentum of the particle
+  E = p.Energy() + onaxisEnergyGain/2.0;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+
+
+  // Thin lens kick upon exit
+  k         = ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
+  state[3] += k*state[0];
+  state[4] += k*state[1];
+
+  // Restore parameters
+  length_  = oldLength;
+  ctRef_   = ctr; 
+
+  // Fix the time calculation
+  double rfct =   length_
+                * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
+                    / (p.Energy()                          - E_i) );
+
+  state[2] = cdt_i + ( rfct - ctRef_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -125,44 +205,114 @@ void rfcavity::localPropagate( Particle& p )
 
 void rfcavity::localPropagate( JetParticle& p ) 
 {
-  double E( p.ReferenceEnergy() ); 
+  double const ctr       = ctRef_;
+  if( 0 == strength_ ) { 
+    ctRef_ = length_/p.ReferenceBeta();
+    bmlnElmnt::localPropagate( p ); 
+    ctRef_ = ctr;
+    return;
+  }
+
+  double const oldLength = length_;
+  double const m         = p.Mass();
+  Jet    const p_i       = p.get_npz() * p.ReferenceMomentum();
+  Jet    const E_i       = p.Energy();
+  Jet    const cdt_i     = p.get_cdt();
 
   Mapping& state = p.getState();
 
-  double referenceEnergyGain = strength_*sin_phi_s_;
-  Jet    onaxisEnergyGain( strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c ) );
-
-  // Assign focal lengths for effective kicks that
-  // model first order edge focussing.
-
-  Jet k1( - 0.5*(onaxisEnergyGain/length_)/ E );
-  Jet k2(   0.5*(onaxisEnergyGain/length_)/(E + referenceEnergyGain) );
-  // ??? Are the denominators correct ???
+  double const referenceEnergyGain = strength_*sin_phi_s_;
+  Jet    const onaxisEnergyGain    = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
+  Jet    const eE_z                = onaxisEnergyGain / oldLength;
 
   // Thin lens kick upon entry
-  state[3] = state[3] + k1*state[0];
-  state[4] = state[4] + k1*state[1];
+  Jet k     = - ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
+  state[3] += k*state[0];  // ??? Improve!
+  state[4] += k*state[1];
 
-  // Propagate through the inner structures
-  Jet x_in( state[0] );
-  Jet y_in( state[1] );
-  Jet w( (onaxisEnergyGain/2.0) / p.Energy() );
 
+  // Free space propagation through "effective half length"
+  // of the cavity.
+  Jet x_in  = state[0];
+  Jet y_in  = state[1];
+  Jet ct_in = state[2];
+
+  length_  = oldLength/2.0;
+  bmlnElmnt::localPropagate( p );
+
+  Jet w = (onaxisEnergyGain/2.0) / p.Energy();
   if( std::abs(w.standardPart()) > 1.0e-8 ) { w = (log(1.+w)/w); }
   else                                      { w = 1.0;           }
 
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
-  }
+  state[0] = ( 1.0 - w )*x_in + w*state[0];
+  state[1] = ( 1.0 - w )*y_in + w*state[1];
+  state[2] = ct_in;
+
+
+  // Cavity increases energy and momentum of the particle
+  Jet E  = p.Energy() + onaxisEnergyGain/2.0;
+
+  double oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2. );
+  double newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+  
+
+  //--------------------------------------
+  // PUT TRANSVERSE WAKE FIELD KICK HERE...
+  //--------------------------------------
+
+
+  // Free space propagation through "effective half length"
+  // of the cavity.
+  x_in  = state[0];
+  y_in  = state[1];
+  ct_in = state[2];
+
+  length_  = oldLength/2.0;
+  bmlnElmnt::localPropagate( p );
+
+  w = (onaxisEnergyGain/2.0) / p.Energy();
+  if( std::abs(w.standardPart()) > 1.0e-8 ) { w = (log(1.+w)/w); }
+  else                                      { w = 1.0;           }
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
+  state[2] = ct_in;
+
+
+  // Cavity increases energy and momentum of the particle
+  E = p.Energy() + onaxisEnergyGain/2.0;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+
 
   // Thin lens kick upon exit
+  k         = ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
+  state[3] += k*state[0];
+  state[4] += k*state[1];
 
-  state[3] =  state[3] + k2*state[0];
-  state[4] =  state[4] + k2*state[1];
+  // Restore length
+  length_ = oldLength;
+  ctRef_ = ctr;
+
+  // Fix the time calculation
+  Jet rfct =   length_
+             * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
+                 / (p.Energy()                          - E_i) );
+
+  state[2] = cdt_i + ( rfct - ctRef_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -170,24 +320,20 @@ void rfcavity::localPropagate( JetParticle& p )
 
 void thinrfcavity::localPropagate( Particle& p ) 
 {
-  if( strength_ == 0.0)  return;
+  if( 0.0 != strength_ ) {
+    double const m  = p.Mass();
+    Vector& state = p.getState(); 
+    double E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
-  Vector& state = p.getState(); 
- 
-  double E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
+    double oldRefP = p.ReferenceMomentum();
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
+    double newRefP = p.ReferenceMomentum();
 
-  double oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
-  double newRefP = p.ReferenceMomentum();
+    state[3] *= ( oldRefP / newRefP );
+    state[4] *= ( oldRefP / newRefP );
 
-  state[3] *= ( oldRefP / newRefP );
-  state[4] *= ( oldRefP / newRefP );
-
-  double   m  = p.Mass();
-  double   pr = p.ReferenceMomentum();
-
-  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0;
-
+    state[5]  = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -196,22 +342,18 @@ void thinrfcavity::localPropagate( Particle& p )
 
 void thinrfcavity::localPropagate( JetParticle& p ) 
 {
-  if( strength_ == 0.0 ) return;
+  if( 0.0 != strength_ ) {
+    double const m  = p.Mass();
+    Mapping& state = p.getState(); 
+    Jet E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
-  Mapping& state = p.getState(); 
+    double oldRefP = p.ReferenceMomentum();
+    p.SetReferenceEnergy( p.ReferenceEnergy() + strength_*sin_phi_s_ );
+    double newRefP = p.ReferenceMomentum();
 
-  Jet E = p.Energy() + strength_*sin( phi_s_ + state(2) * w_rf_ / PH_MKS_c );
+    state[3] *= ( oldRefP / newRefP );
+    state[4] *= ( oldRefP / newRefP );
 
-  double oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + strength_ *sin_phi_s_ );
-  double newRefP = p.ReferenceMomentum();
-  
-  state[3] = ( oldRefP / newRefP )*state[3];
-  state[4] = ( oldRefP / newRefP )*state[4];
-
-  double   m  = p.Mass();
-  double   pr = p.ReferenceMomentum();
-
-  state[5] = ( sqrt((E - m)*(E + m))/pr ) - 1.0 ;
-
+    state[5]  = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0 ;
+  }
 }
