@@ -64,6 +64,17 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
+double PropagatorTraits<Particle>::norm(  PropagatorTraits<Particle>::Component_t const& comp)
+{ 
+  return std::abs(comp); 
+}   
+
+
+double PropagatorTraits<JetParticle>::norm(  PropagatorTraits<JetParticle>::Component_t const& comp)
+{ 
+  return std::abs( comp.standardPart() ); 
+}    
+
 
 // **************************************************
 //   yes and no Criteria
@@ -79,9 +90,9 @@ beamline::Nay beamline::no;
 
 
 bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
-:   _altered(false)
-  , _upStream()
-  , _downStream()
+:   altered_(false)
+  , upStream_()
+  , downStream_()
 {}
 
 
@@ -90,9 +101,9 @@ bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
 
 void bmlnElmnt::PinnedFrameSet::reset()
 {
-  _upStream.reset();
-  _downStream.reset();
-  _altered = false;
+   upStream_.reset();
+   downStream_.reset();
+   altered_ = false;
 }
 
 
@@ -978,7 +989,7 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
   //                         +--------- Not quite what I want.
 
 
-  if( pinnedFrames_._altered ) 
+  if( pinnedFrames_.altered_ ) 
   {
     if( pct < 0.000001 ) { pct = 0; }
     if( 0.999999 < pct ) { pct = 1; }
@@ -996,17 +1007,17 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
 
       // Downstream end (default)
       if( (1.0 - pct) < 0.001 ) {
-        pinnedFrames_._downStream.convertInPlace( p, v );
+        pinnedFrames_.downStream_.convertInPlace( p, v );
       }
 
       // Upstream end
       else if( pct < 0.001 ) {
-        pinnedFrames_._upStream.convertInPlace( p, v );
+        pinnedFrames_.upStream_.convertInPlace( p, v );
       }
 
       // Somewhere in the middle
       else {
-        Frame ref( Frame::tween( pinnedFrames_._upStream, pinnedFrames_._downStream, pct, false ) );
+        Frame ref( Frame::tween( pinnedFrames_.upStream_, pinnedFrames_.downStream_, pct, false ) );
         ref.convertInPlace( p, v );
       }
 
