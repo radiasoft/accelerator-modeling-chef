@@ -56,6 +56,7 @@
 ****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
 ******
 ****** Mar 2007 ostiguy@fnal.gov  
+******
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
 ******   to replace previous scheme based explicitly on monomial exponents tuple.
 ****** - monomial multiplication handled via a lookup-table.
@@ -391,11 +392,9 @@ public:
   T        standardPart() const            { return jl_->standardPart();    }
 
   void     clear();
+
   T        weightedDerivative( IntArray const&  ) const;  
   T                derivative( IntArray const&  ) const; 
-
-  // T        weightedDerivative( int  const* ) const;  // FIXME !
-  // T                derivative( int  const*  ) const; // FIXME !
 
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 
@@ -422,9 +421,6 @@ public:
   friend bool operator==<>( TJet const&, TJet const& );
   friend bool operator==<>( TJet const&, T const& );
   friend bool operator==<>( T    const&, TJet const& );
-
-  // bool operator==( TJet const& ) const; // ??? what is this for
-  // bool operator==( T    const& ) const;    // ??? what is this for
 
   TJet& operator=( TJet const& );
   TJet& operator=( T    const& );
@@ -488,6 +484,7 @@ public:
 
 
   // Utility arithmetic functions ...
+
   void Negate();
   void Mult( T const& );
 
