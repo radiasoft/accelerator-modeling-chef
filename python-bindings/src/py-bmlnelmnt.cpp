@@ -56,8 +56,8 @@ void wrap_bmlnelmnt() {
     .def("propagateParticleBunch",        propagateParticleBunch )
     .def("getTag",                        &bmlnElmnt::getTag)
     .def("setTag",                        &bmlnElmnt::setTag)
-    .def("setShunt",                      &bmlnElmnt::setShunt)
-    .def("getShunt",                      &bmlnElmnt::getShunt)        
+    .def("setShunt",                      &bmlnElmnt::setShunt )
+    .def("getShunt",                      &bmlnElmnt::getShunt, return_value_policy<copy_const_reference>() )        
      /****  virtual functions ***/ 
     .def("setLength",                     &bmlnElmnt::setLength)
     .def("Strength",                      &bmlnElmnt::Strength)
