@@ -69,6 +69,8 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
+  void   setStrength( double const& );
+
   void    set_dx( double const& );
   void   set_dxp( double const& );
   void    set_dy( double const& );
@@ -80,7 +82,17 @@ public:
   void     set_v( double const& );
   void     set_t( double const& );
 
-  void   setStrength( double const& );
+  double const&    xOffset();
+  double const&   xpOffset();
+  double const&    yOffset();
+  double const&   ypOffset();
+  double const&    lOffset();
+  double const&    pOffset();
+  double const&    zOffset();
+  double const&    angle();
+  double const&    v();
+  double const&    t();
+
 
 
  private:
