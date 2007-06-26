@@ -64,9 +64,9 @@ class DLLEXPORT Frame
    Frame( const Frame& );
    ~Frame();
 
-   Frame& operator=( const Frame& );
+   Frame& operator=( Frame const& );
    
-   int setOrigin   ( const Vector& );
+   int setOrigin   ( Vector const& );
    int setAxis     ( int, const Vector& );
    int setDualAxis ( int, const Vector& );
 
