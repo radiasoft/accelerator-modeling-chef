@@ -88,6 +88,9 @@ public:
   void localPropagate( Particle&      );
   void localPropagate( JetParticle&   );
 
+  bool hasInEdge()   const;
+  bool hasOutEdge()  const;
+
 private:
 
   bool inEdge_;
