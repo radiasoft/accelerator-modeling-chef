@@ -25,6 +25,7 @@
 ******             ostiguy@fnal.gov      
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
@@ -36,28 +37,45 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-void gkick::localPropagate( Particle& p )
+namespace {
+
+template <typename Particle_t>
+void propagate( gkick& elm,  Particle_t& p)
 {
 
-  Vector& state = p.getState();
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  state[0] += dx_;
-  state[1] += dy_;
+  State_t& state = p.getState();
 
+  state[0] += elm.xOffset();
+  state[1] += elm.yOffset();
+
+  Component_t npz = p.get_npz(); 
+    
   //------------------------------------------------------------------
   // dxp_ and dyp_ represent a change in *geometric* trajectory angle; 
   // This angle change is *not* momentum dependent ! 
   //------------------------------------------------------------------
 
-  double npz = p.get_npz(); 
-    
-  double xp =  p.get_npx()/npz + dxp_;  
-  double yp =  p.get_npy()/npz + dyp_;
+  Component_t xp =  p.get_npx()/npz + elm.xOffset();  
+  Component_t yp =  p.get_npy()/npz + elm.yOffset();
 
-  double pz = sqrt(1 - xp*xp -yp*yp )*p.Momentum(); 
+  Component_t pz = sqrt(1.0 - xp*xp -yp*yp )*p.Momentum(); 
+  
+  state[3] = xp * ( pz / p.ReferenceMomentum()) ;  
+  state[4] = yp * ( pz / p.ReferenceMomentum()) ; 
+}
 
-  state[3] = xp * ( pz / p.ReferenceMomentum() );  
-  state[4] = yp * ( pz / p.ReferenceMomentum() ); 
+} // anonymous namespace
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void gkick::localPropagate( Particle& p )
+{
+
+  ::propagate(*this, p);
 
 }
 
@@ -67,28 +85,9 @@ void gkick::localPropagate( Particle& p )
 void gkick::localPropagate( JetParticle& p )
 {
 
-  Mapping& state = p.getState();
+  ::propagate(*this, p);
 
-  state[0] += dx_;
-  state[1] += dy_;
-
-  Jet npz = p.get_npz(); 
-    
-  //------------------------------------------------------------------
-  // dxp_ and dyp_ represent a change in *geometric* trajectory angle; 
-  // This angle change is *not* momentum dependent ! 
-  //------------------------------------------------------------------
-
-  Jet xp =  p.get_npx()/npz + dxp_;  
-  Jet yp =  p.get_npy()/npz + dyp_;
-
-  Jet pz = sqrt(1.0 - xp*xp -yp*yp )*p.Momentum(); 
-  
-  state[3] = xp * ( pz / p.ReferenceMomentum()) ;  
-  state[4] = yp * ( pz / p.ReferenceMomentum()) ; 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
