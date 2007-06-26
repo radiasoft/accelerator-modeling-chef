@@ -26,6 +26,7 @@
 ******             ostiguy@fnal.gov                         
 ****** 
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 #ifndef OPTICALSTATEADAPTOR_H
 #define OPTICALSTATEADAPTOR_H
@@ -35,47 +36,55 @@
 #include <beamline/JetParticle.h>
 
 
+//--------------------------------------------------------------------------------
+
+template <typename Particle_t>
+struct OpticalStateAdaptorTraits {
+};
+
+template <>
+struct OpticalStateAdaptorTraits<Particle> {
+ 
+  typedef double  Component_t; 
+  typedef Vector  State_t ;
+
+};
+
+template <>
+struct OpticalStateAdaptorTraits<JetParticle> {
+ 
+  typedef Jet    Component_t; 
+  typedef Mapping    State_t; 
+
+};
+
+//--------------------------------------------------------------------------------
+
+template <typename Particle_t>
 class  OpticalStateAdaptor {
 
  public:
 
+  typedef typename OpticalStateAdaptorTraits<Particle_t>::State_t          State_t; 
+  typedef typename OpticalStateAdaptorTraits<Particle_t>::Component_t  Component_t; 
  
-  OpticalStateAdaptor( Particle&       p);
+  OpticalStateAdaptor( Particle_t&  p);
  ~OpticalStateAdaptor();
 
-  double const&  operator[](int i)  const; 
-  double&        operator[](int i);
+  Component_t const&  operator[](int i)  const; 
+  Component_t&        operator[](int i);
 
   void sync();  
 
  private:
 
-  bool           state_is_valid_;
-  Particle&      particle_;
-  Vector         optical_state_;
+  bool            state_is_valid_;
+  Particle_t&     particle_;
+  State_t         optical_state_;
  
 };
 
-class  JetOpticalStateAdaptor {
-
- public:
-
- 
-  JetOpticalStateAdaptor( JetParticle&       p);
- ~JetOpticalStateAdaptor();
-
-  Jet const&  operator[](int i)  const; 
-  Jet&        operator[](int i);
-
-  void sync();  
-
- private:
-
-  bool           state_is_valid_;
-  JetParticle&   particle_;
-  Mapping        optical_state_;
- 
-};
+#include  <beamline/OpticalStateAdaptor.tcc>
 
 #endif // OPTICALSTATEADAPTOR
 
