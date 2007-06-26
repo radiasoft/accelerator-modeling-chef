@@ -48,120 +48,83 @@
 #include <beamline/Solenoid.h>
 
 
+namespace {
+
+ template <typename Particle_t>
+ void propagate( Solenoid& elm, Particle_t& p );
+
+}
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Solenoid::localPropagate( Particle& p )
 {
-  // NOTE: This implementation assumes the magnetic axis of
-  // NOTE: the solenoid AND the beam current are in the +z direction.
 
   if( 0 == strength_ ) {
     bmlnElmnt::localPropagate( p );
     return;
   }
+ 
+  ::propagate( *this, p);
 
-  // Entry edge effect
-  // -----------------
-  const double edgeKick = strength_ / ( 2.0* p.ReferenceBRho() );
-  if( inEdge_ ) {
-    p.set_npx( p.get_npx() + edgeKick*(p.get_y()) );
-    p.set_npy( p.get_npy() - edgeKick*(p.get_x()) );
-  }
-
-
-  // Body field
-  // -----------
-  const double dtheta =   ( strength_ * length_ / p.ReferenceBRho() ) 
-                        / p.get_npz();
-  
-  double sn = sin(dtheta);
-  double cs = cos(dtheta);
-
-  // ... In what follows, I assume that dtheta is smaller than pi/4.
-  const double threshold = 1.0e-14;
-  // ??? const double threshold = 4.0*numeric_limits<double>::epsilon();  ???
-  int counter = 0;
-  double eps = ( 1 - sn*sn - cs*cs ) / (2.0*cs);
-  while( threshold < fabs(eps) ) {
-    if( counter < 8 ) {
-      cs += eps;
-      eps = ( 1 - sn*sn - cs*cs ) / (2.0*cs);
-      ++counter;
-    }
-    else {
-      throw bmlnElmnt::GenericException( __FILE__, __LINE__, 
-            "void Solenoid::localPropagate( Particle& p )",
-            "Too many iterations to normalize cosine." );
-    }
-  }
-  
-  double x  = p.get_x();
-  double y  = p.get_y();
-  double px = p.get_npx();
-  double py = p.get_npy();
-
-  p.set_npx(    cs*px + sn*py );
-  p.set_npy( (-sn)*px + cs*py );
-  
-  cs -= 1;
-
-  p.set_x( x + ( (    cs*(-py) + sn*px ) / (2.0*edgeKick) ) );
-  p.set_y( y + ( ( (-sn)*(-py) + cs*px ) / (2.0*edgeKick) ) );
-
-
-  // Exit edge effect
-  // ----------------
-  if( outEdge_ ) {
-    p.set_npx( p.get_npx() - edgeKick*(p.get_y()) );
-    p.set_npy( p.get_npy() + edgeKick*(p.get_x()) );
-  }
-
-
-  // It's about time
-  // Assumes pre-registration via RefRegVisitor
-  // 
-  // NOTE: p.get_npz() is non-negative by definition.
-  // NOTE: I may want to change this some day.
-  // -----------------------------------------------
-  const double duration =   length_ 
-                          / ( p.get_npz() * p.ReferenceMomentum() / p.Energy() );
-  p.set_cdt ( p.get_cdt() + ( duration - ctRef_ ) );
 }
-
-
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Solenoid::localPropagate( JetParticle& p )
 {
-  // NOTE: This implementation assumes the magnetic axis of
-  // NOTE: the solenoid AND the beam current are in the +z direction.
 
   if( 0 == strength_ ) {
     bmlnElmnt::localPropagate( p );
     return;
   }
 
+  ::propagate(*this, p);
+
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+namespace {
+
+template <typename Particle_t>
+void propagate( Solenoid& elm, Particle_t & p )
+{
+
+
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+ 
+
+  // NOTE: This implementation assumes the magnetic axis of
+  // NOTE: the solenoid AND the beam current are in the +z direction.
+
+
   // Entry edge effect
   // -----------------
-  const double edgeKick = strength_ / ( 2.0* p.ReferenceBRho() );
-  if( inEdge_ ) {
+
+  const double edgeKick = elm.Strength() / ( 2.0* p.ReferenceBRho() );
+
+  if( elm.hasInEdge() ) {
+
     p.set_npx( p.get_npx() + edgeKick*(p.get_y()) );
     p.set_npy( p.get_npy() - edgeKick*(p.get_x()) );
+
   }
 
 
   // Body field
   // -----------
-  Jet dtheta =   ( strength_ * length_ / p.ReferenceBRho() ) 
+
+  Component_t dtheta =   ( elm.Strength() * elm.Length() / p.ReferenceBRho() ) 
                  / p.get_npz();
   
-  Jet sn = sin(dtheta);
-  Jet cs = cos(dtheta);
+  Component_t sn = sin(dtheta);
+  Component_t cs = cos(dtheta);
 
   #if 0
+  //----------------------------------------------------------------------------
   // ... In what follows, I assume that dtheta is smaller than pi/4.
   const double threshold = 1.0e-14;
   // ??? const double threshold = 4.0*numeric_limits<double>::epsilon(); ???
@@ -179,12 +142,13 @@ void Solenoid::localPropagate( JetParticle& p )
             "Too many iterations to normalize cosine." );
     }
   }
+  //----------------------------------------------------------------------------
   #endif
   
-  Jet x  = p.get_x();
-  Jet y  = p.get_y();
-  Jet px = p.get_npx();
-  Jet py = p.get_npy();
+  Component_t x  = p.get_x();
+  Component_t y  = p.get_y();
+  Component_t px = p.get_npx();
+  Component_t py = p.get_npy();
 
   p.set_npx(    cs*px + sn*py );
   p.set_npy( (-sn)*px + cs*py );
@@ -197,7 +161,7 @@ void Solenoid::localPropagate( JetParticle& p )
 
   // Exit edge effect
   // ----------------
-  if( outEdge_ ) {
+  if( elm.hasOutEdge() ) {
     p.set_npx( p.get_npx() - edgeKick*(p.get_y()) );
     p.set_npy( p.get_npy() + edgeKick*(p.get_x()) );
   }
@@ -209,7 +173,11 @@ void Solenoid::localPropagate( JetParticle& p )
   // NOTE: p.get_npz() is non-negative by definition.
   // NOTE: I may want to change this some day.
   // -----------------------------------------------
-  Jet duration =   length_ 
+
+  Component_t duration =   elm.Length() 
                    / ( p.get_npz() * p.ReferenceMomentum() / p.Energy() );
-  p.set_cdt ( p.get_cdt() + ( duration - ctRef_ ) );
+
+  p.set_cdt ( p.get_cdt() + ( duration - elm.getReferenceTime() ) );
 }
+
+} // anonymous namespace

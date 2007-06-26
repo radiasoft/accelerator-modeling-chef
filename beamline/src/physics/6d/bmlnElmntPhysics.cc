@@ -31,7 +31,13 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                          
+****** 
+****** REVISION HISTORY 
+******                                         
+****** June 2007 ostiguy@fnal.gov
+****** - templated propagator 
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -102,43 +108,51 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 
 #ifndef MADPHYSICS
 
-void bmlnElmnt::localPropagate( Particle& p ) {
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+namespace { 
+
+template <typename Particle_t>
+void propagate( bmlnElmnt& elm, Particle_t& p ) 
+{
+
+ typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+ typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+ 
+ State_t& state = p.getState();
+
+ Component_t npz = p.get_npz();
+
+ Component_t xpr = state[3] / npz;
+ Component_t ypr = state[4] / npz;
+
+ state[0] += ( elm.Length() * xpr);
+ state[1] += ( elm.Length() * ypr);
+
+ Component_t D = elm.Length()*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+
+ state[2] += ( D / p.Beta() ) - elm.getReferenceTime();
+}
+
+}// anonymous namespace
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
- Vector& state = p.getState();
-
- double npz = p.get_npz();
-
- double xpr = state[3] / npz;
- double ypr = state[4] / npz;
-
- state[0] += (length_ * xpr);
- state[1] += (length_ * ypr);
-
- double D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
-
- state[2] += ( D / p.Beta() ) - ctRef_;
+void bmlnElmnt::localPropagate( Particle& p ) 
+{
+   ::propagate(*this, p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::localPropagate( JetParticle& p ) {
-
- Mapping& state = p.getState();
-
- Jet npz = p.get_npz(); 
-
- Jet xpr = state(3) / npz;
- Jet ypr = state(4) / npz;
-
- state[0] += (length_ * xpr);
- state[1] += (length_ * ypr);
-
- Jet D = length_*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
-
- state[2] += ( D / p.Beta() ) - ctRef_;
-
+void bmlnElmnt::localPropagate( JetParticle& p ) 
+{
+   ::propagate(*this, p);
 }
 
 
@@ -147,7 +161,8 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::localPropagate( ParticleBunch& b ) {
+void bmlnElmnt::localPropagate( ParticleBunch& b ) 
+{
 
  for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
  {  localPropagate( *it ); }
