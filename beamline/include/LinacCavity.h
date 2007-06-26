@@ -25,6 +25,7 @@
 ******             ostiguy@fnal.gov
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
@@ -42,6 +43,8 @@ class thinLinacCavity;
 typedef boost::shared_ptr<LinacCavity>            LinacCavityPtr;
 typedef boost::shared_ptr<LinacCavity const> ConstLinacCavityPtr;
 
+
+//-------------------------------------------------------------------------------
 
 class LinacCavity: public bmlnElmnt {
 
@@ -74,7 +77,7 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   
-  void accept( BmlVisitor& v ); 
+  void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
@@ -89,6 +92,7 @@ private:
 
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
+
 
 };
 
