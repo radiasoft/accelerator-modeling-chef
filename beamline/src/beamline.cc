@@ -1643,16 +1643,16 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
       downStreamPtr->accept( fp );
       frameThree = fp.getFrame();
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       // !!! The next lines can be modified (maybe) to do pinned-referenced movements
       Vector displacement(u*frameOne.getAxis(axis));
       frameOne.translate( displacement );
       frameTwo.translate( displacement );
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
@@ -1660,24 +1660,24 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
-        sp->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        sp->pinnedFrames_.altered_ = true;
         // ??? This is not quite right.
       }
       if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        sp->pinnedFrames_.altered_ = true;
         // ??? This is not quite right.
       }
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
 
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putAbove( std::find(theList_.begin(), theList_.end(), thePtr),  slotPtr ); // !!!! TERRIBLY INEFFICIENT !
         remove( upStreamPtr );
         //recycleBinPtr->append( upStreamPtr );
@@ -1686,8 +1686,8 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // !!!! TERRIBLY INNEFFICIENT  !
         remove( downStreamPtr );
         replaced_list.push_back( downStreamPtr );
@@ -1702,15 +1702,15 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
       downStreamPtr->accept( fp );
       frameThree = fp.getFrame();
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       Vector displacement(u*frameTwo.getAxis(axis));
       frameOne.translate( displacement );
       frameTwo.translate( displacement );
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       (*pcerr) << "\n*** WARNING *** "
            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -1726,15 +1726,15 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
         remove( downStreamPtr );
         replaced_list.push_back( downStreamPtr );
@@ -1749,30 +1749,30 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
       frameTwo = fp.getFrame();
       frameThree = frameTwo;
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       Vector displacement(u*frameOne.getAxis(axis));
       frameOne.translate( displacement );
       frameTwo.translate( displacement );
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       // Note: this is done inefficiently
       if( 0 == strcmp("Slot", upStreamPtr->Type() ) ) {
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
-        sp->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );  // ?????
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
         remove( upStreamPtr );
         replaced_list.push_back( upStreamPtr );
@@ -1786,7 +1786,7 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
     }
   }
 
-  thePtr->pinnedFrames_._altered = true;
+  thePtr->pinnedFrames_.altered_ = true;
   return;
 }
 
@@ -1960,8 +1960,8 @@ void beamline::rotateRel(   int axis, double const& angle
       downStreamPtr->accept( fp );
       frameThree = fp.getFrame();
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       // Construct a Frame in between frameOne and frameTwo
       Frame midFrame;
@@ -1992,8 +1992,8 @@ void beamline::rotateRel(   int axis, double const& angle
       frameOne = uFrame.patchedOnto(midFrame);
       frameTwo = dFrame.patchedOnto(midFrame);
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
@@ -2001,22 +2001,22 @@ void beamline::rotateRel(   int axis, double const& angle
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
-        sp->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
         remove( upStreamPtr );
         //recycleBinPtr->append( upStreamPtr );
@@ -2025,8 +2025,8 @@ void beamline::rotateRel(   int axis, double const& angle
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
         remove( downStreamPtr );
         //recycleBinPtr->append( downStreamPtr );
@@ -2041,8 +2041,8 @@ void beamline::rotateRel(   int axis, double const& angle
       downStreamPtr->accept( fp );
       frameThree = fp.getFrame();
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       // Construct a Frame in between frameOne and frameTwo
       Frame midFrame;
@@ -2072,8 +2072,8 @@ void beamline::rotateRel(   int axis, double const& angle
       frameOne = uFrame.patchedOnto(midFrame);
       frameTwo = dFrame.patchedOnto(midFrame);
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
@@ -2085,14 +2085,14 @@ void beamline::rotateRel(   int axis, double const& angle
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._upStream = (thePtr->pinnedFrames_)._downStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.upStream_ = (thePtr->pinnedFrames_).downStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putBelow( std::find( theList_.begin(), theList_.end(), thePtr), slotPtr );
         remove( downStreamPtr );
         //recycleBinPtr->append( downStreamPtr );
@@ -2107,8 +2107,8 @@ void beamline::rotateRel(   int axis, double const& angle
       frameTwo   = fp.getFrame();
       frameThree = frameTwo;
 
-      pinnedFrameOne = ( (thePtr->pinnedFrames_)._upStream   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_)._downStream ).patchedOnto( frameTwo );
+      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream_   ).patchedOnto( frameOne );
+      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream_ ).patchedOnto( frameTwo );
 
       // Construct a Frame in between frameOne and frameTwo
       Frame midFrame;
@@ -2138,8 +2138,8 @@ void beamline::rotateRel(   int axis, double const& angle
       frameOne = uFrame.patchedOnto(midFrame);
       frameTwo = dFrame.patchedOnto(midFrame);
 
-      (thePtr->pinnedFrames_)._upStream   = pinnedFrameOne.relativeTo( frameOne );
-      (thePtr->pinnedFrames_)._downStream = pinnedFrameTwo.relativeTo( frameTwo );
+      (thePtr->pinnedFrames_).upStream_   = pinnedFrameOne.relativeTo( frameOne );
+      (thePtr->pinnedFrames_).downStream_ = pinnedFrameTwo.relativeTo( frameTwo );
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
@@ -2147,15 +2147,15 @@ void beamline::rotateRel(   int axis, double const& angle
         SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
-        sp->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        sp->pinnedFrames_._altered = true;
+        sp->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        sp->pinnedFrames_.altered_ = true;
       }
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
         // DANGEROUS!!  Creates free object
         SlotPtr slotPtr(new Slot(upStreamPtr->Name().c_str(), frameOne ));
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_._downStream = (thePtr->pinnedFrames_)._upStream;
-        slotPtr->pinnedFrames_._altered = true;
+        slotPtr->pinnedFrames_.downStream_ = (thePtr->pinnedFrames_).upStream_;
+        slotPtr->pinnedFrames_.altered_ = true;
         putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
         remove( upStreamPtr );
         //recycleBinPtr->append( upStreamPtr );
@@ -2171,7 +2171,7 @@ void beamline::rotateRel(   int axis, double const& angle
     }
   }
 
-  thePtr->pinnedFrames_._altered = true;
+  thePtr->pinnedFrames_.altered_ = true;
   return;
 }
 

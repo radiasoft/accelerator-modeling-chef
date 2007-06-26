@@ -68,7 +68,7 @@
 #include <exception>
 
 #include <list>
-#include <ext/hash_map>    // This is g++ specific, but will be supported by the next c++ std. 
+#include <map>
 #include <boost/any.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
@@ -109,15 +109,43 @@ template <typename T>
 class TVector;
 
 template <typename T>
+class TMapping;
+
+template <typename T>
 class TJet;
 
 typedef TVector<double> VectorD;
 typedef TJet<double>    Jet;
 
+typedef TMapping<double>  Mapping;
+
 class elm_core_access;
 
 bmlnElmnt* read_istream(std::istream&);
 
+
+//----------------------------------------------------------
+
+template<typename Particle_t>
+  struct PropagatorTraits { 
+  static double  norm( double const& comp);  
+}; 
+
+template<>
+struct PropagatorTraits<Particle> {
+  typedef Vector          State_t;
+  typedef double      Component_t;
+  static double  norm(  PropagatorTraits<Particle>::Component_t const& comp);  
+};  
+
+template<>
+struct PropagatorTraits<JetParticle> {
+  typedef Mapping         State_t;
+  typedef Jet          Component_t;
+  static double  norm( PropagatorTraits<JetParticle>::Component_t const& comp);  
+};  
+   
+//-----------------------------------------------------------
 
 class DLLEXPORT bmlnElmnt
 {
@@ -140,23 +168,25 @@ class DLLEXPORT bmlnElmnt
    //--------------------------------------------------------------
    // PinnedFrameSet 
    //--------------------------------------------------------------
-   // If the element never moves, both _upStream and _downStream 
+   // If the element never moves, both upStream_ and downStream_ 
    // should be the identity frames. 
-   // If it moves, then _upStream will be the element's original 
+   // If it moves, then upStream_ will be the element's original 
    // in-frame AS SEEN BY its current in-frame; 
-   //  _downStream will be its original out-frame AS SEEN BY 
+   // downStream_ will be its original out-frame AS SEEN BY 
    // its current out-frame.
    // Note that in fact, this is redundant information.  
-   // Either _upStream or _downStream could be eliminated. !!!
+   // Either upStream_ or downStream_ could be eliminated. !!!
 
   class PinnedFrameSet
   {
     public:
-      bool  _altered;
-      Frame _upStream;
-      Frame _downStream;
+
+      bool   altered_;
+      Frame  upStream_;
+      Frame  downStream_;
+
       PinnedFrameSet();
-      ~PinnedFrameSet() {}
+     ~PinnedFrameSet() {}
 
       void  reset();
   };
@@ -173,8 +203,7 @@ class DLLEXPORT bmlnElmnt
 
     //   private:
 
-      Discriminator( Discriminator const& );     // forbidden ????
-
+      Discriminator( Discriminator const& );     
   };
 
 
@@ -187,8 +216,6 @@ class DLLEXPORT bmlnElmnt
        return strcmp(s1, s2) == 0;
      }
   };
-
-  typedef __gnu_cxx::hash_map<const char*, boost::any, __gnu_cxx::hash<const char*>, bmlnElmnt::eqstr> hash_map_t;
 
 
  public:
@@ -262,7 +289,7 @@ public:
   virtual bool     setAlignment( alignmentData const& );
 
   inline  bool hasMoved()
-    { return ( pinnedFrames_._altered || align_  ); }
+    { return ( pinnedFrames_.altered_ || align_  ); }
 
   void realign();  // Resets element to its original position.
 
@@ -281,10 +308,10 @@ public:
     // Default value: 1.0 -> return pinned coordinates at the downstream end.
 
   Frame getUpstreamPinnedFrame() const 
-    { return pinnedFrames_._upStream; }
+    { return pinnedFrames_.upStream_; }
 
   Frame getDownstreamPinnedFrame() const 
-    { return pinnedFrames_._downStream; }
+    { return pinnedFrames_.downStream_; }
 
 
   virtual void enterLocalFrame( Particle&                ) const;
@@ -355,8 +382,8 @@ public:
                                    // Will be different from "length"
                                    // for rbends.
 
-  double& IToField()            { return iToField_; }
-  double  getShunt() const      { return shuntCurrent_; }
+  double const& IToField() const      { return iToField_; }
+  double const& getShunt() const      { return shuntCurrent_; }
 
 
 
@@ -378,16 +405,16 @@ protected:
                                                  // the element. Established by a
                                                  // RefRegVisitor.
 
-  hash_map_t                     attributes_;
+  std::map<char const*, boost::any> attributes_;
 
-  std::string                    tag_;
+  std::string                       tag_;
 
-  Aperture*                      pAperture_;     // O.K.
+  Aperture*                         pAperture_;     // O.K.
 
-  PropFunc*                      propfunc_;      
+  PropFunc*                         propfunc_;      
 
-  BmlPtr                         p_bml_;         // The element may be composite.
-  ElmPtr                         bml_e_;         // with one active part.
+  BmlPtr                            p_bml_;         // The element may be composite.
+  ElmPtr                            bml_e_;         // with one active part.
 
 
   virtual void releasePropFunc();
