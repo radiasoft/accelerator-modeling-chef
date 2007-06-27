@@ -42,6 +42,11 @@
 ******   - separated eigenvalue/eigenvector reordering function 
 ******   - eliminated code that attempted to discriminate between objects allocated
 ******     on the stack and objects allocated from the free store.
+******
+******  June 2007   ostiguy@fnal.gov
+******
+******   - integrated GaussJordan algorithm (used to be standalone)   
+******   - added class TMLTraits and support for matrices of Jet
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -90,11 +95,80 @@ class TVector;
 
 typedef TVector<double> Vector;
 
+template <typename T>
+class TJet;
+
+
+//-------------------------------------------------------------------------------
+// class TMLTraits
+//-------------------------------------------------------------------------------
+template<typename T>
+struct TMLTraits {
+};
+
+template<>
+struct TMLTraits<TJet<double> > {
+
+ typedef  double        norm_return_type;
+ typedef  TJet<double>  norm_arg_type;
+
+ typedef  TJet<double>  abs_return_type;
+ typedef  TJet<double>  abs_arg_type;
+
+};
+
+template<>
+struct TMLTraits<TJet<std::complex<double> > > {
+
+ typedef  double                       norm_return_type;
+ typedef  TJet<std::complex<double> >  norm_arg_type;
+
+ typedef  TJet<double>                 abs_return_type;
+ typedef  TJet<std::complex<double> >  abs_arg_type;
+};
+
+
+template<>
+struct TMLTraits<std::complex<double> >  {
+
+ typedef  double                norm_return_type;
+ typedef  std::complex<double>  norm_arg_type;
+
+ typedef  double                abs_return_type;
+ typedef  std::complex<double>  abs_arg_type;
+};
+
+
+template<>
+struct TMLTraits<double>  {
+
+ typedef  double               norm_return_type;
+ typedef  double               norm_arg_type;
+
+ typedef  double               abs_return_type;
+ typedef  double               abs_arg_type;
+};
+
+
+
+
+//-------------------------------------------------------------------------------
+// class TML
+//-------------------------------------------------------------------------------
+
 template<typename T> 
 class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
   template <typename U>
   friend class TML;
+
+public:
+
+  typedef  typename TMLTraits<T>::abs_return_type abs_return_type;
+  typedef  typename TMLTraits<T>::abs_arg_type       abs_arg_type;
+
+  typedef  typename TMLTraits<T>::norm_return_type norm_return_type;
+  typedef  typename TMLTraits<T>::norm_arg_type       norm_arg_type;
 
  private:
 
@@ -106,10 +180,13 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   void       switch_rows(int row1, int row2); 
 
   MLPtr<T>   scale() const; 
-  MLPtr<T>   lu_decompose(int* indx, int& d ) const;
+  MLPtr<T>   lu_decompose( int* indx, int& d ) const;
   void       lu_back_subst(int* indx, MLPtr<T>& b);  
 
   static double tiny_;     // pivot threshold
+
+  static  abs_return_type   abs(abs_arg_type const&); 
+  static norm_return_type norm(norm_arg_type const&); 
 
  public:
 
@@ -151,6 +228,9 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
   
   static void orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
  
+  static void                            GaussJordan( TML<T>& a, TML<T>&     b);
+  static void                            GaussJordan( TML<T>& a, TVector<T>& b);
+
   void                              SVD ( MLPtr<T>& U, Vector& W, MLPtr<T>& V ) const;   
   static TVector<T>       backSubstitute( MLPtr<T> const& U, Vector const& W, MLPtr<T> const & V, 
                                           TVector<T> const& rhs, double threshold);  
@@ -257,8 +337,9 @@ class DLLLOCAL TML : public ReferenceCounter<TML<T> > {
 
 };
 
+//----------------------------------------------------------------------------------------
 // TML Specializations
-
+//----------------------------------------------------------------------------------------
 
 
 
@@ -285,6 +366,15 @@ template<> void TML<double>::SVD (MLPtr<double>& U, Vector& W, MLPtr<double>& V 
 
 template<> TVector<double>  TML<double>::backSubstitute( MLPtr<double> const& U, TVector<double> const& W, MLPtr<double> const& V, 
                                                          TVector<double> const& rhs, double threshold);  
+
+
+template <>  double                 TML<double>::abs( double const& arg); 
+template <>  double  TML<std::complex<double> >::abs( std::complex<double> const& arg); 
+template <>  TJet<double>    TML<TJet<double> >::abs( TJet<double> const& arg); 
+
+template <>  double                TML<double>::norm( double const& arg); 
+template <>  double  TML<std::complex<double> >::norm( std::complex<double> const& arg); 
+template <>  double          TML<TJet<double> >::norm( TJet<double> const& arg); 
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
