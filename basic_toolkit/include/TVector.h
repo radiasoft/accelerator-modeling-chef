@@ -39,7 +39,8 @@
 ******  - new implementation based on std::vector<>
 ******
 ******   Mar 2007 ostiguy@fnal.gov 
-******  - exposed iterator interface                                                                        
+******  - exposed iterator interface
+******                                                                        
 **************************************************************************
 *************************************************************************/
 #ifndef TVECTOR_H

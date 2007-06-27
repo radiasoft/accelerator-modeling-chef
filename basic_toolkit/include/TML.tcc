@@ -39,6 +39,7 @@
 ******   - eliminated code that attempted to discriminate between objects allocated
 ******     on the stack and objects allocated from the free store.
 ****** 
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -48,7 +49,8 @@
 #include <algorithm>
 #include <basic_toolkit/iosetup.h>
 
-using namespace std;
+using std::cout;
+using std::endl;
 
 template<typename T> double TML<T>::tiny_                = 1.0e-20; // pivot threshold
 
@@ -295,8 +297,8 @@ bool TML<T>::isOrthogonal() const
 
   for( int i=0; i<n; ++i ) {
     for( int j=0; j<n; ++j ) {
-      if( i != j ) { if( 1.0e-12 < std::abs( (*W)(i,j) ) )       { return false; } }
-      else         { if( 1.0e-12 < std::abs( (*W)(i,j) - 1.0 ) ) { return false; } }
+      if( i != j ) { if( 1.0e-12 < norm( (*W)(i,j) ) )       { return false; } }
+      else         { if( 1.0e-12 < norm( (*W)(i,j) - 1.0 ) ) { return false; } }
     }
   }
 
@@ -304,8 +306,8 @@ bool TML<T>::isOrthogonal() const
 
   for( int i=0; i<n; ++i ) {
     for( int j = 0; j<n; ++j ) {
-      if( i != j ) { if( 1.0e-12 < std::abs( (*W)(i,j) ) )       { return false; } }
-      else         { if( 1.0e-12 < std::abs( (*W)(i,j) - 1.0 ) ) { return false; } }
+      if( i != j ) { if( 1.0e-12 < norm( (*W)(i,j) ) )       { return false; } }
+      else         { if( 1.0e-12 < norm( (*W)(i,j) - 1.0 ) ) { return false; } }
     }
   }
 
@@ -826,7 +828,7 @@ MLPtr<T> TML<T>::scale() const
     maximum = 0.0;
 
     for(int col=0; col< ncols_; ++col) {
-      maximum = std::max( maximum, std::abs(mdata_[row][col]) );
+      maximum = std::max( maximum, norm(mdata_[row][col]) );
     }
 
     if(maximum == 0.0 ) {
@@ -847,26 +849,29 @@ MLPtr<T> TML<T>::scale() const
 
 
 template<typename T>
- MLPtr<T> TML<T>::lu_decompose(int* indx, int& d ) const
+ MLPtr<T> TML<T>::lu_decompose( int* indx, int& d ) const
 {
+  //----------------------------------------------------------------
   // Returns the L-U decomposition of a matrix. indx is an ouput
   // vector which records the row permutation affected by the
   // partial pivoting, d is output as +-1 depending on whether the
   // number of row interchanges was even or odd, respectively.
   // This routine is used in combination with lu_back_subst to
   // solve linear equations or invert a matrix.
-
+  //-----------------------------------------------------------------
+ 
   if(nrows_  != ncols_) {
     throw( NotSquare( nrows_, ncols_,
       "TML<T>::lu_decompose(int* indx, int& d ) const " )  );
   }
+
   d = 1; // parity check
   T dum; // from the book - I don't know signj
   T sum;
   T maximum;
   T tmp;
 
-  // make a direct copy of the original matrix:
+  // clone the original matrix:
   MLPtr<T> lu_decomp( new TML<T>( *this) );
 
   // scale the matrix
@@ -874,15 +879,17 @@ template<typename T>
 
   // The loop over columns of Crout's method:
 
-  int col_max; 
-  int i,j,k; 
+  int col_max = 0; 
+  int i       = 0;
+  int j       = 0;
+
   for( j=0; j< nrows_; ++j) {
     if (j > 0) {
       // eqn 2.3.12 except for j=i:
-      for (i=0; i<= j-1; ++i) {
+      for ( i=0; i<= j-1; ++i) {
         sum = lu_decomp->mdata_[i][j];
         if(i > 0) {
-          for(k=0; k <= i-1; ++k) {
+          for(int k=0; k <= i-1; ++k) {
             tmp = lu_decomp->mdata_[i][k]*lu_decomp->mdata_[k][j];
             sum -= tmp;
           }
@@ -894,24 +901,26 @@ template<typename T>
 // Initialize the search for the largest pivot element:
     maximum = T();
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
-    for(i=j; i <= ncols_-1; ++i) {
+    for( i=j; i <= ncols_-1; ++i) {
       sum = lu_decomp->mdata_[i][j];
 
       if(j > 0) {
-        for(k=0; k <= j-1; ++k) {
+        for(int k=0; k <= j-1; ++k) {
           tmp =  lu_decomp->mdata_[i][k] * lu_decomp->mdata_[k][j];
           sum -= tmp;
         }
         lu_decomp->mdata_[i][j] = sum;
       }
       // figure of merit for pivot:
-      dum = scale_vector->mdata_[i][0] * std::abs(sum);
-      if ( std::abs(dum) > std::abs(maximum) ){
+      dum = scale_vector->mdata_[i][0] * norm(sum);
+
+      if ( norm (dum) > norm(maximum) ){
         // is it better than the best so far ?
         col_max = i;
-        maximum = std::abs(dum);
+        maximum =norm(dum);
       }
     }
+
     // Do we need to interchange rows?
 
     if(j != col_max)  {
@@ -952,6 +961,7 @@ template<typename T>
 template<typename T>
 void TML<T>::lu_back_subst(int* indx, MLPtr<T>& b)  
 {
+//------------------------------------------------------------------
 // Solves the set of N linear equations A*X = B. Here "this"
 // is the LU-decomposition of the matrix A, determined by the
 // routine lu_decompose(). Indx is input as the permutation
@@ -961,6 +971,7 @@ void TML<T>::lu_back_subst(int* indx, MLPtr<T>& b)
 // that B will begin with many zero elements, so it is efficient
 // for use in matrix inversion. See pp 36-37 in
 // Press & Flannery.
+//--------------------------------------------------------------------
 
   if(nrows_  != ncols_) {
     throw( NotSquare( nrows_, ncols_,
@@ -1267,5 +1278,99 @@ const char* TML<T>::GenericMatrixException::what() const throw()
 {
   return errorString.c_str();
 }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template <typename T>
+void TML<T>::GaussJordan( TML<T>& a, TML<T>& rhs)
+{
+
+  int n =   a.rows();
+  int m = rhs.cols();
+
+  std::vector<int> indxr(n, 0);
+  std::vector<int> indxc(n, 0);
+  std::vector<int>  ipiv(n, 0);
+
+  int icol =0;
+  int irow =0;
+
+  for (int i=0; i<n; ++i) {
+
+    norm_return_type big = norm( T() );
+
+    for (int j=0; j<n; ++j)
+
+      if (ipiv[j] != 1)
+
+	for (int k=0; k<n; ++k) {
+	  if (ipiv[k] == 0) {
+	    if ( norm( a(j,k) ) >= big) {
+	      big = norm(a(j,k));
+	      irow = j;
+	      icol = k;
+	    }
+	  } else if (ipiv[k] > 1) 
+	    (*FNAL::pcerr) << "TML::GaussJordan: Singular Matrix-1 " << ipiv[k] << endl;
+	}
+
+    ++(ipiv[icol]);
+
+    if (irow != icol) {
+      for (int l=0; l<n; ++l)  swap(    a(irow,l), a(icol,l) );
+      for (int l=0; l<m; ++l)  swap(  rhs(irow,l), rhs(icol,l) );
+    }
+    indxr[i]=irow;
+    indxc[i]=icol;
+
+    if (a(icol,icol) == 0.0) 
+      (*FNAL::pcerr) << ": TML::GaussJordan::Singular Matrix-2 " << a << endl;
+
+    T pivinv =  T(1.0)/ a(icol,icol);
+ 
+    a(icol,icol) = T(1.0);
+ 
+    for ( int l=0;  l<n;   ++l) a(icol,l) *= pivinv;
+    for ( int l=0;  l<m;   ++l) rhs(icol,l) *= pivinv;
+    for ( int ll=0; ll<n; ++ll)
+      if (ll != icol) {
+	T dum = a(ll,icol);
+	a(ll,icol)= T();
+	for (int l=0; l<n; ++l)  a(ll,l)   -= a(icol,l)*dum;
+	for (int l=0; l<m; ++l)  rhs(ll,l) -= rhs(icol,l)*dum;
+      }
+  }
+
+  for ( int l=n-1; l>=0 ; --l) {
+    if (indxr[l] != indxc[l])
+      for ( int k=0; k<n; ++k)
+	swap(a(k,indxr[l]),a(k,indxc[l]));
+  }
+}
+
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TML<T>::GaussJordan( TML<T>& a, TVector<T>& b)
+{
+
+  TML<T> btmp(b.Dim(), 1);
+
+  for (int i=0; i<b.Dim(); ++i ) btmp(i,0) = b[i]; 
+
+  GaussJordan( a, btmp ); 
+
+  for (int i=0;  i < b.Dim(); ++i ) b[i] = btmp(i,0); 
+  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 

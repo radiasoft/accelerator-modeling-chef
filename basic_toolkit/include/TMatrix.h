@@ -124,7 +124,7 @@ public:
   TMatrix(int rows, int columns, T  initval);
   TMatrix(int rows, int columns, T* initval);
   TMatrix(const char* flag, int dimension); // create an identity matrix
-                                            // or a symplectic matrix
+                                           // or a symplectic matrix
 
   template<typename U>
   TMatrix(TMatrix<U> const& );
@@ -153,7 +153,12 @@ public:
   TMatrix<std::complex<double> > eigenValues()  const;
   TMatrix<std::complex<double> > eigenVectors() const;
   T                              trace()        const ; 
+
+  static void                    GaussJordan( TMatrix& A, TVector<T> & rhs);
+  static void                    GaussJordan( TMatrix& A, TMatrix<T> & rhs);
+
   void                           SVD( TMatrix& U, Vector& W, TMatrix& V);
+
   static TVector<T>              backSubstitute(TMatrix const& U, TVector<T> const& W, 
                                                 TMatrix const& V, TVector<T> const& rhs, double threshold=-1.0); // threshold < 0.0 ==> threshold = svmax*macheps
   bool                           isOrthogonal() const;
