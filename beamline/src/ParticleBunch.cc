@@ -23,7 +23,7 @@
 ******                                                                
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
-******             ostiguy@fnal.gov                                                   
+******             ostiguy@fnal.gov
 ******
 ******                                                                
 **************************************************************************
@@ -110,17 +110,20 @@ ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& po
   reference_(  p.Clone() ), 
   population_(population ), 
   bunch_(),
-  pool_( sizeof(Particle) , (nparticles*110/100) ) 
+  pool_( sizeof(Particle) , max( 128, (nparticles*110/100) ))  
 
 {
 
  //--------------------------------------------------------------------------------
  // For performance, particles objects need to be allocated as contiguously 
- // as possible in memory. This is accomplished here by allocating particles 
- // from a dedicated pool with am intial 10% reserve. Note that if more particles 
- // are appended, the pool will automatically grow. The Particle Clone function 
- // argument implies that placement new is used when the clone object is 
- // instantiated.
+ // as possible in memory. This is accomplished by allocating particles 
+ // from a dedicated pool with a 10% reserve for more particles. 
+ // Note that if new particles are appended, the pool will automatically grow if the
+ // reserve is exhausted.
+ // The argument of the Particle Clone() function is the address used by 
+ // (placement) new when instantiating the cloned particle.
+ // 
+ // Note: space for a minimum of 128 particles is allways allocated.  
  //---------------------------------------------------------------------------------
   
   for (int i =0; i< nparticles; ++i )
