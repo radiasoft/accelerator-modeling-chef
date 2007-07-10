@@ -554,15 +554,15 @@ DrawSpace::DrawSpace( Tracker* p, QHBox* parent, const char* m )
 
 DrawSpace::~DrawSpace()
 {
-  if( 0 != _rectContext._transformPtr )   
+  if( _rectContext._transformPtr )   
   { delete _rectContext._transformPtr;
     _rectContext._transformPtr = 0;      
   }
-  if( 0 != _normContext._transformPtr )   
+  if( _normContext._transformPtr )   
   { delete _normContext._transformPtr;
     _normContext._transformPtr = 0;      
   }
-  if( 0 != _actangContext._transformPtr )   
+  if( _actangContext._transformPtr )   
   { delete _actangContext._transformPtr;
     _actangContext._transformPtr = 0;      
   }
@@ -761,8 +761,9 @@ void DrawSpace::paintGL()
   }
 
   // Paint one white point
-  q = _topTracker->orbits_.back();
-  if(q) {
+  q = _topTracker->orbits_.empty() ? 0 : _topTracker->orbits_.back();
+
+  if( q ) {
     vec = q->lastPoint();
     glColor3f( 1., 1., 1. );
     _transformPtr->toDynamics( *vec, &a, &b, &c );
