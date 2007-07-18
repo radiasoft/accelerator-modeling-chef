@@ -42,7 +42,7 @@ ConvolutionFunctorImpl<T>::~ConvolutionFunctorImpl()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( vector<T> const& lhs, vector<T> const& rhs )  
+std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> const& lhs, std::vector<T> const& rhs )  
 {
   //-------------------------------------------------------------------------------------------
   // compute lhs transform ... If unary=true, lhs is assumed to already contain the transform 
@@ -94,7 +94,7 @@ std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( vector<T> const& lh
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( vector<T> const& rhs )  
+std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> const& rhs )  
 {
   //-------------------------------------------------------------------------------------------
   // lhsdata_ already contain the transform 
