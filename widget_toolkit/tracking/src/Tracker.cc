@@ -7,7 +7,6 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      Tracker.cc
-******  Version:   4.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -17,7 +16,7 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
-                                                                
+******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -32,6 +31,7 @@
 ****** Mar 2007    ostiguy@fnal.gov
 ****** -  - removed dependencies on dlist/slist
 ****** - support for reference-counted elements and beamlines 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -747,14 +747,19 @@ void DrawSpace::paintGL()
   double a, b, c;
 
   Orbit *q = 0;
-  for (  std::list<Orbit*>::iterator orb_it = _topTracker->orbits_.begin(); orb_it != _topTracker->orbits_.end(); ++orb_it ) 
+
+  for ( std::list<Orbit*>::iterator orb_it  = _topTracker->orbits_.begin();
+                                    orb_it != _topTracker->orbits_.end();
+                                    ++orb_it )
   {
     q = *orb_it;
     glColor3f( q->Red(), q->Green(), q->Blue() );
 
-   for (Orbit::iterator it  = q->begin(); 
-                        it != q->end(); ++it ) {
-     vec = *it;
+    for ( Orbit::iterator it  = q->begin();
+                          it != q->end();
+                          ++it ) 
+    {
+      vec = *it;
       _transformPtr->toDynamics( *vec, &a, &b, &c );
       glVertex3f( a, b, c );
     }
@@ -1355,6 +1360,7 @@ void Tracker::_edit_clear()
                                     it != orbits_.end();  ++it ) {
     delete (*it);
   }
+  orbits_.clear();
 
   _p_leftWindow->updateGL();
   _p_leftWindow->uploadBuffer();
