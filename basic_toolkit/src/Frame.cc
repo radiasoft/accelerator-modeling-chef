@@ -32,7 +32,9 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -43,43 +45,60 @@
 using namespace std;
 
 
-Frame::Frame()
-: o(3), e(3,3)
-{
-  //                     e_1  e_2  e_3
-  const static double u [] = { 1.,  0.,  0.,
-                               0.,  1.,  0.,
-                               0.,  0.,  1.
-                             };
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  const double* k = u;
-  for( int i=0; i < 3; ++i) {
-    for( int j=0; j < 3; ++j) {
-      e(i,j) = *(k++);
-    }
-  }
+Frame::Frame()
+ : o_(3), e_(3,3)
+{
+
+   for( int i=0; i<3; ++i) {
+      for( int j=0; j< 3; ++j) {
+        e_(i,j) = ( i == j ) ? 1.0 : 0.0; 
+      }
+   }
 }
 
 
-Frame::Frame( const Frame& x )
-: o(x.o), e(x.e) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Frame::Frame( Frame const& x )
+: o_(x.o_), e_(x.e_) 
 { }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Frame::~Frame()
 {}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Frame& Frame::operator=( const Frame& x )
+Frame const& Frame::identityFrame() 
 {
-  if( this != &x ) {
-    o = x.o;
-    e = x.e;
-  }
+  static Frame identity;
+  return identity;
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Frame& Frame::operator=( Frame const& x )
+{
+  if( this == &x )  return *this;
+  
+  o_ = x.o_;
+  e_ = x.e_;
+  
   return *this;
 }
   
- int Frame::setOrigin ( const Vector& x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int Frame::setOrigin ( Vector const& x )
 {
    int ret = 0;
 
@@ -93,13 +112,16 @@ Frame& Frame::operator=( const Frame& x )
   }
 
   else {
-    o = x;
+    o_ = x;
   }  
 
   return ret;
 }
 
- int Frame::setAxis   ( int j, const Vector& x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ int Frame::setAxis   ( int j, Vector const& x )
 {
    int ret = 0;
 
@@ -122,15 +144,18 @@ Frame& Frame::operator=( const Frame& x )
   }
 
   else {
-    for( int i = 0; i < 3; i++ ) {
-      e( i, j ) = x(i);
+    for( int i=0; i < 3; ++i) {
+      e_( i, j ) = x(i);
     }
   }  
 
   return ret;
 }
 
- int Frame::setDualAxis   ( int i, const Vector& x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ int Frame::setDualAxis   ( int i, Vector const& x )
 {
    int ret = 0;
 
@@ -153,60 +178,48 @@ Frame& Frame::operator=( const Frame& x )
   }
 
   else {
-    e = e.inverse();
-    for( int j = 0; j < 3; j++ ) {
-      e( i, j ) = x(j);
+    e_ = e_.inverse();
+    for( int j=0; j<3; ++j) {
+      e_( i, j ) = x(j);
     }
-    e = e.inverse();
+    e_ = e_.inverse();
   }  
 
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool Frame::setOrthonormalAxes( const MatrixD& axisSystem )
+bool Frame::setOrthonormalAxes( MatrixD const& axisSystem )
 {
-  MatrixD oldSystem;
-  oldSystem = e;
-  e = axisSystem;
-  if( this->isOrthonormal() ) {
+  MatrixD oldSystem = e_;
+
+  e_ = axisSystem;
+  if( isOrthonormal() ) {
     return true;
   }
   else {
-    e = oldSystem;
+    e_ = oldSystem;
     return false;
   }
 }
 
 
-// REMOVE: bool Frame::isOrthonormal() const
-// REMOVE: {
-// REMOVE:   MatrixD u(3,3);
-// REMOVE: 
-// REMOVE:   u = e.transpose() - e.inverse();
-// REMOVE: 
-// REMOVE:   for( int i = 0; i < 3; i++ ) {
-// REMOVE:     for( int j = 0; j < 3; j++ ) {
-// REMOVE:       if( 1.0e-12 < fabs( u(i,j) ) ) return false;
-// REMOVE:     }
-// REMOVE:   }
-// REMOVE: 
-// REMOVE:   return true;
-// REMOVE: }
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool Frame::isOrthonormal() const
 {
-  MatrixD u(3,3);
-  u = (e.transpose())*e;
+  MatrixD u = (e_.transpose())*e_;
 
-  for( int i = 0; i < 3; i++ ) {
-    for( int j = 0; j < 3; j++ ) {
+  for( int i=0; i<3; ++i) {
+    for( int j=0; j<3; ++j) {
       if( i == j ) {
-        if( 1.0e-9 < fabs( u(i,j) - 1.0 ) ) { return false; }
+        if ( std::abs( u(i,j) - 1.0 ) > 1.0e-9 ) { return false; }
       }
       else {
-        if( 1.0e-12 < fabs( u(i,j) ) ) { return false; }
+        if( std::abs( u(i,j) > 1.0e-12  )) { return false; }
       }
     }
   }
@@ -214,10 +227,16 @@ bool Frame::isOrthonormal() const
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Vector Frame::getOrigin() const
 {
-  return o;
+  return o_;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector Frame::getAxis( int j ) const
 {
@@ -232,32 +251,44 @@ Vector Frame::getAxis( int j ) const
   }
 
   else {
-    for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,j);
+    for( int i=0; i<3; ++i) ret(i) = e_.getElement(i,j);
   }
 
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Vector Frame::getxAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,0);
+  for( int i = 0; i < 3; ++i) ret(i) = e_.getElement(i,0);
   return ret;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector Frame::getyAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,1);
+  for( int i = 0; i<3; ++i) ret(i) = e_.getElement(i,1);
   return ret;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector Frame::getzAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; i++ ) ret(i) = e.getElement(i,2);
+  for( int i=0; i< 3; ++i) ret(i) = e_.getElement(i,2);
   return ret;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector Frame::getDualAxis( int i ) const
 {
@@ -273,18 +304,21 @@ Vector Frame::getDualAxis( int i ) const
   }
 
   else {
-    w = e.inverse();
-    for( int j = 0; j < 3; j++ ) ret(j) = w(i,j);
+    w = e_.inverse();
+    for( int j=0; j<3; ++j) ret(j) = w(i,j);
   }
 
   return ret;
 }
 
- int Frame::rotate( double theta, 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int Frame::rotate( double theta, 
                          const  Vector& u,
                          bool   rotateOrigin )
 {
-   int ret = 0;
+  int ret = 0;
 
   if( u.Dim() != 3 ) {
     cerr << "***WARNING***                                 \n"
@@ -297,25 +331,32 @@ Vector Frame::getDualAxis( int i ) const
 
   else {
     Vector w(3);
-    int i, k;
-    for( i = 0; i < 3; i++ ) {
-      for( k = 0; k < 3; k++ ) {
-        w(k) = e(k,i);
+
+    for( int i=0; i<3; ++i ) {
+
+      for( int k=0; k<3; ++k) {
+        w(k) = e_(k,i);
       }
+
       u.Rotate( w, theta );
-      for( k = 0; k < 3; k++ ) {
-        e(k,i) = w(k);
+
+      for( int k =0; k<3; ++k) {
+        e_(k,i) = w(k);
       }
+
     }
   }
 
   // Origin is rotated by default ...
   if( rotateOrigin ) {
-    u.Rotate( o, theta );
+    u.Rotate( o_, theta );
   }
 
   return ret;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  int Frame::translate ( const Vector& x )
 {
@@ -331,73 +372,80 @@ Vector Frame::getDualAxis( int i ) const
   }
 
   else {
-    o += x;
+    o_ += x;
   }
 
   return ret;
 }
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Frame::reset()
 {
-  o(0) = 0.0;
-  o(1) = 0.0;
-  o(2) = 0.0;
+  o_(0) = 0.0;
+  o_(1) = 0.0;
+  o_(2) = 0.0;
 
   for( int i = 0; i < 3; i++ ) {
-    e(i,i) = 1.0;
+    e_(i,i) = 1.0;
     for( int j = i+1; j < 3; j++ ) {
-      e(i,j) = 0.0;
-      e(j,i) = 0.0;
+      e_(i,j) = 0.0;
+      e_(j,i) = 0.0;
     }
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Frame Frame::relativeTo( const Frame& f ) const
+Frame Frame::relativeTo( Frame const& f ) const
 {
   // Assumes orthonormal Frame
   Frame ret;
   MatrixD W( 3, 3 );
 
-  W = ( f.e ).transpose();
-  ret.o = W * ( this->o - f.o );
-  ret.e = W * ( this->e );
+  W = ( f.e_ ).transpose();
+  ret.o_ = W * ( o_ - f.o_ );
+  ret.e_ = W * ( e_ );
 
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Frame Frame::patchedOnto( const Frame& f ) const
+Frame Frame::patchedOnto( Frame const& f ) const
 {
   // Assumes orthonormal Frame
   Frame ret;
   MatrixD W( 3, 3 );
 
-  W = f.e;
-  ret.o = f.o + W * ( this->o );
-  ret.e = W * ( this->e );
+  W = f.e_;
+  ret.o_ = f.o_ + W * ( this->o_ );
+  ret.e_ = W * ( this->e_ );
 
   // A correction to keep orthogonality
   // errors from building up.
   Matrix corrector(3,3);
-  corrector = (-0.5)*((ret.e.transpose())*(ret.e));
-  for( int i = 0; i < 3; i++ ) {
+  corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
+  for( int i = 0; i < 3; ++i) {
     corrector(i,i) = corrector(i,i) + 1.5;
   }
-  ret.e = corrector*(ret.e);
+  ret.e_ = corrector*(ret.e_);
 
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Frame Frame::tween(   const Frame& one, const Frame& two
                     , double pct, bool doChecks )
 {
   static bool firstTime = true;
-  const std::complex<double>  c_zero(0.,0.);
-  const std::complex<double>  c_one(1.,0.);
+  static const std::complex<double>  c_zero(0.,0.);
+  static const std::complex<double>  c_one(1.,0.);
 
   // Trim the pct argument
   if( doChecks ) {
@@ -531,42 +579,63 @@ Frame Frame::tween(   const Frame& one, const Frame& two
   return middle.patchedOnto(one);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Frame::convertInPlace( Vector& p, Vector& v ) const
 {
-  MatrixD U( e.transpose() );
-  p = U*(p-o);
+  MatrixD U( e_.transpose() );
+  p = U*(p-o_);
   v = U*v;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool Frame::isRightHanded() const
+{
+  return ( e_.determinant() > 0 );
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& operator<< ( ostream& os, const Frame& f )
 {
   /* 
-     os << "Frame origin: " << f.o << endl;
+     os << "Frame origin: " << f.o_ << endl;
      os << "Frame x axis: ( " 
-     << f.e(0,0) << ", " << f.e(1,0) << ", " << f.e(2,0) << " )"
+     << f.e_(0,0) << ", " << f.e_(1,0) << ", " << f.e_(2,0) << " )"
      << endl;
      os << "Frame y axis: ( " 
-     << f.e(0,1) << ", " << f.e(1,1) << ", " << f.e(2,1) << " )"
+     << f.e_(0,1) << ", " << f.e_(1,1) << ", " << f.e_(2,1) << " )"
      << endl;
      os << "Frame z axis: ( " 
-     << f.e(0,2) << ", " << f.e(1,2) << ", " << f.e(2,2) << " )"
+     << f.e_(0,2) << ", " << f.e_(1,2) << ", " << f.e_(2,2) << " )"
      << endl;
      return os;
      */
-  os << f.o(0) << " " << f.o(1) << " " << f.o(2) << endl;
-  os << f.e(0,0) << " " << f.e(1,0) << " " << f.e(2,0) << endl;
-  os << f.e(0,1) << " " << f.e(1,1) << " " << f.e(2,1) << endl;
-  os << f.e(0,2) << " " << f.e(1,2) << " " << f.e(2,2) << endl;
+  os << f.o_(0)   << " " << f.o_(1)   << " " << f.o_(2)   << endl;
+  os << f.e_(0,0) << " " << f.e_(1,0) << " " << f.e_(2,0) << endl;
+  os << f.e_(0,1) << " " << f.e_(1,1) << " " << f.e_(2,1) << endl;
+  os << f.e_(0,2) << " " << f.e_(1,2) << " " << f.e_(2,2) << endl;
   return os;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 istream& operator>> ( istream& is, Frame& f )
 {
-  is >> f.o(0) >> f.o(1) >> f.o(2);
-  is >> f.e(0,0) >> f.e(1,0) >> f.e(2,0);
-  is >> f.e(0,1) >> f.e(1,1) >> f.e(2,1);
-  is >> f.e(0,2) >> f.e(1,2) >> f.e(2,2);
+  is >> f.o_(0)   >> f.o_(1)   >> f.o_(2);
+  is >> f.e_(0,0) >> f.e_(1,0) >> f.e_(2,0);
+  is >> f.e_(0,1) >> f.e_(1,1) >> f.e_(2,1);
+  is >> f.e_(0,2) >> f.e_(1,2) >> f.e_(2,2);
   return is;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
