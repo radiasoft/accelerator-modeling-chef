@@ -36,9 +36,10 @@
 
 #include <beamline/beamline.h>
 
-class RollAccumulator : public beamline::Action {
+class RollAccumulator { 
 
   public:
+
     RollAccumulator( const char*, double = 0.0 );
     ~RollAccumulator();
 
@@ -46,11 +47,12 @@ class RollAccumulator : public beamline::Action {
     void setStrongType();
 
     int operator()( bmlnElmnt& );
+    int operator()( ElmPtr&    );
 
   private:
-    double deltaRoll_;
-    char*  type_;
-    bool   weak_;   // default false
+    double       deltaRoll_;
+    std::string  type_;
+    bool         weak_;   // default false
 };
 
 #endif // ROLLACCUMULATOR_H
