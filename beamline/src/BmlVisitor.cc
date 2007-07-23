@@ -40,7 +40,7 @@
 ******  - converted to new-style STL compatible beamline iterators    
 ******  - take advantage of dynamic typing
 ******  - use reference-based argument rather than ptr 
-******  - use safe casting to dispatch to visit( bmlnElmnt& )default behavior   
+******  - use safe cast to dispatch to visit( bmlnElmnt& )default behavior   
 ******                                                            
 **************************************************************************
 *************************************************************************/
