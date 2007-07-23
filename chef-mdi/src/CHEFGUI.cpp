@@ -1354,7 +1354,7 @@ void CHEFGUI::editAlignBends()
       if( returnCode == QDialog::Accepted )
       {
         CF_rbendFinder_quad cf( prototype->getQuadrupole() );
-        p_currBmlCon_->setAlignment( cf, prototype->Alignment() );
+        p_currBmlCon_->setAlignment( prototype->Alignment(), cf );
       }
 
       delete wpu;

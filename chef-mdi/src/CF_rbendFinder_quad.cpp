@@ -78,3 +78,11 @@ bool CF_rbendFinder_quad::operator()(  bmlnElmnt const& x )
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool CF_rbendFinder_quad::operator()(  ElmPtr& x )
+{
+  return  operator()(*x);
+}
+
