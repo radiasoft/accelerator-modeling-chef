@@ -31,9 +31,15 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
+******
+****** July 2007 ostiguy@fnal.gov
+****** - take advantage of dynamic type resolution for visit functions
+****** - element predicate based on general function object   
+******                                                               
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -83,60 +89,44 @@ const int LayoutVisitor::NOFILEOPENED  = 2;
 // Constructors
 
 LayoutVisitor::LayoutVisitor( double bsl, double bh, double qh, double sh )
-: _s(0.0),
-  _baseline(bsl),
-  _bendHeight(bh),
-  _quadHeight(qh),
-  _sextHeight(sh),
-  _specialHeight(0.0),
-  _streamPtr(0),
-  _errorCode(OKAY),
-  _ptrCritFunc(0)
-{
-}
+: s_(0.0),
+  baseline_(bsl),
+  bendHeight_(bh),
+  quadHeight_(qh),
+  sextHeight_(sh),
+  specialHeight_(0.0),
+  streamPtr_(0),
+  errorCode_(OKAY)
+{}
 
-
-LayoutVisitor::LayoutVisitor( const LayoutVisitor& x )
-: _s(0.0),
-  _baseline(x._baseline),
-  _bendHeight(x._bendHeight),
-  _quadHeight(x._quadHeight),
-  _sextHeight(x._sextHeight),
-  _specialHeight(x._specialHeight),
-  _streamPtr(0),
-  _errorCode(x._errorCode),
-  _ptrCritFunc(x._ptrCritFunc)
-{
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-            "\n*** WARNING *** You should not copy a LayoutVisitor."
-            "\n*** WARNING *** "
-         << endl;
-    firstTime = false;
-  }
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LayoutVisitor::~LayoutVisitor()
 {
-  if( _streamPtr ) {
+  if( streamPtr_ ) {
     this->closeFile();
   }
 }
 
 
-void LayoutVisitor::setDiscriminator( bmlnElmnt::Discriminator* dsc, 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::setDiscriminator( boost::function< bool( bmlnElmnt&) > dsc, 
                                       double hght )
 {
-  _specialHeight = hght;
-  _ptrCritFunc = dsc;
+  specialHeight_   = hght;
+  discriminator_   = dsc;
 }
 
 
 // Visiting functions
 
-void LayoutVisitor::visitSector   ( sector*     )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit ( sector& )
 {
   (*pcerr) << "*** WARNING ***                                \n"
        << "*** WARNING *** LayoutVisitor::visitSector       \n"
@@ -147,181 +137,212 @@ void LayoutVisitor::visitSector   ( sector*     )
        << "*** WARNING *** unreliable.                    \n"
        << "*** WARNING ***                                \n"
        << endl;
-  _errorCode = SECTORVISITED;
+  errorCode_ = SECTORVISITED;
 }
 
 
-void LayoutVisitor::visitBmlnElmnt( bmlnElmnt* x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( bmlnElmnt& x )
 {
-  if( _streamPtr ) {
 
-    if( _ptrCritFunc ) {
-      if( (*_ptrCritFunc)(x) ) {
-        _processSpecialElement( x );
-        return;
-      }
-    }
-
-    if( x->Length() > 0.0 ) {
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline << endl;
-    }
+  if( !streamPtr_ ) { 
+     errorCode_ = NOFILEOPENED;
+     return;
   }
 
-  else {
-    _errorCode = NOFILEOPENED;
+  if( !streamPtr_ ) return;
+
+  if( discriminator_ ) {
+     if(  discriminator_(x) ) {
+        processSpecialElement( x );
+        return;
+     }
+  }
+  
+  if( x.Length() > 0.0 ) {
+      s_ += x.Length();
+      (*streamPtr_) << s_ << "  " << baseline_ << endl;
   }
 }
 
-
-void LayoutVisitor::visitQuadrupole( quadrupole* x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+void LayoutVisitor::visit( quadrupole& x )
 {
-  if( _streamPtr ) {
+  if( !streamPtr_ ) { 
+     errorCode_ = NOFILEOPENED;
+     return;
+  }
 
-    if( _ptrCritFunc ) {
-      if( (*_ptrCritFunc)(x) ) {
-        _processSpecialElement( x );
+  if( !streamPtr_ ) return;
+
+  if( discriminator_ ) {
+      if( discriminator_(x) ) {
+        processSpecialElement( x );
         return;
       }
-    }
+  }
 
-    if( 0 == x->Strength() ) {
-      this->visitBmlnElmnt(x);
-    }
-    else if ( 0 < x->Strength() ) {
-      (*_streamPtr) << _s << "  " << _baseline + _quadHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline + _quadHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
+   if( 0 == x.Strength() ) {
+      this->visit(x);
+   }
+   else if ( 0 < x.Strength() ) {
+      (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
+      s_ += x.Length();
+      (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
+      (*streamPtr_) << s_ << "  " << baseline_ << endl;
+   }
+   else {
+      (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
+      s_ += x.Length();
+      (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
+      (*streamPtr_) << s_ << "  " << baseline_ << endl;
+   }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit_bend( bmlnElmnt& x )
+{
+
+  if( !streamPtr_ ) { 
+     errorCode_ = NOFILEOPENED;
+     return;
+  }
+
+
+  if( discriminator_ ) {
+      if( discriminator_(x) ) {
+        processSpecialElement( x );
+        return;
+      }
+  }
+
+  if( 0 == x.Strength() ) {
+      this->visit(x);
+  }
+  else if ( 0 < x.Strength() ) {
+     (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
+     s_ += x.Length();
+     (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
+     (*streamPtr_) << s_ << "  " << baseline_ << endl;
     }
     else {
-      (*_streamPtr) << _s << "  " << _baseline - _quadHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline - _quadHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
+      (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
+      s_ += x.Length();
+      (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
+      (*streamPtr_) << s_ << "  " << baseline_ << endl;
     }
-  }
-  else {
-    _errorCode = NOFILEOPENED;
-  }
 }
 
 
-void LayoutVisitor::_visit_bend( bmlnElmnt* x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( rbend& x )
 {
-  if( _streamPtr ) {
+  visit_bend(x);
+}
 
-    if( _ptrCritFunc ) {
-      if( (*_ptrCritFunc)(x) ) {
-        _processSpecialElement( x );
-        return;
-      }
-    }
 
-    if( 0 == x->Strength() ) {
-      this->visitBmlnElmnt(x);
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( sbend& x )
+{
+  visit_bend(x);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( CF_rbend& x )
+{
+  visit_bend(x);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( CF_sbend& x )
+{
+   visit_bend(x);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::visit( sextupole& x )
+{
+  if( !streamPtr_ ) { 
+     errorCode_ = NOFILEOPENED;
+     return;
+  }
+
+  if( discriminator_ ) {
+    if( discriminator_(x) ) {
+     processSpecialElement( x );
+     return;
     }
-    else if ( 0 < x->Strength() ) {
-      (*_streamPtr) << _s << "  " << _baseline + _bendHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline + _bendHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
+  }
+
+   if( x.Strength() == 0.0 ) {
+      this->visit(x);
+   }
+   else if ( 0 < x.Strength() ) {
+     (*streamPtr_) << s_ << "  " << baseline_ + sextHeight_ << endl;
+     s_ += x.Length();
+     (*streamPtr_) << s_ << "  " << baseline_ + sextHeight_ << endl;
+     (*streamPtr_) << s_ << "  " << baseline_ << endl;
     }
     else {
-      (*_streamPtr) << _s << "  " << _baseline - _bendHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline - _bendHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
-    }
-  }
-  else {
-    _errorCode = NOFILEOPENED;
-  }
-}
-
-
-void LayoutVisitor::visitRbend( rbend* x )
-{
-  this->_visit_bend(x);
-}
-
-
-void LayoutVisitor::visitSbend( sbend* x )
-{
-  this->_visit_bend(x);
-}
-
-
-void LayoutVisitor::visitCF_rbend( CF_rbend* x )
-{
-  this->_visit_bend(x);
-}
-
-
-void LayoutVisitor::visitCF_sbend( CF_sbend* x )
-{
-  this->_visit_bend(x);
-}
-
-
-void LayoutVisitor::visitSextupole( sextupole* x )
-{
-  if( _streamPtr ) {
-
-    if( _ptrCritFunc ) {
-      if( (*_ptrCritFunc)(x) ) {
-        _processSpecialElement( x );
-        return;
-      }
+     (*streamPtr_) << s_ << "  " << baseline_ - sextHeight_ << endl;
+      s_ += x.Length();
+      (*streamPtr_) << s_ << "  " << baseline_ - sextHeight_ << endl;
+      (*streamPtr_) << s_ << "  " << baseline_ << endl;
     }
 
-    if( 0 == x->Strength() ) {
-      this->visitBmlnElmnt(x);
-    }
-    else if ( 0 < x->Strength() ) {
-      (*_streamPtr) << _s << "  " << _baseline + _sextHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline + _sextHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
-    }
-    else {
-      (*_streamPtr) << _s << "  " << _baseline - _sextHeight << endl;
-      _s += x->Length();
-      (*_streamPtr) << _s << "  " << _baseline - _sextHeight << endl;
-      (*_streamPtr) << _s << "  " << _baseline << endl;
-    }
-  }
-  else {
-    _errorCode = NOFILEOPENED;
-  }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // File manipulation
 
 int LayoutVisitor::openFile( const char* fileName )
 {
-  if( _streamPtr ) {
+  if( streamPtr_ ) {
     this->closeFile();
   }
-  _streamPtr = new ofstream( fileName );
+  streamPtr_ = new ofstream( fileName );
 
   // Record first point
-  (*_streamPtr) << _s << "  " << _baseline << endl;
+  (*streamPtr_) << s_ << "  " << baseline_ << endl;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int LayoutVisitor::closeFile()
 {
   int ret;
 
-  if( _streamPtr ) {
-    (*_streamPtr) << endl;
-    (*_streamPtr) << 0.0 << "  " << _baseline << endl;
-    (*_streamPtr) << _s  << "  " << _baseline << endl;
-    _streamPtr->close();
-    delete _streamPtr;
-    _streamPtr = 0;
+  if( streamPtr_ ) {
+    (*streamPtr_) << endl;
+    (*streamPtr_) << 0.0 << "  " << baseline_ << endl;
+    (*streamPtr_) << s_  << "  " << baseline_ << endl;
+    streamPtr_->close();
+    delete streamPtr_;
+    streamPtr_ = 0;
     ret = OKAY;
   }
 
@@ -332,17 +353,22 @@ int LayoutVisitor::closeFile()
   return ret;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int LayoutVisitor::getErrorCode() const
 {
-  return _errorCode;
+  return errorCode_;
 }
 
 
-void LayoutVisitor::_processSpecialElement( bmlnElmnt* x )
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LayoutVisitor::processSpecialElement( bmlnElmnt& x )
 {
-  (*_streamPtr) << _s << "  " << _baseline + _specialHeight << endl;
-  _s += x->Length();
-  (*_streamPtr) << _s << "  " << _baseline + _specialHeight << endl;
-  (*_streamPtr) << _s << "  " << _baseline << endl;
+  (*streamPtr_) << s_ << "  " << baseline_ + specialHeight_ << endl;
+  s_ += x.Length();
+  (*streamPtr_) << s_ << "  " << baseline_ + specialHeight_ << endl;
+  (*streamPtr_) << s_ << "  " << baseline_ << endl;
 }
