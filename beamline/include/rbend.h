@@ -267,12 +267,12 @@ public:
 
   double setEntryAngle( Particle const& ); 
   double setExitAngle(  Particle const& ); 
-  double getEntryAngle()                  const { return _usAngle; }
-  double getExitAngle()                   const { return _dsAngle; }
+  double getEntryAngle()                  const { return usAngle_; }
+  double getExitAngle()                   const { return dsAngle_; }
   double setEntryAngle( double const& radians ); 
   double setExitAngle(  double const& radians); 
-  double getEntryEdgeAngle()              const { return _usEdgeAngle; }
-  double getExitEdgeAngle()               const { return _dsEdgeAngle; }
+  double getEntryEdgeAngle()              const { return usEdgeAngle_; }
+  double getExitEdgeAngle()               const { return dsEdgeAngle_; }
 
   // Aliases, for the sake of backwards compatability
 
@@ -292,7 +292,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  double OrbitLength( const Particle& );
+  double OrbitLength( Particle const& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.
 
@@ -303,26 +303,26 @@ public:
 private:
   // bmlnElmnt::strength -> magnetic field [T]
 
-  double _usEdgeAngle, _dsEdgeAngle;
-                            // [radians] as defined in MAD for rbends.
-  double _usAngle, _dsAngle;// [radians] entry (upstream) and exit (downstream) 
-                            // angles of the fiducial orbit referenced
+  double usEdgeAngle_;      // [radians] as defined in MAD for rbends.
+  double dsEdgeAngle_;
+  double usAngle_;          // [radians] entry (upstream) and exit (downstream) 
+  double dsAngle_;          // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. If no
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  double _usTan, _dsTan;    // tangents of the entry and exit angles:
-                            // px/pz of a reference particle at the
+  double usTan_;            // tangents of the entry and exit angles:
+  double dsTan_;            // px/pz of a reference particle at the
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
                             // sgn( _usTan ) = - sgn( _dsTan )
-  double _dphi;             // angle between in- and out-frames: a derived 
+  double dphi_;             // angle between in- and out-frames: a derived 
                             // quantity.
-  std::complex<double> _propPhase, _propTerm;
-                            // Used to propagate through constant magnetic
-                            // field using bend angle and edge angle data.
 
-  void _calcPropParams();
+  std::complex<double>   propPhase_;   // Used to propagate through constant magnetic
+  std::complex<double>   propTerm_;    // field using bend angle and edge angle data.
+
+  void calcPropParams();
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
