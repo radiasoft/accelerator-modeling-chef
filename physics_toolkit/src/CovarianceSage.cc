@@ -143,7 +143,7 @@ CovarianceSage::CovarianceSage( beamline const& x)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Criterion& crit )
+int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov)
 {
   // PRECONDITION:   The JetParticle must be on the closed
   //                 orbit with the identity mapping for its state.
@@ -162,10 +162,6 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Crite
   //                 a Barnacle labelled eigentunes that possesses
   //                 an CovarianceSage::Tunes data struct. 
  
-  // This routine has been partially copied from
-  //   TevatronOptics/calcs/ellipse/ellipse_3.cc
-
-
 
   // A little paranoia check.
   int r = cov.rows();
@@ -178,7 +174,7 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Crite
          << "x"
          << (cov.cols())
          << ", not square."
-         << endl;
+         << std::endl;
     return NOTSQR;
   }
 
@@ -228,7 +224,7 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Crite
            << "\n***ERROR*** Determinant of (projected) \"horizontal\" covariance matrix = "
            << normalizer
            << " <= 0.0."
-           << endl;
+           << std::endl;
       return NEGDET;
     }
     normalizer = 1.0/sqrt(normalizer);
@@ -247,7 +243,7 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov, beamline::Crite
            << "\n***ERROR*** Determinant of (projected) \"vertical\" covariance matrix = "
            << normalizer
            << " <= 0.0."
-           << endl;
+           << std::endl;
       return NEGDET;
     }
 

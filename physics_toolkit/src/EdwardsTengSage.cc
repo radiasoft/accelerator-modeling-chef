@@ -120,6 +120,149 @@ EdwardsTengSage::EdwardsTengSage( beamline const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+int EdwardsTengSage::doCalc( JetParticle& jp )
+{
+  // PRECONDITION:   The JetParticle must be on the closed
+  //                 orbit with the identity mapping for its state.
+  //                 Its Jet environment's reference point 
+  //                 should be the closed orbit. It is not reset.
+  //
+  // POSTCONDITIONS: The JetParticle has the one-turn mapping for its state.
+  //                 Every element in the beamline has attached a Barnacle
+  //                 labelled "EdwardsTengSage" that possesses an
+  //                 EdwardsTengSage::Info struct.
+  //                 The beamline has attached to it
+  //                 a Barnacle labelled "eigentunes" that possesses
+  //                 an EdwardsTengSage::Tunes data struct. 
+
+  int             ret = 0;
+  double          t;
+
+
+  // .......... Propagate a JetParticle element by element
+  // .......... It is assumed to be on a closed orbit!!
+
+  Particle particle(jp);
+
+  double lng = 0.0;
+
+  for( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin(); 
+                               it != myBeamlinePtr_->deep_end(); ++it) {
+
+    lng += (*it)->OrbitLength( particle );
+
+    (*it)->propagate( jp );
+
+    Info etinfo;
+    etinfo.arcLength = lng;
+
+    etinfo.map= jp.getState().Jacobian(); 
+
+    (*it)->dataHook.append( Barnacle("EdwardsTengSage", etinfo) );
+    
+  }
+
+  // .......... Calculating tunes .........................
+
+  Mapping one_turn_map( jp.getState() );
+
+  MatrixD mtrx   = one_turn_map.Jacobian();
+  MatrixC lambda = mtrx.eigenValues();
+
+  for( int i = 0; i < BMLN_dynDim; ++i)
+   if( abs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
+    (*FNAL::pcerr) << "\n"
+         << "*** ERROR ***                                     \n"
+         << "*** ERROR ***                                     \n"
+         << "*** ERROR *** EdwardsTengSage()                       \n"
+         << "*** ERROR *** The lattice is linearly unstable.   \n"
+         << "*** ERROR *** lambda( " << i << " ) has magnitude = " 
+         << abs(lambda(i))
+         << "\n"
+         << "*** ERROR ***                                     \n"
+         << std::endl;
+    eraseAll();
+    return 10;
+   }
+
+  if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
+      ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
+    ) {
+    (*FNAL::pcerr) << "\n"
+         << "*** ERROR *** EdwardsTengSage()                        \n"
+         << "*** ERROR *** Conjugacy condition has been violated\n"
+         << "*** ERROR *** The lattice may be linearly unstable.\n"
+         << "*** ERROR *** Eigenvalues =                        \n"
+         << "*** ERROR *** " << lambda << std::endl;
+    return 11;
+  }
+
+  csH_ = real( lambda(0) );    
+  csV_ = real( lambda(1) );
+
+  // Go through the accelerator again and attach
+  //   the Edwards Teng lattice info to each element
+  //   satisfying the selection criterion.
+
+
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) {
+
+     int err = attachETFuncs( (*it), mtrx );  
+
+      if ( err ) 
+      {  
+        eraseAll();
+        return -1; // failure
+      }
+    
+  }
+
+  Tunes tunes;
+  t = atan2( snH_, csH_ );
+
+  if( t < 0.0 )   t += M_TWOPI;
+  tunes.hor = ( t / M_TWOPI );
+
+  t = atan2( snV_, csV_ );
+
+  if( t < 0.0 )   t += M_TWOPI;
+  tunes.ver = ( t / M_TWOPI );
+
+  myBeamlinePtr_->dataHook.append( Barnacle("eigentunes", tunes) );
+
+  
+  // ------------------------------------------------------------------------------------
+  // If we got here, the calculation was successful. Populate the calc_ array. 
+  // 
+  // 
+  // IMPORTANT NOTE: with shared bmlnElmmnts, the Barnacle mechanism is *broken* because
+  //                 the same element ptr may refer to multiple locations within a beamline. 
+  //                 As a temporary work around, one can ***remove*** the barnacles in a FIFO manner. 
+  //
+  //-------------------------------------------------------------------------------------
+
+
+  for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
+  {
+         
+        BarnacleList::iterator itb;
+        if( ( itb = (*it)->dataHook.find( "EdwardsTengSage" )) !=  (*it)->dataHook.end() ) {
+
+            calcs_.push_back( boost::any_cast<EdwardsTengSage::Info>(itb->info) );
+ 
+            // NOTE: the step below needed if *SHARED elements* are allowed !!! 
+            //  (*it)->dataHook.erase(itb); 
+        }
+   
+  }
+
+  return 0;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 int EdwardsTengSage::eigenTuneCalc( JetParticle const& ptr_jp, 
                                     EdwardsTengSage::Tunes& answer )
@@ -432,155 +575,6 @@ void EdwardsTengSage::eraseAll()
   }
 
   calcs_.clear();
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int EdwardsTengSage::doCalc( JetParticle& jp, beamline::Criterion& crit )
-{
-  // PRECONDITION:   The JetParticle must be on the closed
-  //                 orbit with the identity mapping for its state.
-  //                 Its Jet environment's reference point 
-  //                 should be the closed orbit. It is not reset.
-  //
-  // POSTCONDITIONS: The JetParticle has the one-turn mapping for its state.
-  //                 Every element in the beamline that
-  //                 matches the criterion has attached a Barnacle
-  //                 labelled "EdwardsTengSage" that possesses an
-  //                 EdwardsTengSage::Info struct.
-  //                 The beamline has attached to it
-  //                 a Barnacle labelled "eigentunes" that possesses
-  //                 an EdwardsTengSage::Tunes data struct. 
-
-  int             ret = 0;
-  double          t;
-
-
-  // .......... Propagate a JetParticle element by element
-  // .......... It is assumed to be on a closed orbit!!
-
-  Particle particle(jp);
-
-  double lng = 0.0;
-
-  for( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin(); 
-                               it != myBeamlinePtr_->deep_end(); ++it) {
-
-    lng += (*it)->OrbitLength( particle );
-
-    (*it)->propagate( jp );
-
-    if( crit(**it) ) {
-      Info etinfo;
-      etinfo.arcLength = lng;
-
-      // PREVIOUS VERSION: etinfo.map= jp.getState();
-      etinfo.map= jp.getState().Jacobian(); 
-
-      (*it)->dataHook.append( Barnacle("EdwardsTengSage", etinfo) );
-    }
-  }
-
-  // .......... Calculating tunes .........................
-
-  Mapping one_turn_map( jp.getState() );
-
-  MatrixD mtrx   = one_turn_map.Jacobian();
-  MatrixC lambda = mtrx.eigenValues();
-
-  for( int i = 0; i < BMLN_dynDim; ++i)
-   if( abs( abs(lambda(i)) - 1.0 ) > 1.0e-4 ) {
-    (*pcerr) << "\n"
-         << "*** ERROR ***                                     \n"
-         << "*** ERROR ***                                     \n"
-         << "*** ERROR *** EdwardsTengSage()                       \n"
-         << "*** ERROR *** The lattice is linearly unstable.   \n"
-         << "*** ERROR *** lambda( " << i << " ) has magnitude = " 
-         << abs(lambda(i))
-         << "\n"
-         << "*** ERROR ***                                     \n"
-         << endl;
-    eraseAll();
-    return 10;
-   }
-
-  if( ( abs( lambda(0) - conj( lambda(3) ) ) > 1.0e-4 )  ||
-      ( abs( lambda(1) - conj( lambda(4) ) ) > 1.0e-4 )
-    ) {
-    (*pcerr) << "\n"
-         << "*** ERROR *** EdwardsTengSage()                        \n"
-         << "*** ERROR *** Conjugacy condition has been violated\n"
-         << "*** ERROR *** The lattice may be linearly unstable.\n"
-         << "*** ERROR *** Eigenvalues =                        \n"
-         << "*** ERROR *** " << lambda << endl;
-    return 11;
-  }
-
-  csH_ = real( lambda(0) );    
-  csV_ = real( lambda(1) );
-
-  // Go through the accelerator again and attach
-  //   the Edwards Teng lattice info to each element
-  //   satisfying the selection criterion.
-
-
-  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) {
-
-    if(  crit( **it ) ) 
-    {
-      // PREVIOUS VERSION:: int err = attachETFuncs( (*it), one_turn_map );  
-      int err = attachETFuncs( (*it), mtrx );  
-
-      if ( err != 0) 
-      {  
-        eraseAll();
-        return -1; // failure
-      }
-    }
-  }
-
-  Tunes tunes;
-  t = atan2( snH_, csH_ );
-
-  if( t < 0.0 )   t += M_TWOPI;
-  tunes.hor = ( t / M_TWOPI );
-
-  t = atan2( snV_, csV_ );
-
-  if( t < 0.0 )   t += M_TWOPI;
-  tunes.ver = ( t / M_TWOPI );
-
-  myBeamlinePtr_->dataHook.append( Barnacle("eigentunes", tunes) );
-
-  
-  // ------------------------------------------------------------------------------------
-  // If we got here, the calculation was successful. Populate the calc_ array. 
-  // 
-  // 
-  // IMPORTANT NOTE: with shared bmlnElmmnts, the Barnacle mechanism is *broken* because
-  //                 the same element ptr may refer to multiple locations within a beamline. 
-  //                 As a temporary work around, one can ***remove*** the barnacles in a FIFO manner. 
-  //
-  //-------------------------------------------------------------------------------------
-
-
-  for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
-  {
-         
-        BarnacleList::iterator itb;
-        if( ( itb = (*it)->dataHook.find( "EdwardsTengSage" )) !=  (*it)->dataHook.end() ) {
-
-            calcs_.push_back( boost::any_cast<EdwardsTengSage::Info>(itb->info) );
- 
-            // NOTE: the step below needed if *SHARED elements* are allowed !!! 
-            //  (*it)->dataHook.erase(itb); 
-        }
-   
-  }
-
-  return 0;
 }
 
 

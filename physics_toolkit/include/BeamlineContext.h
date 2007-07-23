@@ -66,12 +66,8 @@ class ChromaticityAdjuster;
 class TuneAdjuster;
 class ConstBmlVisitor;
 class BmlVisitor;
-class bmlnElmnt;
-class BeamlineIterator;
-class DeepBeamlineIterator;
-class ReverseBeamlineIterator;
-class DeepReverseBeamlineIterator;
 
+class bmlnElmnt;
 class quadrupole;
 class thinQuad;
 class sextupole;
@@ -124,7 +120,9 @@ class BeamlineContext
     int setAlignment( ElmPtr, alignmentData const& );
 
     // I really want to get rid of AlignmentData altogether!
-    int setAlignment( beamline::Criterion&, const alignmentData& );
+
+    template <typename UnaryPredicate_t>
+    int setAlignment( alignmentData const&, UnaryPredicate_t Criterion=beamline::AllTrue() );
 
     int replaceElement( ElmPtr , ElmPtr );
     // Will replace the first argument with
@@ -137,7 +135,8 @@ class BeamlineContext
     // been cloned. It is assumed that *b has been created on the
     // heap, and the BeamlineContext takes over ownership.
 
-    int processElements( beamline::Action& );
+    template <typename UnaryFunction_t>
+    int processElements( UnaryFunction_t action );
     // Returns number of elements processed.
 
     void setAvgInvariantEmittance( double, double );
@@ -335,11 +334,6 @@ class BeamlineContext
     bool initial_dispersion_set_;
     bool initial_covariance_set_;
 
-    BeamlineIterator*            p_bi_;
-    DeepBeamlineIterator*        p_dbi_;
-    ReverseBeamlineIterator*     p_rbi_;
-    DeepReverseBeamlineIterator* p_drbi_;
-
     // Operations
  
     void createTunes();
@@ -359,5 +353,6 @@ class BeamlineContext
 
 };
 
+#include <physics_toolkit/BeamlineContext.tcc>
 
 #endif // BEAMLINECONTEXT_H
