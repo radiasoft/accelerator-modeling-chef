@@ -37,10 +37,14 @@
 ******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-******                                                            
+****** - modified visitor to reduce src file coupling. 
+******   visit() now takes advantage of (reference) dynamic type.
+****** - use std::string consistently for string operations. 
+******
+****** July 2007          ostiguy@fnal.gov
+****** - new, less memory-hungry PinnedFrameSet implementation
+******   
+******                                                         
 **************************************************************************
 *************************************************************************/
 
@@ -76,13 +80,6 @@ double PropagatorTraits<JetParticle>::norm(  PropagatorTraits<JetParticle>::Comp
 }    
 
 
-// **************************************************
-//   yes and no Criteria
-// **************************************************
-
-beamline::Aye beamline::yes;
-beamline::Nay beamline::no;
-
 
 // ***********************************
 //   class bmlnElmnt::PinnedFrameSet
@@ -90,21 +87,99 @@ beamline::Nay beamline::no;
 
 
 bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
-:   altered_(false)
-  , upStream_()
-  , downStream_()
+:   upStream_(0), downStream_(0)
 {}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bmlnElmnt::PinnedFrameSet::PinnedFrameSet( bmlnElmnt::PinnedFrameSet const& rhs)
+:   upStream_(0), downStream_(0)
+{
+
+    upStream_ = new Frame( *(rhs.upStream_)   );
+  downStream_ = new Frame( *(rhs.downStream_) );
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bmlnElmnt::PinnedFrameSet::~PinnedFrameSet()
+{
+
+  if (    upStream_ ) delete    upStream_; 
+  if (  downStream_ ) delete  downStream_; 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bmlnElmnt::PinnedFrameSet& bmlnElmnt::PinnedFrameSet::operator=( bmlnElmnt::PinnedFrameSet const& rhs)
+{
+
+  if (    upStream_ ) delete    upStream_; 
+  if (  downStream_ ) delete  downStream_; 
+
+  upStream_   =  rhs.upStream_   ?   new Frame( *(rhs.upStream_)   ) : 0; 
+  downStream_ =  rhs.downStream_ ?   new Frame( *(rhs.downStream_) ) : 0;
+
+  return *this;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Frame const& bmlnElmnt::PinnedFrameSet::upStream() const
+{
+  return  upStream_ ? (*upStream_) : Frame::identityFrame(); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Frame const& bmlnElmnt::PinnedFrameSet::downStream() const
+{
+  return  downStream_ ? (*downStream_) : Frame::identityFrame(); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame) 
+{
+  upStream_ = ( &frame == &(Frame::identityFrame())) ? 0 : new Frame(frame);  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::PinnedFrameSet::downStream(Frame const& frame ) 
+{
+  upStream_ = ( &frame == & (Frame::identityFrame())) ? 0 : new Frame(frame);  
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::PinnedFrameSet::reset()
 {
-   upStream_.reset();
-   downStream_.reset();
-   altered_ = false;
+  if (upStream_)   { delete   upStream_;   upStream_ = 0; }
+  if (downStream_) { delete downStream_; downStream_ = 0; }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::PinnedFrameSet::altered()  const
+{
+  return ( ( &( upStream()   ) != &( Frame::identityFrame() ) ) | 
+           ( &( downStream() ) != &( Frame::identityFrame() ) ) ) ;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 // **************************************************
@@ -903,8 +978,7 @@ void bmlnElmnt::realign()
   // #error *** WARNING ***  bmlnElmnt::realign is not finished.
   // #error *** WARNING ***
 
-  if(0 != align_ ) 
-  { delete align_; align_ = 0; }
+  if( align_ ) { delete align_; align_ = 0; }
 
   #if 1
   static bool firstTime = true;
@@ -932,7 +1006,7 @@ void bmlnElmnt::realign()
     they must be returned to drifts, if possible
     - if they were originally Slots, then they have to be reset too.
 
-  _pinnedFrameSet.reset();
+  pinnedFrameSet_.reset();
   #endif
 }
 
@@ -989,7 +1063,7 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
   //                         +--------- Not quite what I want.
 
 
-  if( pinnedFrames_.altered_ ) 
+  if( pinnedFrames_.altered() ) 
   {
     if( pct < 0.000001 ) { pct = 0; }
     if( 0.999999 < pct ) { pct = 1; }
@@ -1007,17 +1081,17 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
 
       // Downstream end (default)
       if( (1.0 - pct) < 0.001 ) {
-        pinnedFrames_.downStream_.convertInPlace( p, v );
+        pinnedFrames_.downStream().convertInPlace( p, v );
       }
 
       // Upstream end
       else if( pct < 0.001 ) {
-        pinnedFrames_.upStream_.convertInPlace( p, v );
+        pinnedFrames_.upStream().convertInPlace( p, v );
       }
 
       // Somewhere in the middle
       else {
-        Frame ref( Frame::tween( pinnedFrames_.upStream_, pinnedFrames_.downStream_, pct, false ) );
+        Frame ref( Frame::tween( pinnedFrames_.upStream(), pinnedFrames_.downStream(), pct, false ) );
         ref.convertInPlace( p, v );
       }
 
@@ -1187,7 +1261,6 @@ void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 void bmlnElmnt::leaveLocalFrame( Particle& p ) const
 {
 
-
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
@@ -1239,7 +1312,8 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setAperture( Aperture* pAperture_in ) {
+void bmlnElmnt::setAperture( Aperture* pAperture_in ) 
+{
     //
     // aperture = x;
     //
@@ -1370,25 +1444,6 @@ double bmlnElmnt::Length() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::Discriminator::Discriminator()
-{
-  // This does nothing, but its presence seems
-  // to be needed by constructors of derived classes.
-  // Go figure!
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bmlnElmnt::Discriminator::Discriminator( const Discriminator& )
-{
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "bmlnElmnt::Discriminator::Discriminator( const Discriminator& )", 
-         "Copy constructor invoked for a Discriminator object." ) );
-}
-
-
 // Exceptions
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1420,8 +1475,7 @@ bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* 
-bmlnElmnt::GenericException::what() const throw()
+const char* bmlnElmnt::GenericException::what() const throw()
 {
   return errorString.c_str();
 }
@@ -1430,43 +1484,34 @@ bmlnElmnt::GenericException::what() const throw()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-boost::any& 
-bmlnElmnt::operator[](const std::string& s) {
-
+boost::any& bmlnElmnt::operator[](const std::string& s) 
+{
   return attributes_[s.c_str()]; 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool  
-bmlnElmnt::attributeExists( const std::string& s ) {
-
+bool  bmlnElmnt::attributeExists( const std::string& s ) 
+{
   return (attributes_.end() !=  attributes_.find( s.c_str() ) );
-
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  
-bmlnElmnt::attributeClear( const std::string& s ) {
-
+void  bmlnElmnt::attributeClear( const std::string& s ) 
+{
   attributes_.erase( s.c_str() ); 
-
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  
-bmlnElmnt::attributeClear() {
-
+void  bmlnElmnt::attributeClear() 
+{
   attributes_.clear();
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
