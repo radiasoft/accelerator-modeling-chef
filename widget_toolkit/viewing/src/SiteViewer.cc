@@ -330,7 +330,7 @@ void SiteViewer::_viewHilite()
   if( checked ) {
     if( 0 == _queryDialogPtr ) {
       _queryDialogPtr = new QueryDialog( 0, 0, 0 );
-      connect( _queryDialogPtr,  SIGNAL(_useThis( const BoolNode& )), 
+      connect( _queryDialogPtr,  SIGNAL( useThis ( const BoolNode& )), 
                this,             SLOT  (_viewHilt( const BoolNode& )) );
     }
     _queryDialogPtr->show();
