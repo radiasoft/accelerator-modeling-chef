@@ -32,6 +32,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** July 2007  ostiguy@fnal.gov
+******
+****** - refactored. Eliminated complex virtual inheritance scheme.
+******   and all references to functors defined as nested classes in
+******   bmlnElmnt and beamline classes.
 **************************************************************************
 *************************************************************************/
 
@@ -40,298 +47,215 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <boost/function.hpp>
 
 
-class DLLEXPORT BoolNode 
-{
+class DLLEXPORT BoolNode {
+
 public:
-  virtual bool evaluate( const bmlnElmnt* ) const = 0;
-  virtual void writeTo( std::ostream& ) const = 0;
+
+  virtual  BoolNode* Clone()                 const = 0;
   virtual ~BoolNode() {}
-  virtual void eliminate() = 0;  // Dangerous function: acts like delete.
-                                 // Assumes everything exists
-                                 // on the heap. Should not be
-                                 // used otherwise.
-  virtual BoolNode* Clone() const = 0;
-  virtual bool isNull() const {return false; }
+
+  virtual  bool evaluate( bmlnElmnt const* ) const = 0;
+  virtual  void writeTo( std::ostream& )     const = 0;
+  virtual  bool isNull()                     const {return false; }
 
 };
 
+struct DLLEXPORT BoolNullNode : public BoolNode {
 
-struct DLLEXPORT BoolNullNode : public BoolNode
-{
 public:
+
   BoolNullNode() {}
-  ~BoolNullNode() {}
-  bool evaluate( const bmlnElmnt* ) const { return false; }
-  void writeTo( std::ostream& ) const {}
-  void eliminate() { delete this; }
-  BoolNode* Clone() const { return new BoolNullNode; }
-  virtual bool isNull() const {return true; }
+ ~BoolNullNode() {}
+
+  bool evaluate( bmlnElmnt const* ) const { return false;              }
+  void writeTo( std::ostream& )     const {}
+  BoolNode* Clone()                 const { return new BoolNullNode(); } 
+  bool isNull()                     const { return true;               }
 
 };
 
 
-class DLLEXPORT BoolEndNode : public virtual BoolNode
-{
+class DLLEXPORT BoolEndNode : public BoolNode {
+
 public: 
-  BoolEndNode();   // Useful for derived EndNodes
-  BoolEndNode( const bmlnElmnt::Discriminator* );
-  BoolEndNode( const bmlnElmnt::Discriminator& );
-  BoolEndNode( const BoolEndNode& );
-  virtual ~BoolEndNode();
 
-  bool evaluate( const bmlnElmnt* ) const;
+  BoolEndNode( boost::function<bool( bmlnElmnt const* )>  discriminator );
+  BoolEndNode( BoolEndNode const& );
 
-  BoolEndNode& operator=( const BoolEndNode& );
-
-  virtual BoolNode* Clone() const { return new BoolEndNode( *this ); }
+  bool evaluate( bmlnElmnt const* ) const;
 
 protected:
-  void _cloneAndSet( const bmlnElmnt::Discriminator* );
-  void _cloneAndSet( const bmlnElmnt::Discriminator& );
 
-private:
-  // Owned data: the Discriminator argument in the
-  // constructor is copied using its .Clone method.
-  // Done this way to facilitate definition of 
-  // derived BoolEndNodes (e.g., NameNode).
-  // Object is deleted by base class destructor.
-  const bmlnElmnt::Discriminator* _ptrCritFunc;
+  BoolEndNode& operator=( BoolEndNode const& x );
+  boost::function<bool( bmlnElmnt const* )> discriminator_;
+
+};
+
+
+class DLLEXPORT BoolOpNode : public BoolNode {
 
 public:
-  void writeTo( std::ostream& os ) const { _ptrCritFunc->writeTo(os); }
-  void eliminate();
-};
 
+  BoolOpNode( BoolNode const* l, BoolNode const* r );
+  BoolOpNode( BoolOpNode const& );
+ ~BoolOpNode();
 
-class DLLEXPORT BoolOpNode : public virtual BoolNode
-{
+  BoolOpNode* Clone()               const = 0;
+  bool evaluate( bmlnElmnt const* ) const = 0;
+  void writeTo( std::ostream& )     const = 0;
+ 
+ 
 protected:
-  BoolOpNode();
-  BoolOpNode( const BoolOpNode& );
-  virtual ~BoolOpNode();
-  
-  virtual bool evaluate( const bmlnElmnt* ) const = 0;
-  virtual void writeTo( std::ostream& ) const = 0;
-  virtual BoolNode* Clone() const = 0;
 
-protected:
-  // These pointers are not owned.
-  // Responsibility for garbage collection
-  // lies elsewhere.
-  const BoolNode* _left;
-  const BoolNode* _right;
+  BoolNode const* left_;
+  BoolNode const* right_;
 
-public:
-  void eliminate();
 };
 
 
-class DLLEXPORT AndNode : public virtual BoolOpNode
-{
- public:
-   AndNode( const BoolNode&, const BoolNode& );
-   AndNode( const AndNode& );
-   ~AndNode();
+class DLLEXPORT AndNode : public BoolOpNode {
 
-   bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( std::ostream& os ) const;
-   BoolNode* Clone() const { return new AndNode( *this ); }
+ public:
+   AndNode( BoolNode const* , BoolNode const* );
+   AndNode( AndNode const& );
+  ~AndNode();
+   AndNode* Clone()                    const { return new AndNode( *this ); }
+
+   bool evaluate( bmlnElmnt const* )   const;
+   void writeTo( std::ostream& os )    const;
 };
 
 
-class DLLEXPORT OrNode : public virtual BoolOpNode
-{
+class DLLEXPORT OrNode : public BoolOpNode {
  public:
-   OrNode( const BoolNode&, const BoolNode& );
-   OrNode( const OrNode& );
+   OrNode( BoolNode const*, BoolNode const* );
+   OrNode( OrNode const& );
    ~OrNode();
+   OrNode* Clone()                    const { return new OrNode( *this ); }
 
-   bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( std::ostream& os ) const;
-   BoolNode* Clone() const { return new OrNode( *this ); }
+   bool evaluate( const bmlnElmnt* )  const;
+   void writeTo( std::ostream& os )   const;
 };
 
 
-class DLLEXPORT NotNode : public virtual BoolOpNode
-{
+class DLLEXPORT NotNode : public BoolOpNode {
+
  public:
-   NotNode( const BoolNode& );
-   NotNode( const NotNode& );
-   ~NotNode();
 
-   bool evaluate( const bmlnElmnt* ) const;
-   void writeTo( std::ostream& os ) const;
-   BoolNode* Clone() const { return new NotNode( *this ); }
-};
+   NotNode( BoolNode const* );
+   NotNode( NotNode  const& );
+  ~NotNode();
+   NotNode* Clone()                    const { return new NotNode( *this ); }
 
-
-AndNode operator*( const BoolNode&, const BoolNode& );
-
-
-// Derived Discriminators
-
-class DLLEXPORT TypeIs : public virtual bmlnElmnt::Discriminator
-{
-public:
-  TypeIs( const char* );
-  ~TypeIs();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  char* _type;
-};
-
-
-class DLLEXPORT NameIs : public virtual bmlnElmnt::Discriminator
-{
-public:
-  NameIs( const char* );
-  ~NameIs();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  char* _name;
-};
-
-
-class DLLEXPORT  LengthIs : public virtual bmlnElmnt::Discriminator
-{
-public:
-  LengthIs( double );
-  ~LengthIs();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _length;
-};
-
-
-class DLLEXPORT LengthLess : public virtual bmlnElmnt::Discriminator
-{
-public:
-  LengthLess( double );
-  ~LengthLess();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _length;
-};
-
-
-class DLLEXPORT LengthMore : public virtual bmlnElmnt::Discriminator
-{
-public:
-  LengthMore( double );
-  ~LengthMore();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _length;
-};
-
-
-class DLLEXPORT StrengthIs : public virtual bmlnElmnt::Discriminator
-{
-public:
-  StrengthIs( double );
-  ~StrengthIs();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _strength;
-};
-
-
-class DLLEXPORT StrengthLess : public virtual bmlnElmnt::Discriminator
-{
-public:
-  StrengthLess( double );
-  ~StrengthLess();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _strength;
-};
-
-
-class DLLEXPORT StrengthMore : public virtual bmlnElmnt::Discriminator
-{
-public:
-  StrengthMore( double );
-  ~StrengthMore();
-
-  bmlnElmnt::Discriminator* Clone() const;
-  bool operator()( const bmlnElmnt* ) const;
-  void writeTo( std::ostream& os ) const;
-private: 
-  double _strength;
+   bool evaluate( bmlnElmnt const* )   const;
+   void writeTo( std::ostream& os )    const;
 };
 
 
 // Derived EndNodes
 
-struct DLLEXPORT TypeNode: public virtual BoolEndNode
+class DLLEXPORT TypeNode: public BoolEndNode
 {
-  TypeNode( const char* );
-  ~TypeNode() {}
+ public:
+   TypeNode( const char* );
+   TypeNode(TypeNode const& );
+   TypeNode* Clone() const;
+
+   void writeTo( std::ostream& os )    const;
+
+ private:
+   std::string type_;
 };
 
-struct DLLEXPORT NameNode: public virtual BoolEndNode
+class DLLEXPORT NameNode: public BoolEndNode
 {
+ public:
   NameNode( const char* );
-  ~NameNode() {}
+  NameNode( NameNode const& );
+  NameNode* Clone() const; 
+
+  void writeTo( std::ostream& os )    const;
+ private:
+   std::string name_;
 };
 
-struct DLLEXPORT LengthEqNode: public virtual BoolEndNode
+class DLLEXPORT LengthEqNode: public BoolEndNode
 {
+ public:
   LengthEqNode( double );
-  ~LengthEqNode() {}
+  LengthEqNode( LengthEqNode const& );
+  LengthEqNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+
+ private:
+   double length_;
 };
 
-struct DLLEXPORT LengthLtNode: public virtual BoolEndNode
+class DLLEXPORT LengthLtNode: public BoolEndNode
 {
+ public:
   LengthLtNode( double );
-  ~LengthLtNode() {}
+  LengthLtNode( LengthLtNode const& );
+  LengthLtNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+ private:
+   double length_;
 };
 
-struct DLLEXPORT LengthGtNode: public virtual BoolEndNode
+class DLLEXPORT LengthGtNode: public BoolEndNode
 {
+ public:
   LengthGtNode( double );
-  ~LengthGtNode() {}
+  LengthGtNode( LengthGtNode const& );
+  LengthGtNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+ private:
+  double length_;
 };
 
-struct DLLEXPORT StrengthEqNode: public virtual BoolEndNode
+class DLLEXPORT StrengthEqNode: public BoolEndNode
 {
+ public:
   StrengthEqNode( double );
-  ~StrengthEqNode() {}
+  StrengthEqNode( StrengthEqNode const& );
+  StrengthEqNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+ private:
+   double strength_;
 };
 
-struct DLLEXPORT StrengthLtNode: public virtual BoolEndNode
+class DLLEXPORT StrengthLtNode: public BoolEndNode
 {
+ public:
   StrengthLtNode( double );
-  ~StrengthLtNode() {}
+  StrengthLtNode(StrengthLtNode const&);
+  StrengthLtNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+
+ private:
+   double strength_;
 };
 
-struct DLLEXPORT StrengthGtNode: public virtual BoolEndNode
+class DLLEXPORT StrengthGtNode: public BoolEndNode
 {
+ public:
   StrengthGtNode( double );
-  ~StrengthGtNode() {}
+  StrengthGtNode(StrengthGtNode const&);
+  
+  StrengthGtNode* Clone() const;
+
+  void writeTo( std::ostream& os )    const;
+ private:
+   double strength_;
+
 };
 
 
