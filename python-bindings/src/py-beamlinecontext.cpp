@@ -58,7 +58,7 @@ class_<BeamlineContext, boost::noncopyable>( "BeamlineContext", init<const Parti
 //.def("setAlignment",                  &BeamlineContext::setAlignment )                    // int setAlignment( bmlnElmnt*, const alignmentData& );
 //.def("setAlignment",                  &BeamlineContext::setAlignment)                     //int setAlignment( beamline::Criterion&, const alignmentData& );
 
-.def( "processElements",                &BeamlineContext::processElements)                  // int processElements( beamline::Action& ); 
+//.def( "processElements",                &BeamlineContext::processElements)                  // int processElements( beamline::Action& ); 
 .def( "setAvgInvariantEmittance",       &BeamlineContext::setAvgInvariantEmittance )        // void setAvgInvariantEmittance( double, double );
 .def( "getEnergy",                      &BeamlineContext::getEnergy)                        // double getEnergy() const;
 .def( "countHowManyDeeply",             &BeamlineContext::countHowManyDeeply)               // int countHowManyDeeply() const;
