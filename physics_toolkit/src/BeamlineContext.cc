@@ -38,6 +38,11 @@
 ****** - Initialization optimizations
 ****** - Interface based on Particle/JetParticle references
 ****** - stack variables for Particle/JetParticles whenever possible
+****** 
+****** July 2007   ostiguy@fnal.gov
+******
+****** - eliminated all references to beamline::Action functor. 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -630,6 +635,57 @@ int BeamlineContext::setAlignment( ElmPtr v, alignmentData const& u )
   deleteClosedOrbit();
 
   return 0;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int BeamlineContext::setAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion)
+{
+  int ret = 0;
+
+  for ( beamline::deep_iterator it  = p_bml_->deep_begin();
+	it != p_bml_->deep_end(); ++it ) {
+
+    if ( !criterion( **it )  ) continue;
+
+    ++ret;
+    (*it)->setAlignment( u );
+   
+  }
+
+  if( ret ) {
+    deleteLFS(); 
+    deleteClosedOrbit();
+  }
+
+  return ret;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int BeamlineContext::processElements( boost::function<bool(bmlnElmnt &)> action )
+{
+
+  int ret = 0;
+
+  for ( beamline::deep_iterator it  = p_bml_->deep_begin();
+	it != p_bml_->deep_end(); ++it ) {
+
+    if ( !action( **it) )   continue;
+    
+    ++ret;
+   
+  }
+
+  if( ret ) {
+    deleteLFS(); // ??? Too conservative
+    deleteClosedOrbit();
+  }
+
+  return ret;
 }
 
 
