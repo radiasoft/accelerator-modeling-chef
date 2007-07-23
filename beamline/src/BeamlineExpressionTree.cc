@@ -33,7 +33,13 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+************ REVISION HISTORY
+******
+****** July 2007  ostiguy@fnal.gov
+******
+****** - refactored. Eliminated complex virtual inheritance scheme.
+******   and all references to functors defined as nested classes in
+******   bmlnElmnt and beamline classes.                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -42,530 +48,527 @@
 
 using namespace std;
 
-BoolEndNode::BoolEndNode()
-  : _ptrCritFunc(0)
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BoolEndNode::BoolEndNode( boost::function<bool( bmlnElmnt const* )>  discriminator )
+ : discriminator_(discriminator) 
+{}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+BoolEndNode::BoolEndNode( BoolEndNode const& x )
+: discriminator_(x.discriminator_) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+bool BoolEndNode::evaluate( bmlnElmnt const* x ) const
 {
+  return discriminator_(x);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BoolEndNode::BoolEndNode( const bmlnElmnt::Discriminator* x )
+
+BoolEndNode& BoolEndNode::operator=( BoolEndNode const& x )
 {
-  _ptrCritFunc = x->Clone();
-}
+  if( this == &x )  return *this;
 
-
-BoolEndNode::BoolEndNode( const bmlnElmnt::Discriminator& x )
-{
-  _ptrCritFunc = x.Clone();
-}
-
-
-BoolEndNode::BoolEndNode( const BoolEndNode& x )
-: _ptrCritFunc( (x._ptrCritFunc)->Clone() )
-{
-}
-
-
-BoolEndNode::~BoolEndNode()
-{
-  if( 0 != _ptrCritFunc ) {
-    delete _ptrCritFunc;
-    _ptrCritFunc = 0;
-  }
-}
-
-
-void BoolEndNode::eliminate() 
-{ 
-  delete this; 
-}
-
-
-void BoolEndNode::_cloneAndSet( const bmlnElmnt::Discriminator* x )
-{
-  if( 0 != _ptrCritFunc ) { delete _ptrCritFunc; }
-  if( x ) { _ptrCritFunc = x->Clone(); }
-  else { _ptrCritFunc = 0; }
-}
-
-
-void BoolEndNode::_cloneAndSet( const bmlnElmnt::Discriminator& x )
-{
-  if( 0 != _ptrCritFunc ) { delete _ptrCritFunc; }
-  _ptrCritFunc = x.Clone();
-}
-
-
-bool BoolEndNode::evaluate( const bmlnElmnt* x ) const
-{
-  if( _ptrCritFunc ) { return (*_ptrCritFunc)( x ); }
-  else               { return false; }
-}
-
-
-BoolEndNode& BoolEndNode::operator=( const BoolEndNode& x )
-{
-  if( this != &x ) {
-    _ptrCritFunc = (x._ptrCritFunc)->Clone();
-  }
+  discriminator_ =   x.discriminator_;
   return *this;  
 }
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++
 
-BoolOpNode::BoolOpNode( )
-: _left(0), _right(0)
+BoolOpNode::BoolOpNode( BoolNode const* l, BoolNode const* r )
+: left_(l), right_(r)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BoolOpNode::BoolOpNode( BoolOpNode const& x )
 {
+  left_  = x.left_  ? x.left_->Clone() : 0; 
+  right_ = x.right_ ? x.right_->Clone(): 0; 
+
 }
 
-
-BoolOpNode::BoolOpNode( const BoolOpNode& x )
-{
-  if( x._left) { _left  = (x._left) ->Clone(); }
-  else { _left = 0; }
-  if( x._right) { _right = (x._right)->Clone(); }
-  else { _right = 0; }
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BoolOpNode::~BoolOpNode()
 {
-}
-
-
-void BoolOpNode::eliminate()
-{ 
-  if( 0 != _left  ) { ((BoolNode*) _left)->eliminate();  }
-  if( 0 != _right ) { ((BoolNode*) _right)->eliminate(); }
-  delete this;
+  if( left_  ) { delete left_;  }
+  if( right_ ) { delete right_; }
 }
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-AndNode::AndNode( const BoolNode& l, const BoolNode& r )
-{
-  _left = &l;
-  _right = &r;
-}
+AndNode::AndNode( BoolNode const* l, BoolNode const* r )
+  : BoolOpNode( l,r )
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AndNode::AndNode( const AndNode& x )
-: BoolOpNode::BoolOpNode( (const BoolOpNode&) x )
-{
-}
+AndNode::AndNode( AndNode const& x )
+: BoolOpNode( x )
+{}
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 AndNode::~AndNode()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool AndNode::evaluate( bmlnElmnt const* x ) const
 {
+  return ( left_->evaluate(x)  && right_->evaluate(x) );
 }
 
-
-bool AndNode::evaluate( const bmlnElmnt* x ) const
-{
-  return ( (_left->evaluate(x)) && (_right->evaluate(x)) );
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void AndNode::writeTo( ostream& os ) const
 {
   os << "( ";
-  _left->writeTo( os );
+  left_->writeTo( os );
   os << " AND ";
-  _right->writeTo( os );
+  right_->writeTo( os );
   os << " )";
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-OrNode::OrNode( const BoolNode& l, const BoolNode& r )
-{
-  _left = &l;
-  _right = &r;
-}
+OrNode::OrNode( BoolNode const*  l, BoolNode const*  r )
+ : BoolOpNode( l,r )
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-OrNode::OrNode( const OrNode& x )
-: BoolOpNode::BoolOpNode( (const BoolOpNode&) x )
-{
-}
+OrNode::OrNode( OrNode const& x )
+: BoolOpNode( x )
+{}
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 OrNode::~OrNode()
-{
-}
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool OrNode::evaluate( const bmlnElmnt* x ) const
 {
-  return ( (_left->evaluate(x)) || (_right->evaluate(x)) );
+  return ( left_->evaluate(x) || right_->evaluate(x) );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void OrNode::writeTo( ostream& os ) const
 {
   os << "( ";
-  _left->writeTo( os );
+  left_->writeTo( os );
   os << " OR ";
-  _right->writeTo( os );
+  right_->writeTo( os );
   os << " )";
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-NotNode::NotNode( const BoolNode& l )
-{
-  _left = &l;
-  _right = 0;
-}
+NotNode::NotNode( BoolNode const* l )
+ : BoolOpNode( l,0 )
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-NotNode::NotNode( const NotNode& x )
-: BoolOpNode::BoolOpNode( (const BoolOpNode&) x )
-{
-}
+NotNode::NotNode( NotNode const& x )
+: BoolOpNode(x)
+{}
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 NotNode::~NotNode()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool NotNode::evaluate( bmlnElmnt const* x ) const
 {
+  return !left_->evaluate(x);
 }
 
-
-bool NotNode::evaluate( const bmlnElmnt* x ) const
-{
-  return ( !(_left->evaluate(x)) );
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void NotNode::writeTo( ostream& os ) const
 {
   os << "( ";
   os << " NOT ";
-  _left->writeTo( os );
+  left_->writeTo( os );
   os << " )";
 }
 
-// Derived Discriminators ...
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+// Discriminators ...
 
 // ... TypeIs
-TypeIs::TypeIs( const char* x )
-  : bmlnElmnt::Discriminator::Discriminator()
-{
-  _type = new char[ strlen(x) + 1 ];
-  strcpy( _type, x );
-}
 
-TypeIs::~TypeIs()
-{
-  delete [] _type;  _type = 0;
+class TypeIs {
 
-}
+public:
 
-bmlnElmnt::Discriminator* TypeIs::Clone() const
-{
-  return new TypeIs( _type );
-}
+ TypeIs( const char* x ): type_(x) {}
 
-bool TypeIs::operator()( const bmlnElmnt* x ) const
-{
-  return ( 0 == strcmp( x->Type(), _type ) );
-}
+ bool operator()( bmlnElmnt const * x ) const   { return (  x->Type() ==  type_ ); }
+
+ void writeTo( ostream& os )            const  { os << "( Type = " << type_ << " )"; }
+ 
+private:
+
+  std::string type_;
+};
 
 
-void TypeIs::writeTo( ostream& os ) const
-{
-  os << "( Type = ";
-  os << _type;
-  os << " )";
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // ... NameIs
-NameIs::NameIs( const char* x )
-  : bmlnElmnt::Discriminator::Discriminator()
-{
-  _name = new char[ strlen(x) + 1 ];
-  strcpy( _name, x );
-}
 
-NameIs::~NameIs()
-{
-  delete [] _name;  _name = 0;
-}
+class NameIs { 
 
-bmlnElmnt::Discriminator* NameIs::Clone() const
-{
-  return new NameIs( _name );
-}
+ public:
 
-bool NameIs::operator()( bmlnElmnt const* x ) const
-{
-  return ( x->Name() == _name );
-}
+  NameIs( const char* x ) : name_(x) {}
 
+  bool operator()( bmlnElmnt const* x ) const  { return x->Name() == name_ ;        }
+  void writeTo( ostream& os )           const  {os << "( Name = " << name_ << " )"; }
 
-void NameIs::writeTo( ostream& os ) const
-{
-  os << "( Name = ";
-  os << _name;
-  os << " )";
-}
+ private:
+ 
+  std::string name_; 
+};
+
 
 // ... LengthIs
-LengthIs::LengthIs( double l )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _length(l)
-{
-}
 
-LengthIs::~LengthIs()
-{
-}
-
-bmlnElmnt::Discriminator* LengthIs::Clone() const
-{ 
-  return new LengthIs( _length );
-}
-
-bool LengthIs::operator()( const bmlnElmnt* x ) const
-{
-  return ( std::abs( x->Length() - _length ) <= 0.001*_length );
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void LengthIs::writeTo( ostream& os ) const
-{
-  os << "( Length = ";
-  os << _length;
-  os << " )";
-}
+class LengthIs {
 
-// ... LengthLess
-LengthLess::LengthLess( double l )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _length(l)
-{
-}
+ public:
+   LengthIs( double l ): length_(l) {}
+   bool operator()( bmlnElmnt const* x ) const { return std::abs( x->Length() - length_ ) <= 0.001*length_; }
+   void writeTo( ostream& os ) const { os << "( Length = " << length_ << os << " )";                        }
 
-LengthLess::~LengthLess()
-{
-}
-
-bmlnElmnt::Discriminator* LengthLess::Clone() const
-{ 
-  return new LengthLess( _length );
-}
-
-bool LengthLess::operator()( const bmlnElmnt* x ) const
-{
-  return ( x->Length() < _length );
-}
+ private:
+  double length_;
+};
 
 
-void LengthLess::writeTo( ostream& os ) const
-{
-  os << "( Length < ";
-  os << _length;
-  os << " )";
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+class LengthLess {
+
+ public: 
+  LengthLess( double l ): length_(l) {}
+  bool operator()( const bmlnElmnt* x ) const { return ( x->Length() < length_ );        }
+  void writeTo( ostream& os )           const {  os << "( Length < " << length_ << " )"; }
+
+ private:
+  double length_;
+};
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // ... LengthMore
-LengthMore::LengthMore( double l )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _length(l)
-{
-}
 
-LengthMore::~LengthMore()
-{
-}
+class LengthMore {
 
-bmlnElmnt::Discriminator* LengthMore::Clone() const
-{ 
-  return new LengthMore( _length );
-}
+ public:
+   LengthMore( double l ) : length_(l) {}
+   bool operator()( const bmlnElmnt* x )   const { return ( x->Length() > length_ );       }
+   void writeTo( ostream& os ) const { os << "( Length > " << length_ << " )";             }
 
-bool LengthMore::operator()( const bmlnElmnt* x ) const
-{
-  return ( x->Length() > _length );
-}
+ private:
+  double length_;
+};
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LengthMore::writeTo( ostream& os ) const
-{
-  os << "( Length > ";
-  os << _length;
-  os << " )";
-}
 
 // ... StrengthIs
-StrengthIs::StrengthIs( double s )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _strength(s)
-{
-}
 
-StrengthIs::~StrengthIs()
-{
-}
+class StrengthIs {
 
-bmlnElmnt::Discriminator* StrengthIs::Clone() const
-{ 
-  return new StrengthIs( _strength );
-}
+ public:
+   StrengthIs( double s ) : strength_(s) {}
+   bool operator()( const bmlnElmnt* x ) const { return ( std::abs( x->Strength() - strength_ ) <= 0.001*strength_ ); }
+   void writeTo( ostream& os )           const { os << "( Strength = " << strength_ << ")";                           }
+ 
+ private:
 
-bool StrengthIs::operator()( const bmlnElmnt* x ) const
-{
-  return ( std::abs( x->Strength() - _strength ) <= 0.001*_strength );
-}
+  double strength_;
 
+};
 
-void StrengthIs::writeTo( ostream& os ) const
-{
-  os << "( Strength = ";
-  os << _strength;
-  os << " )";
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// ... StrengthLess
-StrengthLess::StrengthLess( double s )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _strength(s)
-{
-}
+class StrengthLess {
 
-StrengthLess::~StrengthLess()
-{
-}
+ public:
+   StrengthLess( double s ) : strength_(s) {}
+   bool operator()(bmlnElmnt const* x ) const  { return (x->Strength() < strength_);           }
+ 
+ private:
 
-bmlnElmnt::Discriminator* StrengthLess::Clone() const
-{ 
-  return new StrengthLess( _strength );
-}
+  double strength_;
 
-bool StrengthLess::operator()( const bmlnElmnt* x ) const
-{
-  return ( x->Strength() < _strength );
-}
+};
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void StrengthLess::writeTo( ostream& os ) const
-{
-  os << "( Strength < ";
-  os << _strength;
-  os << " )";
-}
+class StrengthMore {
 
-// ... StrengthMore
-StrengthMore::StrengthMore( double s )
-  : bmlnElmnt::Discriminator::Discriminator(),
-    _strength(s)
-{
-}
+ public:
+   StrengthMore( double s ) : strength_(s) {}
+   bool operator()( const bmlnElmnt* x ) const { return ( x->Strength() > strength_ );       }
+ 
+ private:
 
-StrengthMore::~StrengthMore()
-{
-}
+  double strength_;
 
-bmlnElmnt::Discriminator* StrengthMore::Clone() const
-{ 
-  return new StrengthMore( _strength );
-}
+};
 
-bool StrengthMore::operator()( const bmlnElmnt* x ) const
-{
-  return ( x->Strength() > _strength );
-}
-
-
-void StrengthMore::writeTo( ostream& os ) const
-{
-  os << "( Strength > ";
-  os << _strength;
-  os << " )";
-}
-
-// REMOVE: // ... StrengthIs
-// REMOVE: StrengthIs::StrengthIs( double s )
-// REMOVE:   : bmlnElmnt::Discriminator::Discriminator(),
-// REMOVE:     _strength(s)
-// REMOVE: {
-// REMOVE: }
-// REMOVE: 
-// REMOVE: StrengthIs::~StrengthIs()
-// REMOVE: {
-// REMOVE: }
-// REMOVE: 
-// REMOVE: bmlnElmnt::Discriminator* StrengthIs::Clone() const
-// REMOVE: { 
-// REMOVE:   return new StrengthIs( _strength );
-// REMOVE: }
-// REMOVE: 
-// REMOVE: bool StrengthIs::operator()( const bmlnElmnt* x ) const
-// REMOVE: {
-// REMOVE:   return ( std::abs( x->Strength() - _strength ) <= 0.001*std::abs(_strength) );
-// REMOVE: }
-// REMOVE: 
-// REMOVE: void StrengthIs::writeTo( ostream& os ) const
-// REMOVE: {
-// REMOVE:   os << "( Strength = ";
-// REMOVE:   os << _strength;
-// REMOVE:   os << " )";
-// REMOVE: }
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Derived EndNodes ...
 
 TypeNode::TypeNode( const char* x )
-  : BoolEndNode()
+  : BoolEndNode( TypeIs( x ) ), type_(x)
+{}
+
+TypeNode::TypeNode( TypeNode const& x )
+  : BoolEndNode(x), type_(x.type_)
+{}
+
+TypeNode* TypeNode::Clone() const 
 {
-  _cloneAndSet( TypeIs(x) );
+  return new  TypeNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TypeNode::writeTo( ostream& os) const
+{
+   os << "( Type = " << type_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 NameNode::NameNode( const char* x )
-  : BoolEndNode()
+  : BoolEndNode( NameIs(x) ), name_(x)
+{}
+
+NameNode::NameNode( NameNode const& x )
+  : BoolEndNode(x), name_(x.name_)
+{}
+
+NameNode* NameNode::Clone() const
 {
-  _cloneAndSet( NameIs(x) );
+  return new NameNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void NameNode::writeTo( ostream& os) const
+{
+   os << "( Name = " << name_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LengthEqNode::LengthEqNode( double x )
-  : BoolEndNode()
+  : BoolEndNode(LengthIs(std::abs(x) )), length_( std::abs(x) )
+{}
+
+LengthEqNode::LengthEqNode( LengthEqNode const& x )
+  : BoolEndNode(x), length_( x.length_)
+{}
+
+LengthEqNode* LengthEqNode::Clone() const
 {
-  _cloneAndSet( LengthIs(std::abs(x)) );
+  return new LengthEqNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LengthEqNode::writeTo( ostream& os) const
+{
+   os << "( Length = " << length_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LengthLtNode::LengthLtNode( double x )
-  : BoolEndNode()
+  : BoolEndNode( LengthLess(std::abs(x)) ), length_( std::abs(x) )
+{}
+
+LengthLtNode::LengthLtNode( LengthLtNode const& x )
+  : BoolEndNode(x), length_( x.length_)
+{}
+
+LengthLtNode* LengthLtNode::Clone() const
 {
-  _cloneAndSet( LengthLess(std::abs(x)) );
+  return new  LengthLtNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LengthLtNode::writeTo( ostream& os) const
+{
+   os << "( Length = " << length_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LengthGtNode::LengthGtNode( double x )
-  : BoolEndNode()
+  : BoolEndNode( LengthMore(std::abs(x)) ), length_( std::abs(x) )
+{}
+
+LengthGtNode::LengthGtNode( LengthGtNode const& x )
+  : BoolEndNode(x), length_( x.length_)
+{}
+
+LengthGtNode* LengthGtNode::Clone() const
 {
-  _cloneAndSet( LengthMore(std::abs(x)) );
+  return new  LengthGtNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LengthGtNode::writeTo( ostream& os) const
+{
+   os << "( Length = " << length_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 StrengthEqNode::StrengthEqNode( double x )
-  : BoolEndNode()
-{
-  _cloneAndSet( StrengthIs(x) );
+  : BoolEndNode( StrengthIs(x) ), strength_(x)
+{}
+
+StrengthEqNode::StrengthEqNode( StrengthEqNode const& x )
+  : BoolEndNode(x), strength_(x.strength_)
+{}
+
+StrengthEqNode* StrengthEqNode::Clone() const
+{ 
+  return new StrengthEqNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void StrengthEqNode::writeTo( ostream& os ) const
+{
+   os << "( Strength = " << strength_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 StrengthLtNode::StrengthLtNode( double x )
-  : BoolEndNode()
-{
-  _cloneAndSet( StrengthLess(x) );
+  : BoolEndNode( StrengthLess(x) ), strength_(x)
+{}
+
+StrengthLtNode::StrengthLtNode( StrengthLtNode const& x )
+  : BoolEndNode( x ), strength_(x.strength_)
+{}
+
+StrengthLtNode* StrengthLtNode::Clone() const
+{ 
+  return new StrengthLtNode(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void StrengthLtNode::writeTo( ostream& os ) const
+{
+   os << "( Strength = " << strength_ << ")";    
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 StrengthGtNode::StrengthGtNode( double x )
-  : BoolEndNode()
+  : BoolEndNode(StrengthMore(x) ), strength_(x)
+{}
+
+StrengthGtNode::StrengthGtNode( StrengthGtNode const& x)
+  : BoolEndNode(x), strength_(x.strength_)
+{}
+
+StrengthGtNode* StrengthGtNode::Clone() const
 {
-  _cloneAndSet( StrengthMore(x) );
+  return new StrengthGtNode(*this);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void StrengthGtNode::writeTo( ostream& os ) const 
+{ 
+  os << "( Strength = " << strength_ << ")";  
+}
