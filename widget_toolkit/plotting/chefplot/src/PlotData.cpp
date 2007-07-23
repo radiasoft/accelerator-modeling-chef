@@ -42,8 +42,6 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
 PlotData::PlotData(): 
   scalemag_top_(1.0),   scalemag_bottom_(1.0),
   scalemag_left_(1.0),  scalemag_right_(1.0), bml_()
@@ -60,25 +58,26 @@ PlotData::~PlotData()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-PlotData::Tunes PlotData::getTunes() const
+PlotData::Tunes const& PlotData::getTunes() const
 {
   return  tunes_;
-
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void PlotData::setTunes(double const& hor, double const& ver)
+{
+  tunes_ = Tunes(hor,ver);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ConstBmlPtr PlotData::getBeamline() const 
 {
- 
-  return bml_;
-  
+ return bml_;
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -86,9 +85,7 @@ ConstBmlPtr PlotData::getBeamline() const
 
 void PlotData::setBeamline( ConstBmlPtr bml )
 {
-
   bml_    = bml;  
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -97,7 +94,6 @@ void PlotData::setBeamline( ConstBmlPtr bml )
 
 void PlotData::addCurve(CurveData& cdata)
 {
-
    curves_.push_back(cdata);
 }
 
@@ -107,7 +103,6 @@ void PlotData::addCurve(CurveData& cdata)
 
 CurveData const& PlotData::operator[](int i) const 
 {
-  
   return curves_[i];
   
 }
@@ -116,17 +111,13 @@ CurveData const& PlotData::operator[](int i) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void PlotData::setXLabel( std::string label) 
 {
-
   label_bottom_ = label; 
-
 }
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void PlotData::setYLabel( CurveData::Axis id,  std::string label) 
 {

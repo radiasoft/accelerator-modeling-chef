@@ -41,6 +41,13 @@ class CurveData : public QwtData {
   };
 
 
+  struct Color {
+    Color(int red, int green, int blue): r(red), g(green), b(blue) {}
+    int r;
+    int g;
+    int b;
+  };
+
   CurveData(boost::shared_array<double> x, boost::shared_array<double> y, int size, std::string label); 
 
   CurveData(std::vector<double>  const& x,  std::vector<double> const& y, std::string label);      
@@ -58,12 +65,14 @@ class CurveData : public QwtData {
   size_t          size ()         const;
   double          x (size_t i)    const;
   double          y (size_t i)    const;
-  QwtDoubleRect   boundingRect () const;
+
+  void                    setColor( CurveData::Color const& color);
+  CurveData::Color const& getColor() const;
 
   void   setAxes( Axis xid, Axis yid);
 
-  void        setLabel( std::string label);
-  std::string getLabel() const;
+  void               setLabel( std::string const& label);
+  std::string const& getLabel()  const;
 
   Axis   getXAxis() const;
   Axis   getYAxis() const;
@@ -78,6 +87,7 @@ class CurveData : public QwtData {
   boost::shared_array<double>   xarray_;
   boost::shared_array<double>   yarray_;
 
+
   int          size_;
   double       xmin_;
   double       xmax_;
@@ -87,6 +97,8 @@ class CurveData : public QwtData {
   Axis         xaxis_;
   Axis         yaxis_;
 
+  
+  Color        color_;
   std::string  label_;
 
 

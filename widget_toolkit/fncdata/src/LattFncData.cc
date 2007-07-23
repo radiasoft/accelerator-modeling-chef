@@ -83,15 +83,17 @@ LattFncData::LattFncData( std::vector<LattFuncSage::lattFunc> const& twiss_vec, 
     CurveData c3( azimuth, disp_H, "Horizontal Dispersion"  );
     CurveData c4( azimuth, disp_V, "Vertical Dispersion"    );
 
-    //c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
-    //c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
-    //c3->setPen( QPen( "black", 0, Qt::DashLine ) );
-    //c4->setPen( QPen( "red",   0, Qt::DashLine ) );
-
     c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
+    c1.setColor(CurveData::Color(0,0,0) );
+
     c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
+    c2.setColor(CurveData::Color(255,0,0) );
+
     c3.setAxes( CurveData::xBottom, CurveData::yRight );
+    c3.setColor(CurveData::Color(0,0,0) );
+
     c4.setAxes( CurveData::xBottom, CurveData::yRight );
+    c4.setColor(CurveData::Color(255,0,0) );
 
     addCurve( c1 );
     addCurve( c2 );

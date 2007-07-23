@@ -39,6 +39,7 @@
 
 #include <qwt_plot_picker.h>
 #include <qwt_plot_canvas.h>
+#include <qwt_plot_panner.h>
 #include <qwt_plot_grid.h>
 
 
@@ -61,48 +62,33 @@
 
 
 CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f): 
-QWidget(parent,name,f) 
+  QWidget(parent,name,f), 
+  plot_(0), lego_(0), lego_height_(30),
+  zoomer_left_(0),  picker_left_(0),
+  zoomer_right_(0), picker_right_(0)
 {
-
-   lego_height_ = 30;
-
    plot_   = new Plot(this);
    lego_   = new LegoPlot(this);
 
-
-   zoomer_left_  = new PlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
-   zoomer_left_->setEnabled(false);
-
-   zoomer_right_  = new PlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
-   zoomer_right_->setEnabled(false);
-
-   picker_left_  = new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
-   picker_left_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
-   picker_left_->setTrackerMode(QwtPicker::ActiveOnly);
-   picker_left_->setEnabled(false);
-
-   picker_right_ = new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, plot_->canvas() );
-   picker_right_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
-   picker_right_->setTrackerMode(QwtPicker::ActiveOnly);
-   picker_right_->setEnabled(false);
+   panner_ = new  QwtPlotPanner( plot_->canvas() );
+   panner_->setAxisEnabled(QwtPlot::xBottom , true );
+   panner_->setAxisEnabled(QwtPlot::yRight,   false);
+   panner_->setAxisEnabled(QwtPlot::yLeft,    true );
 
 
    connect(plot_, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
    connect(plot_, SIGNAL( plotResizedSignal() ),  this, SLOT( resizeLego() ) );
 
    return;
-
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CHEFPlot::~CHEFPlot() {
-
-
-     // Qt widgets are automatically destroyed when their parent is destroyed 
-
+CHEFPlot::~CHEFPlot() 
+{
+  // Qt widgets are automatically destroyed when their parent is destroyed 
 }
 
 
@@ -112,9 +98,9 @@ CHEFPlot::~CHEFPlot() {
 
 void CHEFPlot::resizeEvent (QResizeEvent* event) {
   
-  if (!plot_) return;
+  if (plot_) plot_->setGeometry(0, lego_height_,  width(), height()-lego_height_);
 
-  plot_->setGeometry(0, lego_height_,  width(), height()-lego_height_);
+  QWidget::resizeEvent(event);
 
   return;
 
@@ -124,7 +110,7 @@ void CHEFPlot::resizeEvent (QResizeEvent* event) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlot::resizeLego () 
+void CHEFPlot::resizeLego() 
 {
 
   lego_->setGeometry(plot_->canvas()->x(),  0,  plot_->canvas()->width(),  lego_height_ );
@@ -229,42 +215,34 @@ void  CHEFPlot::enableLegoPlot(bool set)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlot::enableZoomLeftYAxis() 
-{ 
+void CHEFPlot::initZoom() 
+{
 
-  zoomer_left_->setEnabled(true);
-  zoomer_right_->setEnabled(false);
+   panner_->setEnabled(false);
 
-  zoomer_left_->setTrackerMode( QwtPicker::AlwaysOn ); 
+   if  (!picker_right_) {
+     picker_right_ =  new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yRight, plot_->canvas() );  
+   }
 
-  zoomer_left_->setTrackerPen(QColor(Qt::red));
-  zoomer_left_->setRubberBandPen(QColor(Qt::red));
+   if  (!zoomer_right_){ 
+       zoomer_right_ =  new PlotZoomer(QwtPlot::xBottom, QwtPlot::yRight, plot_->canvas() );
+       connect(zoomer_right_, SIGNAL( zoomed( const QwtDoubleRect& ) ),  this, SLOT( zoomed( const QwtDoubleRect&) ) );
+   }
 
 
-}
+   if  (!picker_left_) {
+     picker_left_  =  new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft,  plot_->canvas() );  
+   } 
+   if  (!zoomer_left_) {
+       zoomer_left_  =  new PlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft,  plot_->canvas() );
+       connect(zoomer_left_, SIGNAL( zoomed( const QwtDoubleRect& ) ),  this, SLOT( zoomed( const QwtDoubleRect&) ) );
+   }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CHEFPlot::enableZoomRightYAxis() 
-{ 
-
-  zoomer_right_->setEnabled(true);
-  zoomer_left_->setEnabled(false);
-
-  zoomer_right_->setTrackerMode( QwtPicker::AlwaysOn ); 
-
-  zoomer_right_->setTrackerPen(QColor(Qt::red)); 
-  zoomer_right_->setRubberBandPen( QColor(Qt::red) );
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CHEFPlot::enableZoomIn() 
-{ 
-
+   
+   picker_right_->setEnabled(false);
+   zoomer_right_->setEnabled(false);
+   picker_left_->setEnabled(false);
+   zoomer_left_->setEnabled(false);
 
 
 }
@@ -272,9 +250,47 @@ void CHEFPlot::enableZoomIn()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlot::enableZoomOut() 
+void CHEFPlot::enableZoomYAxisLeft() 
+{ 
+   
+   initZoom();
+
+   picker_right_->setEnabled(false);
+   zoomer_right_->setEnabled(false);
+
+   zoomer_left_->setTrackerMode( QwtPicker::AlwaysOn ); 
+   zoomer_left_->setTrackerPen(QColor(Qt::red));
+   zoomer_left_->setRubberBandPen(QColor(Qt::red));
+ 
+   picker_left_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
+   picker_left_->setTrackerMode(QwtPicker::ActiveOnly);
+
+   picker_left_->setEnabled(true);
+   zoomer_left_->setEnabled(true);
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::enableZoomYAxisRight() 
 { 
 
+   initZoom();
+
+   picker_left_->setEnabled(false);
+   zoomer_left_->setEnabled(false);
+
+   zoomer_right_->setTrackerMode( QwtPicker::AlwaysOn ); 
+   zoomer_right_->setTrackerPen(QColor(Qt::red));
+   zoomer_right_->setRubberBandPen(QColor(Qt::red));
+
+   picker_right_->setSelectionFlags(QwtPicker::PointSelection || QwtPicker::ClickSelection );  
+   picker_right_->setTrackerMode(QwtPicker::ActiveOnly);
+
+   picker_right_->setEnabled(true);
+   zoomer_right_->setEnabled(true);
+  
 
 }
 
@@ -286,6 +302,23 @@ void CHEFPlot::zoomReset()
 
      zoomer_left_ ->setSelectionFlags(QwtEventPattern::KeyHome); 
      zoomer_right_ ->setSelectionFlags(QwtEventPattern::KeyHome); 
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlot::zoomOff() 
+{ 
+
+     if (zoomer_left_)  zoomer_left_->setEnabled(false);
+     if (picker_left_)  picker_left_->setEnabled(false); 
+
+     if (zoomer_right_) zoomer_right_->setEnabled(false); 
+     if (picker_right_) picker_right_->setEnabled(false); 
+
+     panner_->setEnabled(true);
+
 }
 
 
@@ -347,61 +380,6 @@ void CHEFPlot::clear()
 
 void CHEFPlot::zoomed(QwtDoubleRect const& pg ) 
 {
-
-  std::cout << "zoomed called " << std::endl;
-
-
+  updateLatticeDisplay();
 } 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0 
-=================================
-
-void Plot::setZoomer(bool set, int axis) {
-
-  
-  if ( !left_zoomer_) { 
-     left_zoomer_ = new PlotZoomer( QwtPlot::xBottom,  QwtPlot::yLeft, canvas() ); 
-     connect( left_zoomer_,  SIGNAL( scaleChangedSignal() ), this, SLOT( scaleChanged()  ));
-  }
-  if ( !right_zoomer_){ 
-     right_zoomer_= new PlotZoomer( QwtPlot::xBottom,  QwtPlot::yRight, canvas()  ); 
-     connect( right_zoomer_,  SIGNAL( scaleChangedSignal() ), this, SLOT( scaleChanged()  ));
-  };
-  
-  switch( axis) {
-  
-   case QwtPlot::yLeft: 
-      active_zoomer_ = left_zoomer_;
-      left_zoomer_->setRubberBand(QwtPicker::NoRubberBand);
-      left_zoomer_->setTrackerMode(QwtPicker::AlwaysOff);
-      left_zoomer_->setEnabled(false);     
-      active_zoomer_ = left_zoomer_;
-      break;
-     
-   case QwtPlot::yRight: 
-      active_zoomer_ = right_zoomer_;
-      right_zoomer_->setRubberBand(QwtPicker::NoRubberBand);
-      right_zoomer_->setTrackerMode(QwtPicker::AlwaysOff);
-      right_zoomer_->setEnabled(false);     
-      break;
-  };
-  
-   // attach the Y grid lines to the axis that has the focus
-
-   grid_->setYAxis(axis);
-
-   replot();
-   
-}
-
-  plot_->setZoomer(true, QwtPlot::yRight);
-  
-
-}
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-===========================================================
-#endif

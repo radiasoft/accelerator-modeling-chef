@@ -33,6 +33,7 @@ class QwtDoubleRect;
 class Plot;
 class PlotZoomer;
 class QwtPlotPicker;
+class QwtPlotPanner;
 class PlotData;
 class LegoPlot;
 
@@ -66,10 +67,9 @@ class CHEFPlot: public QWidget {
     void enableLegoPlot(bool set);
     void setLogScale(int axis);
     void setLinScale(int axis);
-    void enableZoomLeftYAxis();
-    void enableZoomRightYAxis();
-    void enableZoomIn();
-    void enableZoomOut();
+    void enableZoomYAxisLeft();
+    void enableZoomYAxisRight();
+    void zoomOff();
     void zoomReset();
    
 
@@ -80,11 +80,14 @@ class CHEFPlot: public QWidget {
 
   private:
 
+    void initZoom();
+
     Plot*             plot_;
     LegoPlot*         lego_;
     QWMatrix          canvas_transformation_;
     int               lego_height_;
 
+    QwtPlotPanner*    panner_;
     PlotZoomer*       zoomer_left_;
     QwtPlotPicker*    picker_left_;
 

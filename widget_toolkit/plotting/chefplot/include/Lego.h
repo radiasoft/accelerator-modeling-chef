@@ -33,7 +33,7 @@ class LegoPlot: public QWidget {
 
   
   LegoPlot(QWidget * parent = 0, const char * name = 0, WFlags f = 0 );
-  ~LegoPlot();
+ ~LegoPlot();
   
   void        setBeamline(  ConstBmlPtr bml);
   ConstBmlPtr getBeamline();

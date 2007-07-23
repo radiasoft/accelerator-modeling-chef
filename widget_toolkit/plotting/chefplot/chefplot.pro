@@ -66,8 +66,8 @@ IMAGES	= ./src/images/filenew \
 INCLUDEPATH += ../tunespace/include
 
 LIBS	   +=  -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$${GLIB_LIBDIR} -lglib-2.0
-LIBS       +=  -lqwt
-#LIBS       +=  -lqwt4
+
+LIBS       +=  -l$${QWT_LIBNAME}
 
 unix:LIBS  +=  -Wl,--rpath,$${FNAL_LIBDIR} -Wl,--rpath,$${GLIB_LIBDIR}
 

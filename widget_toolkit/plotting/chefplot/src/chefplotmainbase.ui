@@ -47,13 +47,12 @@
         </item>
     </item>
     <item text="Zoom" name="Zoom">
-        <action name="zoomYAxisLeftAction"/>
+        <action name="zoomYAxisAction"/>
         <item text="Y-Axis" name="popupMenu_21" accel="">
-            <action name="zoomAxisXAction"/>
+            <action name="zoomYAxisLeftAction"/>
             <action name="zoomYAxisRightAction"/>
         </item>
-        <action name="zoomZooInAction"/>
-        <action name="zoomZoomOutAction"/>
+        <action name="zoomOffAction"/>
         <action name="zoomResetAction"/>
     </item>
     <item text="Data" name="Data">
@@ -606,7 +605,13 @@
     </action>
     <action>
         <property name="name">
-            <cstring>zoomYAxisLeftAction</cstring>
+            <cstring>zoomYAxisAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>false</bool>
+        </property>
+        <property name="enabled">
+            <bool>true</bool>
         </property>
         <property name="text">
             <string>Y-Axis</string>
@@ -617,13 +622,13 @@
     </action>
     <action>
         <property name="name">
-            <cstring>zoomAxisXAction</cstring>
+            <cstring>zoomYAxisLeftAction</cstring>
         </property>
         <property name="toggleAction">
             <bool>true</bool>
         </property>
         <property name="on">
-            <bool>true</bool>
+            <bool>false</bool>
         </property>
         <property name="text">
             <string>Left</string>
@@ -635,6 +640,9 @@
     <action>
         <property name="name">
             <cstring>zoomYAxisRightAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
         </property>
         <property name="text">
             <string>Right</string>
@@ -676,6 +684,39 @@
             <string>Reset</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>zoomEnableAction</cstring>
+        </property>
+        <property name="text">
+            <string>Enable</string>
+        </property>
+        <property name="menuText">
+            <string>Enable</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>zoomPanAction</cstring>
+        </property>
+        <property name="text">
+            <string>Pan</string>
+        </property>
+        <property name="menuText">
+            <string>Pan</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>zoomOffAction</cstring>
+        </property>
+        <property name="text">
+            <string>Off</string>
+        </property>
+        <property name="menuText">
+            <string>Off</string>
+        </property>
+    </action>
 </actions>
 <images>
     <image name="image0">
@@ -711,6 +752,24 @@
 </images>
 <connections>
     <connection>
+        <sender>dataShowDataAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>showdata()</slot>
+    </connection>
+    <connection>
+        <sender>dataShowTunesAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>showTunes()</slot>
+    </connection>
+    <connection>
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>exit()</slot>
+    </connection>
+    <connection>
         <sender>fileNewAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFPlotMainBase</receiver>
@@ -721,6 +780,12 @@
         <signal>activated()</signal>
         <receiver>CHEFPlotMainBase</receiver>
         <slot>fileOpen()</slot>
+    </connection>
+    <connection>
+        <sender>filePrintAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>filePrint()</slot>
     </connection>
     <connection>
         <sender>fileSaveAction</sender>
@@ -735,10 +800,10 @@
         <slot>fileSaveAs()</slot>
     </connection>
     <connection>
-        <sender>filePrintAction</sender>
+        <sender>helpContentsAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFPlotMainBase</receiver>
-        <slot>filePrint()</slot>
+        <slot>helpContents()</slot>
     </connection>
     <connection>
         <sender>helpIndexAction</sender>
@@ -747,16 +812,10 @@
         <slot>helpIndex()</slot>
     </connection>
     <connection>
-        <sender>helpContentsAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>helpContents()</slot>
-    </connection>
-    <connection>
-        <sender>optionsThumbWheelsAction</sender>
+        <sender>optionsCoordinatesAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>CHEFPlotMainBase</receiver>
-        <slot>enableThumbWheels(bool)</slot>
+        <slot>enableCoordinatesDisplay()</slot>
     </connection>
     <connection>
         <sender>optionsGridAction</sender>
@@ -765,10 +824,22 @@
         <slot>enableGrid(bool)</slot>
     </connection>
     <connection>
+        <sender>optionsHorLogScaleAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>optionsHorLogScale(bool)</slot>
+    </connection>
+    <connection>
         <sender>optionsLego_PlotAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>CHEFPlotMainBase</receiver>
         <slot>enableLegoPlot(bool)</slot>
+    </connection>
+    <connection>
+        <sender>optionsPersistentAction</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>CHEFPlotMainBase</receiver>
+        <slot>optionsPersistent(bool)</slot>
     </connection>
     <connection>
         <sender>optionsShowDataAction</sender>
@@ -777,28 +848,10 @@
         <slot>showDataPoints(bool)</slot>
     </connection>
     <connection>
-        <sender>optionsCoordinatesAction</sender>
+        <sender>optionsThumbWheelsAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>CHEFPlotMainBase</receiver>
-        <slot>enableCoordinatesDisplay()</slot>
-    </connection>
-    <connection>
-        <sender>fileExitAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>exit()</slot>
-    </connection>
-    <connection>
-        <sender>dataShowDataAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>showdata()</slot>
-    </connection>
-    <connection>
-        <sender>dataShowTunesAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>showTunes()</slot>
+        <slot>enableThumbWheels(bool)</slot>
     </connection>
     <connection>
         <sender>optionsVerLogScaleLeftAxisAction</sender>
@@ -813,40 +866,22 @@
         <slot>optionsVerLogScaleRight(bool)</slot>
     </connection>
     <connection>
-        <sender>optionsHorLogScaleAction</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>optionsHorLogScale(bool)</slot>
-    </connection>
-    <connection>
-        <sender>optionsPersistentAction</sender>
-        <signal>toggled(bool)</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>optionsPersistent(bool)</slot>
-    </connection>
-    <connection>
-        <sender>zoomZooInAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFPlotMainBase</receiver>
-        <slot>enableZoomIn()</slot>
-    </connection>
-    <connection>
         <sender>zoomYAxisLeftAction</sender>
-        <signal>activated()</signal>
+        <signal>toggled(bool)</signal>
         <receiver>CHEFPlotMainBase</receiver>
         <slot>enableZoomYAxisLeft()</slot>
     </connection>
     <connection>
         <sender>zoomYAxisRightAction</sender>
-        <signal>activated()</signal>
+        <signal>toggled(bool)</signal>
         <receiver>CHEFPlotMainBase</receiver>
         <slot>enableZoomYAxisRight()</slot>
     </connection>
     <connection>
-        <sender>zoomZoomOutAction</sender>
+        <sender>zoomOffAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFPlotMainBase</receiver>
-        <slot>zoomReset()</slot>
+        <slot>zoomOff()</slot>
     </connection>
 </connections>
 <slots>
@@ -876,9 +911,8 @@
     <slot>optionsPersistent(bool set)</slot>
     <slot>enableZoomYAxisRight()</slot>
     <slot>enableZoomYAxisLeft()</slot>
-    <slot>enableZoomIn()</slot>
-    <slot>enableZoomOut()</slot>
     <slot>zoomReset()</slot>
+    <slot>zoomOff()</slot>
 </slots>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

@@ -1,21 +1,25 @@
-////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                            //
-// FILE:       chefplotmain.h                                                                 //
-//                                                                                            //
-// AUTHOR(S):  Jean-Francois Ostiguy                                                          // 
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-//             Accelerator Division / Accelerator Integration Dept                            //
-//             Fermi National Laboratory, Batavia, IL                                         //
-//             ostiguy@fnal.gov                                                               //
-//                                                                                            //
-// DATE:       September 2004                                                                 //
-//                                                                                            //
-// COPYRIGHT: Universities Research Association                                               //
-//                                                                                            //
-//                                                                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////
-
+/********************************************************************************
+*********************************************************************************
+*********************************************************************************
+****
+****
+**** FILE:       chefplotmain.h                                                                 
+****                                                                                            
+**** AUTHOR(S):  Jean-Francois Ostiguy                                                           
+****             ostiguy@fnal.gov                                                               
+****                                                                                            
+****             Accelerator Division / Accelerator Integration Dept                            
+****             Fermi National Laboratory, Batavia, IL                                         
+****             ostiguy@fnal.gov                                                               
+****                                                                                            
+**** DATE:       September 2004                                                                 
+****                                                                                            
+**** COPYRIGHT: Universities Research Association                                               
+****                                                                                            
+****
+*********************************************************************************
+*********************************************************************************
+********************************************************************************/
 
 #ifndef CHEFPLOTMAIN_H
 #define CHEFPLOTMAIN_H
@@ -36,7 +40,7 @@ class CHEFPlotMain: public CHEFPlotMainBase {
     
   public:
   
-    CHEFPlotMain(QWidget * parent = 0, const char* name = 0, WFlags f=0);
+    CHEFPlotMain(QWidget* parent=0, const char* name=0, WFlags f=0);
    ~CHEFPlotMain();
 
     void displayLattice(BmlPtr bml);
@@ -61,10 +65,9 @@ class CHEFPlotMain: public CHEFPlotMainBase {
     void showTunes();
     void optionsPersistent(bool set);
 
-    void enableZoomLeftYAxis();
-    void enableZoomRightYAxis();
-    void enableZoomIn();
-    void enableZoomOut();
+    void enableZoomYAxisRight();
+    void enableZoomYAxisLeft();
+    void zoomOff();
     void zoomReset();
 
     void exit();

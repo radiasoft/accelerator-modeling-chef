@@ -39,8 +39,11 @@ class PlotData {
 
 
     struct Tunes {
+      Tunes():                                       htune(0.0), vtune(0.0), set(false) {}
+      Tunes(double const& hor, double const& ver) :  htune(hor), vtune(ver), set(true)  {}
       double htune;
       double vtune;
+      bool   set;
     };
 
     PlotData();
@@ -67,8 +70,8 @@ class PlotData {
     double           yMin(CurveData::Axis id = CurveData::yLeft  )    const;
     double           yMax(CurveData::Axis id = CurveData::yLeft  )    const;
 
-    Tunes            getTunes() const;
-    void             setTunes( double nu1, double nu2);
+    Tunes const&     getTunes() const;
+    void             setTunes(double const& nu1, double const& nu2);
 
     CurveData const& operator[](int i) const;
     

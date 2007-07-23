@@ -71,16 +71,18 @@ LBFncData::LBFncData( std::vector<LBSage::Info> const&  lb_vec, ConstBmlPtr bml 
   CurveData  c2x( azimuth, beta_2x,  "<hor|beta|ver>"   );
   CurveData  c2y( azimuth, beta_2y,  "<ver|beta|ver>"   );
 
-
-  //  c1x->setPen( QPen( "black", 1, Qt::SolidLine ) );
-  //  c1y->setPen( QPen( "black", 1, Qt::DashLine  ) );
-  //  c2y->setPen( QPen( "red",   1, Qt::SolidLine ) );
-  //  c2x->setPen( QPen( "red",   1, Qt::DashLine  ) );
-
   c1x.setAxes( CurveData::xBottom, CurveData::yLeft  );
-  c2y.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c1x.setColor( CurveData::Color(0,0,0) );
+
   c2x.setAxes( CurveData::xBottom, CurveData::yRight );
+  c2x.setColor(  CurveData::Color(255, 0, 0) );
+
+  c2y.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c2y.setColor(  CurveData::Color(255, 0, 0) );
+
+
   c1y.setAxes( CurveData::xBottom, CurveData::yRight );
+  c1y.setColor( CurveData::Color(0,0,0) );
 
   addCurve( c1x );
   addCurve( c2x );

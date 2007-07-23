@@ -41,7 +41,7 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size, std::string label):
-  xarray_(x), yarray_(y), size_(size),  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), label_(label)  
+  xarray_(x), yarray_(y), size_(size),  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label)  
 {
 
   xmin_ = *std::min_element( &xarray_[0], &xarray_[0] + size_);
@@ -58,7 +58,7 @@ CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double
 
 CurveData::CurveData( double const* x , double const* y, 
                                     int size, std::string label )
-: size_(size), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), label_(label)  
+: size_(size), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label)  
 
 {
 
@@ -81,7 +81,7 @@ CurveData::CurveData( double const* x , double const* y,
 
 
 CurveData::CurveData( std::vector<double> const& x ,  std::vector<double> const& y, std::string label ):
-  xarray_(0), yarray_(0), size_(0), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), label_(label) 
+  xarray_(0), yarray_(0), size_(0), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label) 
 {
 
   // copy the data 
@@ -117,7 +117,7 @@ CurveData::CurveData(CurveData const& cd)
                    xmin_(cd.xmin_),      xmax_(cd.xmax_), 
                    ymin_(cd.ymin_),      ymax_(cd.ymax_), 
                    xaxis_(cd.xaxis_),    yaxis_(cd.yaxis_),                  
-                   label_(cd.label_) 
+                   color_(cd.color_),    label_(cd.label_) 
 {}
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -159,21 +159,15 @@ CurveData* CurveData::copy() const   // this should be called clone(), but Qwt u
 
 CurveData::~CurveData()
 {
-
   // data destroyed when smart_array[s] go out of scope.   
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
 size_t CurveData::size () const 
 {
-
   return  size_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -183,7 +177,6 @@ size_t CurveData::size () const
 double CurveData::x (size_t i) const
 {
   return xarray_[i];
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -195,16 +188,6 @@ double CurveData::y (size_t i) const
   return yarray_[i];
 }
 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-QwtDoubleRect   CurveData::boundingRect () const
-{
-
-  return QwtDoubleRect(xmin_, xmax_, ymin_, ymax_);
-
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -238,9 +221,7 @@ CurveData::Axis CurveData::getYAxis() const
 
 double CurveData::xMin() const 
 {
-
   return xmin_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -248,9 +229,7 @@ double CurveData::xMin() const
 
 double CurveData::xMax() const
 {
-
   return xmax_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -258,9 +237,7 @@ double CurveData::xMax() const
 
 double CurveData::yMin() const
 {
-
   return ymin_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -268,9 +245,38 @@ double CurveData::yMin() const
 
 double CurveData::yMax() const
 {
-
   return ymax_;
+}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+std::string const& CurveData::getLabel() const
+{
+  return label_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CurveData::setLabel( std::string const& label ) 
+{
+  label_ = label;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CurveData::setColor( CurveData::Color const& color)
+{
+  color_ = color;
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CurveData::Color const&  CurveData::getColor() const
+{
+  return color_;
+}

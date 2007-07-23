@@ -43,25 +43,24 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): 
-QWidget(parent,name,f) {
+QWidget(parent,name,f), painter_(0),  pixmap_(0) 
+{
  
-  setBackgroundMode( Qt::PaletteBase );
-   pixmap_  = 0;
-   painter_ = 0;
+   pixmap_  = new QPixmap(2048, height()); // the width cannot be changed during a paint event
+   painter_ = new QPainter(pixmap_, this);
+
+   setBackgroundMode( Qt::PaletteBase );
    setWFlags(Qt::WNoAutoErase);
-  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+LegoPlot::~LegoPlot() 
+{
 
-
-LegoPlot::~LegoPlot() {
-   
-  if (!pixmap_)    delete pixmap_;
-  if (!painter_)   delete painter_;
-
+  if (painter_)   painter_->end(); delete painter_;
+  if (pixmap_)    delete pixmap_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -69,9 +68,7 @@ LegoPlot::~LegoPlot() {
 
 void LegoPlot::setBeamline( ConstBmlPtr bml) 
 {
-  
      bml_ = bml;
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -79,21 +76,20 @@ void LegoPlot::setBeamline( ConstBmlPtr bml)
 
 ConstBmlPtr LegoPlot::getBeamline() 
 {
-
-  return bml_;
-
+    return bml_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int roffset) {
+void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int roffset) 
+{
   
-  x0_     = x;
-  w_      = w;
-  loffset_ = loffset; // loffset is the offset in screen coordinates on the canvas of x =  _xmin 
-  roffset_ = roffset; // roffset is the offset in screen coordinates on the canvas of x =  _xmax 
+  x0_      = x;
+  w_       = w;
+  loffset_ = loffset; // loffset is the offset in screen coordinates on the canvas of x =  xmin_ 
+  roffset_ = roffset; // roffset is the offset in screen coordinates on the canvas of x =  xmax_ 
 
 }
 
@@ -107,9 +103,13 @@ void  LegoPlot::resizeEvent ( QResizeEvent *event )
 
   QRect rect(QPoint(0,0), QSize(width(), height()));
 
-  if ( !pixmap_) 
-    pixmap_ = new QPixmap(2048, rect.height()); // the width cannot be changed during a paint event
-  
+  painter_->end();
+  delete painter_;
+  delete pixmap_; 
+
+  pixmap_  = new QPixmap(2048, rect.height()); // the width cannot be changed during a paint event
+  painter_ = new QPainter(pixmap_, this);
+
   return QWidget::resizeEvent(event);
   
 }
@@ -124,14 +124,11 @@ void LegoPlot::paintEvent ( QPaintEvent *event )
 
   QRect legorect  = rect();
 
-   pixmap_->fill( ); // should get background color here instead of assuming default
-
-   if ( !painter_)  
-       painter_ = new QPainter(pixmap_, this);
+  pixmap_->fill( ); // should get background color here instead of assuming default
   
-   painter_->setViewport(0, 0, legorect.width(), legorect.height() );
-   painter_->setWindow(painter_->viewport());
-   scale_ = double( ( roffset_ -loffset_ ) / w_ );
+  painter_->setViewport(0, 0, legorect.width(), legorect.height() );
+  painter_->setWindow(painter_->viewport());
+  scale_ = double( ( roffset_ -loffset_ ) / w_ );
 
      double s   = 0;
      double len = 0;
