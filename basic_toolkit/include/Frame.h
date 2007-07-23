@@ -56,43 +56,45 @@
 
 class DLLEXPORT Frame
 {
- private:
-   Vector  o;
-   MatrixD e;
+
  public:
+
    Frame();
-   Frame( const Frame& );
-   ~Frame();
+   Frame( Frame const& );
+  ~Frame();
 
-   Frame& operator=( Frame const& );
-   
+   Frame& operator=( Frame const& x );
+
+   static Frame const& identityFrame();
+
    int setOrigin   ( Vector const& );
-   int setAxis     ( int, const Vector& );
-   int setDualAxis ( int, const Vector& );
+   int setAxis     ( int, Vector const&  );
+   int setDualAxis ( int, Vector const&  );
 
-   bool setOrthonormalAxes( const MatrixD& );
+   bool setOrthonormalAxes( MatrixD const& );
 
    Frame dual() const;
    bool  isOrthonormal() const;
    bool  isRightHanded() const;
 
+
    static int xAxisIndex();
    static int yAxisIndex();
    static int zAxisIndex();
 
-   Vector  getOrigin()        const;
-   Vector  getAxis( int )     const;
-   Vector  getDualAxis( int ) const;
-   Vector  getxAxis()         const;
-   Vector  getyAxis()         const;
-   Vector  getzAxis()         const;
-   MatrixD getAxes()          const;
+   Vector         getOrigin()        const;
+   Vector         getAxis( int )     const;
+   Vector         getDualAxis( int ) const;
+   Vector         getxAxis()         const;
+   Vector         getyAxis()         const;
+   Vector         getzAxis()         const;
+   MatrixD const& getAxes()          const;
 
    int rotate    ( double,        // rotation angle [ radians ]
                          const Vector&, // axis of rotation (right-hand sense)
                          bool = true    // false -> do not rotate origin
                        );
-   int translate ( const Vector&  // displacement of origin
+   int translate ( Vector const&  // displacement of origin
                        );
    void      reset();
 
@@ -123,11 +125,35 @@ class DLLEXPORT Frame
 
    friend std::ostream& operator<< ( std::ostream& os, const Frame& );
    friend std::istream& operator>> ( std::istream& is, Frame& );
+
+
+ private:
+
+   Vector  o_;
+   MatrixD e_;
+
 };
 
 
+inline int Frame::xAxisIndex()
+{ 
+  return 0; 
+}
 
-#include "Frame.icc"
+inline int Frame::yAxisIndex()
+{ 
+  return 1; 
+}
+
+inline int Frame::zAxisIndex()
+{ 
+  return 2; 
+}
+
+inline MatrixD const& Frame::getAxes() const
+{
+  return e_;
+}
 
 
 #endif  // FRAME_H
