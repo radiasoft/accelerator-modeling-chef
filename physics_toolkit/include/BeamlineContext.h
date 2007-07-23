@@ -353,6 +353,6 @@ class BeamlineContext
 
 };
 
-#include <physics_toolkit/BeamlineContext.tcc>
+
 
 #endif // BEAMLINECONTEXT_H
