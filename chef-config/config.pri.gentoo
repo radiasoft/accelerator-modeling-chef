@@ -17,7 +17,10 @@ GLIB_INSTALL_TOP_DIR   =  /usr
 GLIB_VERSION           =  2.0
 PYTHON_INSTALL_TOP_DIR =  /usr
 PYTHON_VERSION         =  2.4
-QWT_INSTALL_TOP_DIR    =  /usr/qt/3
+QWT_INSTALL_TOP_DIR    =  /usr
+QWT_INCDIR             =  $${QWT_INSTALL_TOP_DIR}/include/qwt-qt3
+QWT_LIBDIR             =  $${QWT_INSTALL_TOP_DIR}/lib
+QWT_LIBNAME            =  qwt-qt3
 QUTEXR_INSTALL_TOP_DIR =  /usr/local
 
 ########################################################################
@@ -69,8 +72,8 @@ INSTALLS += target
 # libutil is needed for openpty/forkpty (glibc) on linux  
 LIBS    += -lutil
 
-unix:QMAKE_INCDIR_QT     = /usr/local/qwt5/include $$QMAKE_INCDIR_QT
-unix:QMAKE_LIBDIR        = /usr/local/qwt5/lib     $$QMAKE_LIBDIR 
+unix:QMAKE_INCDIR_QT     = $${QWT_INCDIR} $$QMAKE_INCDIR_QT
+unix:QMAKE_LIBDIR        = $${QWT_LIBDIR} $$QMAKE_LIBDIR 
 
-unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,/usr/local/qwt5/lib 
-unix:QMAKE_LFLAGS_SHLIB += -Wl,-rpath,/usr/local/qwt5/lib 
+unix:QMAKE_LFLAGS_SHAPP += -Wl,-rpath,$${QWT_LIBDIR} 
+unix:QMAKE_LFLAGS_SHLIB += -Wl,-rpath,$${QWT_LIBDIR} 
