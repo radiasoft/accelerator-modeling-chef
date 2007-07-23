@@ -36,7 +36,7 @@
 
 #include <beamline/beamline.h>
 
-class CF_rbendFinder_quad : public beamline::Criterion {
+class CF_rbendFinder_quad { 
 
   public:
     
@@ -46,6 +46,7 @@ class CF_rbendFinder_quad : public beamline::Criterion {
     void setQuadrupole( double );
 
     bool operator()( bmlnElmnt const& );
+    bool operator()( ElmPtr& );
 
   private:
 
