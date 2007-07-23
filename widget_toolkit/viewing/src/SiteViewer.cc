@@ -221,7 +221,7 @@ SiteViewer::~SiteViewer()
   if(_y)             { delete [] _y; }
   if(_z)             { delete [] _z; }
   if(_element)       { delete [] _element; }
-  if(_filterPtr)     { _filterPtr->eliminate(); _filterPtr = 0; }
+  if(_filterPtr)     { delete _filterPtr;       _filterPtr     = 0; }
   if(_queryDialogPtr){ delete _queryDialogPtr; _queryDialogPtr = 0; }
 }
 
