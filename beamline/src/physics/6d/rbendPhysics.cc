@@ -68,8 +68,8 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   double edgeCoeff;
 
   // Put in a kludge for the vertical focusing upon entrance.
-  if( 0.0 != pbe->_usTan ) {
-    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->usTan_ ) {
+    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -87,8 +87,8 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
-  if( 0.0 != pbe->_dsTan ) {
-    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->dsTan_ ) {
+    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -113,8 +113,8 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   double edgeCoeff;
 
   // Put in a kludge for the vertical focusing upon entrance.
-  if( 0.0 != pbe->_usTan ) {
-    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->usTan_ ) {
+    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -132,8 +132,8 @@ int rbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
-  if( 0.0 != pbe->_dsTan ) {
-    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->dsTan_ ) {
+    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -158,8 +158,8 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   double edgeCoeff;
 
   // Put in a kludge for the vertical focusing upon entrance.
-  if( 0.0 != pbe->_usTan ) {
-    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->usTan_ ) {
+    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -187,8 +187,8 @@ int rbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   double edgeCoeff;
 
   // Put in a kludge for the vertical focusing upon entrance.
-  if( 0.0 != pbe->_usTan ) {
-    edgeCoeff = ( pbe->_usTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->usTan_ ) {
+    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -219,8 +219,8 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
-  if( 0.0 != pbe->_dsTan ) {
-    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->dsTan_ ) {
+    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -247,8 +247,8 @@ int rbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
   (*_myPropagator)(pbe,p);
 
   // Put in a kludge for the vertical focusing upon exit.
-  if( 0.0 != pbe->_dsTan ) {
-    edgeCoeff = ( pbe->_dsTan / ( p.ReferenceBRho() / pbe->Strength() ) );
+  if( 0.0 != pbe->dsTan_ ) {
+    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
     #if 0
     if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
     #endif
@@ -289,7 +289,7 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  std::complex<double>  bi = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
- std::complex<double>  bf = bi*pbe->_propPhase + pbe->_propTerm;
+ std::complex<double>  bf = bi*pbe->propPhase_ + pbe->propTerm_;
  
  // Step 3.
  double rho = PH_MKS_c * sqrt( beta_1*beta_1 + beta_3*beta_3 ) / omega;
@@ -303,7 +303,7 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 
  // Final filter back to state coordinates
  // REMOVE: double dphi   = 0.0;
- double dtheta = dthmdphi + pbe->_dphi;
+ double dtheta = dthmdphi + pbe->dphi_;
  double cdt    = - PH_MKS_c * dtheta / omega;
  double CDT    = pbe->getReferenceTime();
 
@@ -347,7 +347,7 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
  // Step 2.
  JetC bf;
- bf = bi*pbe->_propPhase + pbe->_propTerm;
+ bf = bi*pbe->propPhase_ + pbe->propTerm_;
 
  // Step 3.
  Jet rho, dthmdphi;
@@ -365,7 +365,7 @@ int rbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  // Final filter back to state coordinates
  Jet dtheta, cdt;
  // REMOVE: double dphi   = 0.0;
- dtheta = dthmdphi + pbe->_dphi;
+ dtheta = dthmdphi + pbe->dphi_;
  cdt    = - PH_MKS_c * dtheta / omega;
  double CDT = pbe->getReferenceTime();
 
