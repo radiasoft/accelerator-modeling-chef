@@ -40,6 +40,7 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - eliminated unneeded dynamic casts in Split(...);
+******
 **************************************************************************
 *************************************************************************/
 
@@ -69,68 +70,68 @@ using FNAL::pcerr;
 
 rbend::rbend()
 : bmlnElmnt( 1.0, 0.0, &rbend::Exact )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(M_TWOPI)
+  , dsAngle_(-M_TWOPI)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( double const& l, double const& s, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(M_TWOPI)
+  , dsAngle_(-M_TWOPI)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( const char* n, double const& l, double const& s, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(M_TWOPI)
+  , dsAngle_(-M_TWOPI)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( double const& l, double const& s, double const& entryangle, PropFunc* pf ) 
 : bmlnElmnt( l, s, pf )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(entryangle)
-  , _dsAngle(-entryangle)
-  , _usTan(tan(entryangle))
-  , _dsTan(-tan(entryangle))
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(entryangle)
+  , dsAngle_(-entryangle)
+  , usTan_(tan(entryangle))
+  , dsTan_(-tan(entryangle))
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
-   _usAngle = 0.0;
-   _usTan   = 0.0;
-   _dsAngle = 0.0;
-   _dsTan   = 0.0;
+   usAngle_ = 0.0;
+   usTan_   = 0.0;
+   dsAngle_ = 0.0;
+   dsTan_   = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -146,29 +147,29 @@ rbend::rbend( double const& l, double const& s, double const& entryangle, PropFu
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( const char* n, double const& l, double const& s, double const& entryangle, PropFunc* pf ) 
 : bmlnElmnt( n, l, s, pf )
-  , _usEdgeAngle(0.0)
-  , _dsEdgeAngle(0.0)
-  , _usAngle(entryangle)
-  , _dsAngle(-entryangle)
-  , _usTan(tan(entryangle))
-  , _dsTan(-tan(entryangle))
+  , usEdgeAngle_(0.0)
+  , dsEdgeAngle_(0.0)
+  , usAngle_(entryangle)
+  , dsAngle_(-entryangle)
+  , usTan_(tan(entryangle))
+  , dsTan_(-tan(entryangle))
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
-   _usAngle = 0.0;
-   _usTan   = 0.0;
-   _dsAngle = 0.0;
-   _dsTan   = 0.0;
+   usAngle_ = 0.0;
+   usTan_   = 0.0;
+   dsAngle_ = 0.0;
+   dsTan_   = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -184,28 +185,28 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ent
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( double const& l, double const& s, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  , usAngle_(M_TWOPI)
+  , dsAngle_(-M_TWOPI)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
-   _usEdgeAngle = 0.0;
-   _usAngle = 0.0;
-   _usTan = 0.0;
+   usEdgeAngle_ = 0.0;
+   usAngle_     = 0.0;
+   usTan_       = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -220,9 +221,9 @@ rbend::rbend( double const& l, double const& s, double const& us, double const& 
    }
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
-   _dsEdgeAngle = 0.0;
-   _dsAngle = 0.0;
-   _dsTan = 0.0;
+   dsEdgeAngle_ = 0.0;
+   dsAngle_     = 0.0;
+   dsTan_       = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -238,28 +239,28 @@ rbend::rbend( double const& l, double const& s, double const& us, double const& 
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( const char* n, double const& l, double const& s, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(M_TWOPI)
-  , _dsAngle(-M_TWOPI)
-  , _usTan(0.0)
-  , _dsTan(0.0)
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  , usAngle_(M_TWOPI)
+  , dsAngle_(-M_TWOPI)
+  , usTan_(0.0)
+  , dsTan_(0.0)
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
-   _usEdgeAngle = 0.0;
-   _usAngle = 0.0;
-   _usTan = 0.0;
+   usEdgeAngle_ = 0.0;
+   usAngle_     = 0.0;
+   usTan_       = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -274,9 +275,9 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& us,
    }
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
-   _dsEdgeAngle = 0.0;
-   _dsAngle = 0.0;
-   _dsTan = 0.0;
+   dsEdgeAngle_ = 0.0;
+   dsAngle_     = 0.0;
+   dsTan_       = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -292,29 +293,29 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& us,
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+  calcPropParams();
 }
 
 
 rbend::rbend( double const& l, double const& s, double const& entryangle, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( l, s, pf )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(entryangle + us)
-  , _dsAngle(-(entryangle + ds))
-  , _usTan(tan(entryangle + us))
-  , _dsTan(-tan(entryangle + ds))
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  , usAngle_(entryangle + us)
+  , dsAngle_(-(entryangle + ds))
+  , usTan_(tan(entryangle + us))
+  , dsTan_(-tan(entryangle + ds))
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
-   _usAngle = us;
-   _usTan   = tan(us);
-   _dsAngle = -ds;
-   _dsTan   = -tan(ds);
+   usAngle_ = us;
+   usTan_   = tan(us);
+   dsAngle_ = -ds;
+   dsTan_   = -tan(ds);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -329,9 +330,9 @@ rbend::rbend( double const& l, double const& s, double const& entryangle, double
    }
  }
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
-   _usEdgeAngle = 0.0;
-   _usAngle = entryangle;
-   _usTan = tan(entryangle);
+   usEdgeAngle_ = 0.0;
+   usAngle_     = entryangle;
+   usTan_       = tan(entryangle);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -346,9 +347,9 @@ rbend::rbend( double const& l, double const& s, double const& entryangle, double
    }
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
-   _dsEdgeAngle = 0.0;
-   _dsAngle = -entryangle;
-   _dsTan = -tan(entryangle);
+   dsEdgeAngle_ = 0.0;
+   dsAngle_     = -entryangle;
+   dsTan_       = -tan(entryangle);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -364,29 +365,29 @@ rbend::rbend( double const& l, double const& s, double const& entryangle, double
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
 rbend::rbend( const char* n, double const& l, double const& s, double const& entryangle, double const& us, double const& ds, PropFunc* pf )
 :   bmlnElmnt( n, l, s, pf )
-  , _usEdgeAngle(us)
-  , _dsEdgeAngle(ds)
-  , _usAngle(entryangle + us)
-  , _dsAngle(-(entryangle + ds))
-  , _usTan(tan(entryangle + us))
-  , _dsTan(-tan(entryangle + ds))
+  , usEdgeAngle_(us)
+  , dsEdgeAngle_(ds)
+  , usAngle_(entryangle + us)
+  , dsAngle_(-(entryangle + ds))
+  , usTan_(tan(entryangle + us))
+  , dsTan_(-tan(entryangle + ds))
 {
  static bool firstTime = true;
  if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
-   _usAngle = us;
-   _usTan   = tan(us);
-   _dsAngle = -ds;
-   _dsTan   = -tan(ds);
+   usAngle_ = us;
+   usTan_   = tan(us);
+   dsAngle_ = -ds;
+   dsTan_   = -tan(ds);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -401,9 +402,9 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ent
    }
  }
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
-   _usEdgeAngle = 0.0;
-   _usAngle = entryangle;
-   _usTan = tan(entryangle);
+   usEdgeAngle_ = 0.0;
+   usAngle_     = entryangle;
+   usTan_       = tan(entryangle);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -418,9 +419,9 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ent
    }
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
-   _dsEdgeAngle = 0.0;
-   _dsAngle = -entryangle;
-   _dsTan = -tan(entryangle);
+   dsEdgeAngle_ = 0.0;
+   dsAngle_     = -entryangle;
+   dsTan_       = -tan(entryangle);
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -436,27 +437,27 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ent
  }
 
  // This should never happen, but in case it does.
- if(pf == 0) {
+ if(!pf) {
    propfunc_ = &rbend::Exact;
  }
 
- _calcPropParams();
+ calcPropParams();
 }
 
 
-void rbend::_calcPropParams()
+void rbend::calcPropParams()
 {
   // For edge focussing kludge
-  _usTan = tan( _usAngle );
-  _dsTan = tan( _dsAngle );
+  usTan_ = tan( usAngle_ );
+  dsTan_ = tan( dsAngle_ );
 
   // Geometric parameters
-  double psi = - (_usEdgeAngle + _dsEdgeAngle);
-  _dphi = - psi;
-  _propPhase = std::complex<double> ( cos(psi), sin(psi) );
+  double psi = - ( usEdgeAngle_ + dsEdgeAngle_ );
+  dphi_      = - psi;
+  propPhase_ = std::complex<double> ( cos(psi), sin(psi) );
 
-  _propTerm =   this->Length()
-              * std::complex<double> ( cos(_dsEdgeAngle), -sin(_dsEdgeAngle) );
+  propTerm_ =   this->Length()
+              * std::complex<double> ( cos( dsEdgeAngle_ ), -sin( dsEdgeAngle_) );
 
   this->setupPropFunc();
 }
@@ -464,15 +465,15 @@ void rbend::_calcPropParams()
 
 rbend::rbend( const rbend& x )
 : bmlnElmnt(x )
-  , _usEdgeAngle(x._usEdgeAngle)
-  , _dsEdgeAngle(x._dsEdgeAngle)
-  , _usAngle(x._usAngle)
-  , _dsAngle(x._dsAngle)
-  , _usTan(x._usTan)
-  , _dsTan(x._dsTan)
-  , _dphi(x._dphi)
-  , _propPhase(x._propPhase)
-  , _propTerm(x._propTerm)
+  , usEdgeAngle_(x.usEdgeAngle_)
+  , dsEdgeAngle_(x.dsEdgeAngle_)
+  , usAngle_(x.usAngle_)
+  , dsAngle_(x.dsAngle_)
+  , usTan_(x.usTan_)
+  , dsTan_(x.dsTan_)
+  , dphi_(x.dphi_)
+  , propPhase_(x.propPhase_)
+  , propTerm_(x.propTerm_)
 {
   this->setupPropFunc();
 }
@@ -552,45 +553,45 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                               "but it's your fault for using this propagator."
             "\n*** WARNING *** "
          << endl;
-    // NOTE: pc*_usAngle is surely the wrong thing to do but there is no right thing
-    a = ElmPtr( new rbend( pc*length_, strength_, pc*_usAngle, propfunc_ ) );     
-    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*_usAngle, propfunc_ ) );
+    // NOTE: pc*usAngle_ is surely the wrong thing to do but there is no right thing
+    a = ElmPtr( new rbend( pc*length_, strength_, pc*usAngle_, propfunc_ ) );     
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*usAngle_, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
-    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
-    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
+    a = ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, propfunc_ ) );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    a =  ElmPtr( p = new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::InEdge ));
+    a =  ElmPtr( p = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::InEdge ));
     p->setEntryAngle( this->getEntryAngle() );
     p->setExitAngle( 0.0 );    // Should not matter
-    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::OutEdge ));
+    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::OutEdge ));
     p->setEntryAngle( 0.0 );   // Should not matter
     p->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    a = ElmPtr( p = new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
+    a = ElmPtr( p = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, propfunc_ ) );
     p->setEntryAngle( getEntryAngle() );
     p->setExitAngle( 0.0 );    // Should not matter
-    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
-    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
-    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
     p->setEntryAngle( 0.0 );   // Should not matter
     p->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
-    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::RealInEdge )  );
-    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::RealOutEdge ) );
+    a = ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::RealInEdge )  );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::RealOutEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
-    a = ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, propfunc_ ) );
-    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
+    a = ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, propfunc_ ) );
+    b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
-    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
-    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, propfunc_ ) );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -601,8 +602,8 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\n*** WARNING *** It's all your fault."
             "\n*** WARNING *** "
          << endl;
-    a =  ElmPtr( new rbend(         pc*length_, strength_, _usEdgeAngle, 0.0, &rbend::NoEdge ) );
-    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, _dsEdgeAngle, &rbend::NoEdge ) );
+    a =  ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::NoEdge ) );
+    b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::NoEdge ) );
   }
 
   // Rename
@@ -624,7 +625,7 @@ double rbend::setPoleFaceAngle( const Particle& p )
   //                  = 1/2 symmetric bend angle
   setEntryAngle( psi );
   setExitAngle( -psi );
-  return _usAngle;
+  return usAngle_;
 }
 
 
@@ -639,7 +640,7 @@ double rbend::setPoleFaceAngle( JetParticle const& p )
   //                  = 1/2 symmetric bend angle
   setEntryAngle( psi );
   setExitAngle( -psi );
-  return _usAngle;
+  return usAngle_;
 }
 
 
@@ -659,40 +660,40 @@ double rbend::setExitAngle( const Particle& p )
 
 double rbend::setEntryAngle( double const& phi /* radians */ )
 {
-  double ret = _usAngle;
-  _usAngle = phi;
-  _calcPropParams();
+  double ret = usAngle_;
+  usAngle_   = phi;
+  calcPropParams();
   return ret;
 }
 
 
 double rbend::setExitAngle( double const& phi /* radians */ )
 {
-  double ret = _dsAngle;
-  _dsAngle = phi;  
-  _calcPropParams();
+  double ret = dsAngle_;
+  dsAngle_   = phi;  
+  calcPropParams();
   return ret;
 }
 
 
 bool rbend::hasParallelFaces() const
 {
-  return ( std::abs( _usEdgeAngle + _dsEdgeAngle ) <  1.0e-9 );
+  return ( std::abs( usEdgeAngle_ + dsEdgeAngle_ ) <  1.0e-9 );
 }
 
 
 bool rbend::hasStandardFaces() const
 {
-  return ( (std::abs(_usEdgeAngle) < 1.0e-9) && (std::abs(_dsEdgeAngle) < 0.5e-9) );
+  return ( (std::abs(usEdgeAngle_) < 1.0e-9) && (std::abs(dsEdgeAngle_) < 0.5e-9) );
 }
 
 
 ostream& rbend::writeTo(ostream& os)
 {
-  os << OSTREAM_DOUBLE_PREC << _usEdgeAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsEdgeAngle << endl;
-  os << OSTREAM_DOUBLE_PREC << _usAngle << " "
-     << OSTREAM_DOUBLE_PREC << _dsAngle << endl;
+  os << OSTREAM_DOUBLE_PREC << usEdgeAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsEdgeAngle_ << endl;
+  os << OSTREAM_DOUBLE_PREC << usAngle_     << " "
+     << OSTREAM_DOUBLE_PREC << dsAngle_     << endl;
 
   // Determine which propogators are being used, and make a note of it.
   if ( propfunc_ ==            &rbend::Exact )
@@ -715,8 +716,8 @@ ostream& rbend::writeTo(ostream& os)
 
 istream& rbend::readFrom(istream& is)
 {
-  is >> _usEdgeAngle >> _dsEdgeAngle;
-  is >> _usAngle >> _dsAngle;
+  is >> usEdgeAngle_ >> dsEdgeAngle_;
+  is >> usAngle_     >> dsAngle_;
 
   char prop_fun[100], jet_prop_fun[100];
   is >> prop_fun >> jet_prop_fun;
@@ -740,7 +741,7 @@ istream& rbend::readFrom(istream& is)
       setPropFunction(&rbend::Exact);
     }
   
-  _calcPropParams();
+  calcPropParams();
 
   return is;
 }
