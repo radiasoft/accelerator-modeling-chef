@@ -105,7 +105,7 @@ IntArray::GenericException::GenericException( const char* fcn, const char* msg )
 
 const char* IntArray::GenericException::what() const throw()
 {
-  return strcat( "IntArray::GenericException: ", errorString.c_str() );
+  return ("IntArray::GenericException: " + errorString).c_str();
 }
 
 
