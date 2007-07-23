@@ -73,7 +73,6 @@ class DriftEliminator : public ConstBmlVisitor
  public:
 
   DriftEliminator();
-  DriftEliminator( DriftEliminator const& );
 
  ~DriftEliminator();
 
@@ -89,6 +88,8 @@ class DriftEliminator : public ConstBmlVisitor
   BmlPtr beamlinePtr();
 
  private: 
+
+  DriftEliminator( DriftEliminator const& ); // forbidden
 
   void       handlePassiveElement( bmlnElmnt const& );
 
