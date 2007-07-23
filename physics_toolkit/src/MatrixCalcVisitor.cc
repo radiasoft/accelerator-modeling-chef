@@ -468,7 +468,7 @@ int MatrixCalcVisitor::doCalc()
   }
   else {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
+            "*** ERROR *** MatrixCalcVisitor::doCalc          \n"
             "*** ERROR *** cos( psi_H ) = "
          << cs
          << "\n"
@@ -481,7 +481,7 @@ int MatrixCalcVisitor::doCalc()
 
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
+            "*** ERROR *** MatrixCalcVisitor::doCalc          \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
          << endl;
@@ -502,7 +502,7 @@ int MatrixCalcVisitor::doCalc()
   }
   else {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
+            "*** ERROR *** MatrixCalcVisitor::doCalc          \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
          << "\n"
@@ -515,7 +515,7 @@ int MatrixCalcVisitor::doCalc()
 
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** MatrixCalcVisitor::_doCalc          \n"
+            "*** ERROR *** MatrixCalcVisitor::doCalc          \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
          << endl;

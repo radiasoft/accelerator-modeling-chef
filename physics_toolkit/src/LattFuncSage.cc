@@ -601,12 +601,12 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   
 
     // Calculate lattice functions ...
-    beta_x  =   real( outState[i_x] )/resizeFactor;
+    beta_x  =   real( outState[i_x] ) /resizeFactor;
     alpha_x = - real( outState[i_px] )/resizeFactor;
     alpha_x *= beta_x;
     beta_x  *= beta_x;
   
-    beta_y  =   real( outState[i_y] )/resizeFactor;
+    beta_y  =   real( outState[i_y] ) /resizeFactor;
     alpha_y = - real( outState[i_py] )/resizeFactor;
     alpha_y *= beta_y;
     beta_y  *= beta_y;
