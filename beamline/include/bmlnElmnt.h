@@ -57,7 +57,11 @@
 ****** 
 ****** Mar 2007:   ostiguy@fnal.gov
 ****** - support for reference counted elements    
-******                                                           
+******
+****** July 2007   ostiguy@fnal.gov
+*****  - new, less memory hungry implementation for PinnedFrameSet
+*****  - eliminated nested functor base classes (e.g. CRITFUNC) 
+*****                                                            
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -181,31 +185,28 @@ class DLLEXPORT bmlnElmnt
   {
     public:
 
-      bool   altered_;
-      Frame  upStream_;
-      Frame  downStream_;
-
       PinnedFrameSet();
-     ~PinnedFrameSet() {}
+      PinnedFrameSet( PinnedFrameSet const& );
 
+     ~PinnedFrameSet();
+
+      PinnedFrameSet& operator=( PinnedFrameSet const& rhs);
+
+      Frame const&   upStream()   const;
+      Frame const&   downStream() const;
+    
+      void   upStream( Frame const& );
+      void downStream( Frame const& );
+    
+      bool  altered() const;
       void  reset();
+
+   private:
+
+      Frame*  upStream_;
+      Frame*  downStream_;
+
   };
-
-  typedef char (*CRITFUNC)( bmlnElmnt* );
-  struct Discriminator
-  {
-    Discriminator();                             // Needed by constructors of derived classes.
-      virtual      Discriminator* Clone() const = 0;
-      virtual     ~Discriminator() {}
-
-      virtual bool operator()( const bmlnElmnt* ) const = 0;
-      virtual void writeTo( std::ostream& ) const = 0;
-
-    //   private:
-
-      Discriminator( Discriminator const& );     
-  };
-
 
   // comparison operator for hash table.  
 
@@ -289,7 +290,7 @@ public:
   virtual bool     setAlignment( alignmentData const& );
 
   inline  bool hasMoved()
-    { return ( pinnedFrames_.altered_ || align_  ); }
+    { return ( pinnedFrames_.altered() || align_  ); }
 
   void realign();  // Resets element to its original position.
 
@@ -307,11 +308,11 @@ public:
     // 
     // Default value: 1.0 -> return pinned coordinates at the downstream end.
 
-  Frame getUpstreamPinnedFrame() const 
-    { return pinnedFrames_.upStream_; }
+  Frame const& getUpstreamPinnedFrame() const 
+    { return pinnedFrames_.upStream(); }
 
-  Frame getDownstreamPinnedFrame() const 
-    { return pinnedFrames_.downStream_; }
+  Frame const&getDownstreamPinnedFrame() const 
+    { return pinnedFrames_.downStream(); }
 
 
   virtual void enterLocalFrame( Particle&                ) const;
@@ -457,6 +458,5 @@ public:
    static ElmPtr      getElmPtr(bmlnElmnt& elm)   { return elm.getElmPtr(); } 
 
 }; 
-
 
 #endif // BMLNELMNT_H

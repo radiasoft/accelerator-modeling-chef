@@ -51,7 +51,9 @@
 
 
 
-enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD, OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
+enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD, 
+                       OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, 
+                       FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
 
 class Particle;
 class JetParticle;
@@ -91,7 +93,8 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
   
-  void setField( bmlnElmnt::CRITFUNC, double );
+  void setField( boost::function<bool(bmlnElmnt const&)>, double );
+
   void setField( WHICH_MULTIPOLE, double field );
 
   double Field( WHICH_MULTIPOLE );
@@ -108,10 +111,13 @@ public:
   bool isMagnet() const;
 
 private:
+
+  bool hasMultipole( ElmPtr elm, WHICH_MULTIPOLE mult );  
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
 
 
 };
+
 
 #endif // COMBINED_FUNCTION_H
