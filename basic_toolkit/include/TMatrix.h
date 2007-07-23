@@ -157,7 +157,7 @@ public:
   static void                    GaussJordan( TMatrix& A, TVector<T> & rhs);
   static void                    GaussJordan( TMatrix& A, TMatrix<T> & rhs);
 
-  void                           SVD( TMatrix& U, Vector& W, TMatrix& V);
+  void                           SVD( TMatrix& U, Vector& W, TMatrix& V) const;
 
   static TVector<T>              backSubstitute(TMatrix const& U, TVector<T> const& W, 
                                                 TMatrix const& V, TVector<T> const& rhs, double threshold=-1.0); // threshold < 0.0 ==> threshold = svmax*macheps
@@ -235,7 +235,7 @@ template<> TMatrix<std::complex<double> > TMatrix<double>::eigenVectors()   cons
 template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues()  const;
 template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const;
 
-template<> void  TMatrix<double>::SVD( TMatrix<double>&, Vector&, TMatrix<double>& );
+template<> void  TMatrix<double>::SVD( TMatrix<double>&, Vector&, TMatrix<double>& ) const;
 
 template<> 
 TVector<double> TMatrix<double>::backSubstitute(TMatrix<double> const& U, TVector<double> const& W, 
