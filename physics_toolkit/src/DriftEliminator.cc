@@ -79,18 +79,8 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DriftEliminator::DriftEliminator()
+  : bmlPtr_(), driftPtr_()
 {}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-DriftEliminator::DriftEliminator( const DriftEliminator& )
-{
-  throw( GenericException( __FILE__, __LINE__, 
-         "DriftEliminator::DriftEliminator( const DriftEliminator& )", 
-         "Copying object not permitted." ) );
-}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -105,14 +95,6 @@ DriftEliminator::~DriftEliminator()
 
 void DriftEliminator::visit( beamline const& x )
 {
-  // Quick check
-  if( !bmlPtr_ ) {  // Paranoid check only
-    throw( GenericException( __FILE__, __LINE__, 
-           "void DriftEliminator::visitBeamline( beamline const& x )", 
-           "A horrible, inexplicable error has occurred!! Null bmlPtr_." ) );
-  }
-
-
   string nuName =  x.Name()+ string("_Condensed");
 
   bmlPtr_ = BmlPtr( new beamline( nuName.c_str()  ) );
@@ -144,8 +126,13 @@ void DriftEliminator::visit( beamline const& x )
 
 void DriftEliminator::visit( bmlnElmnt const& x )
 {
-  if( bmlPtr_ ) {  // Not paranoia!
-    if( x.Strength() != 0.0  ) {
+
+  if( !bmlPtr_ ) {  // Not paranoia!
+       handlePassiveElement( x );
+       return;
+  }
+
+  if( x.Strength() != 0.0  ) {
       if( driftPtr_ ) {
         if( driftPtr_->Length() > 0.0 ) {
           bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
@@ -153,10 +140,6 @@ void DriftEliminator::visit( bmlnElmnt const& x )
         driftPtr_ = DriftPtr();
       }
       bmlPtr_->append( ElmPtr( x.Clone() ) ); 
-    }
-    else {
-       handlePassiveElement( x );
-    }
   }
 }
 
@@ -167,16 +150,17 @@ void DriftEliminator::visit( bmlnElmnt const& x )
 
 void DriftEliminator::visit( Slot const& x )
 {
-  if(  bmlPtr_ ) {  // Not paranoia!
-
-    if( driftPtr_ ) {
+  if(  !bmlPtr_ ) {  // Not paranoia!
+    return;
+  }
+ 
+  if( driftPtr_ ) {
       if( driftPtr_->Length() > 0.0 ) {
         bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
       }
       driftPtr_ = DriftPtr();
-    }
-    bmlPtr_->append( ElmPtr( x.Clone() ) ); 
   }
+  bmlPtr_->append( ElmPtr( x.Clone() ) ); 
 }
 
 
