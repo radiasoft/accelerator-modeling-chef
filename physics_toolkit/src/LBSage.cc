@@ -45,6 +45,7 @@
 ******  - calcs_ array is now an STL vector. LF are now returned by 
 ******    returning a const reference to the entire vector.
 ******  - misc cleanup.  
+******
 ****** Mar 2007     ostiguy@fnal.gov
 ****** - added support for reference counted elements/beamlines
 ******
@@ -129,7 +130,7 @@ void LBSage::eraseAll()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int LBSage::doCalc( JetParticle const& jp, beamline::Criterion& crit )
+int LBSage::doCalc( JetParticle const& jp)
 {
   // PRECONDITIONS:  The JetParticle must be on the closed
   //   orbit with the one-turn  mapping for its state.

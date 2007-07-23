@@ -103,15 +103,14 @@ public:
   EdwardsTengSage( BmlPtr );
   EdwardsTengSage( beamline const& );
 
-  int doCalc( JetParticle& , beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle& ); 
       // PRECONDITION: The JetParticle must be on the closed
       //               orbit with the identity mapping for its state.
       //               Its Jet environment's reference point 
       //               should be the closed orbit. It is not reset.
       // POSTCONDITION: The JetParticle has the one-turn
-      //                mapping for its state.
-      //                If default value is used for second argument, 
-      //                information is attached to all elements.
+      //                mapping for it
+      //                 information is attached to all elements.
 
   static int eigenTuneCalc( JetParticle const&, Tunes& );
   // PRECONDITION: The JetParticle is on the closed

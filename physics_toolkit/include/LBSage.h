@@ -91,9 +91,7 @@ public:
   LBSage( BmlPtr );
   LBSage( beamline const&);
 
-
-  // vestigial: need to retain???
-  int doCalc( JetParticle const&, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle const& ); 
       // PRECONDITION: The JetParticle must be on the closed
       //   orbit with the identity mapping for its state.
       //               Its Jet environment's reference point 

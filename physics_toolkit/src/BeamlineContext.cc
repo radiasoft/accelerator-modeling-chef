@@ -100,10 +100,6 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   , initialDispersion_()
   , initialCovariance_()
   , dpp_(0.0001)
-  , p_bi_(0)
-  , p_dbi_(0)
-  , p_rbi_(0)
-  , p_drbi_(0)
   , jetparticle_(w)
   , eps1_(40.0)
   , eps2_(40.0)
@@ -640,33 +636,6 @@ int BeamlineContext::setAlignment( ElmPtr v, alignmentData const& u )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int BeamlineContext::setAlignment( beamline::Criterion& cf, const alignmentData& u )
-{
-  int ret = 0;
-
-  for ( beamline::deep_iterator it  = p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
-
-    if ( !cf( **it )  ) continue;
-
-    ++ret;
-    (*it)->setAlignment( u );
-   
-  }
-
-  if( ret != 0 ) {
-
-    deleteLFS(); // ??? Too conservative
-    deleteClosedOrbit();
-  }
-
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 int BeamlineContext::replaceElement( ElmPtr a, ElmPtr b )
 {
   // Will replace the first argument with
@@ -681,32 +650,6 @@ int BeamlineContext::replaceElement( ElmPtr a, ElmPtr b )
   if( 0 == ret ) { reset(); }
 
   // This step will not always be necessary.
-
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::processElements( beamline::Action& cf )
-{
-
-  int ret = 0;
-
-  for ( beamline::deep_iterator it  = p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
-
-    if ( !cf( **it) )   continue;
-    
-    ++ret;
-   
-  }
-
-  if( ret != 0 ) {
-    deleteLFS(); // ??? Too conservative
-    deleteClosedOrbit();
-  }
 
   return ret;
 }
@@ -1253,7 +1196,7 @@ std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
     JetParticle tmp_jetpart(jetparticle_);
     Mapping id( "identity" );
     tmp_jetpart.setState( id );
-    int errorFlag = p_ets_->doCalc(tmp_jetpart , beamline::yes );
+    int errorFlag = p_ets_->doCalc(tmp_jetpart );
  
     edwardstengFuncsCalcd_ = ( 0 == errorFlag ); // SHOULD THROW EXCEPTION IF THIS FAILS
 
@@ -1343,7 +1286,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
     Mapping id( "identity" );
     tmp_jetpart.setState( id );
 
-    int errorFlag = p_covs_->doCalc( tmp_jetpart, covariance, beamline::yes );
+    int errorFlag = p_covs_->doCalc( tmp_jetpart, covariance);
     momentsFuncsCalcd_ = ( 0 == errorFlag );
 
     // Clean up before leaving 
@@ -1393,7 +1336,7 @@ std::vector<LBSage::Info> const& BeamlineContext::getLBArray()
     Jet__environment::setLastEnv ( jetparticle_.State().Env() );
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
 
-    LBFuncsCalcd_ = ( 0 == p_lbs_->doCalc( jetparticle_, beamline::yes ) );
+    LBFuncsCalcd_ = ( 0 == p_lbs_->doCalc( jetparticle_ ) );
 
     // Restore current environment
     Jet__environment::setLastEnv( storedEnv );
@@ -1438,7 +1381,7 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
 
     
       p_dsps_->flags.onClosedOrbit = true;
-      int errorFlag = p_dsps_->doCalc( jetparticle_, beamline::yes );
+      int errorFlag = p_dsps_->doCalc( jetparticle_ );
       dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
       // Restore current environment

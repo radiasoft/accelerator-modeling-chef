@@ -78,7 +78,7 @@ public:
   CovarianceSage( BmlPtr );
   CovarianceSage( beamline const&);
 
-  int doCalc( JetParticle&, MatrixD const&, beamline::Criterion& = beamline::yes ); 
+  int doCalc( JetParticle&, MatrixD const& ); 
 
   std::vector<CovarianceSage::Info> const& getCovarianceArray();
 

@@ -33,7 +33,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+****** REVISION HISTORY 
+******
+****** July 2007 ostiguy@fnal.gov
+****** - take advantage of dynamic type resolution for visit functions
+****** - element predicate based on general function object   
+******                                                               
 **************************************************************************
 *************************************************************************/
 
@@ -62,47 +67,54 @@
 
 #include <fstream>
 
-class LayoutVisitor : public BmlVisitor
-{
- public:
-  LayoutVisitor( double, double, double, double );
-  LayoutVisitor( const LayoutVisitor& );
-  ~LayoutVisitor();
+class LayoutVisitor : public BmlVisitor {
 
-  void visitBmlnElmnt ( bmlnElmnt*  );
-  void visitQuadrupole( quadrupole* );
-  void visitRbend     ( rbend*      );
-  void visitSbend     ( sbend*      );
-  void visitCF_rbend  ( CF_rbend*   );
-  void visitCF_sbend  ( CF_sbend*   );
-  void visitSextupole ( sextupole*  );
-  void visitSector    ( sector*     );
+ public:
+
+  LayoutVisitor( double, double, double, double );
+ ~LayoutVisitor();
+
+  void visit( bmlnElmnt&  );
+  void visit( quadrupole& );
+  void visit( rbend&      );
+  void visit( sbend&      );
+  void visit( CF_rbend&   );
+  void visit( CF_sbend&   );
+  void visit( sextupole&  );
+  void visit( sector&     );
 
   int  getErrorCode() const;
   int  openFile( const char* );
   int  closeFile();
 
-  void setDiscriminator( bmlnElmnt::Discriminator*, double = 0.0 );
+  void setDiscriminator( boost::function< bool( bmlnElmnt&) >, double = 0.0 );
 
   // Error codes
+
   static const int OKAY;
   static const int SECTORVISITED;
   static const int NOFILEOPENED;
 
  private:
-  double _s;
-  double _baseline;
-  double _bendHeight;
-  double _quadHeight;
-  double _sextHeight;
-  double _specialHeight;
 
-  bmlnElmnt::Discriminator* _ptrCritFunc;  // not owned
-  std::ofstream* _streamPtr;  // owned
+  LayoutVisitor( LayoutVisitor const& ); // forbidden
 
-  void _visit_bend( bmlnElmnt* );
-  void _processSpecialElement( bmlnElmnt* );
-  int  _errorCode;
+  std::ofstream * streamPtr_; 
+
+  void visit_bend( bmlnElmnt& );
+  void processSpecialElement( bmlnElmnt& );
+
+  int  errorCode_;
+
+  double s_;
+  double baseline_;
+  double bendHeight_;
+  double quadHeight_;
+  double sextHeight_;
+  double specialHeight_;
+
+  boost::function< bool( bmlnElmnt&) > discriminator_; 
+
 };
 
 #endif // LAYOUTVISITOR_H

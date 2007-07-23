@@ -104,11 +104,8 @@ public:
 
 
   // Public member functions
-  int doCalc( JetParticle&,   beamline::Criterion& = beamline::yes );
 
-  int fullCalc( JetParticle&, beamline::Criterion& = beamline::yes );
-      // Two equivalent functions. doCalc is a name alias for fullCalc.
-      //   It provides backwards compatability with other Sages.
+  int doCalc( JetParticle& );
 
   // int fadCalc( const JetParticle*, beamline::Criterion& = beamline::yes ) const;
       // Assumes no vertical dispersion.
@@ -121,7 +118,8 @@ public:
       //   calculation of dispersion at the beginning of the
       //   beamline.
       // By the way, "FAD" stands for "Fast and Dirty."
-  int pushCalc( const Particle&, const Info& );
+
+  int pushCalc( Particle const&, Info const& );
       // Assumes the data in the second argument are
       //   initial conditions and "pushes" a dispersion
       //   calculation down the beamline.
@@ -147,7 +145,7 @@ public:
   double get_dpp() const;
 
   DispersionSage::Options get_options();
-  void set_options( const DispersionSage::Options& );
+  void set_options( DispersionSage::Options const& );
 
   void setIgnoreErrors( bool );
 
@@ -171,7 +169,5 @@ public:
 
 
 };
-
-
 
 #endif // DISPERSIONSAGE_H

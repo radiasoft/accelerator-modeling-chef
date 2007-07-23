@@ -190,26 +190,11 @@ void DispersionSage::set_options( const DispersionSage::Options& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int DispersionSage::doCalc( JetParticle & jp, beamline::Criterion& crit )
+int DispersionSage::doCalc( JetParticle& jp )
 {
-  // DispersionSage::doCalc maintained for backwards compatability.
-  return fullCalc( jp, crit );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int DispersionSage::fullCalc( JetParticle& jp, beamline::Criterion& )
-{
-  // 
-  // This is copied and modified from 
-  // int LattFuncSage::NewDisp_Calc( const JetParticle* arg_jp, 
-  //                                 bool onClosedOrbit )
-  // 
 
   if( verbose_ ) {
-    *outputStreamPtr_ << "DispersionSage -- Entering DispersionSage::fullCalc" << std::endl;
+    *outputStreamPtr_ << "DispersionSage -- Entering DispersionSage::doCalc" << std::endl;
     outputStreamPtr_->flush();
   }
 
