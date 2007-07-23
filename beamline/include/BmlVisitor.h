@@ -31,8 +31,15 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                                                
-******                                                                
+******
+****** REVISION HISTORY
+******
+****** Mar 2007 ostiguy@fnal.gov
+****** - function signatures based on references rather than ptrs
+****** - take advantage of use dynamic type resolution for visit() functions 
+****** - eliminated unsafe casts
+****** - no implementation in header file (to minimize file dependencies)
+******                                                              
 **************************************************************************
 *************************************************************************/
 
