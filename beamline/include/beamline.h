@@ -39,7 +39,10 @@
 ******                   ostiguy@fnal.gov
 ******
 ****** - support for reference counted elements
+******  July 2007        ostiguy@fnal.gov
+****** - eliminated nested functor predicate and action classes 
 ****** 
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -61,41 +64,16 @@ class BmlVisitor;
 class ConstBmlVisitor;
 
  
-
-// --------------------------------------------------------------------------------------------------
-
-
 class beamline: public bmlnElmnt {
 
 public:
+
   enum LineMode { line, ring, unknown };
 
-  struct Criterion
-  {
-    virtual bool operator()( bmlnElmnt const & );
-    virtual ~Criterion() {};
-
+  class AllTrue {
+  public:
+    bool operator()( ElmPtr const& ) const { return true; }   
   };
-  // Returns true if element matches the derived 
-  // criterion; false, if not.
-  struct Aye : Criterion {
-    bool operator()( bmlnElmnt const& ) { return true; }
-  };
-  struct Nay : Criterion {
-    bool operator()( bmlnElmnt const& ) { return false; }
-  };
-
-  static Aye yes;
-  static Nay no;
-
-  struct Action
-  {
-    virtual int operator()( bmlnElmnt& );
-    virtual ~Action() {}
-  };
-  // Derived classes should return 0 if the action is 
-  // performed successfully on the element. All other
-  // values indicate error.
 
 
 public:
@@ -107,8 +85,7 @@ public:
   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
-  virtual ~beamline();
-
+ ~beamline();
   beamline* Clone() const;
 
   beamline& operator=( beamline const& rhs);
@@ -305,8 +282,10 @@ public:
   int                howMany()                           const { return numElem_; } // WARNING: not reliable!
   int           countHowMany() const;
   int     countHowManyDeeply() const;
-  int           countHowMany( CRITFUNC, std::list<ElmPtr>& ) const;
-  int     countHowManyDeeply( CRITFUNC, std::list<ElmPtr>& ) const;
+
+  int           countHowMany( boost::function<bool(bmlnElmnt const&)>, std::list<ElmPtr>& ) const;
+  int     countHowManyDeeply( boost::function<bool(bmlnElmnt const&)>, std::list<ElmPtr>& ) const;
+
   int                  depth()                               const;                 // Returns -1 if beamline is empty.
                                                                                     // Returns  0 if beamline is flat
                                                                                     //            or all its subbeamlines are empty.
@@ -377,6 +356,14 @@ public:
 
 private:
 
+  // Methods
+  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
+  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
+
+  std::ostream& writeTo(std::ostream&);
+  friend std::istream& operator>>( std::istream&, beamline& );
+
+
   // Data
 
   double                  nominalEnergy_;    // In GeV
@@ -385,12 +372,6 @@ private:
   LineMode                mode_;
   std::list<ElmPtr>       theList_; 
 
-  // Methods
-  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
-  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
-
-  std::ostream& writeTo(std::ostream&);
-  friend std::istream& operator>>( std::istream&, beamline& );
 
 
 }; 
