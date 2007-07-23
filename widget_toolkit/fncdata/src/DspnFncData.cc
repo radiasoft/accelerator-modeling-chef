@@ -79,35 +79,39 @@ DspnFncData::DspnFncData( std::vector<DispersionSage::Info> const& disp_vec, Con
   CurveData c6( azimuth, clo_V,    "Ver Closed Orbit"          );
 
 
-    //c1->setPen( QPen( "black",  1, Qt::SolidLine ) );
-    //c2->setPen( QPen( "blue",   1, Qt::SolidLine ) );
-    //c3->setPen( QPen( "cyan",   0, Qt::SolidLine ) );
-    //c4->setPen( QPen( "magenta",0, Qt::SolidLine ) );
-    //c5->setPen( QPen( "red",    0, Qt::SolidLine ) );
-    //c6->setPen( QPen( "green",  0, Qt::SolidLine ) );
+
+  c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c1.setColor( CurveData::Color( 0, 0, 0) );     // black; 
+
+  c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c2.setColor( CurveData::Color(0, 0 , 255 ) );  // blue
+
+  c3.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c3.setColor( CurveData::Color( 0, 255, 255) ); // cyan
+ 
+  c4.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c4.setColor( CurveData::Color( 255, 0, 255 ) ); // magenta
+
+  c5.setAxes( CurveData::xBottom, CurveData::yRight );
+  c5.setColor(CurveData::Color(  255, 0, 0 ) );   // red
+
+  c6.setAxes( CurveData::xBottom, CurveData::yRight );
+  c6.setColor(CurveData::Color(  0, 255, 0) );    // green
 
 
-    c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    c3.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    c4.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    c5.setAxes( CurveData::xBottom, CurveData::yRight );
-    c6.setAxes( CurveData::xBottom, CurveData::yRight );
+  addCurve( c1 );
+  addCurve( c2 );
+  addCurve( c3 );
+  addCurve( c4 );
+  addCurve( c5 );
+  addCurve( c6 );
 
+  setXLabel( "Arc Length [m]" );
+  setYLabel( CurveData::yLeft,  "Dispersion [m]"    );
+  setYLabel( CurveData::yRight, "Closed Orbit [mm]" );
 
-    addCurve( c1 );
-    addCurve( c2 );
-    addCurve( c3 );
-    addCurve( c4 );
-    addCurve( c5 );
-    addCurve( c6 );
-
-    setXLabel( "Arc Length [m]" );
-    setYLabel( CurveData::yLeft,  "Dispersion [m]"    );
-    setYLabel( CurveData::yRight, "Closed Orbit [mm]" );
-
-    setScaleMag(  CurveData::yRight, 5.0 ); 
-    setBeamline( bml ); 
+  setScaleMag(  CurveData::yRight, 5.0 ); 
+  setBeamline( bml ); 
 
   }
 

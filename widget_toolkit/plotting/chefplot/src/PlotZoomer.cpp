@@ -54,8 +54,6 @@ PlotZoomer::PlotZoomer(QwtPlotCanvas* cv, char const* name):
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
 PlotZoomer::~PlotZoomer() 
 {}
 
@@ -63,8 +61,8 @@ PlotZoomer::~PlotZoomer()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-
-void  PlotZoomer::rescale() {
+void  PlotZoomer::rescale() 
+{
 
   QwtPlotZoomer::rescale();
   emit scaleChangedSignal(); 
@@ -75,25 +73,3 @@ void  PlotZoomer::rescale() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-#if  0
-
-QwtDoubleRect PlotZoomer::scaleRect() const{
-
- 
-    QwtPlot const* plt = plot();
-    //plt->replot(); // force the adjustment of the plot scales
-
-    //    const QwtDoubleRect rect(
-    //    plt->axisWidget(xAxis())->lBound(),
-    //    plt->axisWidget(xAxis())->hBound(),
-    //    plt->axisWidget(yAxis())->lBound(),
-    //    plt->axisWidget(yAxis())->hBound()
-    //);
-
-    //   
-    //return rect.normalize();
-
-    return  QwtDoubleRect(0, 0, 100, 100); // FIXME !!! 
-}
-
-#endif

@@ -40,6 +40,8 @@
 #include <list>
 
 class QwtWheel;
+class QwtPlotItem;
+class QwtPlotCurve;
 class QwtPlotGrid;
 class PlotData;
 class PlotPropertiesDialog;
@@ -82,10 +84,10 @@ class Plot: public QwtPlot {
       void bottomWheelValueChanged( double value);
       void enableThumbWheel(bool set, int axiscode);
       void enableThumbWheels(bool set);
-      void toggleCurve(long key, bool set);
       void setLogScale(int axis);
-      void setLinScale(int axis);
-      
+      void setLinScale(int axis); 
+      void toggleCurve(QwtPlotItem* ); 
+     
   protected:
 
      virtual void resizeEvent(QResizeEvent *e);
@@ -93,7 +95,9 @@ class Plot: public QwtPlot {
   private:
 
      void formatPlot();
-  
+
+     QMap<QString,QwtPlotCurve*> curves_; 
+
      QwtPlotGrid*                grid_; 
      QwtLegend*                  legend_; 
 

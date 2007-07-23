@@ -69,11 +69,11 @@ ETFncData::ETFncData( std::vector<EdwardsTengSage::Info> const& et_vec, ConstBml
   CurveData c1( azimuth,  beta_H, "Horizontal Beta" );
   CurveData c2( azimuth,  beta_V, "Vertical Beta"   );
 
-  //c1->setPen( QPen( "black", 1, Qt::SolidLine ) );
-  //c2->setPen( QPen( "red",   1, Qt::SolidLine ) );
-
   c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c1.setColor(  CurveData::Color( 0, 0, 0) ); //
+
   c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c2.setColor(  CurveData::Color( 255, 0, 0) ); //
 
   addCurve( c1 );
   addCurve( c2 );

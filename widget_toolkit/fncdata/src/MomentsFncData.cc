@@ -66,13 +66,21 @@ MomentsFncData::MomentsFncData( std::vector<CovarianceSage::Info> const& covar_v
 
   CurveData  c1(  azimuth, beta_H,  "Horizontal Beta"  );
   CurveData  c2(  azimuth, beta_V,  "Vertical Beta"    );
+
   CurveData  c3(  azimuth, alpha_H, "Horizontal Alpha" );
   CurveData  c4(  azimuth, alpha_V, "Vertical Alpha"   );
 
   c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c1.setColor( CurveData::Color( 0, 0, 0));
+
   c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c2.setColor( CurveData::Color( 255, 0, 0));
+
   c3.setAxes( CurveData::xBottom, CurveData::yRight );
+  c3.setColor( CurveData::Color( 0, 0, 0));
+
   c4.setAxes( CurveData::xBottom, CurveData::yRight );
+  c4.setColor( CurveData::Color(  255, 0, 0));
 
   addCurve( c1 );
   addCurve( c2 );

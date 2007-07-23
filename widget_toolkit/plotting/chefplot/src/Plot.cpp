@@ -31,6 +31,7 @@
 **************************************************************************
 **************************************************************************
 *************************************************************************/
+
 #include <iostream>
 #include <Plot.h>
 #include <PlotLegendItem.h>
@@ -73,10 +74,13 @@ xmin_(0.0), xmax_(0.0)
    grid_->setMinPen(QPen(Qt::blue,  0 ,Qt::DotLine));
    grid_->attach(this);
 
-   legend_ = new QwtLegend; 
+   legend_ = new QwtLegend(); 
+   legend_->setDisplayPolicy(QwtLegend::AutoIdentifier, 
+                             QwtLegendItem::ShowLine | QwtLegendItem::ShowSymbol |QwtLegendItem::ShowText );
    legend_->setFrameStyle(QFrame::Box|QFrame::Sunken);
    legend_->setItemMode(QwtLegend::ClickableItem );
-   insertLegend(legend_, QwtPlot::BottomLegend);
+ 
+   insertLegend(legend_,       QwtPlot::BottomLegend);
 
    enableAxis(xBottom, true);
    enableAxis(yLeft,   true);
@@ -111,28 +115,26 @@ xmin_(0.0), xmax_(0.0)
 
    xrange_ = xmax_-xmin_;
 
-   QwtScaleWidget*  scale =   axisWidget(QwtPlot::xBottom);
-   /////bottom_wheel_          =   new QwtWheel( scale );
+   //bottom_wheel_           =   new QwtWheel( axisWidget(QwtPlot::xBottom) );  
+   //bottom_wheel_->setOrientation(Qt::Horizontal);
 
-   scale            =   axisWidget(QwtPlot::yLeft);
-   /////left_wheel_      =   new QwtWheel( scale );
+   //left_wheel_             =   new QwtWheel( axisWidget(QwtPlot::yLeft)   );  
+   //left_wheel_->setOrientation(Qt::Vertical); 
 
-   scale            =   axisWidget(QwtPlot::yRight);
-   /////right_wheel_     =   new QwtWheel( scale );
+   //right_wheel_            =   new QwtWheel( axisWidget(QwtPlot::yRight)  );  
+   //right_wheel_->setOrientation(Qt::Vertical);
 
 
-   /////connect (bottom_wheel_, SIGNAL( valueChanged(double) ), this,  SLOT( bottomWheelValueChanged(double) ));
-   /////connect (left_wheel_,   SIGNAL( valueChanged(double) ), this,  SLOT( leftWheelValueChanged(double)  )  ); 
-   /////connect (right_wheel_,  SIGNAL( valueChanged(double) ), this,  SLOT( rightWheelValueChanged(double) )  );
+   //connect (bottom_wheel_, SIGNAL( valueChanged(double) ), this,  SLOT( bottomWheelValueChanged(double) ));
+   //connect (left_wheel_,   SIGNAL( valueChanged(double) ), this,  SLOT( leftWheelValueChanged(double)  )  ); 
+   //connect (right_wheel_,  SIGNAL( valueChanged(double) ), this,  SLOT( rightWheelValueChanged(double) )  );
 
    
-   /////enableThumbWheel(false,QwtPlot::xBottom);
-   /////enableThumbWheel(false,QwtPlot::yLeft);
-   /////enableThumbWheel(false,QwtPlot::yRight);
+   //enableThumbWheel(false,QwtPlot::xBottom);
+   //enableThumbWheel(false,QwtPlot::yLeft);
+   //enableThumbWheel(false,QwtPlot::yRight);
 
-
-   //////connect( this,  SIGNAL( legendClicked(long) ), this, SLOT( legendClicked( long ) ) );
-
+   connect ( this, SIGNAL(legendClicked(QwtPlotItem*)) , this, SLOT(toggleCurve(QwtPlotItem*)) ) ;  
 
   return;
 
@@ -142,11 +144,11 @@ xmin_(0.0), xmax_(0.0)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Plot::~Plot() {
+Plot::~Plot() 
+{
 
   // Qt Widgets are automatically destroyed when their parent is destroyed.
   // QwtPlotCurve objects are also destroyed.
-
 
 }
 
@@ -156,12 +158,13 @@ Plot::~Plot() {
 bool 
 Plot::eventFilter(QObject *object, QEvent *e)
 {
-#if 0 
+#if 0
     if ( e->type() == QEvent::Resize )
     {
       
-        const QSize &size = dynamic_cast<QResizeEvent *>(e)->size();
-        int x,y,w,h;
+       QSize const& size = dynamic_cast<QResizeEvent *>(e)->size();
+       
+       int x,y,w,h;
 
        const int margin = 2;
 
@@ -216,8 +219,10 @@ Plot::eventFilter(QObject *object, QEvent *e)
        } ;
 
     }
+
 #endif
-       return QwtPlot::eventFilter(object,e);
+
+  return QwtPlot::eventFilter(object,e);
 
 }
 
@@ -250,22 +255,25 @@ void  Plot::setData( PlotData const& pltdata) {
 
   // add the curves to the plot ...
 
-  PlotLegendItem* litem = 0;
   QwtPlotCurve*   crv     = 0;
 
   for (unsigned int i=0; i < pltdata.nCurves(); ++i) {
      
-     crv = new QwtPlotCurve();
-     crv->setData( pltdata[i] );
+     CurveData const& curve = pltdata[i];
+ 
+     crv = new QwtPlotCurve( pltdata[i].getLabel() );
+     crv->setData( curve );
 
      if ( pltdata[i].getYAxis() == CurveData::yLeft  ) enableAxis(yLeft,  true);
      if ( pltdata[i].getYAxis() == CurveData::yRight ) enableAxis(yRight, true);
-  
-     crv->setYAxis( pltdata[i].getYAxis() );
 
-     //c->setPen( QPen( Qt::red ) );
+     crv->setYAxis( curve.getYAxis() );
+     crv->setPen(  QColor( curve.getColor().r, curve.getColor().g, curve.getColor().b ) );
 
      crv->attach(this);
+   
+     curves_[ crv->title().text() ] = crv;
+
    };
 
 
@@ -319,12 +327,11 @@ void Plot::rightWheelValueChanged(double value)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
-Plot::bottomWheelValueChanged(double value){
-
+Plot::bottomWheelValueChanged(double value)
+{
    setAxisScale(QwtPlot::xBottom, value, value+xrange_, 0);
    emit scaleChangedSignal(); // to force a rescale of the beamline lego display
    replot();
-
 }
 
 
@@ -333,9 +340,7 @@ Plot::bottomWheelValueChanged(double value){
 
 double Plot::getCurrentXmin() 
 {
-
   return axisScaleDiv(QwtPlot::xBottom)->lBound();
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -343,7 +348,6 @@ double Plot::getCurrentXmin()
 
 double Plot::getCurrentXmax() 
 {
-  
   return axisScaleDiv(QwtPlot::xBottom)->hBound();
 }
 
@@ -407,8 +411,7 @@ Plot::resizeEvent(QResizeEvent *e) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-Plot::enableThumbWheels(bool set) 
+void Plot::enableThumbWheels(bool set) 
 {
   enableThumbWheel(set, QwtPlot::xBottom);
   enableThumbWheel(set, QwtPlot::yLeft);
@@ -423,26 +426,26 @@ Plot::enableThumbWheels(bool set)
 void Plot::enableThumbWheel(bool set, int axiscode) 
 {
 
-QwtScaleWidget* scale =  axisWidget(axiscode);
+#if 0
+ QwtScaleWidget* scale =  axisWidget(axiscode);
 
-if (scale == 0) return; // the axis is disabled.
+ if (!scale) return; // the axis is disabled.
 
 Qt::Orientation orientation;
-QwtWheel*  wheel;
+QwtWheel*       wheel =0;
  
-
 switch (axiscode) {
 
    case QwtPlot::xBottom:
-         wheel = bottom_wheel_;
+         wheel       = bottom_wheel_;
          orientation = Qt::Horizontal;
          break;
    case QwtPlot::yLeft:
-         wheel = left_wheel_;
+         wheel       = left_wheel_;
          orientation = Qt::Vertical;
         break;
    case QwtPlot::yRight:
-         wheel = right_wheel_;
+         wheel       = right_wheel_;
          orientation = Qt::Vertical;
         break;
   };
@@ -465,7 +468,8 @@ if (set) {
 }
 
  replot();
- 
+
+#endif 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -522,52 +526,16 @@ void   Plot::enableInterpolation(bool set) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void   Plot::enableCoordinatesDisplay(bool set) {
-
-
-}
+void   Plot::enableCoordinatesDisplay(bool set) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void   Plot::toggleCurve(long key, bool setting) {
-
-  long ikey = 0;
-   
-  QwtPlotItemList const& items = itemList();
-
-  for ( QwtPlotItemList::const_iterator it  = items.begin(); 
-	it != items.end(); ++it ) {
-
-    if ( (*it)->rtti() != QwtPlotItem::Rtti_PlotCurve ) continue;
-    
-    ++ikey;
-
-    if ( ikey == key) {
-       QwtPlotCurve* cv = dynamic_cast<QwtPlotCurve*>(*it);     
-       cv->setVisible(setting);
-       break;
-    }
-  }
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Plot::setLogScale( int axis) {
-
-#if 0
-
-  QwtScaleEngine* engine = axisScaleEngine(axis);  
-  if (engine) delete engine;
-
-  engine = new QwtLog10ScaleEngine();
-  setAxisScaleEngine(axis, engine);
-  left_zoomer_->setZoomBase();
-  replot();
-#endif
- 
+void Plot::setLogScale( int axis) 
+{
+  setAxisScaleEngine(axis, new QwtLog10ScaleEngine() ); // qwt auto-deletes old ScaleEngine
+   replot();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -575,17 +543,8 @@ void Plot::setLogScale( int axis) {
 
 void Plot::setLinScale( int axis) 
 {
-
-#if 0
- QwtScaleEngine* engine = axisScaleEngine(axis);  
- if (engine) delete engine;
- engine = new QwtLinearScaleEngine();
- setAxisScaleEngine(axis, engine);
-
- left_zoomer_->setZoomBase();
+ setAxisScaleEngine(axis, new QwtLinearScaleEngine()); // qwt auto-deletes old ScaleEngine
  replot();
-#endif
-
 }
 
 
@@ -594,15 +553,24 @@ void Plot::setLinScale( int axis)
 
 void   Plot::enableLegend(bool set) 
 {
-
   if (set) 
-    legend_->show();
+    legend_->contentsWidget()->show();
   else 
-    legend_->hide();
-
+    legend_->contentsWidget()->hide();
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Plot::toggleCurve(QwtPlotItem* item) 
+{ 
+  QwtPlotCurve* crv =  curves_[ item->title().text() ]; 
+  crv->setVisible( !item->isVisible() );
+  replot();
+}
+
+  
+  
+       
 

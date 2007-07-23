@@ -48,7 +48,7 @@ class PlotZoomer: public QwtPlotZoomer {
     PlotZoomer (int xaxis, int yaxis, QwtPlotCanvas* canvas, const char *name=0);
     PlotZoomer (QwtPlotCanvas* canvas, const char *name=0);
  
- ~PlotZoomer();
+   ~PlotZoomer();
 
   signals:
   
@@ -61,4 +61,4 @@ class PlotZoomer: public QwtPlotZoomer {
 };
 
 
-#endif
+#endif // PLOTZOOMER_H

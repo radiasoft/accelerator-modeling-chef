@@ -102,8 +102,6 @@ void CHEFPlotMain::displayLattice(BmlPtr bml)
 
 void CHEFPlotMain::addData(PlotData& pltdata)
 {
-
- 
  if (auto_clear_) chefplot_->clear(); 
 
  tunediagram_->setTunes( pltdata.getTunes().htune, pltdata.getTunes().vtune );
@@ -117,132 +115,98 @@ void CHEFPlotMain::addData(PlotData& pltdata)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::enableGrid(bool set) {
-  
- chefplot_->enableGrid(set);
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void CHEFPlotMain::enableThumbWheels(bool set) {
-
- chefplot_->enableThumbWheels(set);
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void CHEFPlotMain::enableLegoPlot(bool set) {
-
- chefplot_->enableLegoPlot(set);
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void CHEFPlotMain::enableZoomRightYAxis() {
-
-  std::cout << " CHEFPlotMain::enableZoomRightYAxis()" << std::endl;
- chefplot_->enableZoomRightYAxis(); 
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CHEFPlotMain::enableZoomLeftYAxis() {
-  
-  std::cout << " CHEFPlotMain::enableZoomZoomLeftYAxis()" << std::endl;
- chefplot_->enableZoomLeftYAxis(); 
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CHEFPlotMain::enableZoomIn() {
-
-  std::cout << " CHEFPlotMain::enableZoomIn()" << std::endl;
-  chefplot_->enableZoomIn();  
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CHEFPlotMain::enableZoomOut() 
+void CHEFPlotMain::enableGrid(bool set) 
 {
-  
-
+ chefplot_->enableGrid(set);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
+void CHEFPlotMain::enableThumbWheels(bool set) 
+{
+ chefplot_->enableThumbWheels(set);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CHEFPlotMain::enableLegoPlot(bool set) 
+{
+ chefplot_->enableLegoPlot(set);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CHEFPlotMain::enableZoomYAxisRight() 
+{
+ chefplot_->enableZoomYAxisRight(); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlotMain::enableZoomYAxisLeft() 
+{
+ chefplot_->enableZoomYAxisLeft(); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFPlotMain::zoomReset()
 {
-
-  std::cout << " CHEFPlotMain::zoomReset()" << std::endl;
   chefplot_->zoomReset();  
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::showDataPoints( bool set ){
-
+void CHEFPlotMain::showDataPoints( bool set )
+{
   chefplot_->plot_->enableDataPointSymbols(set);
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::enableLegend( bool set ){
-
+void CHEFPlotMain::enableLegend( bool set )
+{
   chefplot_->plot_->enableLegend(set);
   chefplot_->plot_->replot();
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::enableInterpolation( bool set ){
-
+void CHEFPlotMain::enableInterpolation( bool set )
+{
   chefplot_->plot_->enableInterpolation(set);
   chefplot_->plot_->replot();
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void CHEFPlotMain::enableCoordinatesDisplay( bool set ){
-
+void CHEFPlotMain::enableCoordinatesDisplay( bool set )
+{
   chefplot_->plot_->enableCoordinatesDisplay(set);
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::exit( ){
+void CHEFPlotMain::exit( )
+{
   
   // Do *not* use "delete this" as deleting the raw ptr interferes with situations where a widget* is 
   // wrapped with a smart (shared) pointer. 
@@ -256,21 +220,18 @@ void CHEFPlotMain::exit( ){
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void CHEFPlotMain::clear( ){
-  
+void CHEFPlotMain::clear( )
+{
      chefplot_->clear();  //  clear the plot
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void CHEFPlotMain::setAutoClear( bool set){
-  
+void CHEFPlotMain::setAutoClear( bool set)
+{
      auto_clear_ = set;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -421,7 +382,6 @@ void CHEFPlotMain::optionsVerLogScaleLeft(bool set)
 
 void CHEFPlotMain::optionsVerLogScaleRight(bool set) 
 {
-
   if (set)
 
     chefplot_->setLogScale( QwtPlot::yRight);
@@ -429,8 +389,6 @@ void CHEFPlotMain::optionsVerLogScaleRight(bool set)
   else
 
     chefplot_->setLinScale( QwtPlot::yRight);
-
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -438,7 +396,6 @@ void CHEFPlotMain::optionsVerLogScaleRight(bool set)
 
 void CHEFPlotMain::optionsHorLogScale(bool set) 
 {
-
   if (set)
 
     chefplot_->setLogScale( QwtPlot::xBottom);
@@ -446,8 +403,6 @@ void CHEFPlotMain::optionsHorLogScale(bool set)
   else
 
     chefplot_->setLinScale( QwtPlot::xBottom);
-
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -465,9 +420,16 @@ void CHEFPlotMain::optionsPersistent(bool set)
 
 void CHEFPlotMain::filePrint() 
 {
-
   // not implemented.
+}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFPlotMain::zoomOff() 
+{
+  chefplot_->zoomOff();
 }
 
 
