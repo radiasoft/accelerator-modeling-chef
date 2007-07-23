@@ -67,7 +67,7 @@
 #include <qfiledialog.h>
 #include <qgrid.h>
 
-#include <qwt/qwt_math.h>
+#include <qwt_math.h>
 #include <GL/glut.h>
 
 #include "MathConstants.h"
