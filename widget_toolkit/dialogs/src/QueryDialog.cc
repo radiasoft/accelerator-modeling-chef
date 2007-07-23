@@ -219,7 +219,7 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
 QueryDialog::~QueryDialog()
 {
   for( int i = 0; i < 4; i++ ) {
-    if( 0 != queryPtr_[i] )     { queryPtr_[i]->eliminate(); }
+    if( 0 != queryPtr_[i] )     { delete queryPtr_[i]; }
   }
   if( tabWidgetPtr_ ) { delete  tabWidgetPtr_; }
   if( opsBoxPtr_    ) { delete  opsBoxPtr_;    }
@@ -255,7 +255,7 @@ void QueryDialog::opEnter()
   static bool ok = false;
 
   // Shift
-  if( 0 != queryPtr_[3] ) { queryPtr_[3]->eliminate(); }
+  if( 0 != queryPtr_[3] ) { delete queryPtr_[3]; }
   for( int i = 3; i >=1; i-- ) {
     queryPtr_[i] = queryPtr_[i-1];
   }
@@ -321,7 +321,7 @@ void QueryDialog::opAnd()
   static BoolNode* temp;
   static int i;
   if( ( 0 != queryPtr_[0] ) && ( 0 != queryPtr_[1] ) ) {
-    temp = new AndNode( *(queryPtr_[0]), *(queryPtr_[1]) );
+    temp = new AndNode( (queryPtr_[0]), (queryPtr_[1]) );
     queryPtr_[0] = temp;
     for( i = 1; i <=2; i++ ) {
       queryPtr_[i] = queryPtr_[i+1];
@@ -338,7 +338,7 @@ void QueryDialog::opOr()
   static BoolNode* temp;
   static int i;
   if( ( 0 != queryPtr_[0] ) && ( 0 != queryPtr_[1] ) ) {
-    temp = new OrNode( *(queryPtr_[0]), *(queryPtr_[1]) );
+    temp = new OrNode( queryPtr_[0], queryPtr_[1] );
     queryPtr_[0] = temp;
     for( i = 1; i <=2; i++ ) {
       queryPtr_[i] = queryPtr_[i+1];
@@ -354,7 +354,7 @@ void QueryDialog::opNot()
 {
   static BoolNode* temp;
   if( queryPtr_[0] ) {
-    temp = new NotNode( *(queryPtr_[0]) );
+    temp = new NotNode( queryPtr_[0] );
     queryPtr_[0] = temp;
   }
 
