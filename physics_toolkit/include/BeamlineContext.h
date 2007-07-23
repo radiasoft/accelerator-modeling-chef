@@ -121,8 +121,7 @@ class BeamlineContext
 
     // I really want to get rid of AlignmentData altogether!
 
-    template <typename UnaryPredicate_t>
-    int setAlignment( alignmentData const&, UnaryPredicate_t Criterion=beamline::AllTrue() );
+    int setAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion);
 
     int replaceElement( ElmPtr , ElmPtr );
     // Will replace the first argument with
@@ -135,8 +134,7 @@ class BeamlineContext
     // been cloned. It is assumed that *b has been created on the
     // heap, and the BeamlineContext takes over ownership.
 
-    template <typename UnaryFunction_t>
-    int processElements( UnaryFunction_t action );
+    int processElements( boost::function<bool(bmlnElmnt &)> action );
     // Returns number of elements processed.
 
     void setAvgInvariantEmittance( double, double );
@@ -352,7 +350,5 @@ class BeamlineContext
     void deleteClosedOrbit();
 
 };
-
-
 
 #endif // BEAMLINECONTEXT_H
