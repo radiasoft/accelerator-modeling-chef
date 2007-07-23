@@ -1473,9 +1473,6 @@ JLPtr<T> TJL<T>::sqrt() const
    
    //--------------------------------------------------------------------------
 
-   int *p = 0;    
-   *p = 1; 
-
    throw( GenericException( __FILE__, __LINE__, 
           "TJL<T> sqrt() { ",
           "Argument is zero." ) );
@@ -2357,10 +2354,6 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
  EnvPtr<T> pje(x->myEnv_);
  JLPtr<T> z( TJL<T>::makeTJL( pje ) );
 
- int  indy                = 0;
- T  dummy                 = T();
- T  product               = T();
-
 
  // ---------------------------------------------------------------------------------------
  // Determine the lowest weight of the product and the maximum weight computed accurately.
@@ -2368,7 +2361,7 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 
  int testWeight = std::min( (x->accuWgt_ + y->lowWgt_), (y ->accuWgt_+ x->lowWgt_) );
      testWeight = std::min( testWeight,  pje->maxWeight() ); 
- 
+
  //------------------------------------------------------------------------------
  // Is the max accurate weight == 1 ?  If so, no sparsity. perform the multiplication directly 
  //-------------------------------------------------------------------------------
@@ -2401,6 +2394,7 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
    return z;
  }
  
+ 
  //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.
  //  Use direct sequential access to access terms since order is
@@ -2420,13 +2414,13 @@ for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
 
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
 
-     indy = pje->multOffset( p->offset_ , q->offset_ );
+     int indy = pje->multOffset( p->offset_ , q->offset_ );
 
      // Will work even when the exponents are all zero. 
 
-     product = p->value_ * q->value_;
+     T product = p->value_ * q->value_;
 
-     dummy =  tjlmml[indy].value_ + product;
+     T dummy =  tjlmml[indy].value_ + product;
  
      if( ( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) || 
          ( std::abs(dummy) <  TJL<T>::mx_small_ ) ) {
@@ -2478,11 +2472,6 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
    x->weight_  = 0; 
    return x;
  }
-
- 
- int  indy                = 0;
- T  dummy                 = T();
- T  product               = T();
 
 
  // -------------------------------------------------
@@ -2552,13 +2541,13 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
 
-     indy = pje->multOffset( p->offset_ , q->offset_ );
+     int indy = pje->multOffset( p->offset_ , q->offset_ );
 
      // Will work even when the exponents are all zero.
 
-     product = p->value_ * q->value_;
+     T product = p->value_ * q->value_;
 
-     dummy = tjlmml[indy].value_ + product;
+     T dummy = tjlmml[indy].value_ + product;
 
     if( ( std::abs(dummy) <  TJL<T>::mx_small_* std::abs( product ) ) || 
         ( std::abs(dummy) <  TJL<T>::mx_small_ ) ) {
