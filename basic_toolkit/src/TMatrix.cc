@@ -181,7 +181,7 @@ TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() co
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-void TMatrix<double>::SVD( TMatrix<double>& U, Vector& W, TMatrix<double>& V) 
+void TMatrix<double>::SVD( TMatrix<double>& U, Vector& W, TMatrix<double>& V) const
 {
   ml_->SVD( U.ml_, W, V.ml_);
 
