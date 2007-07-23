@@ -55,27 +55,28 @@ class TuneDiagram : public QVBox
 
   void draw();
 
+  const QPixmap* copyPtr() { return imagoPtr_; }
+
  private:
-  Vector  _tunes;
-  double  _nx_lo;
-  double  _nx_hi;
-  double  _ny_lo;
-  double  _ny_hi;
-  int     _order;
 
-  int     _border;
+  void finishConstructor();
+  void mark( double, double, QBrush* );
+  void drawLine( const Pair&, const Pair&, QPen* );
 
-  QLabel*      _tuneLabelPtr;
-  ChalkBoard*  _chalkBoardPtr;
-  QPixmap*     _imagoPtr;
+  Vector  tunes_;
+  double  nx_lo_;
+  double  nx_hi_;
+  double  ny_lo_;
+  double  ny_hi_;
+  int     order_;
 
-  void _finishConstructor();
+  int     border_;
 
-  void _mark( double, double, QBrush* );
-  void _drawLine( const Pair&, const Pair&, QPen* );
+  QLabel*      tuneLabelPtr_;
+  ChalkBoard*  chalkBoardPtr_;
+  QPixmap*     imagoPtr_;
 
- public:
-  const QPixmap* copyPtr() { return _imagoPtr; }
+
 };
 
 #endif // TUNEDIAGRAM_H
