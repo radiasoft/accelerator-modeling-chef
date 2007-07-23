@@ -56,86 +56,86 @@ using namespace std;
 
 TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
 : QVBox( parent, nnn, fff )
-, _tunes(2)
-, _order(5)
-, _border(60)
-, _tuneLabelPtr(0)
-, _chalkBoardPtr(0)
-, _imagoPtr(0)
+, tunes_(2)
+, order_(5)
+, border_(60)
+, tuneLabelPtr_(0)
+, chalkBoardPtr_(0)
+, imagoPtr_(0)
 {
-  _tunes(0) = 0.5; 
-  _tunes(1) = 0.5; 
+  tunes_(0) = 0.5; 
+  tunes_(1) = 0.5; 
 
-  _finishConstructor();
+  finishConstructor();
 }
 
 
 /////////////////////////////////////////////////////////////////
 
 
-TuneDiagram::TuneDiagram(   const Vector& nu, int ord
+TuneDiagram::TuneDiagram(   Vector const& nu, int ord
                           , QWidget* parent, const char* nnn, WFlags fff )
 : QVBox( parent, nnn, fff )
-, _tunes(nu)
-, _order(ord)
-, _border(60)
-, _tuneLabelPtr(0)
-, _chalkBoardPtr(0)
-, _imagoPtr(0)
+, tunes_(nu)
+, order_(ord)
+, border_(60)
+, tuneLabelPtr_(0)
+, chalkBoardPtr_(0)
+, imagoPtr_(0)
 {
-  if( _order < 0  ) { _order = - _order; }
-  if( 0 == _order ) { _order = 5;        }
+  if( order_ < 0  ) { order_ = - order_; }
+  if( 0 == order_ ) { order_ = 5;        }
 
-  if( 2 == _tunes.Dim() ) {
-    _finishConstructor();
+  if( 2 == tunes_.Dim() ) {
+    finishConstructor();
 
   }    
   else {
     ostringstream uic;
     uic  << "Current version handles allows only two-dimensional tunespace."
             "\nYours has dimension "
-         << _tunes.Dim()
+         << tunes_.Dim()
          << '.';
     throw GenericException( __FILE__, __LINE__
           , "TuneDiagram::TuneDiagram( const Vector&, double )"
           , uic.str().c_str() );
   }
 
-  this->draw();
-  this->show();
+  draw();
+  show();
 }
 
 
 /////////////////////////////////////////////////////////////////
 
 
-void TuneDiagram::_finishConstructor()
+void TuneDiagram::finishConstructor()
 {
-  _tuneLabelPtr  = new QLabel( this );
-  _chalkBoardPtr = new ChalkBoard( this );
-  _imagoPtr      = new QPixmap;
+  tuneLabelPtr_  = new QLabel( this );
+  chalkBoardPtr_ = new ChalkBoard( this );
+  imagoPtr_      = new QPixmap;
 
-  _tunes(0) = fabs(_tunes(0));
-  _tunes(1) = fabs(_tunes(1));
+  tunes_(0) = fabs(tunes_(0));
+  tunes_(1) = fabs(tunes_(1));
 
-  _nx_lo    = int(_tunes(0));
-  _ny_lo    = int(_tunes(1));
-  _nx_hi    = _nx_lo + 1;
-  _ny_hi    = _ny_lo + 1;
+  nx_lo_    = int(tunes_(0));
+  ny_lo_    = int(tunes_(1));
+  nx_hi_    = nx_lo_ + 1;
+  ny_hi_    = ny_lo_ + 1;
 
   ostringstream uic;
   uic << "    "
       << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*_tunes(0)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
       << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*_tunes(1)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
       << "\n    ";
-  _tuneLabelPtr->setTextFormat( Qt::PlainText );
-  _tuneLabelPtr->setAlignment( Qt::AlignHCenter );
-  _tuneLabelPtr->setFrameStyle( QFrame::Panel|QFrame::Raised );
-  _tuneLabelPtr->setText( QString(uic.str().c_str()) );
+  tuneLabelPtr_->setTextFormat( Qt::PlainText );
+  tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
+  tuneLabelPtr_->setFrameStyle( QFrame::Panel|QFrame::Raised );
+  tuneLabelPtr_->setText( QString(uic.str().c_str()) );
 
-  this->setCaption( QString("CHEF: Tune Diagram") );
+  setCaption( QString("CHEF: Tune Diagram") );
 }
 
 
@@ -144,20 +144,21 @@ void TuneDiagram::_finishConstructor()
 
 void TuneDiagram::draw()
 {
-  _imagoPtr->fill();
-  _chalkBoardPtr->erase();
+  
+  imagoPtr_->fill();
+  chalkBoardPtr_->erase();
 
   ostringstream uic;
   uic << "    "
       << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*_tunes(0)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
       << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*_tunes(1)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
       << "\n    ";
-  _tuneLabelPtr->setTextFormat( Qt::PlainText );
-  _tuneLabelPtr->setAlignment( Qt::AlignHCenter );
-  _tuneLabelPtr->setFrameStyle( QFrame::Panel|QFrame::Raised );
-  _tuneLabelPtr->setText( QString(uic.str().c_str()) );
+  tuneLabelPtr_->setTextFormat( Qt::PlainText );
+  tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
+  tuneLabelPtr_->setFrameStyle( QFrame::Panel|QFrame::Raised );
+  tuneLabelPtr_->setText( QString(uic.str().c_str()) );
 
 
   // ----------------------------------------------
@@ -165,21 +166,21 @@ void TuneDiagram::draw()
   // TrollTech's "Painting on the Desktop" example.
   // ----------------------------------------------
   // REMOVE: QFont f( "charter", 96, QFont::Black );
-  // REMOVE: f.setPixelSize(_border/3);
+  // REMOVE: f.setPixelSize(border_/3);
   // REMOVE: f.setStyleHint( QFont::Times );
   // REMOVE: QApplication::setFont( f );
   
   QFont oldFont( QApplication::font() );
   QFont f( "charter", 96, QFont::Black );
-  f.setPixelSize(_border/3);
+  f.setPixelSize(border_/3);
   f.setStyleHint( QFont::Times );
   QApplication::setFont( f );
 
-  const int w = 400 + _border;
-  const int h = 400 + _border;
+  const int w = 400 + border_;
+  const int h = 400 + border_;
 
-  _chalkBoardPtr->setBackgroundMode( Qt::FixedColor );
-  _chalkBoardPtr->setBackgroundColor( Qt::white );
+  chalkBoardPtr_->setBackgroundMode( Qt::FixedColor );
+  chalkBoardPtr_->setBackgroundColor( Qt::white );
 
   this->setSize(w,h);
 
@@ -188,60 +189,60 @@ void TuneDiagram::draw()
   blackPen.setStyle ( Qt::SolidLine );
   blackPen.setWidth ( 1 );
 
-  if( _order <= 0 ) { _order = 5; }
+  if( order_ <= 0 ) { order_ = 5; }
 
   int m_1, m_2;  
   Pair a, b;
   Pair trial[4];
   double n, n_lo, n_hi;
 
-  for( int ord = 1; ord <= _order; ord++ ) {
+  for( int ord = 1; ord <= order_; ord++ ) {
     // Draw the line m_1 = ord, m_2 = 0
-    n_lo = - nearestInteger( ord*_nx_lo );
-    n_hi = - nearestInteger( ord*_nx_hi );
+    n_lo = - nearestInteger( ord*nx_lo_ );
+    n_hi = - nearestInteger( ord*nx_hi_ );
     for( n = n_hi; n < n_lo + 0.01; n++ ) {
-      a.x = (-n/ord); a.y = _ny_lo;
-      b.x = (-n/ord); b.y = _ny_hi;
-      _drawLine( a, b, &blackPen );
+      a.x = (-n/ord); a.y = ny_lo_;
+      b.x = (-n/ord); b.y = ny_hi_;
+      drawLine( a, b, &blackPen );
     }
        
     // Draw the line m_1 = 0, m_2 = ord
-    n_lo = - nearestInteger( ord*_ny_lo );
-    n_hi = - nearestInteger( ord*_ny_hi );
+    n_lo = - nearestInteger( ord*ny_lo_ );
+    n_hi = - nearestInteger( ord*ny_hi_ );
     for( n = n_hi; n < n_lo + 0.01; n++ ) {
-      a.x = _nx_lo; a.y = (-n/ord);
-      b.x = _nx_hi; b.y = (-n/ord);
-      _drawLine( a, b, &blackPen );
+      a.x = nx_lo_; a.y = (-n/ord);
+      b.x = nx_hi_; b.y = (-n/ord);
+      drawLine( a, b, &blackPen );
     }
 
     // Draw the sum resonances
     for( m_1 = 1; m_1 < ord; m_1++ ) 
     {
       m_2 = ord - m_1;
-      n_lo = - nearestInteger( m_1*_nx_lo + m_2*_ny_lo );
-      n_hi = - nearestInteger( m_1*_nx_hi + m_2*_ny_hi );
+      n_lo = - nearestInteger( m_1*nx_lo_ + m_2*ny_lo_ );
+      n_hi = - nearestInteger( m_1*nx_hi_ + m_2*ny_hi_ );
 
       for( n = n_hi; n < n_lo + 0.01; n++ ) 
       {
-        trial[0].x = _nx_lo;
-        trial[0].y = - (m_1*_nx_lo + n )/m_2;
+        trial[0].x = nx_lo_;
+        trial[0].y = - (m_1*nx_lo_ + n )/m_2;
 
-        trial[1].x = _nx_hi;
-        trial[1].y = - (m_1*_nx_hi + n )/m_2;
+        trial[1].x = nx_hi_;
+        trial[1].y = - (m_1*nx_hi_ + n )/m_2;
 
-        trial[2].y = _ny_lo;
-        trial[2].x = - (m_2*_ny_lo + n )/m_1;
+        trial[2].y = ny_lo_;
+        trial[2].x = - (m_2*ny_lo_ + n )/m_1;
 
-        trial[3].y = _ny_hi;
-        trial[3].x = - (m_2*_ny_hi + n )/m_1;
+        trial[3].y = ny_hi_;
+        trial[3].x = - (m_2*ny_hi_ + n )/m_1;
 
         int jj = -1;
         int j = 0;
         int count = 0;
         while( j < 4  &&  count < 2 ) 
         {
-          if( _nx_lo <= trial[j].x   &&   trial[j].x <= _nx_hi  &&
-              _ny_lo <= trial[j].y   &&   trial[j].y <= _ny_hi ) 
+          if( nx_lo_ <= trial[j].x   &&   trial[j].x <= nx_hi_  &&
+              ny_lo_ <= trial[j].y   &&   trial[j].y <= ny_hi_ ) 
           {
             if( jj == -1 ) 
             {
@@ -264,7 +265,7 @@ void TuneDiagram::draw()
         }
 
         if( count == 2 ) {
-          _drawLine( a, b, &blackPen );
+          drawLine( a, b, &blackPen );
         }
       }
     }
@@ -277,82 +278,82 @@ void TuneDiagram::draw()
   QBrush redBrush;
   redBrush.setColor( Qt::red );
   redBrush.setStyle( Qt::SolidPattern );
-  _mark( _tunes(0), _tunes(1), &redBrush );
+  mark( tunes_(0), tunes_(1), &redBrush );
 
 
   // -----------------
   // Write tune values
   // -----------------
-  QPainter localPainter(_chalkBoardPtr);
+  QPainter localPainter(chalkBoardPtr_);
   {
   ostringstream uic;
-  uic << int(_tunes(0));
+  uic << int(tunes_(0));
 
   blackPen.setColor(Qt::black);
   blackPen.setWidth(1);
   localPainter.setPen( blackPen );
 
-  localPainter.drawText( _border, h-1-_border, 100, _border
+  localPainter.drawText( border_, h-1-border_, 100, border_
                          , Qt::AlignLeft|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setPen( blackPen );
-  localPainter.drawText( _border, h-1-_border, 100, _border
+  localPainter.drawText( border_, h-1-border_, 100, border_
                          , Qt::AlignLeft|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
   }
 
   {
   ostringstream uic;
-  uic << int(_tunes(1));
+  uic << int(tunes_(1));
 
-  localPainter.begin(_chalkBoardPtr);
+  localPainter.begin(chalkBoardPtr_);
   blackPen.setColor(Qt::black);
   blackPen.setWidth(1);
 
   localPainter.setPen( blackPen );
-  localPainter.drawText( 0, h-1-2*_border, _border, _border
+  localPainter.drawText( 0, h-1-2*border_, border_, border_
                          , Qt::AlignRight|Qt::AlignBottom, QString(uic.str().c_str()) );
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setPen( blackPen );
-  localPainter.drawText( 0, h-1-2*_border, _border, _border
+  localPainter.drawText( 0, h-1-2*border_, border_, border_
                          , Qt::AlignRight|Qt::AlignBottom, QString(uic.str().c_str()) );
   localPainter.end();
   }
 
   {
   ostringstream uic;
-  uic << (int(_tunes(0)) + 1);
+  uic << (int(tunes_(0)) + 1);
 
-  localPainter.begin(_chalkBoardPtr);
+  localPainter.begin(chalkBoardPtr_);
   localPainter.setPen( blackPen );
-  localPainter.drawText( w - 1 - _border - 100, h-1-_border, 100, _border
+  localPainter.drawText( w - 1 - border_ - 100, h-1-border_, 100, border_
                          , Qt::AlignRight|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setPen( blackPen );
-  localPainter.drawText( w - 1 - _border - 100, h-1-_border, 100, _border
+  localPainter.drawText( w - 1 - border_ - 100, h-1-border_, 100, border_
                          , Qt::AlignRight|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
   }
 
   {
   ostringstream uic;
-  uic << (int(_tunes(1)) + 1);
+  uic << (int(tunes_(1)) + 1);
 
-  localPainter.begin(_chalkBoardPtr);
+  localPainter.begin(chalkBoardPtr_);
   localPainter.setPen( blackPen );
-  localPainter.drawText( 0, _border, _border, _border
+  localPainter.drawText( 0, border_, border_, border_
                          , Qt::AlignRight|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setPen( blackPen );
-  localPainter.drawText( 0, _border, _border, _border
+  localPainter.drawText( 0, border_, border_, border_
                          , Qt::AlignRight|Qt::AlignTop, QString(uic.str().c_str()) );
   localPainter.end();
   }
@@ -366,9 +367,9 @@ void TuneDiagram::draw()
 
 TuneDiagram::~TuneDiagram()
 {
-  if( _imagoPtr ) { 
-    delete _imagoPtr; 
-    _imagoPtr = 0; 
+  if( imagoPtr_ ) { 
+    delete imagoPtr_; 
+    imagoPtr_ = 0; 
   }
 }
 
@@ -378,31 +379,31 @@ TuneDiagram::~TuneDiagram()
 
 void TuneDiagram::setSize( int w, int h )
 {
-  _imagoPtr->resize(w,h);
-  _imagoPtr->fill();
-  _chalkBoardPtr->setFixedSize(w,h);
-  _chalkBoardPtr->erase();
+  imagoPtr_->resize(w,h);
+  imagoPtr_->fill();
+  chalkBoardPtr_->setFixedSize(w,h);
+  chalkBoardPtr_->erase();
   this->adjustSize();
 }
 
 
 /////////////////////////////////////////////////////////////////
 
-void TuneDiagram::_mark( double x, double y, QBrush* z )
+void TuneDiagram::mark( double x, double y, QBrush* z )
 {
   static QPainter localPainter;
 
-  x = _border + (_chalkBoardPtr->width()  - 1 - 2*_border)*(( x - _nx_lo )/( _nx_hi - _nx_lo ));
-  y = _border + (_chalkBoardPtr->height() - 1 - 2*_border)*(( _ny_hi - y )/( _ny_hi - _ny_lo ));
+  x = border_ + (chalkBoardPtr_->width()  - 1 - 2*border_)*(( x - nx_lo_ )/( nx_hi_ - nx_lo_ ));
+  y = border_ + (chalkBoardPtr_->height() - 1 - 2*border_)*(( ny_hi_ - y )/( ny_hi_ - ny_lo_ ));
 
-  localPainter.begin( _chalkBoardPtr );
+  localPainter.begin( chalkBoardPtr_ );
   localPainter.setBrush( *z );
   localPainter.setPen( Qt::NoPen );
   localPainter.drawEllipse( ((int) x)-5, ((int) y)-5, 10, 10 );
   localPainter.flush();
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setBrush( *z );
   localPainter.setPen( Qt::NoPen );
   localPainter.drawEllipse( ((int) x)-5, ((int) y)-5, 10, 10 );
@@ -414,24 +415,24 @@ void TuneDiagram::_mark( double x, double y, QBrush* z )
 /////////////////////////////////////////////////////////////////
 
 
-void TuneDiagram::_drawLine( const Pair& a, const Pair& b, QPen* z )
+void TuneDiagram::drawLine( const Pair& a, const Pair& b, QPen* z )
 {
   static QPainter localPainter;
 
-  localPainter.begin( _chalkBoardPtr );
+  localPainter.begin( chalkBoardPtr_ );
   localPainter.setPen( *z );
-  localPainter.drawLine( _border + int((_chalkBoardPtr->width()  - 1 - 2*_border) * double( a.x - _nx_lo )/double( _nx_hi - _nx_lo )),
-                         _border + int((_chalkBoardPtr->height() - 1 - 2*_border) * double( _ny_hi - a.y )/double( _ny_hi - _ny_lo )),
-                         _border + int((_chalkBoardPtr->width()  - 1 - 2*_border) * double( b.x - _nx_lo )/double( _nx_hi - _nx_lo )),
-                         _border + int((_chalkBoardPtr->height() - 1 - 2*_border) * double( _ny_hi - b.y )/double( _ny_hi - _ny_lo ))  );
+  localPainter.drawLine( border_ + int((chalkBoardPtr_->width()  - 1 - 2*border_) * double( a.x - nx_lo_ )/double( nx_hi_ - nx_lo_ )),
+                         border_ + int((chalkBoardPtr_->height() - 1 - 2*border_) * double( ny_hi_ - a.y )/double( ny_hi_ - ny_lo_ )),
+                         border_ + int((chalkBoardPtr_->width()  - 1 - 2*border_) * double( b.x - nx_lo_ )/double( nx_hi_ - nx_lo_ )),
+                         border_ + int((chalkBoardPtr_->height() - 1 - 2*border_) * double( ny_hi_ - b.y )/double( ny_hi_ - ny_lo_ ))  );
   localPainter.end();
 
-  localPainter.begin( _imagoPtr );
+  localPainter.begin( imagoPtr_ );
   localPainter.setPen( *z );
-  localPainter.drawLine( _border + int((_imagoPtr->width()  - 1 - 2*_border) * double( a.x - _nx_lo )/double( _nx_hi - _nx_lo )),
-                         _border + int((_imagoPtr->height() - 1 - 2*_border) * double( _ny_hi - a.y )/double( _ny_hi - _ny_lo )),
-                         _border + int((_imagoPtr->width()  - 1 - 2*_border) * double( b.x - _nx_lo )/double( _nx_hi - _nx_lo )),
-                         _border + int((_imagoPtr->height() - 1 - 2*_border) * double( _ny_hi - b.y )/double( _ny_hi - _ny_lo ))  );
+  localPainter.drawLine( border_ + int((imagoPtr_->width()  - 1 - 2*border_) * double( a.x - nx_lo_ )/double( nx_hi_ - nx_lo_ )),
+                         border_ + int((imagoPtr_->height() - 1 - 2*border_) * double( ny_hi_ - a.y )/double( ny_hi_ - ny_lo_ )),
+                         border_ + int((imagoPtr_->width()  - 1 - 2*border_) * double( b.x - nx_lo_ )/double( nx_hi_ - nx_lo_ )),
+                         border_ + int((imagoPtr_->height() - 1 - 2*border_) * double( ny_hi_ - b.y )/double( ny_hi_ - ny_lo_ ))  );
   localPainter.flush();
   localPainter.end();
 }
@@ -472,6 +473,6 @@ void TuneDiagram::ChalkBoard::paintEvent( QPaintEvent* x )
 
 void TuneDiagram::setTunes( double nu_x, double nu_y )
 {
-  _tunes(0) = nu_x;
-  _tunes(1) = nu_y;
+  tunes_(0) = nu_x;
+  tunes_(1) = nu_y;
 }
