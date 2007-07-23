@@ -112,7 +112,7 @@ TML<T>::TML(const char* flag, int dimension ): nrows_(dimension), ncols_(dimensi
   } else {
       throw( GenericMatrixException( dimension, dimension
                      , "TML<T>::TML<T>(const char* flag, int dimension)"
-                     , strcat("Unknown flag: ", flag) ) );
+                     , (std::string("Unknown flag: ")+flag).c_str() ));
   }
 }
 
