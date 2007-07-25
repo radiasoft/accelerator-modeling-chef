@@ -20,7 +20,7 @@ main( int argc, char** argv ) {
   exit(0);
  }
 
- int deg [2];
+ IntArray deg(2);
  deg[0] = atoi( argv[2] );
  deg[1] = atoi( argv[4] );
 

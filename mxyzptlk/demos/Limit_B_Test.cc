@@ -37,7 +37,7 @@ main( int argc, char** argv ) {
  printf ( "atan( %lf ) = %le\n", x, answer );
 
  Jet u, s, c;
- int d[1];
+ IntArray d(1);
  d[0] = 0;
  u = m;
 

@@ -7,7 +7,8 @@ using namespace std;
 
 main() 
 {
-  int index[] = { 3, 2 };
+  int contents[] = { 3, 2 };
+  IntArray index( 2, contents );
   double   answer[2];
 
   Jet__environment::BeginEnvironment( 7 );
