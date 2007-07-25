@@ -30,20 +30,26 @@ main( int argc, char** argv ) {
 
  Jet u, v;
  Jet f, g;
- int d = 1;
+ IntArray d(1);
+ d[0] = 1;
 
  f = x + x*x + x*x*x;
- g = f.D(&d);
+ g = f.D(d);
  
  int i = 0;
  u = x;
- v = ( f(&u) - x ) / g(&u);
+ std::vector<Jet> w(1);
+ w[0] = u;
+ v = ( f(w) - x ) / g(w);
  while( ( i++ < n ) &&  ( v != 0.0 ) ) {
   u -= v;
-  v = ( f(&u) - x ) / g(&u);
+  w[0] = u;
+  v = ( f(w) - x ) / g(w);
  }
 
  u.printCoeffs();
- f(&u).printCoeffs();
- u(&f).printCoeffs();
+ w[0] = u;
+ f(w).printCoeffs();
+ w[0] = f;
+ u(w).printCoeffs();
 }

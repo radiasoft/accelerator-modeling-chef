@@ -56,7 +56,8 @@ main( int argc, char** argv )
  ( g = v.expMap( t, y ) ).printCoeffs();
 
  // Enter a point and evaluate the map.
- static double s[] = { 0.0, 0.0, 0.0 };
+ double s_values[] = { 0.0, 0.0, 0.0 };
+ Vector s( 3, s_values );
  double tlo, thi, delta;
 
  cout << "Enter x and y:  ";

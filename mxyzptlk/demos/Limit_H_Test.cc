@@ -39,27 +39,34 @@ int main( int argc, char** argv )
 
  Jet u, v;
  Jet f, g;
- int d = 1;
+ IntArray d(1);
+ d[0] = 1;
 
  f = c[n-1];
  if( n > 1 )
   for( i = n-2; i >= 0; i-- )
    f = f*x + c[i];
  f *= x;
- g = f.D(&d);
+ g = f.D(d);
+
+ std::vector<Jet> w(1);
 
  u = x / c[0];
- v = ( f(&u) - x ) / g(&u);
+ w[0] = u;
+ v = ( f(w) - x ) / g(w);
  while( v != 0.0 ) {
   u -= v;
-  v = ( f(&u) - x ) / g(&u);
+  w[0] = u;
+  v = ( f(w) - x ) / g(w);
  }
 
  cout << "\nThe answers: __________________________ " << endl;
  f.peekAt();
  u.peekAt();
- f(&u).peekAt();
- u(&f).peekAt();
+ w[0] = u;
+ f(w).peekAt();
+ w[0] = f;
+ u(w).peekAt();
 
  return 0;
 }

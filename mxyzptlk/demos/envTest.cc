@@ -54,13 +54,15 @@ main( int argc, char** argv ) {
 
  Jet h(a);
 
- h = g(&f);
+ std::vector<Jet> w(1);
+ w[0] = f;
+ h = g(w);
  cout << " h.printCoeffs();" << endl;
  h.printCoeffs();
  cout << " f.printCoeffs();" << endl;
  f.printCoeffs();
 
- h = k(&f);
+ h = k(w);
  cout << " h.printCoeffs();" << endl;
  h.printCoeffs();
  cout << " f.printCoeffs();" << endl;

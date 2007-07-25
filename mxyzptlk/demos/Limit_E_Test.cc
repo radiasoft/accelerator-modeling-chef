@@ -32,16 +32,20 @@ main( int argc, char** argv ) {
 
  Jet u;
  Jet f, g;
- int d = 1;
+ IntArray d(1);
+ d[0] = 1;
 
  f = x + x*x + x*x*x;
- g = f.D(&d);
+ g = f.D(d);
  
  u = x;
+ std::vector<Jet> w(1);
+ w[0] = u;
  for( int i = 0; i < n; i++ ) {
-  u -= ( f(&u) - x ) / g(&u);
+  u -= ( f(w) - x ) / g(w);
   u.peekAt();
+  w[0] = u;
  }
 
- f(&u).peekAt();
+ f(w).peekAt();
 }

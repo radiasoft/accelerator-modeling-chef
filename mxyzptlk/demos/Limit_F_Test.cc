@@ -34,16 +34,20 @@ main( int argc, char** argv ) {
  Jet u;
  Jet f;
  double g;
- int d = 1;
+ IntArray d(1);
+ d[0] = 1;
 
  f = x + x*x + x*x*x;
- g = f.derivative(&d);
+ g = f.derivative(d);
  
  u = x;
+ std::vector<Jet> w(1);
+ w[0] = u;
  for( int i = 0; i < n; i++ ) {
-  u -= ( f(&u) - x ) / g;
+  u -= ( f(w) - x ) / g;
+  w[0] = u;
  }
 
  u.printCoeffs();
- f(&u).printCoeffs();
+ f(w).printCoeffs();
 }

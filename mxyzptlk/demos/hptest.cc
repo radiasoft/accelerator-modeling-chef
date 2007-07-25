@@ -139,9 +139,7 @@ void rith() {
 
 void eval() {
   int i;
-  double* z;
-  
-  z = new double[ numberOfVar ];
+  Vector z( numberOfVar );
   
   cout <<  "Enter %d real numbers ..> " << numberOfVar ;
   for( i = 0; i < numberOfVar; i++ ) cin >> z[i];
@@ -150,8 +148,6 @@ void eval() {
   cout << endl;
   
   cout <<  "\nThe value is " << (*(HPreg[0]))(z) << " \n";
-  
-  delete z;
 }
 
 void dffr() {
@@ -255,9 +251,7 @@ void llgg() {
 
 void drvt() {
   int i;
-  int* n;
-  
-  n = new int[ numberOfVar ];
+  IntArray n( numberOfVar );
   
   cout <<  "Enter " << numberOfVar << "integers for the index set ..> ";
   for( i = 0; i < numberOfVar; i++ ) cin >> n[i];

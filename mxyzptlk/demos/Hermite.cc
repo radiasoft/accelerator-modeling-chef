@@ -35,9 +35,10 @@ int main( int argc, char** argv )
   cout << "Results for k = " << k << endl;
   ( g / f ).printCoeffs();
 
-  int d = 1;
+  IntArray d(1);
+  d[0] = 1;
   for( k = 1; k <= n; k++ ) {
-    g = - g.D( &d );
+    g = - g.D( d );
     cout << "Results for k = " << k << endl;
     ( g / f ).printCoeffs();
   }

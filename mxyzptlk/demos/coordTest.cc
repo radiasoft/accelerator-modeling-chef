@@ -20,9 +20,13 @@ main() {
   
   Jet h, u, v;
   
-  static double r[]  = { 1.0,  0.0,  0.0 };
-  static double s[]  = { 0.33, 0.33, 0.33 };
-  static int index[] = { 2, 1, 3 };
+  double r_values[]     = { 1.0,  0.0,  0.0 };
+  double s_values[]     = { 0.33, 0.33, 0.33 };
+  int    index_values[] = { 2, 1, 3 };
+  
+  Vector       r( 3, r_values    );
+  Vector       s( 3, s_values    );
+  IntArray index( 3, index_values);
   
   // First test ....
   h = 1.0 / ( cos( exp( x*x*y - 3.0*x*z*z ) ) );
