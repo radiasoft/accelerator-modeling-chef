@@ -9,9 +9,16 @@
 **
 */
 
-#include "beamline.h"
-#include "LattFuncSage.h"
-#include "ChromaticityAdjuster.h"
+#include <beamline/beamline.h>
+#include <beamline/sbend.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
+#include <beamline/RefRegVisitor.h>
+#include <beamline/beamline_iterators.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/ChromaticityAdjuster.h>
 
 using namespace std;
 
@@ -61,13 +68,13 @@ int main( int argc, char** argv )
  thinSextupole SD( "SD", 0.0 );
 
  beamline cell;
- cell.append(  F.Clone() );
- cell.append( SF.Clone() );
- cell.append(  O.Clone() );
- cell.append(  D.Clone() );
- cell.append( SD.Clone() );
- cell.append(  O.Clone() );
- cell.setLineMode( beamline::ring );
+          cell.append(  F );    // NOTE: Current behavior is that
+          cell.append( SF );    // the .append function will clone
+          cell.append(  O );    // these elements automatically.
+          cell.append(  D );
+          cell.append( SD );
+          cell.append(  O );
+          cell.setLineMode( beamline::ring );
  
  // Regrettably, this step must be done.
  // -----------------------------------
@@ -84,57 +91,55 @@ int main( int argc, char** argv )
  JetProton jpr2( energy );
  JetProton jpr3( energy );
 
- BeamlineIterator bi( cell );
- bmlnElmnt* q;
-
- while((  q = bi++  )) 
- {
+ ElmPtr q;
+ for (   beamline::iterator bi = cell.begin()
+       ; bi != cell.end()
+       ; ++bi ) {
+   q = *bi;
    if( 0 == strcmp( q->Type(), "thinSextupole" )) 
    {
-     if( q->hasName( "SF" ) ) adj.addCorrector( (thinSextupole*) q, 1.0, 0.0 );
-     if( q->hasName( "SD" ) ) adj.addCorrector( (thinSextupole*) q, 0.0, 1.0 );
+     if( std::string("SF") == q->Name() ) { adj.addCorrector( q, 1.0, 0.0 ); }
+     if( std::string("SD") == q->Name() ) { adj.addCorrector( q, 0.0, 1.0 ); }
    }
  }
 
  cell.dataHook.eraseAll( "Ring" );
- // lfs.TuneCalc( &jpr3 );
- // REMOVE: lfs.set_verbose();
- lfs.Disp_Calc( &jpr3 );
- LattFuncSage::lattRing* tuneptr = (LattFuncSage::lattRing*) cell.dataHook.find( "Ring" );
- if( tuneptr == 0 ) {
+ lfs.Disp_Calc( jpr3 );
+
+ LattFuncSage::lattRing* tuneptr = 0;
+ BarnacleList::iterator bli = cell.dataHook.find( "Ring" );
+ if( cell.dataHook.end() == bli ) {
    cout << "Whoops" << endl;
    exit(1);
  }
- cout << "\nTune:         horizontal  = " << ((double) N)*tuneptr->tune.hor
-      << "\n              vertical    = " << ((double) N)*tuneptr->tune.ver
-      << "\nChromaticity: horizontal  = " << ((double) N)*tuneptr->chromaticity.hor
-      << "\n              vertical    = " << ((double) N)*tuneptr->chromaticity.ver
+ tuneptr = boost::any_cast<LattFuncSage::lattRing*>((*bli).info);
+ cout << "\nTune:         horizontal  = " << ((double) N) * tuneptr->tune.hor
+      << "\n              vertical    = " << ((double) N) * tuneptr->tune.ver
+      << "\nChromaticity: horizontal  = " << ((double) N) * tuneptr->chromaticity.hor
+      << "\n              vertical    = " << ((double) N) * tuneptr->chromaticity.ver
       << endl;
- 
 
  adj.changeChromaticityBy( delta_H/((double) N), delta_V/((double) N), jpr );
 
  cell.dataHook.eraseAll( "Ring" );
- // lfs.TuneCalc( &jpr2 );
- lfs.Disp_Calc( &jpr2 );
- tuneptr = (LattFuncSage::lattRing*) cell.dataHook.find( "Ring" );
- if( tuneptr == 0 ) {
+ lfs.Disp_Calc( jpr2 );
+
+ tuneptr = 0;
+ bli = cell.dataHook.find( "Ring" );
+ if( cell.dataHook.end() == bli ) {
    cout << "Whoopsie" << endl;
    exit(1);
  }
+ tuneptr = boost::any_cast<LattFuncSage::lattRing*>((*bli).info);
  cout << "\nTune:         horizontal  = " << ((double) N)*tuneptr->tune.hor
       << "\n              vertical    = " << ((double) N)*tuneptr->tune.ver
       << "\nChromaticity: horizontal  = " << ((double) N)*tuneptr->chromaticity.hor
       << "\n              vertical    = " << ((double) N)*tuneptr->chromaticity.ver
       << endl;
 
-
  cout << "The control:\n"
       << adj.getControls()
       << endl;
-
- // Clean up before exiting
- cell.zap();
 
  return 0;
 }

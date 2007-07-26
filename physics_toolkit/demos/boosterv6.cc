@@ -1,7 +1,11 @@
 #include <iostream>
 
-#include <beamline.h>
-#include <EdwardsTeng.h>
+#include <beamline/sbend.h>
+#include <beamline/quadrupole.h>
+#include <beamline/drift.h>
+#include <beamline/beamline.h>
+#include <beamline/JetParticle.h>
+#include <physics_toolkit/EdwardsTeng.h>
 
 bool criterion( bmlnElmnt* )
 { return true; }
@@ -64,86 +68,91 @@ int main( int argc, char* argv[] )
  
  // .............. Build the booster beamline
  beamline  cell( "cell" );
- 	   cell.append( OO  );
- 	   cell.append( OO  );
- 	   cell.append( EF  );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( EF  );
- 	   cell.append( O   );
- 	   cell.append( O   );
- 	   cell.append( ED  );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( ED  );
- 	   cell.append( OOO );
- 	   cell.append( OOO );
- 	   cell.append( OOO );
- 	   cell.append( OOO );
- 	   cell.append( ED  );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( D   );
- 	   cell.append( ED  );
- 	   cell.append( O   );
- 	   cell.append( O   );
- 	   cell.append( EF  );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( F   );
- 	   cell.append( EF  );
- 	   cell.append( OO  );
- 	   cell.append( OO  );
+           cell.append( OO  );
+           cell.append( OO  );
+           cell.append( EF  );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( EF  );
+           cell.append( O   );
+           cell.append( O   );
+           cell.append( ED  );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( ED  );
+           cell.append( OOO );
+           cell.append( OOO );
+           cell.append( OOO );
+           cell.append( OOO );
+           cell.append( ED  );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( D   );
+           cell.append( ED  );
+           cell.append( O   );
+           cell.append( O   );
+           cell.append( EF  );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( F   );
+           cell.append( EF  );
+           cell.append( OO  );
+           cell.append( OO  );
 
  // ============================================================
 
  EdwardsTeng      ET( &cell );
- bmlnElmnt*   	  lbe;
- ETtunes*     	  tunes;
- ETinfo*      	  infoPtr;
+ ElmPtr           lbe;
+ ETtunes*         tunes;
+ ETinfo*          infoPtr;
 
  double energy;
  energy =         PH_CNV_brho_to_p*( 296.5/10. );
  energy =         sqrt(  PH_NORM_mp*PH_NORM_mp + energy*energy );
  JetProton        p( energy );
  
- int ETresult = ET.doCalc( &p, &criterion );
+ int ETresult = ET.doCalc( p, &criterion );
  if( ETresult != 0 ) {
   cout << "Something went wrong: " << ETresult << endl;
   return -1;
  }
  
- tunes = (ETtunes*) cell.dataHook.find( "Tunes" );
+ BarnacleList::iterator bli = cell.dataHook.find( "Tunes" );
+ tunes = boost::any_cast<ETtunes*>((*bli).info);
  cout << "\nTune: horizontal = " << tunes->hor 
       <<        "   vertical = " << tunes->ver 
       << endl;
  
- BeamlineIterator bi( cell );
  int i = 0;
- while( lbe = bi++ ) {
-  cout << "Element:  " << lbe->Name() << endl;
-  cout << "\n" << i++ 
-       << "  --------------------------------------------" << endl;
+ for (   beamline::iterator bi = cell.begin()
+       ; bi != cell.end()
+       ; ++bi ) {
+   lbe = *bi;
 
-  infoPtr = (ETinfo*) lbe->dataHook.find( "EdwardsTeng" );
-  if( 0 != infoPtr ) {
-    cout << "infoPtr->beta.hor  " << infoPtr->beta.hor  << endl;
-    cout << "infoPtr->beta.ver  " << infoPtr->beta.ver  << endl;
-    cout << "infoPtr->alpha.hor " << infoPtr->alpha.hor << endl;
-    cout << "infoPtr->alpha.ver " << infoPtr->alpha.ver << endl;
-    cout << "infoPtr->phi       " << infoPtr->phi       << endl;
-    cout << "infoPtr->D \n"       << infoPtr->D         << endl;
-    lbe->dataHook.eraseFirst( "EdwardsTeng" );
-  }
-  else {
-    cout << "*** DATA NOT FOUND ***" << endl;
-  }
+   cout << "Element:  " << lbe->Name() << endl;
+   cout << "\n" << i++ 
+        << "  --------------------------------------------" << endl;
+
+   BarnacleList::iterator bli = lbe->dataHook.find( "EdwardsTeng" );
+   infoPtr = boost::any_cast<ETinfo*>((*bli).info);
+   if( 0 != infoPtr ) {
+     cout << "infoPtr->beta.hor  " << infoPtr->beta.hor  << endl;
+     cout << "infoPtr->beta.ver  " << infoPtr->beta.ver  << endl;
+     cout << "infoPtr->alpha.hor " << infoPtr->alpha.hor << endl;
+     cout << "infoPtr->alpha.ver " << infoPtr->alpha.ver << endl;
+     cout << "infoPtr->phi       " << infoPtr->phi       << endl;
+     cout << "infoPtr->D \n"       << infoPtr->D         << endl;
+     lbe->dataHook.eraseFirst( "EdwardsTeng" );
+   }
+   else {
+     cout << "*** DATA NOT FOUND ***" << endl;
+   }
  }
 
 } 
