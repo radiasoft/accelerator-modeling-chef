@@ -7,18 +7,20 @@
 // 
 //------------------------------------------------------------------------------------------------------
 #include <iostream>
+
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline.h>
-#include <beamline/BeamlineIterator.h>
-#include <bmlfactory/bmlfactory.h>
+#include <beamline/beamline_iterators.h>
 #include <beamline/Particle.h>
+
+#include <bmlfactory/MAD8Factory.h>
 
 int main(int argc, const char* argv[] ) {
 
   double energy =150.0;
 
   //bmlfactory bfact("Tevatron-E.lat");
-bmlfactory bfact("tevgen2_v3h01v2_new_new.lat"); 
+MAD8Factory bfact("tevgen2_v3h01v2_new_new.lat"); 
 
 Proton pr(energy);
 
@@ -26,7 +28,7 @@ std::cout << "Reference BRho = ", pr.ReferenceBRho();
 
 //beamline* tevatron = bfact.create_beamline("normal_tevatron", pr.ReferenceBRho() );
 
-beamline* tevatron = bfact.create_beamline("TEVE0",pr.ReferenceBRho() ); 
+BmlPtr tevatron = bfact.create_beamline("TEVE0",pr.ReferenceBRho() ); 
 
 int nelm = tevatron->countHowManyDeeply();
 

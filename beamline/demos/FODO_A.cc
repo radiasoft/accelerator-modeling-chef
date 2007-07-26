@@ -18,10 +18,11 @@
 #include <iostream>
 #include <fstream>
 
-#include <Particle.h>
-#include <quadrupole.h>
-#include <drift.h>
-#include <monitor.h>
+#include <beamline/beamline.h>
+#include <beamline/quadrupole.h>
+#include <beamline/drift.h>
+#include <beamline/monitor.h>
+#include <beamline/Particle.h>
 
 using namespace std;
 

@@ -9,13 +9,14 @@
 C++        = g++
 
 INCS       = -I$(BOOST_INC) \
-             -I$(INSTALLDIR)/include/gms \
-             -I$(INSTALLDIR)/include/basic_toolkit \
-             -I$(INSTALLDIR)/include/mxyzptlk \
-             -I$(INSTALLDIR)/include/beamline \
+             -I$(GLIB_INC) \
+             -I$(GLIBCONFIG_INC) \
              -I$(INSTALLDIR)/include
 
-LIBS       = -L$(INSTALLDIR)/lib -lbeamline -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
+## NOTE: Using a factory object in this directory breaks hierarchy.
+## NOTE: beamline_iterators.cc does so.
+## NOTE: The demo belongs at a higher level: e.g. bmlfactory.
+LIBS       = -L$(INSTALLDIR)/lib -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
 SYSLIBS    = -lglib -lm -lnsl -lintl
 
 .cc.o:
@@ -25,7 +26,7 @@ SYSLIBS    = -lglib -lm -lnsl -lintl
 .cc :
 	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
 
-all: FODO_A
+all: FODO_A  beamline_iterators
 
 clean:	
 	\rm *.o; \rm *Test; \rm hptest dfr evaltest pbtest survey concattest
