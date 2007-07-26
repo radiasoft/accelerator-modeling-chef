@@ -10,7 +10,6 @@
 
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline.h>
-#include <beamline/beamline_iterators.h>
 #include <beamline/Particle.h>
 
 #include <bmlfactory/MAD8Factory.h>
