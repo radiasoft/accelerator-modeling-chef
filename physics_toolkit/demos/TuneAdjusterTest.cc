@@ -9,10 +9,15 @@
 **
 */
 
-#include "beamline.h"
-#include "LattFuncSage.h"
-#include "TuneAdjuster.h"
-#include "EdwardsTeng.h"    // for ETtunes
+#include <beamline/beamline.h>
+#include <beamline/drift.h>
+#include <beamline/quadrupole.h>
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/TuneAdjuster.h>
+#include <physics_toolkit/EdwardsTeng.h>    // for ETtunes
+
 
 using namespace std;
 
@@ -58,53 +63,61 @@ int main( int argc, char** argv )
  thinQuad D ( "D", - pr.ReferenceBRho() / atof( argv[focalD] ) );
 
 
- beamline cell;
+ BmlPtr cellPtr( new beamline );
  for( i = 0; i < N; i++ ) {
-   cell.append( F.Clone() );
-   cell.append( O.Clone() );
-   cell.append( D.Clone() );
-   cell.append( O.Clone() );
+   cellPtr->append( F );
+   cellPtr->append( O );
+   cellPtr->append( D );
+   cellPtr->append( O );
  }
  
- TuneAdjuster adj( cell );
- LattFuncSage lfs( &cell );
+ TuneAdjuster adj( cellPtr );
+ LattFuncSage lfs( cellPtr );
 
  // Initialize JetProtons for use
  JetParticle::createStandardEnvironments(1);
 
- JetProton jpr( energy );
+ JetProton jpr ( energy );
  JetProton jpr2( energy );
  JetProton jpr3( energy );
 
- BeamlineIterator bi( cell );
- bmlnElmnt* q;
- while((  q = bi++  )) {
+ ElmPtr q;
+ for (   beamline::iterator bi = cellPtr->begin()
+       ; bi != cellPtr->end()
+       ; ++bi ) {
+   q = *bi;
    if( 0 == strcmp( q->Type(), "thinQuad" )) {
-     if( q->Strength() > 0.0 ) adj.addCorrector( (thinQuad*) q, 1.0, 0.0 );
-     else                      adj.addCorrector( (thinQuad*) q, 0.0, 1.0 );
+     if( q->Strength() > 0.0 ) adj.addCorrector( q, 1.0, 0.0 );
+     else                      adj.addCorrector( q, 0.0, 1.0 );
    }
  }
 
- cell.dataHook.eraseAll( "Tunes" );
- lfs.TuneCalc( &jpr3 );
- ETtunes* tuneptr = (ETtunes*) cell.dataHook.find( "Tunes" );
- if( tuneptr == 0 ) {
+ cellPtr->dataHook.eraseAll( "Tunes" );
+ lfs.TuneCalc( jpr3 );
+
+ BarnacleList::iterator bli = cellPtr->dataHook.find( "Tunes" );
+ if( cellPtr->dataHook.end() == bli ) {
    cout << "Whoops" << endl;
    exit(1);
  }
+
+ ETtunes* tuneptr = boost::any_cast<ETtunes*>((*bli).info);
  cout << "\nTune: horizontal = " << tuneptr->hor
       <<        "   vertical = " << tuneptr->ver
       << endl;
  
  adj.changeTunesBy( delta_H, delta_V, jpr );
 
- cell.dataHook.eraseAll( "Tunes" );
- lfs.TuneCalc( &jpr2 );
- tuneptr = (ETtunes*) cell.dataHook.find( "Tunes" );
- if( tuneptr == 0 ) {
-   cout << "Whoops" << endl;
+ cellPtr->dataHook.eraseAll( "Tunes" );
+ lfs.TuneCalc( jpr2 );
+
+ bli = cellPtr->dataHook.find( "Tunes" );
+ if( cellPtr->dataHook.end() == bli ) {
+   cout << "Whoopsie" << endl;
    exit(1);
  }
+
+ tuneptr = boost::any_cast<ETtunes*>((*bli).info);
  cout << "\nTune: horizontal = " << tuneptr->hor
       <<        "   vertical = " << tuneptr->ver
       << endl;
@@ -113,9 +126,6 @@ int main( int argc, char** argv )
  cout << "The control:\n"
       << adj.getControls()
       << endl;
-
- // Clean up before exiting
- cell.zap();
 
  return 0;
 }
