@@ -134,11 +134,11 @@ public:
   void     Set              ( int const* , int  n);
   void     Set              ( int  );
 
-  int          operator()  (  int i )  const;
-  exponent_t&  operator()  (  int i );  
+  exponent_t const&   operator()  (  int i )  const;
+  exponent_t&         operator()  (  int i );  
 
-  exponent_t   operator[]  (  int i )  const;
-  exponent_t&  operator[]  (  int i );  
+  exponent_t const&   operator[]  (  int i )  const;
+  exponent_t&         operator[]  (  int i );  
 
 
   // Functions ...
@@ -239,28 +239,26 @@ inline int  IntArray::Dim() const
 }
 
 
-inline  int     IntArray::operator()(  int i )  const
+inline  exponent_t const&  IntArray::operator()(  int i )  const
 { 
-   int value = comp_[i]; 
-   return value;
+   return comp_[i]; 
 }    
 
 
-inline  exponent_t&  IntArray::operator()  ( int  i )
+inline  exponent_t&       IntArray::operator()  ( int  i )
 {
   weight_is_valid_ = false;
   return comp_[i]; 
 }    
 
 
-inline exponent_t  IntArray::operator[](  int i )  const
+inline exponent_t const&  IntArray::operator[](  int i )  const
 { 
-   int value = comp_[i]; 
-   return value;
+   return comp_[i]; 
 }    
 
 
-inline  exponent_t&  IntArray::operator[]  ( int  i )
+inline  exponent_t&       IntArray::operator[]  ( int  i )
 {
   weight_is_valid_ = false;
   return comp_[i]; 
