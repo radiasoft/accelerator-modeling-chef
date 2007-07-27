@@ -8,10 +8,7 @@
 
 C++        = g++
 
-INCS       = -I/usr/local/ap/include/boost-1_33 \
-             -I$(INSTALLDIR)/include/gms \
-             -I$(INSTALLDIR)/include/basic_toolkit \
-             -I$(INSTALLDIR)/include/integrator \
+INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include
 
 LIBS       = -L$(INSTALLDIR)/lib -lintegrator -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
