@@ -1,13 +1,53 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
+#include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/VectorD.h>
 #include <integrator/RungeKutta.h>
-#include <integrator/Oscillator.h>
+#include <integrator/ODE.h>
 
 using namespace std;
+
+
+// ******************************************
+// class Oscillator
+// ******************************************
+class Oscillator : public ODE 
+{
+  private:
+  public:
+    Oscillator();
+    ~Oscillator();
+    Vector operator() (const Vector&, double);
+};
+
+
+Oscillator::Oscillator() 
+: ODE() 
+{
+  dimen = 2;
+}
+
+
+Oscillator::~Oscillator() 
+{
+}
+
+
+Vector Oscillator::operator() (const Vector& state, double /* t */ )
+{
+  Vector ret(dimen);
+  if (dimen == 2){
+    ret(0) =   state(1);
+    ret(1) = - state(0);
+  }
+  else{
+    cerr << "Oscillator::operator(): Wrong dimension." << std::endl;
+  }
+  return ret;
+}
+
+
+// ******************************************
+// Main program
+// ******************************************
 
 main()
 {
