@@ -45,8 +45,6 @@ class_<MAD8Factory>("bmlfactory", init<std::string, const char*>() )
   .def("create_beamline",  create_beamline_1 )
   .def("create_beamline",  create_beamline_2 );
 
-  //  .def("create_beamline",  create_beamline_1, return_value_policy<manage_new_object>() )
-  //.def("create_beamline",  create_beamline_2, return_value_policy<manage_new_object>() );
 }
 
 
