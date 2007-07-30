@@ -77,6 +77,7 @@ class Testclass_for_synergia(unittest.TestCase):
 
     def test_07_get_space_charge_maps(self):
         self.apron.insert_space_charge_markers(self.space_charge_markers)
+        maps = []
         maps = self.apron.get_maps()
         if write_answers:
             self.answers['sc maps'] = maps

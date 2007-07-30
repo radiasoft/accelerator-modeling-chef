@@ -13,7 +13,7 @@ import math
 
 
 kinetic_energy = 0.067
-createStandardEnvironments(1)
+JetParticle.createStandardEnvironments(1)
 
 mass = PH_NORM_mp
 kinetic_energy = kinetic_energy
