@@ -29,6 +29,10 @@
 #include <boost/python.hpp>
 #include <beamline/bmlnElmnt.h>
 #include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/EdwardsTengSage.h>
+#include <physics_toolkit/LBSage.h>
+#include <physics_toolkit/CovarianceSage.h>
+#include <physics_toolkit/DispersionSage.h>
 #include <iostream>
 
 #define BOOST_PYTHON_STATIC_MODULE
@@ -76,6 +80,7 @@ std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattFunc::psi_ty
 
 
 }// anonymous namespace 
+
 
 static std::ostream& operator<<(std::ostream &os,  LattFuncSage::lattFunc const& lf) 
 {
@@ -134,5 +139,18 @@ class_<LattFuncSage::lattFunc::alpha_type>("alpha")
 class_<LattFuncSage::lattFunc::psi_type>("psi")
   .def_readwrite("hor", &LattFuncSage::lattFunc::psi_type::hor)
   .def_readwrite("ver", &LattFuncSage::lattFunc::psi_type::ver);
- 
+
+
+class_<EdwardsTengSage::Info>("ETFunc",init<>())
+  ;
+
+class_<LBSage::Info>("LBFunc",init<>())
+  ;
+
+class_<CovarianceSage::Info >("CovFunc",init<>())
+  ;
+
+class_<DispersionSage::Info >("DispFunc",init<>())
+  ;
+
 }
