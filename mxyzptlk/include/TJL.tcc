@@ -2250,7 +2250,9 @@ JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  )
 
 
      if ( px->offset_  >   py->offset_)  { 
-          z->append( TJLterm<T>(py->value_, py->offset_, py->weight_) );    
+          T value = T();
+          T_function (value, py->value_); 
+          z->append( TJLterm<T>(value, py->offset_, py->weight_) );    
           ++py; 
           continue; 
      }   
