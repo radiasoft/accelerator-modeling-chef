@@ -26,7 +26,7 @@ class Apron:
         self.line_name = line_name
         self.order = order
         self.saved_elements = []
-        createStandardEnvironments(self.order)
+        JetParticle.createStandardEnvironments(self.order)
 
         self.particle = particle
         if self.particle == 'proton':
@@ -44,15 +44,14 @@ class Apron:
         self.factory = bmlfactory(mad_file)
         brho = self.get_new_particle().ReferenceBRho()
         beamline_orig = self.factory.create_beamline(line_name,brho)
-        beamline_orig.flatten()
+        beamline_orig = beamline_orig.flatten()
         beamline_orig.insert(pacifier)
         beamline_orig.append(pacifier)
         self.beamline = DriftsToSlots(beamline_orig)
-        self.context = BeamlineContext(self.get_new_particle(),
-                                       self.beamline,0)
+        self.context  = BeamlineContext(self.get_new_particle(),
+                                       self.beamline)
         if not self.context.isTreatedAsRing():
             self.context.handleAsRing()
-        self.iterator = DeepBeamlineIterator(self.beamline)
 
     def get_new_particle(self,energy=None):
         if not energy:
@@ -78,29 +77,21 @@ class Apron:
         
     def insert_accuracy_markers(self, num_markers_per_element):
         master_insertion_point = 0.0
-        insertion_list = InsertionList(self.momentum)
-        self.iterator.reset()
-        element = self.iterator.next()
         ile_list = []
         particle = self.get_new_particle()
-        while element:
+        for element in self.beamline:
                 if element.OrbitLength(particle) > 0:
                         marker_interval = element.OrbitLength(particle)/ \
                         (num_markers_per_element + 1.0)
                         insertion_point = master_insertion_point
                         for i in range(0,num_markers_per_element):
                                 insertion_point += marker_interval
-                                ile = InsertionListElement(insertion_point,
-                                                           accuracy_marker)
+                                ile = accuracy_marker, insertion_point
                                 ile_list.append(ile)
-                                insertion_list.Append(ile)
                 master_insertion_point += element.OrbitLength(particle)
                 element.propagateParticle(particle)
-                element = self.iterator.next()
-        removed_elements = slist()
         s_0 = 0.0
-        self.beamline.InsertElementsFromList(s_0, insertion_list,
-                                             removed_elements)
+        self.beamline.InsertElementsFromList(particle, s_0, ile_list)
         self.beamline.append(accuracy_marker)
         self._commission()
         
@@ -112,25 +103,22 @@ class Apron:
             elements = (elements,)
             positions = (positions,)
         ile_list = []
-        insertion_list = InsertionList(self.momentum)
         index = 0
         elements_to_insert = 0
         for element in elements:
             self.saved_elements.append(element)
             position = positions[index]
             if position > 0.0:
-                ile = InsertionListElement(position,element)
+                ile = element,position
                 ile_list.append(ile)
-                insertion_list.Append(ile)
                 elements_to_insert += 1
             else:
                 self.beamline.insert(element)
             index += 1
         if elements_to_insert > 0:
-            removed_elements = slist()
             s_0 = 0.0
-            self.beamline.InsertElementsFromList(s_0, insertion_list,
-                                                 removed_elements)
+            particle = self.get_new_particle()
+            self.beamline.InsertElementsFromList(particle, s_0, ile_list)
         self._commission()
     
     def insert_space_charge_markers(self, num_kicks):
@@ -152,27 +140,18 @@ class Apron:
 
     def get_lattice_functions(self):
         lattice_function_array = Lattice_function_array()
-        self.iterator.reset()
-        i = 0
-        element = self.iterator.next()
-        while element:
-            lattice_function = self.context.getLattFuncPtr(i)
-            if lattice_function:
-                lattice_function_array.append(lattice_function)
-            element = self.iterator.next()
-            i += 1
+        for  lattice_function in self.context.getTwissArray():
+            lattice_function_array.append(lattice_function)
         return lattice_function_array
 
     def get_maps(self):
-        self.iterator.reset()
-        element = self.iterator.next()
         s = 0.0
         particle = self.get_new_particle()
         jet_particle = self.get_new_jet_particle()
         has_propagated = 0
         energy = self.energy
         maps = []
-        while element:
+        for  element in self.beamline:
             split_name = element.Name().split(":")
             if split_name[0] == "mapping endpoint":
                 if has_propagated:
@@ -180,29 +159,26 @@ class Apron:
                     s = element.OrbitLength(particle)
                     element.propagateParticle(particle)
                     element.propagateJetParticle(jet_particle)
-                energy = jet_particle.ReferenceEnergy()
-                jet_particle = self.get_new_jet_particle(energy)
+                energy         = jet_particle.ReferenceEnergy()
+                jet_particle   = self.get_new_jet_particle(energy)
                 has_propagated = 0
-                s = 0.0
+                s              = 0.0
             else:
                 if not element.Type() == "marker":
                     s += element.OrbitLength(particle)
                     element.propagateParticle(particle)
                     element.propagateJetParticle(jet_particle)
                     has_propagated = 1
-            element = self.iterator.next()
         return maps
 
     def get_quad_strengths(self):
-        self.iterator.reset()
-        element = self.iterator.next()
         particle = self.get_new_particle()
         brho = particle.ReferenceBRho()
         kxs = []
         kys = []
         ss = []
         s = 0.0
-        while element:
+        for element in self.beamline:
             kx = 0.0
             ky = 0.0
             strength = element.Strength()
@@ -222,7 +198,6 @@ class Apron:
             kys.append(ky)
             ss.append(s)
             element.propagateParticle(particle)
-            element = self.iterator.next()
         return (numarray.array(ss),numarray.array(kxs),numarray.array(kys))
     
     def _convert_linear_maps(self, chef_linear_maps):
