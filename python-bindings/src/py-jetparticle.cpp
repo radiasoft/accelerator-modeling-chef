@@ -43,6 +43,9 @@ namespace {
 Vector  (   Particle::*State_ptr)()    const      = &Particle::State;
 Mapping (JetParticle::*JetState_ptr)() const      = &JetParticle::State;
 
+void createStandardEnvironments_arg_1(int order) { return JetParticle::createStandardEnvironments( order ); }
+void createStandardEnvironments_arg_0()          { return JetParticle::createStandardEnvironments();        }
+
 } // anonymous namespace
 
 //------------------------------------------------------------------------------
@@ -69,8 +72,6 @@ void wrap_jetparticle () {
   JetParticle_.staticmethod("ndpIndex");  
   JetParticle_.def("createStandardEnvironments", &JetParticle::createStandardEnvironments);
   JetParticle_.staticmethod("createStandardEnvironments");  
-     //.def( "psd",  &JetParticle::psd)
-     //.staticmethod("psd")  
 
   JetParticle_.def("SetReferenceEnergy", &JetParticle::SetReferenceEnergy);
   JetParticle_.def("State",    JetState_ptr, return_value_policy<return_by_value>() );
