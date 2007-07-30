@@ -468,9 +468,9 @@ void beamline::insert( ElmPtr const& q ) {
 
  length_ += q -> length_;
 
- if ( beamline const* bml = dynamic_cast<beamline const*>(q.get()) )  
+ if ( ConstBmlPtr bml = boost::dynamic_pointer_cast<beamline const>(q) )  
       numElem_ += bml->numElem_;
- else numElem_++;
+ else ++numElem_;
 }  
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -495,10 +495,10 @@ void beamline::append( ElmPtr const& q ) {
 
  length_ += q->length_;
 
- if(  beamline const* bml = dynamic_cast<beamline const*>(q.get()) )  
+ if(  ConstBmlPtr bml = boost::dynamic_pointer_cast<beamline const>(q) ) 
       numElem_ += bml->numElem_;
  else 
-      numElem_++;
+      ++numElem_;
 } 
 
 
@@ -518,7 +518,7 @@ void beamline::append( bmlnElmnt const& elm ) {
 void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList)
 {
 
- ElmPtr null;
+ static const ElmPtr null;
 
  std::list<ElmPtr>::iterator bml_iter = theList_.begin();
 
@@ -558,9 +558,9 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
  while( p_be && (p_ile.first) ) {
 
-  if( typeid(*p_be.get()) == typeid(beamline) ) {
+  if( typeid(*p_be) == typeid(beamline) ) {
 
-    static_cast<beamline*>( p_be.get() )->InsertElementsFromList(particle, s, inList );
+    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList(particle, s, inList );
 
     p_ile = inList.front();   // this may have changed
     ++bml_iter; 
@@ -568,6 +568,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
   }
 
   else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second ) {
+
     s += p_be->OrbitLength( lparticle );
     ++bml_iter; 
     p_be = (bml_iter == theList_.end()) ? null : *bml_iter;     
@@ -576,15 +577,17 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
   else if ( s == p_ile.second ) {
 
     putAbove( bml_iter, p_ile.first );
-    inList.erase( inList.begin() ); // removes top element
+    inList.pop_front();             // removes top element
+    if (inList.empty() ) break;
     p_ile = inList.front();         // accesses new top element
 
   }
 
-  else if (  typeid(*p_be.get()) == typeid(combinedFunction)  ) {
+  else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
 
     p_be->p_bml_->InsertElementsFromList( particle, s, inList );
     p_ile = inList.front();     // this may have changed
+
     ++bml_iter; 
     p_be = (bml_iter == theList_.end()) ? null : *bml_iter;     
 
@@ -599,9 +602,10 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
     }
   }
 
-  else if ( ( s < p_ile.second ) && ( p_ile.second < s + p_be->OrbitLength( lparticle ) ) )  {
+  else if ( ( p_ile.second > s ) && ( p_ile.second < s + p_be->OrbitLength( lparticle ) ) )  {
 
-    p_be->Split( ( p_ile.second - s )/p_be->OrbitLength( lparticle ), p_be_a, p_be_b );
+    p_be->Split( ( p_ile.second - s )/p_be->OrbitLength( lparticle ), p_be_a,  p_be_b );
+
 
     putAbove( bml_iter, p_be_a      );
     putAbove( bml_iter, p_ile.first );
@@ -610,14 +614,15 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
     s += ( p_be_a->OrbitLength( lparticle ) + p_ile.first->OrbitLength( lparticle ) );
 
   
-    // removedElements.append( (void*) p_be );
-
     p_be = p_be_b;
-    inList.erase( inList.begin() );           // removes top element
+
+    inList.pop_front();                       // removes top element
+    if (inList.empty() ) break;
     p_ile = inList.front();                   // accesses new top element
 
-    bml_iter = theList_.erase( bml_iter ); // bml_iter now points to element downstream of p_be_b !
-    --bml_iter;                            // now points to p_be_b 
+    bml_iter = theList_.erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+
+    --bml_iter;                               // now points to p_be_b 
 
   }
 
@@ -667,7 +672,6 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 int beamline::replace( ElmPtr a, ElmPtr b ) 
 {
 
@@ -701,9 +705,9 @@ int beamline::deepReplace( ElmPtr a, ElmPtr b )
       return 0; 
     }
 
-    else if( typeid(*(*it).get() ) == typeid(beamline) ) {
+    else if( typeid( **it ) == typeid(beamline) ) {
 
-      if( dynamic_cast<beamline*>((*it).get())->deepReplace( a, b ) == 0  ) { return 0; }
+      if( boost::dynamic_pointer_cast<beamline>(*it)->deepReplace( a, b ) == 0  ) { return 0; }
     }
 
   }
@@ -1158,8 +1162,8 @@ void beamline::peekAt( double& s, Particle const& prt ) const
 
  for (beamline::const_iterator it = begin(); it != end(); ++it )  {
 
-    if( typeid( *(*it).get() ) == typeid(beamline) ) 
-      static_cast<beamline*>( (*it).get() )->peekAt( s, prt );
+    if( typeid( **it ) == typeid(beamline) ) 
+      boost::static_pointer_cast<beamline>(*it)->peekAt( s, prt );
     else (*it)->peekAt( s, prt );
   }
 
@@ -1267,8 +1271,8 @@ int beamline::depth() const
 
   for (beamline::const_iterator it = begin(); it != end(); ++it) {
     ret = 0;
-    if(  typeid(*(*it).get()) == typeid(beamline) ) {
-      int subDepth =  dynamic_cast<const beamline*>((*it).get())->depth();
+    if(  typeid(**it) == typeid(beamline) ) {
+      int subDepth =  boost::dynamic_pointer_cast<beamline const>(*it)->depth();
       if( maxSubDepth < subDepth ) { maxSubDepth = subDepth; }
     }
   }
@@ -1929,8 +1933,8 @@ void beamline::rotateRel(   int axis, double const& angle
       if     ( 0.0 == pct ) { midFrame = frameOne; }
       else if( 1.0 == pct ) { midFrame = frameTwo; }
       else {
-        if(    typeid( *thePtr.get())  == typeid(Slot) 
-            || typeid( *thePtr.get() ) == typeid(beamline) ) {
+        if(    typeid( *thePtr )  == typeid(Slot) 
+            || typeid( *thePtr )  == typeid(beamline) ) {
           midFrame = Frame::tween( frameOne, frameTwo, pct );
         }
         else {
