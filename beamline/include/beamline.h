@@ -70,12 +70,6 @@ public:
 
   enum LineMode { line, ring, unknown };
 
-  class AllTrue {
-  public:
-    bool operator()( ElmPtr const& ) const { return true; }   
-  };
-
-
 public:
 
   // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
@@ -107,7 +101,7 @@ public:
 
   beamline*  reverse() const;                
 
-  void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );
+  void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );                 // NOT IMPLEMENTED !!!!
                                       // Will insert q into the beamline at
                                       // OrbitLength s, assuming the beamline
                                       // begins at OrbitLength s_0.  Normally
