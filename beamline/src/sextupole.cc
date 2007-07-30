@@ -138,7 +138,7 @@ const char* sextupole::Type() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Split( double pc, ElmPtr& a, ElmPtr& b ) const
+void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
