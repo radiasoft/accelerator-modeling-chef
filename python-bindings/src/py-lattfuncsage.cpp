@@ -74,7 +74,6 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Disp_Calc_overloads,    Disp
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Fast_CS_Calc_overloads, Fast_CS_Calc, 1, 1) 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Slow_CS_Calc_overloads, Slow_CS_Calc, 1, 1) 
 
-     // BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_ET_Disp_Calc_overloads,ET_Disp_Calc, 1, 1) 
 
 void wrap_lattfuncsage() {
 
@@ -101,21 +100,21 @@ class_<LattFuncSage::lattRing::chromaticity_type>("chromaticity")
  class_<LattFuncSage,  boost::noncopyable>("LattFuncSage", init< BmlPtr >())
    .def(init<beamline const&>())
    .def("TuneCalc",        &LattFuncSage::TuneCalc)
-   .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() ) // ( JetParticle*, Sage::CRITFUNC = 0 )
-      //.def("Disp_Calc_old"  ( JetParticle*, Sage::CRITFUNC = 0 )
-      //.def("NewDisp_Calc"   ( JetParticle*, bool onClosedOrbit = false )
-   .def("Fast_CS_Calc",   &LattFuncSage::Fast_CS_Calc, LattFuncSage_Fast_CS_Calc_overloads() )//  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-   .def("Slow_CS_Calc",   &LattFuncSage::Slow_CS_Calc, LattFuncSage_Slow_CS_Calc_overloads())  //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-      //.def("NewSlow_CS_Calc"( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-      ///.def("ET_Disp_Calc",  &LattFuncSage::ET_Disp_Calc, LattFuncSage_ET_Disp_Calc_overloads() )        // (             JetParticle*, Sage::CRITFUNC = 0 )
-      ///.def("CS_Disp_Calc",  &LattFuncSage::CS_Disp_Calc)  //  (             JetParticle*, Sage::CRITFUNC = 0 )
-      //.def("FAD_Disp_Calc"  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-      //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
-      //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
-     .def("eraseAll",  &LattFuncSage::eraseAll)
-     .def("set_dpp",   &LattFuncSage::set_dpp)
-     .def("get_dpp",   &LattFuncSage::get_dpp);
+   .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() )     // ( JetParticle*, Sage::CRITFUNC = 0 )
+   .def("Fast_CS_Calc",    &LattFuncSage::Fast_CS_Calc, LattFuncSage_Fast_CS_Calc_overloads() ) //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+   .def("Slow_CS_Calc",    &LattFuncSage::Slow_CS_Calc, LattFuncSage_Slow_CS_Calc_overloads())  //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+   .def("eraseAll",  &LattFuncSage::eraseAll)
+   .def("set_dpp",   &LattFuncSage::set_dpp)
+   .def("get_dpp",   &LattFuncSage::get_dpp);
  
 }
 
+    //.def("Disp_Calc_old"  ( JetParticle*, Sage::CRITFUNC = 0 )
+    //.def("NewDisp_Calc"   ( JetParticle*, bool onClosedOrbit = false )
 
+    //.def("NewSlow_CS_Calc"( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+    //.def("ET_Disp_Calc",  &LattFuncSage::ET_Disp_Calc, LattFuncSage_ET_Disp_Calc_overloads() )        // (             JetParticle*, Sage::CRITFUNC = 0 )
+    //.def("CS_Disp_Calc",  &LattFuncSage::CS_Disp_Calc)  //  (             JetParticle*, Sage::CRITFUNC = 0 )
+    //.def("FAD_Disp_Calc"  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+    //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
+    //.def("Twiss_Calc",  &LattFuncSage::Twiss_Calc)
