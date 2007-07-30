@@ -1371,6 +1371,7 @@ Aperture* bmlnElmnt::getAperture() {
 
 void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+
   if( p_bml_ || bml_e_ ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "void bmlnElmnt::Split( double const& pc,  ElmPtr& a, ElmPtr& b )", 
@@ -1385,14 +1386,15 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
            uic.str().c_str() ) );
   }
 
-  a = ElmPtr( a->Clone() );
-  b = ElmPtr( b->Clone() );
+  a = ElmPtr( Clone() );
+  b = ElmPtr( Clone() );
 
   a->ident_ = ident_ + string("_1") ;
   b->ident_ = ident_ + string("_2") ;
   
   a->strength_ = pc*strength_;
   b->strength_ = ( 1.0 - pc )*strength_;
+
   a->length_   = pc*length_;
   b->length_   = ( 1.0 - pc )*length_;
 }
