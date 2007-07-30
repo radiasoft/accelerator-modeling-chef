@@ -90,7 +90,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  void Split( double, ElmPtr&, ElmPtr& ) const;
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 } ;
 
 
