@@ -30,11 +30,13 @@
 #include <string>
 
 #include <boost/iterator/indirect_iterator.hpp>
+#include <boost/python/detail/api_placeholder.hpp>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/beamline.h>
+#include <list>
 
 class PropFunc;
 
@@ -79,7 +81,6 @@ indirect_reverse_deep_iterator      indirect_rdeep_begin( beamline& bml )  { ret
 indirect_reverse_deep_iterator        indirect_rdeep_end( beamline& bml )  { return bml.rdeep_end();   }
 
 
-
 void (beamline::*beamline_propagateParticle)     (Particle&      ) =  &beamline::propagate;
 void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) =  &beamline::propagate;
 void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) =  &beamline::propagate;
@@ -94,6 +95,26 @@ int (beamline::*countHowManyDeeply1)() const                       =  &beamline:
 bmlnElmnt& beamline_firstElement ( beamline& bml ) { return *bml.firstElement(); }
 bmlnElmnt& beamline_lastElement  ( beamline& bml ) { return *bml.lastElement(); }
 
+void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, double s, boost::python::list elements)
+{
+
+  long int nelms = boost::python::len(elements);
+  
+  ElmPtr elm;
+
+  std::list<std::pair<ElmPtr,double> > elm_list;
+
+  for (int i=0; i<nelms; ++i) { 
+    boost::python::tuple tp  = extract<boost::python::tuple>(elements.pop(0));
+    ElmPtr elm               = extract<ElmPtr>(tp[0]);
+    double                s   = extract<double>(tp[1]);       
+    elm_list.push_back( std::make_pair(elm, s) );
+  }
+
+   bml->InsertElementsFromList(particle, s, elm_list);
+}
+
+
 } // anonymous namespace
 
 //------------------------------------------------------------------------------
@@ -102,7 +123,7 @@ bmlnElmnt& beamline_lastElement  ( beamline& bml ) { return *bml.lastElement(); 
 
 void wrap_beamline() {
 
-class_<beamline, bases<bmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beamline", init<>() );
+class_<beamline, bases<bmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beamline", init<>() ); 
 
 beamline_.def( init<const char*>() );
 beamline_.def( init<const beamline& >() );
@@ -133,13 +154,14 @@ beamline_.def("reverse_post_order_iterator",
 beamline_.def("reverse_deep_iterator", 
     range<return_value_policy<reference_existing_object> >(  &indirect_rdeep_begin, &indirect_rdeep_end ) );
 
-beamline_.def("clear",                  &beamline::clear);
-beamline_.def("insert",                 insert1);
-beamline_.def("append",                 append1 );
-beamline_.def("flatten",                &beamline::flatten);
+ beamline_.def("clear",                  &beamline::clear);
+ beamline_.def("insert",                 insert1);
+ beamline_.def("append",                 append1 );
+ beamline_.def("flatten",                &beamline::flatten);
 
-// beamline_.def("InsertElementsFromList",  &beamlineWrap::InsertElementsFromList);
-// beamline_.def("InsertElementAt",         &beamline::InsertElementAt);
+
+ beamline_.def("InsertElementsFromList",     &InsertElementsFromList_wrap);
+ // beamline_.def("InsertElementAt",         &beamline::InsertElementAt);          // NOT IMPLEMENTED !!! 
 
   // PROPAGATE PARTICLES
 
