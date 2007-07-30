@@ -34,8 +34,12 @@
 
 using namespace boost::python;
 
+//-----------------------------------------------------------------------------------------------
+// locally defined classes and functions 
+//-----------------------------------------------------------------------------------------------
+namespace { 
 
-static void EndEnvironment_local( ) 
+void EndEnvironment_local( ) 
 {
   // double* scale = new double[ Jet::_workEnv->numVar] 
 
@@ -46,7 +50,7 @@ static void EndEnvironment_local( )
   Jet__environment::EndEnvironment();  
 }
 
-static void EndEnvironmentC_local( ) 
+void EndEnvironmentC_local( ) 
 {
   // double* scale = new double[JetC::_workEnv->numVar] 
 
@@ -57,12 +61,15 @@ static void EndEnvironmentC_local( )
   JetC__environment::EndEnvironment(); 
 }
 
-static EnvPtr<double> makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
+
+EnvPtr<double> makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) 
+{
  
        return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim);
 }
 
-static EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim, numeric::array& refpt ) {
+EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim, numeric::array& refpt ) 
+{
  
   if ( !   refpt.is_c_array() ) 
     throw PyBindingsException("makeJetEnvironment: reference points underlying data array must be a c-array.");  
@@ -70,42 +77,49 @@ static EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int sp
   if ( std::string( extract<const char*>( ( refpt.type()).attr("name") ) ) != std::string( "Float64") ) 
     throw PyBindingsException("makeJetEnvironment:: reference pt data array must be of type Float64");  
       
-       return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim, reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( refpt.ptr())->data ) );
+       return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim, reinterpret_cast<double*>(reinterpret_cast<PyArrayObject*>( refpt.ptr())->data ) );
 }
 
-static EnvPtr<std::complex<double> > makeJetCEnvironment_3_local(int maxweight, int nvar, int spacedim ) {
+
+EnvPtr<std::complex<double> > makeJetCEnvironment_3_local(int maxweight, int nvar, int spacedim ) 
+{
  
        return JetC__environment::makeJetEnvironment(maxweight, nvar, spacedim);
 }
 
 
-static EnvPtr<std::complex<double> > getLastEnvC_local( ) 
+EnvPtr<std::complex<double> > getLastEnvC_local() 
 {
   return JetC__environment::getLastEnv(); 
 }
 
-static EnvPtr<double>  getLastEnv_local( ) 
+EnvPtr<double>  getLastEnv_local() 
 {
   return Jet__environment::getLastEnv(); 
 }
 
-static void setLastEnvC_local( EnvPtr<std::complex<double> > const& env ) 
+void setLastEnvC_local( EnvPtr<std::complex<double> > const& env) 
 {
   JetC__environment::setLastEnv(env); 
 }
 
-static void setLastEnv_local(  EnvPtr<double> const& env  ) 
+void setLastEnv_local(  EnvPtr<double> const& env  ) 
 {
   Jet__environment::setLastEnv(env); 
 }
 
 
-static EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& env) {
+EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& env) {
        
   return TJetEnvironment<std::complex<double> >::makeJetEnvironment(env); // implicit conversion 
 }
 
-  
+} // anonymous namespace   
+
+//-----------------------------------------------------------------------------------------------
+// end of locally defined classes and functions 
+//-----------------------------------------------------------------------------------------------
+
 
 void wrap_mxyzptlk_jetenv() {
 
