@@ -78,63 +78,59 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-#ifndef MX_MAXITER
-#define MX_MAXITER  100     // Maximum number of iterations allowed
-                            //   in iterative routines
-#endif  // MX_MAXITER
+static const int maxiter = 100;
 
-
-//    Globals |||||||||||||||||||||||||||||||||||||||||||||||||||||
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-using namespace std;
-
-//    Constructors and destructors    |||||||||||||||||||||||||||
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( int n, EnvPtr<T> const& pje )
 : TJetVector<T>(n, pje)
 { }
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( EnvPtr<T> const& pje )
 : TJetVector<T>(pje )
 { }
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( TMapping<T> const& x ) 
-: TJetVector<T>( x ) {}
-
+: TJetVector<T>( x ) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
 TMapping<T>::TMapping( typename TJetVector<T>::const_iterator itstart,  typename TJetVector<T>::const_iterator itend)
  : TJetVector<T>(itstart, itend) 
 {}
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( TJetVector<T> const& x ) 
-: TJetVector<T>( x ) {}  // there should be a check here to make sure dims make sense
+: TJetVector<T>( x ) 
+{}  // there should be a check here to make sure dims make sense
 
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( TVector<T> const& x,   EnvPtr<T>  const& env ) 
-: TJetVector<T>( x, env ) {}
+: TJetVector<T>( x, env ) 
+{}
 
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  ) 
@@ -147,24 +143,20 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
           "Phase space has dimension 0." ) );
  }
  
-
  int s  = pje->spaceDim();
-
  for( int i=0; i<s; ++i) (this->comp_)[i].setVariable( i, pje );
 
 }
 
-
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::~TMapping<T>() {}
+TMapping<T>::~TMapping<T>() 
+{}
 
-
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
@@ -185,23 +177,27 @@ TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
    return z;
 }
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T> TMapping<T>::operator*( TMapping<T> const& x ) const
 {
+  // alias for composition operator
   return operator()( x );
 }
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void operator*=( TMapping<T>& x, TMapping<T> const& y ) {
+void operator*=( TMapping<T>& x, TMapping<T> const& y ) 
+{
  x = x*y;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMatrix<T> TMapping<T>::jacobian() const 
@@ -223,15 +219,17 @@ TMatrix<T> TMapping<T>::jacobian() const
  return M;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMatrix<T> TMapping<T>::Jacobian() const 
 {
-return jacobian();
+  return jacobian();
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T> TMapping<T>::inverse() const 
@@ -270,7 +268,7 @@ TMapping<T> TMapping<T>::inverse() const
 
  // If zero maps into zero, return inverse immediately .....................
  
- if( zero_mapped_into_zero ) return _epsInverse( (this->myEnv_) );
+ if( zero_mapped_into_zero ) return epsInverse( (this->myEnv_) );
 
  // --------------------------------------
  // Otherwise, construct an idempotent 
@@ -305,7 +303,7 @@ TMapping<T> TMapping<T>::inverse() const
          z.comp_[j].setEnvTo( z.myEnv_ );    // NOTE: setEnvTo() clones z.comp_[j] !!!!         
    }
 
-   z = z._epsInverse( z.myEnv_ );
+   z = z.epsInverse( z.myEnv_ );
 
 //---------------------------------------------------------------------
 // Reset the environment with one that has the correct reference point 
@@ -338,10 +336,11 @@ TMapping<T> TMapping<T>::inverse() const
   return z;
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const 
+TMapping<T> TMapping<T>::epsInverse( EnvPtr<T> const& pje) const 
 {
 
  TMapping<T>  z( (this->comp_.size()), pje ); // the second argument creates an "empty mapping"
@@ -355,7 +354,7 @@ TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const
     M = Jacobian().inverse();
  else{                                            
     M = Jacobian().Square().inverse();
-    (*pcout) << " TMapping<T>::_epsInverse() Warning: Jacobian Matrix is not square. This should not be called ! " << std::endl;
+    (*pcout) << " TMapping<T>::epsInverse() Warning: Jacobian Matrix is not square. This should not be called ! " << std::endl;
  }
 
 
@@ -366,18 +365,18 @@ TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const
 
 
  int  i = 0;
- while ( ( i++ < MX_MAXITER ) && ( ( v - v.filter(0,1)) != T() ) ) {
+ while ( ( i++ < maxiter ) && ( ( v - v.filter(0,1)) != T() ) ) {
                // This assumes linear is handled well enough
                // by the TMatrix<T> routine.  
   z = z - M*v;
   v = ( operator()(z) - id );
  }
 
- if( i >= MX_MAXITER ) {
+ if( i >= maxiter ) {
   (*pcerr) << "\n\n"
        << "*** WARNING ***                                            \n" 
-          "*** WARNING *** TMapping<T>& TMapping<T>::_epsInverse()                     \n" 
-          "*** WARNING *** Over " << MX_MAXITER << " iterations used. \n"
+          "*** WARNING *** TMapping<T>& TMapping<T>::epsInverse()                     \n" 
+          "*** WARNING *** Over " << maxiter << " iterations used. \n"
           "*** WARNING *** result may be incorrect.                   \n" 
           "*** WARNING ***                                            \n" 
        << endl;
@@ -386,17 +385,16 @@ TMapping<T> TMapping<T>::_epsInverse( EnvPtr<T> const& pje) const
  return z;
 }
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TMapping<T> TMapping<T>::Inverse() const 
 {
-
  return inverse();
-
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #endif // TMAPPING_TCC
