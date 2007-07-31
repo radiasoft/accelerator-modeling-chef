@@ -171,8 +171,8 @@ public:
   TJet<T> const&   operator[]      ( int idx) const { return comp_[idx]; } 
   TJet<T>&         operator[]      ( int idx)       { return comp_[idx]; }  
 
-  TJet<T>          operator()      ( int ) const; 
-  TJet<T>&         operator()      ( int ); 
+  TJet<T> const&   operator()      ( int ) const; 
+  TJet<T> &        operator()      ( int ); 
                    // WARNING: There is no way to use this and be
                    //          assured that environments are consistent.
 

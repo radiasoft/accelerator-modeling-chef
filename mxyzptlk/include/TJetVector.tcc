@@ -204,7 +204,7 @@ CHECKOUT( ( !x.Env() )         , "TJetVector<T>::Set", "Null environment.")
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJetVector<T>::operator() ( int i ) const
+TJet<T> const& TJetVector<T>::operator() ( int i ) const
 {
     return comp_[i];
 }
