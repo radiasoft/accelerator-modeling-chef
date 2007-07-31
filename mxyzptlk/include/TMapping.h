@@ -92,12 +92,15 @@ class DLLEXPORT TMapping: public TJetVector<T> {
   TMapping& operator= ( TMapping const& );
 
 
-  Vector     operator()( Vector const& ) const;
-  TMapping   operator()( TMapping const& ) const;  // TMapping composition.
-  TJet<T>    operator()( int ) const; 
-  TJet<T>&   operator()( int ); 
+  TJet<T> const& operator()( int i ) const;
+  TJet<T>&       operator()( int i ); 
 
-  TMapping  operator* ( TMapping const& ) const;  // TMapping composition also; an alias.
+  Vector    operator()( Vector const& )   const;
+  TMapping  operator()( TMapping const& ) const;  // TMapping composition.
+
+  Vector    operator* ( Vector   const& ) const;  //  an alias for operator()
+  TMapping  operator* ( TMapping const& ) const;  //  an alias for operator()
+
   TMapping* operator*=( TMapping const& );
 
   TMatrix<T> Jacobian() const; // Retained for backwards compatability
@@ -108,34 +111,44 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
  private:
 
-  TMapping<T> _epsInverse(  EnvPtr<T> const&) const;
+  TMapping<T> epsInverse(  EnvPtr<T> const&) const;
 
 
 };
 
-
+//-------------------------------------------------------------------------------
 // specializations
+//-------------------------------------------------------------------------------
 
  template<>
- Vector  TMapping<double>::operator()( const Vector& ) const;
+ Vector  TMapping<double>::operator()( Vector const& ) const;
+ 
+ template<>
+ Vector  TMapping<double>::operator* ( Vector const& ) const;  //  an alias for operator()
 
  template<>
  template<>
  TMapping<std::complex<double> >::TMapping( TMapping<double> const& );
 
+//-------------------------------------------------------------------------------
 // Inline methods
+//-------------------------------------------------------------------------------
 
 template<typename T>
-inline TJet<T> TMapping<T>::operator()( int i ) const
+inline TJet<T> const& TMapping<T>::operator()( int i ) const
 { return this->TJetVector<T>::operator()( i ); }
 
 template<typename T>
 inline TJet<T>& TMapping<T>::operator()( int i )
 { return this->TJetVector<T>::operator()( i ); }
 
+
 template<typename T>
 inline TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
-{  TJetVector<T>::operator=(x);  
+{  
+   if ( &x == this ) return *this;
+
+   TJetVector<T>::operator=(x);  
    return *this;
 }
 
