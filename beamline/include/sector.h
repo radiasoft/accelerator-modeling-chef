@@ -44,6 +44,7 @@
 #ifndef SECTOR_H
 #define SECTOR_H
 
+#include <vector>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
@@ -74,10 +75,12 @@ public:
   static JET_Prop defaultPropagate; 
 
   sector( const char* = 0, double const& = 0.0 );
-  sector( double* betaH,  double* alphaH,  double* psiH,
-          double* betaV,  double* alphaV,  double* psiV, double const& length );
-  sector( const char*, double* betaH,  double* alphaH,  double* psiH,
-                       double* betaV,  double* alphaV,  double* psiV, double const& length );
+
+  sector( std::vector<double> const& betaH,  std::vector<double> const& alphaH,  std::vector<double> const& psiH,
+          std::vector<double> const& betaV,  std::vector<double> const& alphaV,  std::vector<double> const& psiV, double const& length );
+
+  sector( const char*, std::vector<double> const& betaH,  std::vector<double> const& alphaH,  std::vector<double> const& psiH,
+                       std::vector<double> const& betaV,  std::vector<double> const& alphaV,  std::vector<double> const& psiV,  double const& length );
 
 
   sector(              Mapping const&,  double const& length, char mapType=1, PropFunc* = &sector::defaultPropagate );
@@ -88,9 +91,9 @@ public:
 
   sector* Clone() const { return new sector( *this ); }
 
-  virtual ~sector();
+ ~sector();
 
-  Mapping getMap() const;
+  Mapping const& getMap() const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
@@ -100,7 +103,7 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   void setFrequency( double (*)( double const& ) );
-  void setFrequency( Jet (*)( Jet const& ) );
+  void setFrequency( Jet    (*)( Jet    const& ) );
   void setLength( double const& );
 
   const char* Type()     const;
@@ -108,21 +111,21 @@ public:
 
 private:
 
-  char mapType;        // ??? Unnecessary. Get rid of this!
-  Mapping myMap;
-  double betaH     [2];  // 0 = entry;  1 = exit
-  double alphaH    [2];
-  double deltaPsiH;
-  double betaV     [2];
-  double alphaV    [2];
-  double deltaPsiV;
-  double mapMatrix[BMLN_dynDim][BMLN_dynDim];
-  double (*DeltaT) ( double const& );
-  Jet    (*JetDeltaT) ( const Jet& );
+  double (*DeltaT)    ( double const& );
+  Jet    (*JetDeltaT) ( Jet    const& );
 
   std::ostream& writeTo ( std::ostream& );
   std::istream& readFrom( std::istream& );
 
+  char                 mapType_;   // 0 => use matrix  != 0 => use general mapping         
+  Mapping              myMap_;
+  std::vector<double>  betaH_;     // 0 = entry;  1 = exit
+  std::vector<double>  alphaH_;    
+  double               deltaPsiH_;
+  std::vector<double>  betaV_;     
+  std::vector<double>  alphaV_;    
+  double               deltaPsiV_;
+  MatrixD              mapMatrix_;
 } ;
 
 
