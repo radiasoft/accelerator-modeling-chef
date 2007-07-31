@@ -73,8 +73,8 @@ DspnFncData::DspnFncData( std::vector<DispersionSage::Info> const& disp_vec, Con
 
   CurveData c1( azimuth, disp_H,   "Hor Dispersion"            );
   CurveData c2( azimuth, disp_V,   "Ver Dispersion"            );
-  CurveData c3( azimuth, dPrime_H, "Ver Dispersion"            );
-  CurveData c4( azimuth, dPrime_V, "Hor Dispersion Derivative" );
+  CurveData c3( azimuth, dPrime_H, "Hor Dispersion Derivative" );
+  CurveData c4( azimuth, dPrime_V, "Ver Dispersion Derivative" );
   CurveData c5( azimuth, clo_H,    "Hor Closed Orbit"          );
   CurveData c6( azimuth, clo_V,    "Ver Closed Orbit"          );
 
