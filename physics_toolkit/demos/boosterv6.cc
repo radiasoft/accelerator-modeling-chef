@@ -124,7 +124,7 @@ int main( int argc, char* argv[] )
  }
  
  BarnacleList::iterator bli = cell.dataHook.find( "Tunes" );
- tunes = boost::any_cast<ETtunes*>((*bli).info);
+ tunes = &( boost::any_cast<ETtunes>((*bli).info) );
  cout << "\nTune: horizontal = " << tunes->hor 
       <<        "   vertical = " << tunes->ver 
       << endl;
@@ -139,16 +139,18 @@ int main( int argc, char* argv[] )
    cout << "\n" << i++ 
         << "  --------------------------------------------" << endl;
 
-   BarnacleList::iterator bli = lbe->dataHook.find( "EdwardsTeng" );
-   infoPtr = boost::any_cast<ETinfo*>((*bli).info);
-   if( 0 != infoPtr ) {
-     cout << "infoPtr->beta.hor  " << infoPtr->beta.hor  << endl;
-     cout << "infoPtr->beta.ver  " << infoPtr->beta.ver  << endl;
-     cout << "infoPtr->alpha.hor " << infoPtr->alpha.hor << endl;
-     cout << "infoPtr->alpha.ver " << infoPtr->alpha.ver << endl;
-     cout << "infoPtr->phi       " << infoPtr->phi       << endl;
-     cout << "infoPtr->D \n"       << infoPtr->D         << endl;
-     lbe->dataHook.eraseFirst( "EdwardsTeng" );
+   if( lbe->dataHook.begin() != lbe->dataHook.end() ) {
+     BarnacleList::iterator bli = lbe->dataHook.find( "EdwardsTeng" );
+     infoPtr = &( boost::any_cast<ETinfo>((*bli).info) );
+     if( 0 != infoPtr ) {
+       cout << "infoPtr->beta.hor  " << infoPtr->beta.hor  << endl;
+       cout << "infoPtr->beta.ver  " << infoPtr->beta.ver  << endl;
+       cout << "infoPtr->alpha.hor " << infoPtr->alpha.hor << endl;
+       cout << "infoPtr->alpha.ver " << infoPtr->alpha.ver << endl;
+       cout << "infoPtr->phi       " << infoPtr->phi       << endl;
+       cout << "infoPtr->D \n"       << infoPtr->D         << endl;
+       lbe->dataHook.eraseFirst( "EdwardsTeng" );
+     }
    }
    else {
      cout << "*** DATA NOT FOUND ***" << endl;
