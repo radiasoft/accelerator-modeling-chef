@@ -52,7 +52,6 @@ int main( int argc, char** argv )
  Jet__environment::EndEnvironment();
 
  msq = msq*msq;
- double vel = p0 / sqrt( p0*p0 + msq );
  field B( x, y, z );
 
  double dt = t / nb;
@@ -60,7 +59,7 @@ int main( int argc, char** argv )
 
  LieOperator v;
  Jet q[6], s[6];  s[0] = x;  s[1] = y;  s[2] = z;
-                 s[3] = px; s[4] = py; s[5] = p0 + pz;
+                  s[3] = px; s[4] = py; s[5] = p0 + pz;
  Jet E;
  E = msq;
  for( i = 3; i < 6; i++ ) E += s[i]*s[i];

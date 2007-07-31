@@ -41,6 +41,7 @@ int main( int argc, char** argv )
   double y = atof( argv[2] );
   double z = atof( argv[3] );
 
+
   // --------------------------
   // Construct the input matrix.
   // --------------------------
@@ -55,6 +56,7 @@ int main( int argc, char** argv )
   D(2,2) =  z;
 
   A = UU*D*VV.transpose();
+
 
   // ------------------------
   // Do the SVD decomposition.
@@ -72,6 +74,7 @@ int main( int argc, char** argv )
 
   A.SVD( U, W, V );
 
+
   // ---------------
   // Display results.
   // ---------------
@@ -81,6 +84,10 @@ int main( int argc, char** argv )
        << "\nOutput V: 	     \n" << V
        << "\nSingular values:\n" << W;
 
+
+  // ---------------
+  // Test results.
+  // ---------------
   D(0,0) =  W(0);
   D(1,1) =  W(1);
   D(2,2) =  W(2);
