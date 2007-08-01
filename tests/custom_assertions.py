@@ -13,13 +13,28 @@ def assertLinearMapAlmostEqual(testcase,expected,found,accuracy):
 def assertMapAlmostEqual(testcase,expected,found,accuracy):
 # We do not assume that the terms stay in the same order.
     for i in range(0,6):
-        testcase.assertEqual(len(expected[i]),len(found[i]))
-        coeffs = {}
+        coeffs_exp = {}
+        coeffs_found = {}
         for term in expected[i]:
-            coeffs[term[1]] = term[0]
+            coeffs_exp[term[1]] = term[0]
         for term in found[i]:
-            coeff_exp = coeffs[term[1]]
+            coeffs_found[term[1]] = term[0]
+        for term in found[i]:
+            if coeffs_exp.has_key(term[1]):
+                coeff_exp = coeffs_exp[term[1]]
+            else:
+                coeff_exp = 0.0
             coeff_found = term[0]
+            testcase.assertAlmostEqual(
+                coeff_exp,coeff_found,accuracy,
+                'map(%d) coefficient of %s: expected %g, found %g' % \
+                (i,str(term[1]),coeff_exp,coeff_found))
+        for term in expected[i]:
+            coeff_exp = coeffs_exp[term[1]]
+            if coeffs_found.has_key(term[1]):
+                coeff_found = coeffs_found[term[1]]
+            else:
+                coeff_found = 0.0
             testcase.assertAlmostEqual(
                 coeff_exp,coeff_found,accuracy,
                 'map(%d) coefficient of %s: expected %g, found %g' % \
