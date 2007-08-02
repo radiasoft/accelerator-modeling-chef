@@ -63,7 +63,7 @@ int main( int argc, char** argv )
 
   a.setStyle( new QWindowsStyle );
 
-  QDate expiration(2007,9,1);
+  QDate expiration(2008,1,1);
  
  
   if (QDate::currentDate() > expiration ) {
