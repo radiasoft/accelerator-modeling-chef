@@ -16,7 +16,6 @@
 #include <beamline/JetParticle.h>
 #include <physics_toolkit/LattFuncSage.h>
 #include <physics_toolkit/TuneAdjuster.h>
-#include <physics_toolkit/EdwardsTeng.h>    // for ETtunes
 
 
 using namespace std;
@@ -70,6 +69,7 @@ int main( int argc, char** argv )
    cellPtr->append( D );
    cellPtr->append( O );
  }
+ cellPtr->setLineMode( beamline::ring );
  
  TuneAdjuster adj( cellPtr );
  LattFuncSage lfs( cellPtr );
@@ -95,13 +95,13 @@ int main( int argc, char** argv )
  cellPtr->dataHook.eraseAll( "Tunes" );
  lfs.TuneCalc( jpr3 );
 
- BarnacleList::iterator bli = cellPtr->dataHook.find( "Tunes" );
- if( cellPtr->dataHook.end() == bli ) {
+ if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
    cout << "Whoops" << endl;
    exit(1);
  }
+ BarnacleList::iterator bli = cellPtr->dataHook.find( "Tunes" );
 
- ETtunes* tuneptr = boost::any_cast<ETtunes*>((*bli).info);
+ LattFuncSage::tunes* tuneptr = &( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
  cout << "\nTune: horizontal = " << tuneptr->hor
       <<        "   vertical = " << tuneptr->ver
       << endl;
@@ -111,13 +111,13 @@ int main( int argc, char** argv )
  cellPtr->dataHook.eraseAll( "Tunes" );
  lfs.TuneCalc( jpr2 );
 
- bli = cellPtr->dataHook.find( "Tunes" );
- if( cellPtr->dataHook.end() == bli ) {
+ if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
    cout << "Whoopsie" << endl;
    exit(1);
  }
+ bli = cellPtr->dataHook.find( "Tunes" );
 
- tuneptr = boost::any_cast<ETtunes*>((*bli).info);
+ tuneptr = &( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
  cout << "\nTune: horizontal = " << tuneptr->hor
       <<        "   vertical = " << tuneptr->ver
       << endl;
