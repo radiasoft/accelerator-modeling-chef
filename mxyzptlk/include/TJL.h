@@ -307,8 +307,8 @@ friend class TJL;
   void setVariable( T   const& x, int const& j,  EnvPtr<T> const& pje );
   void setVariable( int const&,   EnvPtr<T> const& pje );               
 
-  T    standardPart()                 const  { return jltermStore_[0].value_; }
-  void setStandardPart( T const& std)        { jltermStore_[0].value_ = std;  } 
+  T const& standardPart()                 const  { return jltermStore_[0].value_; }
+  void     setStandardPart( T const& std)        { jltermStore_[0].value_ = std;  } 
 
   T weightedDerivative( IntArray const& ) const;
   T derivative( IntArray const& )         const;
