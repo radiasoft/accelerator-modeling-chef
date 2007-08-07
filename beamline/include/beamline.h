@@ -180,12 +180,12 @@ public:
 
   bool     setAlignment( alignmentData const& );
  
-  std::list<ElmPtr>   moveRelX( ElmPtr, double const&, int* = 0 );
-  std::list<ElmPtr>   moveRelY( ElmPtr, double const&, int* = 0 );
-  std::list<ElmPtr>   moveRelZ( ElmPtr, double const&, int* = 0 );
-  std::list<ElmPtr>      pitch( ElmPtr, double const&, double const&, int* );
-  std::list<ElmPtr>        yaw( ElmPtr, double const&, double const&, int* );
-  std::list<ElmPtr>       roll( ElmPtr, double const&, double const&, int* );
+  std::list<ElmPtr> moveRelX( ElmPtr, double const&, int& errcode );
+  std::list<ElmPtr> moveRelY( ElmPtr, double const&, int& errcode );
+  std::list<ElmPtr> moveRelZ( ElmPtr, double const&, int& errcode );
+  std::list<ElmPtr>    pitch( ElmPtr, double const&, double const&, int& errcode);
+  std::list<ElmPtr>      yaw( ElmPtr, double const&, double const&, int& errcode);
+  std::list<ElmPtr>     roll( ElmPtr, double const&, double const&, int& errcode);
 
 
   // PROPAGATE PARTICLES
@@ -351,8 +351,8 @@ public:
 private:
 
   // Methods
-  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
-  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int*   errorCodePtr, std::list<ElmPtr>& replaced_list, std::string invoker );
+  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int&   errorCode, std::list<ElmPtr>& replaced_list, std::string invoker );
+  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int&   errorCode, std::list<ElmPtr>& replaced_list, std::string invoker );
 
   std::ostream& writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );
