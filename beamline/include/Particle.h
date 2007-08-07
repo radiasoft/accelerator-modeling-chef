@@ -204,35 +204,31 @@ public:
   void set_npy ( double u );
   void set_ndp ( double u );
 
-  Vector  State()                   const;  // Returns the state as a Vector object.
-  double  State( int i )            const;
-  void    setState(Vector const& );
-
-  Vector& getState();
-  Vector  const& getState()         const;
+  Vector&        State();
+  Vector  const& State()         const;
 
 
-  double Energy()                   const;
-  double Momentum()                 const;
-  double NormalizedMomentum()       const;
-  double Mass()                     const;
-  double Gamma()                    const;
-  double Beta()                     const;
-  double BetaX()                    const;
-  double BetaY()                    const;
-  double BetaZ()                    const;
-  double ReferenceBRho()            const;
-  double ReferenceBeta()            const;
-  double ReferenceGamma()           const;
-  double ReferenceMomentum()        const;
-  double PNI2()                     const;
-  double ReferenceEnergy()          const;
-  double Weight()                   const;
-  inline double Charge()            const;
-  Vector VectorBeta()               const;
-  Vector VectorMomentum()           const;
-  Vector NormalizedVectorMomentum() const;
-  double BRho()                     const;
+  double        Energy()                   const;
+  double        Momentum()                 const;
+  double        NormalizedMomentum()       const;
+  double const& Mass()                     const;
+  double        Gamma()                    const;
+  double        Beta()                     const;
+  double        BetaX()                    const;
+  double        BetaY()                    const;
+  double        BetaZ()                    const;
+  double const& ReferenceBRho()            const;
+  double const& ReferenceBeta()            const;
+  double const& ReferenceGamma()           const;
+  double const& ReferenceMomentum()        const;
+  double const& PNI2()                     const;
+  double const& ReferenceEnergy()          const;
+  double const& Weight()                   const;
+  double const& Charge()                   const;
+  Vector        VectorBeta()               const;
+  Vector        VectorMomentum()           const;
+  Vector        NormalizedVectorMomentum() const;
+  double        BRho()                     const;
 
   BarnacleList dataHook;   // Carries data as service to application program.
 
@@ -360,7 +356,7 @@ class particle_core_access
 
  protected:
 
-  static Vector& getState(Particle &p) { return p.getState(); } 
+  static Vector& State(Particle &p) { return p.State(); } 
 
 };
 
@@ -394,29 +390,25 @@ class particle_core_access
   inline void  Particle::set_ndp ( double u )  { state_[5] = u; }
 
 
-  inline Vector   Particle::State()                   const   { return state_;                  }  // Returns the state as a Vector object.
-  inline double   Particle::State( int i )            const   { return state_[i];               }
-
-
   inline double  Particle::Energy()                   const   { double p = Momentum(); 
                                                                 return sqrt( p*p + m_*m_ );       }
 
-  inline double  Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );  }
-  inline double  Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );       }
-  inline double  Particle::Mass()                     const   { return m_;                        }
-  inline double  Particle::Gamma()                    const   { return Energy() / m_;             }
-  inline double  Particle::Beta()                     const   { return Momentum() / Energy();     }
-  inline double  Particle::BetaX()                    const   { return (get_npx()*ReferenceMomentum())/Energy(); }
-  inline double  Particle::BetaY()                    const   { return (get_npy()*ReferenceMomentum())/Energy(); }
-  inline double  Particle::BetaZ()                    const   { return (get_npz()*ReferenceMomentum())/Energy(); }
-  inline double  Particle::ReferenceBRho()            const   { return bRho_;                     }
-  inline double  Particle::ReferenceBeta()            const   { return beta_;                     }
-  inline double  Particle::ReferenceGamma()           const   { return gamma_;                    }
-  inline double  Particle::ReferenceMomentum()        const   { return p_;                        }
-  inline double  Particle::PNI2()                     const   { return pni2_;                     }
-  inline double  Particle::ReferenceEnergy()          const   { return E_;                        }
-  inline double  Particle::Weight()                   const   { return wgt_;                      } 
-  inline double  Particle::Charge()                   const   { return q_;                        }
-  inline double  Particle::BRho()                     const   { return bRho_*( 1.0 + state_[5] ); }
+  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );  }
+  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );       }
+  inline double  const& Particle::Mass()                     const   { return m_;                        }
+  inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
+  inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
+  inline double         Particle::BetaX()                    const   { return (get_npx()*ReferenceMomentum())/Energy(); }
+  inline double         Particle::BetaY()                    const   { return (get_npy()*ReferenceMomentum())/Energy(); }
+  inline double         Particle::BetaZ()                    const   { return (get_npz()*ReferenceMomentum())/Energy(); }
+  inline double  const& Particle::ReferenceBRho()            const   { return bRho_;                     }
+  inline double  const& Particle::ReferenceBeta()            const   { return beta_;                     }
+  inline double  const& Particle::ReferenceGamma()           const   { return gamma_;                    }
+  inline double  const& Particle::ReferenceMomentum()        const   { return p_;                        }
+  inline double  const& Particle::PNI2()                     const   { return pni2_;                     }
+  inline double  const& Particle::ReferenceEnergy()          const   { return E_;                        }
+  inline double  const& Particle::Weight()                   const   { return wgt_;                      } 
+  inline double  const& Particle::Charge()                   const   { return q_;                        }
+  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[5] ); }
 
 #endif // PARTICLE_H

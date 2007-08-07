@@ -179,14 +179,10 @@ public:
 
   double setWeight( double const& );       // Returns previous value.
 
-  void     setState( Mapping const& );
   void     setState( Vector  const& );    // sets the state to the identity Map. Vector elements define ref point. 
 
-  Mapping&       getState();
-  Mapping const& getState() const;
-
-  Mapping  State()  const;
-  Jet&     State( int );
+  Mapping&       State();
+  Mapping const& State() const;
 
   Jet get_x()     const;
   Jet get_y()     const;
@@ -219,19 +215,19 @@ public:
                              // Note: this assumes a 6x6 state: 
                              // ( x, y, cdt; px/p, py/p, dp/p )
 
-  Jet Energy()               const;
-  Jet Momentum()             const;
-  Jet NormalizedMomentum()   const;
-  double Mass()              const;
-  double ReferenceBRho()     const;
-  double ReferenceBeta()     const;
-  double ReferenceGamma()    const;
-  Jet    Gamma()             const;
-  double ReferenceMomentum() const;
-  double PNI2()              const;
-  double ReferenceEnergy()   const; 
-  double Weight()            const;
-  double Charge()            const;
+  Jet           Energy()               const;
+  Jet           Momentum()             const;
+  Jet           NormalizedMomentum()   const;
+  double const& Mass()                 const;
+  double const& ReferenceBRho()        const;
+  double const& ReferenceBeta()        const;
+  double const& ReferenceGamma()       const;
+  Jet           Gamma()                const;
+  double const& ReferenceMomentum()    const;
+  double const& PNI2()                 const;
+  double const& ReferenceEnergy()      const; 
+  double const& Weight()               const;
+  double const& Charge()               const;
 
   JetVector VectorBeta()     const;
   JetVector VectorMomentum() const;
@@ -343,7 +339,7 @@ class jetparticle_core_access
 
  protected:
 
-  static Mapping& getState(JetParticle &p) { return p.getState(); } 
+  static Mapping& State(JetParticle &p) { return p.State(); } 
 
 };
 
@@ -359,9 +355,6 @@ class jetparticle_core_access
   inline int JetParticle::ndpIndex()   { return 5; }
 
   inline int JetParticle::psd()      const   { return JetParticle::PSD; }
-
-
-  inline Mapping  JetParticle::State()  const { return state_; }
 
 
   inline Jet JetParticle::get_x()     const { return state_[0]; }
@@ -382,23 +375,23 @@ class jetparticle_core_access
   inline void JetParticle::set_ndp ( Jet const& u )  { state_[5] = u; }
 
 
-  inline Jet    JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ ); }
-  inline Jet    JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                   } 
-  inline Jet    JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                       }
-  inline double JetParticle::Mass()               const { return m_;                                       }
-  inline double JetParticle::ReferenceBRho()      const { return bRho_;                                    }
-  inline double JetParticle::ReferenceBeta()      const { return beta_;                                    }
-  inline Jet    JetParticle::Beta()               const { return Momentum() / Energy();                    }
-  inline Jet    JetParticle::BetaX()              const { return (get_npx()*ReferenceMomentum())/Energy(); }
-  inline Jet    JetParticle::BetaY()              const { return (get_npy()*ReferenceMomentum())/Energy(); }
-  inline Jet    JetParticle::BetaZ()              const { return (get_npz()*ReferenceMomentum())/Energy(); }
-  inline double JetParticle::ReferenceGamma()     const { return gamma_;                                   }
-  inline Jet    JetParticle::Gamma()              const { return Energy() / m_;                            }
-  inline double JetParticle::ReferenceMomentum()  const { return p_;                                       }
-  inline double JetParticle::PNI2()               const { return pni2_;                                    }
-  inline double JetParticle::ReferenceEnergy()    const { return E_;                                       } 
-  inline double JetParticle::Weight()             const { return wgt_;                                     }
-  inline double JetParticle::Charge()             const { return q_;                                       }
+  inline Jet           JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ ); }
+  inline Jet           JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                   } 
+  inline Jet           JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                       }
+  inline double const& JetParticle::Mass()               const { return m_;                                       }
+  inline double const& JetParticle::ReferenceBRho()      const { return bRho_;                                    }
+  inline double const& JetParticle::ReferenceBeta()      const { return beta_;                                    }
+  inline Jet           JetParticle::Beta()               const { return Momentum() / Energy();                    }
+  inline Jet           JetParticle::BetaX()              const { return (get_npx()*ReferenceMomentum())/Energy(); }
+  inline Jet           JetParticle::BetaY()              const { return (get_npy()*ReferenceMomentum())/Energy(); }
+  inline Jet           JetParticle::BetaZ()              const { return (get_npz()*ReferenceMomentum())/Energy(); }
+  inline double const& JetParticle::ReferenceGamma()     const { return gamma_;                                   }
+  inline Jet           JetParticle::Gamma()              const { return Energy() / m_;                            }
+  inline double const& JetParticle::ReferenceMomentum()  const { return p_;                                       }
+  inline double const& JetParticle::PNI2()               const { return pni2_;                                    }
+  inline double const& JetParticle::ReferenceEnergy()    const { return E_;                                       } 
+  inline double const& JetParticle::Weight()             const { return wgt_;                                     }
+  inline double const& JetParticle::Charge()             const { return q_;                                       }
 
   inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                }
 

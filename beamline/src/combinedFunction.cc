@@ -330,19 +330,21 @@ double combinedFunction::AdjustPosition( const Particle& arg_p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
+double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 {
   enum { x = 0, y, cdt, xp, yp, dpop };
 
   JetParticle jetparticle(arg_jp);
   Particle    particle(jetparticle);
 
-  Vector inState;
-  double x_i  = inState[x]  = particle.State( x  );
-  double xp_i = inState[xp] = particle.State( xp );
+  Vector& state   = particle.State();
+  Vector  inState = particle.State();
+
+  double x_i  = inState[x];
+  double xp_i = inState[xp];
 
   jetparticle.setState( inState );
-  particle.setState( inState );
+  particle.State() =  inState;
 
   propagate( jetparticle );
 
@@ -358,12 +360,11 @@ double combinedFunction::AdjustPosition( const JetParticle& arg_jp )
   m = 1.0 / m;
 
   z = x_i;
-  int i;
-  for( i = 0; i < 75; i++ ) {
+  for( int i = 0; i < 75; i++ ) {
     inState[x] = z;
-    particle.setState( inState );
+    particle.State() = inState;
     propagate( particle );
-    f = ( particle.State() )( x ) - z;
+    f = state[x] - z;
     z -= m*f;
   }
 

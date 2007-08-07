@@ -1209,7 +1209,7 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   state[0] -= align_->x_offset();
   state[1] -= align_->y_offset();
@@ -1237,7 +1237,7 @@ void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  JetVector& state = p.getState();
+  JetVector& state = p.State();
 
   state(0) -= align_->x_offset();
   state(1) -= align_->y_offset();
@@ -1264,7 +1264,7 @@ void bmlnElmnt::leaveLocalFrame( Particle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if( align_->roll() != 0.0) {
     double temp   = state[0] * cs - state[1] * sn;
@@ -1290,7 +1290,7 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  JetVector& state = p.getState();
+  JetVector& state = p.State();
 
   if( align_->roll() != 0.0) {
     Jet temp   = state[0] * cs - state[1] * sn;
