@@ -46,7 +46,8 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::localPropagate( Particle& p ) {
+void octupole::localPropagate( Particle& p ) 
+{
   p_bml_->propagate( p );
   p.set_cdt( p.get_cdt() - ctRef_ );
 }
@@ -54,7 +55,8 @@ void octupole::localPropagate( Particle& p ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::localPropagate( JetParticle& p ) {
+void octupole::localPropagate( JetParticle& p ) 
+{
   p_bml_->propagate( p );
   p.set_cdt( p.get_cdt() - ctRef_ );
 }
@@ -65,18 +67,16 @@ void octupole::localPropagate( JetParticle& p ) {
 
 void thinOctupole::localPropagate( Particle& p ) {
 
- double x, y, k;
- double xx, yy;
- 
-  Vector& state = p.getState(); 
+  Vector& state = p.State(); 
 
   if(strength_ != 0) {
-    k = strength_ / p.ReferenceBRho();
-    x = state[0];
-    y = state[1];
+    
+    double k = strength_ / p.ReferenceBRho();
+    double x = state[0];
+    double y = state[1];
  
-    xx = x*x;  
-    yy = y*y;
+    double xx = x*x;  
+    double yy = y*y;
  
     state[3] -= k * x * ( xx - 3.0*yy );
     state[4] -= k * y * ( yy - 3.0*xx );
@@ -88,20 +88,18 @@ void thinOctupole::localPropagate( Particle& p ) {
 
 void thinOctupole::localPropagate( JetParticle& p ) {
 
+  Mapping& state = p.State(); 
 
   if(strength_ != 0) {
-    double  k;
-    Jet     x( p.State(0) );
-    Jet     y( p.State(1) );
-    Jet     xx( x.Env() );
-    Jet     yy( y.Env() );
  
-    k = strength_ / p.ReferenceBRho();
+    Jet     x( state[0] );
+    Jet     y( state[1] );
+    Jet     xx( x*x );
+    Jet     yy( y*y );
+ 
+    double k = strength_ / p.ReferenceBRho();
     
-    xx = x*x;  
-    yy = y*y;
-
-    p.State(3) -= k * x * ( xx - 3.0*yy );
-    p.State(4) -= k * y * ( yy - 3.0*xx );
+    state[3] -= k * x * ( xx - 3.0*yy );
+    state[4] -= k * y * ( yy - 3.0*xx );
   }
 }

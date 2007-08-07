@@ -56,7 +56,7 @@ void BBLens::localPropagate( Particle& p ) {
  Vector p_beta(3);
  Vector E(3), K(3);
 
- Vector& state = p.getState();
+ Vector& state = p.State();
 
  x = state[0];
  y = state[1];
@@ -87,7 +87,7 @@ void BBLens::localPropagate( JetParticle& p ) {
  JetVector p_beta(3);
  JetVector E(3), K(3);
 
- Mapping& state = p.getState();
+ Mapping& state = p.State();
 
  x = state(0);
  y = state(1);

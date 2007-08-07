@@ -47,7 +47,7 @@ void srot::localPropagate(Particle& p) {
 
  double result[4];
  
- Vector& state = p.getState();
+ Vector& state = p.State();
 
  result[0] = state[0] * cos(strength_) + state[1] * sin(strength_);
  result[1] = state[1] * cos(strength_) - state[0] * sin(strength_);
@@ -67,7 +67,7 @@ void srot::localPropagate(JetParticle& p) {
 
 Jet result[4];
 
- Mapping& state = p.getState();
+ Mapping& state = p.State();
 
  result[0] = state[0] * cos(strength_) + state[1] * sin(strength_);
  result[1] = state[1] * cos(strength_) - state[0] * sin(strength_);

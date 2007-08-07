@@ -63,10 +63,10 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, Particle& p ) {
  sector* s = dynamic_cast<sector*>(b);
  
  if( s->mapType_ ) {
-   p.getState() =  s->myMap_   * p.getState(); // composition
+   p.State() =  s->myMap_   * p.State(); // composition
  } 
  else {
-   p.getState() = s->mapMatrix_* p.getState();
+   p.State() = s->mapMatrix_* p.State();
  } 
 
  // Longitudinal phase space kludge
@@ -84,11 +84,11 @@ int sector::JET_Prop::operator()( bmlnElmnt* b, JetParticle& p ) {
  sector* s = dynamic_cast<sector*>(b);
 
  if( s->mapType_ ) { 
-   p.getState() = s->myMap_ * p.getState();  // composition
+   p.State() = s->myMap_ * p.State();  // composition
  }
  else {
    // ??? REMOVE zero.fixReferenceAtStart( p.state );
-   p.getState() = s->mapMatrix_ * p.getState();
+   p.State() = s->mapMatrix_ * p.State();
  }
 
  // Longitudinal phase space kludge

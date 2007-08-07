@@ -104,7 +104,7 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
   {
  
-      Vector& state         =  it->getState();
+      Vector& state         =  it->State();
 
       ibin = int( (state[5] - cdt_min) / binsize ); 
        

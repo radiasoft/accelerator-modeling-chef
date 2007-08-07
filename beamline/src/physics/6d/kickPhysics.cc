@@ -71,7 +71,7 @@ void vkick::localPropagate( Particle& p )
     firstTime = false;
   }
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double realLength, realCt;
 
@@ -116,7 +116,7 @@ void vkick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   double realLength, realCt;
   if( length_ > 0.0 ) {
@@ -162,7 +162,7 @@ void hkick::localPropagate( Particle& p )
     firstTime = false;
   }
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double realLength, realCt;
   if( length_ > 0.0 ) {
@@ -207,7 +207,7 @@ void hkick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   double realLength, realCt;
 
@@ -253,7 +253,7 @@ void kick::localPropagate( Particle& p )
     firstTime = false;
   }
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double realLength, realCt;
   if( length_ > 0.0 ) {
@@ -299,7 +299,7 @@ void kick::localPropagate( JetParticle& p )
     firstTime = false;
   }
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   double realLength, realCt;
   if( length_ > 0.0 ) {

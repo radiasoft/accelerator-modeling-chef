@@ -164,7 +164,7 @@ void thinQuad::localPropagate( Particle& p ) {
  // "Strength" is B'l in Tesla
 
  double k      = 0;
- Vector& state = p.getState();
+ Vector& state = p.State();
 
  if( strength_ != 0.0 ) 
  {
@@ -182,7 +182,7 @@ void thinQuad::localPropagate( Particle& p ) {
 void thinQuad::localPropagate( JetParticle& p ) {
 
  double k       = 0;
- Mapping& state = p.getState();
+ Mapping& state = p.State();
 
  if( strength_ != 0.0 ) 
  {

@@ -46,7 +46,7 @@ void propagate( gkick& elm,  Particle_t& p)
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.getState();
+  State_t& state = p.State();
 
   state[0] += elm.xOffset();
   state[1] += elm.yOffset();
