@@ -899,7 +899,9 @@ sector* beamline::MakeSector (ElmPtr be_1, ElmPtr be_2, int deg, JetParticle& jp
 
  bool       firstFound  = false;
  bool       secondFound = false;
- Particle   prt(jp);
+ 
+ Particle       particle(jp);
+ 
  double     s           = 0.0;
 
  for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) {
@@ -937,8 +939,8 @@ sector* beamline::MakeSector (ElmPtr be_1, ElmPtr be_2, int deg, JetParticle& jp
     break;
   }
   else {
-    (*it)->propagate( jp );
-    s += (*it)->OrbitLength( prt );
+    (*it)->propagate( jp);
+    s += (*it)->OrbitLength( particle );
   }
  }
 
@@ -969,7 +971,7 @@ sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) 
  bool       firstFound  = false;
  double     s           = 0.0;
  
- Particle prt(jp);
+ Particle particle(jp);
 
  // Check first element against the argument ------------
 
@@ -993,7 +995,7 @@ sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) 
 
  // Propagate the JetParticle through first element -----------
  p_be->propagate( jp );
- s += p_be->OrbitLength( prt );
+ s += p_be->OrbitLength( particle );
 
 
  // Find element that matches argument ------------------
@@ -1007,7 +1009,7 @@ sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) 
   }
   else {
     p_be->propagate( jp );
-    s += p_be->OrbitLength( prt );
+    s += p_be->OrbitLength( particle );
   }
  }
 
@@ -1024,6 +1026,7 @@ sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) 
  // Construct the map and return the sector -----------------------------------
 
  return new sector( jp.State().filter( 0, deg ), s );
+
 }
 
 
@@ -1031,7 +1034,7 @@ sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle& jp ) {
+sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle&  jp ) {
 
  // This assumes that the argument jp has been initialized as
  // desired by the calling program.  This routine does NOT
@@ -1041,7 +1044,7 @@ sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle& jp ) {
  bool       firstFound  = false;
  double     s           = 0.0;
 
- Particle prt(jp);
+ Particle particle(jp);
 
  // Find the element that matches argument ---------------------------------
 
@@ -1072,7 +1075,7 @@ sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle& jp ) {
  }
  else {
     p_be->propagate( jp );
-    s += p_be->OrbitLength( prt );
+    s += p_be->OrbitLength( particle );
  }
 
  // Construct the map and return sector ------------------------------------
@@ -1080,7 +1083,7 @@ sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle& jp ) {
  for ( ; it != end(); ++it) {
    p_be = (*it);
    p_be->propagate( jp );
-   s += p_be->OrbitLength( prt );
+   s += p_be->OrbitLength( particle );
  }
 
  return new sector( jp.State().filter( 0, deg ), s );
@@ -1091,13 +1094,15 @@ sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle& jp ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sector* beamline::makeSector( int degree, JetParticle& pd ) {
- Vector zero(BMLN_dynDim );
+ 
 
- pd.setState ( zero );
+ Mapping& zd = pd.State();
+
+ pd.setState( zd.Dim() ); 
+
  propagate   ( pd );
- Mapping zd = pd.getState();
 
- for( int i = 0; i < BMLN_dynDim; ++i)
+ for( int i = 0; i < zd.Dim(); ++i)
    zd[i] = zd[i].filter( 0, degree );
 
  sector* s        = new sector ( ident_.c_str(), zd, length_ );
@@ -1453,7 +1458,7 @@ bool beamline::find( ElmPtr& u, ElmPtr& v, ElmPtr& w ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelX(   ElmPtr thePtr, double const& u, int* errorCodePtr )
+std::list<ElmPtr> beamline::moveRelX(   ElmPtr thePtr, double const& u, int& errorCode )
 {
   // Upon entry: thePtr      = pointer to element to be translated
   //                           longitudinally
@@ -1467,15 +1472,9 @@ std::list<ElmPtr> beamline::moveRelX(   ElmPtr thePtr, double const& u, int* err
   //               neighboring free-space elements that have been replaced.
   // 
 
-  int dummyErr;
   std::list<ElmPtr> replaced_list;
 
-  if( 0 == errorCodePtr ) {
-    moveRel( Frame::xAxisIndex(), u, thePtr, &dummyErr, replaced_list, string("beamline::moveRelX") );
-  }
-  else {
-    moveRel( Frame::xAxisIndex(), u, thePtr, errorCodePtr, replaced_list, string("beamline::moveRelX") );
-  }
+  moveRel( Frame::xAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
 
   return replaced_list;
 
@@ -1485,20 +1484,13 @@ std::list<ElmPtr> beamline::moveRelX(   ElmPtr thePtr, double const& u, int* err
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelY(   ElmPtr thePtr, double const& u, int* errorCodePtr )
+std::list<ElmPtr> beamline::moveRelY(   ElmPtr thePtr, double const& u, int &errorCode )
 {
 
-  int dummyErr;
-  std::list<ElmPtr> replaced_list;
+   std::list<ElmPtr> replaced_list;
 
-  if( 0 == errorCodePtr ) {
-     moveRel( Frame::yAxisIndex(), u, thePtr, &dummyErr, replaced_list, 
-                    string("beamline::moveRelX") );
-  }
-  else {
-     moveRel( Frame::yAxisIndex(), u, thePtr, errorCodePtr, replaced_list, 
-                    string("beamline::moveRelX") );
-  }
+  moveRel( Frame::yAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
+ 
 
   return replaced_list;
 
@@ -1510,21 +1502,13 @@ std::list<ElmPtr> beamline::moveRelY(   ElmPtr thePtr, double const& u, int* err
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelZ(  ElmPtr thePtr, double const& u, int* errorCodePtr )
+std::list<ElmPtr> beamline::moveRelZ(  ElmPtr thePtr, double const& u, int& errorCode)
 {
 
 
-  int dummyErr;
   std::list<ElmPtr> replaced_list;
 
-  if( 0 == errorCodePtr ) {
-    moveRel( Frame::zAxisIndex(), u, thePtr, &dummyErr,    replaced_list, 
-                    string("beamline::moveRelX") );
-  }
-  else {
-    moveRel( Frame::zAxisIndex(), u, thePtr, errorCodePtr, replaced_list, 
-                    string("beamline::moveRelX") );
-  }
+  moveRel( Frame::zAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
 
   return replaced_list;
 }
@@ -1533,7 +1517,7 @@ std::list<ElmPtr> beamline::moveRelZ(  ElmPtr thePtr, double const& u, int* erro
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCodePtr, std::list<ElmPtr>& replaced_list, string invoker )
+void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCode, std::list<ElmPtr>& replaced_list, string invoker )
 {
   // Upon entry: axis            = index of axis along displacement
   //             u          [m]  = displacement
@@ -1549,34 +1533,19 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
   //               may have been replaced.
   //             *bmlPtrList: appended zero, one, or two
   //               neighboring free-space elements that have been replaced.
-  //             *errorCode  = 0, nothing wrong
+  //              errorCode  = 0, nothing wrong
   //                           1, errorCode, ret, or thePtr is null on entry
   //                           2, i != 0, 1, or 2
   //                           3, |u| < 1 nanometer displacement
   // 
-  //             NOTE WELL: if the returned list is not empty, it means
-  //               that Slots have been created and installed in the line
-  //               for which the calling program must take responsibility.
-  //               This could be a serious problem. We need smart pointers!
-  // 
-
-  // #error *** WARNING ***
-  // #error *** WARNING ***  beamline::moveRel must be reviewed and tested!!
-  // #error *** WARNING ***
-
-  int dummyError;
-  int* errPtr;
-
-  // Set the error pointer ...
-  if( 0 == errorCodePtr ) { errPtr = &dummyError;  }
-  else                    { errPtr = errorCodePtr; }
-  *errPtr = 0;
+  //               NOTE WELL: if the returned list is not empty, it means
+  //               that Slots have been created and installed in the line.
 
   // Argument filter
-  if( !thePtr ) { *errPtr = 1; return;}
+  if( !thePtr ) { errorCode = 1; return;}
 
   if( axis < 0 || 2 < axis ) {
-    *errPtr = 2;
+    errorCode = 2;
     return;
   }
 
@@ -1593,7 +1562,7 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
             "\n*** ERROR *** Must be at least 1 nanometer."
             "\n*** ERROR *** "
          << endl;
-    *errPtr = 3;
+    errorCode = 3;
     return;
   }
 
@@ -1605,6 +1574,7 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
 
   Frame frameZero, frameOne, frameTwo, frameThree;
   Frame pinnedFrameOne, pinnedFrameTwo;
+
   // Note: frameZero never changes; it remains the identity.
 
   if( this->find( upStreamPtr, thePtr, downStreamPtr ) )
@@ -1735,7 +1705,6 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
         sp->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
       }
       if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );  // ?????
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
@@ -1759,19 +1728,13 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int* errorCo
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::pitch(   ElmPtr thePtr, double const& angle, double const& pct, int* errorCodePtr )
+std::list<ElmPtr> beamline::pitch(   ElmPtr thePtr, double const& angle, double const& pct, int& errorCode)
 {
 
   std::list<ElmPtr> replaced_list;
 
-  int dummyErr;
-
-  if( 0 == errorCodePtr ) {
-           rotateRel( Frame::xAxisIndex(), angle, thePtr, pct, &dummyErr, replaced_list, string("beamline::pitch") );
-  }
-  else {
-            rotateRel( Frame::xAxisIndex(), angle, thePtr, pct, errorCodePtr, replaced_list, string("beamline::pitch") );
-  }
+  rotateRel( Frame::xAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch") );
+ 
   return  replaced_list;
 }
 
@@ -1779,18 +1742,12 @@ std::list<ElmPtr> beamline::pitch(   ElmPtr thePtr, double const& angle, double 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::yaw( ElmPtr thePtr, double const& angle, double const& pct, int* errorCodePtr )
+std::list<ElmPtr> beamline::yaw( ElmPtr thePtr, double const& angle, double const& pct, int& errorCode )
 {
 
   std::list<ElmPtr> replaced_list;
-  int dummyErr;
 
-  if( 0 == errorCodePtr ) {
-           rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, &dummyErr, replaced_list, string("beamline::pitch") );
-  }
-  else {
-           rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, errorCodePtr, replaced_list, string("beamline::pitch"));
-  }
+  rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch"));
 
   return  replaced_list;
 }
@@ -1799,22 +1756,13 @@ std::list<ElmPtr> beamline::yaw( ElmPtr thePtr, double const& angle, double cons
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::roll(   ElmPtr thePtr, double const& angle, double const& pct, int* errorCodePtr )
+std::list<ElmPtr> beamline::roll(   ElmPtr thePtr, double const& angle, double const& pct, int& errorCode )
 {
 
   std::list<ElmPtr> replaced_list;
 
-  int dummyErr;
-  if( 0 == errorCodePtr ) {
-           rotateRel( Frame::zAxisIndex(), angle, thePtr, pct, 
-                      &dummyErr, replaced_list, 
-                      string("beamline::pitch") );
-  }
-  else {
-           rotateRel( Frame::zAxisIndex(), angle, thePtr, pct, 
-                      errorCodePtr, replaced_list, 
-                      string("beamline::pitch") );
-  }
+  rotateRel( Frame::zAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch") );
+ 
   return replaced_list;
 }
 
@@ -1825,7 +1773,7 @@ std::list<ElmPtr> beamline::roll(   ElmPtr thePtr, double const& angle, double c
 void beamline::rotateRel(   int axis, double const& angle
                            , ElmPtr thePtr
                            , double pct
-                           , int* errorCodePtr, std::list<ElmPtr>& replaced_list
+                           , int& errorCode, std::list<ElmPtr>& replaced_list
                            , string invoker )
 {
   // Upon entry: axis            = rotation direction
@@ -1845,7 +1793,7 @@ void beamline::rotateRel(   int axis, double const& angle
   //               replaced.
   //             *recycleBinPtr: appended zero, one, or two
   //               neighboring free-space elements that have been replaced.
-  //             *errorCode  = 0, nothing wrong
+  //              errorCode  = 0, nothing wrong
   //                           1, errorCodePtr, recycleBinPtr, or thePtr 
   //                              is null on entry
   //                           2, |angle| < 1 nanoradian displacement
@@ -1853,24 +1801,9 @@ void beamline::rotateRel(   int axis, double const& angle
   // 
   //             NOTE WELL: if the returned list is not empty, it means
   //               that Slots have been created and installed in the line
-  //               for which the calling program must take responsibility.
-  //               This could be a serious problem. We need smart pointers!
-  // 
-
-  // #error *** WARNING ***
-  // #error *** WARNING ***  beamline::_rotateRel must be reviewed and tested!!
-  // #error *** WARNING ***
-
-  int dummyError;
-  int* errPtr;
-
-  // Set the error pointer ...
-  if( 0 == errorCodePtr ) { errPtr = &dummyError;  }
-  else                    { errPtr = errorCodePtr; }
-  *errPtr = 0;
 
   // Argument filter
-  if( !thePtr ) { *errPtr = 1; return;}
+  if( !thePtr ) { errorCode = 1; return;}
 
   if( pct < 0.0 || pct > 1.0 )       { pct = 0.5; }
   if( std::abs(pct) < 1.0e-8 )       { pct = 0.0; }
@@ -1889,7 +1822,7 @@ void beamline::rotateRel(   int axis, double const& angle
             "\n*** ERROR *** Must be at least 1 nanoradian."
             "\n*** ERROR *** "
          << endl;
-    *errPtr = 2;
+    errorCode = 2;
     return;
   }
 
@@ -1901,10 +1834,9 @@ void beamline::rotateRel(   int axis, double const& angle
          << "\n*** ERROR *** Unable to perform rotation on "
          << thePtr->Type() << "  " << thePtr->Name() << "."
          << endl;
-    *errPtr = 3;
+    errorCode = 3;
     return;
   }
-
 
   // Continue program ...
 
@@ -2132,7 +2064,7 @@ void beamline::rotateRel(   int axis, double const& angle
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool beamline::setAlignment( const alignmentData& al ) {
+bool beamline::setAlignment( alignmentData const& al ) {
   // Propogate alignment data of entire  beamline to each individual element
 
 
@@ -2185,8 +2117,6 @@ ostream& beamline::writeTo(ostream& os) {
 // **************************************************
 //   Frame functions
 // **************************************************
-
-
 
 
 void beamline::enterLocalFrame( Particle& p ) const
