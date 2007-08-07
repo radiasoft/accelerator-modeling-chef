@@ -78,33 +78,48 @@ LattFncData::LattFncData( std::vector<LattFuncSage::lattFunc> const& twiss_vec, 
     }
 
 
-    CurveData c1( azimuth, beta_H, "Horizontal Beta"        );
-    CurveData c2( azimuth, beta_V, "Vertical Beta"          );
-    CurveData c3( azimuth, disp_H, "Horizontal Dispersion"  );
-    CurveData c4( azimuth, disp_V, "Vertical Dispersion"    );
+    CurveData c1( azimuth, beta_H,  "Horizontal Beta"    );
+    CurveData c2( azimuth, alpha_H, "Horizontal Alpha"   );
+    //CurveData c3( azimuth, psi_H,   "Horizontal Psi"     );
+
+    CurveData c4( azimuth, beta_V,  "Vertical Beta"      );
+    CurveData c5( azimuth, alpha_V, "Vertical Alpha"     );
+    //CurveData c6( azimuth, psi_V,   "Vertical Psi"       );
+
 
     c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
     c1.setColor(CurveData::Color(0,0,0) );
 
-    c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
+    c2.setAxes( CurveData::xBottom, CurveData::yRight  );
     c2.setColor(CurveData::Color(255,0,0) );
 
-    c3.setAxes( CurveData::xBottom, CurveData::yRight );
-    c3.setColor(CurveData::Color(0,0,0) );
+    //c3.setAxes( CurveData::xBottom, CurveData::yLeft  );
+    //c3.setColor(CurveData::Color(0,255,0) );
 
-    c4.setAxes( CurveData::xBottom, CurveData::yRight );
-    c4.setColor(CurveData::Color(255,0,0) );
+
+    c4.setAxes( CurveData::xBottom, CurveData::yLeft );
+    c4.setColor(CurveData::Color(0,0,0) );
+
+    c5.setAxes( CurveData::xBottom, CurveData::yRight );
+    c5.setColor(CurveData::Color(255,0,0) );
+
+    //c6.setAxes( CurveData::xBottom, CurveData::yRight );
+    //c6.setColor(CurveData::Color(0,255,0) );
 
     addCurve( c1 );
     addCurve( c2 );
-    addCurve( c3 );
+    //addCurve( c3 );
+
     addCurve( c4 );
+    addCurve( c5 );
+    //addCurve( c6 );
 
     setXLabel( "Arc Length [m]"                      );
-    setYLabel(  CurveData::yLeft,   "Beta [m]"       );
-    setYLabel(  CurveData::yRight,  "Dispersion [m]" );
+    setYLabel(  CurveData::yLeft,   "Beta  [m]"      );
+    setYLabel(  CurveData::yRight,  "Alpha"          );
 
-    setScaleMag(  CurveData::yRight, 5.0 ); 
+    // setScaleMag(  CurveData::yRight, 5.0 ); // scale magnification ... unused at this point
+
     setBeamline( bml ); 
 
 }
