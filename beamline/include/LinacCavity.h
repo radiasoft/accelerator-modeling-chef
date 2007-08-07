@@ -73,7 +73,7 @@ public:
   void            setStrength( double const& eV);  
 
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   
@@ -93,6 +93,10 @@ private:
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
 
+ public:
+
+  double                ctRef_part_1_;  // reference time for part 1
+  double                ctRef_part_2_;  // reference time for part 2
 
 };
 
