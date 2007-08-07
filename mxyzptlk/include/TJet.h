@@ -389,7 +389,7 @@ public:
 
 
   void     setStandardPart( T const& std ); 
-  T        standardPart() const            { return jl_->standardPart();    }
+  T const& standardPart() const            { return jl_->standardPart();    }
 
   void     clear();
 
