@@ -289,14 +289,13 @@ public:
   virtual bool alignAbsRollmrad( double const& mrad    );
   virtual bool     setAlignment( alignmentData const& );
 
-  inline  bool hasMoved()
-    { return ( pinnedFrames_.altered() || align_  ); }
+  bool    hasMoved() const { return ( pinnedFrames_.altered() || align_  ); }
 
-  void realign();  // Resets element to its original position.
+  void    realign();  // Resets element to its original position.
 
-  void markPins(); // WRITE // Marks the current positions of the element as "original"
+  void    markPins(); // WRITE // Marks the current positions of the element as "original"
 
-  void loadPinnedCoordinates( Particle const &, Vector&, double = 1.0 );  // WRITE
+  void    loadPinnedCoordinates( Particle const &, Vector&, double = 1.0 );  // WRITE
 
     // Pinned coordinates of the particle are returned in the vector
     //   argument.  
@@ -328,18 +327,8 @@ public:
                                    // pct from the in-face and returns
                                    // addresses to the two pieces
                                    // in the second and third arguments.
-                                   // The user has responsibility for
-                                   // eventually deleting these.
 
   virtual void  peekAt( double& s, Particle const& ) const;
-
-  virtual bool equivTo( bmlnElmnt const& ) const;
-
-  virtual bool hasParallelFaces() const;
-  virtual bool hasStandardFaces() const;
-
-  virtual bool isSimple() const;
-  virtual bool isMagnet() const = 0;
 
 
   // ... Tagging methods
@@ -353,11 +342,9 @@ public:
   virtual void setLength     ( double const& );
   virtual void setStrength   ( double const& );
   virtual void setCurrent    ( double const& );
-  virtual void setShunt(double const& a);
+  virtual void setShunt      ( double const& a);
           void setAperture   ( Aperture* );
           void rename        ( std::string name);  
-
-
 
 
   virtual double getReferenceTime()                    const;     // returns ctRef_
@@ -366,15 +353,24 @@ public:
 
   // ... Query functions 
 
-  alignmentData  Alignment( void )        const;
-  Aperture*      getAperture( void );                                           // returns a clone of the aperture class
-  int            hasAperture( void )      const { return  ( pAperture_ ? 1 : 0 ); }
-  double         Strength()               const { return strength_; }
-  double         Length()                 const;
-  virtual double Current()                const  { return strength_/iToField_; }
+  alignmentData        Alignment( void )        const;
+  Aperture*            getAperture( void );     // returns a clone of the aperture class
+  int                  hasAperture( void )      const  { return  ( pAperture_ ? 1 : 0 ); }
+  double               Strength()               const  { return strength_; }
+  double               Length()                 const;
 
-  std::string          Name()             const { return ident_; }
-  virtual const char*  Type()             const = 0;
+  virtual double       Current()                const  { return strength_/iToField_; }
+
+  virtual bool equivTo( bmlnElmnt const& ) const;
+
+  virtual bool hasParallelFaces() const;
+  virtual bool hasStandardFaces() const;
+
+  virtual bool isSimple()   const;
+  virtual bool isMagnet()   const = 0;
+
+  std::string          Name()                   const  { return ident_; }
+  virtual const char*  Type()                   const = 0;
 
 
   virtual double OrbitLength( Particle const& ) { return length_; }
@@ -383,28 +379,28 @@ public:
                                    // Will be different from "length"
                                    // for rbends.
 
-  double const& IToField() const      { return iToField_; }
+  double const& IToField() const      { return iToField_;     }
   double const& getShunt() const      { return shuntCurrent_; }
 
 
 
 protected:
 
-  std::string                    ident_;         // Name identifier of the element.
-  double                         length_;        // Length of object [ meters ]
-  double                         strength_;      // Interpretation depends on object.
+  std::string                    ident_;             // Name identifier of the element.
+  double                         length_;            // Length of object [ meters ]
+  double                         strength_;          // Interpretation depends on object.
   
   alignment*                     align_;
-  double                         iToField_;      // Conversion factor for current through
-                                                 // magnet in amperes to field or gradient etc.
-  double                         shuntCurrent_;  // Does this element have a shunt?
+  double                         iToField_;          // Conversion factor for current through
+                                                     // magnet in amperes to field or gradient etc.
+  double                         shuntCurrent_;      // Does this element have a shunt?
 
   PinnedFrameSet                 pinnedFrames_;
 
-  mutable double                 ctRef_;         // (normalized) time required for
-                                                 // a reference particle to cross
-                                                 // the element. Established by a
-                                                 // RefRegVisitor.
+  mutable double                     ctRef_;         // (normalized) time required for
+                                                     // a reference particle to cross
+                                                     // the element. Established by a
+                                                     // RefRegVisitor.
 
   std::map<char const*, boost::any> attributes_;
 
