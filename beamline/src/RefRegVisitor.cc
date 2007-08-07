@@ -52,7 +52,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 /*
  * File: RefRegVisitor.cc
  * 
@@ -163,11 +162,12 @@ void RefRegVisitor::visit( beamline& x )
 
      double cumulativeCdt = 0.0;
 
+
      for (beamline::deep_iterator it  = x.deep_begin();
                               it != x.deep_end(); ++it) {
     
         double momentum = particle_.ReferenceMomentum();
-
+       
         if( (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) ) { 
          (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
         }
@@ -277,12 +277,39 @@ void RefRegVisitor::visit( rfcavity& x )
 
 void RefRegVisitor::visit( LinacCavity& x ) 
 {
+ 
+  if( x.Strength() == 0.0) 
+  {   x.ctRef_part_1_ =  x.ctRef_part_2_  = x.Length()/particle_.BetaZ()/2.0;
+      x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );
+      return;
+  }
+                        
+  Vector& state = particle_.State();
 
+  const  double length     =  x.Length();
+  const  double energyGain =  x.Strength()*cos( x.getPhi());
+ 
+  state[2] = 0;
+  x.setLength( length/2.0 );
   x.setReferenceTime(0.0);
-  particle_.set_cdt(0.0);
-  x.propagate( particle_ );
-  x.setReferenceTime( particle_.get_cdt() );
+  x.bmlnElmnt::localPropagate( particle_ );
 
+  x.ctRef_part_1_ = state[2];
+
+  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
+
+  state[2] = 0;
+  x.setReferenceTime(0.0);
+  x.bmlnElmnt::localPropagate( particle_ );
+
+  x.ctRef_part_2_ =  state[2];  
+
+  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
+
+  x.setLength(length);  // restore length to its original value
+
+  x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );     
+ 
 }
 
 
