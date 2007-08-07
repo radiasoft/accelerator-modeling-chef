@@ -196,6 +196,9 @@ bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::c
 template
 void std::fill<int*, int>(int*, int*, int const&);
 
+template
+double* std::fill_n<double*, int, int>(double*, int, int const&);
+
 // ----------------------------------------------------------------------------
 // Instantiations related to Cascade 
 // ----------------------------------------------------------------------------
