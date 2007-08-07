@@ -245,7 +245,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     }
 
     if( ptr != correctors_[j]->dataHook.end() ) { 
-      dsp           =   boost::any_cast<lattFunc>(ptr->info).dispersion.hor;
+      dsp           =   boost::any_cast<LattFuncSage::lattFunc>(ptr->info).dispersion.hor;
       gotDispersion = true;
     }
     else {
@@ -255,8 +255,8 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     ptr = correctors_[j]->dataHook.find( "Twiss" );
     // NOTE: possibly 2nd time this is done.
     if(ptr !=  correctors_[j]->dataHook.end() ) {
-      beta(0,j) =   boost::any_cast<lattFunc>(ptr->info).beta.hor * dsp;
-      beta(1,j) = - boost::any_cast<lattFunc>(ptr->info).beta.ver * dsp;
+      beta(0,j) =   boost::any_cast<LattFuncSage::lattFunc>(ptr->info).beta.hor * dsp;
+      beta(1,j) = - boost::any_cast<LattFuncSage::lattFunc>(ptr->info).beta.ver * dsp;
       gotBetas = true;
     }
 

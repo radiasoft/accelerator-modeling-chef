@@ -295,7 +295,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
     // Output
 
-    lattFunc lf;
+    LattFuncSage::lattFunc lf;
 
     lf.arcLength = arcLength;
     lf.beta.hor  = beta_x;
@@ -601,12 +601,12 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   
 
     // Calculate lattice functions ...
-    beta_x  =   real( outState[i_x] ) /resizeFactor;
+    beta_x  =   real( outState[i_x] )/resizeFactor;
     alpha_x = - real( outState[i_px] )/resizeFactor;
     alpha_x *= beta_x;
     beta_x  *= beta_x;
   
-    beta_y  =   real( outState[i_y] ) /resizeFactor;
+    beta_y  =   real( outState[i_y] )/resizeFactor;
     alpha_y = - real( outState[i_py] )/resizeFactor;
     alpha_y *= beta_y;
     beta_y  *= beta_y;
@@ -1135,7 +1135,7 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     // Store the calculation if appropriate ...
     if( ( !Crit ) || ( Crit( lbe ) ) ) 
     {
-      lattFunc lf;
+      LattFuncSage::lattFunc lf;
 
       lf.arcLength = lng;
       lf.beta.hor  = beta_x;
@@ -1526,10 +1526,10 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
         (*it)->dataHook.insert( Barnacle( "Dispersion", lf ) );
     }
     else {
-        boost::any_cast<lattFunc&>( itb->info ).dispersion.hor = lf.dispersion.hor;
-        boost::any_cast<lattFunc&>( itb->info ).dPrime.hor     = lf.dPrime.hor;
-        boost::any_cast<lattFunc&>( itb->info ).dispersion.ver = lf.dispersion.ver;
-        boost::any_cast<lattFunc&>( itb->info ).dPrime.ver     = lf.dPrime.ver;
+        boost::any_cast<LattFuncSage::lattFunc&>( itb->info ).dispersion.hor = lf.dispersion.hor;
+        boost::any_cast<LattFuncSage::lattFunc&>( itb->info ).dPrime.hor     = lf.dPrime.hor;
+        boost::any_cast<LattFuncSage::lattFunc&>( itb->info ).dispersion.ver = lf.dispersion.ver;
+        boost::any_cast<LattFuncSage::lattFunc&>( itb->info ).dPrime.ver     = lf.dPrime.ver;
     }
   }  
 
@@ -1699,7 +1699,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
     if ( stand_alone_disp_calc ) { 
-       lattFunc lf;
+       LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_px );
        lf.dispersion.ver = d( i_y  );
@@ -1898,7 +1898,7 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
    
        if( !Crit || Crit( (*it) ) ) 
        {
-          LattFuncSage::lattFunc lf;
+         LattFuncSage::lattFunc lf;
          lf.dispersion.hor = firstParticle.get_x()   /dpp;
          lf.dPrime.hor     = firstParticle.get_npx() /dpp;
          lf.dispersion.ver = firstParticle.get_y()   /dpp;

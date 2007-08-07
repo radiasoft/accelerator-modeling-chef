@@ -67,22 +67,22 @@ int main( int argc, char** argv )
  thinSextupole SF( "SF", 0.0 );
  thinSextupole SD( "SD", 0.0 );
 
- beamline cell;
-          cell.append(  F );    // NOTE: Current behavior is that
-          cell.append( SF );    // the .append function will clone
-          cell.append(  O );    // these elements automatically.
-          cell.append(  D );
-          cell.append( SD );
-          cell.append(  O );
-          cell.setLineMode( beamline::ring );
+ BmlPtr cellPtr( new beamline );
+          cellPtr->append(  F );    // NOTE: Current behavior is that
+          cellPtr->append( SF );    // the .append function will clone
+          cellPtr->append(  O );    // these elements automatically.
+          cellPtr->append(  D );
+          cellPtr->append( SD );
+          cellPtr->append(  O );
+          cellPtr->setLineMode( beamline::ring );
  
  // Regrettably, this step must be done.
  // -----------------------------------
  RefRegVisitor registrar(pr);
- cell.accept(registrar);
+ cellPtr->accept(registrar);
 
- ChromaticityAdjuster adj ( cell );
- LattFuncSage         lfs ( cell );
+ ChromaticityAdjuster adj ( cellPtr );
+ LattFuncSage         lfs ( cellPtr );
 
  // Initialize JetProtons for use
  JetParticle::createStandardEnvironments( 1 );
@@ -92,8 +92,8 @@ int main( int argc, char** argv )
  JetProton jpr3( energy );
 
  ElmPtr q;
- for (   beamline::iterator bi = cell.begin()
-       ; bi != cell.end()
+ for (   beamline::iterator bi = cellPtr->begin()
+       ; bi != cellPtr->end()
        ; ++bi ) {
    q = *bi;
    if( 0 == strcmp( q->Type(), "thinSextupole" )) 
@@ -103,16 +103,16 @@ int main( int argc, char** argv )
    }
  }
 
- cell.dataHook.eraseAll( "Ring" );
+ cellPtr->dataHook.eraseAll( "Ring" );
  lfs.Disp_Calc( jpr3 );
 
  LattFuncSage::lattRing* tuneptr = 0;
- BarnacleList::iterator bli = cell.dataHook.find( "Ring" );
- if( cell.dataHook.end() == bli ) {
+ if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
    cout << "Whoops" << endl;
    exit(1);
  }
- tuneptr = boost::any_cast<LattFuncSage::lattRing*>((*bli).info);
+ BarnacleList::iterator bli = cellPtr->dataHook.find( "Ring" );
+ tuneptr = &( boost::any_cast<LattFuncSage::lattRing>((*bli).info) );
  cout << "\nTune:         horizontal  = " << ((double) N) * tuneptr->tune.hor
       << "\n              vertical    = " << ((double) N) * tuneptr->tune.ver
       << "\nChromaticity: horizontal  = " << ((double) N) * tuneptr->chromaticity.hor
@@ -121,16 +121,16 @@ int main( int argc, char** argv )
 
  adj.changeChromaticityBy( delta_H/((double) N), delta_V/((double) N), jpr );
 
- cell.dataHook.eraseAll( "Ring" );
+ cellPtr->dataHook.eraseAll( "Ring" );
  lfs.Disp_Calc( jpr2 );
 
  tuneptr = 0;
- bli = cell.dataHook.find( "Ring" );
- if( cell.dataHook.end() == bli ) {
+ if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
    cout << "Whoopsie" << endl;
    exit(1);
  }
- tuneptr = boost::any_cast<LattFuncSage::lattRing*>((*bli).info);
+ bli = cellPtr->dataHook.find( "Ring" );
+ tuneptr = &( boost::any_cast<LattFuncSage::lattRing>((*bli).info) );
  cout << "\nTune:         horizontal  = " << ((double) N)*tuneptr->tune.hor
       << "\n              vertical    = " << ((double) N)*tuneptr->tune.ver
       << "\nChromaticity: horizontal  = " << ((double) N)*tuneptr->chromaticity.hor
