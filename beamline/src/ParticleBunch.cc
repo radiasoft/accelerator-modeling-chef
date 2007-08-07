@@ -50,8 +50,8 @@ namespace {
 
 typedef  boost::rand48    base_generator_type;
 
-base_generator_type generator1((int32_t) 117u);
-base_generator_type generator2((int32_t) 137u);
+base_generator_type generator1((boost::int32_t) 117u);
+base_generator_type generator2((boost::int32_t) 137u);
 
 boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
 boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );

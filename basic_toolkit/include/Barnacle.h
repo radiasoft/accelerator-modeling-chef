@@ -85,8 +85,8 @@ class DLLEXPORT BarnacleList {
 
 public:
  
-  typedef  std::list<Barnacle>::iterator                     iterator;
-  typedef  std::list<Barnacle>::const_iterator const_iterator;
+  typedef  std::list<Barnacle>::iterator                             iterator;
+  typedef  std::list<Barnacle>::const_iterator                 const_iterator;
 
   typedef  std::list<Barnacle>::reverse_iterator             reverse_iterator;
   typedef  std::list<Barnacle>::const_reverse_iterator const_reverse_iterator;

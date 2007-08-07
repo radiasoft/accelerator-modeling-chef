@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env csh
 
 ######################################################
 #
-# File: test-build.sh
+# File: test-build.csh
 #
 # Tests the mxyzptlk/demos files
 #
@@ -20,4 +20,12 @@
 #
 ######################################################
 
-gmake
+foreach w ( `ls *.cc | sed -e "s/.cc//"` )
+  gmake $w >& $w.build.log
+  end
+
+## foreach w ( `ls *.cc | sed -e "s/.cc//"` )
+##   echo $w
+##   $w >& $w.out
+##   echo $w
+##   end

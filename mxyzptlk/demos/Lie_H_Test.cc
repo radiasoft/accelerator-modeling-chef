@@ -105,5 +105,6 @@ int main( int argc, char** argv )
  cout << "\n-*-*-*-  q(u)  coefficients  -*-*-*-*-*" << endl;
  q(u).printCoeffs();
 
+ cout << endl;
  return 0;
 }
