@@ -1813,7 +1813,7 @@ void Tracker::_tool_pdicOrb()
         xsq = x1*x1;  // ??? Why do we have to define x1? ???
         #endif
   
-        dummyPtr->setState(w);
+        dummyPtr->State() = w;
         jpPtr = new JetParticle(*dummyPtr);
         Mapping stuff;
         cout << "Begin n-th Henon iterate for n = "
@@ -1875,7 +1875,7 @@ void Tracker::_tool_pdicOrb()
     }
 
     // A final test ...
-    dummyPtr->setState(w);
+    dummyPtr->State() = w;
     cout << "\nTest the results: " << endl;
     for( int j = 0; j < 10; j++ ) {
       for( unsigned int i = 0; i < iterate; i++ ) {

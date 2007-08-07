@@ -60,7 +60,7 @@ void thin2pole::localPropagate( Particle& p )
 
  if (strength_ == 0.0 ) return;
 
- Vector& state = p.getState();
+ Vector& state = p.State();
 
  const double angle =  strength_/p.ReferenceBRho();
 
@@ -82,7 +82,7 @@ void thin2pole::localPropagate( JetParticle& p ) {
 
  if (strength_ == 0.0 ) return;
 
- Mapping& state = p.getState();
+ Mapping& state = p.State();
 
  const double angle =  strength_/p.ReferenceBRho();
 
@@ -106,7 +106,7 @@ void thin12pole::localPropagate( Particle& p ) {
  
  if(strength_ == 0.0) return;
 
- Vector& state = p.getState();
+ Vector& state = p.State();
 
 
  double k = strength_/p.ReferenceBRho();
@@ -129,7 +129,7 @@ void thin12pole::localPropagate( JetParticle& p ) {
 
   if(strength_ == 0.0) return;
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   Jet k = strength_/p.ReferenceBRho();
 
@@ -151,7 +151,7 @@ void thin14pole::localPropagate( Particle& p )
 {
   if(strength_ == 0.0)  return;
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
  
   double k = strength_/p.ReferenceBRho();
  
@@ -170,7 +170,7 @@ void thin14pole::localPropagate( JetParticle& p ) {
 
   if(strength_ == 0.0 ) return;
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
   
   Jet k = strength_/p.ReferenceBRho();
  
@@ -193,7 +193,7 @@ void thin16pole::localPropagate( Particle& p )
  
   if(strength_ == 0.0) return;
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double k = strength_/p.ReferenceBRho();
  
@@ -215,7 +215,7 @@ void thin16pole::localPropagate( JetParticle& p )
 
   if(strength_ == 0.0) return;
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   Jet k = strength_/p.ReferenceBRho();
  
@@ -240,7 +240,7 @@ void thin18pole::localPropagate( Particle& p )
  
   if(strength_ == 0.0) return;
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double k = strength_/p.ReferenceBRho();
 
@@ -263,7 +263,7 @@ void thin18pole::localPropagate( JetParticle& p )
 
   if(strength_ == 0.0) return;
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   Jet k = strength_/p.ReferenceBRho();
   Jet x = state(0);

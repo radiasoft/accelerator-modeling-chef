@@ -32,7 +32,12 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******                 
+****** REVISION HISTORY
+****** July 2007    ostiguy@fnal.gov
+*****
+****** - efficiency: access particle state by reference                                                  
+******
 **************************************************************************
 *************************************************************************/
 
@@ -51,7 +56,7 @@
 
 void Pinger::localPropagate( Particle& p ) {
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if ( isArmed() ) {
     if( 0 == counter_ ) {
@@ -68,14 +73,12 @@ void Pinger::localPropagate( Particle& p ) {
 void Pinger::localPropagate( JetParticle& p ) {
 
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   if ( isArmed() ) {
     if( 0 == counter_ ) {
-      Jet  dummy = p.State(3) + cos(kick_direction_)*strength_;
-      state.SetComponent( 3, dummy );
-      dummy = p.State(4) + sin(kick_direction_)*strength_;
-      state.SetComponent( 4, dummy );
+      state[3] += cos(kick_direction_)*strength_;
+      state[4] += sin(kick_direction_)*strength_;
     }
     --counter_;
   }
@@ -92,7 +95,7 @@ void Pinger::localPropagate( ParticleBunch& b ) {
 
       for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
       {
-        Vector& state = it->getState();
+        Vector& state = it->State();
         state[3] += cos(kick_direction_)*strength_;
         state[4] += sin(kick_direction_)*strength_;
       }

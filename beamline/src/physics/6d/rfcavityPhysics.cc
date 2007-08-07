@@ -105,7 +105,7 @@ void rfcavity::localPropagate( Particle& p )
   double const E_i       = p.Energy();
   double const cdt_i     = p.get_cdt();
 
-  Vector& state   = p.getState();
+  Vector& state   = p.State();
 
   double const referenceEnergyGain = strength_*sin_phi_s_;
   double const onaxisEnergyGain    = strength_ * sin ( phi_s_ + state[2] * w_rf_ / PH_MKS_c );  // ??? Improve!
@@ -219,7 +219,7 @@ void rfcavity::localPropagate( JetParticle& p )
   Jet    const E_i       = p.Energy();
   Jet    const cdt_i     = p.get_cdt();
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   double const referenceEnergyGain = strength_*sin_phi_s_;
   Jet    const onaxisEnergyGain    = strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
@@ -322,7 +322,7 @@ void thinrfcavity::localPropagate( Particle& p )
 {
   if( 0.0 != strength_ ) {
     double const m  = p.Mass();
-    Vector& state = p.getState(); 
+    Vector& state = p.State(); 
     double E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
     double oldRefP = p.ReferenceMomentum();
@@ -344,7 +344,7 @@ void thinrfcavity::localPropagate( JetParticle& p )
 {
   if( 0.0 != strength_ ) {
     double const m  = p.Mass();
-    Mapping& state = p.getState(); 
+    Mapping& state = p.State(); 
     Jet E = p.Energy() + strength_*sin( phi_s_ + state[2] * w_rf_ / PH_MKS_c );
 
     double oldRefP = p.ReferenceMomentum();

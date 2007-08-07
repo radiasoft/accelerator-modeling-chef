@@ -23,7 +23,7 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Authors:   Leo Michelotti (Original Version)                                    
+******  Authors:   Leo Michelotti (Original Version)
 ******             Jean-Francois Ostiguy
 ******                                                   
 ******             Fermilab                                           
@@ -213,21 +213,22 @@ JetParticle::~JetParticle()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
+#if 0
 void JetParticle::setState( Mapping const& u ) 
 {
  state_ = u;
 } 
 
+#endif
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void   JetParticle::setState( Vector  const& u ) {    // sets the state to the identity Map. Vector elements define ref point. 
 
- if( u.Dim() != BMLN_dynDim ) {
+ if( state_.Dim() != u.Dim() ) {
   ostringstream uic;
   uic  << "Dimension of argument, " << u.Dim() << ", does not match "
-          "phase space dimension, " << BMLN_dynDim << "." << endl;
+          "phase space dimension, " << state_.Dim()<< "." << endl;
   throw( GenericException( __FILE__, __LINE__, 
          "void JetParticle::setState( const Vector& )", 
          uic.str().c_str() ) );
@@ -240,11 +241,12 @@ void   JetParticle::setState( Vector  const& u ) {    // sets the state to the i
  }
 }
 
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-Mapping& JetParticle::getState() 
+Mapping& JetParticle::State() 
 {
   return state_;
 } 
@@ -253,7 +255,7 @@ Mapping& JetParticle::getState()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-Mapping const& JetParticle::getState() const 
+Mapping const& JetParticle::State() const 
 {
   return state_;
 } 
@@ -262,6 +264,7 @@ Mapping const& JetParticle::getState() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0 
 Jet& JetParticle::State( int i )
 {
   if( (0 <= i) && (i < 6) ) {
@@ -275,7 +278,7 @@ Jet& JetParticle::State( int i )
            uic.str().c_str() ) );
   }
 }
-
+#endif
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -419,20 +422,25 @@ JetProton::JetProton() : JetParticle( PH_NORM_mp,  PH_NORM_mp ){
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetProton::JetProton( double const& energy ) : JetParticle( PH_NORM_mp, energy ){
+JetProton::JetProton( double const& energy ) 
+: JetParticle( PH_NORM_mp, energy )
+{
  q_ = PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetProton::JetProton( JetProton const& u ): JetParticle(u) {}
+JetProton::JetProton( JetProton const& u )
+: JetParticle(u) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-JetProton::JetProton( Proton const& u,   EnvPtr<double> const& pje ): JetParticle(u, pje) {} 
+JetProton::JetProton( Proton const& u,   EnvPtr<double> const& pje )
+: JetParticle(u, pje) 
+{} 
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -449,36 +457,42 @@ JetProton& JetProton::operator=(JetProton const& u) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetProton::~JetProton() {
-}
-
-
+JetProton::~JetProton() 
+{}
 
 // **************************************************
 //   class JetAntiProton
 // **************************************************
 
-JetAntiProton::JetAntiProton() : JetParticle( PH_NORM_mp, PH_NORM_mp){
+JetAntiProton::JetAntiProton() 
+: JetParticle( PH_NORM_mp, PH_NORM_mp)
+{
  q_ = - PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiProton::JetAntiProton( double const& energy ) : JetParticle( PH_NORM_mp, energy ){
+JetAntiProton::JetAntiProton( double const& energy ) 
+: JetParticle( PH_NORM_mp, energy )
+{
  q_ = - PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiProton::JetAntiProton( JetAntiProton const & u ) : JetParticle(u) { }
+JetAntiProton::JetAntiProton( JetAntiProton const & u ) 
+: JetParticle(u) 
+{ }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-JetAntiProton::JetAntiProton( AntiProton const& u,  EnvPtr<double> const& pje ) : JetParticle(u, pje) {}
+JetAntiProton::JetAntiProton( AntiProton const& u,  EnvPtr<double> const& pje ) 
+: JetParticle(u, pje) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -496,34 +510,42 @@ JetAntiProton& JetAntiProton::operator=(JetAntiProton const& u)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiProton::~JetAntiProton() {
-}
+JetAntiProton::~JetAntiProton() 
+{}
 
 // **************************************************
 //   class JetElectron
 // **************************************************
 
-JetElectron::JetElectron() : JetParticle( PH_NORM_me, PH_NORM_me ) {
+JetElectron::JetElectron() 
+: JetParticle( PH_NORM_me, PH_NORM_me ) 
+{
  q_ = - PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetElectron::JetElectron( double const& energy ) : JetParticle( PH_NORM_me, energy ) {
+JetElectron::JetElectron( double const& energy ) 
+: JetParticle( PH_NORM_me, energy ) 
+{
  q_ = - PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetElectron::JetElectron( JetElectron const& u ) : JetParticle( u ) {}
+JetElectron::JetElectron( JetElectron const& u ) 
+: JetParticle( u ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-JetElectron::JetElectron( Electron const& u,   EnvPtr<double> const& pje) : JetParticle( u, pje ) {}
+JetElectron::JetElectron( Electron const& u,   EnvPtr<double> const& pje) 
+: JetParticle( u, pje ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -548,31 +570,37 @@ JetElectron::~JetElectron()
 //   class JetPositron
 // **************************************************
 
-JetPositron::JetPositron() : JetParticle( PH_NORM_me, PH_NORM_me ) {
+JetPositron::JetPositron() 
+: JetParticle( PH_NORM_me, PH_NORM_me ) 
+{
  q_ = PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetPositron::JetPositron( double const& energy ) : JetParticle( PH_NORM_me, energy ) {
+JetPositron::JetPositron( double const& energy ) 
+: JetParticle( PH_NORM_me, energy ) 
+{
  q_ = PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-JetPositron::JetPositron( JetPositron const& u ) : JetParticle( u ) {}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-JetPositron::JetPositron( Positron const& u,  EnvPtr<double> const& pje ) : JetParticle( u, pje ) {}
+JetPositron::JetPositron( JetPositron const& u ) 
+: JetParticle( u ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+JetPositron::JetPositron( Positron const& u,  EnvPtr<double> const& pje ) 
+: JetParticle( u, pje ) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetPositron& JetPositron::operator=(JetPositron const& u) 
 {
@@ -594,7 +622,9 @@ JetPositron::~JetPositron() {}
 //   class JetMuon
 // **************************************************
 
-JetMuon::JetMuon() : JetParticle( PH_NORM_mmu, PH_NORM_mmu ){
+JetMuon::JetMuon() 
+: JetParticle( PH_NORM_mmu, PH_NORM_mmu )
+{
  q_ = - PH_MKS_e;
 }
 
@@ -608,13 +638,16 @@ JetMuon::JetMuon( double const& energy ) : JetParticle( PH_NORM_mmu, energy ){
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-JetMuon::JetMuon( JetMuon const& u ) : JetParticle(u) {}
+JetMuon::JetMuon( JetMuon const& u ) 
+: JetParticle(u) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetMuon::JetMuon( Muon const & u,   EnvPtr<double> const& pje) : JetParticle(u, pje) {}
+JetMuon::JetMuon( Muon const & u,   EnvPtr<double> const& pje) 
+: JetParticle(u, pje) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -642,26 +675,34 @@ JetMuon::~JetMuon()
 //   class JetAntiMuon
 // **************************************************
 
-JetAntiMuon::JetAntiMuon() : JetParticle( PH_NORM_mmu, PH_NORM_mmu ){
+JetAntiMuon::JetAntiMuon() 
+: JetParticle( PH_NORM_mmu, PH_NORM_mmu )
+{
  q_ = PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiMuon::JetAntiMuon( double const& energy ) : JetParticle( PH_NORM_mmu, energy ){
+JetAntiMuon::JetAntiMuon( double const& energy ) 
+: JetParticle( PH_NORM_mmu, energy )
+{
  q_ = PH_MKS_e;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiMuon::JetAntiMuon( JetAntiMuon const& u ): JetParticle(u) {}
+JetAntiMuon::JetAntiMuon( JetAntiMuon const& u )
+: JetParticle(u) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiMuon::JetAntiMuon( AntiMuon const& u,   EnvPtr<double> const& pje ): JetParticle(u, pje) {}
+JetAntiMuon::JetAntiMuon( AntiMuon const& u,   EnvPtr<double> const& pje )
+ : JetParticle(u, pje) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -680,6 +721,5 @@ JetAntiMuon& JetAntiMuon::operator=(JetAntiMuon const& u)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetAntiMuon::~JetAntiMuon() 
-{
-}
+{}
 

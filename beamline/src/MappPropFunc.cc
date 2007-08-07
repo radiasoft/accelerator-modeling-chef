@@ -49,7 +49,7 @@ int MappPropFunc::operator() ( bmlnElmnt* b, Particle& p )
   // cout << "DGN> Entering MappPropFunc::operator()" << endl;
   // cout << "DGN> " << p.State() << endl;
   // cout << "DGN> " << _myMap( p.State() ) << endl;
-  p.setState( _myMap( p.State() ) );
+  p.State() = _myMap( p.State() );
   // cout << "DGN> " << p.State() << endl;
   // cout << "DGN> Leaving MappPropFunc::operator()" << endl;
   return 0;
@@ -58,7 +58,7 @@ int MappPropFunc::operator() ( bmlnElmnt* b, Particle& p )
 
 int MappPropFunc::operator() ( bmlnElmnt* b, JetParticle& p ) 
 {
-  p.setState( _myMap( p.State() ) );
+  p.State() = _myMap( p.State() );
   return 0;
 }
 
@@ -76,13 +76,12 @@ MappPropFunc::MappPropFunc( JetParticle& p, bmlnElmnt& b )
 
 MappPropFunc::MappPropFunc( const Mapping& map )
 : _myMap( map )
-{
-}
+{}
+
 
 MappPropFunc::MappPropFunc( const MappPropFunc& x )
 : _myMap( x._myMap )
-{
-}
+{}
 
 void MappPropFunc::setMapping( const Mapping& x )
 {

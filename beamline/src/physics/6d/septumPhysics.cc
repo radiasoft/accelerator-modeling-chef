@@ -45,7 +45,7 @@
 
 void thinSeptum::localPropagate( Particle& p ) {
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   double kick = ( state[0] > xWire_ ) ? strengthPos_/(1.0 + state[5]) :  strengthNeg_/(1.0 + state[5]); 
   
@@ -61,7 +61,7 @@ void thinSeptum::localPropagate( Particle& p ) {
 void thinSeptum::localPropagate( JetParticle& p ) { 
 // This is taken from the thinSeptaPhysics.cc file. AJB 2/20/98
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   Jet kick = ( state[0].standardPart() > xWire_ ) ? 
                   strengthPos_/(1.0 + state[5]) :  strengthNeg_/(1.0 + state[5] ); 

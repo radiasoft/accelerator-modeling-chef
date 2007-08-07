@@ -63,7 +63,7 @@ void sextupole::localPropagate( JetParticle& p ) {
 
 void thinSextupole::localPropagate( Particle& p ) {
 
- Vector& state = p.getState(); 
+ Vector& state = p.State(); 
  
  double k = strength_ / p.ReferenceBRho();
  double x = state[0];
@@ -84,7 +84,7 @@ void thinSextupole::localPropagate( Particle& p ) {
 
 void thinSextupole::localPropagate( JetParticle& p ) {
 
- Mapping& state = p.getState(); 
+ Mapping& state = p.State(); 
 
  double k = strength_ / p.ReferenceBRho();
  Jet x = state[0];
@@ -140,7 +140,7 @@ ThinSextupolePropagator::~ThinSextupolePropagator() {
 void ThinSextupolePropagator::operator()( bmlnElmnt& elm,  Particle& p ) 
 { 
 
-  Vector& state    = p.getState(); 
+  Vector& state    = p.State(); 
   double  strength_ = elm.Strength(); 
 
   double k = strength_ / p.ReferenceBRho();
@@ -159,7 +159,7 @@ void ThinSextupolePropagator::operator()( bmlnElmnt& elm,  Particle& p )
 void ThinSextupolePropagator::operator()( bmlnElmnt& elm, JetParticle& p)
 { 
 
- Mapping& state   = p.getState(); 
+ Mapping& state   = p.State(); 
  double  strength_ = elm.Strength(); 
 
  double k = strength_ / p.ReferenceBRho();

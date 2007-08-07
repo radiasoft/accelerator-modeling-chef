@@ -50,7 +50,7 @@ void monitor::localPropagate( Particle& p )
   int i;
   double realLength, realCt;
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -100,7 +100,7 @@ void monitor::localPropagate( JetParticle& p )
   int i;
   double realLength, realCt;
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -148,7 +148,7 @@ void hmonitor::localPropagate( Particle& p )
 {
   int i;
   double realLength, realCt;
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -195,7 +195,7 @@ void hmonitor::localPropagate( JetParticle& p )
 {
   int i;
   double realLength, realCt;
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -241,7 +241,7 @@ void vmonitor::localPropagate( Particle& p )
 {
   int i;
   double realLength, realCt;
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------
@@ -288,7 +288,7 @@ void vmonitor::localPropagate( JetParticle& p )
 {
   int i;
   double realLength, realCt;
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
     // ---------------------------------------------------------------------

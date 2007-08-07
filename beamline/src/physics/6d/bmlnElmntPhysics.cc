@@ -67,7 +67,7 @@ void bmlnElmnt::localPropagate( Particle& p ) {
   firstCall = false;
  }
 
- Vector& state = p.getState();
+ Vector& state = p.State();
 
  state[0] += length_ * state[3];
  state[1] += length_ * state[4];
@@ -88,7 +88,7 @@ void bmlnElmnt::localPropagate( JetParticle& p ) {
   firstCall = false;
  }
 
- Mapping & state = p.getState();
+ Mapping & state = p.State();
 
  Jet  dummy = state[0] + length_ * state[3];
  state.SetComponent( 0, dummy );
@@ -121,7 +121,7 @@ void propagate( bmlnElmnt& elm, Particle_t& p )
  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
- State_t& state = p.getState();
+ State_t& state = p.State();
 
  Component_t npz = p.get_npz();
 

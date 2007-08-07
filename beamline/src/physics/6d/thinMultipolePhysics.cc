@@ -40,7 +40,7 @@
 void thinMultipole::localPropagate( Particle& p ) 
 {
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
 #if  0
   if(strength_ == 0.0 ) return;
@@ -70,7 +70,7 @@ void thinMultipole::localPropagate( JetParticle& p )
 
 #if 0
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
 
   if(strength_ != 0) {
