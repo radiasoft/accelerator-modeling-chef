@@ -548,7 +548,7 @@ void CHEFGUI::openFile()
 
           browser_->displayBeamline( p_currBmlCon_ );
 
-          nlines++;
+          ++nlines;
      }
 
  }
