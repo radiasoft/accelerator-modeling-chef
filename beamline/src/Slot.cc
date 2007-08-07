@@ -525,7 +525,7 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
   static Vector u_z(3);
   static Vector u_y(3);
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
 
   if( firstTime ) {
@@ -542,15 +542,16 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
   {
     // "Old" frame represented in "new" frame coordinates.
     Vector e_1(3), e_2(3), e_3(3);
+
     e_1 = frm.getAxis(0);
     e_2 = frm.getAxis(1);
     e_3 = frm.getAxis(2);
     
     double cs = e_1(0);
     double sn = e_3(0);
-
+    
     // Coordinate transformation.
-    Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
+    Vector r        ( state[x]*e_1 + state[y]*e_2 );
     Vector dummy    ( p.VectorBeta() );
     Vector beta     ( dummy(0)*e_1 +
                       dummy(1)*e_2 +
@@ -616,7 +617,7 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
   }
 
    
-  Mapping&  state = p.getState();
+  Mapping&  state = p.State();
 
 
   // Yaw -------------------------------------
@@ -711,7 +712,7 @@ void Slot::localPropagate( Particle& p )
   // If this is modified, one should
   // simultaneously modify Slot::setReferenceTime( const Particle& )
 
-  Vector& state = p.getState();
+  Vector& state = p.State();
 
   if      ( bml_e_   ) bml_e_->propagate( p );
   else if ( p_bml_   ) p_bml_->propagate( p );
@@ -767,7 +768,7 @@ void Slot::localPropagate( Particle& p )
 void Slot::localPropagate( JetParticle& p )
 {
  
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   if     (  p_bml_   ) p_bml_->propagate( p );
   else if(  bml_e_   ) bml_e_->propagate( p );

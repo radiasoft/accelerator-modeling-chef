@@ -179,7 +179,7 @@ alignment& alignment::operator=(alignment const& a) {
 
 void alignment::misalign(Particle const& p, Vector& inState) {
 
-  Vector const& state = const_cast<Particle&>(p).getState();
+  Vector const& state = const_cast<Particle&>(p).State();
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state[i];
@@ -219,7 +219,7 @@ void alignment::misalign(Particle const& p, Vector& inState) {
 void alignment::align(Particle const& p, Vector& inState) {
 
 
-  Vector const& state = const_cast<Particle&>(p).getState();
+  Vector const& state = const_cast<Particle&>(p).State();
 
   for( int i=0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state[i];
@@ -297,7 +297,7 @@ void alignment::align(Vector& p, Vector& inState) {
 
 void alignment::misalign(JetParticle& p, Mapping& inState) {
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   for( int i=0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state(i);
@@ -336,7 +336,7 @@ void alignment::misalign(JetParticle& p, Mapping& inState) {
 
 void alignment::align(JetParticle& p, Mapping& inState) {
 
-  Mapping& state = p.getState();
+  Mapping& state = p.State();
 
   for( int i = 0; i < BMLN_dynDim; ++i  ) 
     inState[i] = state(i);
