@@ -49,6 +49,7 @@ QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr&
 {
 
     DispersionSage::Info initialDispersion;
+
     initialDispersion.arcLength      = 0.0;
     initialDispersion.dispersion.hor = initial.dispersion.hor;
     initialDispersion.dispersion.ver = initial.dispersion.ver;
@@ -57,7 +58,7 @@ QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr&
 
     context->setInitialDispersion( initialDispersion );
 
-    DspnFncData dfd( context->getDispersionArray() );
+    DspnFncData dfd( context->getDispersionArray(), context->cheatBmlPtr() );
 
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "DspnplotWidget", Qt::WDestructiveClose );
  
