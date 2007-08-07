@@ -75,6 +75,7 @@ CHEFPlot::CHEFPlot(QWidget * parent, const char* name, Qt::WFlags f):
    panner_->setAxisEnabled(QwtPlot::yRight,   false);
    panner_->setAxisEnabled(QwtPlot::yLeft,    true );
 
+   panner_->setEnabled(false); // disabled for the moment .... 
 
    connect(plot_, SIGNAL( scaleChangedSignal() ), this, SLOT( updateLatticeDisplay() ) );
    connect(plot_, SIGNAL( plotResizedSignal() ),  this, SLOT( resizeLego() ) );
@@ -91,12 +92,11 @@ CHEFPlot::~CHEFPlot()
   // Qt widgets are automatically destroyed when their parent is destroyed 
 }
 
-
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlot::resizeEvent (QResizeEvent* event) {
+void CHEFPlot::resizeEvent (QResizeEvent* event) 
+{
   
   if (plot_) plot_->setGeometry(0, lego_height_,  width(), height()-lego_height_);
 
@@ -105,7 +105,6 @@ void CHEFPlot::resizeEvent (QResizeEvent* event) {
   return;
 
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -131,7 +130,6 @@ void CHEFPlot::displayLattice( ConstBmlPtr bml)
   
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -142,7 +140,6 @@ ConstBmlPtr CHEFPlot::getBeamline()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void  CHEFPlot::updateLatticeDisplay() 
 {
@@ -355,14 +352,12 @@ void CHEFPlot::setLogScale( int axis)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void CHEFPlot::setLinScale( int axis) 
 {
 
   plot_->setLinScale(axis); 
 
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -376,7 +371,6 @@ void CHEFPlot::clear()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void CHEFPlot::zoomed(QwtDoubleRect const& pg ) 
 {
