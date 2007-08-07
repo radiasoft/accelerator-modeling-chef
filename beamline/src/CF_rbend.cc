@@ -931,13 +931,14 @@ double CF_rbend::OrbitLength( const Particle& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_rbend::AdjustPosition( const Particle& arg_p )
+
+double CF_rbend::AdjustPosition( Particle const& arg_p )
 {
-  JetParticle* myJPPtr = new JetParticle(arg_p);
-  // This probably won't work properly.
-  double ret = AdjustPosition( *myJPPtr );
-  delete myJPPtr;
-  return ret;
+  // This probably won't work properly ... 
+  // because the current env may not be appropriate 
+
+  JetParticle jetparticle(arg_p);
+  return AdjustPosition( jetparticle );
 }
 
 
@@ -954,41 +955,41 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
   enum { x = 0, y, cdt, xp, yp, dpop };
 
-  JetParticle* myJPPtr = arg_jp.Clone();
-  Particle*      p_myP = new Particle( *myJPPtr );
+  JetParticle jetparticle(arg_jp);
+  Particle       particle(arg_jp);
 
-  // These are deleted before returning.
+  Mapping& jetstate =  jetparticle.State();
+  Vector&     state =     particle.State();
+ 
+  Jet__environment_ptr env = jetstate.Env(); 
 
-  double x_i  = p_myP->State( x  );
-  double xp_i = p_myP->State( xp );
+  Vector    instate =     state;
 
-  Vector inState(6);
-
-  inState[x]  = x_i;
-  inState[xp] = xp_i;
-
-  double f, m, z;
+  const double x_i  = state[x];
+  const double xp_i = state[xp]; 
 
   // Initialize the derivative...
-  myJPPtr->setState( inState );
-  this->propagate( *myJPPtr );
 
-  m = ( myJPPtr->State().Jacobian() )( xp, x );
+  jetparticle.setState(instate); 
+
+  propagate(jetparticle);
+
+  double m = jetstate.Jacobian()( xp, x );
   if( fabs(m) < 1.0e-12 ) {
-    delete p_myP;   p_myP   = 0;
-    delete myJPPtr; myJPPtr = 0;
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
            "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
 
   // Initialize the difference ...
-  z = x_i;
-  inState[x] = z;
-  p_myP->setState( inState );
-  this->propagate( *p_myP );
-  f = ( p_myP->State() )( xp ) + xp_i;
+
+  double z = instate[x]  = x_i;
+  state = instate;
+
+  propagate( particle );
+
+  double f = state[xp] + xp_i;
 
   int i = 0;
   while( ( i < 5 ) || ( ( i < 15 ) && (fabs(f) > 1.0e-9) ) ) 
@@ -997,15 +998,17 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
     // One Newton's step ...
     z -= m*f;
-    inState[x]  = z;
+    
+    instate[x] = z;
+    state      = instate; 
 
     // Recalculate inverse derivative ...
-    myJPPtr->setState( inState );
-    this->propagate( *myJPPtr );
-    m = ( myJPPtr->State().Jacobian() )( xp, x );
+
+    jetparticle.setState(instate); 
+    propagate( jetparticle );
+ 
+    m =  (jetstate.Jacobian())( xp, x );
     if( fabs(m) < 1.0e-12 ) {
-      delete p_myP;   p_myP   = 0;
-      delete myJPPtr; myJPPtr = 0;
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
              "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
@@ -1013,13 +1016,18 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
     m = 1.0 / m;
 
     // Recalculate difference ...
-    p_myP->setState( inState );
-    this->propagate( *p_myP );
-    f = ( p_myP->State() )( xp ) + xp_i;
+
+    propagate( particle);
+
+    f = state[xp] + xp_i;
   }
 
-
+  //------------------------------------------------------------------------
   // Step procedure when Newton's method fails ...
+  //------------------------------------------------------------------------'
+
+  double delta = 1.0e-4;           // step 0.1 mm
+
   if( i >= 15 ) {
     (*pcerr) << "*** WARNING ***                                      \n"
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
@@ -1031,50 +1039,60 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
             "*** WARNING ***                                      \n"
          << endl;
 
-    inState[x] = 0.0;
-    double delta = 1.0e-4;           // step 0.1 mm
 
-    p_myP->setState( inState );
-    this->propagate( *p_myP );
-    double error = ( p_myP->State() )( xp ) + xp_i;
+    instate[x]  = 0.0;
+    state       = instate;
 
-    inState[x] = delta;
-    p_myP->setState( inState );
-    this->propagate( *p_myP );
-    f = ( p_myP->State() )( xp ) + xp_i;
+    propagate( particle );
+
+    double error = state[xp] + xp_i; // this should be 0 if the angles are equal in magnitude and opposite in sign.
+
+    instate[x] = delta;
+    state      = instate;
+    
+    propagate( particle );
+
+    f = state[xp] + xp_i;
 
     if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) ) 
           && ( fabs(error) < fabs(f) ) ) 
     {
-      delta = - delta;
+      delta = - delta;                 
     }
 
-    inState[x] = 0.0;
+    instate[x]  = 0.0;
+    state       = instate;
+
     while( fabs(delta) > 0.9e-6 ) {
-      inState[x] += delta;
-      p_myP->setState( inState );
-      this->propagate( *p_myP );
-      f = ( p_myP->State() )( xp ) + xp_i;
+
+      instate[x] +=  delta;
+      state       = instate;
+      propagate( particle);
+
+      f = state[xp] + xp_i;
 
       while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) && 
              ( fabs(f) < fabs(error) ) )
       {
         error = f;
-        inState[x] += delta;
-      	p_myP->setState( inState );
-      	this->propagate( *p_myP );
-      	f = ( p_myP->State() )( xp ) + xp_i;
+        instate[x] +=  delta;
+        state       = instate;
+      	propagate( particle );
+
+      	f = state[xp] + xp_i;
       }
 
-      inState[x] -= delta;
+      instate[x] +=  delta;
+      state       = instate;
       delta      *= (-0.1);
-    }
 
-    (*pcerr) << "*** WARNING ***                                      \n"
+    } // while
+
+    (*pcerr) << "*** WARNING ***                                  \n"
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
             "*** WARNING *** The step procedure suggests a best   \n"
             "*** WARNING *** solution with magnet displacement "
-         <<                                  (-1000.0)*inState[x]
+         <<                                  (-1000.0)*instate[x]
          <<                                           " mm with   \n"
             "*** WARNING *** bend angle error "
          <<                                   (2.0e6)*error
@@ -1082,28 +1100,29 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
             "*** WARNING ***                                      \n"
          << endl;
 
-    z = inState[x];
-  }
+    z = state[x];
+
+  } // if 
 
 
   // Set the alignment of the internal beamline.
   // this->align_->getAlignment().xOffset -= z;
-  alignmentData v;	// Assumes zero alignment constructed this way.
-  if ( align_ != 0 )
-    v = align_->getAlignment();
-  v.xOffset -= z;
+
+  alignmentData v; 
+
+  if ( align_ ) {
+     v = align_->getAlignment();
+  }
+
   // ??? Does not work: p_bml->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
   // ??? parallel.
-  this->setAlignment( v );
+
+  setAlignment( v );
+
   // ??? This will work only if the in and out faces
   // ??? of the CF_rbend element are parallel.
-
-
-  // Clean up and return.
-  delete p_myP;   p_myP   = 0;
-  delete myJPPtr; myJPPtr = 0;
 
   return z;
 }
@@ -1119,7 +1138,7 @@ void CF_rbend::acceptInner( BmlVisitor& v )
   while( x <= v_ ) {
     (*x)->accept( v );
     ctRef_ += (*x)->getReferenceTime();
-    x++;
+    ++x;
   }
 }
 
@@ -1134,7 +1153,7 @@ void CF_rbend::acceptInner( ConstBmlVisitor& v )
   while( x <= v_ ) {
     (*x)->accept( v );
     ctRef_ += (*x)->getReferenceTime();
-    x++;
+    ++x;
   }
 }
 
