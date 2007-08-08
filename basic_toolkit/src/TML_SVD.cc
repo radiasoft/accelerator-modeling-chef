@@ -1,6 +1,6 @@
 /*******************************************************************************************
- *******************************************************************************************
- *******************************************************************************************
+********************************************************************************************
+********************************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
 ******                                    
@@ -102,7 +102,7 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
   //
   //  upon return, U W and V will contain the factors U, W and V from the factorization, correctly dimensioned.
   //
-  //  A = U  W V^T  
+  //  A = U diag(W) V^T  
   // 
   //  
   //
@@ -331,7 +331,7 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
   // NOTE: we perform the matrix multiplication explicitly 
   // to avoid unecessary copying. 
   //
-  //   x = V W U^T rhs 
+  //   x = V diag(W) U^T rhs 
   // 
   //-------------------------------------------------------
 

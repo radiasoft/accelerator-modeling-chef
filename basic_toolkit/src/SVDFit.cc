@@ -46,6 +46,8 @@ using FNAL::pcout;
 
 using namespace std;
 
+const double SVDFit::threshold_ = 1.0e-8;
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
@@ -55,20 +57,10 @@ Matrix SVDFit::sqrt( Matrix& x )
   int c = x.cols();
 
   if( r == c ) {
-
     Matrix U(r,c);
     Vector W(c);
     Matrix V(c,c);
     x.SVD(U,W,V);
-
-    #if 0
-    BEGIN DIAGNOSTIC SECTION
-    (*pcout) << "DGN: = " << __FILE__ << "," << __LINE__
-             << ": U - v = \n"
-             << ( U - V )
-             << endl;
-    END DIAGNOSTIC SECTION
-    #endif
 
     // Next to using a diagonal matrix, this is
     // probably the slowest possible way to do this.
@@ -88,14 +80,14 @@ Matrix SVDFit::sqrt( Matrix& x )
        << "\nYours is " << r << " x " << c << ".";
    (*pcerr) << "\n*** ERROR *** " 
             << "\n*** ERROR *** " << __FILE__ << "," << __LINE__
-            << "\n*** ERROR *** Matrix sqrt( const Matrix& x )"
+            << "\n*** ERROR *** Matrix SVDFit::sqrt( const Matrix& x )"
             << "\n*** ERROR *** ------------------------------"
             << "\n*** ERROR *** The argument of sqrt must be a square matrix."
             << "\n*** ERROR *** Yours is " << r << " x " << c << "."
             << "\n*** ERROR *** "
             << endl;
    throw GenericException( __FILE__, __LINE__, 
-                           "Matrix sqrt( const Matrix& x )",
+                           "Matrix SVDFit::sqrt( const Matrix& x )",
                            uic.str().c_str() );
   }
 }
@@ -116,18 +108,21 @@ SVDFit::SVDFit()
 ,  xU_(3,2)
 ,  xW_(2)
 ,  xV_(2,2)
-,  limW_(0)
+,  xU0_(3,2)
+,  xW0_(2)
+,  xV0_(2,2)
 ,  applyWeights_(false)
 ,  ready_(false)
+,  limW_(SVDFit::threshold_)
 {
-  finishConstruction();
+  finishConstruction_();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-void SVDFit::reconstruct( int r, int c )
+void SVDFit::reconstruct_( int r, int c )
 {
   rows_         = r;
   cols_         = c;
@@ -140,17 +135,20 @@ void SVDFit::reconstruct( int r, int c )
   xU_           = Matrix( r, c );
   xW_           = Vector( c    );
   xV_           = Matrix( c, c );
+  xU0_          = Matrix( r, c );
+  xW0_          = Vector( c    );
+  xV0_          = Matrix( c, c );
   applyWeights_ = false;
   ready_        = false;
 
-  finishConstruction();
+  finishConstruction_();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-void SVDFit::finishConstruction()
+void SVDFit::finishConstruction_()
 {
   for( int i=0; i < rows_; ++i ) {
     for( int j=0; j < rows_; ++j ) {
@@ -169,7 +167,8 @@ void SVDFit::finishConstruction()
 
 
 SVDFit::~SVDFit()
-{}
+{
+}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -179,10 +178,10 @@ SVDFit::~SVDFit()
 void SVDFit::setLinearResponse( Matrix const& x )
 {
   if( rows_ != x.rows() || cols_ != x.cols() ) { 
-     reconstruct( x.rows(), x.cols() ); 
+     reconstruct_( x.rows(), x.cols() ); 
   }
   response_ = x;
-  buildSolver();
+  buildSolver_();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
@@ -196,33 +195,30 @@ void SVDFit::setErrorCovariance( Matrix const& E )
   // if it is to be used frequently.
 
   if( rows_ == E.rows() && 1 == E.cols() ) {  // Uncorrelated errors
-
      cov_    = Matrix( rows_, rows_ );
      sig_    = Matrix( rows_, rows_ );
      covInv_ = Matrix( rows_, rows_ );
      sigInv_ = Matrix( rows_, rows_ );
 
     for( int i=0;  i < rows_; ++i) {
-
-         cov_(i,i) = std::abs( E(i,0) );
-         sig_(i,i) = std::sqrt( fabs( E(i,0) ) );
+      cov_(i,i)    = std::abs( E(i,0) );
+      sig_(i,i)    = std::sqrt( fabs( E(i,0) ) );
       covInv_(i,i) = 1.0/std::abs( E(i,0) );
       sigInv_(i,i) = 1.0/std::sqrt( fabs( E(i,0) ) );
     }
 
     applyWeights_ = true;
-    buildSolver();
+    buildSolver_();
   }
 
   else if( rows_ == E.rows() && rows_ == E.cols() ) {
-
      cov_    = 0.5*( E + E.transpose() );  // Forces symmetry
-     sig_    = this->sqrt(cov_);
+     sig_    = SVDFit::sqrt(cov_);
      covInv_ = cov_.inverse();
      sigInv_ = sig_.inverse();
 
      applyWeights_ = true;
-     buildSolver();
+     buildSolver_();
   }
 
   else if( E.rows() != E.cols() ) {
@@ -256,30 +252,6 @@ void SVDFit::setErrorCovariance( Matrix const& E )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
-Vector SVDFit::getSingularValue() const 
-{ 
-  return xW_;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-
-Matrix SVDFit::getVMatrix() const 
-{ 
-  return xV_;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-
-Matrix SVDFit::getUMatrix() const 
-{ 
-  return xU_;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-
 
 void SVDFit::setWeighted( bool x )
 {
@@ -291,41 +263,63 @@ void SVDFit::setWeighted( bool x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-void SVDFit::buildSolver()
+void SVDFit::setNullSpaceThreshold( double x )
+{
+  limW_ = fabs(x);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
+
+void SVDFit::buildSolver_()
 {
   if( applyWeights_ ) {
-    ( sigInv_* response_).SVD( xU_, xW_, xV_ );
+    (sigInv_*response_).SVD( xU_, xW_, xV_ );
   }
   else {
     response_.SVD( xU_, xW_, xV_ );
   }
+  xU0_ = xU_;    // Stored for later
+  xV0_ = xV_;    // retrieval by user.
+  xW0_ = xW_;
 
-  // Removal of nullSpace 
-  // Get the maximum w
 
+  // Suppressing (thresholded) null space.
+  // -------------------------------------
   double wMax = -1.0; 
+  for( int j = 0; j < cols_; j++ ) {
+    if( wMax < xW_(j) ) { wMax = xW_(j); }
+    // NOTE: singular values are non-negative 
+    // NOTE: by definition and construction.
+  }
+  wMax *= limW_;
 
-  for( int j=0; j < cols_; ++j) {
-    if (std::abs( xW_(j)) > wMax ) 
-      wMax = std::abs( xW_(j)); 
+  for( int j = 0; j < cols_; j++ ) {
+    if( xW_(j) < wMax ) {
+      for (int i=0; i < rows_; i++) { xU_(i,j) = 0.; }
+      xW_(j) = 0;
+    }
   } 
 
-  for( int j=0;  j< cols_; ++j) {
-     if (std::abs( xW_(j))/wMax < limW_) 
-       for (int i=0; i < rows_; ++i) xU_(i,j) = 0.; 
-  } 
-
-  // Next to using a diagonal matrix, this is
-  // probably the slowest possible way to do this.
-
+  // ... Next to using a diagonal matrix, this is
+  // ... probably the slowest possible way to do this.
   double aaa;
-
   for( int j=0; j < cols_; ++j) {
-    aaa = 1.0/ xW_(j);
-    for( int i=0; i < cols_; ++i) {
-       xV_(i,j) *= aaa;
+    if( 0 < xW_(j) ) {
+      aaa = 1.0/xW_(j);
+      for( int i = 0; i < cols_; i++ ) {
+        xV_(i,j) *= aaa;
+      }
+    }
+    else {
+      for( int i = 0; i < cols_; i++ ) {
+        xV_(i,j) = 0;  // Not strictly necessary,
+      }                // but paranoia seldom hurts.
     }
   }
+
 
   if( applyWeights_ ) {
     solver_ = ( xV_ * xU_.transpose() ) * sigInv_;
@@ -338,25 +332,18 @@ void SVDFit::buildSolver()
 }
 
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
 Matrix SVDFit::solve( const Matrix& theData ) const
 {
-  
- if( !ready_ ) {
-    throw GenericException( __FILE__, __LINE__, 
-                            "Matrix SVDFit::solve( const Matrix& theData )"
-                            "\nYou first must establish a response matrix." );
- }  
-
-
-  if( rows_ == theData.rows() ) {
+  if( ready_ ) 
+  {
+    if( rows_ == theData.rows() ) {
       return ( solver_*theData );
-  }
-  else {
+    }
+    else {
       ostringstream uic;
       uic << "The argument must have "
           << cols_ 
@@ -377,14 +364,23 @@ Matrix SVDFit::solve( const Matrix& theData ) const
       throw GenericException( __FILE__, __LINE__, 
                               "Matrix SVDFit::solve( const Matrix& theData )",
                               uic.str().c_str() );
+    }
+  }
+
+  else 
+  {
+    throw GenericException( __FILE__, __LINE__, 
+                            "Matrix SVDFit::solve( const Matrix& theData )"
+                            "\nYou first must establish a response matrix." );
   }
 }
 
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-Matrix SVDFit::getStateCovariance() const
+Matrix SVDFit::stateCovariance() const
 {
   return ( solver_ * cov_ *  solver_.transpose() );
 }
@@ -394,11 +390,16 @@ Matrix SVDFit::getStateCovariance() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
 
-bool SVDFit::getWeighted() const
+Matrix SVDFit::D() const
 {
-  return applyWeights_;
+  int n = xW0_.Dim();
+  Matrix ret(n,n);
+  for( int i = 0; i < n; i++ ) {
+    ret(i,i) = xW0_(i);
+  }
+  return ret;
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
