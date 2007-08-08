@@ -47,6 +47,7 @@
 #endif
 
 #include <algorithm>
+#include <vector>
 #include <basic_toolkit/iosetup.h>
 
 using std::cout;
