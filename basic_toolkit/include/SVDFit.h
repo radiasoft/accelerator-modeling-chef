@@ -44,7 +44,6 @@
 class SVDFit
 {
   public: 
-
     SVDFit();
    ~SVDFit();
 
@@ -54,17 +53,20 @@ class SVDFit
 
     Matrix solve( Matrix const& ) const;
 
-    Matrix getStateCovariance()  const;
-    bool   getWeighted()         const;
-    Vector getSingularValue()    const;
-    Matrix getVMatrix()          const;
-    Matrix getUMatrix()          const;
+    inline Matrix U() const;
+    Matrix D() const;
+    inline Matrix V() const;
+    inline Vector singularValues() const;
+    Matrix stateCovariance() const;
 
-    inline double getLimitNullSpace()        const  { return limW_; }
-    inline void   setLimitNullSpace(double l)       { limW_   = l;  }
+    void setNullSpaceThreshold(double);
+    inline double nullSpaceThreshold() const;
+
+    inline bool isWeighted() const;
+
+    static Matrix sqrt( Matrix& );
 
   private:
-
     int    rows_;
     int    cols_;
 
@@ -79,17 +81,51 @@ class SVDFit
     Matrix  xU_;
     Vector  xW_;
     Matrix  xV_;
+    Matrix  xU0_;
+    Vector  xW0_;
+    Matrix  xV0_;
 
     bool   applyWeights_;
     bool   ready_;
     
     double limW_;
+    static const double threshold_;
 
-    void  finishConstruction();
-    void  reconstruct( int, int );
-    void  buildSolver();
-
-    Matrix sqrt( Matrix& x );
+    void  finishConstruction_();
+    void  reconstruct_( int, int );
+    void  buildSolver_();
 };
+
+
+// Inlined functions
+// -----------------
+inline Matrix SVDFit::U() const
+{
+  return xU0_;
+}
+
+
+inline Matrix SVDFit::V() const
+{
+  return xV0_;
+}
+
+
+inline Vector SVDFit::singularValues() const
+{
+  return xW0_;
+}
+
+
+inline double SVDFit::nullSpaceThreshold() const
+{ 
+  return limW_; 
+}
+
+
+inline bool SVDFit::isWeighted() const
+{
+  return applyWeights_;
+}
 
 #endif // SVDFIT_H
