@@ -123,6 +123,31 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h strings.h])
 
 
+#---------------------------------------------------------------------
+# FFTW3
+#---------------------------------------------------------------------
+
+AC_ARG_VAR([FFTW3_INC],    [FFTW3 include directory])dnl
+AC_CHECK_HEADER(fftw3.h,,[
+if test ${FFTW3_INC} && test -r ${FFTW3_INC}; then
+        AC_SUBST(FFTW3_INC)
+        AC_MSG_RESULT([Location specified: ${FFTW3_INC}]) 
+fi
+])
+
+AC_ARG_VAR([FFTW3_LIB],    [FFTW3 lib directory])dnl
+AC_LANG_PUSH(C)
+AC_CHECK_LIB(fftw3,fftw_execute,,[ if test ${FFTW3_LIB} && test -r ${FFTW3_LIB}; then
+        AC_SUBST(FFTW3_LIB)
+        AC_MSG_RESULT([Location specified: ${FFTW3_LIB}]) 
+fi
+])
+AC_LANG_POP(C)
+
+#---------------------------------------------------------------------
+# BOOST
+#---------------------------------------------------------------------
+
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
