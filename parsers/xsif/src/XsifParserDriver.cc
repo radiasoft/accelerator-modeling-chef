@@ -1048,7 +1048,6 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   any value;
   bmlnElmnt* elm = 0;
 
-
   double length = 0.0;  bool attribute_length = false;
   double angle  = 0.0;  bool attribute_angle  = false; 
   double k1     = 0.0;  bool attribute_k1     = false;
@@ -1059,24 +1058,25 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   double e2     = 0.0;  bool attribute_e2     = false;
   alignmentData aligner;
 
-  bool simple = true;
+  if ( eval( string("L"),      attributes, value) )  { attribute_length = true;  length = any_cast<double>(value); }
+  if ( eval( string("ANGLE"),  attributes, value) )  { attribute_angle  = true;  angle  = any_cast<double>(value); }
+  if ( eval( string("K1"),     attributes, value) )  { attribute_k1     = true;  k1     = any_cast<double>(value); } 
+  if ( eval( string("K2"),     attributes, value) )  { attribute_k2     = true;  k2     = any_cast<double>(value); }
+  if ( eval( string("K3"),     attributes, value) )  { attribute_k3     = true;  k3     = any_cast<double>(value); }
 
-  if ( eval( string("L"),      attributes, value) )  { attribute_length = true;  length = any_cast<double>(value);                         }
-  if ( eval( string("ANGLE"),  attributes, value) )  { attribute_angle  = true;  angle  = any_cast<double>(value);                         }
-  if ( eval( string("K1"),     attributes, value) )  { attribute_k1     = true;  k1     = any_cast<double>(value); simple = ( k1 == 0.0 ); } 
-  if ( eval( string("K2"),     attributes, value) )  { attribute_k2     = true;  k2     = any_cast<double>(value); simple = ( k2 == 0.0 ); }
-  if ( eval( string("K3"),     attributes, value) )  { attribute_k3     = true;  k3     = any_cast<double>(value); simple = ( k3 == 0.0 ); }
+  if ( eval( string("TILT"),   attributes, value) )  { tilt = value.empty() ?  M_PI/2.0 : any_cast<double>(value); } 
 
-  if ( eval( string("TILT"),   attributes, value) )  { tilt = value.empty() ?  M_PI/2.0 : tilt  = any_cast<double>(value); } 
-
-  if ( eval( string("E1"),     attributes, value) )    e1     = any_cast<double>(value); 
-  if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
+  if ( eval( string("E1"),     attributes, value) )  { attribute_e1     = true;  e1     = any_cast<double>(value); }
+  if ( eval( string("E2"),     attributes, value) )  { attribute_e2     = true;  e2     = any_cast<double>(value); }
 
 
   aligner.xOffset = 0.0;
   aligner.yOffset = 0.0;
   aligner.tilt    = tilt;
 
+  bool simple = (    (!attribute_k1 || (0 == k1))
+                  && (!attribute_k2 || (0 == k2))
+                  && (!attribute_k3 || (0 == k3))  );
   if( simple) {
     elm =  new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
     elm->setTag("SBEND");
@@ -1086,38 +1086,32 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
 
   elm = new CF_sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
 
- 
   if (tilt != 0.0 ) elm->setAlignment( aligner );
 
   double multipoleStrength = k1*BRHO*length;
-
   if( multipoleStrength != 0.0 ) {
-      dynamic_cast<CF_sbend*>(elm)->setQuadrupole( multipoleStrength );
+    dynamic_cast<CF_sbend*>(elm)->setQuadrupole( multipoleStrength );
   }
-
   multipoleStrength = k2*BRHO*length/2.0;
   if( multipoleStrength != 0.0 ) {
-      dynamic_cast<CF_sbend*>(elm)->setSextupole( multipoleStrength );
+    dynamic_cast<CF_sbend*>(elm)->setSextupole( multipoleStrength );
   }
-
   multipoleStrength = k3*BRHO*length/6.0;
-    if( multipoleStrength != 0.0 ) {
-      dynamic_cast<CF_sbend*>(elm)->setOctupole( multipoleStrength );
+  if( multipoleStrength != 0.0 ) {
+    dynamic_cast<CF_sbend*>(elm)->setOctupole( multipoleStrength );
   }
-  
   
   elm->setTag("SBEND");
   return ElmPtr(elm);
-
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
-
   //---------------------------------------------------------------------
   // valid attributes for type RBEND  
   // --------------------------------------------------------------------
@@ -1139,75 +1133,75 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
   any value;
   bmlnElmnt* elm = 0;
 
-  double length = 0.0;
-  double angle  = 0.0;
-  double k1     = 0.0;
-  double k2     = 0.0;
-  double k3     = 0.0;
-  double tilt   = 0.0;
-  double e1     = 0.0;
-  double e2     = 0.0;
+  double length = 0.0;  bool attribute_length = false;
+  double angle  = 0.0;  bool attribute_angle  = false; 
+  double k1     = 0.0;  bool attribute_k1     = false;
+  double k2     = 0.0;  bool attribute_k2     = false;
+  double k3     = 0.0;  bool attribute_k3     = false;
+  double tilt   = 0.0;  bool attribute_tilt   = false;
+  double e1     = 0.0;  bool attribute_e1     = false;
+  double e2     = 0.0;  bool attribute_e2     = false;
   alignmentData aligner;
 
-  bool simple = true;
+  if ( eval( string("L"),      attributes, value) )  { attribute_length = true;  length = any_cast<double>(value); }
+  if ( eval( string("ANGLE"),  attributes, value) )  { attribute_angle  = true;  angle  = any_cast<double>(value); }
+  if ( eval( string("K1"),     attributes, value) )  { attribute_k1     = true;  k1     = any_cast<double>(value); } 
+  if ( eval( string("K2"),     attributes, value) )  { attribute_k2     = true;  k2     = any_cast<double>(value); }
+  if ( eval( string("K3"),     attributes, value) )  { attribute_k3     = true;  k3     = any_cast<double>(value); }
 
-  if ( eval( string("L"),      attributes, value) )    length = any_cast<double>(value); 
-  if ( eval( string("ANGLE"),  attributes, value) )    angle  = any_cast<double>(value); 
-  if ( eval( string("K1"),     attributes, value) )  { k1     = any_cast<double>(value); simple = false; } 
-  if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
-  if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
-  if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
-                                                           { simple = false; tilt = M_PI/2.0; } 
-                                                        else 
-                                                           { tilt  = any_cast<double>(value); simple = ( tilt == 0.0); } 
-                                                     }; 
+  if ( eval( string("TILT"),   attributes, value) )  { tilt = value.empty() ?  M_PI/2.0 : any_cast<double>(value); } 
 
-  if ( eval( string("E1"),     attributes, value) )    e1     = any_cast<double>(value); 
-  if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
+  if ( eval( string("E1"),     attributes, value) )  { attribute_e1     = true;  e1     = any_cast<double>(value); }
+  if ( eval( string("E2"),     attributes, value) )  { attribute_e2     = true;  e2     = any_cast<double>(value); }
 
-  if( simple ) {
-    if( (0.0 == e1) && (0.0 == e2) ) {
-      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
-	}
-    else {
-      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
-    }
-      
-    elm->setTag("RBEND");
-    return ElmPtr(elm);
-  }
-
-  if( (0.0 == e1) && (0.0 == e2) ) {
-      elm = new CF_rbend( label.c_str(),  length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
-  } else {
-      elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
-  }
 
   aligner.xOffset = 0.0;
   aligner.yOffset = 0.0;
   aligner.tilt    = tilt;
 
+  bool simple = (    (!attribute_k1 || (0 == k1))
+                  && (!attribute_k2 || (0 == k2))
+                  && (!attribute_k3 || (0 == k3))  );
+  if( simple ) {
+    if( (!attribute_e1 || (0.0 == e1)) && (!attribute_e2 || (0.0 == e2)) ) {
+      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+    }
+    else {
+      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+    }
+    elm->setTag("RBEND");
+    if (tilt != 0.0 ) elm->setAlignment( aligner );
+    return ElmPtr( elm );
+  }
+
+
+  if( (!attribute_e1 || (0.0 == e1)) && (!attribute_e2 || (0.0 == e2)) ) {
+    elm = new CF_rbend( label.c_str(),  length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+  } 
+  else 
+  {
+    elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+  }
+
   if (tilt != 0.0 ) elm->setAlignment( aligner );
 
   double multipoleStrength = k1*BRHO*length;
-
   if( multipoleStrength != 0.0 ) {
-      dynamic_cast<CF_rbend*>(elm)->setQuadrupole( multipoleStrength );
+    dynamic_cast<CF_rbend*>(elm)->setQuadrupole( multipoleStrength );
   }
-
   multipoleStrength = k2*BRHO*length/2.0;
     if( multipoleStrength != 0.0 ) {
       dynamic_cast<CF_rbend*>(elm)->setSextupole( multipoleStrength );
   }
-
-   multipoleStrength = k3*BRHO*length/6.0;
-    if( multipoleStrength != 0.0 ) {
-      dynamic_cast<CF_rbend*>(elm)->setOctupole( multipoleStrength );
+  multipoleStrength = k3*BRHO*length/6.0;
+  if( multipoleStrength != 0.0 ) {
+    dynamic_cast<CF_rbend*>(elm)->setOctupole( multipoleStrength );
   }
 
   elm->setTag("RBEND");
   return ElmPtr(elm);     
 }
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1474,15 +1468,11 @@ return elm;
 
 ElmPtr XsifParserDriver::make_solenoid(    ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )  
 {
-
   //---------------------------------------------------------------------
   // valid attributes for type SOLENOID
   // --------------------------------------------------------------------
   // L             length                [m  ]
   // KS            solenoid strength     
-  // K1            quadrupole strength
-  // TILT          tilt angle
-  // APERTURE      aperture radius ?  
   //--------------------------------------------------------------------- 
 
   any value;
@@ -1490,22 +1480,13 @@ ElmPtr XsifParserDriver::make_solenoid(    ConstElmPtr& udelm, double const& BRH
 
   double length   = 0.0;
   double ks       = 0.0;
-  double k1       = 0.0;
-  double tilt     = 0.0;
-  double aperture = 0.0;
 
+  if ( eval( string("L"),        attributes, value) ) { length   = any_cast<double>(value); }
+  if ( eval( string("KS"),       attributes, value) ) { ks       = any_cast<double>(value); }
 
-  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
-  if ( eval( string("KS"),       attributes, value) )    ks       = any_cast<double>(value); 
-  if ( eval( string("K1"),       attributes, value) )    k1       = any_cast<double>(value); 
-  if ( eval( string("TILT"),     attributes, value) )    tilt     = any_cast<double>(value); 
-  if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
-
-  elm = new drift( (label + string("SOLENOID")).c_str(), length ); // PLACEHOLDER. FIXME !!!!
-
+  elm = new Solenoid( label.c_str(), length, BRHO*ks );
   elm->setTag("SOLENOID");
   return ElmPtr(elm);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
