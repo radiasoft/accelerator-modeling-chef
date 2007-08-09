@@ -94,8 +94,8 @@ string TJetWriter<T>::TJetWriter::_writeLatexDiracTabular(   const TJet<T>&     
   int e;
   IntArray exps(d);
 
-  const_cast<TJet<T>&>(jetRef).resetConstIterator();
-  termPtr = jetRef.stepConstIteratorPtr();
+  Jet::iterator iter( jetRef );
+  termPtr = ++iter;
   while( 0 != termPtr ) {
     uic << "\\\\ $\\langle \\,";
     exps = termPtr->exponents();
@@ -116,7 +116,7 @@ string TJetWriter<T>::TJetWriter::_writeLatexDiracTabular(   const TJet<T>&     
         << termPtr->coefficient() 
         << "$"
         << endl;
-    termPtr = jetRef.stepConstIteratorPtr();
+    termPtr = ++iter;
   }
 
   return uic.str();
