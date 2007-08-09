@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  Beamline:  C++ objects for design and analysis
+******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******                                    
@@ -135,7 +135,7 @@ beamline::beamline( const char* nm )
  mode_           = unknown;
  numElem_        = 0;
  nominalEnergy_  = NOTKNOWN;
- twissDone_      = 0;
+ twissDone_      = false;
 } 
 
 
@@ -147,7 +147,7 @@ beamline::beamline( beamline const& a )
     mode_(a.mode_),  
     nominalEnergy_(a.nominalEnergy_), 
     numElem_(a.numElem_), 
-    twissDone_(0), 
+    twissDone_(false), 
     theList_( a.theList_) 
 {}
 
@@ -170,7 +170,7 @@ beamline* beamline::Clone() const {
  bml->mode_          = mode_;  
  bml->nominalEnergy_ = nominalEnergy_; 
  bml->numElem_       = numElem_; 
- bml->twissDone_     = 0; 
+ bml->twissDone_     = false; 
 
  // Recursively clone all the beamlines and all the elements.
 
