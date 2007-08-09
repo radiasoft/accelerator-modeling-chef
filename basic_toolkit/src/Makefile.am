@@ -2,8 +2,8 @@
 lib_LTLIBRARIES		= libbasic_toolkit.la
 include source_files
 
-CPPFLAGS		     = -I$(top_srcdir)/../include -I$(BOOST_INC)  
-libbasic_toolkit_la_LDFLAGS  = -lfftw3 
+CPPFLAGS		     = -I$(top_srcdir)/../include -I$(BOOST_INC)  -I$(FFTW3_INC)  
+libbasic_toolkit_la_LDFLAGS  = -L$(FFTW3_LIB) -lfftw3 
 
 LTCXXCOMPILE_TEMPLATES = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
