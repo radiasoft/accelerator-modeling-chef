@@ -362,7 +362,7 @@ private:
 
   double                  nominalEnergy_;    // In GeV
   int                     numElem_;          // Number of elements in the beamline
-  char                    twissDone_;
+  bool                    twissDone_;
   LineMode                mode_;
   std::list<ElmPtr>       theList_; 
 
