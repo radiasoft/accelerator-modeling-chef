@@ -76,6 +76,7 @@ class octupole;
 class thinrfcavity;
 class rfcavity;
 class LinacCavity;
+class Solenoid;
 class srot;
 class vkick;
 class monitor;
@@ -126,6 +127,8 @@ public:
   virtual void visit( rfcavity&      x ); 
 
   virtual void visit( LinacCavity&   x ); 
+
+  virtual void visit( Solenoid&      x ); 
 
   virtual void visit( srot&          x ); 
 
@@ -216,6 +219,8 @@ public:
   virtual void visit( thinrfcavity  const& x ); 
 
   virtual void visit( rfcavity      const& x ); 
+
+  virtual void visit( Solenoid      const& x ); 
 
   virtual void visit( srot          const& x ); 
 
