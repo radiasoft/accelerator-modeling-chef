@@ -68,5 +68,6 @@
 #include <beamline/combinedFunction.h>
 #include <beamline/pinger.h>
 #include <beamline/Slot.h>
+#include <beamline/Solenoid.h>
 
 #endif // BEAMLINE_ELEMENTS_H
