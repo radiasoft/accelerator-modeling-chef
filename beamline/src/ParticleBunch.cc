@@ -50,8 +50,8 @@ namespace {
 
 typedef  boost::rand48    base_generator_type;
 
-base_generator_type generator1((boost::int32_t) 117u);
-base_generator_type generator2((boost::int32_t) 137u);
+base_generator_type generator1(static_cast<boost::int32_t>(117u) );
+base_generator_type generator2(static_cast<boost::int32_t>(137u) );
 
 boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
 boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
@@ -316,7 +316,7 @@ void ParticleBunch::populateBinomial ( PhaseSpaceProjection psid, double M, doub
     u     = a*cos(alpha);
     v     = a*sin(alpha);
 
-    Vector& state = it->getState(); 
+    Vector& state = it->State(); 
  
     state[0+psid]    += x_lim*u;
     state[3+psid]    += px_lim*(u*sin(chi) + v*cos(chi)); 
