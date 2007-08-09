@@ -73,7 +73,7 @@
 using namespace std;
 
 
-void BmlVisitor::visit( beamline& x )  // THIS IS BROKEN !
+void BmlVisitor::visit( beamline& x )
 {
 
   for (beamline::iterator it = x.begin();   it != x.end(); ++it ) {
@@ -96,6 +96,9 @@ void BmlVisitor::visit( rfcavity& x )
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
 void BmlVisitor::visit( LinacCavity& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( Solenoid& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
 void BmlVisitor::visit( srot& x ) 
@@ -194,7 +197,7 @@ void BmlVisitor::visit( CF_sbend& x)
 
 //---------------------------------------------------------------------------------
 
-void ConstBmlVisitor::visit( beamline const& x )  // THIS IS BROKEN !
+void ConstBmlVisitor::visit( beamline const& x )
 {
 
   for (beamline::const_iterator it = x.begin();  it != x.end(); ++it ) {
@@ -213,6 +216,9 @@ void ConstBmlVisitor::visit( thinrfcavity const& x )
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
 void ConstBmlVisitor::visit( rfcavity const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
+
+void ConstBmlVisitor::visit( Solenoid const& x ) 
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
 void ConstBmlVisitor::visit( srot const& x ) 
