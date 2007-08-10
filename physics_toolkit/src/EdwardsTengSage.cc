@@ -156,7 +156,7 @@ int EdwardsTengSage::doCalc( JetParticle& jp )
     Info etinfo;
     etinfo.arcLength = lng;
 
-    etinfo.map= jp.getState().Jacobian(); 
+    etinfo.map= jp.State().Jacobian(); 
 
     (*it)->dataHook.append( Barnacle("EdwardsTengSage", etinfo) );
     
@@ -164,7 +164,7 @@ int EdwardsTengSage::doCalc( JetParticle& jp )
 
   // .......... Calculating tunes .........................
 
-  Mapping one_turn_map( jp.getState() );
+  Mapping one_turn_map( jp.State() );
 
   MatrixD mtrx   = one_turn_map.Jacobian();
   MatrixC lambda = mtrx.eigenValues();

@@ -333,14 +333,14 @@ int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit )
    if( !Crit ) {
     ETinfo etinfo;
     etinfo.arcLength = lng;
-    etinfo.map = jp.getState();   
+    etinfo.map = jp.State();   
     etinfo.mapInv =etinfo.map.Inverse();
      (*it)->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
    else if( (*Crit)( (*it).get() ) ) {
     ETinfo etinfo;
     etinfo.arcLength = lng;
-    etinfo.map = jp.getState();   
+    etinfo.map = jp.State();   
     etinfo.mapInv = etinfo.map.Inverse();
      (*it)->dataHook.append( Barnacle( "EdwardsTeng", etinfo) );
    }
@@ -350,7 +350,7 @@ int EdwardsTeng::doCalc( JetParticle& jp, ET_CRITFUNC Crit )
 
  // .......... Calculating tunes .........................
 
- theMap_        = jp.getState();
+ theMap_        = jp.State();
  MatrixD mtrx   = EdwardsTeng::theMap_.Jacobian();
  MatrixC lambda = mtrx.eigenValues();
 
