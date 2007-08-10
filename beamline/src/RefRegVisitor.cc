@@ -48,7 +48,14 @@
 ****** - revolution frequency was computed assuming v = c. 
 ******   Added missing Beta() factor, important for low energy machines.
 ******  
-******
+****** August 10, 2007  (Friday)  michelotti@fnal.gov
+****** 
+****** Introducing particle_.Beta()in the line that computes
+****** revolution frequency (see above) was not correct. Using c
+****** here - i.e. PH_MKS_c - is not a high energy approximation.
+****** That is: cdt IS c x time, and frequency is 1/time.  This
+****** line is being returned to its previous form.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -185,7 +192,7 @@ void RefRegVisitor::visit( beamline& x )
     // elements with an accelerating phase are present.
     //---------------------------------------------------------------
 
-    revolutionFrequency_ = PH_MKS_c/ ( particle_.Beta()*cumulativeCdt );
+    revolutionFrequency_ = PH_MKS_c/cumulativeCdt;
 
 }
 
