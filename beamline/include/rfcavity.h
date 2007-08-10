@@ -7,10 +7,9 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rfcavity.h
-******  Version:   2.1
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright Universities Research Association, Inc./ Fermilab    
+******            All Rights Reserved                             
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
