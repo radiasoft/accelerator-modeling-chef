@@ -486,7 +486,7 @@ bmlnElmnt::~bmlnElmnt() {
 
 void bmlnElmnt::propagate( Particle& x ) 
 {
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
@@ -502,7 +502,7 @@ void bmlnElmnt::propagate( Particle& x )
 
 void bmlnElmnt::propagate( JetParticle& x )
 {
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
@@ -519,7 +519,7 @@ void bmlnElmnt::propagate( JetParticle& x )
 void bmlnElmnt::propagate( ParticleBunch& x )
 {
 
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
