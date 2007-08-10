@@ -416,16 +416,7 @@ void visit( combinedFunction& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector& MatrixCalcVisitor::getState()
-{
-  return  particle_.getState();
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Vector MatrixCalcVisitor::State()
+Vector const& MatrixCalcVisitor::State() const
 {
   return particle_.State();
 }

@@ -68,8 +68,7 @@ class MatrixCalcVisitor : public BmlVisitor
   void visit( CF_rbend&   );
   void visit( marker&     );
 
-  Vector& getState();
-  Vector  State();
+  Vector const& State() const;
 
   static int UNSTABLE;
   static int INTEGER_TUNE;

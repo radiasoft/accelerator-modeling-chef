@@ -37,6 +37,8 @@
 ******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
+****** June 2007          ostiguy@fnal.gov
+******  - added new method to compute dispersion using AD
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -124,7 +126,7 @@ public:
       //   initial conditions and "pushes" a dispersion
       //   calculation down the beamline.
 
-  int pushCalc2( const JetParticle&, Info const& );
+  int pushCalc( JetParticle const&, Info const& );
 
   DispersionSage::GlobalInfo getGlobalInfo() const;
 
@@ -161,10 +163,7 @@ public:
 
   double              dpp_;    // used for dispersion calculations
   std::vector<Info>   calcs_;  // array of calculated results;
-                               //   the objects stored on
-                               //   the individual beamline elements
-  GlobalInfo          lr_;
-
+  GlobalInfo          lr_;     
   bool                ignoreErrors_;
 
 

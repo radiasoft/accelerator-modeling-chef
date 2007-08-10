@@ -250,7 +250,7 @@ int beamline::twiss( char, JetParticle& p )
     
     MatrixD mtrx(BMLN_dynDim,BMLN_dynDim,0.0);
     Mapping map;
-    map = p.getState();
+    map = p.State();
     mtrx = map.Jacobian();
 
    // .......... Calculating tunes .........................
