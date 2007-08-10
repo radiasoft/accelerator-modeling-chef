@@ -27,6 +27,7 @@
 ******                                                                
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #ifndef WAKEKICK_H
@@ -51,7 +52,7 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
   public:
 
    template <typename Propagator>  
-   WakeKick( Propagator propagator);      
+   WakeKick( Propagator propagator );      
 
    template <typename Propagator>  
    WakeKick( char const* name, Propagator propagator);      
@@ -64,7 +65,9 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
   ~WakeKick();
 
-   void localPropagate( ParticleBunch& x );
+   void localPropagate( Particle&      p );
+   void localPropagate( JetParticle&   p );
+   void localPropagate( ParticleBunch& b );
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
@@ -80,6 +83,7 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
 } ;
 
+//----------------------------------------------------------------------
 
 template <typename Propagator>  
 WakeKick::WakeKick( char const* name,  Propagator propagator )      
