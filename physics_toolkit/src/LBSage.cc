@@ -161,8 +161,7 @@ int LBSage::doCalc( JetParticle const& jp)
   MatrixC E = ( jpart.State() ).Jacobian().Matrix::eigenVectors();
   BmlUtil::normalize( E );
 
-  Mapping id( "identity" );
-  jpart.setState( id );
+  jpart.State() = Mapping( "identity", jpart.State().Env() );
 
 
   double lng = 0.0;
