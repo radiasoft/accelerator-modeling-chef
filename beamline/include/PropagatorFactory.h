@@ -41,8 +41,8 @@ class bmlnElmnt;
 
 class  PropagatorFactoryImpl {
 
- typedef  boost::function<void(bmlnElmnt*,    Particle&) > particle_propagator_t;
- typedef  boost::function<void(bmlnElmnt*, JetParticle&) > jetparticle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&,    Particle&) > particle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&, JetParticle&) > jetparticle_propagator_t;
 
  public:
 
