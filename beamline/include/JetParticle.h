@@ -392,9 +392,7 @@ class jetparticle_core_access
   inline double const& JetParticle::ReferenceEnergy()    const { return E_;                                       } 
   inline double const& JetParticle::Weight()             const { return wgt_;                                     }
   inline double const& JetParticle::Charge()             const { return q_;                                       }
-
-  inline Jet       JetParticle::BRho()            const { return bRho_*( 1.0 + state_(5) );                }
-
+  inline Jet           JetParticle::BRho()               const { return bRho_*( 1.0 + state_(5) );                }
 
   inline JetProton*         JetProton::Clone()             const { return new     JetProton( *this ); }
   inline JetAntiProton* JetAntiProton::Clone()             const { return new JetAntiProton( *this ); }
