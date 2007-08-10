@@ -26,7 +26,9 @@
 ******             ostiguy@fnal.gov      
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -58,6 +60,10 @@ WakeKickPropagator::WakeKickPropagator( int nsamples, double const& interval)
 {}
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other ) 
  : nsamples_(other.nsamples_), 
    interval_(other.interval_),
@@ -68,7 +74,6 @@ WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 {
@@ -81,8 +86,11 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   //--------------------------------------------------------------------------
 
   std::vector<double> const dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
+
   std::vector<double> const dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
-  std::vector<double> const dpz_vec =  lwake_( projector.monopoleLineDensity() );   
+
+  // **** the longitudinal wake is disabled for the moment
+  // std::vector<double> const dpz_vec =  lwake_( projector.monopoleLineDensity() );   
 
   //------------------------------------------------------------------
   // For each particle in the bunch, apply appropriate wakefield kicks 
@@ -91,10 +99,10 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   double binsize  = interval_/(nsamples_-1);
   int    ibin = 0;
 
-  // 
+  // ------------------------------------------------------------------------------
   // At this point, the bunch has been longitudinally sorted by the BunchProjector. 
   // We get the min value of cdt from the first particle.
-  // 
+  // ------------------------------------------------------------------------------
 
   double  cdt_min =  projector.cdt_min(); 
   double  p0      =  bunch.begin()->ReferenceMomentum(); 
@@ -111,7 +119,9 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
       state[3]  +=  npart *( dpx_vec[ibin] * binsize ) /p0;
       state[4]  +=  npart *( dpy_vec[ibin] * binsize )/ p0; 
 
-      double npz  =  it->get_npz() + npart*(dpz_vec[ibin] * binsize)/p0;   
+      // **** the longitudinal wake is disabled for the moment
+      // double npz  =  it->get_npz() + npart*(dpz_vec[ibin] * binsize)/p0;   
+         double npz  =  it->get_npz();
 
       state[5] =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
   }   
