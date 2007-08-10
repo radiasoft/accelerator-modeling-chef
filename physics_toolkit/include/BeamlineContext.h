@@ -150,7 +150,7 @@ class BeamlineContext
     int countHowManyDeeply() const;
     alignmentData getAlignmentData( ElmPtr ) const;
 
-    Mapping getOneTurnMap();
+    Mapping const& getOneTurnMap();
     // Returns the one turn map; 
     // Side effect: calculates closed orbit if not
     // already done.
@@ -163,8 +163,9 @@ class BeamlineContext
     // Returns -1 if no reference particle is available.
     Particle const& getParticle();
 
-    Vector getParticleState();
-    void   loadParticleStateInto( Vector& );
+    Vector const& getParticleState() const;
+    void          loadParticleStateInto( Vector& );
+
     double getParticle_x   ();
     double getParticle_y   ();
     double getParticle_cdt ();
