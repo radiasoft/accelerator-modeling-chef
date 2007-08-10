@@ -41,6 +41,8 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - implemented missing operator=()
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -565,4 +567,12 @@ void BBLens::accept( ConstBmlVisitor& v ) const
 { 
   v.visit( *this ); 
 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BBLens::localPropagate(ParticleBunch& b)
+{  
+  bmlnElmnt::localPropagate(b);
 }
