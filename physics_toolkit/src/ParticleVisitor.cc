@@ -59,13 +59,13 @@ ParticleVisitor::ParticleVisitor( Particle const& x)
   yp_    = Particle::npyIndex();
   cdt_   = Particle::cdtIndex();
   dpop_  = Particle::ndpIndex();
-  state_ = particle_.getState();
+  state_ = particle_.State();
 }
 
 ParticleVisitor::ParticleVisitor(ParticleVisitor const& x) 
 : BmlVisitor(), particle_(x.particle_)  {
 
-  state_ = particle_.getState();
+  state_ = particle_.State();
    
   x_     = Particle::xIndex();
   xp_    = Particle::npxIndex();
@@ -81,18 +81,18 @@ ParticleVisitor::~ParticleVisitor() {
 void ParticleVisitor::setParticle(Particle const& x) {
 
   particle_ = x;
-  state_ = particle_.getState();
+  state_ = particle_.State();
 
 }
 
 void ParticleVisitor::setState(Vector const& x) {
-  particle_.setState(x);
-  state_ = particle_.getState();
+  particle_.State() = x;
+  state_ = particle_.State();
  
 }
 
 const Particle& ParticleVisitor::getParticle() {
-  particle_.setState(state_);
+  particle_.State() = state_;
   return particle_;
 }
 
