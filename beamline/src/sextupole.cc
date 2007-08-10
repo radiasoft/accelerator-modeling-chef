@@ -144,7 +144,7 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void sextupole::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
   }
 
