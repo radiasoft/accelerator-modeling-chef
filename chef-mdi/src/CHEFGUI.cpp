@@ -57,6 +57,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/TVector.h>
 #include <beamline/marker.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
@@ -2549,8 +2550,6 @@ void CHEFGUI::propagateTwiss()
 
   if( QDialog::Accepted == initCondDialogLF_->exec() ) 
   {
-
-    initCondDialogLF_->readInputValues();
 
     LattFuncSage::lattFunc initialConditions = initCondDialogLF_->getInitCond();
 

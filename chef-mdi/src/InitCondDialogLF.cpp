@@ -57,26 +57,27 @@ InitCondDialogLFBase(parent,name,f)
 
 void InitCondDialogLF::readInputValues()
 {
-  _lf.beta.hor       = hBetaLineEdit->text().toDouble();
-  _lf.beta.ver       = vBetaLineEdit->text().toDouble();
-  _lf.alpha.hor      = hAlphaLineEdit->text().toDouble();
-  _lf.alpha.ver      = vAlphaLineEdit->text().toDouble();
+  lf_.beta.hor       = hBetaLineEdit->text().toDouble();
+  lf_.beta.ver       = vBetaLineEdit->text().toDouble();
+  lf_.alpha.hor      = hAlphaLineEdit->text().toDouble();
+  lf_.alpha.ver      = vAlphaLineEdit->text().toDouble();
 
-  _lf.dispersion.hor = hEtaLineEdit->text().toDouble();
-  _lf.dispersion.ver = vEtaLineEdit->text().toDouble();
+  lf_.dispersion.hor = hEtaLineEdit->text().toDouble();
+  lf_.dispersion.ver = vEtaLineEdit->text().toDouble();
 
-  _lf.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
-  _lf.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
+  lf_.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
+  lf_.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
 
-  _lf.psi.hor        = hPsiLineEdit->text().toDouble();
-  _lf.psi.ver        = vPsiLineEdit->text().toDouble();
+  lf_.psi.hor        = hPsiLineEdit->text().toDouble();
+  lf_.psi.ver        = vPsiLineEdit->text().toDouble();
 }
 
 
-const LattFuncSage::lattFunc& 
-InitCondDialogLF::getInitCond() const
+LattFuncSage::lattFunc const& 
+InitCondDialogLF::getInitCond()
 {
-  return _lf;
+  readInputValues();
+  return lf_;
 }
 
 void
