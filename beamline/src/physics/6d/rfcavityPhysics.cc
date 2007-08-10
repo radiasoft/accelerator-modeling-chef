@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  Beamline:  C++ objects for design and analysis
+******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******                                    
@@ -32,36 +32,39 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******  REVISION HISTORY
-******  ------------------
-******  Revisions (a few):
-******  ------------------
-******  Date: January 4, 2000   (Tuesday)
-******  Stored in cvs repository
-******  after major reorganization of files.
-******  - lpjm
-******
-******  Date: January 13, 2006  (Friday)
-******  Upgrades: preparation for use in ILC studies.
-******  - lpjm
-******
+******  
 ******  December 2006 ostiguy@fnal.gov 
 ******  -Efficiency improvements. 
 ******  -Particle state passed by reference.
 ******
-******  Date: February 2, 2007  (Friday)
+******  January 4, 2006   (Wednesday)   michelotti@fnal.gov
+******  Stored in cvs repository
+******  after major reorganization of files.
+******  - lpjm
+******
+******  January 12, 2007  (Friday)   michelotti@fnal.gov
+******  Upgrades: preparation for use in ILC studies.
+******  - lpjm
+******
+******  February 2, 2007  (Friday)   michelotti@fnal.gov
 ******  Fixed edge focusing following recommendation of Paul Lebrun
 ******  to use actual electric field upon entry.
 ******  In addition, included change to "effective length" calculation.
 ******  !! WARNING: THESE CHANGES ARE TENTATIVE AND BEING REVIEWED !!
 ******  - lpjm
 ******
-******  Date: May 9, 2007
+******  May 9, 2007       (Wednesday)   michelotti@fnal.gov
 ******  A minor bug fix; produces minimal effect.  Another major overhaul
 ******  will be coming soon anyway.
 ******  - lpjm
 ******
+******  May 14, 2007      (Monday)   michelotti@fnal.gov
+******  This version is an intermediate, combining both old and new.
+******  In essence, it is a reversion to the strategy of the 
+******  November, 2005 version with a few details changed.
+******  The internal structure of rfcavity is (temporarily?) being ignored.
+******  - lpjm
 ******  
-******
 **************************************************************************
 *************************************************************************/
 
@@ -77,8 +80,6 @@
 #include <beamline/JetParticle.h>
 #include <beamline/rfcavity.h>
 #include <beamline/OpticalStateAdaptor.h>
-
-#include <basic_toolkit/TMatrix.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -133,6 +134,7 @@ void rfcavity::localPropagate( Particle& p )
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
+  state[2] = ct_in;
 
   // Cavity increases energy and momentum of the particle
   double E  = p.Energy() + onaxisEnergyGain/2.0;
@@ -151,6 +153,20 @@ void rfcavity::localPropagate( Particle& p )
   // PUT TRANSVERSE WAKE FIELD KICK HERE...
   //--------------------------------------
 
+
+  // Cavity increases energy and momentum of the particle
+  E = p.Energy() + onaxisEnergyGain/2.0;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+
+
   // Free space propagation through "effective half length"
   // of the cavity.
 
@@ -168,19 +184,6 @@ void rfcavity::localPropagate( Particle& p )
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
   state[2] = ct_in;
-
-
-  // Cavity increases energy and momentum of the particle
-  E = p.Energy() + onaxisEnergyGain/2.0;
-
-  oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
-  newRefP = p.ReferenceMomentum();
-
-  state[3] *= ( oldRefP / newRefP );
-  state[4] *= ( oldRefP / newRefP );
-
-  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
 
 
   // Thin lens kick upon exit
@@ -267,6 +270,19 @@ void rfcavity::localPropagate( JetParticle& p )
   //--------------------------------------
 
 
+  // Cavity increases energy and momentum of the particle
+  E = p.Energy() + onaxisEnergyGain/2.0;
+
+  oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
+  newRefP = p.ReferenceMomentum();
+
+  state[3] *= ( oldRefP / newRefP );
+  state[4] *= ( oldRefP / newRefP );
+
+  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
+
+
   // Free space propagation through "effective half length"
   // of the cavity.
   x_in  = state[0];
@@ -283,19 +299,6 @@ void rfcavity::localPropagate( JetParticle& p )
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
   state[2] = ct_in;
-
-
-  // Cavity increases energy and momentum of the particle
-  E = p.Energy() + onaxisEnergyGain/2.0;
-
-  oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain/2.0 );
-  newRefP = p.ReferenceMomentum();
-
-  state[3] *= ( oldRefP / newRefP );
-  state[4] *= ( oldRefP / newRefP );
-
-  state[5] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
 
 
   // Thin lens kick upon exit
