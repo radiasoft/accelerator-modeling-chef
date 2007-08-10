@@ -204,9 +204,8 @@ public:
   void set_npy ( double u );
   void set_ndp ( double u );
 
-  Vector&        State();
-  Vector  const& State()         const;
-
+  Vector&       State();
+  Vector const& State()                    const;
 
   double        Energy()                   const;
   double        Momentum()                 const;
@@ -389,10 +388,11 @@ class particle_core_access
   inline void  Particle::set_npy ( double u )  { state_[4] = u; }
   inline void  Particle::set_ndp ( double u )  { state_[5] = u; }
 
+  inline Vector&       Particle::State()       { return state_; } 
+  inline Vector const& Particle::State() const { return state_; } 
 
-  inline double  Particle::Energy()                   const   { double p = Momentum(); 
-                                                                return sqrt( p*p + m_*m_ );       }
-
+  inline double         Particle::Energy()                   const   { double p = Momentum(); 
+                                                                       return sqrt( p*p + m_*m_ );       }
   inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );  }
   inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );       }
   inline double  const& Particle::Mass()                     const   { return m_;                        }
