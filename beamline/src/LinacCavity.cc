@@ -29,11 +29,18 @@
 *************************************************************************/
 
 #include <iomanip>
+#include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
+#include <beamline/LinacCavityParts.h>
+#include <beamline/WakeKick.h>
+#include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
 
 using namespace std;
+
+
+WakeKickPropagator wake_propagator(256, 10.0e-6);
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -47,18 +54,27 @@ LinacCavity::LinacCavity( const char* name,         // name
                           double const& phi_s)      // synchronous phase 
  : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
 
-{}
+{
+
+  p_bml_ = BmlPtr(new beamline("LinacCavityInner") );
+  
+  p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV, phi_s)   )  );
+  p_bml_->append( WakeKickPtr       ( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )  );
+  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV, phi_s)   )  );
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
  : bmlnElmnt( x.ident_.c_str(), x.length_, x.strength_), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
-{}
+{
+  p_bml_ = BmlPtr( x.p_bml_->Clone() );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 LinacCavity::~LinacCavity()
 {}
@@ -78,7 +94,6 @@ ostream& LinacCavity::writeTo(ostream& os)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 istream& LinacCavity::readFrom(istream& is) 
 {
   double w, phi_s;
@@ -88,7 +103,6 @@ istream& LinacCavity::readFrom(istream& is)
   return is;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -96,7 +110,6 @@ const char* LinacCavity::Type() const
 {
   return "LinacCavity"; 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,7 +124,7 @@ bool    LinacCavity::isMagnet() const
 
 void LinacCavity::accept( BmlVisitor& v ) 
 { 
-  v.visit( *this ); 
+  v.visit( *p_bml_ ); // visit the inner beamline 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -119,9 +132,26 @@ void LinacCavity::accept( BmlVisitor& v )
 
 void LinacCavity::accept( ConstBmlVisitor& v ) const 
 { 
-  v.visit( *this ); 
+  v.visit( *p_bml_ ); // visit the inner beamline 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double LinacCavity::getReferenceTime() const 
+{
+
+  ctRef_ = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+        
+   ctRef_  += (*it)->getReferenceTime();
+  }
+
+  return ctRef_;
+
+}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -143,7 +173,6 @@ double LinacCavity::getDesignEnergyGain()   const
 
 void   LinacCavity::setFrequency( double const& freq)
 {
-
   w_rf_ = 2.0*M_PI*freq;
 }
 
@@ -160,7 +189,6 @@ double   LinacCavity::getFrequency() const
 
 double const& LinacCavity::getRadialFrequency() const
 {
-
   return w_rf_;
 }
 
@@ -170,7 +198,6 @@ double const& LinacCavity::getRadialFrequency() const
 
  void  LinacCavity::setPhi( double const& radians)
 {
-
   phi_s_ = radians;
 }
 
@@ -179,7 +206,6 @@ double const& LinacCavity::getRadialFrequency() const
 
 void  LinacCavity::setStrength( double const& eV)
 {
-
   strength_ = eV*1.0e-9; 
 }
 
