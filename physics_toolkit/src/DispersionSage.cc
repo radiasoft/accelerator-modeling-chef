@@ -48,6 +48,10 @@
 ******
 ******  - eliminated references to slist/dlist
 ******
+******   June 2007 ostiguy@fnal.gov
+******   
+******  - added new method to compute dispersion using AD
+******
 **************************************************************************
 *************************************************************************/
 
@@ -85,31 +89,26 @@ DispersionSage::Info::Info() {
   dPrime.ver      = 0.0;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-DispersionSage::GlobalInfo::GlobalInfo() {
+DispersionSage::GlobalInfo::GlobalInfo() 
+{
   tune.hor         = 0.0;
   tune.ver         = 0.0;
   chromaticity.hor = 0.0;
   chromaticity.ver = 0.0;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 DispersionSage::Options::Options()
 : onClosedOrbit(false)
 {}
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
@@ -418,15 +417,18 @@ int DispersionSage::doCalc( JetParticle& jp )
 int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions )
 {
 
+  //------------------------------------------------------------------------------
+  // This method computes the dispersion by subtracting two particle trajectories 
+  // The momentum offset is dpp_ 
+  //------------------------------------------------------------------------------
 
   if( verbose_ ) {
     *outputStreamPtr_ << "DispersionSage -- Entering DispersionSage::pushCalc" << std::endl;
     outputStreamPtr_->flush();
   }
 
-  
-
   int ret = 0;
+
   Vector d( prt.State().Dim() );
 
   const int i_x   =  Particle::xIndex();
@@ -472,9 +474,6 @@ int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions
 
   }
 
-  // Clean up before leaving .............................................
-
-
   if( verbose_ ) {
     *outputStreamPtr_ << "DispersionSage -- Leaving DispersionSage::pushCalc" << std::endl;
     outputStreamPtr_->flush();
@@ -486,8 +485,12 @@ int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditions )
+int DispersionSage::pushCalc( JetParticle const& p, Info const& initialConditions )
 {
+
+  //--------------------------------------------------------------------
+  // This method computes the dispersion using automatic differentiation  
+  //--------------------------------------------------------------------
 
   int ret = 0;
 
@@ -503,7 +506,7 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
   Particle    particle(p);
   JetParticle jparticle(p);
 
-  Mapping& state = jparticle.getState();
+  Mapping& state = jparticle.State();
 
   IntArray exp_d(6);
   exp_d[5]  = 1;
@@ -523,25 +526,23 @@ int DispersionSage::pushCalc2( JetParticle const& p, Info const& initialConditio
   for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin();  it != myBeamlinePtr_->deep_end(); ++it ) {
 
       (*it)->propagate(jparticle);
+     
       lng += (*it)->OrbitLength( particle );
 
       double scale  =  jparticle.ReferenceMomentum()/start_momentum;
  
-      info.dispersion.hor = jparticle.getState()[i_x ].getTermCoefficient(exp_d ) * scale;
-      info.dPrime.hor     = jparticle.getState()[i_px].getTermCoefficient(exp_d ) * scale; 
-      info.dispersion.ver = jparticle.getState()[i_y ].getTermCoefficient(exp_d ) * scale;
-      info.dPrime.ver     = jparticle.getState()[i_py].getTermCoefficient(exp_d ) * scale; 
+      info.dispersion.hor = jparticle.State()[i_x ].getTermCoefficient(exp_d ) * scale;
+      info.dPrime.hor     = jparticle.State()[i_px].getTermCoefficient(exp_d ) * scale; 
+      info.dispersion.ver = jparticle.State()[i_y ].getTermCoefficient(exp_d ) * scale;
+      info.dPrime.ver     = jparticle.State()[i_py].getTermCoefficient(exp_d ) * scale; 
       info.arcLength      = lng;
 
       calcs_.push_back(info);
 
   }
 
-  // Clean up before leaving .............................................
-
   return ret;
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -551,18 +552,13 @@ DispersionSage::Info const& DispersionSage::getInfo() const
   return calcs_.back();
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 std::vector<DispersionSage::Info> const& DispersionSage::getDispersionArray() const
 {
-
  return calcs_; 
-
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -572,7 +568,8 @@ void DispersionSage::eraseAll()
 
   myBeamlinePtr_->dataHook.eraseAll( "Dispersion" );
 
-  for ( beamline::deep_iterator it = myBeamlinePtr_->deep_begin();  it != myBeamlinePtr_->deep_end(); ++it ) {
+  for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();  
+                                it != myBeamlinePtr_->deep_end(); ++it ) {
 
     (*it)->dataHook.eraseAll( "Dispersion" );
   }
@@ -580,5 +577,8 @@ void DispersionSage::eraseAll()
   calcs_.clear();
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
