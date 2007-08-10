@@ -45,9 +45,6 @@ public:
 
   WakeKickPropagator( WakeKickPropagator const& other);
 
-  void operator()( Particle&      particle    ) {} 
-  void operator()( JetParticle&   jetparticle ) {} 
-
   void operator()( ParticleBunch& bunch       );
 
   void debug(ParticleBunch&);
