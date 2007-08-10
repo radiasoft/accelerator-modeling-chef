@@ -85,6 +85,11 @@ public:
   BBLens& operator=( BBLens const&);
 
 
+  void localPropagate( ParticleBunch& x );
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+
   char useRound;         // By default = 1
                          // If 1: then round beam approximation
                          // used when horizontal and vertical 
@@ -112,10 +117,6 @@ public:
                 be multiplied by Q/(2 pi epsilon_o), where
                 Q is the line density of charge [C/m] (in
                 rest frame). */
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
 
   void accept( BmlVisitor& v );            
   void accept( ConstBmlVisitor& v ) const; 
