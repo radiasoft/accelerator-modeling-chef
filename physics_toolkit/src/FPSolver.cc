@@ -133,7 +133,7 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 
   Vector zs( dimension_ );
   Vector z(4);
-  for( int i = 0; i < 4; i++ ) z(i) = p.State( l_[i] );
+  for( int i = 0; i < 4; i++ ) z(i) = p.State()[ l_[i] ];
 
   JetParticle jpr(p);
   bmLine_->propagate( jpr);
@@ -156,24 +156,24 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 
     // --- Has the state gone out of bounds? ---------
     for( int i = 0; i < Particle::PSD; i++ ) {
-      if( isnan(p.State(i)) ) { 
+      if( isnan(p.State()[i]) ) { 
         (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
         (*pcerr) << "FPSolver: *** ERROR *** p.State(" << i << ") is NaN." << endl;
         return -1; 
       }
     }
       
-    for( int i = 0; i < 4; i++ ) eps(i) = z(i) - p.State( l_[i] );
+    for( int i = 0; i < 4; i++ ) eps(i) = z(i) - p.State()[ l_[i] ];
 
     // --- Set up the tests --------------------------
     jumpTest = zeroTest = false;
     for( int i = 0; i < 4; i++ ) {
-      if((  std::max(std::abs( z(i) ),std::abs( p.State( l_[i] ) )) > zeroScale_[i]  )) {
+      if((  std::max(std::abs( z(i) ),std::abs( p.State()[l_[i] ] )) > zeroScale_[i]  )) {
         zeroTest = true;
         jumpTest = jumpTest || 
           ( 
             ( std::abs( eps(i) ) >
-            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State( l_[i] ) )) )  
+            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[l_[i]] )) )  
           );
       }
     }    
@@ -185,7 +185,7 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 
     zs = p.State();
     for( int i = 0; i < 4; i++ ) zs( l_[i] ) = z(i);
-    p.setState( zs );
+    p.State() = zs;
 
   } while ( ++iterCount < 200 );
   
@@ -219,7 +219,7 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
        }
     }
 
-    p.setState( zs );
+    p.State() = zs;
   }
 
   // --- Exit --------------------------------------------------------
@@ -235,7 +235,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
 {
    int ret = 0;
 
-   jpr.setState( Mapping("Identity", jpr.State().Env() ) );  // Resets to identity.
+   jpr.State() = Mapping("Identity", jpr.State().Env() );  // Resets to identity.
 
    Particle p(jpr);
 
@@ -263,7 +263,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
   
     Vector zs( dimension_ );
     Vector z(4);
-    for( i = 0; i < 4; i++ ) z(i) = p.State( l_[i] );
+    for( int i=0; i< 4; i++ ) z(i) = p.State()[ l_[i] ];
   
     bmLine_->propagate( jpr );
   
@@ -285,23 +285,23 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
 
       // --- Has the state gone out of bounds? ---------
       for( i = 0; i < Particle::PSD; i++ ) {
-        if( isnan(p.State(i)) ) { 
+        if( isnan(p.State()[i]) ) { 
           (*pcerr) << "FPSolver (lineno: " << __LINE__ << " )  : *** ERROR *** p.State(" << i << ") is NaN." << endl;
           return -1; 
         }
       }
       
-      for( i = 0; i < 4; i++ ) eps(i) = z(i) - p.State( l_[i] );
+      for( i = 0; i < 4; i++ ) eps(i) = z(i) - p.State()[ l_[i] ];
   
       // --- Set up the tests --------------------------
       jumpTest = zeroTest = 0;
       for( i = 0; i < 4; i++ ) {
-        if((  std::max(std::abs( z(i) ),std::abs( p.State( l_[i] ) )) > zeroScale_[i]  )) {
+        if((  std::max(std::abs( z(i) ),std::abs( p.State()[ l_[i] ] )) > zeroScale_[i]  )) {
           zeroTest = 1;
           jumpTest = jumpTest || 
             ( 
               ( std::abs( eps(i) ) >
-              jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State( l_[i] ) )) )  
+              jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[ l_[i] ] )) )  
             );
         }
       }    
@@ -313,7 +313,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
   
       zs = p.State();
       for( i = 0; i < 4; i++ ) zs( l_[i] ) = z(i);
-      p.setState( zs );
+      p.State() = zs;
   
       iterCount++;
     } while ( iterCount < 200 );
@@ -345,7 +345,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
          }
       }
     
-      p.setState( zs );
+      p.State() = zs;
     }
   
 
@@ -359,7 +359,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
     for( int i = 0; i < dimension_; i++ ) {
       oneTurn(i) += ( zs(i) - oneTurn(i).standardPart() );
     }
-    jpr.setState( oneTurn );
+    jpr.State() =  oneTurn;
 
   } // End block: if( ret == 0 )
 
@@ -408,7 +408,7 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
 
     // --- Has the state gone out of bounds? ---------
     for( int i = 0; i < Particle::PSD; i++ ) {
-      if( isnan(p.State(i)) ) { 
+      if( isnan(p.State()[i]) ) { 
         (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
         (*pcerr) << "FPSolver: *** ERROR *** p.State(" << i << ") is NaN." << endl;
         return -1; 
@@ -420,12 +420,12 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
     // --- Set up the tests --------------------------
     jumpTest = zeroTest = 0;
     FORALL(i) {
-      if((  std::max(std::abs( z(i) ),std::abs( p.State(i) )) > zeroScale_[i]  )) {
+      if((  std::max(std::abs( z(i) ),std::abs( p.State()[i] )) > zeroScale_[i]  )) {
         zeroTest = 1;
         jumpTest = jumpTest || 
           ( 
             ( std::abs( eps(i) ) >
-            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State(i) )) )  
+            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[i] )) )  
           );
       }
     }    
@@ -434,7 +434,7 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
 
     // --- Correct orbit and repeat ------------------
     z = z + M*eps;
-    p.setState( z );
+    p.State() = z;
 
     iterCount++;
   } while ( iterCount < 200 );
@@ -466,7 +466,7 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
          (*it)->dataHook.append( Barnacle("FPS_orbit", FPinfo( startLength, p.State() ) ) );
     }
 
-    p.setState( z );
+    p.State() = z;
   }
 
   // --- Exit --------------------------------------------------------
@@ -501,7 +501,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 
   Mapping w(dimension_);
 
-  Vector particleCoord = p.getState().standardPart();
+  Vector particleCoord = p.State().standardPart();
 
   FORALL(i) eps[i] = 0.0;
 
@@ -514,7 +514,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
       w.SetComponent( i, y );
     }
 
-    p.setState(w);
+    p.State() = w;
  
     bmLine_->propagate( p );
    
