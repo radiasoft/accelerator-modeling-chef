@@ -1,4 +1,4 @@
-#######################################################################
+########################################################################
 #                                                                      #
 # FILE:     chef.pro                                                   #
 #                                                                      #
@@ -109,8 +109,8 @@ LIBS    += -lqassistantclient
 LIBS    += -lqutexr
 LIBS    += -l$${QWT_LIBNAME}
 LIBS    += -lglut
-LIBS    += -L$${BOOST_LIBDIR} -lboost_regex 
-LIBS    += -L$${GLIB_DIR} -lglib-2.0  
+LIBS    += -L$${BOOST_LIBDIR} -lboost_regex-gcc-mt
+LIBS    += -L$${GLIB_DIR} -lglib-2.0
 
 unix:LIBS  += -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} -Wl,-rpath,/usr/local/lib
 
