@@ -7,7 +7,6 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      Tracker.h
-******  Version:   4.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -95,6 +94,8 @@ class Orbit
     GLdouble Blue() const;
 
     void setColor( GLdouble, GLdouble, GLdouble );
+
+    enum RepStyle { points=0, lines } mode;
 
     typedef std::list<Vector*>::iterator             iterator;  
     typedef std::list<Vector*>::const_iterator const_iterator;  
