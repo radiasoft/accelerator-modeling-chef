@@ -67,7 +67,7 @@
 #include <qfiledialog.h>
 #include <qgrid.h>
 
-#include <qwt_math.h>
+#include <qwt/qwt_math.h>
 #include <GL/glut.h>
 
 #include "MathConstants.h"
@@ -654,25 +654,33 @@ void DrawSpace3D::paintGL()
   glPointSize(3);
   const Orbit* orbitPtr;
 
-  glBegin( GL_POINTS );
-
   for (std::list<Orbit*>::iterator orbit_it  =  _topTrbWidget->_myOrbits.begin();
        orbit_it !=  _topTrbWidget->_myOrbits.end(); ++orbit_it ) 
   {
-
     orbitPtr = *orbit_it;
-
-    glColor3f( orbitPtr->Red(), orbitPtr->Green(), orbitPtr->Blue() );
-
-    for( Orbit::const_iterator it  = orbitPtr->begin();
-	                       it != orbitPtr->end(); ++it ) {
-
-      glVertex3f( ((**it)(0) - _x_center)/_x_scale,
-                  ((**it)(1) - _y_center)/_y_scale,
-                  ((**it)(2) - _z_center)/_z_scale  );
+    if( Orbit::points == orbitPtr->mode ) {
+      glBegin( GL_POINTS );
+      glColor3f( orbitPtr->Red(), orbitPtr->Green(), orbitPtr->Blue() );
+      for( Orbit::const_iterator it  = orbitPtr->begin();
+                                 it != orbitPtr->end(); ++it ) {
+        glVertex3f( ((**it)(0) - _x_center)/_x_scale,
+                    ((**it)(1) - _y_center)/_y_scale,
+                    ((**it)(2) - _z_center)/_z_scale  );
+      }
+      glEnd();
+    }
+    else {
+      glBegin( GL_LINE_STRIP );
+      glColor3f( orbitPtr->Red(), orbitPtr->Green(), orbitPtr->Blue() );
+      for( Orbit::const_iterator it  = orbitPtr->begin();
+                                 it != orbitPtr->end(); ++it ) {
+        glVertex3f( ((**it)(0) - _x_center)/_x_scale,
+                    ((**it)(1) - _y_center)/_y_scale,
+                    ((**it)(2) - _z_center)/_z_scale  );
+      }
+      glEnd();
     }
   }
-  glEnd();
 
   glFlush ();
 }
