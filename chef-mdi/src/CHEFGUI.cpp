@@ -2550,8 +2550,6 @@ void CHEFGUI::propagateTwiss()
   if( QDialog::Accepted == initCondDialogLF_->exec() ) 
   {
 
-    initCondDialogLF_->readInputValues();
-
     LattFuncSage::lattFunc initialConditions = initCondDialogLF_->getInitCond();
 
     QWidget* plot = command_propagateTwiss_( centralWidget(), p_currBmlCon_ , initialConditions); 
