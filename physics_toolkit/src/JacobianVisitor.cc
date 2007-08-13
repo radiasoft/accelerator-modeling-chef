@@ -54,8 +54,8 @@
 
 const MatrixD identityMatrix("I",6);
 
-char* LOCAL_JACOBIAN_STRING = "Local_Jacobian";
-char* CUMULATIVE_JACOBIAN_STRING = "Cumulative_Jacobian";
+char const* LOCAL_JACOBIAN_STRING      = "Local_Jacobian";
+char const* CUMULATIVE_JACOBIAN_STRING = "Cumulative_Jacobian";
 
 using namespace std;
 
@@ -120,11 +120,12 @@ MatrixD JacobianData::RMatrix() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JacobianVisitor::JacobianVisitor(beamline* mach, JetParticle const& p)
-: JetParticleVisitor(p) {
+: JetParticleVisitor(p) 
+{
 
-  theLine      = mach;
-  Mapping temp = particle_.getState();
-  state_       = particle_.getState();
+  theLine_      = mach;
+  Mapping temp = particle_.State();
+  state_       = particle_.State();
 
 }
 
@@ -142,19 +143,19 @@ JacobianVisitor::~JacobianVisitor() {
 void JacobianVisitor::visit(beamline& x) {
 
   BmlVisitor::visit(x);
-  if(jacobianType == JACOBIAN_CUMULATIVE) {
+  if(jacobianType_ == JACOBIAN_CUMULATIVE) {
 
-    x.dataHook.append( Barnacle(whichJacobian, JacobianData(cumulativeMatrix) ));
+    x.dataHook.append( Barnacle(whichJacobian_, JacobianData(cumulativeMatrix_) ));
 
   } else {
 
-    BarnacleList::iterator it = x.dataHook.find( whichJacobian );
+    BarnacleList::iterator it = x.dataHook.find( whichJacobian_ );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
     x.dataHook.erase(it); 
 
-    jacInfo.jac = jacInfo.jac * cumulativeMatrix.inverse();
+    jacInfo.jac = jacInfo.jac * cumulativeMatrix_.inverse();
 
-    x.dataHook.append(  Barnacle(whichJacobian, jacInfo) );
+    x.dataHook.append(  Barnacle(whichJacobian_, jacInfo) );
 
   }
 }
@@ -164,26 +165,26 @@ void JacobianVisitor::visit(beamline& x) {
 
 void JacobianVisitor::visit(bmlnElmnt& be) {
 
-  if(jacobianType == JACOBIAN_CUMULATIVE) {
+  if(jacobianType_ == JACOBIAN_CUMULATIVE) {
 
     be.propagate(particle_);
 
-    Mapping map = particle_.getState();
-    cumulativeMatrix = map.Jacobian();
-    JacobianData matBarn(cumulativeMatrix);
-    be.dataHook.append( Barnacle(whichJacobian,  JacobianData(cumulativeMatrix) ) );
+    Mapping map = particle_.State();
+    cumulativeMatrix_ = map.Jacobian();
+    JacobianData matBarn(cumulativeMatrix_);
+    be.dataHook.append( Barnacle(whichJacobian_,  JacobianData(cumulativeMatrix_) ) );
 
   } else {
 
 
-    BarnacleList::iterator it = be.dataHook.find( whichJacobian );
+    BarnacleList::iterator it = be.dataHook.find( whichJacobian_ );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
     be.dataHook.erase( it);
     
     MatrixD tmpMat = jacInfo.jac;
-    jacInfo.jac = tmpMat * cumulativeMatrix.inverse();
-    be.dataHook.append( Barnacle(whichJacobian, jacInfo) );
-    cumulativeMatrix = tmpMat;
+    jacInfo.jac = tmpMat * cumulativeMatrix_.inverse();
+    be.dataHook.append( Barnacle(whichJacobian_, jacInfo) );
+    cumulativeMatrix_ = tmpMat;
   }
     
 }
@@ -193,40 +194,40 @@ void JacobianVisitor::visit(bmlnElmnt& be) {
 
 void JacobianVisitor::clearBarnacles() {
 
-  for (beamline::iterator it = theLine->begin();  it != theLine->end(); ++it) {
+  for (beamline::iterator it = theLine_->begin();  it != theLine_->end(); ++it) {
     (*it)->dataHook.eraseAll("Jacobian");
   }
-  cumulativeMatrix = identityMatrix;
+  cumulativeMatrix_ = identityMatrix;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
-  jacobianType = jacType;
-  JACOBIAN_TYPE tmpType = jacobianType;
+  jacobianType_ = jacType;
+  JACOBIAN_TYPE tmpType = jacobianType_;
 				// If the local Jacobian is desired then
 				// we must go through the beamline twice.
 				// The first time the cumulative Jacobian
 				// is calculated then the second time it
 				// is changed to the local Jacobian.
-  if(jacobianType == JACOBIAN_LOCAL) {
-    jacobianType = JACOBIAN_CUMULATIVE;
-    whichJacobian = LOCAL_JACOBIAN_STRING;
+  if(jacobianType_ == JACOBIAN_LOCAL) {
+    jacobianType_  = JACOBIAN_CUMULATIVE;
+    whichJacobian_ = LOCAL_JACOBIAN_STRING;
   } else
-    whichJacobian = CUMULATIVE_JACOBIAN_STRING;
+    whichJacobian_ = CUMULATIVE_JACOBIAN_STRING;
 
-  cumulativeMatrix = identityMatrix;
-  theLine->accept(*this);
+  cumulativeMatrix_ = identityMatrix;
+  theLine_->accept(*this);
 				// Now go around and calculate the local
 				// Jacobian.
   if(tmpType == JACOBIAN_LOCAL)
-    jacobianType = JACOBIAN_LOCAL;
+    jacobianType_ = JACOBIAN_LOCAL;
 				// Reset the particle.
   Mapping tmpMap(state_);
-  particle_.setState(tmpMap);
-  cumulativeMatrix = identityMatrix;
-  theLine->accept(*this);
+  particle_.State() = tmpMap;
+  cumulativeMatrix_    = identityMatrix;
+  theLine_->accept(*this);
 				// We have to do something special for the
 				// highest level beamline otherwise one gets
 				// the identity matrix.
@@ -234,11 +235,11 @@ void JacobianVisitor::createJacobian(const JACOBIAN_TYPE& jacType) {
   if(tmpType == JACOBIAN_LOCAL){
 
 
-    BarnacleList::iterator it = theLine->dataHook.find( whichJacobian );
+    BarnacleList::iterator it = theLine_->dataHook.find( whichJacobian_ );
     JacobianData jacInfo = boost::any_cast<JacobianData>(it->info);
-    theLine->dataHook.erase( it);
-    jacInfo.jac = cumulativeMatrix;
-    theLine->dataHook.append( Barnacle( whichJacobian,jacInfo ) );
+    theLine_->dataHook.erase( it);
+    jacInfo.jac = cumulativeMatrix_;
+    theLine_->dataHook.append( Barnacle( whichJacobian_,jacInfo ) );
   }
 }
 

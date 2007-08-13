@@ -58,14 +58,18 @@ JetParticleVisitor::JetParticleVisitor(JetParticle const& x)
   cdt_   = Particle::cdtIndex();
   dpop_  = Particle::ndpIndex();
 
-  Mapping temp = particle_.getState();
-  state_ = particle_.getState();
+  Mapping temp = particle_.State();
+  state_ = particle_.State();
 }
 
-JetParticleVisitor::JetParticleVisitor(JetParticleVisitor const& x)
-  : BmlVisitor(), particle_(x.particle_) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  state_ = particle_.getState(); 
+JetParticleVisitor::JetParticleVisitor(JetParticleVisitor const& x)
+  : BmlVisitor(), particle_(x.particle_) 
+{
+
+  state_ = particle_.State(); 
 
   x_     = Particle::xIndex();
   xp_    = Particle::npxIndex();
@@ -77,21 +81,38 @@ JetParticleVisitor::JetParticleVisitor(JetParticleVisitor const& x)
 }
 
 
-JetParticleVisitor::~JetParticleVisitor() {
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetParticleVisitor::~JetParticleVisitor() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void JetParticleVisitor::setParticle(JetParticle const& x) {
 
   particle_ = x;
-  state_ = particle_.getState();
+  state_    = particle_.State();
 
 }
-void JetParticleVisitor::setState(Mapping const& x) {
-  state_ = particle_.getState();	
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetParticle const& JetParticleVisitor::getParticle() {
+  particle_.State() = state_;
+  return particle_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void JetParticleVisitor::setState(Mapping const& x) 
+{
+  particle_.State() = x;
+  state_ = particle_.State();	
  
 }
 
-const JetParticle& JetParticleVisitor::getParticle() {
-  particle_.setState(state_);
-  return particle_;
-}
+

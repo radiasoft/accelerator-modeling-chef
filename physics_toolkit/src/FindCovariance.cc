@@ -131,7 +131,7 @@ MatrixD FindCovariance( beamline             const&   line,
 
       if( (*it) != (*sit ) )  continue;
       
-      map = jp.getState();
+      map = jp.State();
       M = map.Jacobian();
 
       BarnacleList::iterator bit = (*it)->dataHook.find("WIREData");
@@ -218,7 +218,7 @@ void TestCovariance( beamline const&     line,
 
       (*it)->propagate( jp );
 
-       map = jp.getState();
+       map = jp.State();
        M = map.Jacobian();
        Cov = M*C*M.transpose();
       
