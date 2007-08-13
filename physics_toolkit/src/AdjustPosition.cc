@@ -46,30 +46,33 @@
 
 using namespace std;
 
-int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
+int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
 {
   int ret   = 0;
 
   // --- Must initialize these variables before the goto -----
   // --- (especially for g++ compiler ) ----------------------
-  JetParticle* myJPPtr = arg_jp.Clone();
-  Particle* p_myP = new Particle( arg_jp );
-  // These are deleted before returning.
 
-  double x_i  = p_myP->get_x();
-  double xp_i = p_myP->get_npx();
-  Vector inState(6);
+  JetParticle jetparticle(arg_jp);
+  Particle    particle(arg_jp);
+
+  double x_i  = particle.get_x();
+  double xp_i = particle.get_npx();
+
+  Vector inState(particle.State().Dim());
 
   int i = 0;
 
   alignmentData v( p_be->Alignment() );
   // ---------------------------------------------------------
 
-
   // --- Set up indices -----------------------------
   // /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
+
   static int x, y, cdt, xp, yp, dpop;
+
   bool firstTime = true;
+
   if( firstTime ) {
     firstTime = false;
     x    = arg_jp.xIndex();
@@ -106,10 +109,11 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
   double f, m, z;
 
   // Initialize the derivative...
-  myJPPtr->setState( inState );
-  p_be->propagate( *myJPPtr );
 
-  m = ( myJPPtr->State().Jacobian() )( xp, x );
+  jetparticle.setState( inState );
+  p_be->propagate( jetparticle );
+
+  m =  jetparticle.State().Jacobian()( xp, x );
   if( fabs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
            "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
@@ -118,11 +122,11 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
   m = 1.0 / m;
 
   // Initialize the difference ...
-  z = x_i;
+  z          = x_i;
   inState[x] = z;
-  p_myP->setState( inState );
-  p_be->propagate( *p_myP );
-  f = ( p_myP->State() )( xp ) + xp_i;
+  particle.State()= inState;
+  p_be->propagate( particle );
+  f =  (particle.State())[xp] + xp_i;
 
   while( ( i < 5 ) || ( ( i < 15 ) && (fabs(f) > 1.0e-9) ) ) 
   {
@@ -133,9 +137,10 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
     inState[x]  = z;
 
     // Recalculate inverse derivative ...
-    myJPPtr->setState( inState );
-    p_be->propagate( *myJPPtr );
-    m = ( myJPPtr->State().Jacobian() )( xp, x );
+    jetparticle.setState(inState);
+
+    p_be->propagate( jetparticle );
+    m = ( jetparticle.State().Jacobian() )( xp, x );
     if( fabs(m) < 1.0e-12 ) {
       ostringstream uic;
       uic  << "Horrible, inexplicable error at step "
@@ -147,9 +152,9 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
     m = 1.0 / m;
 
     // Recalculate difference ...
-    p_myP->setState( inState );
-    p_be->propagate( *p_myP );
-    f = ( p_myP->State() )( xp ) + xp_i;
+    particle.State()= inState;
+    p_be->propagate( particle );
+    f = ( particle.State() )[xp] + xp_i;
   }
 
 
@@ -168,14 +173,14 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
     inState[x] = 0.0;
     double delta = 1.0e-4;           // step 0.1 mm
 
-    p_myP->setState( inState );
-    p_be->propagate( *p_myP );
-    double error = ( p_myP->State() )( xp ) + xp_i;
+    particle.State() = inState;
+    p_be->propagate( particle );
+    double error = ( particle.State() )[xp] + xp_i;
 
     inState[x] = delta;
-    p_myP->setState( inState );
-    p_be->propagate( *p_myP );
-    f = ( p_myP->State() )( xp ) + xp_i;
+    particle.State() = inState;
+    p_be->propagate( particle );
+    f = ( particle.State() )[xp] + xp_i;
 
     if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) ) 
           && ( fabs(error) < fabs(f) ) ) 
@@ -186,18 +191,18 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
     inState[x] = 0.0;
     while( fabs(delta) > 0.9e-6 ) {
       inState[x] += delta;
-      p_myP->setState( inState );
-      p_be->propagate( *p_myP );
-      f = ( p_myP->State() )( xp ) + xp_i;
+      particle.State() = inState;
+      p_be->propagate( particle );
+      f = ( particle.State() )[xp] + xp_i;
 
       while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) && 
              ( fabs(f) < fabs(error) ) )
       {
         error = f;
         inState[x] += delta;
-      	p_myP->setState( inState );
-      	p_be->propagate( *p_myP );
-      	f = ( p_myP->State() )( xp ) + xp_i;
+      	particle.State()= inState;
+      	p_be->propagate( particle );
+      	f = ( particle.State() )[xp] + xp_i;
       }
 
       inState[x] -= delta;
@@ -222,14 +227,15 @@ int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )
 
   // Set alignment of the object.
   // p_be->align->getAlignment().xOffset -= z;
+
   v.xOffset -= z;
   p_be->setAlignment( v );
+
   // ??? Does not work when in and out faces are not parallel.
 
-
   // Clean up and return.
+
   end:
-  if( p_myP )   { delete p_myP;   p_myP   = 0; }
-  if( myJPPtr ) { delete myJPPtr; myJPPtr = 0; }
+
   return ret;
 }

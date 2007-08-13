@@ -180,10 +180,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
     // *** CHANGE ***
     // *** CHANGE *** See above re tolerances
     // *** CHANGE ***
-    if( ( std::abs( inState(i_x)  - prt.State(i_x)  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_y)  - prt.State(i_y)  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_px) - prt.State(i_px) ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_py) - prt.State(i_py) ) > 1.0e-6 )
+    if( ( std::abs( inState(i_x)  - prt.State()[i_x]  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_y)  - prt.State()[i_y]  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_px) - prt.State()[i_px] ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_py) - prt.State()[i_py] ) > 1.0e-6 )
     ){
       if( 0 != ( ret = invokeFPSolver( jp ) ) ) {
         if( !ignoreErrors_ ) { return ret; }
@@ -350,10 +350,10 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
   // *** CHANGE *** Shouldn't the stopping criterion be the same
   // *** CHANGE *** as was used by the FPSolver fp?
 
-  if( ( std::abs( co(i_x)  - prt.State(i_x)  ) > 2.0e-6 ) ||
-      ( std::abs( co(i_y)  - prt.State(i_y)  ) > 2.0e-6 ) ||
-      ( std::abs( co(i_px) - prt.State(i_px) ) > 2.0e-6 ) ||
-      ( std::abs( co(i_py) - prt.State(i_py) ) > 2.0e-6 )
+  if( ( std::abs( co(i_x)  - prt.State()[i_x]  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_y)  - prt.State()[i_y]  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_px) - prt.State()[i_px] ) > 2.0e-6 ) ||
+      ( std::abs( co(i_py) - prt.State()[i_py] ) > 2.0e-6 )
   ){
     *errorStreamPtr_
          << "\n*** WARNING ***"
@@ -361,13 +361,13 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
          << "\n*** WARNING *** ClosedOrbitSage::invokeFPSolver"
             "\n*** WARNING *** Closed orbit not correct."
             "\n*** WARNING *** delta x = "
-         << (std::abs(co(i_x)  - prt.State(i_x)))
+         << (std::abs(co(i_x)  - prt.State()[i_x]))
          << "\n*** WARNING *** delta y = "
-         << (std::abs(co(i_y)  - prt.State(i_y)))
+         << (std::abs(co(i_y)  - prt.State()[i_y]))
          << "\n*** WARNING *** delta p_x/p = "
-         << (std::abs(co(i_px)  - prt.State(i_px)))
+         << (std::abs(co(i_px)  - prt.State()[i_px]))
          << "\n*** WARNING *** delta p_y/p = "
-         << (std::abs(co(i_py)  - prt.State(i_py)))
+         << (std::abs(co(i_py)  - prt.State()[i_py]))
          << "\n*** WARNING ***"
          << endl;
 

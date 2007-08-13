@@ -68,14 +68,14 @@ class JacobianVisitor : public JetParticleVisitor {
   void visit(beamline& x);
   void visit(bmlnElmnt& x);
   void clearBarnacles();
-  void createJacobian(const JACOBIAN_TYPE&);
+  void createJacobian(JACOBIAN_TYPE const&);
 
  private:
 
-  beamline*     theLine;
-  char*         whichJacobian;
-  MatrixD       cumulativeMatrix;
-  JACOBIAN_TYPE jacobianType;
+  beamline*           theLine_;
+  char const*         whichJacobian_;
+  MatrixD             cumulativeMatrix_;
+  JACOBIAN_TYPE       jacobianType_;
 
   JacobianVisitor(JacobianVisitor const&);
 };
