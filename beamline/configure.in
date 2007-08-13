@@ -129,22 +129,22 @@ AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])
 AC_C_CONST
 AC_C_INLINE
 
-#---------------------------------------------------------------------
+#-------------------------------------------------------------------------
 # FFTW3
-#---------------------------------------------------------------------
+#-------------------------------------------------------------------------
 
 AC_ARG_VAR([FFTW3_INC],    [FFTW3 include directory])dnl
 AC_CHECK_HEADER(fftw3.h,,[
 if test ${FFTW3_INC} && test -r ${FFTW3_INC}; then
+        AC_MSG_RESULT([Location specified: ${FFTW3_INC}])
+        FFTW3_INC="-I"${FFTW3_INC}
         AC_SUBST(FFTW3_INC)
-        AC_MSG_RESULT([Location specified: ${FFTW3_INC}]) 
 fi
 ])
 
-#---------------------------------------------------------------------
+#-------------------------------------------------------------------------
 # BOOST
-#---------------------------------------------------------------------
-
+#-------------------------------------------------------------------------
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
@@ -155,37 +155,27 @@ else
         boost_inc=`which gcc | sed "s#bin\/gcc#include#"`
         if test -r $boost_inc/boost/shared_ptr.hpp; then
                 BOOST_INC=$boost_inc
-                AC_SUBST(BOOST_INC)
-                AC_MSG_RESULT([Header file located in $BOOST_INC])
         else
 		if test -r /usr/include/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/include"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include/boost-1_33"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/ap/include/boost-1_33"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include/boost-1_32"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
 		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/ap/include/boost-1_32"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
                 else
 		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
 		fi
 	fi
+
+        AC_MSG_RESULT([Header file located in $BOOST_INC])
+        BOOST_INC="-I"${BOOST_INC}
+        AC_SUBST(BOOST_INC)
 fi
 ])
 
