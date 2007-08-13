@@ -57,7 +57,6 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
-#include <basic_toolkit/TVector.h>
 #include <beamline/marker.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
@@ -508,7 +507,7 @@ void CHEFGUI::openFile()
 
     double brho = bmlSelectionDialog_->getBRHO();
 
-     beamline_list = bmlSelectionDialog_->getSelected(); 
+    beamline_list = bmlSelectionDialog_->getSelected(); 
 
     std::list<std::string>::reverse_iterator it;
     int nlines = 0;
@@ -778,7 +777,7 @@ CHEFGUI::parseEditorMAD8( CF_Editor* editor )
 
   double brho =  bmlSelectionDialog_->getBRHO();
 
-  bmlSelectionDialog_->getSelected(); // this function alters beamline_list 
+  beamline_list = bmlSelectionDialog_->getSelected(); 
 
   std::list<std::string>::iterator it;
   int nlines = 0;
