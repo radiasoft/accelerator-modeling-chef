@@ -10,6 +10,7 @@
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
+******
 ******  Software and documentation created under 
 ******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
 ******  The U.S. Government retains a world-wide non-exclusive, 
@@ -77,19 +78,19 @@ using namespace std;
 // ---------------------------
 
 Orbit::Orbit( Vector const& x ) 
-:  red_(1), green_(1), blue_(1)
+:  mode(Orbit::points), red_(1), green_(1), blue_(1)
 {
   history_.push_back( new Vector( x ) );
 }
 
 Orbit::Orbit( Vector const* x ) 
-: red_(1), green_(1), blue_(1)
+: mode(Orbit::points), red_(1), green_(1), blue_(1)
 {
   history_.push_back( new Vector( *x ) );
 }
 
 Orbit::Orbit( Orbit const& x ) 
-: red_(x.red_), green_(x.green_), blue_(x.blue_)
+: mode(x.mode), red_(x.red_), green_(x.green_), blue_(x.blue_)
 {
   for (std::list<Vector*>::const_iterator it  = x.history_.begin(); 
        it != x.history_.end(); ++it ) {
