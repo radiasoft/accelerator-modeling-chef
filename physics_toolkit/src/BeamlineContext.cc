@@ -122,27 +122,8 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   , initial_covariance_set_(false)
 {
 
-  particle_ = w.Clone();
-
-  // Try to instantiate _theSamplePtr
-  // --------------------------------
- 
-  if( typeid(w) == typeid(Proton) ) {
-    particleBunchPtr_ = new ParticleBunch( *particle_);
-  }
-  else if( typeid(w) == typeid(Positron) ) {
-    particleBunchPtr_ = new ParticleBunch( *particle_);
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-           "BeamlineContext::BeamlineContext( Particle w&, BmlPtr )", 
-           "*** SORRY ***"
-           "\n*** SORRY *** This version of BeamlinContext only handles"
-           "\n*** SORRY *** positrons and protons, principally because."
-           "\n*** SORRY *** this version of ParticleBunch is restricted"
-           "\n*** SORRY *** to those classes."
-           "\n*** SORRY ***"  );
-  }
+  particle_         = w.Clone();
+  particleBunchPtr_ = new ParticleBunch( *particle_);
 
 
   // If that succeeds, then continue 
@@ -161,9 +142,13 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
    particle_->setStateToZero();
    particle_->SetReferenceEnergy( p_bml_->Energy() );
 
+   RefRegVisitor( *particle_ ).visit( *p_bml_ );   // scale magnet strengths  
 
    if( Sage::isRing( p_bml_) ) { handleAsRing(); }
    else                        { handleAsLine(); }
+
+
+
 }
 
 
@@ -265,7 +250,7 @@ void BeamlineContext::handleAsLine()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector BeamlineContext::getParticleState()    
+Vector const& BeamlineContext::getParticleState()  const  
 { 
   return particle_->State();                          
 }
@@ -413,6 +398,7 @@ void BeamlineContext::setInitialDispersion( DispersionSage::Info const& u )
 {
   initialDispersion_      = u;
   initial_dispersion_set_ = true;
+  dispCalcd_              = false; 
 }
 
 
@@ -729,7 +715,7 @@ alignmentData BeamlineContext::getAlignmentData( ElmPtr v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Mapping BeamlineContext::getOneTurnMap()
+Mapping const& BeamlineContext::getOneTurnMap()
 {
 
   if( !closed_orbit_computed_ ) {
@@ -947,7 +933,7 @@ Particle const& BeamlineContext::getParticle()
 
 void BeamlineContext::setParticleState( Vector const& s )
 {
-   particle_->setState(s);
+   particle_->State() = s;
 }
 
 
@@ -1250,8 +1236,9 @@ std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ) ; // implicit conversion 
 
     JetParticle tmp_jetpart(jetparticle_);
-    Mapping id( "identity" );
-    tmp_jetpart.setState( id );
+
+    tmp_jetpart.State() =  Mapping("identity", jetparticle_.State().Env() );
+
     int errorFlag = p_ets_->doCalc(tmp_jetpart );
  
     edwardstengFuncsCalcd_ = ( 0 == errorFlag ); // SHOULD THROW EXCEPTION IF THIS FAILS
@@ -1278,8 +1265,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
   }
 
   if( !momentsFuncsCalcd_ ) { 
-    int j;
-
+ 
     const int n = Particle::PSD;
     MatrixD covariance(n,n);
 
@@ -1322,7 +1308,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
         Jet__environment::BeginEnvironment( 1 );
 
         for( int j = 0; j < n; j++ ) {
-          coordPtr[j] = new coord( particle_->State(j) );
+          coordPtr[j] = new coord( particle_->State()[j] );
         }
         JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
 
@@ -1339,8 +1325,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
 
 
 
-    Mapping id( "identity" );
-    tmp_jetpart.setState( id );
+    tmp_jetpart.State() = Mapping ("identity");
 
     int errorFlag = p_covs_->doCalc( tmp_jetpart, covariance);
     momentsFuncsCalcd_ = ( 0 == errorFlag );
@@ -1348,7 +1333,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
     // Clean up before leaving 
 
     if( coordPtr ) {
-      for( j = 0; j < n; j++ ) { delete coordPtr[j]; }
+      for( int j=0; j < n; ++j) { delete coordPtr[j]; }
       delete [] coordPtr;
     }
 
@@ -1409,8 +1394,21 @@ std::vector<LBSage::Info> const& BeamlineContext::getLBArray()
 
 std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
 {
+
+  //---------------------------------------------------------------------------------------
+  // Preserve the current Jet environment
+  //----------------------------------------------------------------------------------------
+
+  EnvPtr<double>   storedEnv                = Jet__environment::getLastEnv();
+  EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
+ 
+  Jet__environment::setLastEnv (  jetparticle_.State().Env() );
+  JetC__environment::setLastEnv ( Jet__environment::getLastEnv() ); //implicit conversion 
+
+
   if( !p_dsps_ ) createDSPS();
   
+
   if( !dispersionFuncsCalcd_ ) 
   { 
     if( isTreatedAsRing() ) {
@@ -1427,42 +1425,36 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
         }
       }
 
-      // Preserve/reset the current Jet environment
-
-      EnvPtr<double>   storedEnv                = Jet__environment::getLastEnv();
-      EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
- 
-      Jet__environment::setLastEnv (  jetparticle_.State().Env() );
-      JetC__environment::setLastEnv ( Jet__environment::getLastEnv() ); //implicit conversion 
-
     
       p_dsps_->flags.onClosedOrbit = true;
       int errorFlag = p_dsps_->doCalc( jetparticle_ );
       dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
-      // Restore current environment
-      Jet__environment::setLastEnv( storedEnv );
-      JetC__environment::setLastEnv( storedEnvC );
 
     } // ring
 
     // If the line is not treated as periodic, do the following:
+  
     else {
     
-        int errorFlag = p_dsps_->pushCalc( *particle_, initialDispersion_ );
+       //************************************************************************* 
+       // ISSUE: the closed orbit should be defined for beamlines/Linac FIXME !
+       //*************************************************************************
+
+        JetParticle jetparticle( *particle_ );
+        int errorFlag         =  p_dsps_->pushCalc( jetparticle, initialDispersion_ );
         dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
-//else {
-//      _dispersionFuncsCalcd = false;
-//      throw( GenericException( __FILE__, __LINE__, 
-//             "BeamlineContext::getDispersionPtr( int i )", 
-//             "You must first provide initial conditions"
-//             "\nfor a non-periodic line." ) );
-//     }
-  
-     } 
+    } 
   }
 
+ //--------------------------------------------------
+ // Restore current environment
+ //--------------------------------------------------
+
+  Jet__environment::setLastEnv( storedEnv );
+  JetC__environment::setLastEnv( storedEnvC );
+  
   return p_dsps_->getDispersionArray();  
 }
 
