@@ -123,8 +123,23 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
 {
 
   particle_         = w.Clone();
-  particleBunchPtr_ = new ParticleBunch( *particle_);
 
+  // Try to instantiate particleBunchPtr_
+  // --------------------------------
+
+  if( typeid(w) == typeid(Proton) || typeid(w) == typeid(Positron) ) {
+    particleBunchPtr_ = new ParticleBunch( *particle_);
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+           "BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )", 
+           "*** SORRY ***"
+           "\n*** SORRY *** This version of BeamlinContext only handles"
+           "\n*** SORRY *** positrons and protons, principally because"
+           "\n*** SORRY *** I (lm) do not yet trust propagators to handle"
+           "\n*** SORRY *** correctly other types of particles."
+           "\n*** SORRY ***"  );
+  }
 
   // If that succeeds, then continue 
   // -------------------------------
@@ -146,9 +161,6 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
 
    if( Sage::isRing( p_bml_) ) { handleAsRing(); }
    else                        { handleAsLine(); }
-
-
-
 }
 
 
