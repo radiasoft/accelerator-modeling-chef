@@ -199,7 +199,6 @@ LattFuncSage::lattRing const& LattFuncSage::getLattRing()
 
 int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& initialConditions )
 {
-
   if( verbose_ ) {
     *outputStreamPtr_ << "LattFuncSage -- Entering LattFuncSage::pushCalc" << endl;
     outputStreamPtr_->flush();
@@ -259,7 +258,6 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   double arcLength = 0.0;
   double psi_x     = 0.0;
   double psi_y     = 0.0;
-
 
   for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
                                it != myBeamlinePtr_->deep_end();  ++it) 
@@ -1143,7 +1141,7 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     // Store the calculation if appropriate ...
     if( ( !Crit ) || ( Crit( lbe ) ) ) 
     {
-      lattFunc lf;
+      LattFuncSage::lattFunc lf;
 
       lf.arcLength = lng;
       lf.beta.hor  = beta_x;
@@ -1707,7 +1705,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
     if ( stand_alone_disp_calc ) { 
-       lattFunc lf;
+       LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_px );
        lf.dispersion.ver = d( i_y  );
@@ -1906,7 +1904,7 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
    
        if( !Crit || Crit( (*it) ) ) 
        {
-          LattFuncSage::lattFunc lf;
+         LattFuncSage::lattFunc lf;
          lf.dispersion.hor = firstParticle.get_x()   /dpp;
          lf.dPrime.hor     = firstParticle.get_npx() /dpp;
          lf.dispersion.ver = firstParticle.get_y()   /dpp;
