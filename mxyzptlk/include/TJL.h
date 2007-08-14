@@ -80,7 +80,6 @@
 #include <basic_toolkit/TMatrix.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/ReferenceCounter.h>
-#include <mxyzptlk/TJetEnvironment.h>
 #include <mxyzptlk/JLPtr.h>
 #include <mxyzptlk/EnvPtr.h>
 #include <mxyzptlk/TJLterm.h>
@@ -567,3 +566,6 @@ inline void TJL<T>::append( TJLterm<T> const& a)
 #endif
 
 #endif // TJL_H
+
+
+

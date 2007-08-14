@@ -68,9 +68,6 @@
 ******      
 **************************************************************************
 *************************************************************************/
-#ifndef TJETENVIRONMENT_TCC
-#define TJETENVIRONMENT_TCC
-
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -1021,4 +1018,3 @@ std::istream& streamIn( std::istream& is, EnvPtr<T>& pje )
 }
 
 
-#endif // TJETENVIRONMENT_TCC
