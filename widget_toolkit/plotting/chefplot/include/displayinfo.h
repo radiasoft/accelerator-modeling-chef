@@ -19,8 +19,8 @@
 #ifndef DISPLAY_INFO_H
 #define DISPLAY_INFO_H
 
-#include <qwt/qwt_data.h>
-#include  <qstring.h>
+#include <qwt_data.h>
+#include <qstring.h>
 #include <string>
 #include <vector>
 
