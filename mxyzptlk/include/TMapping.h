@@ -59,8 +59,8 @@
 #define TMAPPING_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <mxyzptlk/TJet.h>
 #include <mxyzptlk/TJetVector.h>
+
 
 template <typename T>
 class DLLEXPORT TMapping: public TJetVector<T> {

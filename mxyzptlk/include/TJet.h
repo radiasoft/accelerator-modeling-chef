@@ -545,7 +545,6 @@ public:
 
   reverse_iterator       rend();
   const_reverse_iterator rend()   const;
-
 };
 
 //-------------------------------------------------------------------------------------

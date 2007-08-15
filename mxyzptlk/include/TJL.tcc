@@ -65,8 +65,6 @@
 ******
 **************************************************************************
 *************************************************************************/
-#ifndef TJL_TCC
-#define TJL_TCC
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -77,6 +75,7 @@
 #include <fstream>
 #include <limits>
 #include <algorithm>
+#include <mxyzptlk/TJetEnvironment.h>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
@@ -2876,5 +2875,3 @@ typename TJL<T>::const_reverse_iterator    TJL<T>::rend()  const
   return  boost::make_reverse_iterator( begin() );
 }
 
-
-#endif // TJL_TCC
