@@ -43,19 +43,8 @@
 ******  
 ****** May 2007 ostiguy@fnal.gov
 ******
-****** - eliminated uncessary two-step registration process. 
-******   Registration is now done in a single loop.
-****** - revolution frequency was computed assuming v = c. 
-******   Added missing Beta() factor, important for low energy machines.
-******  
-****** August 10, 2007  (Friday)  michelotti@fnal.gov
-****** 
-****** Introducing particle_.Beta()in the line that computes
-****** revolution frequency (see above) was not correct. Using c
-****** here - i.e. PH_MKS_c - is not a high energy approximation.
-****** That is: cdt IS c x time, and frequency is 1/time.  This
-****** line is being returned to its previous form.
-****** 
+****** - registration process now done in a single loop.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -163,15 +152,23 @@ void RefRegVisitor::visit( beamline& x )
 
   x.setEnergy( particle_.ReferenceEnergy() );
 
- //------------------------------------------------------------------------------------
+ 
+ std::vector<RFCavityPtr>     rfcavities;  
+ std::vector<ThinRFCavityPtr> thinrfcavities;  
+ RFCavityPtr                  rfcavity_elm; 
+ ThinRFCavityPtr              thinrfcavity_elm; 
+
+ //-------------------------------------------------------------------------------------------
  // *** visit individual elements to set reference time  **** 
- //-------------------------------------------------------------------------------------
+ // Ring cavity elements i.e. cavities for which frequency can be set as a revolution harmonic
+ // are collected; their frequencies are set once the revolution frequency is known.    
+ //--------------------------------------------------------------------------------------------
 
      double cumulativeCdt = 0.0;
-
+     
 
      for (beamline::deep_iterator it  = x.deep_begin();
-                              it != x.deep_end(); ++it) {
+                                  it != x.deep_end(); ++it) {
     
         double momentum = particle_.ReferenceMomentum();
        
@@ -182,7 +179,9 @@ void RefRegVisitor::visit( beamline& x )
         (*it)->accept( *this ); 
 
         cumulativeCdt +=(*it)->getReferenceTime();          
-
+        
+        if ( rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it) )      rfcavities.push_back(rfcavity_elm);
+        if ( thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it) )  thinrfcavities.push_back(thinrfcavity_elm);
      }
 
     //-------------------------------------------------------------
@@ -192,7 +191,20 @@ void RefRegVisitor::visit( beamline& x )
     // elements with an accelerating phase are present.
     //---------------------------------------------------------------
 
-    revolutionFrequency_ = PH_MKS_c/cumulativeCdt;
+    revolutionFrequency_ = PH_MKS_c/cumulativeCdt ;
+
+    // -------------------------------------------------------------------
+    // set the frequency in rfcavity elements when a   
+    // revolution harmonic has been specified. 
+    //--------------------------------------------------------------------
+  
+    for ( std::vector<RFCavityPtr>::iterator it = rfcavities.begin();  it != rfcavities.end(); ++it ) {
+      (*it)->setFrequencyRelativeTo( revolutionFrequency_ );
+    }
+
+    for ( std::vector<ThinRFCavityPtr>::iterator it = thinrfcavities.begin();  it != thinrfcavities.end(); ++it ) {
+      (*it)->setFrequencyRelativeTo( revolutionFrequency_ );
+    }
 
 }
 
@@ -205,7 +217,6 @@ void RefRegVisitor::visit( bmlnElmnt& x )
   particle_.set_cdt(0.0);
   x.propagate( particle_ );
   x.setReferenceTime( particle_.get_cdt() );
-
 }
 
 
@@ -275,64 +286,29 @@ void RefRegVisitor::visit( rbend& x )
 
 void RefRegVisitor::visit( rfcavity& x ) 
 {
- x.acceptInner( *this );
+  // x.acceptInner( *this ); // inner structure is ignored for the moment
+  
+  visit( static_cast<bmlnElmnt&>(x) );
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void RefRegVisitor::visit( LinacCavity& x ) 
 {
- 
-  if( x.Strength() == 0.0) 
-  {   x.ctRef_part_1_ =  x.ctRef_part_2_  = x.Length()/particle_.BetaZ()/2.0;
-      x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );
-      return;
-  }
-                        
-  Vector& state = particle_.State();
-
-  const  double length     =  x.Length();
-  const  double energyGain =  x.Strength()*cos( x.getPhi());
- 
-  state[2] = 0;
-  x.setLength( length/2.0 );
-  x.setReferenceTime(0.0);
-  x.bmlnElmnt::localPropagate( particle_ );
-
-  x.ctRef_part_1_ = state[2];
-
-  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
-
-  state[2] = 0;
-  x.setReferenceTime(0.0);
-  x.bmlnElmnt::localPropagate( particle_ );
-
-  x.ctRef_part_2_ =  state[2];  
-
-  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
-
-  x.setLength(length);  // restore length to its original value
-
-  x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );     
- 
+  visit( static_cast<bmlnElmnt&>(x) ); // default
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void RefRegVisitor::visit( thinrfcavity& x ) 
 {
-
-  if( x.getRadialFrequency() < 1.0e-9 ) {
-    if( x.getHarmonicNumber() > 0 ) {
-      x.setFrequencyRelativeTo( revolutionFrequency_ );
-    }
-  }
-
-  visit( static_cast<bmlnElmnt&>(x) );
- 
+  visit( static_cast<bmlnElmnt&>(x) ); // default
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 
