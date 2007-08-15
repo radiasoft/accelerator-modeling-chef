@@ -58,9 +58,6 @@
 #include <basic_toolkit/iosetup.h>
 
 template<typename T>
-class TJL;
-
-template<typename T>
 class ReferenceCounter;
 
 template<typename T>
