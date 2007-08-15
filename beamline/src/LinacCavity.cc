@@ -58,9 +58,9 @@ LinacCavity::LinacCavity( const char* name,         // name
 
   p_bml_ = BmlPtr(new beamline("LinacCavityInner") );
   
-  p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV, phi_s)   )  );
+  p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
   p_bml_->append( WakeKickPtr       ( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )  );
-  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV, phi_s)   )  );
+  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
 
 }
 
