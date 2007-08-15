@@ -398,6 +398,8 @@ void BeamlineContext::setInitialDispersion( DispersionSage::Info const& u )
 {
   initialDispersion_      = u;
   initial_dispersion_set_ = true;
+  dispCalcd_              = false; 
+  dispersionFuncsCalcd_   = false;
 }
 
 
@@ -1186,8 +1188,7 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
       }
     }
 
-    // If the line is not treated as periodic, do the following:
-    else
+    else  // If the line is not treated as periodic, do the following:
     {
 
       if( initial_lattfunc_set_) {
