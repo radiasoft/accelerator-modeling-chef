@@ -20,7 +20,7 @@
 #define INTERPOLATOR_H
 
 #include <OrderedPair.h>
-#include <qwt5/qwt_double_rect.h>
+#include <qwt_double_rect.h>
 
 
 class Interpolator {
