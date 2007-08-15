@@ -35,8 +35,6 @@
 ******
 **************************************************************************
 *************************************************************************/
-#ifndef TJL1_TCC
-#define TJL1_TCC
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -1716,9 +1714,4 @@ JL1Ptr<T> operator/( JL1Ptr<T> const& wArg, JL1Ptr<T> const& uArg )
  return z;
 
 }
-
-
-
-#endif // TJL1_TCC
-
 

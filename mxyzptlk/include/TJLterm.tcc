@@ -59,8 +59,6 @@
 **************************************************************************
 **************************************************************************
 *************************************************************************/
-#ifndef TJLTERM_TCC
-#define TJLTERM_TCC
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
@@ -333,4 +331,3 @@ IntArray  TJLterm<T>::exponents( EnvPtr<T> const& env) const
 } 
 
 
-#endif // TJLTERM_TCC

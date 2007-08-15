@@ -54,8 +54,6 @@
 ******                                                        
 **************************************************************************
 *************************************************************************/
-#ifndef TLIEOPERATOR_TCC
-#define TLIEOPERATOR_TCC
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -445,5 +443,4 @@ TJetVector<T> TLieOperator<T>::expMap( TJet<T> const& t, TJetVector<T> const& x 
  return z;
 }
 
-#endif // TLIEOPERATOR_TCC
 
