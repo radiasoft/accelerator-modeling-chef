@@ -169,13 +169,13 @@ public:
   TMatrix& operator=(TMatrix    const&);
   TMatrix& operator=(TVector<T> const&);
 
-  T& operator()(int row, int column);
-  T  operator()(int row, int column) const;
+  T      &  operator()(int row, int column);
+  T const&  operator()(int row, int column) const;
 
-  T  getElement(int row, int column) const;
+  T         getElement(int row, int column) const;
 
-  T& operator()(int row);
-  T  operator()(int row) const;
+  T&        operator()(int row);
+  T const&  operator()(int row) const;
 
   TMatrix<T>& operator+=( T const&);
   TMatrix<T>& operator-=( T const&);
