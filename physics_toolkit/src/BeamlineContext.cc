@@ -59,6 +59,7 @@
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/RefRegVisitor.h>
+#include <beamline/LinacCavity.h>
 
 #include <physics_toolkit/BmlUtil.h>
 #include <physics_toolkit/BeamlineContext.h>
@@ -66,7 +67,9 @@
 #include <physics_toolkit/ChromaticityAdjuster.h>
 #include <physics_toolkit/TuneAdjuster.h>
 
-extern void BeamlineSpitout( int, beamline::const_iterator &);
+extern void      BeamlineSpitout( int, beamline::const_iterator &);
+extern beamline* DriftsToSlots( beamline const& argbml );
+extern bool      d2S_rbendLike( bmlnElmnt& x);
 
 using namespace std;
 using namespace boost;
@@ -136,18 +139,46 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   }
 
 
-  // Reinitialize the internal particle
+  // Initialize the internal particle
   // ----------------------------------
 
    particle_->setStateToZero();
    particle_->SetReferenceEnergy( p_bml_->Energy() );
 
-   RefRegVisitor( *particle_ ).visit( *p_bml_ );   // scale magnet strengths  
+ 
+   //-------------------------------------------------------------------
+   // Determine if some elements have faces that are not perpendicular 
+   // to the ref trajectory. Currently ***disabled*** because
+   // DriftsToSlots does not preserve the hierarchical structure.
+   //-------------------------------------------------------------------
+
+   bool convert_drifts_to_slots = false;
+   for (beamline::deep_iterator it  = p_bml_->deep_begin();  
+                                it != p_bml_->deep_end(); ++it ) {
+
+
+     if ( convert_drifts_to_slots = d2S_rbendLike( **it ) ) break;
+   }
+
+   // ***** if ( convert_drifts_to_slots ) { p_bml_ = BmlPtr( DriftsToSlots( *p_bml_ ) ); }       
+
+   //-------------------------------------------------------------------
+   // Determine if the lattice contains LinacCavities.
+   //-------------------------------------------------------------------
+
+   bool is_linac= false;
+
+   for (beamline::deep_iterator it  = p_bml_->deep_begin();  
+                                it != p_bml_->deep_end(); ++it ) {
+
+     if ( is_linac = (typeid(**it) == typeid(LinacCavity)) ) break;
+   }
+
+   if ( is_linac) { RefRegVisitor( *particle_ ).visit( *p_bml_ ); } // scale magnet strengths  
+
 
    if( Sage::isRing( p_bml_) ) { handleAsRing(); }
    else                        { handleAsLine(); }
-
-
 
 }
 
@@ -164,7 +195,6 @@ BeamlineContext::~BeamlineContext()
   if( particleBunchPtr_ ) { delete particleBunchPtr_; particleBunchPtr_ = 0; }
 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -428,6 +458,7 @@ void BeamlineContext::setInitialCovariance( CovarianceSage::Info const& u )
 
   initialCovariance_       = u;
   initial_covariance_set_  = true;  
+  momentsFuncsCalcd_       = false;
 }
 
 
@@ -453,8 +484,9 @@ CovarianceSage::Info const& BeamlineContext::getInitialCovariance()
 
 void BeamlineContext::setInitialTwiss( LattFuncSage::lattFunc const& u )
 {
-  initialLattFunc_      = u;
-  initial_lattfunc_set_ = true;
+  initialLattFunc_       = u;
+  initial_lattfunc_set_  = true;
+  normalLattFuncsCalcd_  = false;
 }
 
 
@@ -1482,7 +1514,7 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps1, double eps2 )
   const double mm_mr = 1.0e-6;
 
 
-  if( ! closed_orbit_computed_ ) {
+  if( !closed_orbit_computed_ ) {
     try {
        createClosedOrbit(); 
     }
@@ -1513,12 +1545,10 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps1, double eps2 )
   aa(y,y)     = I2;
   aa(yp,yp)   = I2;
 
-  MatrixC E(n,n);
-  E = ( jetparticle_.State() ).Jacobian().eigenVectors();
+  MatrixC E = jetparticle_.State().Jacobian().eigenVectors();
   BmlUtil::normalize( E );
 
-  MatrixD cov(n,n);
-  cov = real(E*aa*E.dagger());
+  MatrixD cov = real( E*aa*E.dagger());
 
   return cov;
 }
