@@ -67,12 +67,17 @@ using FNAL::pcout;
 // --- Constructors ---------------------------------
 // --------------------------------------------------
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Slot::Slot()
-  : bmlnElmnt()
+ : bmlnElmnt()
 {
   align_ = new alignment;  // ??? why???
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( const char* nm )
 : bmlnElmnt(nm)
@@ -80,11 +85,14 @@ Slot::Slot( const char* nm )
   align_ = new alignment;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 Slot::Slot( Frame const& y )
-: bmlnElmnt(), out(y)
+: bmlnElmnt(), in_(), out_(y)
 {
-  if( !out.isOrthonormal() )
+  if( !out_.isOrthonormal() )
   {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            "Slot::Slot( const Frame& y )", 
@@ -93,15 +101,18 @@ Slot::Slot( Frame const& y )
 
   align_   = 0;
 
-  length_ = out.getOrigin() .Norm();
+  length_ = out_.getOrigin() .Norm();
   ctRef_  = length_;
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Slot::Slot( const char* nm, const Frame& y )
-: bmlnElmnt(nm), out(y)
+: bmlnElmnt(nm), in_(), out_(y)
 {
-  if( !out.isOrthonormal() )
+  if( !out_.isOrthonormal() )
   {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            "Slot::Slot( const char* nm, const Frame& y )", 
@@ -110,50 +121,58 @@ Slot::Slot( const char* nm, const Frame& y )
 
   align_   = 0;
 
-  length_ = out.getOrigin() .Norm();
+  length_ = out_.getOrigin() .Norm();
   ctRef_  = length_;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( const Frame&     x, 
             const Frame&     y, 
             const beamline&  bl
           )
-: bmlnElmnt(), in(x), out(y)
+: bmlnElmnt(), in_(x), out_(y)
 {
-  if( ( 0 == checkFrame(in)  ) && 
-      ( 0 == checkFrame(out) ) ) 
+  if( ( 0 == checkFrame(in_)  ) && 
+      ( 0 == checkFrame(out_) ) ) 
   {
     p_bml_   = BmlPtr( bl.Clone() );
   }
   align_ = new alignment;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( const char*      nm,
             const Frame&     x, 
             const Frame&     y, 
             const beamline&  bl
           )
-: bmlnElmnt(nm), in(x), out(y)
+: bmlnElmnt(nm), in_(x), out_(y)
 {
-  if( ( 0 == this->checkFrame(in)  ) && 
-      ( 0 == this->checkFrame(out) ) ) 
+  if( ( 0 == this->checkFrame(in_)  ) && 
+      ( 0 == this->checkFrame(out_) ) ) 
   {
     p_bml_   = BmlPtr( bl.Clone() );
   }
   align_ = new alignment;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( const Frame&     x, 
             const Frame&     y, 
             const bmlnElmnt& be
           )
-: bmlnElmnt(), in(x), out(y)
+: bmlnElmnt(), in_(x), out_(y)
 {
-  if( ( 0 == this->checkFrame(in)  ) && 
-      ( 0 == this->checkFrame(out) ) &&
+  if( ( 0 == this->checkFrame(in_)  ) && 
+      ( 0 == this->checkFrame(out_) ) &&
       ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
   {
     bml_e_ = ElmPtr( be.Clone() );
@@ -162,15 +181,18 @@ Slot::Slot( const Frame&     x,
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Slot::Slot( const char*     nm,
             const Frame&     x, 
             const Frame&     y, 
             const bmlnElmnt& be
           )
-: bmlnElmnt(nm), in(x), out(y)
+: bmlnElmnt(nm), in_(x), out_(y)
 {
-  if( ( 0 == this->checkFrame(in)  ) && 
-      ( 0 == this->checkFrame(out) ) &&
+  if( ( 0 == this->checkFrame(in_)  ) && 
+      ( 0 == this->checkFrame(out_) ) &&
       ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
   {
      bml_e_ = ElmPtr( be.Clone() );
@@ -179,8 +201,11 @@ Slot::Slot( const char*     nm,
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Slot::Slot( Slot const& x )
-: bmlnElmnt( x), in( x.in ), out( x.out )
+: bmlnElmnt( x), in_( x.in_ ), out_( x.out_ )
 {
   if ( x.align_ != 0 )
     align_ = new alignment( *(x.align_) );
@@ -202,90 +227,114 @@ Slot::~Slot()
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
 {
   length_ = lng;
-  in.reset();
-  out.reset();
+
+  in_.reset();
+  out_.reset();
 
   static Vector driftOffset(3); 
   driftOffset(2) = lng;
   
-  out.rotate( - ang, out.getyAxis() );
-  out.translate( driftOffset );
+  out_.rotate( - ang, out_.getyAxis() );
+  out_.translate( driftOffset );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
 {
   length_ = lng;
-  in.reset();
-  out.reset();
+  in_.reset();
+  out_.reset();
 
   static Vector driftOffset(3); 
   driftOffset(2) = lng;
   
-  out.translate( driftOffset );
-  out.rotate( - ang, out.getyAxis() );
+  out_.translate( driftOffset );
+  out_.rotate( - ang, out_.getyAxis() );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
 {
   length_ = lng;
-  in.reset();
-  out.reset();
+  in_.reset();
+  out_.reset();
 
   static Vector driftOffset(3); 
   driftOffset(2) = lng;
   
-  out.rotate( - ang, out.getxAxis() );
-  out.translate( driftOffset );
+  out_.rotate( - ang, out_.getxAxis() );
+  out_.translate( driftOffset );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
 {
   length_ = lng;
-  in.reset();
-  out.reset();
+  in_.reset();
+  out_.reset();
 
   static Vector driftOffset(3); 
   driftOffset(2) = lng;
   
-  out.translate( driftOffset );
-  out.rotate( - ang, out.getxAxis() );
+  out_.translate( driftOffset );
+  out_.rotate( - ang, out_.getxAxis() );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char*  Slot::Type()  const  
 { 
   return "Slot"; 
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool Slot::isMagnet()  const  
 { 
   return false; 
 }
 
- int Slot::setInFrame( const Frame& frm )
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ int Slot::setInFrame( Frame const& frm )
 {
-   int ret = checkFrame( frm );
+
+  int ret = checkFrame( frm );
 
   if( 0 == ret ) {
-    in = frm;
+    in_ = frm;
   }
 
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- int Slot::setOutFrame( const Frame& frm )
+ int Slot::setOutFrame( Frame const& frm )
 {
-  // REMOVE:  int ret = checkFrame( frm );
 
   if( frm.isOrthonormal() ) { 
-    out = frm;   
+    out_ = frm;   
     return 0;
   }
 
@@ -295,7 +344,10 @@ bool Slot::isMagnet()  const
 }
 
 
- int Slot::checkFrame( const Frame& f ) const
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ int Slot::checkFrame( Frame const& f ) const
 {
   static const Frame zero;
   static const int y = 1;
@@ -327,63 +379,14 @@ bool Slot::isMagnet()  const
   return ret;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double Slot::setReferenceTime( double const& x )
 {
   double oldValue = ctRef_;
-  ctRef_ = x;
+  ctRef_          = x;
   return oldValue;
-}
-
-
-double Slot::setReferenceTime( Particle const& p)
-{
-  // This probably should never be used.
-  // Code copied from Slot::localPropagate
-  // and edited slightly. The two functions
-  // must stay synchronized.
-
-  Particle localParticle(p);
-
-  // This part correlates with bmlnElmnt.h
-  if( align_ != 0 ) {
-    enterLocalFrame( localParticle );
-  }
-
-  // This assumes the in face corresponds to the
-  // in Frame. It is attached to the out face
-  // of the previous element.
-
-  Vector r(3);
-  r(0) = localParticle.get_x();
-  r(1) = localParticle.get_y();
-  // r(2) = 0.0, set in constructor
-
-  Vector beta ( localParticle.VectorBeta() );
-  Vector u_3  ( out.getAxis(2) );
-  Vector q    ( out.getOrigin() );
-  double betaParallel = beta * u_3;
-
-
-  if( betaParallel > 0.0 ) {
-    ctRef_ = ( q - r )*u_3 / betaParallel;
-  }
-  else {
-    (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** double Slot::setReferenceTime( const Particle& prtn )"
-            "\n*** WARNING *** Velocity is not forward.        "
-            "\n*** WARNING ***                                 ";
-    (*pcerr) << "\n*** WARNING *** " << this->Name();
-    (*pcerr) << "\n*** WARNING *** " << in;
-    (*pcerr) << "\n*** WARNING *** " << out;
-    (*pcerr) << "\n*** WARNING *** " << "VectorBeta(): " << localParticle.VectorBeta();
-    (*pcerr) << "\n*** WARNING *** " << "betaParallel: " << betaParallel;
-    (*pcerr) << endl;
-
-    ctRef_ = 0.0;
-  }
-
-  return ctRef_;
 }
 
 
@@ -391,10 +394,13 @@ double Slot::setReferenceTime( Particle const& p)
 // --- Istream and Ostream support ------------------
 // --------------------------------------------------
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& Slot::writeTo ( ostream& os )
 {
   // Write out private attributes, which are the "in" and "out" Frame's.
-  os << in ;
+  os << in_ ;
   if ( p_bml_ != NULL ) {
     // print out the beamline contained in this slot
     os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
@@ -407,17 +413,20 @@ ostream& Slot::writeTo ( ostream& os )
   } else {
     os << "no_slot_contents " << Name() << " 0 0 0 0 0\n";
   }
-  os << out ;
+  os << out_ ;
   return os;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& Slot::readFrom( istream& is )
 {
   // Read in my private attributes
 
   // First, get the "in" frame"
-  is >> in;
+  is >> in_;
 
   // Second, read in the stuff contained in the Slot.
   char type[30], name[60];
@@ -454,12 +463,15 @@ istream& Slot::readFrom( istream& is )
   }
     
   // Finally, read in the "out" frame information.
-  is >> out;
-  length_ = ( out.getOrigin() - in.getOrigin()) .Norm();
+  is >> out_;
+  length_ = ( out_.getOrigin() - in_.getOrigin()) .Norm();
 
   return is;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 {
@@ -487,13 +499,13 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
     return;
   }
 
-  Vector d( out.getOrigin() - in.getOrigin() );
+  Vector d( out_.getOrigin() - in_.getOrigin() );
   Vector av( pct*d );
   Vector bv( ( 1. - pct )*d );  
   
-  Frame aOutFrame( in );
-  aOutFrame.setOrigin( in.getOrigin() + pct*d );
-  Frame bOutFrame( out.relativeTo( aOutFrame ) );
+  Frame aOutFrame( in_ );
+  aOutFrame.setOrigin( in_.getOrigin() + pct*d );
+  Frame bOutFrame( out_.relativeTo( aOutFrame ) );
 
   a = SlotPtr( new Slot( aOutFrame ) );
   b = SlotPtr( new Slot( bOutFrame ) );
@@ -510,6 +522,9 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 // --- Frame functions ------------------------------
 // --------------------------------------------------
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::processFrame( const Frame& frm, Particle& p ) const
 {
@@ -595,6 +610,8 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::processFrame( const Frame& frm, JetParticle& p ) const
 {
@@ -677,30 +694,44 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Slot::enterLocalFrame( Particle& p ) const
 {
-  processFrame( in, p );
+  processFrame( in_, p );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::enterLocalFrame( JetParticle& p ) const
 {
-  processFrame( in, p );
+  processFrame( in_, p );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::leaveLocalFrame( Particle& p ) const
 {
-  processFrame( out, p );
+  processFrame( out_, p );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::leaveLocalFrame( JetParticle& p ) const
 {
-  processFrame( out, p );
+  processFrame( out_, p );
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // --------------------------------------------------
 // --- Local propagate functions --------------------
@@ -712,58 +743,61 @@ void Slot::localPropagate( Particle& p )
   // If this is modified, one should
   // simultaneously modify Slot::setReferenceTime( const Particle& )
 
+  if      ( bml_e_   ) { bml_e_->propagate( p ); return; }
+  else if ( p_bml_   ) { p_bml_->propagate( p ); return; }
+
+ //-----------------------------------------
+ // Propagate as drift to the out-plane
+ //-----------------------------------------
+
   Vector& state = p.State();
 
-  if      ( bml_e_   ) bml_e_->propagate( p );
-  else if ( p_bml_   ) p_bml_->propagate( p );
+  Vector r(3);
 
-  else {
-    // Propagate as drift to the out-plane
+  r(0) = p.get_x();
+  r(1) = p.get_y();
 
-    Vector r(3);
-    r(0) = p.get_x();
-    r(1) = p.get_y();
+  Vector beta ( p.VectorBeta() );
 
-    Vector beta ( p.VectorBeta() );
+  Vector q    ( out_.getOrigin() );
+  Vector u_1  ( out_.getAxis(0) );
+  Vector u_2  ( out_.getAxis(1) );
+  Vector u_3  ( out_.getAxis(2) );
 
-    Vector q    ( out.getOrigin() );
-    Vector u_1  ( out.getAxis(0) );
-    Vector u_2  ( out.getAxis(1) );
-    Vector u_3  ( out.getAxis(2) );
+  double tau;
+  double betaParallel = beta * u_3;
 
-    // REMOVE: double tauZero = length_ / p.ReferenceBeta();
-
-    double tau;
-    double betaParallel = beta * u_3;
-
-    if( betaParallel > 0.0 ) {
+  if( betaParallel > 0.0 ) {
       tau = ( q - r )*u_3 / betaParallel;
     }
-    else {
+  else {
       ostringstream uic;
       uic << this->Type() << "  " << this->Name()
           << ": Velocity is not forward: it may be NAN.";
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
              "void Slot::localPropagate( Particle& p )", 
              uic.str().c_str() ) );
-    }
+  }
 
-    r += tau*beta;
-    r -= q;
+  r += tau*beta;
+  r -= q;
 
-    state[ p.xIndex()   ]  = r*u_1;
-    state[ p.yIndex()   ]  = r*u_2;
-    // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
-    state[ p.cdtIndex() ] += ( tau - ctRef_ );
+  state[ p.xIndex()   ]  = r*u_1;
+  state[ p.yIndex()   ]  = r*u_2;
+  // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
+  state[ p.cdtIndex() ] += ( tau - ctRef_ );
 
     // Momentum transformation
-    Vector momntm(3);
-    momntm = ( p.NormalizedVectorMomentum() );
-    state[ p.npxIndex() ] = momntm*u_1;
-    state[ p.npyIndex() ] = momntm*u_2;
-  }
+  Vector momntm(3);
+  momntm = ( p.NormalizedVectorMomentum() );
+  state[ p.npxIndex() ] = momntm*u_1;
+  state[ p.npyIndex() ] = momntm*u_2;
+  
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::localPropagate( JetParticle& p )
 {
@@ -782,10 +816,10 @@ void Slot::localPropagate( JetParticle& p )
 
     JetVector beta ( p.VectorBeta() );
 
-    Vector q    ( out.getOrigin() );
-    Vector u_1  ( out.getAxis(0) );
-    Vector u_2  ( out.getAxis(1) );
-    Vector u_3  ( out.getAxis(2) );
+    Vector q    ( out_.getOrigin() );
+    Vector u_1  ( out_.getAxis(0) );
+    Vector u_2  ( out_.getAxis(1) );
+    Vector u_3  ( out_.getAxis(2) );
 
     // REMOVE: double tauZero = length_ / p.ReferenceBeta();
     Jet    tau;
@@ -821,6 +855,9 @@ void Slot::localPropagate( JetParticle& p )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Slot::localPropagate( ParticleBunch& x )
 {
   if     ( p_bml_   ) { p_bml_->propagate( x ); }
@@ -843,11 +880,17 @@ void Slot::setStrength   ( double const& x )
   else if( bml_e_   ) bml_e_->setStrength( x );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Slot::setCurrent    ( double const& x )
 {
   if     ( p_bml_   ) p_bml_->setStrength( x );
   else if( bml_e_   ) bml_e_->setStrength( x );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool Slot::setAlignment  ( const alignmentData& x )
 {
@@ -871,6 +914,9 @@ bool Slot::setAlignment  ( const alignmentData& x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double Slot::Current() const
 {
   if     ( p_bml_   ) return p_bml_->Current();
@@ -878,6 +924,9 @@ double Slot::Current() const
   else                    return 0.0;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double Slot::OrbitLength( const Particle& x )
 {
@@ -901,6 +950,9 @@ double Slot::OrbitLength( const Particle& x )
 }
  
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 std::string Slot::Name() const
 {
   if     ( p_bml_   )     return p_bml_->Name();
@@ -910,13 +962,24 @@ std::string Slot::Name() const
 
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Slot::accept( BmlVisitor& v ) 
 {
  v.visit(*this);
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Slot::accept( ConstBmlVisitor& v ) const
 {
 
   v.visit(*this);
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
