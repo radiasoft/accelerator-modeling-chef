@@ -76,26 +76,33 @@ static const int PHASESPACE = 6;
 
 
 template<typename T>
-TMatrix<T>::TMatrix(): ml_( MLPtr<T>( new TML<T> ) ) 
+TMatrix<T>::TMatrix()
+ : ml_( MLPtr<T>( new TML<T> ) ) 
 { }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>::TMatrix(int rows): ml_( MLPtr<T>( new TML<T>( rows, 1, T() ) )) {}
+TMatrix<T>::TMatrix(int rows)
+ : ml_( MLPtr<T>( new TML<T>( rows, 1, T() ) )) 
+{}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>::TMatrix(int rows, int columns):ml_( MLPtr<T>( new TML<T>( rows,columns,T() ) ) ){ }
+TMatrix<T>::TMatrix(int rows, int columns)
+ : ml_( MLPtr<T>( new TML<T>( rows,columns,T() ) ) )
+{ }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>::TMatrix(int rows, int columns, T initval): ml_( MLPtr<T>( new TML<T> (rows,columns,initval) )){}
+TMatrix<T>::TMatrix(int rows, int columns, T initval)
+ : ml_( MLPtr<T>( new TML<T> (rows,columns,initval) ))
+{}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -132,7 +139,8 @@ TMatrix<T>::TMatrix(MLPtr<T> const& ml): ml_(ml) { }
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>::~TMatrix<T>() {/* ml_ automatically destroyed if refcount=0 */ }
+TMatrix<T>::~TMatrix<T>() 
+{} /* ml_ automatically destroyed if refcount=0 */ 
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -259,7 +267,7 @@ template<typename T>
 TMatrix<T>& TMatrix<T>::operator-=( T const& x ) 
 {
 
-  if (ml_->count() > 1) ml_= ml_->clone();
+ if (ml_->count() > 1) ml_= ml_->clone();
  ml_->operator+=( -x );
  return *this;
 
@@ -364,7 +372,7 @@ T& TMatrix<T>::operator()(int i, int j)
 
 
 template<typename T>
-T  TMatrix<T>::operator()(int i, int j) const 
+T const&  TMatrix<T>::operator()(int i, int j) const 
 {
   
   return (*ml_)(i,j);
@@ -385,7 +393,7 @@ T TMatrix<T>::getElement(int i, int j) const
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T& TMatrix<T>::operator()(int i) 
+T & TMatrix<T>::operator()(int i) 
 {
 
 if ( ml_->count() > 1 ) ml_ = ml_->clone();  
@@ -397,7 +405,7 @@ return (*ml_)(i);
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TMatrix<T>::operator()(int i) const 
+T const& TMatrix<T>::operator()(int i) const 
 {
 return ml_->operator()(i);
 
@@ -413,7 +421,6 @@ std::ostream& operator<<(std::ostream& os, TMatrix<T> const& x)
    return os << *(x.ml_); 
 
 }
-
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
