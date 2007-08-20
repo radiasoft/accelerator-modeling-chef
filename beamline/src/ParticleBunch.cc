@@ -178,19 +178,29 @@ ParticleBunch:: const_iterator  ParticleBunch::end() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ParticleBunch::append( Particle const& x )
+ParticleBunch::const_iterator   ParticleBunch::removed_begin() const
 {
+  return removed_.begin();
+}
+ 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  bunch_.push_back(  x.Clone( pool_.malloc() ) ); 
-
+ParticleBunch:: const_iterator  ParticleBunch::removed_end() const
+{
+  return removed_.end();
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//std::vector<ParticlePtr> ParticleBunch::remove( Discriminator& dsc )
-//{}
+void ParticleBunch::append( Particle const& x )
+{
+
+  bunch_.push_back(  x.Clone( pool_.malloc() ) ); 
+
+}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
