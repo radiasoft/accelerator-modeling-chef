@@ -27,10 +27,12 @@ HEADERS += ./include/MomentsFncData.h \
            ./include/DspnFncData.h \
            ./include/ETFncData.h \
            ./include/LBFncData.h \
-           ./include/LattFncData.h
+           ./include/LattFncData.h \
+           ./include/BunchData.h
 
 SOURCES += ./src/MomentsFncData.cc \
            ./src/DspnFncData.cc \
            ./src/ETFncData.cc \
            ./src/LBFncData.cc \
-           ./src/LattFncData.cc
+           ./src/LattFncData.cc \
+           ./src/BunchData.cc
