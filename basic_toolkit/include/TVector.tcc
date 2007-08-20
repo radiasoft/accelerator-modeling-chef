@@ -103,8 +103,8 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 //
 
 template<typename T>
-TVector<T>::TVector( int n, const T* x, OutputFormat* fmtPtr )
-: m_theVector(n), m_ofPtr(fmtPtr)
+TVector<T>::TVector( int n, T const* x, OutputFormat* fmtPtr )
+: m_theVector(n,T()), m_ofPtr(fmtPtr)
 {
 
   CHECKOUT(n <= 0, "TVector<T>::TVector", "Dimension must be positive.")
@@ -120,7 +120,7 @@ TVector<T>::TVector( int n, const T* x, OutputFormat* fmtPtr )
 
 template<typename T> 
 TVector<T>::TVector( TVector const& x )
- : m_theVector( x.m_theVector), m_ofPtr(x.m_ofPtr) 
+ : m_theVector( x.m_theVector), m_ofPtr( x.m_ofPtr ) 
 { }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -190,12 +190,10 @@ void TVector<T>::Set( const T* x )
 
 
 template<typename T>
-T TVector<T>::operator() ( int i ) const
+T const& TVector<T>::operator() ( int i ) const
 {
   if ( ( 0 <= i ) && ( i < Dim() ) ) { return m_theVector[i]; }
   else {
-    void* p = 0 ;
-    *((int *)p ) = 0;
     throw( GenericException( __FILE__, __LINE__, "T TVector<T>::operator() ( int i ) const", "Index out of range.") );
   }
 }
