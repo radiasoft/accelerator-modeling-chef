@@ -42,15 +42,17 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-PlotData::PlotData(): 
-  scalemag_top_(1.0),   scalemag_bottom_(1.0),
-  scalemag_left_(1.0),  scalemag_right_(1.0), bml_()
+PlotData::PlotData()
+ : curves_(), 
+   label_top_("label_top"),   label_bottom_("label_bottom"),
+   label_left_("label_left"), label_right_("label_right"),
+   scalemag_top_(1.0),  scalemag_bottom_(1.0), 
+   scalemag_left_(1.0), scalemag_right_(1.0),
+   tunes_(), bml_()
 {}
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 PlotData::~PlotData()
 {}
@@ -104,7 +106,6 @@ void PlotData::addCurve(CurveData& cdata)
 CurveData const& PlotData::operator[](int i) const 
 {
   return curves_[i];
-  
 }
 
     
@@ -277,11 +278,9 @@ double PlotData::yMax(CurveData::Axis id) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 int PlotData::nCurves() const  
 {
   return curves_.size();
-  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
