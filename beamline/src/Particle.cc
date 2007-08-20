@@ -289,9 +289,9 @@ Vector Particle::VectorMomentum() const
 {
  Vector ret(3);
 
- ret(0) = p_ * state_[3];
- ret(1) = p_ * state_[4];
- ret(2) = p_ * get_npz();
+ ret[0] = p_ * state_[3];
+ ret[1] = p_ * state_[4];
+ ret[2] = p_ * get_npz();
 
  return ret;
 }
