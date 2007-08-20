@@ -34,7 +34,7 @@
 ******
 ****** REVISION HISTORY
 ******
-****** Mar 2006   ostiguy@fnal.gov
+****** Mar 2007   ostiguy@fnal.gov
 ******
 ******  - reference counted elements/beamlines 
 ******  - eliminated references to slist/dlist
@@ -100,6 +100,8 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool d2S_LookUpStream ( ElmPtr&              el2Ptr, 
                         bool&                rb, 
@@ -109,6 +111,7 @@ bool d2S_LookUpStream ( ElmPtr&              el2Ptr,
                         beamline::iterator   bi
                       )
 {
+
   rb   = false;
   CFrb = false;
   sb   = false;
@@ -125,7 +128,9 @@ bool d2S_LookUpStream ( ElmPtr&              el2Ptr,
       return false;
     }
 
-    el2Ptr = *(--bi);
+    if  (bi == bi.begin() ) return false;
+
+    el2Ptr = *(--bi); 
   }
 
   rb   = ( 0 == strcmp( el2Ptr->Type(), "rbend"    ) );
@@ -146,6 +151,8 @@ bool d2S_LookUpStream ( ElmPtr&              el2Ptr,
 
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool d2S_LookDownStream ( ElmPtr&            el2Ptr, 
                           bool&              rb, 
@@ -198,6 +205,9 @@ bool d2S_LookDownStream ( ElmPtr&            el2Ptr,
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool d2S_rbendLike( bmlnElmnt& x)
 {
   if(0 == strcmp("rbend", x.Type())) {
@@ -224,6 +234,9 @@ bool d2S_rbendLike( bmlnElmnt& x)
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool d2S_sbendLike( bmlnElmnt const& x )
 {
   if(0 == strcmp("sbend", x.Type())) {
@@ -238,6 +251,9 @@ bool d2S_sbendLike( bmlnElmnt const& x )
   return false;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline* DriftsToSlots( beamline const& argbml )
 {
@@ -295,11 +311,11 @@ beamline* DriftsToSlots( beamline const& argbml )
     }
   }  
 
-  // -------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------------------
   // if we come out of the above loop with  prev_is_rbend_like = true, this means that the last element
   // was rbend like. In that case, if we are dealing with a ring, we need to test that the "next" (i.e. first) 
   // element, is also not  rbend like ...
-  //------------------------------------------------------------------------------------------------ 
+  //----------------------------------------------------------------------------------------------------------- 
 
   if( prev_is_rbend_like && originalRing ) {
     if( d2S_rbendLike( **original.deep_begin() )) {
@@ -343,7 +359,9 @@ beamline* DriftsToSlots( beamline const& argbml )
   ElmPtr elPtr;
   ElmPtr el2Ptr;
 
+  //-----------------------------------------
   // Check if Slots are already present ...
+  //-----------------------------------------
 
   for ( beamline::deep_iterator dit = original.deep_begin(); dit != original.deep_end(); ++dit )
   {
@@ -386,13 +404,16 @@ beamline* DriftsToSlots( beamline const& argbml )
   
   bool isRing = ( beamline::ring == flatRing.getLineMode() );
 
-  bool isFirstPtr = true;
-  bool isLastPtr  = false;
 
+  beamline::iterator it2;
   for ( beamline::iterator it = flatRing.begin(); it != flatRing.end(); ++it )
   {
   
     elPtr = *it;
+
+    bool isFirstPtr = (      it   == flatRing.begin() );
+    it2 = it;
+    bool isLastPtr  = ( ( ++it2)  == flatRing.end()   );
 
     // If the trial element is not a drift, just copy it ...
     if( 0 !=  strcmp( elPtr->Type(), "drift" ) ) 
@@ -413,11 +434,9 @@ beamline* DriftsToSlots( beamline const& argbml )
           if( isFirstPtr ) {
             isDownStream  = false;
             isUpStream    = d2S_LookDownStream ( c, c_rb, c_CFrb, c_sb, c_CFsb, it );
-            isFirstPtr    = false;
           }
           else if( isLastPtr ) {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
-            isUpStream    = false;
           }
           else {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
