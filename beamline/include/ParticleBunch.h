@@ -25,6 +25,7 @@
 ******             ostiguy@fnal.gov
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 #ifndef PARTICLEBUNCH_H
 #define PARTICLEBUNCH_H
@@ -80,8 +81,11 @@ public:
 
   void clear();
 
-  template <typename Predicate_t>
-  void sort( Predicate_t );          
+  template <typename UnaryPredicate_t>
+  void remove( UnaryPredicate_t );          
+
+  template <typename BinaryPredicate_t>
+  void sort( BinaryPredicate_t );          
 
   int size()   const;
   bool empty() const;
@@ -94,6 +98,9 @@ public:
   iterator                   end();
   const_iterator             end()            const;
 
+  const_iterator             removed_begin()  const;
+  const_iterator             removed_end()    const;
+
 
 private:
 
@@ -103,12 +110,34 @@ private:
   double                       population_;      // actual population (as opposed to no of pseudo-particles)
 
   boost::ptr_vector<Particle,  boost::view_clone_allocator>  bunch_;
+  boost::ptr_vector<Particle,  boost::view_clone_allocator>  removed_;
+
   boost::pool<>                                              pool_;
 
 };
 
-template <typename Predicate_t>
-void ParticleBunch::sort( Predicate_t predicate ) { bunch_.sort( predicate ); }          
+
+template <typename BinaryPredicate_t>
+void ParticleBunch::sort( BinaryPredicate_t predicate ) 
+{  
+  bunch_.sort( predicate ); 
+}          
+
+
+template <typename UnaryPredicate_t>
+void ParticleBunch::remove( UnaryPredicate_t predicate) 
+{
+  for (ParticleBunch::iterator it=begin(); it != end(); ++it ) {
+     
+    if ( !predicate(*it) ) continue;
+    removed_.transfer( removed_.end(), it, bunch_ );
+
+  }
+}
+
+
+
+
 
 
 #endif // PARTICLEBUNCH_H
