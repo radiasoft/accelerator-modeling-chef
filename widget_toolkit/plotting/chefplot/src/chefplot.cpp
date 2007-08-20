@@ -314,16 +314,15 @@ void CHEFPlot::zoomOff()
      if (zoomer_right_) zoomer_right_->setEnabled(false); 
      if (picker_right_) picker_right_->setEnabled(false); 
 
-     panner_->setEnabled(true);
+     // panner_->setEnabled(true); not used for the moment
 
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFPlot::setData(PlotData const& pltdata) {
-
+void CHEFPlot::setData(PlotData const& pltdata) 
+{
    ConstBmlPtr bml = pltdata.getBeamline(); 
    
    if ( bml ) {
@@ -331,9 +330,7 @@ void CHEFPlot::setData(PlotData const& pltdata) {
       enableLegoPlot( true);
 
    } else {
-     
      enableLegoPlot(false);
-   
    }
 
   plot_->setData(pltdata);
@@ -345,18 +342,15 @@ void CHEFPlot::setData(PlotData const& pltdata) {
 
 void CHEFPlot::setLogScale( int axis) 
 {
-
   plot_->setLogScale(axis); 
-
 }
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CHEFPlot::setLinScale( int axis) 
 {
-
   plot_->setLinScale(axis); 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -364,9 +358,7 @@ void CHEFPlot::setLinScale( int axis)
 
 void CHEFPlot::clear() 
 {
-
   plot_->clear(); 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
