@@ -69,7 +69,6 @@ const int canvas_height = 30;
 CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
 : CHEFPlotMainBase(parent,name,f), auto_clear_(true) 
 {
-
   chefplot_    = new CHEFPlot(this);
   setCentralWidget(chefplot_);
 
@@ -266,7 +265,7 @@ void CHEFPlotMain::showdata()
 
   QWidget* parent = ( !parentWidget()) ? 0 : parentWidget()->parentWidget();
   
-  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, ! (chefplot_->getBeamline()->empty()) ); 
+  DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, chefplot_->getBeamline() ); 
 
   dd->setCaption( this->caption() );
   dd->resize(width(), height());
@@ -294,7 +293,12 @@ void CHEFPlotMain::showdata()
   // adjust row and col size to accomodate beamline element names and azimuth info if applicable  
 
   QString data("");
-  if ( !( chefplot_->getBeamline()->empty() )  ) 
+  
+  //-----------------------------------------------------------------------------------------------------
+  // If the data is related to elements along a beamline, display element name, type, length and azimuth
+  //-----------------------------------------------------------------------------------------------------
+ 
+  if ( chefplot_->getBeamline() ) 
   {  
      nelmnts    = chefplot_->getBeamline()->countHowManyDeeply();  
      bmlcolsize = 4;
