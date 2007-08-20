@@ -37,11 +37,8 @@
 
 TuneDialog::TuneDialog(QWidget* parent, const char* name, WFlags f):
   TuneDialogBase(parent, name,f)
-{
+{}
 
-
-
-}
 
 void TuneDialog::setTunes( double htune, double vtune)
 {
