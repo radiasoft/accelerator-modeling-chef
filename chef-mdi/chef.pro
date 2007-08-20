@@ -1,4 +1,4 @@
-#######################################################################
+########################################################################
 #                                                                      #
 # FILE:     chef.pro                                                   #
 #                                                                      #
@@ -44,6 +44,7 @@ HEADERS	+= include/BmlSelectionDialog.h \
 	include/CF_Editor.h \
 	include/CHEFGUI.h \
 	include/InitCondDialogLF.h \
+	include/DialogGenerateBunch.h \
 	include/about.h \
 	include/appworkspace.h \
 	include/filters.h \
@@ -61,6 +62,7 @@ SOURCES	+= src/BmlSelectionDialog.cpp \
 	src/CF_Editor.cpp \
 	src/CHEFGUI.cpp \
 	src/InitCondDialogLF.cpp \
+	src/DialogGenerateBunch.cpp \
 	src/about.cpp \
 	src/appworkspace.cpp \
 	src/builders.cpp \
@@ -81,7 +83,8 @@ SOURCES	+= src/BmlSelectionDialog.cpp \
 FORMS	= src/chefguibase.ui \
 	src/bmlselectiondialogbase.ui \
 	src/aboutbase.ui \
-	src/initconddialoglfbase.ui
+	src/initconddialoglfbase.ui \
+	src/DialogGenerateBunchBase.ui
 
 IMAGES	= src/images/filenew \
 	src/images/fileopen \
