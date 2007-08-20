@@ -81,7 +81,7 @@ class DLLEXPORT Slot : public bmlnElmnt
    void makeUpstreamVertical     ( double const& length, double const& angle );
    void makeDownstreamVertical   ( double const& length, double const& angle );
 
-   int checkFrame( const Frame& ) const;
+   int  checkFrame( const Frame& ) const;
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
@@ -107,14 +107,13 @@ class DLLEXPORT Slot : public bmlnElmnt
    int setOutFrame( Frame const& );
 
    Frame getInFrame() const
-     { return in; }
+     { return in_; }
    Frame getOutFrame() const
-     { return out; }
+     { return out_; }
 
    // Not overloaded: virtual double getReferenceTime() const {return _ctRef;}
 
    double setReferenceTime(   double const& );
-   double setReferenceTime( Particle const& );  // returns _ctRef
 
    // Functions passed on to tenant
 
@@ -130,11 +129,11 @@ class DLLEXPORT Slot : public bmlnElmnt
 
  private:
 
-   Frame in;
-   Frame out;
+   Frame in_;
+   Frame out_;
 
-   void processFrame( const Frame&, Particle& ) const;
-   void processFrame( const Frame&, JetParticle& ) const;
+   void processFrame( Frame const&, Particle& )    const;
+   void processFrame( Frame const&, JetParticle& ) const;
 
    std::ostream& writeTo ( std::ostream& );
    std::istream& readFrom( std::istream& );
