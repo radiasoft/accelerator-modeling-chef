@@ -120,7 +120,7 @@ public:
   // Assignment _____________________________
 
   void        Set                   ( T const* );
-  T           operator()            ( int )       const; // return component
+  T const&    operator()            ( int )       const; // return component
   T&          operator()            ( int );              // set    component
   T const&    operator[]            ( int idx)    const { return m_theVector[idx]; }
   T&          operator[]            ( int idx)          { return m_theVector[idx]; }
