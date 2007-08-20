@@ -93,12 +93,12 @@ bmlnElmnt::PinnedFrameSet::PinnedFrameSet()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::PinnedFrameSet::PinnedFrameSet( bmlnElmnt::PinnedFrameSet const& rhs)
+bmlnElmnt::PinnedFrameSet::PinnedFrameSet( bmlnElmnt::PinnedFrameSet const& o)
 :   upStream_(0), downStream_(0)
 {
 
-    upStream_ = new Frame( *(rhs.upStream_)   );
-  downStream_ = new Frame( *(rhs.downStream_) );
+  upStream_   =  o.upStream_   ?   new Frame( *(o.upStream_)   ) : 0; 
+  downStream_ =  o.downStream_ ?   new Frame( *(o.downStream_) ) : 0;
 
 }
 
@@ -291,21 +291,21 @@ bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s, PropFunc
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlnElmnt::bmlnElmnt( bmlnElmnt const& a ) 
-  : ident_(a.ident_),      
-    length_(a.length_),     
-    strength_(a.strength_),  
-    align_(0),   
-    iToField_(a.iToField_),   
-    shuntCurrent_(a.shuntCurrent_), 
-    p_bml_(),      
-    bml_e_(),    
-    propfunc_(a.propfunc_),
-    pinnedFrames_(),
-    ctRef_(a.ctRef_),
+  :      ident_(a.ident_),      
+        length_(a.length_),     
+      strength_(a.strength_),  
+         align_(0),   
+      iToField_(a.iToField_),   
+  shuntCurrent_(a.shuntCurrent_), 
+         p_bml_(),      
+         bml_e_(),    
+      propfunc_(a.propfunc_),
+  pinnedFrames_(a.pinnedFrames_),
+         ctRef_(a.ctRef_),
     attributes_(a.attributes_),
-    tag_(a.tag_),
-    pAperture_(0),
-    dataHook()
+           tag_(a.tag_),
+     pAperture_(0),
+     dataHook()
 {
 
 
@@ -486,7 +486,7 @@ bmlnElmnt::~bmlnElmnt() {
 
 void bmlnElmnt::propagate( Particle& x ) 
 {
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
@@ -502,7 +502,7 @@ void bmlnElmnt::propagate( Particle& x )
 
 void bmlnElmnt::propagate( JetParticle& x )
 {
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
@@ -519,7 +519,7 @@ void bmlnElmnt::propagate( JetParticle& x )
 void bmlnElmnt::propagate( ParticleBunch& x )
 {
 
-  if( align_ == 0 ) {
+  if( !align_  ) {
     localPropagate  ( x );
   }
   else {
