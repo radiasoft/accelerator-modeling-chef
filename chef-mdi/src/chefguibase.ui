@@ -25,13 +25,13 @@
     </property>
     <item text="&amp;File" name="fileMenu">
         <action name="fileLoadAction"/>
-        <item text="Load" name="popupMenu_38" accel="">
+        <item text="Load" name="popupMenu" accel="">
             <action name="fileLoadLatticeFileAction"/>
             <action name="fileLoadDeviceFileAction"/>
             <action name="fileLoadScriptAction"/>
         </item>
         <action name="fileEditAction"/>
-        <item text="Open" name="popupMenu_42" accel="">
+        <item text="Open" name="popupMenu_5" accel="">
             <action name="fileOpenMAD8Action"/>
             <action name="fileOpenPythonAction"/>
         </item>
@@ -46,7 +46,7 @@
     </item>
     <item text="&amp;Edit" name="editMenu">
         <action name="editSelectAction"/>
-        <item text="Select" name="popupMenu" accel="">
+        <item text="Select" name="popupMenu_16" accel="">
             <action name="editSelectFilterAction"/>
             <separator/>
             <action name="editSelectallAction"/>
@@ -75,14 +75,14 @@
     </item>
     <item text="Calculations" name="Calculations">
         <action name="calculationsLatticeFunctionsAction"/>
-        <item text="Lattice Functions" name="popupMenu_24" accel="">
+        <item text="Lattice Functions" name="popupMenu_41" accel="">
             <action name="calculationsLatticeFunctionsTwissAction"/>
             <action name="calculationsLatticeFunctionsEdwardsTengAction"/>
             <action name="calculationsLatticeFunctionsMomentsAction"/>
             <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
         </item>
         <action name="calculationsPushAction"/>
-        <item text="Push" name="popupMenu_29" accel="">
+        <item text="Push" name="popupMenu_46" accel="">
             <action name="calculationsPropagateTwissAction"/>
             <action name="calculationsPropagateMomentsAction"/>
             <action name="calculationsPropagateDispersionAction"/>
@@ -100,10 +100,23 @@
         <action name="controlsAdjustChromAction"/>
     </item>
     <item text="&amp;Tools" name="Tools">
-        <action name="toolsGenBunchAction"/>
-        <action name="toolsSite_ViewerAction"/>
+        <action name="toolsGenerateBunchAction"/>
+        <action name="toolsDisplayBunchAction"/>
+        <item text="Display Bunch" name="popupMenu_60" accel="">
+            <action name="toolsDisplayBunchXvsYAction"/>
+            <action name="toolsDisplayBunchYvsYPAction"/>
+            <action name="toolsDisplayBunchx_vs_yAction"/>
+            <action name="toolsDisplayBunchLineDensityAction"/>
+            <action name="toolsDisplayBunchHorProfileAction"/>
+            <action name="toolsDisplayBunchVerProfileAction"/>
+        </item>
+        <separator/>
+        <action name="tools2D_TAction"/>
+        <separator/>
         <action name="toolsTrackAction"/>
         <action name="toolsTraceAction"/>
+        <separator/>
+        <action name="toolsSite_ViewerAction"/>
     </item>
     <item text="Examples" name="Examples">
         <action name="examplesFODO_CellAction"/>
@@ -625,7 +638,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>toolsGenBunchAction</cstring>
+            <cstring>toolsGenerateBunchAction</cstring>
         </property>
         <property name="text">
             <string>Generate Bunch</string>
@@ -650,10 +663,10 @@
             <cstring>toolsTrackAction</cstring>
         </property>
         <property name="text">
-            <string>Track</string>
+            <string>GL Phase Space Tracker</string>
         </property>
         <property name="menuText">
-            <string>Track</string>
+            <string>GL Phase Space Tracker</string>
         </property>
     </action>
     <action>
@@ -661,10 +674,10 @@
             <cstring>toolsTraceAction</cstring>
         </property>
         <property name="text">
-            <string>Trace</string>
+            <string>GL Ray Tracer</string>
         </property>
         <property name="menuText">
-            <string>Trace</string>
+            <string>GL Ray Tracer</string>
         </property>
     </action>
     <action>
@@ -790,6 +803,9 @@
         <property name="name">
             <cstring>examplesSingle_SextupoleAction</cstring>
         </property>
+        <property name="toggleAction">
+            <bool>true</bool>
+        </property>
         <property name="text">
             <string>Single Sextupole</string>
         </property>
@@ -913,7 +929,10 @@
     </action>
     <action>
         <property name="name">
-            <cstring>editSelectlineAction</cstring>
+            <cstring>editSelectLineAction</cstring>
+        </property>
+        <property name="toggleAction">
+            <bool>true</bool>
         </property>
         <property name="text">
             <string></string>
@@ -1188,6 +1207,94 @@
             <string>Retrieve Data</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>tools2D_TAction</cstring>
+        </property>
+        <property name="text">
+            <string>Ray Tracer</string>
+        </property>
+        <property name="menuText">
+            <string>Ray Tracer</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchAction</cstring>
+        </property>
+        <property name="text">
+            <string>Display Bunch</string>
+        </property>
+        <property name="menuText">
+            <string>Display Bunch</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchXvsYAction</cstring>
+        </property>
+        <property name="text">
+            <string>x vs x'</string>
+        </property>
+        <property name="menuText">
+            <string>x vs x'</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchYvsYPAction</cstring>
+        </property>
+        <property name="text">
+            <string>y vs y'</string>
+        </property>
+        <property name="menuText">
+            <string>y vs y'</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchLineDensityAction</cstring>
+        </property>
+        <property name="text">
+            <string>line density</string>
+        </property>
+        <property name="menuText">
+            <string>line density</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchHorProfileAction</cstring>
+        </property>
+        <property name="text">
+            <string>hor profile</string>
+        </property>
+        <property name="menuText">
+            <string>hor profile</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchVerProfileAction</cstring>
+        </property>
+        <property name="text">
+            <string>ver profile</string>
+        </property>
+        <property name="menuText">
+            <string>ver profile</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>toolsDisplayBunchx_vs_yAction</cstring>
+        </property>
+        <property name="text">
+            <string>x vs y</string>
+        </property>
+        <property name="menuText">
+            <string>x vs y</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
@@ -1207,12 +1314,6 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>fileSave()</slot>
-    </connection>
-    <connection>
-        <sender>toolsGenBunchAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>pushParticles()</slot>
     </connection>
     <connection>
         <sender>fileSaveAsAction</sender>
@@ -1377,12 +1478,6 @@
         <slot>verChromCtrl()</slot>
     </connection>
     <connection>
-        <sender>controlsAdjustChromAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>chromCtrl()</slot>
-    </connection>
-    <connection>
         <sender>toolsSite_ViewerAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1425,7 +1520,7 @@
         <slot>makeFODO()</slot>
     </connection>
     <connection>
-        <sender>editSelectlineAction</sender>
+        <sender>editSelectLineAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>editSelectLine()</slot>
@@ -1682,10 +1777,25 @@
         <receiver>CHEFGUIBase</receiver>
         <slot>databaseConnect()</slot>
     </connection>
+    <connection>
+        <sender>toolsGenerateBunchAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>toolsGenerateBunch()</slot>
+    </connection>
+    <connection>
+        <sender>toolsDisplayBunchAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>toolsDisplayBunch()</slot>
+    </connection>
+    <connection>
+        <sender>editSelectLineAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>editSelectLine()</slot>
+    </connection>
 </connections>
-<includes>
-    <include location="local" impldecl="in implementation">chefguibase.ui.h</include>
-</includes>
 <slots>
     <slot>fileNew()</slot>
     <slot>fileOpen()</slot>
@@ -1740,7 +1850,6 @@
     <slot>tuneCtrl()</slot>
     <slot>horChromCtrl()</slot>
     <slot>verChromCtrl()</slot>
-    <slot>chromCtrl()</slot>
     <slot>windowsInterpreterAction_toggled( bool set )</slot>
     <slot>windowsMessagesAction_toggled( bool set )</slot>
     <slot>windowsTree_BrowserAction_toggled( bool set )</slot>
@@ -1780,6 +1889,8 @@
     <slot>fileEditorSave()</slot>
     <slot>databaseConnect()</slot>
     <slot>databaseRetrieve()</slot>
+    <slot>toolsGenerateBunch()</slot>
+    <slot>toolsDisplayBunch()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
