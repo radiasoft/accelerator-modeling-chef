@@ -46,8 +46,6 @@
 #define CHEFGUI_H
 
 
-
-
 #include <ostream>
 #include <chefguibase.h>
 
@@ -133,21 +131,13 @@ struct insDlgData
  
 
 
-
 class CHEFGUI: public CHEFGUIBase {
 
   Q_OBJECT
 
-  typedef void (CHEFGUI::* ACTFUNC00)( ElmPtr       );
-  typedef void (CHEFGUI::* ACTFUNC01)( ConstElmPtr  );
-  typedef void (CHEFGUI::* ACTFUNC10)( ElmPtr       ) const;
-  typedef void (CHEFGUI::* ACTFUNC11)( ConstElmPtr  ) const;
-
-  typedef bool (CHEFGUI::* BOOLFUNC00)( ElmPtr       );
-  typedef bool (CHEFGUI::* BOOLFUNC01)( ConstElmPtr  );
-  typedef bool (CHEFGUI::* BOOLFUNC10)( ElmPtr       ) const;
-  typedef bool (CHEFGUI::* BOOLFUNC11)( ConstElmPtr  ) const;
-
+  typedef boost::function<void( ElmPtr ) >      ActionOnElm;
+  typedef boost::function<void( ConstElmPtr)>   ActionOnConstElm;
+  typedef boost::function<void( ConstElmPtr)>   BoolOnConstElm;
 
 public:
 
@@ -155,21 +145,31 @@ public:
  ~CHEFGUI();    
 
 
+public slots:
+
+  void modeRing(bool set);
+  void modeLine(bool set);
+  void devicesAutoRefresh(bool);
+  void fileEditPython();
+  void fileEditMAD8();
+  void editParse();
+
 private:
 
-  int             id_FileWriteTree_;
-  int             id_analMenu_;
-  int             id_ctrlMenu_;
-  int             id_EditSelectMenu_;
-  int             id_FilePrint_;
+  int                              id_FileWriteTree_;
+  int                              id_analMenu_;
+  int                              id_ctrlMenu_;
+  int                              id_EditSelectMenu_;
+  int                              id_FilePrint_;
 
-  coord*          x_; 
-  coord*          y_; 
-  coord*          z_; 
-  coord*          px_;
-  coord*          py_;
-  coord*          pz_;
+  coord*                           x_; 
+  coord*                           y_; 
+  coord*                           z_; 
+  coord*                           px_;
+  coord*                           py_;
+  coord*                           pz_;
 
+  std::auto_ptr<ParticleBunch>     bunch_;                        
 
   QObject*                         eventfilter_;
  
@@ -213,47 +213,38 @@ private:
   QPyCHEF*                         interpreter_;
 
 
-  QPopupMenu*       fileMenu_;
-  QPopupMenu*       toolMenu_;
-  QPopupMenu*       editMenu_;
+  QPopupMenu*                      fileMenu_;
+  QPopupMenu*                      toolMenu_;
+  QPopupMenu*                      editMenu_;
 
 
-  std::list<ConstElmPtr>  foundList_;    // List of beamline elements found
-                                         // by the editor.
+  std::list<ConstElmPtr>           foundList_;    // List of beamline elements found
+                                                  // by the editor.
 
-  std::list<BmlContextPtr> contextList_;
+  std::list<BmlContextPtr>         contextList_;
 
-  BmlContextPtr            p_currBmlCon_;   // Currently selected beamline context
-  QBmlRoot*                p_currQBmlRoot_; // ... and its widget
-  QBml*                    p_clickedQBml_;  // ... and its QBml
+  BmlContextPtr                    p_currBmlCon_;   // Currently selected beamline context
+  QBmlRoot*                        p_currQBmlRoot_; // ... and its widget
+  QBml*                            p_clickedQBml_;  // ... and its QBml
 
   EnvPtr<double>                   p_JetEnv_;
   EnvPtr<std::complex<double> >    p_JetCEnv_;
 
   Options                          userOptions_;
 
-  void buildVTuneCircuit ( ConstElmPtr  ) const;
-  void buildHTuneCircuit ( ConstElmPtr  ) const;
-  void buildVChromCircuit( ConstElmPtr  ) const;
-  void buildHChromCircuit( ConstElmPtr  ) const;
+  void buildVTuneCircuit ( ElmPtr );
+  void buildHTuneCircuit ( ElmPtr );
+  void buildVChromCircuit( ElmPtr );
+  void buildHChromCircuit( ElmPtr );
 
-  void testFC( ACTFUNC11 ) const;
+  void testFC( ActionOnElm& );
 
-  void traverseTree( QBmlRoot const*, ACTFUNC11 ) const;
+  void traverseTree( QBmlRoot const*, ActionOnElm& );
   void pushArgs();
 
   insDlgData     insertionDialog() const;
   void           enableMenus(bool set);
   void           updateEditorWindowLists(); 
-
-public slots:
-
-  void modeRing(bool set);
-  void modeLine(bool set);
-  void devicesAutoRefresh(bool);
-  void fileEditPython();
-  void fileEditMAD8();
-  void editParse();
 
 
 private slots:
@@ -355,6 +346,9 @@ private slots:
   void disableMenus();
   void enableMenus();
 
+  void toolsGenerateBunch();
+  void toolsDisplayBunch();
+
  private:
 
   void readBmlFile( QString s);
@@ -364,6 +358,7 @@ private slots:
                                              // END   CHEFGUI SPECIFIC CODE
 
 signals:
+
   void new_beamline();
   void modeChanged( ConstBmlContextPtr );
 
