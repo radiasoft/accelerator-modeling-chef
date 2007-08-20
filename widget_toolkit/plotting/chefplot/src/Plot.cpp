@@ -269,6 +269,7 @@ void  Plot::setData( PlotData const& pltdata) {
 
      crv->setYAxis( curve.getYAxis() );
      crv->setPen(  QColor( curve.getColor().r, curve.getColor().g, curve.getColor().b ) );
+     if ( !curve.isConnected() ) crv->setStyle(QwtPlotCurve::Dots);
 
      crv->attach(this);
    

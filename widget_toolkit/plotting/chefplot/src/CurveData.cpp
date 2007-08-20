@@ -41,7 +41,8 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size, std::string label):
-  xarray_(x), yarray_(y), size_(size),  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label)  
+  xarray_(x), yarray_(y), size_(size),  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
+  connected_(true), label_(label)  
 {
 
   xmin_ = *std::min_element( &xarray_[0], &xarray_[0] + size_);
@@ -58,7 +59,8 @@ CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double
 
 CurveData::CurveData( double const* x , double const* y, 
                                     int size, std::string label )
-: size_(size), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label)  
+: size_(size), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
+  connected_(true), label_(label)  
 
 {
 
@@ -81,7 +83,8 @@ CurveData::CurveData( double const* x , double const* y,
 
 
 CurveData::CurveData( std::vector<double> const& x ,  std::vector<double> const& y, std::string label ):
-  xarray_(0), yarray_(0), size_(0), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), label_(label) 
+  xarray_(0), yarray_(0), size_(0), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
+  connected_(true), label_(label) 
 {
 
   // copy the data 
@@ -117,7 +120,8 @@ CurveData::CurveData(CurveData const& cd)
                    xmin_(cd.xmin_),      xmax_(cd.xmax_), 
                    ymin_(cd.ymin_),      ymax_(cd.ymax_), 
                    xaxis_(cd.xaxis_),    yaxis_(cd.yaxis_),                  
-                   color_(cd.color_),    label_(cd.label_) 
+                   color_(cd.color_),    connected_(cd.connected_),
+                   label_(cd.label_) 
 {}
  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -140,7 +144,8 @@ CurveData&  CurveData::operator=( CurveData const& cd)
   xaxis_  =  cd.xaxis_;
   yaxis_  =  cd.yaxis_;
 
-  label_  =  cd.label_; 
+  connected_  =  cd.connected_; 
+  label_      =  cd.label_; 
 
   return *this;
 } 
@@ -273,10 +278,27 @@ void CurveData::setColor( CurveData::Color const& color)
 {
   color_ = color;
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CurveData::Color const&  CurveData::getColor() const
 {
   return color_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CurveData::setConnected(bool set)
+{
+  connected_ = set;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool CurveData::isConnected() const
+{
+  return connected_;
 }
