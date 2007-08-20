@@ -52,6 +52,8 @@ Frame::Frame()
  : o_(3), e_(3,3)
 {
 
+  // default: zero offset and rotation matrix = unit diagonal
+
    for( int i=0; i<3; ++i) {
       for( int j=0; j< 3; ++j) {
         e_(i,j) = ( i == j ) ? 1.0 : 0.0; 
@@ -387,11 +389,9 @@ void Frame::reset()
   o_(1) = 0.0;
   o_(2) = 0.0;
 
-  for( int i = 0; i < 3; i++ ) {
-    e_(i,i) = 1.0;
-    for( int j = i+1; j < 3; j++ ) {
-      e_(i,j) = 0.0;
-      e_(j,i) = 0.0;
+  for( int i=0; i<3; ++i) {
+    for( int j=0; j< 3; ++j ) {
+       e_(i,j) = ( i == j) ? 1.0 : 0.0;
     }
   }
 }
@@ -403,9 +403,9 @@ Frame Frame::relativeTo( Frame const& f ) const
 {
   // Assumes orthonormal Frame
   Frame ret;
-  MatrixD W( 3, 3 );
 
-  W = ( f.e_ ).transpose();
+  MatrixD W = ( f.e_ ).transpose();
+
   ret.o_ = W * ( o_ - f.o_ );
   ret.e_ = W * ( e_ );
 
@@ -419,17 +419,16 @@ Frame Frame::patchedOnto( Frame const& f ) const
 {
   // Assumes orthonormal Frame
   Frame ret;
-  MatrixD W( 3, 3 );
 
-  W = f.e_;
+  MatrixD W = f.e_;
   ret.o_ = f.o_ + W * ( this->o_ );
   ret.e_ = W * ( this->e_ );
 
   // A correction to keep orthogonality
   // errors from building up.
-  Matrix corrector(3,3);
-  corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
-  for( int i = 0; i < 3; ++i) {
+
+  Matrix corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
+  for( int i=0; i<3; ++i) {
     corrector(i,i) = corrector(i,i) + 1.5;
   }
   ret.e_ = corrector*(ret.e_);
@@ -496,30 +495,24 @@ Frame Frame::tween(   const Frame& one, const Frame& two
 
 
   // Construct mid Frame
-  // REMOVE: Frame middle;
-  // REMOVE: middle.setOrigin( (1.0 - pct)*one.getOrigin() +  pct*two.getOrigin() );
+
   Frame middle( two.relativeTo(one) );
 
-  // REMOVE: MatrixD E1(3,3), E2(3,3), W(3,3);
-  MatrixD W(3,3);
-  MatrixC U(3,3), UI(3,3), lambda(3,3);
-
   // ... the rotation matrix
-  // REMOVE: E1 = one.getAxes();
-  // REMOVE: E2 = two.getAxes();
-  // REMOVE: W = E1.transpose() * E2;
-  W = middle.getAxes();
+
+  MatrixD W = middle.getAxes();
   
   // ... eigenvalues and eigenvectors
-  U = W.eigenVectors();
-  UI = U.inverse();
-  lambda = UI*W*U;
+
+  MatrixC U      = W.eigenVectors();
+  MatrixC UI     = U.inverse();
+  MatrixC lambda = UI*W*U;
   
   // ...... more paranoia
-  int i, j;
+
   if( doChecks ) {
-    for( i = 0; i < 3; i++ ) {
-      for( j = 0; j < 3; j++ ) {
+    for( int i=0; i<3; ++i) {
+      for( int j=0; j< 3; ++j) {
         if( i == j ) {
           if( 1.0e-8 < std::abs( 1.0 - std::abs(lambda(i,i)) ) ) {
             throw( GenericException( __FILE__, __LINE__
@@ -547,8 +540,9 @@ Frame Frame::tween(   const Frame& one, const Frame& two
   //  within the range (-pi,pi). I'm going to assume this is correct.
   //  Even paranoia has its limits.
   double theta;
-  for( i = 0; i < 3; i++ ) {
-    for( j = 0; j < 3; j++ ) {
+
+  for( int i = 0; i < 3; ++i) {
+    for( int j = 0; j < 3; ++j) {
       if( i == j ) {
         if( std::abs(imag(lambda(i,i))) < 1.0e-9*std::abs(real(lambda(i,i))) ) {
           lambda(i,i) = c_one;
@@ -565,17 +559,10 @@ Frame Frame::tween(   const Frame& one, const Frame& two
   }
   
 
-  // REMOVE: // Construct the "tweened" axes.
-  // REMOVE: // Exuding confidence; no paranoia.
-  // REMOVE: middle.setOrthonormalAxes( E1*real( U*lambda*UI ) );
-  // REMOVE: 
-  // REMOVE: 
-  // REMOVE: // Finished
-  // REMOVE: return middle;
-
-  // Finish
   middle.setOrigin( pct*middle.getOrigin() );
+
   middle.setOrthonormalAxes( real( U*lambda*UI ) );
+
   return middle.patchedOnto(one);
 }
 
@@ -638,4 +625,11 @@ istream& operator>> ( istream& is, Frame& f )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+MatrixD const& Frame::getAxes() const
+{
+  return e_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
