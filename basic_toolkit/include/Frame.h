@@ -150,10 +150,5 @@ inline int Frame::zAxisIndex()
   return 2; 
 }
 
-inline MatrixD const& Frame::getAxes() const
-{
-  return e_;
-}
-
 
 #endif  // FRAME_H
