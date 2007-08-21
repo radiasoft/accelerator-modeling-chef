@@ -1,5 +1,4 @@
-! ==============================================================================
-! subsystems=elin1/elin2
+! ==============================================================================! subsystems=elin1/elin2
 ! ------------------------------------------------------------------------------
 ! Prerequisite files ($ILC = ILC lattice root directory):
 ! one of
@@ -40,10 +39,12 @@
   Eloss  := NMLcav*(1E-6*MLcavK*MLcavL*(Np*QELEC))
   Elossu := 0 !3.23
   MLcavG := 31.5
+!  MLcavG := 0
 !  MLcavG := (GEV2MEV*(Ef-Ei+Elossu)+Eloss)/(NMLcav*MLcavL*COS(TWOPI*MLcavP))
   MLcavE := MLcavG*MLcavL
 
   MLcav : ML9cell, DELTAE=MLcavE, PHI0=MLcavP
+! MLcav : ML9cell, DELTAE=0.0, PHI0=0.0
 
   DMLcav : DRIF, L=MLcavL
 

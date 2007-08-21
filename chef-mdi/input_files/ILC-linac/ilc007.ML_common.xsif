@@ -58,9 +58,12 @@
 ! MLcavV : cavity voltage (MV)
 
   MLcavF := 1300
+! MLcavF := 0
+
   MLcavA := 0.078/2
  !MLcavK := 1.4461E13
-  MLcavK := 2.0775E13 !from Lucretia
+!!MLcavK := 2.0775E13 !from Lucretia
+  MLcavK := 0.0
 
   ML9cell : LCAV, FREQ=MLcavF, APERTURE=MLcavA, L=MLcavL, &
                   ELOSS=MLcavK*MLcavL, &
@@ -125,9 +128,9 @@
 !        cryomodules will be perpendicular to local gravity vector)
 ! ------------------------------------------------------------------------------
 
-  CURVE := 0 !switch earth's curvature following on (1) or off (0)
-  STEER := 0 !switch earth's curvature steering on (1) or off (0)
-  BUMPS := 0 !switch dispersion matching bumps on (1) or off (0)
+  CURVE := 1 !switch earth's curvature following on (1) or off (0)
+  STEER := 1 !switch earth's curvature steering on (1) or off (0)
+  BUMPS := 1 !switch dispersion matching bumps on (1) or off (0)
 
   R_earth := 6.370E6 !6370 km
 
