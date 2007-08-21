@@ -89,17 +89,18 @@ protected:
 class QBmlElmt : public QBml
 {
 public:
-  QBmlElmt( QBmlRoot* parent, ConstElmPtr const&, double& azimuth );
+  QBmlElmt( QBmlRoot* parent, ElmPtr const&, double& azimuth );
  ~QBmlElmt();
 
   double             Azimuth()         const     { return  azimuth_; }
   ConstElmPtr        cheatElementPtr() const     { return  myElement_; }
+       ElmPtr        cheatElementPtr()           { return  myElement_; }
   QString fullName() const;
 
   friend class BeamlineBrowser;
 
 private:
-  ConstElmPtr       myElement_;
+  ElmPtr            myElement_;
   double            azimuth_;   
 };
 
