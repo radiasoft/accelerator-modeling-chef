@@ -233,8 +233,8 @@ public:
 
   // Tagging methods
 
-  std::string getTag();                         
-  void        setTag(std::string const& tag);     
+  std::string const&  getTag() const;                         
+  void                setTag(std::string const& tag);     
 
 
 };
