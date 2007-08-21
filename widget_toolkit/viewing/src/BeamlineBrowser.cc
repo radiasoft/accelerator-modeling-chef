@@ -390,8 +390,7 @@ QBml::QBml( QPixmap* px, QBmlRoot* rt, const char* s1, const char* s2 )
 
 QBml::QBml( QPixmap* px, QListView* parent, const char* s1, const char* s2 )
 : QListViewItem( parent, s1, s2 ), pix_(px), p_(0)
-{
-}
+{}
 
 QBml::QBml( QBml const& x ) 
 : QListViewItem( x )
@@ -457,7 +456,7 @@ const QBmlRoot* QBml::topBmlParent()
 // *
 // *****************************************************************************
 
-QBmlElmt::QBmlElmt( QBmlRoot* parent, ConstElmPtr const& q, double& s )
+QBmlElmt::QBmlElmt( QBmlRoot* parent, ElmPtr const& q, double& s )
 : QBml( 0, parent, q->Name().c_str(), q->Type() ),
    myElement_(q),
    azimuth_(s) 
