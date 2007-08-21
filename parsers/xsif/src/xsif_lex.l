@@ -300,7 +300,9 @@ void XsifParserDriver::command_CALL( xsif_yy::location& yylloc, std::map<std::st
 
   yyguts_t* yyg =  (yyguts_t*) yyscanner;
  
-  std::string filename = boost::any_cast<std::string const>( attributes[std::string("FILENAME")] ); 
+  std::map<std::string,boost::any>::const_iterator it = attributes.find( std::string("FILENAME" ) );
+ 
+  std::string filename = boost::any_cast<std::string const&>(it->second);
 
   filename = trim(filename);  
 
