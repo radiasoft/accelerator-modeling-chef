@@ -54,6 +54,7 @@
 #include <streambuf>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
@@ -62,6 +63,8 @@
 #include <beamline/CF_sbend.h>
 #include <beamline/sector.h>
 #include <beamline/marker.h>
+#include <beamline/quadrupole.h>
+#include <beamline/sextupole.h>
 #include <mxyzptlk/EnvPtr.h>
 #include <bmlfactory/MAD8Factory.h>
 #include <bmlfactory/ParserException.h>
@@ -72,6 +75,7 @@
 #include <filters.h>
 #include <BeamlineBrowser.h>
 #include <BmlSelectionDialog.h>
+#include <DialogGenerateBunch.h>
 #include <InitCondDialogLF.h>
 #include <EditDialog.h>
 #include <DistributionWidget.h>
@@ -106,6 +110,8 @@
 #include <CHEFPlotMain.h>
 #include <CurveData.h>
 #include <PlotData.h>
+#include <beamline/ParticleBunch.h>
+#include <BunchData.h>
 #include <DbConnectDialog.h>
 
 
@@ -964,14 +970,16 @@ void CHEFGUI::editRemoveLine()
 
 void CHEFGUI::horTuneCtrl()
 {
-
- if( 0 == p_currBmlCon_ ) {
+ 
+ if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
   }
 
+  ActionOnElm action = boost::bind( &CHEFGUI::buildHTuneCircuit, this, _1);		
+
   if( p_currBmlCon_->isTreatedAsRing() ) {
-      testFC( &CHEFGUI::buildHTuneCircuit );
+      testFC( action );
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -992,8 +1000,10 @@ void CHEFGUI::verTuneCtrl()
     return;
   }
 
+  ActionOnElm action = boost::bind( &CHEFGUI::buildVTuneCircuit, this, _1);		
+
   if( p_currBmlCon_->isTreatedAsRing() ) {
-     testFC( &CHEFGUI::buildVTuneCircuit );
+     testFC(action);
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -1015,8 +1025,10 @@ void CHEFGUI::horChromCtrl()
     return;
   }
 
+  ActionOnElm action = boost::bind( &CHEFGUI::buildHChromCircuit, this, _1);		
+
   if( p_currBmlCon_->isTreatedAsRing() ) {
-     testFC( &CHEFGUI::buildHChromCircuit );
+     testFC(action);
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -1037,8 +1049,10 @@ void CHEFGUI::verChromCtrl()
     return;
   }
 
+  ActionOnElm action = boost::bind( &CHEFGUI::buildVChromCircuit, this, _1);		
+
   if( p_currBmlCon_->isTreatedAsRing() ) {
-      testFC( &CHEFGUI::buildVChromCircuit );
+      testFC( action );
   }
   else {
     QMessageBox::information( 0, "CHEF: ERROR",
@@ -1052,34 +1066,34 @@ void CHEFGUI::verChromCtrl()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildHTuneCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildHTuneCircuit(  ElmPtr elm ) 
 {
-  // ????????? p_currBmlCon_->addHTuneCorrector( bPtr );
+  p_currBmlCon_->addHTuneCorrector( elm );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildVTuneCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildVTuneCircuit(  ElmPtr elm ) 
 {
-  //????????????p_currBmlCon_->addVTuneCorrector( bPtr );
+  p_currBmlCon_->addVTuneCorrector( elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildHChromCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildHChromCircuit(  ElmPtr elm ) 
 {
-  //????????????? p_currBmlCon_->addHChromCorrector( bPtr );
+ p_currBmlCon_->addHChromCorrector( elm );
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildVChromCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildVChromCircuit(  ElmPtr elm ) 
 {
-  // ???????????? p_currBmlCon_->addVChromCorrector( bPtr );
+  p_currBmlCon_->addVChromCorrector(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1384,10 +1398,10 @@ void CHEFGUI::editFlatten()
   // Create a cloned, flattened beamline
   beamline  tempbml = p_currBmlCon_->cheatBmlPtr()->flatten();
   BmlPtr bmlPtr( tempbml.Clone() );
-    // This step is necessary,
+    //   This step is necessary,
     //   because the same objects exist both
     //   the original and flattened beamlines.
-    // Does not delete beamline elements.
+    //   Does not delete beamline elements.
 
   p_currBmlCon_ = BmlContextPtr ( new BeamlineContext( p_currBmlCon_->getParticle(), bmlPtr ) );
   contextList_.push_front( p_currBmlCon_ );
@@ -1401,11 +1415,36 @@ void CHEFGUI::editFlatten()
 
 void CHEFGUI::pushParticles()
 {
+
   DistributionWidget* dwPtr
     = new DistributionWidget( *(p_currBmlCon_), 0, 0, Qt::WDestructiveClose );
   dwPtr->show();
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::toolsGenerateBunch()
+{
+  static DialogGenerateBunch* dialog_generate_bunch = new DialogGenerateBunch(this,"Generate Particle Bunch", 0 );
+  dialog_generate_bunch->show(); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::toolsDisplayBunch()
+{
+  bunch_ = std::auto_ptr<ParticleBunch>( new ParticleBunch( Positron(), 2048, 1.0 ) );
+  bunch_->populateGaussian ( ParticleBunch::x_npx, 0.001, 0.001, 0.0);
+  bunch_->populateGaussian ( ParticleBunch::y_npy, 0.001, 0.001, 0.0);
+
+  CHEFPlotMain* plot =  new CHEFPlotMain( centralWidget_ , "Bunch X-Y projection", Qt::WDestructiveClose );
+  BunchData data ( *bunch_ );
+  plot->addData( data );
+  plot->show();
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -3000,7 +3039,7 @@ void CHEFGUI::processFilter( BoolNode const& query )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::testFC( ACTFUNC11 actfcn ) const
+void CHEFGUI::testFC( ActionOnElm& actfcn ) 
 {
 
   QListViewItem* fc = browser_->firstChild();
@@ -3020,7 +3059,7 @@ void CHEFGUI::testFC( ACTFUNC11 actfcn ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC11 actfcn ) const
+void CHEFGUI::traverseTree( QBmlRoot const* x, ActionOnElm& actfcn ) 
 {
 
   // Applies actfcn on selected elements. If element is a beamline, 
@@ -3032,7 +3071,7 @@ void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC11 actfcn ) const
   {
     if(typeid(*fc) == typeid(QBmlElmt)) {
       if( fc->isSelected() ) {
-        (this->*actfcn)( dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
+        actfcn( dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
       }
     }
 
@@ -3078,8 +3117,7 @@ void CHEFGUI::windowsInterpreterAction_toggled( bool  set){
   if (set) {
     interpreter_->show();
   }
-  else
-  {
+  else {
     interpreter_->hide();
   }
 }
@@ -3089,12 +3127,10 @@ void CHEFGUI::windowsInterpreterAction_toggled( bool  set){
 
 void CHEFGUI::windowsDevicesAction_toggled( bool  set)
 {
-  if (set)
-  {
+  if (set) {
     devices_->show();
   }
-  else
-  {
+  else {
     devices_->hide();
   }
 }
@@ -3103,38 +3139,32 @@ void CHEFGUI::windowsDevicesAction_toggled( bool  set)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::windowsCascade() {
-
+void CHEFGUI::windowsCascade() 
+{
   dynamic_cast<AppWorkspace*>(centralWidget_)->cascade();
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::windowsMinimizeAll(){
-
-
-
-}
+void CHEFGUI::windowsMinimizeAll()
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-void CHEFGUI::windowsTile(){
-
+void CHEFGUI::windowsTile()
+{
   dynamic_cast<AppWorkspace*>(centralWidget_)->tile();
-
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::windowsDefaultLayout(){
-
+void CHEFGUI::windowsDefaultLayout()
+{
   dynamic_cast<AppWorkspace*>(centralWidget_)->defaultLayout();
-
 }
 
 
@@ -3144,7 +3174,6 @@ void CHEFGUI::windowsDefaultLayout(){
 void CHEFGUI::disableMenus()
 {
   enableMenus(false);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -3152,9 +3181,7 @@ void CHEFGUI::disableMenus()
 
 void CHEFGUI::enableMenus()
 {
-
  enableMenus(true);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -3185,7 +3212,7 @@ void CHEFGUI::enableMenus( bool set )
     controlsBuildHChromCctAction->setEnabled(set);
     controlsBuildVChromCctAction->setEnabled(set);
     controlsAdjustChromAction->setEnabled(set);
-    toolsGenBunchAction->setEnabled(set);
+    toolsGenerateBunchAction->setEnabled(set);
 
     editCopyLineAction->setEnabled(set);
     editRemoveLineAction->setEnabled(set);
@@ -3205,7 +3232,7 @@ void CHEFGUI::enableMenus( bool set )
     editSelectFilterAction->setEnabled(set);
     editSelectallAction->setEnabled(set);
     editSelectnoneAction->setEnabled(set);
-    editSelectlineAction->setEnabled(set);
+    editSelectLineAction->setEnabled(set);
 
     editMergeEquivalentQuadsAction->setEnabled(set);
     editConvertToSlotsAction->setEnabled(set);
@@ -3257,7 +3284,6 @@ void CHEFGUI::devicesAutoRefresh(bool set)
 {
   devices_->setAutoRefresh(set);
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -3362,9 +3388,7 @@ void CHEFGUI::fileEditMAD8()
 
 void CHEFGUI::databaseConnect() 
 { 
-
   dbconnect_dlg_->show();
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
