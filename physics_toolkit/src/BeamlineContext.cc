@@ -128,7 +128,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   particle_         = w.Clone();
   particleBunchPtr_ = new ParticleBunch( *particle_);
 
-  if( typeid(*w) == typeid(Proton) || typeid(*w) == typeid(Positron) ) {
+  if( typeid(w) == typeid(Proton) || typeid(w) == typeid(Positron) ) {
     particleBunchPtr_ = new ParticleBunch( *particle_);
   }
   else {
