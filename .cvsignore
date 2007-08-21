@@ -11,3 +11,5 @@ header_files
 libtool
 stamp-h1
 include
+BUILD
+RUNTIME
