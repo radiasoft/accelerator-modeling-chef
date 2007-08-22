@@ -58,8 +58,8 @@ void propagate( gkick& elm,  Particle_t& p)
   // This angle change is *not* momentum dependent ! 
   //------------------------------------------------------------------
 
-  Component_t xp =  p.get_npx()/npz + elm.xOffset();  
-  Component_t yp =  p.get_npy()/npz + elm.yOffset();
+  Component_t xp =  p.get_npx()/npz + elm.xpOffset();  
+  Component_t yp =  p.get_npy()/npz + elm.ypOffset();
 
   Component_t pz = sqrt(1.0 - xp*xp -yp*yp )*p.Momentum(); 
   
