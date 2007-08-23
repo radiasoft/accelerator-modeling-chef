@@ -511,7 +511,7 @@ beam_element_display( madparser*    mp,
     case BEL_SOLENOID: {
       char left[BEL_NAME_LENGTH];
       beam_element_get_label( bel, left );
-      fprintf( out, "solenoid %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
+      fprintf( out, "Solenoid %s ( (char*)\"%s\", ", left, beam_element_make_name( bel->name_ ));
       expr_display(mp,  out, bel->length_, var_table, bel_table );
       fprintf( out, ", BRHO*(");
       expr_display(mp,  out, bel->params_[BEL_SOLENOID_KS], var_table, bel_table );
