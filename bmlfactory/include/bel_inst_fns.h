@@ -48,11 +48,6 @@ make_multipole( const char* name, double length ) {
 }
 
 static inline bmlnElmnt*
-make_solenoid( const char* name, double length ) {
-  return new drift( name, length );
-}
-
-static inline bmlnElmnt*
 make_elseparator( const char* name, double length ) {
   return new drift( name, length );
 }
