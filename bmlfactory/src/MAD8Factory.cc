@@ -233,7 +233,7 @@ MAD8Factory::~MAD8Factory() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BmlPtr 
-MAD8Factory::create_beamline( std::string bmlname) {   
+MAD8Factory::create_beamline( std::string bmlname) {   // DEPRECATED
   
  BmlPtr bml = create_beamline_private(bmlname.c_str() );
 
@@ -369,9 +369,6 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       break;
     }
     case BEL_SBEND: {
-
-      bool simple = false;
-
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       double angle  = expr_evaluate( mp_,  bel->params_[BEL_SBEND_ANGLE], var_table_, bel_table_ );
 
@@ -384,21 +381,12 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double e2 = expr_evaluate( mp_,  bel->params_[BEL_SBEND_E2], var_table_, bel_table_ );
 
 
-      simple = (k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0 && 
-                k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0 && 
-                k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0 && 
-                tilt->kind_ == NUMBER_EXPR && tilt->dvalue_ == 0.0);
+      bool simple =    k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0
+                    && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0
+                    && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0;
 
-      if( true == simple ) {
+      if( simple ) {
         lbel = ElmPtr( new sbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*angle/length, angle, e1, e2 ) );
-        if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-          aligner.xOffset = 0.0;
-          aligner.yOffset = 0.0;
-          aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
-          lbel->setAlignment( aligner );
-          // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
-	}
-        break;
       }
       else {
         CF_sbend* p = 0;
@@ -423,11 +411,19 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( multipoleStrength != 0.0 ) {
           p->setOctupole( multipoleStrength );
 	}
-        break;
       }
+
+      if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
+        // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
+      }
+
+      break;
     }
     case BEL_RBEND: {
-      bool simple = false;
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       double angle  = expr_evaluate( mp_,  bel->params_[BEL_RBEND_ANGLE], var_table_, bel_table_ );
       expr_struct *k1   = (expr_struct*)bel->params_[BEL_RBEND_K1]->data;
@@ -438,30 +434,17 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double e1 = expr_evaluate( mp_,  bel->params_[BEL_RBEND_E1], var_table_, bel_table_ );
       double e2 = expr_evaluate( mp_,  bel->params_[BEL_RBEND_E2], var_table_, bel_table_ ); 
     
-      simple = (k1->kind_ == NUMBER_EXPR && 
-                k1->dvalue_ == 0.0 && 
-                k2->kind_ == NUMBER_EXPR && 
-                k2->dvalue_ == 0.0 && 
-                k3->kind_ == NUMBER_EXPR && 
-                k3->dvalue_ == 0.0 && 
-                tilt->kind_ == NUMBER_EXPR && 
-                tilt->dvalue_ == 0.0);
+      bool simple =    k1->kind_ == NUMBER_EXPR && k1->dvalue_ == 0.0
+                    && k2->kind_ == NUMBER_EXPR && k2->dvalue_ == 0.0
+                    && k3->kind_ == NUMBER_EXPR && k3->dvalue_ == 0.0;
 
-      if( true == simple ) {
+      if( simple ) {
         if( (0.0 == e1) && (0.0 == e2) ) {
           lbel = ElmPtr ( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) ) );
 	}
         else {
           lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 ) );
         }
-        if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
-          aligner.xOffset = 0.0;
-          aligner.yOffset = 0.0;
-          aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
-          lbel->setAlignment( aligner );
-        }
-        // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
-        break;
       }
       else {
         CF_rbend* p =0; 
@@ -492,8 +475,17 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( multipoleStrength != 0.0 ) {
           p->setOctupole( multipoleStrength );
 	}
-        break;
       }
+
+      if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
+        aligner.xOffset = 0.0;
+        aligner.yOffset = 0.0;
+        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
+        lbel->setAlignment( aligner );
+      }
+      // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
+
+      break;
     }
     case BEL_QUADRUPOLE: {
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
@@ -676,9 +668,23 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       }
       break;
     }
-    case BEL_SOLENOID:
-      lbel = ElmPtr( make_solenoid( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );
+    case BEL_SOLENOID: {
+      lbel = ElmPtr( new Solenoid(   // Name
+                                     strip_final_colon( bel->name_ ).c_str()  
+                                     // Length   [m]
+                                   , expr_evaluate(   mp_
+                                                    , bel->length_
+                                                    , var_table_, bel_table_ 
+                                                  )
+                                     // Strength [T]
+                                   , BRHO_*expr_evaluate(   mp_
+                                                          , bel->params_[BEL_SOLENOID_KS]
+                                                          , var_table_, bel_table_ 
+                                                        )
+                                 ) 
+                   );
       break;
+    }
     case BEL_HKICKER: {
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
       double kck    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_KICK], var_table_, bel_table_ );
