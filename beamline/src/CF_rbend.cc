@@ -39,6 +39,9 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
+******
 **************************************************************************
 *************************************************************************/
 
@@ -51,6 +54,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/beamline.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/quadrupole.h>
 #include <beamline/sextupole.h>
@@ -262,13 +266,7 @@ CF_rbend::CF_rbend( CF_rbend const& x )
   ,        usTan_(x.usTan_)
   ,        dsTan_(x.dsTan_)
 {
-  int m = 1 + ( ( int(x.v_) - int(x.u_) )/sizeof( bmlnElmnt* ) );
-  u_ = new bmlnElmnt* [ m ];
-  v_ = &( u_[m-1] );
-  
-  for( int k = 0; k < m;  ++k) {
-    u_[k] = ( x.u_[k] )->Clone();
-  }
+  p_bml_ = BmlPtr( p_bml_->Clone() );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -304,55 +302,41 @@ void CF_rbend::finishConstructor(int n)
   thinSextupole ts( 0.0 );
   thinQuad      tq( 0.0 );
 
-  u_ = new bmlnElmnt* [ 121 ];    // Paranoia: should need only 109
-  v_ = u_;
+  inEdge.setEntryAngle(  usAngle_ );
+  outEdge.setEntryAngle( dsAngle_ );
 
-  *(v_  ) = new rbend          ( inEdge  );
-  dynamic_cast<rbend*>(*v_)->setEntryAngle( usAngle_ );
-    v_++;
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new rbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new rbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new rbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
+  p_bml_ = BmlPtr( new beamline("CF_RBEND_INTERNAL") );
+
+  p_bml_->append( inEdge  );
+  p_bml_->append( ts      );
+  p_bml_->append( tq      );
+  p_bml_->append( body    );
+  p_bml_->append( ts      );
+  p_bml_->append( tq      );
+  p_bml_->append( body    );
+  p_bml_->append( ts      );
+  p_bml_->append( tq      );
+  p_bml_->append( body    );
+  p_bml_->append( ts      );
+  p_bml_->append( tq      );
 
   for( int i = 1; i < n; i++ ) {
-    *(v_++) = new rbend          ( separator );
-    *(v_++) = new thinSextupole  ( ts      );
-    *(v_++) = new thinQuad       ( tq      );
-    *(v_++) = new rbend          ( body    );
-    *(v_++) = new thinSextupole  ( ts      );
-    *(v_++) = new thinQuad       ( tq      );
-    *(v_++) = new rbend          ( body    );
-    *(v_++) = new thinSextupole  ( ts      );
-    *(v_++) = new thinQuad       ( tq      );
-    *(v_++) = new rbend          ( body    );
-    *(v_++) = new thinSextupole  ( ts      );
-    *(v_++) = new thinQuad       ( tq      );
+    p_bml_->append( separator );
+    p_bml_->append( ts      );
+    p_bml_->append( tq      );
+    p_bml_->append( body    );
+    p_bml_->append( ts      );
+    p_bml_->append( tq      );
+    p_bml_->append( body    );
+    p_bml_->append( ts      );
+    p_bml_->append( tq      );
+    p_bml_->append( body    );
+    p_bml_->append( ts      );
+    p_bml_->append( tq      );
   }
 
-  *(v_  ) = new rbend          ( outEdge );
-  dynamic_cast<rbend*>(*v_)->setExitAngle( dsAngle_ );
+  p_bml_->append( outEdge );
 
-  // Paranoid test.
-  if( (12*n + 1) != (1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) )) ) {
-    (*pcerr) << "*** ERROR ***                                         \n"
-            "*** ERROR *** CF_rbend constructor                    \n"
-            "*** ERROR *** Impossible! "
-         << (11*n + 2)
-         << " != " 
-         << (1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) ))
-         << "\n*** ERROR *** Constructor is aborting program.        \n"
-            "*** ERROR ***                                         \n"
-         << endl;
-    exit(9);
-  }
 }
 
 
@@ -360,14 +344,7 @@ void CF_rbend::finishConstructor(int n)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_rbend::~CF_rbend()
-{
-  // NOTE: If this code is ever modified, you 
-  // must also modify CF_rbend::readFrom.
-  while( v_ >= u_ ) {
-    delete (*(v_--));
-  }
-  delete [] u_;
-}
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -388,19 +365,8 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
   usTan_       =  rhs.usTan_;
   dsTan_       =  rhs.dsTan_;
 
-  if  (!v_ ) { u_ = v_ = 0; return *this; } 
+  p_bml_       =  BmlPtr( rhs.p_bml_->Clone() );  
 
-  int nelm = 1 + (rhs.v_ - rhs.u_)/sizeof(bmlnElmnt*);
-
-  u_ = new bmlnElmnt*[nelm];
-  
-  for ( int i=0; i < nelm; ++i)
-  {
-    u_[i] = rhs.u_[i]->Clone();   
-  }
-
-  v_ = u_ + nelm-1;       
-  
   return *this;
 }
 
@@ -409,10 +375,10 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 
 void CF_rbend::localPropagate( Particle& p )
 {
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
-  }
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	it != p_bml_->end(); ++it ) {
+    (*it)->localPropagate( p );
+  }  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -420,9 +386,9 @@ void CF_rbend::localPropagate( Particle& p )
 
 void CF_rbend::localPropagate( JetParticle& p )
 {
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
+   for ( beamline::iterator it  = p_bml_->begin(); 
+	it != p_bml_->end(); ++it ) {
+    (*it)->localPropagate( p );
   }
 }
 
@@ -455,7 +421,7 @@ double CF_rbend::setEntryAngle( double const& phi /* radians */ )
   double ret = usAngle_;
   usAngle_ = phi;
   usTan_   = tan(phi);
-  dynamic_cast<rbend*>(*u_)->setEntryAngle(phi);
+  boost::dynamic_pointer_cast<rbend>(p_bml_->firstElement())->setEntryAngle(phi);
   return ret;
 }
 
@@ -468,7 +434,7 @@ double CF_rbend::setExitAngle( double const& phi /* radians */ )
   double ret = dsAngle_;
   dsAngle_ = phi;  
   dsTan_  = tan(phi);
-  dynamic_cast<rbend*>(*v_)->setExitAngle(phi);
+  boost::dynamic_pointer_cast<rbend>(p_bml_->lastElement())->setExitAngle(phi);
   return ret;
 }
 
@@ -478,31 +444,22 @@ double CF_rbend::setExitAngle( double const& phi /* radians */ )
 
 int CF_rbend::setOctupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinOctupole** w = new thinOctupole* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
+  int counter = 0;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) ) ++counter;
+  }
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
-      // w[++counter] = dynamic_cast<thinOctupole*>(*x);
-      w[++counter] = (thinOctupole*)(*x);
+  if (counter==0) return 1;
+ 
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
+      (*it)->setStrength( arg_x/counter );
     }
-    x++;
   }
-
-  if( counter < 0 ) {
-    delete [] w;
-    return 1;
-  }
-  
-  double s = arg_x/((double) ( counter + 1 ));
-  for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( s );
-  }
-  
-  delete [] w;
   return 0;
+ 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -510,31 +467,22 @@ int CF_rbend::setOctupole( double const& arg_x )
 
 int CF_rbend::setSextupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinSextupole** w = new thinSextupole* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
+  int counter = 0;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) ) ++counter;
+  }
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinSextupole" ) ) {
-      // w[++counter] = dynamic_cast<thinSextupole*>(*x);
-      w[++counter] = (thinSextupole*)(*x);
+  if (counter==0) return 1;
+ 
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) { 
+      (*it)->setStrength( arg_x/counter );
     }
-    x++;
   }
-
-  if( counter < 0 ) {
-    delete [] w;
-    return 1;
-  }
-  
-  double s = arg_x/((double) ( counter + 1 ));
-  for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( s );
-  }
-  
-  delete [] w;
   return 0;
+ 
 }
 
 
@@ -561,30 +509,21 @@ bool CF_rbend::hasStandardFaces() const
 
 int CF_rbend::setQuadrupole( double const& arg_x )
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinQuad** w = new thinQuad* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
-      // w[++counter] = dynamic_cast<thinQuad*>(*x);
-      w[++counter] = (thinQuad*)(*x);
+  int counter = 0;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( ( boost::dynamic_pointer_cast<thinQuad>(*it) ) ) ++counter;
+  }
+
+  if (counter==0) return 1;
+ 
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<thinQuad>(*it) ) { 
+      (*it)->setStrength( arg_x/counter );
     }
-    x++;
   }
-
-  if( counter < 0 ) {
-    delete [] w;
-    return 1;
-  }
-  
-  double s = arg_x/((double) ( counter + 1 ));
-  for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( s );
-  }
-  
-  delete [] w;
   return 0;
 }
 
@@ -594,31 +533,16 @@ int CF_rbend::setQuadrupole( double const& arg_x )
 
 int CF_rbend::setDipoleField( double const& arg_x )
 {
-  this->strength_ = arg_x;
-
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  rbend** w = new rbend* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
-
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "rbend" ) ) {
-      // w[++counter] = dynamic_cast<rbend*>(*x);
-      w[++counter] = (rbend*)(*x);
-    }
-    x++;
+ 
+  strength_ = arg_x; 
+ 
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<rbend>(*it) ) { 
+     (*it)->setStrength( arg_x );
+   }
   }
 
-  if( counter < 0 ) {
-    delete [] w;
-    return 1;
-  }
-  
-  for( int i = 0; i <= counter; i++ ) {
-    w[i]->setStrength( this->strength_ );
-  }
-  
-  delete [] w;
   return 0;
 }
 
@@ -628,13 +552,14 @@ int CF_rbend::setDipoleField( double const& arg_x )
 
 void CF_rbend::setStrength( double const& s )
 {
-  double ratio = s / getDipoleField();
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*x)->setStrength( ratio*((*x)->Strength()) );
-    ++x;
+  double ratio = s/strength_;
+ 
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+      (*it)->setStrength( (s>0.0) ? ratio * (*it)->Strength() : (*it)->Strength()  );
   }
-  strength_ = s;
+
+  strength_ = s; 
 }
 
 
@@ -643,31 +568,17 @@ void CF_rbend::setStrength( double const& s )
 
 double CF_rbend::getOctupole() const
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinOctupole** w = new thinOctupole* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
+ // Returns the **integrated** octupole
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinOctupole" ) ) {
-      // w[++counter] = dynamic_cast<thinOctupole*>(*x);
-      w[++counter] = (thinOctupole*)(*x);
+  double strength = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinOctupole>(*it) )  {
+      strength += (*it)->Strength();
     }
-    x++;
   }
-
-  if( counter < 0 ) {
-    delete [] w;
-    return 0.0;
-  }
-  
-  double ret = 0.0;
-  for( int i=0; i <= counter; ++i) {
-    ret += w[i]->Strength();
-  }
-  
-  delete [] w;
-  return ret;
+  return strength;
 }
 
 
@@ -676,31 +587,17 @@ double CF_rbend::getOctupole() const
 
 double CF_rbend::getSextupole() const
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinSextupole** w = new thinSextupole* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
+  // Returns the **integrated** sextupole
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinSextupole" ) ) {
-      // w[++counter] = dynamic_cast<thinSextupole*>(*x);
-      w[++counter] = (thinSextupole*)(*x);
+  double strength = 0.0;
+
+  for ( beamline::const_iterator it = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinSextupole>(*it) ) {
+      strength += (*it)->Strength();
     }
-    x++;
   }
-
-  if( counter < 0 ) {
-    delete [] w;
-    return 0.0;
-  }
-  
-  double ret = 0.0;
-  for( int i=0; i <= counter; ++i) {
-    ret += w[i]->Strength();
-  }
-  
-  delete [] w;
-  return ret;
+  return strength;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -708,31 +605,18 @@ double CF_rbend::getSextupole() const
 
 double CF_rbend::getQuadrupole() const
 {
-  int m = 1 + ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
-  thinQuad** w = new thinQuad* [ m ];
-  int counter = -1;
-  bmlnElmnt** x = u_;
+  // Returns the **integrated** quadrupole
 
-  while( x <= v_ ) {
-    if( 0 == strcmp( (*x)->Type(), "thinQuad" ) ) {
-      // w[++counter] = dynamic_cast<thinQuad*>(*x);
-      w[++counter] = (thinQuad*)(*x);
-    }
-    x++;
+  double strength = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
+       strength += (*it)->Strength();
+     }
   }
 
-  if( counter < 0 ) {
-    delete [] w;
-    return 0.0;
-  }
-  
-  double ret = 0.0;
-  for( int i = 0; i <= counter; i++ ) {
-    ret += w[i]->Strength();
-  }
-  
-  delete [] w;
-  return ret;
+  return strength;
 }
 
 
@@ -836,7 +720,8 @@ void CF_rbend::peekAt( double& s, Particle const& prt )
 
 ostream& CF_rbend::writeTo( ostream& os )
 {
-  int n = ( ( int(v_) - int(u_) )/sizeof( bmlnElmnt* ) );
+  int n = p_bml_->countHowMany();
+
   if( 0 != n%12 ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "ostream& CF_rbend::writeTo( ostream& os )", 
@@ -879,15 +764,6 @@ istream& CF_rbend::readFrom( istream& is )
   dsTan_ = tan( dsAngle_ );
 
   // Rebuild basic element ...
-  // ... First deconstruct (identical to CF_rbend destructor)
-  while( v_ >= u_ ) {
-    delete (*(v_--));
-  }
-  delete [] u_;
-  v_ = 0;
-  u_ = 0;
-
-  // ... Then reconstruct
   finishConstructor(n);
 
 
@@ -1133,13 +1009,9 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
 void CF_rbend::acceptInner( BmlVisitor& v )
 {
-  ctRef_ = 0.0;
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ctRef_ += (*x)->getReferenceTime();
-    ++x;
-  }
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
 }
 
 
@@ -1148,13 +1020,9 @@ void CF_rbend::acceptInner( BmlVisitor& v )
 
 void CF_rbend::acceptInner( ConstBmlVisitor& v )
 {
-  ctRef_ = 0.0;
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ctRef_ += (*x)->getReferenceTime();
-    ++x;
-  }
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
 }
 
 
@@ -1175,3 +1043,20 @@ void CF_rbend::accept( ConstBmlVisitor& v ) const
 } 
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  CF_rbend::getReferenceTime() const 
+{
+
+  ctRef_ = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+        
+   ctRef_  += (*it)->getReferenceTime();
+  }
+
+  return ctRef_;
+
+}

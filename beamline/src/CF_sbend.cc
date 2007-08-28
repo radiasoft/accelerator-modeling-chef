@@ -40,6 +40,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
 *******                                                                
 **************************************************************************
 *************************************************************************/
@@ -51,6 +53,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/beamline.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/quadrupole.h>
 #include <beamline/sextupole.h>
@@ -68,14 +71,15 @@ using FNAL::pcerr;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::CF_sbend()
-: bmlnElmnt( 1.0, 0.0 )
-  , angle_(0.001)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  , usAngle_(0.0)
-  , dsAngle_(0.0)
-  , usTan_(0.0)
-  , dsTan_(0.0)
+  : bmlnElmnt( 0.0, 0.0, 0 ), 
+          angle_(0.0),       
+    usEdgeAngle_(0.0),
+    dsEdgeAngle_(0.0),
+        usAngle_(0.0),
+        dsAngle_(0.0),
+          usTan_(0.0),
+          dsTan_(0.0),
+              n_(1)
 {
   finishConstructor();
 }
@@ -87,15 +91,16 @@ CF_sbend::CF_sbend()
 CF_sbend::CF_sbend( double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
                     double const&        ang,  // bend angle [ radians  ]
-                    int )
-: bmlnElmnt( lng, fld )
-  , angle_(ang)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  , usAngle_(0.0)
-  , dsAngle_(0.0)
-  , usTan_(0.0)
-  , dsTan_(0.0)
+                    int n )
+: bmlnElmnt( lng, fld ),
+          angle_(ang),
+    usEdgeAngle_(0.0),
+    dsEdgeAngle_(0.0),
+        usAngle_(0.0),
+        dsAngle_(0.0),
+          usTan_(0.0),
+          dsTan_(0.0),
+                n_(n)
 {
   finishConstructor();
 }
@@ -108,15 +113,16 @@ CF_sbend::CF_sbend( const char*   nm,   // name
                     double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
                     double const&        ang,  // angle      [ radians  ]
-                    int )
-: bmlnElmnt( nm, lng, fld )
-  , angle_(ang)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  , usAngle_(0.0)
-  , dsAngle_(0.0)
-  , usTan_(0.0)
-  , dsTan_(0.0)
+                    int  n)
+  : bmlnElmnt( nm, lng, fld ),
+        angle_(ang),
+  usEdgeAngle_(0.0),
+  dsEdgeAngle_(0.0),
+      usAngle_(0.0),
+      dsAngle_(0.0),
+        usTan_(0.0),
+        dsTan_(0.0),
+              n_(n)
 {
   finishConstructor();
 }
@@ -133,14 +139,15 @@ CF_sbend::CF_sbend( double const&        lng,  // length     [ meter    ]
                                         // signs of previous two parameters
                                         // are as defined for sbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
-: bmlnElmnt( lng, fld )
-  , angle_(ang)
-  , usEdgeAngle_(us)
-  , dsEdgeAngle_(ds)
-  , usAngle_(us)
-  , dsAngle_(-ds)
-  , usTan_(tan(us))
-  , dsTan_(-tan(ds))
+  : bmlnElmnt( lng, fld ),
+        angle_(ang),
+  usEdgeAngle_(us),
+  dsEdgeAngle_(ds),
+      usAngle_(us),
+      dsAngle_(-ds),
+        usTan_(tan(us)),
+        dsTan_(-tan(ds)),
+            n_(n)
 {
   finishConstructor();
 }
@@ -158,14 +165,15 @@ CF_sbend::CF_sbend( const char*   nm,   // name
                                         // signs of previous two parameters
                                         // are as defined for sbends by MAD
                     int           n  )  // number of blocks: 4n+1 bends + 2(4n) multipoles
-: bmlnElmnt( nm, lng, fld )
-  , angle_(ang)
-  , usEdgeAngle_(us)
-  , dsEdgeAngle_(ds)
-  , usAngle_(us)
-  , dsAngle_(-ds)
-  , usTan_(tan(us))
-  , dsTan_(-tan(ds))
+: bmlnElmnt( nm, lng, fld ),
+       angle_(ang),
+ usEdgeAngle_(us),
+ dsEdgeAngle_(ds),
+     usAngle_(us),
+     dsAngle_(-ds),
+       usTan_(tan(us)),
+       dsTan_(-tan(ds)),
+           n_(n)
 {
   finishConstructor();
 }
@@ -175,22 +183,18 @@ CF_sbend::CF_sbend( const char*   nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::CF_sbend( CF_sbend const& x )
-: bmlnElmnt( x )
-  , angle_(x.angle_)
-  , usEdgeAngle_(x.usEdgeAngle_)
-  , dsEdgeAngle_(x.dsEdgeAngle_)
-  , usAngle_(x.usAngle_)
-  , dsAngle_(x.dsAngle_)
-  , usTan_(x.usTan_)
-  , dsTan_(x.dsTan_)
+  : bmlnElmnt( x ),
+        angle_(x.angle_),
+  usEdgeAngle_(x.usEdgeAngle_),
+  dsEdgeAngle_(x.dsEdgeAngle_),
+      usAngle_(x.usAngle_),
+      dsAngle_(x.dsAngle_),
+        usTan_(x.usTan_),
+        dsTan_(x.dsTan_),
+            n_(x.n_)
+
 {
-  int m = 1 + ( ( int(x.v_) - int(x.u_) )/sizeof( bmlnElmnt* ) );
-  u_ = new bmlnElmnt* [ m ];
-  v_ = &( u_[m-1] );
-  
-  for( int k=0; k < m; ++k) {
-    u_[k] = ( x.u_[k] )->Clone();
-  }
+  p_bml_ = BmlPtr( p_bml_->Clone() );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -199,43 +203,62 @@ CF_sbend::CF_sbend( CF_sbend const& x )
 
 void CF_sbend::finishConstructor()
 {
-// Insertion for CF_sbend constructors
-// 
-  double field       =  strength_;
-  double frontLength =  6.0*(length_/4.0)/15.0;
-  double sepLength   = 16.0*(length_/4.0)/15.0;
 
-  sbend inEdge  ( frontLength,     field, (frontLength/length_)*angle_, 
+//------------------------------------
+// Insertion for CF_sbend constructors
+//------------------------------------- 
+
+  double field       =  strength_;
+
+  //----------------------------------------------------------------------------
+  // NOTE: the proportions below come from a quadrature rule meant to minimize 
+  //       the error when a magnet is split into 4 parts. See R. Talman 
+  //         
+  // 2*6/15  *  (L/4) +   3*16/15 * (L/4)  = 60/15 * ( L/4) =  L
+  // 2* ends +   body     =  L  
+  //----------------------------------------------------------------------------       
+
+  double frontLength =   (6.0/15.0)*( length_/(4.0*n_) );
+  double sepLength   =  (16.0/15.0)*( length_/(4.0*n_) );
+  
+  sbend inEdge  ( "IN_EDGE" , frontLength,     field, (frontLength/length_)*angle_, 
                   usEdgeAngle_, 0.0, &sbend::InEdge  );
-  sbend outEdge ( frontLength,     field, (frontLength/length_)*angle_, 
+  sbend outEdge ( "OUT_EDGE", frontLength,     field, (frontLength/length_)*angle_, 
                   0.0, dsEdgeAngle_, &sbend::OutEdge );
-  sbend body    ( sepLength,       field, (sepLength/length_)*angle_,
+  sbend body    ( "BODY",    sepLength,       field,   (sepLength/length_)*angle_,
                   0.0,          0.0, &sbend::NoEdge );
 
   thinSextupole ts( 0.0 );
   thinQuad      tq( 0.0 );
 
-  u_ = new bmlnElmnt* [ 13 ];
-  v_ = u_;
+  p_bml_ = BmlPtr( new beamline("CF_SBEND_INTERNALS") );
 
-  (*v_)   = new sbend          ( inEdge    );
+   inEdge.setEntryAngle( usAngle_ );
+  outEdge.setExitAngle( dsAngle_ );
 
-  dynamic_cast<sbend*>(*v_)->setEntryAngle( usAngle_ );
-    v_++;
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new sbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new sbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_++) = new sbend          ( body    );
-  *(v_++) = new thinSextupole  ( ts      );
-  *(v_++) = new thinQuad       ( tq      );
-  *(v_  ) = new sbend          ( outEdge );
+  for( int i=0; i<n_; ++i) {
 
-  dynamic_cast<sbend*>(*v_)->setExitAngle( dsAngle_ );
+    if ( i == 0 ) { 
+      p_bml_->append( inEdge );
+    } 
+    else {
+      p_bml_->append( body   );
+    }
+
+    p_bml_->append( ts       );
+    p_bml_->append( tq       );
+    p_bml_->append( body     );
+    p_bml_->append( ts       );
+    p_bml_->append( tq       );
+    p_bml_->append( body     );
+    p_bml_->append( ts       );
+    p_bml_->append( tq       );
+    p_bml_->append( body     );
+    p_bml_->append( ts       );
+    p_bml_->append( tq       );
+  }
+
+  p_bml_->append( outEdge    );
 
 }
 
@@ -244,14 +267,7 @@ void CF_sbend::finishConstructor()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::~CF_sbend()
-{
-  // NOTE: If this code is ever modified, you 
-  // must also modify CF_sbend::readFrom.
-  while( v_ >= u_ ) {
-    delete (*(v_--));
-  }
-  delete [] u_;
-}
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -279,9 +295,9 @@ void CF_sbend::peekAt( double& s, Particle const& prt )
 
 void CF_sbend::localPropagate( Particle& p )
 {
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    (*it)->localPropagate( p );
   }
 }
 
@@ -290,9 +306,9 @@ void CF_sbend::localPropagate( Particle& p )
 
 void CF_sbend::localPropagate( JetParticle& p )
 {
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*(x++))->localPropagate( p );
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    (*it)->localPropagate( p );
   }
 }
 
@@ -301,16 +317,16 @@ void CF_sbend::localPropagate( JetParticle& p )
 
 double CF_sbend::setEntryAngle( Particle const& p )
 {
-  return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_sbend::setExitAngle( const Particle& p )
+double CF_sbend::setExitAngle( Particle const& p )
 {
-  return this->setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -322,7 +338,9 @@ double CF_sbend::setEntryAngle( double const& phi /* radians */ )
   double ret = usAngle_;
   usAngle_   = phi;
   usTan_     = tan(phi);
-  dynamic_cast<sbend*>(*u_)->setEntryAngle(phi);
+
+  boost::dynamic_pointer_cast<sbend>( p_bml_->firstElement() )->setEntryAngle(phi);
+
   return ret;
 }
 
@@ -334,7 +352,9 @@ double CF_sbend::setExitAngle( double const& phi /* radians */ )
   double ret = dsAngle_;
   dsAngle_   = phi;  
   dsTan_     = tan(phi);
-  dynamic_cast<sbend*>(*v_)->setExitAngle(phi);
+
+  boost::dynamic_pointer_cast<sbend>( p_bml_->lastElement() )->setExitAngle(phi);
+
   return ret;
 }
 
@@ -343,23 +363,21 @@ double CF_sbend::setExitAngle( double const& phi /* radians */ )
 
 int CF_sbend::setOctupole( double const& arg_x )
 {
-  thinOctupole* q = 0;
-  bmlnElmnt** x   = u_;
-  
+   
   int counter = 0;
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<thinOctupole*>(*x) ) ) ++counter;
-    ++x;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
  
-  x   = u_;
-
-  while( x <= v_ ) {
-   if( (q=dynamic_cast<thinOctupole*>(*x) ) )  q->setStrength( arg_x/counter );
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
+      (*it)->setStrength( arg_x/counter );
+    }
   }
-  
   return 0;
  
 }
@@ -370,21 +388,19 @@ int CF_sbend::setOctupole( double const& arg_x )
 int CF_sbend::setSextupole( double const& arg_x )
 {
 
-  thinSextupole* q = 0;
-  bmlnElmnt** x    = u_;
-  
   int counter = 0;
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<thinSextupole*>(*x) ) ) ++counter;
-    ++x;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
  
-  x   = u_;
-
-  while( x <= v_ ) {
-   if( (q=dynamic_cast<thinSextupole*>(*x) ) )  q->setStrength( arg_x/counter );
+  for ( beamline::iterator it  = p_bml_->begin(); 
+                           it != p_bml_->end(); ++it ) {
+   if ( boost::dynamic_pointer_cast<thinSextupole>(*it) )  {
+     (*it)->setStrength( arg_x/counter );
+   }
   }
   
   return 0;
@@ -413,23 +429,20 @@ bool CF_sbend::hasStandardFaces() const
 int CF_sbend::setQuadrupole( double const& arg_x )
 {
 
-  thinQuad* q = 0;
-  bmlnElmnt** x    = u_;
-  
   int counter = 0;
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<thinQuad*>(*x) ) ) ++counter;
-    ++x;
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) ++counter;
   }
 
   if (counter==0) return 1;
  
-  x   = u_;
-
-  while( x <= v_ ) {
-   if( (q=dynamic_cast<thinQuad*>(*x) ) )  q->setStrength( arg_x/counter );
-   ++x; 
- }
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+   if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
+    (*it)->setStrength( arg_x/counter );
+   }
+  }
   
   return 0;
 }
@@ -440,25 +453,16 @@ int CF_sbend::setQuadrupole( double const& arg_x )
 int CF_sbend::setDipoleField( double const& arg_x )
 {
 
-  strength_ = arg_x;
-
-  sbend*      q  = 0;
-  bmlnElmnt** x  = u_;
   
-  int counter = 0;
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<sbend*>(*x) ) ) ++counter;
-    ++x;
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<sbend>(*it) ) { 
+     (*it)->setStrength( arg_x );
+   }
   }
 
-  if (counter==0) return 1;
- 
-  x   = u_;
+  strength_ =  arg_x; 
 
-  while( x <= v_ ) {
-   if( (q=dynamic_cast<sbend*>(*x) ) )  q->setStrength( arg_x/counter );
-  }
-  
   return 0;
 
 
@@ -470,14 +474,16 @@ int CF_sbend::setDipoleField( double const& arg_x )
 void CF_sbend::setStrength( double const& s )
 {
 
-  double ratio = s / getDipoleField();
-  bmlnElmnt** x = u_;
-
-  while( x <= v_ ) {
-    (*x)->setStrength( ratio*((*x)->Strength()) );
-    ++x;
+  double ratio = s/strength_;
+ 
+  for ( beamline::iterator it  = p_bml_->begin(); 
+                           it != p_bml_->end(); ++it ) {
+    
+       (*it)->setStrength( (s>0.0) ? ratio * (*it)->Strength() : (*it)->Strength()  );
   }
-  strength_ = s;
+
+
+  strength_ = s; 
 
 }
 
@@ -490,18 +496,16 @@ double CF_sbend::getOctupole() const
 
   // Returns the **integrated** octupole
 
-  thinOctupole*  q = 0;
-  bmlnElmnt**    x = u_;
+  double strength = 0.0;
 
-  double ret = 0.0;
-  
-  while( x <= v_ ) {
-    if( (q = dynamic_cast<thinOctupole*>(*x)) ) {
-      ret += q->Strength(); 
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinOctupole>(*it) )  {
+      strength += (*it)->Strength();
     }
-  ++x;
   }
-  return ret;
+  return strength;
+
 }
 
 
@@ -513,21 +517,15 @@ double CF_sbend::getSextupole() const
 
   // Returns the **integrated** sextupole
 
-   thinSextupole* q   = 0;
-   bmlnElmnt** x    = u_;
+  double strength = 0.0;
 
-   double ret         = 0.0;
-
-   while( x <= v_ ) {
-    if( (q = dynamic_cast<thinSextupole*>(*x)) ) 
-    {
-      ret += q->Strength();
+  for ( beamline::const_iterator it = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinSextupole>(*it) ) {
+      strength += (*it)->Strength();
     }
-    ++x;
-   }
-
-   return ret;
-
+  }
+  return strength;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -538,26 +536,23 @@ double CF_sbend::getQuadrupole() const
 
   // Returns the **integrated** quadrupole
 
-   thinQuad* q   = 0;
-   double ret    = 0.0;
+  double strength = 0.0;
 
-   bmlnElmnt** x = u_;
-   while( x <= v_ ) {
-    if( (q = dynamic_cast<thinQuad*>(*x)) ) 
-    {
-      ret += q->Strength();
-    }
-    ++x;
-   }
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
+       strength += (*it)->Strength();
+     }
+  }
 
-   return ret;
+  return strength;
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_sbend::getDipoleField() const
+double const& CF_sbend::getDipoleField() const
 {
   return strength_;
 }
@@ -678,17 +673,8 @@ istream& CF_sbend::readFrom( istream& is )
   dsTan_ = tan(dsAngle_);
 
   // Rebuild basic element ...
-  // ... First deconstruct (identical to CF_sbend destructor)
-  while( v_ >= u_ ) {
-    delete ( *(v_--) );
-  }
-  delete [] u_;
-  v_ = 0;
-  u_ = 0;
 
-  // ... Then reconstruct
   finishConstructor();
-
 
   // Set multipoles
   setQuadrupole( quadStrength );
@@ -718,7 +704,7 @@ bool CF_sbend::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_sbend::OrbitLength( const Particle& x )
+double CF_sbend::OrbitLength( Particle const& x )
 {
   return length_;
 }
@@ -728,13 +714,11 @@ double CF_sbend::OrbitLength( const Particle& x )
 
 void CF_sbend::acceptInner( BmlVisitor& v )
 {
-  ctRef_ = 0.0;
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ctRef_ += (*x)->getReferenceTime();
-    ++x;
-  }
+
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
+
 }
 
 
@@ -743,14 +727,9 @@ void CF_sbend::acceptInner( BmlVisitor& v )
 
 void CF_sbend::acceptInner( ConstBmlVisitor& v ) const
 {
-  ctRef_        = 0.0;
-  bmlnElmnt** x = u_;
-
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ctRef_ += (*x)->getReferenceTime();
-    ++x;
-  }
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -769,6 +748,40 @@ void CF_sbend::accept( ConstBmlVisitor& v ) const
 {
   v.visit(*this);
 } 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  CF_sbend::getReferenceTime() const 
+{
+
+  ctRef_ = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+        
+   ctRef_  += (*it)->getReferenceTime();
+  }
+
+  return ctRef_;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const& CF_sbend::getEntryAngle()   const
+{
+  return usAngle_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const&  CF_sbend::getExitAngle()    const
+{
+  return dsAngle_;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
