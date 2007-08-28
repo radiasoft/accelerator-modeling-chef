@@ -41,26 +41,29 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LattFncData::LattFncData( std::vector<LattFuncSage::lattFunc> const& twiss_vec, ConstBmlPtr bml ) 
+LattFncData::LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
+                          , double const& horTune
+                          , double const& verTune
+                          , ConstBmlPtr bml                                       ) 
 {
+  setTunes( horTune, verTune );
 
-   std::vector<double>      azimuth;
-   std::vector<double>       beta_H;
-   std::vector<double>      alpha_H;
-   std::vector<double>        psi_H;
-   std::vector<double>       beta_V;
-   std::vector<double>      alpha_V;
-   std::vector<double>        psi_V;
-   std::vector<double>   inv_beta_H;
-   std::vector<double>   inv_beta_V;
-   std::vector<double>  root_beta_H;
-   std::vector<double>  root_beta_V;
-   std::vector<double>       disp_H;
-   std::vector<double>       disp_V;
+  std::vector<double>      azimuth;
+  std::vector<double>       beta_H;
+  std::vector<double>      alpha_H;
+  std::vector<double>        psi_H;
+  std::vector<double>       beta_V;
+  std::vector<double>      alpha_V;
+  std::vector<double>        psi_V;
+  std::vector<double>   inv_beta_H;
+  std::vector<double>   inv_beta_V;
+  std::vector<double>  root_beta_H;
+  std::vector<double>  root_beta_V;
+  std::vector<double>       disp_H;
+  std::vector<double>       disp_V;
 
-  for ( std::vector<LattFuncSage::lattFunc>::const_iterator it =  twiss_vec.begin();  
+  for ( std::vector<LattFuncSage::lattFunc>::const_iterator it  =  twiss_vec.begin();  
                                                             it !=  twiss_vec.end(); ++it ) {
-
        azimuth.push_back( it->arcLength      );
         beta_H.push_back(  it->beta.hor      );
        alpha_H.push_back( it->alpha.hor      );
@@ -78,56 +81,58 @@ LattFncData::LattFncData( std::vector<LattFuncSage::lattFunc> const& twiss_vec, 
     }
 
 
-    CurveData c1( azimuth, beta_H,  "Horizontal Beta"    );
-    CurveData c2( azimuth, alpha_H, "Horizontal Alpha"   );
-    //CurveData c3( azimuth, psi_H,   "Horizontal Psi"     );
+  CurveData c1( azimuth, beta_H,  "Horizontal Beta"    );
+  CurveData c2( azimuth, alpha_H, "Horizontal Alpha"   );
+  //CurveData c3( azimuth, psi_H,   "Horizontal Psi"     );
 
-    CurveData c4( azimuth, beta_V,  "Vertical Beta"      );
-    CurveData c5( azimuth, alpha_V, "Vertical Alpha"     );
-    //CurveData c6( azimuth, psi_V,   "Vertical Psi"       );
+  CurveData c4( azimuth, beta_V,  "Vertical Beta"      );
+  CurveData c5( azimuth, alpha_V, "Vertical Alpha"     );
+  //CurveData c6( azimuth, psi_V,   "Vertical Psi"       );
+
+  c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  c1.setColor(CurveData::Color(0,0,0) );
+
+  c2.setAxes( CurveData::xBottom, CurveData::yRight  );
+  c2.setColor(CurveData::Color(255,0,0) );
+
+  //c3.setAxes( CurveData::xBottom, CurveData::yLeft  );
+  //c3.setColor(CurveData::Color(0,255,0) );
 
 
-    c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    c1.setColor(CurveData::Color(0,0,0) );
+  c4.setAxes( CurveData::xBottom, CurveData::yLeft );
+  c4.setColor(CurveData::Color(0,0,0) );
 
-    c2.setAxes( CurveData::xBottom, CurveData::yRight  );
-    c2.setColor(CurveData::Color(255,0,0) );
+  c5.setAxes( CurveData::xBottom, CurveData::yRight );
+  c5.setColor(CurveData::Color(255,0,0) );
 
-    //c3.setAxes( CurveData::xBottom, CurveData::yLeft  );
-    //c3.setColor(CurveData::Color(0,255,0) );
+  //c6.setAxes( CurveData::xBottom, CurveData::yRight );
+  //c6.setColor(CurveData::Color(0,255,0) );
 
+  addCurve( c1 );
+  addCurve( c2 );
+  //addCurve( c3 );
 
-    c4.setAxes( CurveData::xBottom, CurveData::yLeft );
-    c4.setColor(CurveData::Color(0,0,0) );
+  addCurve( c4 );
+  addCurve( c5 );
+  //addCurve( c6 );
 
-    c5.setAxes( CurveData::xBottom, CurveData::yRight );
-    c5.setColor(CurveData::Color(255,0,0) );
+  setXLabel( "Arc Length [m]"                      );
+  setYLabel(  CurveData::yLeft,   "Beta  [m]"      );
+  setYLabel(  CurveData::yRight,  "Alpha"          );
 
-    //c6.setAxes( CurveData::xBottom, CurveData::yRight );
-    //c6.setColor(CurveData::Color(0,255,0) );
+  // setScaleMag(  CurveData::yRight, 5.0 ); // scale magnification ... unused at this point
 
-    addCurve( c1 );
-    addCurve( c2 );
-    //addCurve( c3 );
-
-    addCurve( c4 );
-    addCurve( c5 );
-    //addCurve( c6 );
-
-    setXLabel( "Arc Length [m]"                      );
-    setYLabel(  CurveData::yLeft,   "Beta  [m]"      );
-    setYLabel(  CurveData::yRight,  "Alpha"          );
-
-    // setScaleMag(  CurveData::yRight, 5.0 ); // scale magnification ... unused at this point
-
-    setBeamline( bml ); 
-
+  setBeamline( bml ); 
 }
+
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 LattFncData::~LattFncData()
 {}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
