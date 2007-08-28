@@ -28,8 +28,14 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
-******                                       
-******                                                                
+******  
+******   REVISION HISTORY
+******                                     
+******   August 2007  ostiguy@fnal.gov
+******  - efficiency improvmnents: 
+******        - access particle state by refeoence                                                                  
+******        - eliminate slow and uncessary dynamic casts  
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -52,47 +58,38 @@ sbend::Exact_Prop   sbend::Exact;
 sbend::InEdge_Prop  sbend::InEdge;
 sbend::OutEdge_Prop sbend::OutEdge;
 
-// REMOVE: sbend::Null_Prop    sbend::AbortProp;
-// REMOVE: sbend::Approx_Prop  sbend::Approx;
 
+namespace {
+  Particle::PhaseSpaceIndex const& i_x    =  Particle::xIndex;
+  Particle::PhaseSpaceIndex const& i_y    =  Particle::yIndex;
+  Particle::PhaseSpaceIndex const& i_cdt  =  Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const& i_npx  =  Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& i_npy  =  Particle::npyIndex;
+  Particle::PhaseSpaceIndex const& i_ndp  =  Particle::ndpIndex;
+}
 
-// REMOVE: // ********************************************************
-// REMOVE: 
-// REMOVE: int sbend::Null_Prop::operator()( bmlnElmnt* p_be, Particle& p )
-// REMOVE: {
-// REMOVE:   throw( GenericException( __FILE__, __LINE__,
-// REMOVE:          "int sbend::Null_Prop::operator()( bmlnElmnt* p_be, Particle& p )",
-// REMOVE:          "Must use a RefRegVisitor to register a reference proton." ) );
-// REMOVE: }
-// REMOVE: 
-// REMOVE: int sbend::Null_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
-// REMOVE: {
-// REMOVE:   throw( GenericException( __FILE__, __LINE__,
-// REMOVE:          "int sbend::Null_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )",
-// REMOVE:          "Must use a RefRegVisitor to register a reference proton." ) );
-// REMOVE: }
-// REMOVE: 
-// ********************************************************
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
 
- sbend * pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend * pbe = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Vector&  state = p.State();
 
  // Put in a kludge for the vertical focusing upon entrance.
- if( 0.0 != pbe->usTan_ ) {
+
+ if( pbe->usTan_ != 0.0 ) {
+
    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
  }
 
@@ -100,88 +97,87 @@ int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  (*myPropagator_)(pbe,p);
 
  // Put in a kludge for the vertical focusing upon exit.
- if( 0.0 != pbe->dsTan_ ) {
+ if( pbe->dsTan_  != 0.0) {
+
    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
  }
 
  return 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::Exact_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
 
- sbend* pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend* pbe       = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Mapping&  state = p.State();
 
  // Put in a kludge for the vertical focusing upon entrance.
- if( 0.0 != pbe->usTan_ ) {
+
+ if( pbe->usTan_ != 0.0 ) {
+
    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
  }
 
- // Propagate through constant magnetic field.
+ // Propagate through the constant magnetic field.
  (*myPropagator_)(pbe,p);
 
  // Put in a kludge for the vertical focusing upon exit.
- if( 0.0 != pbe->dsTan_ ) {
+ if( pbe->dsTan_  != 0.0) {
+
    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
  }
 
  return 0;
+
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- sbend* pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend* pbe = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Vector&  state = p.State();
 
  // Put in a kludge for the vertical focusing upon entrance.
  if( 0.0 != pbe->usTan_ ) {
+
    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
  }
 
@@ -191,25 +187,26 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
   return 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- sbend* pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend* pbe       = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Mapping&  state = p.State();
 
  // Put in a kludge for the vertical focusing upon entrance.
- if( 0.0 != pbe->usTan_ ) {
+
+ if( pbe->usTan_  != 0.0 ) {
    edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
  }
 
@@ -219,11 +216,15 @@ int sbend::InEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  return 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
- sbend* pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend* pbe       = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Vector&  state = p.State();
 
  // Propagate through the constant magnetic field.
  (*myPropagator_)(pbe,p);
@@ -231,16 +232,12 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  // Put in a kludge for the vertical focusing upon exit.
  if( 0.0 != pbe->dsTan_ ) {
    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
  }
 
@@ -248,38 +245,45 @@ int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int sbend::OutEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 {
- sbend* pbe = dynamic_cast<sbend*>(p_be);
- double edgeCoeff;
+ sbend* pbe       = static_cast<sbend*>(p_be);
+ double edgeCoeff = 0.0;
+
+ Mapping&  state = p.State();
 
  (*myPropagator_)(pbe,p);
 
  // Put in a kludge for the vertical focusing upon exit.
- if( 0.0 != pbe->dsTan_ ) {
+ if( pbe->dsTan_ != 0.0 ) {
+
    edgeCoeff = ( pbe->dsTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
-   #if 0
-   if( ( p.Charge() > 0.0 ) == ( pbe->Strength() > 0.0 ) ) {
-   #endif
-   #if 1
+
    if( p.Charge() > 0.0 ) {
-   #endif
-     p.set_npy( p.get_npy() + edgeCoeff* p.get_y() );
+     state[i_npy] +=  edgeCoeff * state[i_y];
    }
    else {
-     p.set_npy( p.get_npy() - edgeCoeff* p.get_y() );
+     state[i_npy] -=  edgeCoeff * state[i_y];
    }
  }
 
  return 0;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
 {
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
- sbend* pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = static_cast<sbend*>(p_be);
+
+ Vector&  state = p.State();
 
  // Preliminary filter from state coordinates
 
@@ -287,10 +291,10 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
         psq = psq*psq;
 
  double E_factor = 1.0 / sqrt( psq + p.PNI2() );
- double beta_1 = E_factor*p.get_npx();
- double beta_2 = E_factor*p.get_npy();
- double beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
-                                    - p.get_npy()*p.get_npy() );
+ double beta_1 = E_factor*state[i_npx];
+ double beta_2 = E_factor*state[i_npy];
+ double beta_3 = E_factor*sqrt( psq - state[i_npx]*state[i_npx]
+                                    - state[i_npy]*state[i_npy] );
 
  std::complex<double>  ui  ( 0.0, p.get_x() );
  std::complex<double>  vui ( PH_MKS_c*beta_3, PH_MKS_c*beta_1 );
@@ -321,21 +325,26 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, Particle& p )
  double cdt    = - PH_MKS_c * dtheta / omega;
  double CDT    =   pbe->getReferenceTime();
 
- p.set_x    ( imag( uf ) );
- p.set_y    ( p.get_y() + beta_2*cdt );
- p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
- p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
+ state[i_x]    =    imag( uf );
+ state[i_y]   +=    beta_2*cdt;
+ state[i_cdt] +=   (cdt - CDT );
+ state[i_npx]  =   ( imag( vuf )/( E_factor * PH_MKS_c ) );
 
  return 0;
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p ) 
 {
 
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
- sbend* pbe = dynamic_cast<sbend*>(p_be);
+ sbend* pbe = static_cast<sbend*>(p_be);
+
+ Mapping&  state = p.State();
 
  // Preliminary filter from state coordinates
 
@@ -344,10 +353,10 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
 
  Jet E_factor = 1.0 / sqrt( psq + p.PNI2() );
 
- Jet beta_1 = E_factor*p.get_npx();
- Jet beta_2 = E_factor*p.get_npy();
- Jet beta_3 = E_factor*sqrt( psq - p.get_npx()*p.get_npx()
-                             - p.get_npy()*p.get_npy() );
+ Jet beta_1 = E_factor*state[i_npx];
+ Jet beta_2 = E_factor*state[i_npy];
+ Jet beta_3 = E_factor*sqrt( psq - state[i_npx]*state[i_npx]
+                                 - state[i_npy]*state[i_npy] );
 
  JetC ui  = complex_i * p.get_x();
  JetC vui = PH_MKS_c*( beta_3 + complex_i * beta_1 );
@@ -373,19 +382,19 @@ int sbend::NoEdge_Prop::operator()( bmlnElmnt* p_be, JetParticle& p )
  JetC uf   = ( ui + bi )*expF - bf;
 
 
- // Final filter back to state coordinates
- // REMOVE: double dphi   = - pbe->getAngle();
-
  Jet dtheta = dthmdphi + pbe->dphi_;
  Jet cdt    = - PH_MKS_c * dtheta / omega;
 
  double CDT = pbe->getReferenceTime();
 
- p.set_x    ( imag( uf ) );
- p.set_y    ( p.get_y() + beta_2*cdt );
- p.set_cdt  ( p.get_cdt() + ( cdt - CDT ) );
- p.set_npx  ( imag( vuf )/( E_factor * PH_MKS_c ) );
+ state[i_x]    =    imag( uf );
+ state[i_y]   +=    beta_2*cdt;
+ state[i_cdt] +=   (cdt - CDT );
+ state[i_npx]  =   ( imag( vuf )/( E_factor * PH_MKS_c ) );
+
 
  return 0;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
