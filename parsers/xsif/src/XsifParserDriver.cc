@@ -42,12 +42,6 @@
 #include <cstdlib>
 #include <sstream>
 
-#if USE_SQLITE
-#include <sqlite/connection.hpp>
-#include <sqlite/execute.hpp>
-#include <sqlite/query.hpp>
-#endif
-
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
@@ -173,9 +167,6 @@ ostream& operator<<(ostream& os, expr_map_t  const& xm) {
 
 XsifParserDriver::XsifParserDriver()
  : m_trace_scanning(false), m_trace_parsing(false)
-#if USE_SQLITE
-, db_(":memory:")
-#endif
 {
 
 
@@ -194,77 +185,12 @@ XsifParserDriver::XsifParserDriver()
    
   init();    // initialize jump table
 
-#if USE_SQLITE
-  db_init(); // initialize database
-#endif
-
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if USE_SQLITE
-
-void XsifParserDriver::init_db()
-{
-  
- //---------------------------------------------------- 
- // initialize sqlite3 database
- //----------------------------------------------------
-
- //--------------------------------------------------------------
- // copy the contents of xsif.db 
- //--------------------------------------------------------------
-
- // load the existing default database
- //-----------------------------------
- 
- sqlite::execute(db_, "ATTACH DATABASE 'xsif.db' as xsif", true);
-
- // copy each table to the target ( in this case, the in-memory db ":memory:")
- //---------------------------------------------------------------------------
-
- sqlite::query q1(db_, "SELECT name FROM xsif.sqlite_master WHERE type =\'table\'");
- sqlite::result_type res1 = q1.emit_result();
- 
- do {
-   string tname = res1->get_string(0); to_lower(tname);
-    if ( tname.find(string("sqlite_")) != string::npos ) continue; // skip system tables    
-    string sql = "CREATE TABLE " + tname +  " AS SELECT * FROM xsif." + tname;
-    sqlite::execute(db_, sql, true);
-  }
-  while(res1->next_row());
-
-  // create indices (if any) in loaded table
-  //-----------------------------------------
-
-  sqlite::query q2(db_, "SELECT sql FROM xsif.sqlite_master WHERE type =\'index\'");
-  sqlite::result_type res2 = q2.emit_result();
-
-  if  ( res2->get_row_count() != 0 ) 
-  {
-    do {  
-      string sql = res2->get_string(0);
-      sqlite::execute(db_, sql, true);
-    }
-    while(res2->next_row());
-  }
-
-  sqlite::execute( db_, "DETACH xsif", true);
- 
- // done. at this point, the default data has been copied. 
-
- //-----------------------------------------------------------------------------------------------------------------------------------
-
- // create additional internal tables  
-
-  sqlite::execute(db_, "CREATE TABLE elements (  id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE )", true);
-  sqlite::execute(db_, "CREATE TABLE beamlines(  id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE)", true); 
-  sqlite::execute(db_, "CREATE TABLE attributes( id INTEGER, attribute TEXT NOT NULL COLLATE NOCASE," 
-                                                 "INTEGER datatype, value BLOB, FOREIGN KEY(id) REFERENCES elements)", true); 
-}
-#endif
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -281,42 +207,6 @@ XsifParserDriver::~XsifParserDriver()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if USE_SQLITE
-void XsifParserDriver::dumpDatabase() 
-{
-  //-------------------------------------------------------- 
-  // dump the contents of the database. Used for debugging
-  //-------------------------------------------------------
-
-  sqlite::query q( db_, "SELECT * FROM beamlines");
-
-  sqlite::result_type res = q.emit_result();
-  do{
-      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
-  }
-  while(res->next_row());
-
-
-  sqlite::query q1( db_, "SELECT * FROM elements");
-
-  res = q1.emit_result();
-  do{
-      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
-  }
-  while(res->next_row());
-
-  sqlite::query q2( db_, "SELECT * FROM attributes");
-  res = q2.emit_result();
-  do{
-      std::cout << res->get_int(0) << "|" << res->get_string(1) << std::endl;
-  }
-  while(res->next_row());
-
-
-}
-#endif
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int XsifParserDriver::parse(string const& f)
 {
@@ -465,10 +355,6 @@ vector<string>* XsifParserDriver::instantiateAnonymousLine( xsif_yy::location co
 BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const& name, vector<string> const & elements ) 
 { 
 
-#if USE_SQLITE
-  db_insert_beamline( name,elements );
- #endif
-
   beamline* bl = new beamline( name.c_str() ); 
   bl->setEnergy( m_energy); 
 
@@ -591,10 +477,6 @@ void XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string co
 BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) 
 { 
 
-#if USE_SQLITE
-  sqlite::execute(db_, string("INSERT INTO beamlines(name) VALUES('") +  name_and_args + string("')"), true );  
-#endif
-  
   //-------------------------------------------------------------------------------------------------------------------------------------
   // Recursively expands the line defined by the macro call 'name_and_args', which includes the parentheses and 
   // comma separated arguments. If the line does not exists it is created; otherwise, the existing one is cloned. 
@@ -786,6 +668,11 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
   if ( iequals( pname, "ANTIMUON"  )  ) { m_particle_type_name = pname; ptype = antimuon;      mass = PH_NORM_mmu; }
 
   double energy   = (energy_defined = eval( string("ENERGY"),     attributes, value) ) ? any_cast<double>(value) : mass; 
+
+  if ( !energy_defined ) {
+         energy   = (energy_defined = eval( string("E"),          attributes, value) ) ? any_cast<double>(value) : mass; 
+  }
+
   double pc       = (pc_defined     = eval( string("PC"),         attributes, value) ) ? any_cast<double>(value) : 0.0; 
   double gamma    = (gamma_defined  = eval( string("GAMMA"),      attributes, value) ) ? any_cast<double>(value) : 1.0; 
 
@@ -899,10 +786,6 @@ ElmPtr
 XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string const& label, string const& type,  map<string,boost::any> const & attributes ) 
 {
 
-#if USE_SQLITE
-   db_insert_element( label, type, attributes); 
-#endif
-
  // ------------------------------------------------------------------------------------------
  // search for a match for type among the existing elements. 
  // If found, retrieve previous attributes and override with 
@@ -980,15 +863,6 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
 ElmPtr XsifParserDriver::make_drift(  ConstElmPtr& udelm, double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  
-#if 0
-   for ( std::map<string,boost::any>::const_iterator it = attributes.begin();  it != attributes.end(); ++it )
-   {
-      string tmp("DRIFT");
-      std::cout << it->first << "  " << "attribute_is_valid_attribute = " <<  attribute_is_valid( tmp, it->first ) << std::endl; 
-
-   }
-#endif
-
    any value;
    drift* elm = 0; 
 
@@ -1531,7 +1405,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
 
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = any_cast<double>(value); }
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
 
   elm = (udelm) ? dynamic_cast<hkick*>( udelm->Clone() ) : new hkick();
 
@@ -1575,8 +1449,8 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
 
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = any_cast<double>(value); }
-
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
+                          
   elm = (udelm) ? dynamic_cast<vkick*>( udelm->Clone() ) : new vkick();
 
   elm->rename(label);
@@ -1622,16 +1496,15 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("HKICK"),       attributes, value) )    { attribute_hkck   = true; hkck    = any_cast<double>(value); }
   if ( eval( string("VKICK"),       attributes, value) )    { attribute_vkck   = true; vkck    = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_length = true; tilt    = any_cast<double>(value); }
-
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
 
 
   elm = (udelm) ? dynamic_cast<kick*>( udelm->Clone() ) : new kick();
 
   elm->rename(label);
   if ( attribute_length )   elm->setLength(length);
-  // if ( attribute_hkck   )   elm->setHStrength(kck);
-  // if ( attribute_vkck   )   elm->setVStrength(kck);
+  if ( attribute_hkck   )   elm->horizontalStrength()  =  hkck;
+  if ( attribute_vkck   )   elm->verticalStrength()    =  vkck;
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;
@@ -2243,183 +2116,3 @@ ElmPtr  XsifParserDriver::make_beta0(  ConstElmPtr& udelm, double const& BRHO, s
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-#if USE_SQLITE
-bool  XsifParserDriver::attribute_is_valid( std::string const& elm, std::string const& attribute )
-{ 
-
-  sqlite::query q(db_, "SELECT COUNT(*) FROM valid_attributes_t WHERE ( typeid = (SELECT typeid from valid_elm_types_t WHERE type= ? ) AND attribute = ? )" );
-
-  q % elm % attribute;
-    
-  sqlite::result_type result = q.emit_result();
-
-  return ( result->get_row_count() == 1 ) ? true : false;    
-
-}
-#endif
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if USE_SQLITE
-bool  XsifParserDriver::attribute_is_set( std::string const& elm, std::string const& attribute )
-{ 
-
-  sqlite::query q(db_, "SELECT * FROM attributes WHERE ( id = (SELECT id FROM elements WHERE name = ? ) AND attribute = ? )" );
-
-  q % elm % attribute;
-    
-  sqlite::result_type result = q.emit_result();
-
-  return ( result->empty() ) ? false : true;    
-
-}
-#endif
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-#if USE_SQLITE
-void XsifParserDriver::db_insert_element( string const& label, string const& type,  map<string,boost::any> const & attributes ) 
-{
-
-  // ------------------------------------------------------------------------------------------
-  // search for a match for type among the existing elements. 
-  // If found, retrieve previous attributes. Override with new ones if necessary
-  // ------------------------------------------------------------------------------------------
-
-   sqlite::query q_match(db_, string("SELECT * FROM elements WHERE ( name = ? ) ") );  
-
-   q_match %  type ;
-
-   std::cout << "searching for : "<< type << std::endl;
-
-   sqlite::result_type res = q_match.emit_result();
-
-   int eid = res->get_int( get_column_idx(res,"id") );
-
-    if ( res->empty() ) { 
-
-     // ----------------------------------------------------------------------------------------
-     // No exact match found. Try best match with basic element type 
-     //-----------------------------------------------------------------------------------------
-
-      sqlite::query q_match_basic(db_, "SELECT * FROM valid_elm_types_t WHERE (type LIKE ? )" );  
-      q_match_basic % (  type.empty() ? type : (type + "%") );
- 
-      sqlite::result_type res = q_match_basic.emit_result();
-
-      string btype = res->get_string(0); 
- 
-      std::cout << " inserting new element.  basic type = " << btype   << std::endl;
-
-      sqlite::execute(db_, string("INSERT INTO elements(name) VALUES('" )+  label + string("')"), true);  
-      int rowid = db_.last_insert_rowid();
-
-      sqlite::query ins(db_, "INSERT INTO attributes(id, attribute ) VALUES(?, ?)");
-
-      for ( std::map<string,boost::any>::const_iterator it  = attributes.begin(); 
-                                                        it != attributes.end(); ++it )
-      { 
-        
-	std::cout << " inserting attribute = " <<  rowid << "  " << it->first << std::endl;
-        ins %  rowid % it->first;
-        ins();
-        ins.clear();
-      }
-   }
-
-   else  {    
-
-       // The element is defined from an already user defined one
-       // Copy the existing attributes 
-
-       
-       sqlite::execute(db_, string("INSERT INTO elements(name) VALUES('" )+  label + string("')"), true);  
-       int newid = db_.last_insert_rowid();
-
-       sqlite::query q_attr(db_, "SELECT attribute FROM attributes WHERE ( id = ? )" ); 
-       q_attr % eid; 
-
-       sqlite::result_type res_attrib = q_attr.emit_result();
-
-       sqlite::query ins(db_, "INSERT INTO attributes (id, attribute) VALUES( ? , ? )" );  
-
-       while( !(res_attrib->empty()) ) {
-          ins % newid % res_attrib->get_string(0);
-          ins();
-          ins.clear();
-          res_attrib->next_row(); 
-       }
-
-       //----------------------------------------------
-       // Now override old attributes with the new ones
-       //----------------------------------------------
-
-
-        for ( std::map<string,boost::any>::const_iterator it  = attributes.begin(); 
-                                                          it != attributes.end(); ++it )
-        { 
-
-	  // std::cout << " updating attribute = " <<  newid << "  " << it->first << std::endl;
-
-         sqlite::query q(db_, "SELECT * FROM attributes WHERE ( (id = ? )  AND ( attribute = ?) )" );
-	 q % newid % it->first;
-	 sqlite::result_type res = q.emit_result(); 
-
-	 if ( res->empty() ) {
-	  std::cout << "attribute " <<  it->first << "was *not* previously  defined " << std::endl;
-          sqlite::query ins(db_, "INSERT INTO attributes(id, attribute)  VALUES( ?, ? )" ); 
-          ins % newid % it->first;
-          ins();
-          ins.clear();
-          continue;
-         }
-
-         sqlite::query upd (db_, "UPDATE attributes SET (value = ?) WHERE  (id = ? ) and ( attribute = attribute) VALUES( ? , ? )" );  
-	 // std::cout << "attribute " <<  it->first << "was previously  defined " << std::endl;
-        } 
-
-   }
-
-}
-#endif 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-#if USE_SQLITE
-void XsifParserDriver::db_insert_beamline ( std::string const& name, std::vector<std::string> const& elements) 
-{
-
-  sqlite::execute( db_, string("INSERT INTO beamlines(name) VALUES('" )+  name + string("')"), true);  
-
-}
-#endif
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if USE_SQLITE
-int XsifParserDriver::get_column_idx(sqlite::result_type& res, std::string const& cname) 
-{
-
-  int cols = res->get_column_count();
-  
-  for (int i=0; i<cols; ++i ) {
-    
-    if ( boost::algorithm::iequals(cname, res->get_column_name(i) ) ) return i;  
-
-  }
-
-  return -1; 
-
-}
-#endif
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
- 
