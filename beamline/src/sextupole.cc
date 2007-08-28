@@ -192,7 +192,8 @@ void sextupole::accept( ConstBmlVisitor& v ) const
 //   class thinSextupole
 // **************************************************
 
-thinSextupole::thinSextupole () : bmlnElmnt( 0.0, 0.0 ) {
+thinSextupole::thinSextupole () 
+: bmlnElmnt( 0.0, 0.0 ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
 }
@@ -200,7 +201,8 @@ thinSextupole::thinSextupole () : bmlnElmnt( 0.0, 0.0 ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
+thinSextupole::thinSextupole ( double s ) 
+: bmlnElmnt( 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
 }
@@ -208,14 +210,14 @@ thinSextupole::thinSextupole ( double s ) : bmlnElmnt( 0.0, s ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSextupole::thinSextupole ( const char* n, double s ) : bmlnElmnt( n, 0.0, s ) {
+thinSextupole::thinSextupole ( const char* n, double s ) 
+: bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 thinSextupole::thinSextupole( thinSextupole const& x ) 
 : bmlnElmnt( x ){}

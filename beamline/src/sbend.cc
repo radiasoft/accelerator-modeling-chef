@@ -364,17 +364,17 @@ void sbend::calcPropParams()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( sbend const& x )
-:   bmlnElmnt( x )
-  ,      angle_(x.angle_)
-  ,usEdgeAngle_(x.usEdgeAngle_)
-  ,dsEdgeAngle_(x.dsEdgeAngle_)
-  ,    usAngle_(x.usAngle_)
-  ,    dsAngle_(x.dsAngle_)
-  ,      usTan_(x.usTan_)
-  ,      dsTan_(x.dsTan_)
-  ,       dphi_(x.dphi_)
-  ,  propPhase_(x.propPhase_)
-  ,   propTerm_(x.propTerm_)
+  : bmlnElmnt( x ),
+        angle_(x.angle_),
+  usEdgeAngle_(x.usEdgeAngle_),
+  dsEdgeAngle_(x.dsEdgeAngle_),
+      usAngle_(x.usAngle_),
+      dsAngle_(x.dsAngle_),
+        usTan_(x.usTan_),
+        dsTan_(x.dsTan_),
+         dphi_(x.dphi_),
+    propPhase_(x.propPhase_),
+     propTerm_(x.propTerm_)
 {
   setupPropFunc();
 }
