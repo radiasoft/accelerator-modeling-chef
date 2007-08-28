@@ -99,42 +99,40 @@ bool alignmentData::operator==( alignmentData const& data ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 alignment::alignment()
-: xOffset(0.0), yOffset(0.0), tilt(0.0), cosTilt(1.0), sinTilt(0.0) {}
+: xOffset_(0.0), yOffset_(0.0), tilt_(0.0), cosTilt_(1.0), sinTilt_(0.0) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment::alignment(double x, double y, double t ) 
-  : xOffset(x), yOffset(y), tilt(t) 
-{
-
- cosTilt = cos(t);
- sinTilt = sin(t); 
-
-}
+alignment::alignment(double const& x, double const& y, double const& t ) 
+  : xOffset_(x), yOffset_(y), tilt_(t), cosTilt_(cos(t)), sinTilt_(sin(t))
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 alignment::alignment( alignment const& a) 
-: xOffset(a.xOffset), yOffset(a.yOffset), tilt(a.tilt), 
-  cosTilt(a.cosTilt), sinTilt(a.sinTilt) 
+: xOffset_(a.xOffset_), yOffset_(a.yOffset_), tilt_(a.tilt_), 
+  cosTilt_(a.cosTilt_), sinTilt_(a.sinTilt_) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 alignment::alignment(alignmentData const& a)
-  :  xOffset(a.xOffset), yOffset(a.yOffset), tilt(a.tilt) 
+  :  xOffset_(a.xOffset), yOffset_(a.yOffset), tilt_(a.tilt) 
 {
-  cosTilt = cos(tilt);
-  sinTilt = sin(tilt);
+ 
+     cosTilt_ = cos(tilt_),
+     sinTilt_ = sin(tilt_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment::~alignment() {}
+alignment::~alignment() 
+{}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -142,7 +140,7 @@ alignment::~alignment() {}
 
 bool alignment::isNull() const
 {
-  return ( (yOffset == 0.0) && (xOffset == 0.0) && (tilt == 0.0) );
+  return ( (yOffset_ == 0.0) && (xOffset_ == 0.0) && (tilt_ == 0.0) );
 }
 
 
@@ -151,9 +149,9 @@ bool alignment::isNull() const
 
 bool alignment::operator==( alignment const& a ) const
 {
-  return ( (yOffset == a.yOffset) && 
-           (xOffset == a.xOffset) && 
-           (tilt    == a.tilt   ) );
+  return ( (yOffset_ == a.yOffset_) && 
+           (xOffset_ == a.xOffset_) && 
+           (tilt_    == a.tilt_   ) );
 }
 
 
@@ -164,11 +162,11 @@ alignment& alignment::operator=(alignment const& a) {
 
   if ( &a == this) return *this;
 
-  xOffset = a.xOffset;
-  yOffset = a.yOffset;
-  tilt    = a.tilt;
-  cosTilt = a.cosTilt;
-  sinTilt = a.sinTilt;
+  xOffset_ = a.xOffset_;
+  yOffset_ = a.yOffset_;
+  tilt_    = a.tilt_;
+  cosTilt_ = a.cosTilt_;
+  sinTilt_ = a.sinTilt_;
 
   return *this;
 }
@@ -177,35 +175,25 @@ alignment& alignment::operator=(alignment const& a) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0 
 void alignment::misalign(Particle const& p, Vector& inState) {
 
-  Vector const& state = const_cast<Particle&>(p).State();
+  inState = p.State();
 
-  for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = state[i];
-  
-  inState[0] -= xOffset;
-  inState[1] -= yOffset;
+  inState[0] -= xOffset_;
+  inState[1] -= yOffset_;
 
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.inPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = geometry.inPoint - offset;
-  // ??? REMOVE   inState[0] += r*geometry.inAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.inAxes[1];
-  // ??? REMOVE }
   
-  if(tilt != 0.0) {
+  if(tilt_ != 0.0) {
     double result[4];
-     result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
-     result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+    result[0] = inState[0] * cosTilt_ + inState[1] * sinTilt_;
+    result[1] = inState[1] * cosTilt_ - inState[0] * sinTilt_;
 
     inState[0] = result[0];
     inState[1] = result[1];
  
-    result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
-    result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+    result[2] = inState[3] * cosTilt_ + inState[4] * sinTilt_;
+    result[3] = inState[4] * cosTilt_ - inState[3] * sinTilt_;
 
     inState[3] = result[2];
     inState[4] = result[3];
@@ -219,111 +207,77 @@ void alignment::misalign(Particle const& p, Vector& inState) {
 void alignment::align(Particle const& p, Vector& inState) {
 
 
-  Vector const& state = const_cast<Particle&>(p).State();
+  inState = p.State();
 
-  for( int i=0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = state[i];
-  
-
- if(tilt != 0.0) {
+ if(tilt_ != 0.0) {
    double result[4];
-     result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-     result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+     result[0] = inState[0] * cosTilt_ - inState[1] * sinTilt_;
+     result[1] = inState[1] * cosTilt_ + inState[0] * sinTilt_;
 
     inState[0] = result[0];
     inState[1] = result[1];
 
-     result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
-     result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+     result[2] = inState[3] * cosTilt_ - inState[4] * sinTilt_;
+     result[3] = inState[4] * cosTilt_ + inState[3] * sinTilt_;
 
     inState[3] = result[2];
     inState[4] = result[3];
  }
 
-  inState[0] += xOffset;
-  inState[1] += yOffset;
-
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.outPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = offset - geometry.outPoint;
-  // ??? REMOVE   inState[0] += r*geometry.outAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.outAxes[1];
-  // ??? REMOVE }
+  inState[0] += xOffset_;
+  inState[1] += yOffset_;
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(Vector& p, Vector& inState) {
+void alignment::align(Vector const& p, Vector& inState) {
 
+  inState = p;
 
-  for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p[i];
-  
-
- if(tilt != 0.0) {
-   double result[4];
-    result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-    result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+  if(tilt_ != 0.0) {
+    double result[4];
+    result[0] = inState[0] * cosTilt_ - inState[1] * sinTilt_;
+    result[1] = inState[1] * cosTilt_ + inState[0] * sinTilt_;
    
-   inState[0] = result[0];
-   inState[1] = result[1];
+    inState[0] = result[0];
+    inState[1] = result[1];
 
-   result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
-   result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+    result[2] = inState[3] * cosTilt_ - inState[4] * sinTilt_;
+    result[3] = inState[4] * cosTilt_ + inState[3] * sinTilt_;
 
-   inState[3] = result[2];
-   inState[4] = result[3];
- }
+    inState[3] = result[2];
+    inState[4] = result[3];
+  }
 
-  inState[0] += xOffset;
-  inState[1] += yOffset;
+  inState[0] += xOffset_;
+  inState[1] += yOffset_;
 
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.outPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = offset - geometry.outPoint;
-  // ??? REMOVE   inState[0] += r*geometry.outAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.outAxes[1];
-  // ??? REMOVE }
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::misalign(JetParticle& p, Mapping& inState) {
+void alignment::misalign(JetParticle const& p, Mapping& inState) {
 
-  Mapping& state = p.State();
+  inState = p.State();
 
-  for( int i=0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = state(i);
+  inState[0] -= xOffset_;
+  inState[1] -= yOffset_;
+
   
-  inState[0] -= xOffset;
-  inState[1] -= yOffset;
-
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.inPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = geometry.inPoint - offset;
-  // ??? REMOVE   inState[0] += r*geometry.inAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.inAxes[1];
-  // ??? REMOVE }
-  
-  if(tilt != 0.0) {
+  if(tilt_ != 0.0) {
     Jet result[4];
-    result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
-    result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+    result[0] = inState[0] * cosTilt_ + inState[1] * sinTilt_;
+    result[1] = inState[1] * cosTilt_ - inState[0] * sinTilt_;
 
     inState[0] = result[0];
     inState[1] = result[1];
 
-    result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
-    result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+    result[2] = inState[3] * cosTilt_ + inState[4] * sinTilt_;
+    result[3] = inState[4] * cosTilt_ - inState[3] * sinTilt_;
 
     inState[3] = result[2];
     inState[4] = result[3];
@@ -334,90 +288,70 @@ void alignment::misalign(JetParticle& p, Mapping& inState) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(JetParticle& p, Mapping& inState) {
+void alignment::align(JetParticle const& p, Mapping& inState) {
 
-  Mapping& state = p.State();
+  inState = p.State();
 
-  for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = state(i);
-  
-
- if(tilt != 0.0) {
+ if(tilt_ != 0.0) {
    Jet result[4];
-   result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-   result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+   result[0] = inState[0] * cosTilt_ - inState[1] * sinTilt_;
+   result[1] = inState[1] * cosTilt_ + inState[0] * sinTilt_;
 
    inState[0] = result[0];
    inState[1] = result[1];
 
-   result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
-   result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+   result[2] = inState[3] * cosTilt_ - inState[4] * sinTilt_;
+   result[3] = inState[4] * cosTilt_ + inState[3] * sinTilt_;
    inState[3] = result[2];
    inState[4] = result[3];
  }
 
-  inState[0] += xOffset;
-  inState[1] += yOffset;
+  inState[0] += xOffset_;
+  inState[1] += yOffset_;
 
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.outPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = offset - geometry.outPoint;
-  // ??? REMOVE   inState[0] += r*geometry.outAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.outAxes[1];
-  // ??? REMOVE }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::align(JetVector& p, Mapping& inState) {
+void alignment::align(JetVector const& p, Mapping& inState) {
 
-  for( int i = 0; i < BMLN_dynDim; ++i  ) 
-    inState[i] = p[i];
-  
+  inState = p; 
 
- if(tilt != 0.0) {
+ if(tilt_ != 0.0) {
    Jet result[4];
-   result[0] = inState[0] * cosTilt - inState[1] * sinTilt;
-   result[1] = inState[1] * cosTilt + inState[0] * sinTilt;
+   result[0] = inState[0] * cosTilt_ - inState[1] * sinTilt_;
+   result[1] = inState[1] * cosTilt_ + inState[0] * sinTilt_;
 
    inState[0] = result[0];
    inState[1] = result[1];
 
-   result[2] = inState[3] * cosTilt - inState[4] * sinTilt;
-   result[3] = inState[4] * cosTilt + inState[3] * sinTilt;
+   result[2] = inState[3] * cosTilt_ - inState[4] * sinTilt_;
+   result[3] = inState[4] * cosTilt_ + inState[3] * sinTilt_;
 
    inState[3] = result[2];
    inState[4] = result[3];
  }
 
-  inState[0] += xOffset;
-  inState[1] += yOffset;
+  inState[0] += xOffset_;
+  inState[1] += yOffset_;
 
-  // ??? REMOVE if((xOffset != 0.0) || (yOffset != 0.0)) {
-  // ??? REMOVE   offset = geometry.outPoint;
-  // ??? REMOVE   offset(0) += xOffset;
-  // ??? REMOVE   offset(1) += yOffset;
-  // ??? REMOVE   r = offset - geometry.outPoint;
-  // ??? REMOVE   inState[0] += r*geometry.outAxes[0];
-  // ??? REMOVE   inState[1] += r*geometry.outAxes[1];
-  // ??? REMOVE }
+
 }
 
+#endif
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void alignment::setAlignment(alignmentData const& data) 
 {
 
-  xOffset = data.xOffset;
-  yOffset = data.yOffset;
+  xOffset_ = data.xOffset;
+  yOffset_ = data.yOffset;
 
-  tilt    = data.tilt;
-  cosTilt = cos(tilt);
-  sinTilt = sin(tilt);
+  tilt_    = data.tilt;
+  cosTilt_ = cos(tilt_);
+  sinTilt_ = sin(tilt_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -427,9 +361,9 @@ alignmentData alignment::getAlignment()  const
 {
   alignmentData z;
 
-  z.xOffset = xOffset;
-  z.yOffset = yOffset;
-  z.tilt    = tilt;
+  z.xOffset = xOffset_;
+  z.yOffset = yOffset_;
+  z.tilt    = tilt_;
 
   return z;
 }
@@ -440,7 +374,7 @@ alignmentData alignment::getAlignment()  const
 ostream& operator<<(ostream& os, alignment& align)
 {
   if ( &align ) 
-    os << OSTREAM_DOUBLE_PREC << align.xOffset << " " << align.yOffset << " " << align.tilt;
+    os << OSTREAM_DOUBLE_PREC << align.xOffset_ << " " << align.yOffset_ << " " << align.tilt_;
   else
     os << "0 0 0 ";
 
@@ -451,21 +385,23 @@ ostream& operator<<(ostream& os, alignment& align)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0
 void alignment::misalign( Vector& inState )
 {
 
-  double result[4];
+  inState[0] -= xOffset_;
+  inState[1] -= yOffset_;
 
-  inState[0] -= xOffset;
-  inState[1] -= yOffset;
+  if(tilt_ != 0.0) {
+ 
+    double result[4];
 
-  if(tilt != 0.0) {
-    result[0] = inState[0] * cosTilt + inState[1] * sinTilt;
-    result[1] = inState[1] * cosTilt - inState[0] * sinTilt;
+    result[0]  = inState[0] * cosTilt_ + inState[1] * sinTilt_;
+    result[1]  = inState[1] * cosTilt_ - inState[0] * sinTilt_;
     inState[0] = result[0];
     inState[1] = result[1];
-    result[2] = inState[3] * cosTilt + inState[4] * sinTilt;
-    result[3] = inState[4] * cosTilt - inState[3] * sinTilt;
+    result[2]  = inState[3] * cosTilt_ + inState[4] * sinTilt_;
+    result[3]  = inState[4] * cosTilt_ - inState[3] * sinTilt_;
     inState[3] = result[2];
     inState[4] = result[3];
   }
@@ -476,20 +412,23 @@ void alignment::misalign( Vector& inState )
 
 void alignment::align( Vector& outState ) 
 {
- if(tilt != 0.0) {
+
+ if(tilt_ != 0.0) {
    double result[4];
-   result[0] = outState[0] * cosTilt - outState[1] * sinTilt;
-   result[1] = outState[1] * cosTilt + outState[0] * sinTilt;
+   result[0] = outState[0] * cosTilt_ - outState[1] * sinTilt_;
+   result[1] = outState[1] * cosTilt_ + outState[0] * sinTilt_;
    outState[0] = result[0];
    outState[1] = result[1];
-   result[2] = outState[3] * cosTilt - outState[4] * sinTilt;
-   result[3] = outState[4] * cosTilt + outState[3] * sinTilt;
+   result[2] = outState[3] * cosTilt_ - outState[4] * sinTilt_;
+   result[3] = outState[4] * cosTilt_ + outState[3] * sinTilt_;
    outState[3] = result[2];
    outState[4] = result[3];
  }
 
-  outState[0] += xOffset;
-  outState[1] += yOffset;
+  outState[0] += xOffset_;
+  outState[1] += yOffset_;
+
+
 }
 
 
@@ -498,17 +437,17 @@ void alignment::align( Vector& outState )
 
 void alignment::misalign( JetVector& inState ) 
 {
-  inState(0) -= xOffset;
-  inState(1) -= yOffset;
+  inState(0) -= xOffset_;
+  inState(1) -= yOffset_;
 
-  if(tilt != 0.0) {
+  if(tilt_ != 0.0) {
     Jet result[4];
-    result[0] = inState(0) * cosTilt + inState(1) * sinTilt;
-    result[1] = inState(1) * cosTilt - inState(0) * sinTilt;
+    result[0]  = inState(0) * cosTilt_ + inState(1) * sinTilt_;
+    result[1]  = inState(1) * cosTilt_ - inState(0) * sinTilt_;
     inState(0) = result[0];
     inState(1) = result[1];
-    result[2] = inState(3) * cosTilt + inState(4) * sinTilt;
-    result[3] = inState(4) * cosTilt - inState(3) * sinTilt;
+    result[2]  = inState(3) * cosTilt_ + inState(4) * sinTilt_;
+    result[3]  = inState(4) * cosTilt_ - inState(3) * sinTilt_;
     inState(3) = result[2];
     inState(4) = result[3];
   }
@@ -519,20 +458,21 @@ void alignment::misalign( JetVector& inState )
 
 void alignment::align( JetVector& outState ) 
 {
- if(tilt != 0.0) {
+
+ if(tilt_ != 0.0) {
    Jet result[4];
-   result[0] = outState(0) * cosTilt - outState(1) * sinTilt;
-   result[1] = outState(1) * cosTilt + outState(0) * sinTilt;
+   result[0]   = outState(0) * cosTilt_ - outState(1) * sinTilt_;
+   result[1]   = outState(1) * cosTilt_ + outState(0) * sinTilt_;
    outState(0) = result[0];
    outState(1) = result[1];
-   result[2] = outState(3) * cosTilt - outState(4) * sinTilt;
-   result[3] = outState(4) * cosTilt + outState(3) * sinTilt;
+   result[2]   = outState(3) * cosTilt_ - outState(4) * sinTilt_;
+   result[3]   = outState(4) * cosTilt_ + outState(3) * sinTilt_;
    outState(3) = result[2];
    outState(4) = result[3];
  }
 
-  outState(0) += xOffset;
-  outState(1) += yOffset;
-
+  outState(0) += xOffset_;
+  outState(1) += yOffset_;
 }
 
+#endif
