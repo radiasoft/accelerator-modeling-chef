@@ -119,9 +119,7 @@ template<typename T>
 TJetVector<T>::TJetVector( int n, EnvPtr<T> const& pje )
 : myEnv_(pje)
 {
-
   comp_.resize( n, TJet<T>(T(), pje) ); 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
