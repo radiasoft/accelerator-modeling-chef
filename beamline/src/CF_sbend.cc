@@ -445,18 +445,10 @@ int CF_sbend::setDipoleField( double const& arg_x )
   sbend*      q  = 0;
   bmlnElmnt** x  = u_;
   
-  int counter = 0;
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<sbend*>(*x) ) ) ++counter;
-    ++x;
-  }
-
-  if (counter==0) return 1;
- 
   x   = u_;
 
   while( x <= v_ ) {
-   if( (q=dynamic_cast<sbend*>(*x) ) )  q->setStrength( arg_x/counter );
+   if( (q=dynamic_cast<sbend*>(*x) ) )  q->setStrength( arg_x );
   }
   
   return 0;
