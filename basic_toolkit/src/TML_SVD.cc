@@ -55,21 +55,35 @@
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/MLPtr.h>
 
+#include <algorithm>
 #include<limits>
 
 using namespace std;
 using FNAL::pcerr;
 
+namespace {
+
+inline double PYTHAG(double const& a, double const& b) 
+{
+  double at,bt,ct;
+
+  return ( (at=std::abs(a)) > (bt=std::abs(b)) ? (ct=bt/at,at*sqrt(1.0+ct*ct)) : ( bt ? (ct=at/bt,bt*sqrt(1.0+ct*ct)): 0.0) );
+}
+
+inline double SIGN( double const& a,double const& b) 
+{ 
+  return ((b) >= 0.0 ? std::abs(a) : -std::abs(a));
+}
+
+} // anonymous namespace
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr ) const
+void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) const
 {
 
-#define PYTHAG(a,b) ((at=fabs(a)) > (bt=fabs(b)) ? \
-  (ct=bt/at,at*sqrt(1.0+ct*ct)) : (bt ? (ct=at/bt,bt*sqrt(1.0+ct*ct)): 0.0))
-#define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
-
-  double at,bt,ct;
   double maxarg1, maxarg2;
   double c,f,h,s,x,y,z;
   double anorm=0.0,g=0.0,scale=0.0;
@@ -114,7 +128,7 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
 
  
   if ((UPtr->nrows_ == nrows_) || (UPtr->ncols_ == ncols_) ) { 
-    memcpy ( UPtr->mdata_[0], mdata_[0], nrows_*ncols_*sizeof(double) );  // dimensions are OK. just copy current matrix data into U. No need to reallocate. 
+    std::copy(  UPtr->mdata_[0],  UPtr->mdata_[nrows_*ncols_], mdata_[0] );
   }     
   else {
     UPtr = MLPtr<double>( new TML<double>( *this) );      // reallocates U and copy current matrix into it 
@@ -315,8 +329,7 @@ void TML<double>::SVD ( MLPtr<double> & UPtr,  Vector& W, MLPtr<double> & VPtr )
 
 }
 
-#undef SIGN
-#undef PYTHAG
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
