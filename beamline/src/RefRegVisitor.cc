@@ -92,10 +92,12 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 RefRegVisitor::RefRegVisitor( Particle const& p )
-  :    particle_(p)
-  ,    errorCode_(OKAY)
-  ,    revolutionFrequency_(-1.0)
-  ,    initialMomentum_( p.ReferenceMomentum() )
+           
+   : BmlVisitor(), 
+            particle_(p),
+ revolutionFrequency_(-1.0),
+     initialMomentum_( p.ReferenceMomentum() ),
+            errorCode_(OKAY)
 {}
 
 
@@ -103,10 +105,11 @@ RefRegVisitor::RefRegVisitor( Particle const& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 RefRegVisitor::RefRegVisitor( RefRegVisitor const& x )
-:   particle_(x.particle_)
-  , errorCode_(OKAY)
-  , revolutionFrequency_(x.revolutionFrequency_)
-  , initialMomentum_(x.initialMomentum_)
+  :        BmlVisitor(),
+           particle_(x.particle_),
+   revolutionFrequency_(x.revolutionFrequency_),
+       initialMomentum_(x.initialMomentum_),
+             errorCode_(OKAY)
 {}
 
 
@@ -128,7 +131,7 @@ int RefRegVisitor::getErrorCode() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double RefRegVisitor::getCdt()
+double RefRegVisitor::getCdt() const
 {
   return particle_.get_cdt();
 }
@@ -136,7 +139,7 @@ double RefRegVisitor::getCdt()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void RefRegVisitor::setCdt( double x )
+void RefRegVisitor::setCdt( double const& x )
 {
    particle_.set_cdt(x);
 }
@@ -166,22 +169,26 @@ void RefRegVisitor::visit( beamline& x )
 
      double cumulativeCdt = 0.0;
      
-
+     
+ 
      for (beamline::deep_iterator it  = x.deep_begin();
                                   it != x.deep_end(); ++it) {
     
         double momentum = particle_.ReferenceMomentum();
        
-        if( (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) ) { 
-         (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
+        if(   (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) && ( !getInnerFlag())  )  { 
+             (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
         }
 
         (*it)->accept( *this ); 
 
+
+	if ( getInnerFlag() )  continue;
+ 
         cumulativeCdt +=(*it)->getReferenceTime();          
-        
         if ( rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it) )      rfcavities.push_back(rfcavity_elm);
         if ( thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it) )  thinrfcavities.push_back(thinrfcavity_elm);
+       
      }
 
     //-------------------------------------------------------------
@@ -257,12 +264,11 @@ void RefRegVisitor::visit( sbend& x )
 {
   const bmlnElmnt::PropFunc* propPtr = x.getPropFunction();
 
-  x.setPropFunction( &sbend::NoEdge );
-  x.setEntryAngle( particle_ );
-  visit( static_cast<bmlnElmnt&>(x) );
-  x.setExitAngle( particle_ );
-  x.setPropFunction( propPtr );
-
+   x.setPropFunction( &sbend::NoEdge );
+   x.setEntryAngle( particle_ );
+   visit( static_cast<bmlnElmnt&>(x) );
+   x.setExitAngle( particle_ );
+   x.setPropFunction( propPtr );
 }
 
 
@@ -296,7 +302,7 @@ void RefRegVisitor::visit( rfcavity& x )
 
 void RefRegVisitor::visit( LinacCavity& x ) 
 {
-  visit( static_cast<bmlnElmnt&>(x) ); // default
+  x.acceptInner( *this); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
