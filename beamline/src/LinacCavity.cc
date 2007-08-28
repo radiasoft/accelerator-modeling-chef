@@ -124,7 +124,7 @@ bool    LinacCavity::isMagnet() const
 
 void LinacCavity::accept( BmlVisitor& v ) 
 { 
-  v.visit( *p_bml_ ); // visit the inner beamline 
+  v.visit( *this); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -132,7 +132,31 @@ void LinacCavity::accept( BmlVisitor& v )
 
 void LinacCavity::accept( ConstBmlVisitor& v ) const 
 { 
-  v.visit( *p_bml_ ); // visit the inner beamline 
+  v.visit( *this); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LinacCavity::acceptInner( BmlVisitor&      v )
+{
+// visit the inner beamline elements 
+
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LinacCavity::acceptInner( ConstBmlVisitor& v ) const 
+{
+// visit the inner beamline elements 
+
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
