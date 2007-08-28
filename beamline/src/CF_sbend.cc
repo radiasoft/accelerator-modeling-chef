@@ -470,6 +470,11 @@ int CF_sbend::setDipoleField( double const& arg_x )
 void CF_sbend::setStrength( double const& s )
 {
 
+  if (strength_ == 0.0)  {  
+    strength_ = s; 
+    return;
+  }
+  
   double ratio = s / getDipoleField();
   bmlnElmnt** x = u_;
 
