@@ -32,8 +32,15 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                             
+****** April 2007  ostiguy@fnal.gov
+****** - efficiency improvements: avoid unnecessary copying of Particle/JetParticle State.
+****** August 2007 ostiguy@fnal.gov
+****** - templatized propagation functions
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -47,7 +54,6 @@ using namespace std;
 
 void monitor::localPropagate( Particle& p )
 {
-  int i;
   double realLength, realCt;
 
   Vector& state = p.State();
@@ -56,14 +62,14 @@ void monitor::localPropagate( Particle& p )
     // ---------------------------------------------------------------------
     realLength = length_;
     realCt     = ctRef_;
-    length_ *= getDriftFraction();
-    ctRef_ *= getDriftFraction();
+    length_   *= getDriftFraction();
+    ctRef_    *= getDriftFraction();
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) { _rgr[i] = state[i]; }
+    for ( int i=0; i<BMLN_dynDim; ++i) { _rgr[i] = state[i]; }
     
     if ( _onOffSwitch ) {
-      for ( i = 0; i < BMLN_dynDim; i++ ) {
+      for ( int i=0; i < BMLN_dynDim; ++i) {
         (*_outputStreamPtr) << _rgr[i] << "  ";
       }
       (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
@@ -78,10 +84,10 @@ void monitor::localPropagate( Particle& p )
   } // ---------------------------------------------------------------------
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
+    for ( int i=0; i<BMLN_dynDim; ++i) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
-      for ( i = 0; i < BMLN_dynDim; i++ ) {
+      for ( int i=0; i < BMLN_dynDim; ++i) {
         (*_outputStreamPtr) << _rgr[i] << "  ";
       }
       (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
@@ -161,8 +167,8 @@ void hmonitor::localPropagate( Particle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
-                          << "  " << _rgr[p.npxIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::xIndex  ] 
+                          << "  " << _rgr[Particle::npxIndex]
                           << "   HBPM: " << ident_ 
                           << endl;
     }
@@ -179,8 +185,8 @@ void hmonitor::localPropagate( Particle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
-                          << "  " << _rgr[p.npxIndex()]
+      (*_outputStreamPtr) <<         _rgr[ Particle::xIndex    ] 
+                          << "  " << _rgr[ Particle::npxIndex  ]
                           << "   HBPM: " << ident_ 
                           << endl;
     }
@@ -208,8 +214,8 @@ void hmonitor::localPropagate( JetParticle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] =  state(i).standardPart();
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
-                          << "  " << _rgr[p.npxIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::xIndex  ] 
+                          << "  " << _rgr[Particle::npxIndex]
                           << "   HBPM: " << ident_ 
                           << endl;
     }
@@ -226,8 +232,8 @@ void hmonitor::localPropagate( JetParticle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.xIndex()] 
-                          << "  " << _rgr[p.npxIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::xIndex   ] 
+                          << "  " << _rgr[Particle::npxIndex ]
                           << "   HBPM: " << ident_ 
                           << endl;
     }
@@ -254,8 +260,8 @@ void vmonitor::localPropagate( Particle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
-                          << "  " << _rgr[p.npyIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
+                          << "  " << _rgr[Particle::npyIndex]
                           << "   VBPM: " << ident_ 
                           << endl;
     }
@@ -272,8 +278,8 @@ void vmonitor::localPropagate( Particle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
-                          << "  " << _rgr[p.npyIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
+                          << "  " << _rgr[Particle::npyIndex]
                           << "   VBPM: " << ident_ 
                           << endl;
     }
@@ -301,8 +307,8 @@ void vmonitor::localPropagate( JetParticle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
-                          << "  " << _rgr[p.npyIndex()]
+      (*_outputStreamPtr) <<         _rgr[ Particle::yIndex  ] 
+                          << "  " << _rgr[ Particle::npyIndex]
                           << "   VBPM: " << ident_ 
                           << endl;
     }
@@ -319,8 +325,8 @@ void vmonitor::localPropagate( JetParticle& p )
     for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
     
     if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[p.yIndex()] 
-                          << "  " << _rgr[p.npyIndex()]
+      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
+                          << "  " << _rgr[Particle::npyIndex]
                           << "   VBPM: " << ident_ 
                           << endl;
     }
