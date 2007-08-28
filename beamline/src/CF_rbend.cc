@@ -633,8 +633,8 @@ void CF_rbend::setStrength( double const& s )
 
   if (strength_ == 0.0)  {  
 
-    while( x <= v_ ) {
-      (*x)->setStrength( s );
+   while( x <= v_ ) {
+      if ( dynamic_cast<rbend*>(*x) ) (*x)->setStrength( s );
       ++x;
    }
    strength_ = s; 

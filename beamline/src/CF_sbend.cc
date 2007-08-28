@@ -467,7 +467,7 @@ void CF_sbend::setStrength( double const& s )
   if (strength_ == 0.0)  {  
 
     while( x <= v_ ) {
-      (*x)->setStrength( s );
+      if ( dynamic_cast<sbend*>(*x) ) (*x)->setStrength( s );
       ++x;
     }
 
