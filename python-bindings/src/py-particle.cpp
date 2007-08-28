@@ -50,19 +50,8 @@ Vector const& (Particle::*State_void)()       const      = &Particle::State;
 
 void wrap_particle () {
 
-  class_<Particle, boost::noncopyable> ("Particle", no_init )
-  .def("xIndex",      &Particle::xIndex)
-  .staticmethod("xIndex")
-  .def("yIndex",      &Particle::yIndex)
-  .staticmethod("yIndex")
-  .def("cdtIndex",    &Particle::cdtIndex)
-  .staticmethod("cdtIndex")
-  .def("npxIndex",    &Particle::npxIndex)
-  .staticmethod("npxIndex")
-  .def("npyIndex",    &Particle::npyIndex)
-  .staticmethod("npyIndex")
-  .def("ndpIndex",    &Particle::ndpIndex)
-  .staticmethod("ndpIndex")
+scope scope_Particle = 
+class_<Particle, boost::noncopyable> ("Particle", no_init )
   .def("psd",                  &Particle::psd)
   .staticmethod("psd")
   .def("SetReferenceEnergy",   &Particle::SetReferenceEnergy)
@@ -87,7 +76,7 @@ void wrap_particle () {
   .def("NormalizedMomentum",   &Particle::NormalizedMomentum)
   .def("Gamma",                &Particle::Gamma)
   .def("Beta",                 &Particle::Beta)
-   .def("Mass",                &Particle::Mass,             return_value_policy<copy_const_reference>() )
+  .def("Mass",                 &Particle::Mass,             return_value_policy<copy_const_reference>() )
   .def("ReferenceBRho",        &Particle::ReferenceBRho,    return_value_policy<copy_const_reference>() )
   .def("ReferenceBeta",        &Particle::ReferenceBeta,    return_value_policy<copy_const_reference>() )
   .def("ReferenceMomentum",    &Particle::ReferenceMomentum,return_value_policy<copy_const_reference>() )
@@ -99,6 +88,14 @@ void wrap_particle () {
   .def("BRho",                 &Particle::BRho);
 
 
+enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
+    .value("xIndex",     Particle::xIndex   )
+    .value("yIndex",     Particle::yIndex   )
+    .value("cdtIndex",   Particle::cdtIndex )
+    .value("npxIndex",   Particle::npxIndex )
+    .value("npyIndex",   Particle::npyIndex )
+    .value("ndpIndex",   Particle::ndpIndex )
+  ;
 
   class_<Proton, bases<Particle> >("Proton", init<>() )
    .def( init<double const&>())
