@@ -100,6 +100,14 @@ double LattFuncSage::snH_ = 0.0;
 double LattFuncSage::snV_ = 0.0;
 Mapping* LattFuncSage::theMapPtr_ = 0;
 
+namespace {
+ Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
+}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -247,11 +255,6 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
   MatrixD mtrx(N,N,0.0);
 
-  int x =  prt.xIndex();
-  int y =  prt.yIndex();
-  int px = prt.npxIndex();
-  int py = prt.npyIndex();
-
   const double momentum = jp.ReferenceMomentum();
 
   lfvec_.clear();
@@ -271,10 +274,10 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     mtrx = jp.State().Jacobian();
 
 
-    double a = mtrx(  x,  x);
-    double b = mtrx(  x, px);
-    double c = mtrx( px,  x);
-    double d = mtrx( px, px);
+    double a = mtrx(  i_x,   i_x   );
+    double b = mtrx(  i_x,   i_npx );
+    double c = mtrx(  i_npx, i_x   );
+    double d = mtrx(  i_npx, i_npx );
 
     // I allow for the possibility of RF cavities by scaling
 
@@ -284,10 +287,10 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     double alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
                     *( jp.ReferenceMomentum()/momentum );
 
-    a = mtrx( y,   y);
-    b = mtrx( y,  py);
-    c = mtrx( py,  y);
-    d = mtrx( py, py);
+    a = mtrx( i_y,    i_y   );
+    b = mtrx( i_y,    i_npy );
+    c = mtrx( i_npy,  i_y   );
+    d = mtrx( i_npy,  i_npy );
 
     psi_x    =  (( psi_x = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_x : 2*M_PI + psi_x;
 
@@ -507,10 +510,10 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   // Set up "real" particle ...
 
-  inState[ p_1.xIndex()   ] =   sqrt( beta_x );
-  inState[ p_1.npxIndex() ] = - alpha_x / sqrt( beta_x );
-  inState[ p_1.yIndex()   ] =   sqrt( beta_y );
-  inState[ p_1.npyIndex() ] = - alpha_y / sqrt( beta_y );
+  inState[ i_x   ] =   sqrt( beta_x );
+  inState[ i_npx ] = - alpha_x / sqrt( beta_x );
+  inState[ i_y   ] =   sqrt( beta_y );
+  inState[ i_npy ] = - alpha_y / sqrt( beta_y );
 
   for( int i=0; i < 6; i++ ) {
     inState[i] *= resizeFactor;
@@ -521,8 +524,8 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   }
     
   // Set up "imaginary" particle ...
-  inState[ p_2.npxIndex() ] = 1.0/sqrt( beta_x );
-  inState[ p_2.npyIndex() ] = 1.0/sqrt( beta_y );
+  inState[ i_npx ] = 1.0/sqrt( beta_x );
+  inState[ i_npy ] = 1.0/sqrt( beta_y );
   for( int i= 0; i < 6; i++ ) {
     inState[i] *= resizeFactor;
   }

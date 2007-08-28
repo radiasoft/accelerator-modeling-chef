@@ -51,47 +51,50 @@
 #include <physics_toolkit/ParticleVisitor.h>
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ParticleVisitor::ParticleVisitor( Particle const& x) 
-: BmlVisitor(), particle_(x) {
-  x_     = Particle::xIndex();
-  xp_    = Particle::npxIndex();
-  y_     = Particle::yIndex();
-  yp_    = Particle::npyIndex();
-  cdt_   = Particle::cdtIndex();
-  dpop_  = Particle::ndpIndex();
-  state_ = particle_.State();
-}
+: BmlVisitor(), particle_(x) {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ParticleVisitor::ParticleVisitor(ParticleVisitor const& x) 
-: BmlVisitor(), particle_(x.particle_)  {
+ : BmlVisitor(), particle_(x.particle_), state_(particle_.State())
+{}
 
-  state_ = particle_.State();
-   
-  x_     = Particle::xIndex();
-  xp_    = Particle::npxIndex();
-  y_     = Particle::yIndex();
-  yp_    = Particle::npyIndex();
-  cdt_   = Particle::cdtIndex();
-  dpop_  = Particle::ndpIndex();
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ParticleVisitor::~ParticleVisitor() {
-}
+ParticleVisitor::~ParticleVisitor() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void ParticleVisitor::setParticle(Particle const& x) {
 
   particle_ = x;
-  state_ = particle_.State();
+  state_    = particle_.State();
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void ParticleVisitor::setState(Vector const& x) {
+
   particle_.State() = x;
   state_ = particle_.State();
  
 }
 
-const Particle& ParticleVisitor::getParticle() {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const Particle& ParticleVisitor::getParticle() 
+{
   particle_.State() = state_;
   return particle_;
 }

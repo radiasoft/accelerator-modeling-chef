@@ -352,7 +352,7 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
     // --- Reset JetParticle* argument to contain the map ----------------
     // --- on the closed orbit.                         ----------------
 
-    zs( p.cdtIndex() ) = 0.0;
+    zs( Particle::cdtIndex ) = 0.0;
     jpr.setState( zs );
     bmLine_->propagate( (jpr) );
     Mapping oneTurn( jpr.State() );

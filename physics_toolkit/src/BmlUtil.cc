@@ -305,13 +305,6 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
   double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
   double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
 
-  int x   = Particle::xIndex();
-  int y   = Particle::yIndex();
-  int cdt = Particle::cdtIndex();    // not yet used
-  int xp  = Particle::npxIndex();
-  int yp  = Particle::npyIndex();
-  int dpp = Particle::ndpIndex();    // not yet used
-
   int n = Particle::PSD;
   if( 6 != n ) {
     *errorStreamPtr_ << "\n*** WARNING ***"
@@ -327,17 +320,19 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
   }
 
   MatrixD aa(n,n);
-  aa(x,x)     = I1;
-  aa(xp,xp)   = I1;
-  aa(y,y)     = I2;
-  aa(yp,yp)   = I2;
+
+  aa(Particle::xIndex,   Particle::xIndex)       = I1;
+  aa(Particle::npxIndex, Particle::npxIndex)     = I1;
+  aa(Particle::yIndex,   Particle::yIndex)       = I2;
+  aa(Particle::npyIndex, Particle::npyIndex)     = I2;
 
   // Construct matrix of eigenvectors
+
   MatrixC E("I",n);
-  E(x , 0) = sqrt( w.beta.hor / 2.0 );
-  E(xp, 0) = - ( i + w.alpha.hor )/sqrt( 2.0*w.beta.hor );
-  E(y , 1) = sqrt( w.beta.ver / 2.0 );
-  E(yp, 1) = - ( i + w.alpha.ver )/sqrt( 2.0*w.beta.ver );
+  E(Particle::xIndex ,  0) = sqrt( w.beta.hor / 2.0 );
+  E(Particle::npxIndex, 0) = - ( i + w.alpha.hor )/sqrt( 2.0*w.beta.hor );
+  E(Particle::yIndex ,  1) = sqrt( w.beta.ver / 2.0 );
+  E(Particle::npyIndex, 1) = - ( i + w.alpha.ver )/sqrt( 2.0*w.beta.ver );
 
   for( int j = 0; j < 2; j++ ) {
     int m = j + (n/2);

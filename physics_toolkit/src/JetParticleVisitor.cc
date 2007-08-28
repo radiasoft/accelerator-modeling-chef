@@ -48,37 +48,28 @@
 #include <beamline/Particle.h>
 
 
-JetParticleVisitor::JetParticleVisitor(JetParticle const& x) 
- : BmlVisitor(), particle_(x) {
-
-  x_     = Particle::xIndex();
-  xp_    = Particle::npxIndex();
-  y_     = Particle::yIndex();
-  yp_    = Particle::npyIndex();
-  cdt_   = Particle::cdtIndex();
-  dpop_  = Particle::ndpIndex();
-
-  Mapping temp = particle_.State();
-  state_ = particle_.State();
+namespace {
+ Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+JetParticleVisitor::JetParticleVisitor(JetParticle const& x) 
+ : BmlVisitor(), particle_(x), state_ (particle_.State())
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetParticleVisitor::JetParticleVisitor(JetParticleVisitor const& x)
-  : BmlVisitor(), particle_(x.particle_) 
-{
-
-  state_ = particle_.State(); 
-
-  x_     = Particle::xIndex();
-  xp_    = Particle::npxIndex();
-  y_     = Particle::yIndex();
-  yp_    = Particle::npyIndex();
-  cdt_   = Particle::cdtIndex();
-  dpop_  = Particle::ndpIndex();
-
-}
+  : BmlVisitor(), particle_(x.particle_), state_(x.particle_.State())
+{}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
