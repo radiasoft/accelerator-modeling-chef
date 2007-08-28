@@ -72,6 +72,8 @@
 
 using namespace std;
 
+BmlVisitor::BmlVisitor(): inner_(false) { } 
+
 
 void BmlVisitor::visit( beamline& x )
 {
@@ -196,6 +198,8 @@ void BmlVisitor::visit( CF_sbend& x)
 
 
 //---------------------------------------------------------------------------------
+
+ConstBmlVisitor::ConstBmlVisitor(): inner_(false) { } 
 
 void ConstBmlVisitor::visit( beamline const& x )
 {
