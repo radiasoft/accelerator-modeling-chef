@@ -62,6 +62,14 @@
 
 using namespace std;
 
+namespace {
+  Particle::PhaseSpaceIndex const&  x  = Particle::xIndex; 
+  Particle::PhaseSpaceIndex const&  y  = Particle::yIndex; 
+  Particle::PhaseSpaceIndex const& xp  = Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& yp  = Particle::npyIndex;
+}
+
+
 // ============================================================== //
 // Global error codes
 
@@ -177,12 +185,6 @@ int CovarianceSage::doCalc( JetParticle& jp, MatrixD const& cov)
          << std::endl;
     return NOTSQR;
   }
-
-  const int x  = Particle::xIndex(); 
-  const int y  = Particle::yIndex(); 
-  const int xp = Particle::npxIndex();
-  const int yp = Particle::npyIndex();
-
 
   // Clear the calcs_ array and delete its contents
 

@@ -68,12 +68,23 @@
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
+namespace {
+  Particle::PhaseSpaceIndex const& i_x   =  Particle::xIndex;
+  Particle::PhaseSpaceIndex const& i_y   =  Particle::yIndex;
+  Particle::PhaseSpaceIndex const& i_z   =  Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const& i_px  =  Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& i_py  =  Particle::npyIndex;
+  Particle::PhaseSpaceIndex const& i_dpp =  Particle::ndpIndex;
+}
+
+
 // ... Globals:
 const int DispersionSage::DONE             = 0;
 const int DispersionSage::TOO_MANY_VECTORS = 7;
 const int DispersionSage::IMPOSSIBILITY    = 111;
 
 const DispersionSage::Options DispersionSage::defaultFlags;
+
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -202,13 +213,6 @@ int DispersionSage::doCalc( JetParticle& jp )
   Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
 
   int ret = 0;
-
-  int i_x   =  Particle::xIndex();
-  int i_y   =  Particle::yIndex();
-  int i_z   =  Particle::cdtIndex();
-  int i_px  =  Particle::npxIndex();
-  int i_py  =  Particle::npyIndex();
-  int i_dpp =  Particle::ndpIndex();
 
 
   // Preliminary steps ...
@@ -431,13 +435,6 @@ int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions
 
   Vector d( prt.State().Dim() );
 
-  const int i_x   =  Particle::xIndex();
-  const int i_y   =  Particle::yIndex();
-  const int i_z   =  Particle::cdtIndex();
-  const int i_px  =  Particle::npxIndex();
-  const int i_py  =  Particle::npyIndex();
-  const int i_dpp =  Particle::ndpIndex();
-
   double lng = 0.0;
 
   Particle firstParticle(prt);
@@ -493,13 +490,6 @@ int DispersionSage::pushCalc( JetParticle const& p, Info const& initialCondition
   //--------------------------------------------------------------------
 
   int ret = 0;
-
-  const int i_x   =  Particle::xIndex();
-  const int i_y   =  Particle::yIndex();
-  const int i_z   =  Particle::cdtIndex();
-  const int i_px  =  Particle::npxIndex();
-  const int i_py  =  Particle::npyIndex();
-  const int i_dpp =  Particle::ndpIndex();
 
   double lng = 0.0;
 

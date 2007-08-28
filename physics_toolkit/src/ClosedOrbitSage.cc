@@ -70,7 +70,16 @@
 
 using namespace std;
 
-int ClosedOrbitSage::ERR_NOTRING = -17;
+namespace {
+  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
+  Particle::PhaseSpaceIndex const& i_z   = Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const& i_px  = Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& i_py  = Particle::npyIndex;
+  Particle::PhaseSpaceIndex const& i_dpp = Particle::ndpIndex;
+ }
+
+  int ClosedOrbitSage::ERR_NOTRING = -17;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -135,14 +144,6 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
   Particle prt(jp);
 
   Vector inState( prt.State() );
-
-  int i_x   = Particle::xIndex();
-  int i_y   = Particle::yIndex();
-  int i_z   = Particle::cdtIndex();
-  int i_px  = Particle::npxIndex();
-  int i_py  = Particle::npyIndex();
-  int i_dpp = Particle::ndpIndex();
-
 
   // Turn off all RF ...
 
@@ -294,14 +295,6 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
       << "ClosedOrbitSage --- Starting calculation of closed orbit."
       << endl;
   }
-
-
-  int i_x   = Particle::xIndex();
-  int i_y   = Particle::yIndex();
-  int i_z   = Particle::cdtIndex();
-  int i_px  = Particle::npxIndex();
-  int i_py  = Particle::npyIndex();
-  int i_dpp = Particle::ndpIndex();
 
 
   // Set up an FPSolver ...

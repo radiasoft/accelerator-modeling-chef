@@ -83,6 +83,12 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 
+namespace {
+  Particle::PhaseSpaceIndex const& x  = Particle::xIndex;
+  Particle::PhaseSpaceIndex const& y  = Particle::yIndex;
+  Particle::PhaseSpaceIndex const& xp = Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& yp = Particle::npyIndex;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -267,11 +273,6 @@ int EdwardsTengSage::doCalc( JetParticle& jp )
 int EdwardsTengSage::eigenTuneCalc( JetParticle const& ptr_jp, 
                                     EdwardsTengSage::Tunes& answer )
 {
-  const int x  = Particle::xIndex();
-  const int y  = Particle::yIndex();
-  const int xp = Particle::npxIndex();
-  const int yp = Particle::npyIndex();
-
   MatrixD mtrx   = ptr_jp.State().Jacobian();  
   MatrixC lambda = mtrx.Matrix::eigenValues();
 

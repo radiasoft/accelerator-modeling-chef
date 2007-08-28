@@ -1530,20 +1530,13 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps1, double eps2 )
   double I1 = ( std::abs( eps1_ )/betaGamma ) * mm_mr / 2.0;
   double I2 = ( std::abs( eps2_ )/betaGamma ) * mm_mr / 2.0;
 
-  int x   = Particle::xIndex();
-  int y   = Particle::yIndex();
-  int cdt = Particle::cdtIndex();
-  int xp  = Particle::npxIndex(); 
-  int yp  = Particle::npyIndex(); 
-  int dpp = Particle::ndpIndex();
-
   int n = Particle::PSD;
 
   MatrixD aa(n,n);
-  aa(x,x)     = I1;
-  aa(xp,xp)   = I1;
-  aa(y,y)     = I2;
-  aa(yp,yp)   = I2;
+  aa(Particle::  xIndex, Particle::xIndex)     = I1;
+  aa(Particle::npxIndex, Particle::npxIndex)   = I1;
+  aa(Particle::  yIndex, Particle::yIndex)     = I2;
+  aa(Particle::npyIndex, Particle::npyIndex)   = I2;
 
   MatrixC E = jetparticle_.State().Jacobian().eigenVectors();
   BmlUtil::normalize( E );

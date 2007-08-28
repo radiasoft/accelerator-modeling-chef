@@ -73,6 +73,15 @@ using FNAL::pcerr;
 
 using namespace std;
 
+namespace {
+ Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
+}
+
 
 LBSage::Info::Info() 
   : arcLength(-1.0),
@@ -139,12 +148,6 @@ int LBSage::doCalc( JetParticle const& jp)
   Particle    part(  jp);
 
   const int n   = Particle::PSD;
-  const int x   = Particle::xIndex();
-  const int y   = Particle::yIndex();
-  const int cdt = Particle::cdtIndex();
-  const int xp  = Particle::npxIndex(); 
-  const int yp  = Particle::npyIndex(); 
-  const int dpp = Particle::ndpIndex();
 
   //*********************************************************
   // NOTE:
@@ -183,7 +186,7 @@ int LBSage::doCalc( JetParticle const& jp)
     
     // beta_1x and beta_2y
 
-    std::complex<double> temp = E2(x,x);
+    std::complex<double> temp = E2(i_x,i_x);
     if( real(temp) > 0.0 ) {
       calcs_.back().beta_1x = 2.0*real(temp)*real(temp);
     }
@@ -194,7 +197,7 @@ int LBSage::doCalc( JetParticle const& jp)
 			       "beta_1x is negative !. This error is likely due to an unstable lattice." );
        return 1; 
     }
-    temp = real(E2(y,y));
+    temp = real(E2(i_y,i_y));
     if( real(temp) > 0.0 ) {
       calcs_.back().beta_2y = 2.0*real(temp)*real(temp);
     }
@@ -207,27 +210,27 @@ int LBSage::doCalc( JetParticle const& jp)
      }
 
     // alpha_1x and alpha_2y
-    temp = E2(xp,x)*E2(x,x);
+    temp = E2(i_npx,i_x)*E2(i_x,i_x);
     calcs_.back().alpha_1x = -2.0*real(temp);
     calcs_.back().u1       = -2.0*imag(temp);
 
-    temp = E2(yp,y)*E2(y,y);
+    temp = E2(i_npy,i_y)*E2(i_y,i_y);
     calcs_.back().alpha_2y = -2.0*real(temp);
     calcs_.back().u4       = -2.0*imag(temp);
 
     // beta_1y and beta_2x
-    temp = E2(y,x);
+    temp = E2(i_y,i_x);
     calcs_.back().beta_1y = 2.0*real(temp*conj(temp));
-    temp = E2(x,y);
+    temp = E2(i_x,i_y);
     calcs_.back().beta_2x = 2.0*real(temp*conj(temp));
 
     // alpha_1y and alpha_2x
 
-    temp = E2(yp,x)*E2(y,x);
+    temp = E2(i_npy,i_x)*E2(i_y,i_x);
     calcs_.back().alpha_1y = -2.0*real(temp);
     calcs_.back().u2       = -2.0*imag(temp);
 
-    temp = E2(xp,y)*E2(y,y);
+    temp = E2(i_npx,i_y)*E2(i_y,i_y);
     calcs_.back().alpha_2x = -2.0*real(temp);
     calcs_.back().u3       = -2.0*imag(temp);
 
