@@ -63,6 +63,15 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+namespace {
+  Particle::PhaseSpaceIndex const&  i_x     = Particle::xIndex;
+  Particle::PhaseSpaceIndex const&  i_y     = Particle::yIndex;
+  Particle::PhaseSpaceIndex const&  i_cdt   = Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const&  i_npx   = Particle::npxIndex;
+  Particle::PhaseSpaceIndex const&  i_npy   = Particle::npyIndex;
+  Particle::PhaseSpaceIndex const&  i_ndp   = Particle::ndpIndex;
+} // anonymous namespace
+
 // --------------------------------------------------
 // --- Constructors ---------------------------------
 // --------------------------------------------------
@@ -529,13 +538,6 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 void Slot::processFrame( const Frame& frm, Particle& p ) const
 {
 
-  const int x    = p.xIndex();
-  const int y    = p.yIndex();
-  const int cdt  = p.cdtIndex();
-  const int xp   = p.npxIndex();
-  const int yp   = p.npyIndex();
-  const int dpop = p.ndpIndex();
-
   static bool firstTime = true;
   static Vector u_z(3);
   static Vector u_y(3);
@@ -566,26 +568,26 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
     double sn = e_3(0);
     
     // Coordinate transformation.
-    Vector r        ( state[x]*e_1 + state[y]*e_2 );
+    Vector r        ( state[i_x]*e_1 + state[i_y]*e_2 );
     Vector dummy    ( p.VectorBeta() );
-    Vector beta     ( dummy(0)*e_1 +
-                      dummy(1)*e_2 +
-                      dummy(2)*e_3 );
+    Vector beta     ( dummy[0]*e_1 +
+                      dummy[1]*e_2 +
+                      dummy[2]*e_3 );
   
     double tau      ( - r(2) / beta(2) );
   
-    state[x]    = r(0) + tau*beta(0);
-    state[y]    = r(1) + tau*beta(1);
-    state[cdt] += tau;
+    state[i_x]    = r[0] + tau*beta[0];
+    state[i_y]    = r[1] + tau*beta[1];
+    state[i_cdt] += tau;
   
     // Momentum transformation
 
-    double p1( state[ xp ] );
-    double p2( state[ yp ] );
-    double p3divpbar = sqrt( ( 1.0 + state[dpop] ) * ( 1.0 + state[dpop] )
+    double p1( state[ i_npx ] );
+    double p2( state[ i_npy ] );
+    double p3divpbar = sqrt( ( 1.0 + state[i_ndp] ) * ( 1.0 + state[i_ndp] )
                               - p1*p1 - p2*p2 );
   
-    state[xp] = cs* state[ xp ] + sn*p3divpbar;
+    state[i_npx] = cs* state[ i_npx ] + sn*p3divpbar;
   }
 
 
@@ -597,12 +599,12 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
     // sin of angle by which magnet is rolled
 
   
-    double temp     = state[0] * cs + state[1] * sn;
-    state[1]        = state[1] * cs - state[0] * sn;
+    double temp     = state[i_x] * cs + state[i_y] * sn;
+    state[1]        = state[i_y] * cs - state[i_x] * sn;
     state[0]        = temp;
   
-    temp       = state[3] * cs + state[4] * sn;
-    state[4]   = state[4] * cs - state[3] * sn;
+    temp       = state[i_npx] * cs + state[i_npy] * sn;
+    state[4]   = state[i_npy] * cs - state[i_npx] * sn;
     state[3]   = temp;
    
 
@@ -615,12 +617,6 @@ void Slot::processFrame( const Frame& frm, Particle& p ) const
 
 void Slot::processFrame( const Frame& frm, JetParticle& p ) const
 {
-  const int x    = p.xIndex();
-  const int y    = p.yIndex();
-  const int cdt  = p.cdtIndex();
-  const int xp   = p.npxIndex();
-  const int yp   = p.npyIndex();
-  const int dpop = p.ndpIndex();
 
   static bool firstTime = true;
   static Vector u_z(3);
@@ -646,30 +642,30 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
     e_2 = frm.getAxis(1);
     e_3 = frm.getAxis(2);
     
-    double cs = e_1(0);
-    double sn = e_3(0);
+    double cs = e_1[0];
+    double sn = e_3[0];
 
     // Coordinate transformation.
 
-    JetVector r        ( state[x]*e_1 + state[y]*e_2 );
+    JetVector r        ( state[i_x]*e_1 + state[i_y]*e_2 );
     JetVector dummy    ( p.VectorBeta() );
-    JetVector beta     ( dummy(0)*e_1 +
-                         dummy(1)*e_2 +
-                         dummy(2)*e_3 );
+    JetVector beta     ( dummy[0]*e_1 +
+                         dummy[1]*e_2 +
+                         dummy[2]*e_3 );
   
-    Jet tau            ( - r(2) / beta(2) );
+    Jet tau            ( - r[2] / beta[2] );
   
-    state[x]    =   r(0) + tau*beta(0);
-    state[y]    =   r(1) + tau*beta(1);
-    state[cdt] +=   tau ;
+    state[i_x]    =   r[0] + tau*beta[0];
+    state[i_y]    =   r[1] + tau*beta[1];
+    state[i_cdt] +=   tau ;
   
     // Momentum transformation
-    Jet p1( state[xp] );
-    Jet p2( state[yp] );
-    Jet p3divpbar = sqrt( ( 1.0 + state[dpop] ) * ( 1.0 + state[dpop] )
+    Jet p1( state[i_npx] );
+    Jet p2( state[i_npy] );
+    Jet p3divpbar = sqrt( ( 1.0 + state[i_ndp] ) * ( 1.0 + state[i_ndp] )
                               - p1*p1 - p2*p2 );
   
-     state[xp] =  cs*state[xp] + sn*p3divpbar ;
+     state[i_npx] =  cs*state[i_npx] + sn*p3divpbar ;
   }
 
   // Roll ------------------------------------
@@ -681,12 +677,12 @@ void Slot::processFrame( const Frame& frm, JetParticle& p ) const
     // sin of angle by which magnet is rolled
 
   
-    Jet temp   = state[0] * cs + state[1] * sn;
-    state[1]   = state[1] * cs - state[0] * sn;
+    Jet temp   = state[i_x] * cs + state[i_y] * sn;
+    state[1]   = state[i_y] * cs - state[i_x] * sn;
     state[0]   = temp;
 
-    temp      = state[3] * cs + state[4] * sn;
-    state[4]  = state[4] * cs - state[3] * sn;
+    temp      = state[i_npx] * cs + state[i_npy] * sn;
+    state[4]  = state[i_npy] * cs - state[i_npx] * sn;
     state[3]  = temp;
 
   }
@@ -782,16 +778,16 @@ void Slot::localPropagate( Particle& p )
   r += tau*beta;
   r -= q;
 
-  state[ p.xIndex()   ]  = r*u_1;
-  state[ p.yIndex()   ]  = r*u_2;
-  // REMOVE: p.state[ p.cdtIndex() ] += ( tau - tauZero );
-  state[ p.cdtIndex() ] += ( tau - ctRef_ );
+  state[ i_x   ]  = r*u_1;
+  state[ i_y   ]  = r*u_2;
+  state[ i_cdt ] += ( tau - ctRef_ );
 
     // Momentum transformation
-  Vector momntm(3);
-  momntm = ( p.NormalizedVectorMomentum() );
-  state[ p.npxIndex() ] = momntm*u_1;
-  state[ p.npyIndex() ] = momntm*u_2;
+
+  Vector momntm = ( p.NormalizedVectorMomentum() );
+
+  state[ i_npx ] = momntm*u_1;
+  state[ i_npy ] = momntm*u_2;
   
 }
 
@@ -842,15 +838,15 @@ void Slot::localPropagate( JetParticle& p )
     r += tau*beta;
     r -= q;
 
-    state( p.xIndex()   )   = r*u_1;
-    state( p.yIndex()   )   = r*u_2;
-    // REMOVE: p.state( p.cdtIndex() ) += ( tau - tauZero );
-    state( p.cdtIndex() )  += ( tau - ctRef_ );
+    state[i_x  ]   = r*u_1;
+    state[i_y  ]   = r*u_2;
+    state[i_cdt]  += ( tau - ctRef_ );
 
     // Momentum transformation
+
     JetVector mom( p.NormalizedVectorMomentum() );
-    state( p.npxIndex() ) = mom*u_1;
-    state( p.npyIndex() ) = mom*u_2;
+    state[i_npx] = mom*u_1;
+    state[i_npy] = mom*u_2;
   }
 }
 
