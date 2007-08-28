@@ -165,8 +165,8 @@ void bmlnElmnt::localPropagate( ParticleBunch& b )
 {
 
  for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  
- {  localPropagate( *it ); }
-
-}
+ {  
+    localPropagate( *it ); }
+ }
 
 
