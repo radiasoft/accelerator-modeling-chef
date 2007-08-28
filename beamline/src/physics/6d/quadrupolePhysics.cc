@@ -163,12 +163,11 @@ quadrupole::TPOT_Prop  quadrupole::LikeTPOT(4);
 void thinQuad::localPropagate( Particle& p ) {
  // "Strength" is B'l in Tesla
 
- double k      = 0;
  Vector& state = p.State();
 
  if( strength_ != 0.0 ) 
  {
-   k = strength_ / p.ReferenceBRho();
+   double const k = strength_ / p.ReferenceBRho();
  
    state[3] += - k * state[0];
    state[4] +=   k * state[1];
@@ -181,13 +180,12 @@ void thinQuad::localPropagate( Particle& p ) {
 
 void thinQuad::localPropagate( JetParticle& p ) {
 
- double k       = 0;
  Mapping& state = p.State();
 
  if( strength_ != 0.0 ) 
  {
 
-   k = strength_ / p.ReferenceBRho();
+   double const k = strength_ / p.ReferenceBRho();
 
    state[3] += - k * state[0];
    state[4] +=   k * state[1];
