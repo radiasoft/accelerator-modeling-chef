@@ -222,7 +222,7 @@ bool    beamline::isMagnet()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr beamline::firstElement() 
+ElmPtr& beamline::firstElement() 
 { 
     return   theList_.front(); 
 }
@@ -230,7 +230,7 @@ ElmPtr beamline::firstElement()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr beamline::firstElement() const
+ElmPtr const& beamline::firstElement() const
 { 
     return   theList_.front(); 
 }
@@ -238,7 +238,7 @@ ElmPtr beamline::firstElement() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr beamline::lastElement() 
+ElmPtr&  beamline::lastElement() 
 { 
    return   theList_.back(); 
 }
@@ -246,7 +246,7 @@ ElmPtr beamline::lastElement()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr beamline::lastElement() const
+ElmPtr const& beamline::lastElement() const
 
 { 
    return   theList_.back(); 
@@ -2208,4 +2208,33 @@ void beamline::accept( ConstBmlVisitor& v ) const
   v.visit( *this ); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double beamline::getReferenceTime()                    const
+{
+
+  double ct = 0.0; 
+  for ( beamline::const_iterator it = begin(); it != end(); ++it ) {
+
+    ct += (*it)->getReferenceTime();
+
+  } 
+  return ct; 
+}     
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beamline::setReferenceTime( double const& ct)
+{ 
+  (*pcerr) << "*** WARNING ****: attempt to explicitly set reference time of a beamline. " << std::endl;
+  (*pcerr) << "*** WARNING ****: most likely, this is an error, Continuing, nontheless   " << std::endl;
+
+  double old = ctRef_;
+  ctRef_ = ct;
+  return   old; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
