@@ -52,7 +52,6 @@
 #endif
 
 #include <stdlib.h>
-#include <string.h>   // for memcpy()
 
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Matrix.h>
