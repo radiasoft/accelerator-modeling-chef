@@ -51,7 +51,6 @@ using namespace std;
 
 QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context ) 
 { 
-    
    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
    string caption = "CHEF:  Twiss Functions (uncoupled): " + string( context->name() );
@@ -60,7 +59,10 @@ QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
-   LattFncData data( context->getTwissArray(),  context->cheatBmlPtr() );
+   LattFncData data(   context->getTwissArray()
+                     , context->getHorizontalFracTune()
+                     , context->getVerticalFracTune()
+                     , context->cheatBmlPtr()           );
    plot->addData( data);
 
    return plot;

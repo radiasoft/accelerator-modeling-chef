@@ -45,13 +45,15 @@ using namespace std;
 
 QWidget* CommandPropagateTwiss::operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initialConditions ) 
 {
-
     context->setInitialTwiss( initialConditions );
 
     LattFuncSage lfs(   boost::const_pointer_cast<beamline>( context->cheatBmlPtr() ) );
     vector<LattFuncSage::lattFunc> vec = context->getTwissArray(); 
 
-    LattFncData lfd( vec,  context->cheatBmlPtr() );
+    LattFncData lfd(   vec
+                     , context->getHorizontalFracTune()
+                     , context->getVerticalFracTune()
+                     , context->cheatBmlPtr()            );
 
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "PlotWidget", Qt::WDestructiveClose );
 

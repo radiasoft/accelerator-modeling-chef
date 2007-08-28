@@ -42,14 +42,14 @@
 #include <LattFuncSage.h>
 #include <PlotData.h>
 
-
-class LattFncData: public PlotData  {
-
+class LattFncData: public PlotData  
+{
  public:
-
-    LattFncData( std::vector<LattFuncSage::lattFunc> const& twiss_vec, ConstBmlPtr bml = ConstBmlPtr() );
+    LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
+                 , double const& horTune
+                 , double const& verTune
+                 , ConstBmlPtr bml = ConstBmlPtr() );
    ~LattFncData();
-
 };
 
 
