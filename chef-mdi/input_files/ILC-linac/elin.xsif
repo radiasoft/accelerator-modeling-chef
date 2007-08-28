@@ -10,8 +10,8 @@
   CALL, FILENAME="ilc000.ILC_common.xsif"
   CALL, FILENAME="ilc007.ML_common.xsif"
 
-  !CALL, FILENAME="ML_earthcurve_MULT.xsif"
-  CALL, FILENAME="ML_earthcurve_GKICK.xsif"
+  CALL, FILENAME="ML_earthcurve_MULT.xsif"
+  !CALL, FILENAME="ML_earthcurve_GKICK.xsif"
 
 ! ==============================================================================
 ! Beamline definitions
