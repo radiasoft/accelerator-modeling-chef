@@ -1,3 +1,10 @@
+#---------------------------------------------------------------------
+# Makefile.am for python-bindings
+# Authors: ostiguy@fnal.gov
+#          amundson@fnal.gov 
+#---------------------------------------------------------------------
+
+
 lib_LTLIBRARIES         = libpybasic_toolkit.la  libpymxyzptlk.la libpybeamline.la libpybmlfactory.la libpyphysics_toolkit.la libpurepybasic_toolkit.la  libpurepymxyzptlk.la libpurepybeamline.la libpurepybmlfactory.la libpurepyphysics_toolkit.la
 
 libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-barnacle.cpp  py-vector.cpp  py-matrix.cpp  
@@ -20,7 +27,10 @@ libpurepymxyzptlk_la_SOURCES = $(libpymxyzptlk_la_SOURCES)
 libpurepybeamline_la_SOURCES = $(libpybeamline_la_SOURCES)
 libpurepybmlfactory_la_SOURCES = $(libpybmlfactory_la_SOURCES)
 libpurepyphysics_toolkit_la_SOURCES = $(libpyphysics_toolkit_la_SOURCES)
+
+
 ### the following depend on CHEF 
+
 # libpychefplot_la_SOURCES        =   py-chefplot-module.cpp py-chefplotmain.cpp py-chefcurve.cpp py-chefplotdata.cpp
 
 # libpychef_la_SOURCES            =   py-chef-module.cpp 
@@ -65,7 +75,7 @@ libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
-CPPFLAGS                          =    $(BOOST_INC)  -I$(top_srcdir)/../include $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC)
+CPPFLAGS   =    $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC)
 
 install-exec-hook:
 	for lib in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit ;\
