@@ -33,11 +33,11 @@ using namespace boost::python;
 void wrap_quadrupole () {
 
 class_<quadrupole, bases<bmlnElmnt>, QuadrupolePtr >("quadrupole")
-  .def(init<char*  , double, double, bmlnElmnt::PropFunc*>() )
-  .def(init<double , double, bmlnElmnt::PropFunc* >() )
-  .def(init<char*  , double, double>())
-  .def(init<double , double>())
-     //  .def("setStrength", &quadrupole::setStrength) overloaded 
+  .def(init<char*  ,  double, double, bmlnElmnt::PropFunc*>() )
+  .def(init<double ,  double, bmlnElmnt::PropFunc* >() )
+  .def(init<char*  ,  double, double>())
+  .def(init<double ,  double>())
+  .def("setStrength", &quadrupole::setStrength) 
   .def("Type",        &quadrupole::Type);
  
 
