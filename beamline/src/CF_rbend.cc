@@ -552,11 +552,21 @@ int CF_rbend::setDipoleField( double const& arg_x )
 
 void CF_rbend::setStrength( double const& s )
 {
-  double ratio = s/strength_;
+
+  double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
  
-  for ( beamline::const_iterator it  = p_bml_->begin(); 
-                                 it != p_bml_->end(); ++it ) {
-      (*it)->setStrength( (s>0.0) ? ratio * (*it)->Strength() : (*it)->Strength()  );
+  CFRBendPtr q;
+
+  for ( beamline::iterator it  = p_bml_->begin(); 
+                           it != p_bml_->end(); ++it ) {
+    
+    if ( ratio != 0.0  ) {
+         (*it)->setStrength( ratio * (*it)->Strength() );
+    } 
+    else {
+      if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->->setStrength(s);
+    }
+   
   }
 
   strength_ = s; 
