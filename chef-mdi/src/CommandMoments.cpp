@@ -42,6 +42,7 @@
 #include<CHEFPlotMain.h>
 #include<MomentsFncData.h>
 #include<qwidget.h>
+#include <qmessagebox.h>
 
 using namespace std;
 
@@ -51,20 +52,36 @@ using namespace std;
 
 QWidget* CommandMoments::operator()( QWidget* parent, BmlContextPtr const& context ) 
 { 
+  if( context->isTreatedAsRing() ) {
+    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-   CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
+    string caption = "CHEF:  Lattice Functions (Moments): " + string( context->name() );
 
-   string caption = "CHEF:  Lattice Functions (Moments): " + string( context->name() );
+    plot->setCaption( caption.c_str() );
+    plot->setGeometry(0,0, parent->width(), parent->height() );
+    plot->setAutoClear(true);
 
-   plot->setCaption( caption.c_str() );
-   plot->setGeometry(0,0, parent->width(), parent->height() );
-   plot->setAutoClear(true);
+    MomentsFncData data(   context->getCovarianceArray()
+                         , context->getHorizontalEigenTune()
+                         , context->getVerticalEigenTune()
+                         , context->cheatBmlPtr()            );
 
-   MomentsFncData data( context->getCovarianceArray(),  context->cheatBmlPtr() );
- 
-   plot->addData( data );
-
-   return plot;
+    plot->addData( data );
+    return plot;
+  }
+  else {
+    ostringstream uic;
+    uic  <<   "This command is meant for a periodic structure.";
+    QMessageBox::critical(   0
+                           , QString( "ERROR: NOT RING" )
+                           , QString( uic.str().c_str() )
+                           , QMessageBox::Ok
+                           , QMessageBox::NoButton
+                           , QMessageBox::NoButton        );
+    throw GenericException( __FILE__, __LINE__,
+                            "CommandMoments::operator()(...)",
+                            uic.str().c_str() );
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

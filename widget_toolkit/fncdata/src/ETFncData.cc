@@ -41,8 +41,13 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ETFncData::ETFncData( std::vector<EdwardsTengSage::Info> const& et_vec, ConstBmlPtr bml)
+ETFncData::ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
+                      , double const& horTune
+                      , double const& verTune
+                      , ConstBmlPtr bml                                  )
+: PlotData()
 {
+   setTunes( horTune, verTune );
 
    std::vector<double>      azimuth;
 

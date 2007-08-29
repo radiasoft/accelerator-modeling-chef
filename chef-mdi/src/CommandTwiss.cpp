@@ -59,11 +59,20 @@ QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
-   LattFncData data(   context->getTwissArray()
-                     , context->getHorizontalFracTune()
-                     , context->getVerticalFracTune()
-                     , context->cheatBmlPtr()           );
-   plot->addData( data);
+   if( context->isTreatedAsRing() ) {
+     LattFncData data(   context->getTwissArray()
+                       , context->getHorizontalFracTune()
+                       , context->getVerticalFracTune()
+                       , context->cheatBmlPtr()           );
+     plot->addData(data);
+   }
+   else {
+     LattFncData data(   context->getTwissArray()
+                       , -1.0
+                       , -1.0
+                       , context->cheatBmlPtr()           );
+     plot->addData(data);
+   }
 
    return plot;
 }

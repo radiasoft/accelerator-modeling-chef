@@ -45,7 +45,10 @@
 class LBFncData : public PlotData {
 
  public:
-    LBFncData( std::vector<LBSage::Info> const& lb_vec, ConstBmlPtr bml = ConstBmlPtr() );
+    LBFncData(   std::vector<LBSage::Info> const& lb_vec
+               , double const& horTune
+               , double const& verTune
+               , ConstBmlPtr bml = ConstBmlPtr()         );
    ~LBFncData();
 };
 
