@@ -19,10 +19,14 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
+****************************************************************************
 ****************************************************************************/
+
 #include <boost/python.hpp>
 
 #include <bmlfactory/MAD8Factory.h>
+#include <parsers/xsif/XSIFFactory.h>
 #include <beamline/beamline.h>
 #include <string>
 
@@ -32,19 +36,26 @@ using namespace boost::python;
 // #define BOOST_PYTHON_STATIC_MODULE
 
 
-BmlPtr ( MAD8Factory::* create_beamline_1 )(std::string        )        = &MAD8Factory::create_beamline;
-BmlPtr ( MAD8Factory::* create_beamline_2 )(std::string, double)        = &MAD8Factory::create_beamline;
+BmlPtr ( bmlfactory::* create_beamline_1 )(std::string        )        = &bmlfactory::create_beamline;
+BmlPtr ( bmlfactory::* create_beamline_2 )(std::string, double)        = &bmlfactory::create_beamline;
 
 BOOST_PYTHON_MODULE(bmlfactory)
 {
 
-class_<MAD8Factory>("bmlfactory", init<std::string, const char*>() )
-  .def( init<std::string, double, const char*>() ) 
-  .def( init<std::string>() ) 
-  .def( init<std::string, double>() ) 
+class_<bmlfactory, boost::noncopyable >("bmlfactory", no_init)
   .def("create_beamline",  create_beamline_1 )
   .def("create_beamline",  create_beamline_2 );
 
+
+class_<MAD8Factory, bases<bmlfactory> >("MAD8Factory", init<std::string, const char*>() )
+  .def( init<std::string, double, const char*>() ) 
+  .def( init<std::string>() ) 
+  .def( init<std::string, double>() );
+
+
+class_<XSIFFactory, bases<bmlfactory> >("XSIFFactory", init<std::string, const char*>() )
+  .def( init<std::string, double, const char*>() ) 
+  .def( init<std::string>() ) 
+  .def( init<std::string, double>() );
+
 }
-
-
