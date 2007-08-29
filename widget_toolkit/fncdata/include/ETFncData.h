@@ -43,11 +43,13 @@
 #include <PlotData.h>
 
 
-class ETFncData: public PlotData {
-
+class ETFncData: public PlotData 
+{
  public:
-
-    ETFncData( std::vector<EdwardsTengSage::Info> const& et_vec, ConstBmlPtr bml = ConstBmlPtr() );
+    ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
+               , double const& horTune
+               , double const& verTune
+               , ConstBmlPtr bml = ConstBmlPtr()                   );
    ~ETFncData();
 
 };

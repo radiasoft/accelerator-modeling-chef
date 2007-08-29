@@ -42,6 +42,7 @@
 #include<CHEFPlotMain.h>
 #include<ETFncData.h>
 #include<qwidget.h>
+#include <qmessagebox.h>
 
 using namespace std;
 
@@ -51,19 +52,36 @@ using namespace std;
 
 QWidget* CommandEdwardsTeng::operator()( QWidget* parent, BmlContextPtr const& context ) 
 { 
+  if( context->isTreatedAsRing() ) {
+    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-   CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
+    string caption = "CHEF: Lattice Functions (Factorization): " + string( context->name() );
 
-   string caption = "CHEF: Lattice Functions (Factorization): " + string( context->name() );
+    plot->setCaption( caption.c_str() );
+    plot->setGeometry(0,0, parent->width(), parent->height() );
+    plot->setAutoClear(true);
 
-   plot->setCaption( caption.c_str() );
-   plot->setGeometry(0,0, parent->width(), parent->height() );
-   plot->setAutoClear(true);
-
-   ETFncData data( context->getETArray(), context->cheatBmlPtr() );
-   plot->addData( data);
-
-   return plot;
+    ETFncData data(   context->getETArray()
+                    , context->getHorizontalEigenTune()
+                    , context->getVerticalEigenTune()
+                    , context->cheatBmlPtr()             );
+    plot->addData(data);
+    return plot;
+  }
+  else {
+    ostringstream uic;
+    uic  <<   "Can only compute Edward-Teng lattice functions"
+            "\nfor a periodic structure.";
+    QMessageBox::critical(   0
+                           , QString( "ERROR: NOT RING" )
+                           , QString( uic.str().c_str() )
+                           , QMessageBox::Ok
+                           , QMessageBox::NoButton
+                           , QMessageBox::NoButton        );
+    throw GenericException( __FILE__, __LINE__,
+                            "CommandEdwardsTeng::operator()(...)",
+                            uic.str().c_str() );
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -42,8 +42,13 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LBFncData::LBFncData( std::vector<LBSage::Info> const&  lb_vec, ConstBmlPtr bml ) 
+LBFncData::LBFncData(   std::vector<LBSage::Info> const&  lb_vec
+                      , double const& horTune
+                      , double const& verTune
+                      , ConstBmlPtr bml                           ) 
+: PlotData()
 {
+  setTunes( horTune, verTune );
 
   std::vector<double>   azimuth;
 
@@ -55,15 +60,13 @@ LBFncData::LBFncData( std::vector<LBSage::Info> const&  lb_vec, ConstBmlPtr bml 
 
   for ( std::vector<LBSage::Info>::const_iterator it  = lb_vec.begin(); 
                                                   it != lb_vec.end(); ++it ) {
+    azimuth.push_back( it->arcLength );
 
-       azimuth.push_back( it->arcLength );
+    beta_1x.push_back( it->beta_1x   );
+    beta_1y.push_back( it->beta_1y   );
 
-       beta_1x.push_back( it->beta_1x   );
-       beta_1y.push_back( it->beta_1y   );
-
-       beta_2x.push_back( it->beta_2x   );
-       beta_2y.push_back( it->beta_2y   );
-
+    beta_2x.push_back( it->beta_2x   );
+    beta_2y.push_back( it->beta_2y   );
   }
 
   CurveData  c1x( azimuth, beta_1x,  "<hor|beta|hor>"   );
@@ -103,6 +106,7 @@ LBFncData::LBFncData( std::vector<LBSage::Info> const&  lb_vec, ConstBmlPtr bml 
 
 LBFncData::~LBFncData()
 {}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

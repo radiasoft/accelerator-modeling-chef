@@ -49,7 +49,6 @@ using namespace std;
 
 QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initial )
 {
-
     CovarianceSage::Info initialCovariance;
 
     initialCovariance.arcLength = 0.0;
@@ -66,24 +65,35 @@ QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& co
  
     int errcode = BmlUtil::makeCovariance( initialCovariance, context->getParticle() );
 
-    if ( errcode != 0 ) throw GenericException( __FILE__, __LINE__, " CommandPropagateMoments::operator()",  "Call to makeCovariance failed." );
-        
+    if ( errcode != 0 ) throw GenericException( __FILE__, __LINE__, 
+                                                " CommandPropagateMoments::operator()",  
+                                                "Call to makeCovariance failed."        );
 
     context->setInitialCovariance( initialCovariance );
  
-    MomentsFncData data( context->getCovarianceArray(),  context->cheatBmlPtr() );
-
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "MMplotWidget", Qt::WDestructiveClose );
 
+    if( context->isTreatedAsRing() ) {
+      MomentsFncData data(   context->getCovarianceArray()
+                           , context->getHorizontalEigenTune()
+                           , context->getVerticalEigenTune()
+                           , context->cheatBmlPtr()            );
+      plotWidget->addData( data );
+    }
+    else {
+      MomentsFncData data(   context->getCovarianceArray()
+                           , -1.0
+                           , -1.0
+                           , context->cheatBmlPtr()            );
+      plotWidget->addData( data );
+    }
+
     string theCaption("CHEF: Lattice Functions (covariance): " );
-
     theCaption += string( context->name() );
-
     plotWidget->setCaption( theCaption );
+
     plotWidget->setGeometry(0,0, parent->width(), parent->height() );
     plotWidget->setAutoClear(true);
-    plotWidget->addData( data );
   
     return plotWidget;
-
 }

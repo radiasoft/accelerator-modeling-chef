@@ -42,26 +42,29 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-MomentsFncData::MomentsFncData( std::vector<CovarianceSage::Info> const& covar_vec, ConstBmlPtr bml )
+MomentsFncData::MomentsFncData(   std::vector<CovarianceSage::Info> const& covar_vec
+                                , double const& horTune
+                                , double const& verTune
+                                , ConstBmlPtr bml                                     )
 : PlotData() 
 {
-    std::vector<double>    azimuth;
-    std::vector<double>    beta_H;
-    std::vector<double>    alpha_H;
-    std::vector<double>    beta_V;
-    std::vector<double>    alpha_V;
+  setTunes( horTune, verTune );
+
+  std::vector<double>    azimuth;
+  std::vector<double>    beta_H;
+  std::vector<double>    alpha_H;
+  std::vector<double>    beta_V;
+  std::vector<double>    alpha_V;
 
   for (std::vector<CovarianceSage::Info>::const_iterator it  = covar_vec.begin(); 
                                                          it != covar_vec.end(); ++it ) {
+    azimuth.push_back( it->arcLength );
 
-       azimuth.push_back(	it->arcLength       );
+     beta_H.push_back( it->beta.hor  );
+     beta_V.push_back( it->beta.ver  );
 
-        beta_H.push_back(       it->beta.hor        );
-        beta_V.push_back(       it->beta.ver        );
-
-       alpha_H.push_back(       it->alpha.hor       );
-       alpha_V.push_back(       it->alpha.ver       );
-
+    alpha_H.push_back( it->alpha.hor );
+    alpha_V.push_back( it->alpha.ver );
   }
 
   CurveData  c1(  azimuth, beta_H,  "Horizontal Beta"  );
