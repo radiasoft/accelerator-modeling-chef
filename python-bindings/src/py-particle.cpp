@@ -50,9 +50,8 @@ Vector const& (Particle::*State_void)()       const      = &Particle::State;
 
 void wrap_particle () {
 
-scope scope_Particle = 
-class_<Particle, boost::noncopyable> ("Particle", no_init )
-  .def("psd",                  &Particle::psd)
+  class_<Particle, boost::noncopyable> Particle_("Particle", no_init ); 
+  Particle_.def("psd",                  &Particle::psd)
   .staticmethod("psd")
   .def("SetReferenceEnergy",   &Particle::SetReferenceEnergy)
   .def("SetReferenceMomentum", &Particle::SetReferenceMomentum)
@@ -88,15 +87,6 @@ class_<Particle, boost::noncopyable> ("Particle", no_init )
   .def("BRho",                 &Particle::BRho);
 
 
-enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
-    .value("xIndex",     Particle::xIndex   )
-    .value("yIndex",     Particle::yIndex   )
-    .value("cdtIndex",   Particle::cdtIndex )
-    .value("npxIndex",   Particle::npxIndex )
-    .value("npyIndex",   Particle::npyIndex )
-    .value("ndpIndex",   Particle::ndpIndex )
-  ;
-
   class_<Proton, bases<Particle> >("Proton", init<>() )
    .def( init<double const&>())
    .def( init<double const&, Vector const&>());
@@ -121,6 +111,18 @@ enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
   class_<AntiMuon, bases<Particle> >("AntiMuon", init<>() )
    .def( init<double const&>())
    .def( init<double const&, Vector const&>());
+
+ scope scope_Particle = Particle_;
+
+ enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
+    .value("xIndex",     Particle::xIndex   )
+    .value("yIndex",     Particle::yIndex   )
+    .value("cdtIndex",   Particle::cdtIndex )
+    .value("npxIndex",   Particle::npxIndex )
+    .value("npyIndex",   Particle::npyIndex )
+    .value("ndpIndex",   Particle::ndpIndex )
+  ;
+
 
 
 }
