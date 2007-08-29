@@ -474,12 +474,20 @@ int CF_sbend::setDipoleField( double const& arg_x )
 void CF_sbend::setStrength( double const& s )
 {
 
-  double ratio = s/strength_;
+  double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
  
+  CFSBendPtr q;
+
   for ( beamline::iterator it  = p_bml_->begin(); 
                            it != p_bml_->end(); ++it ) {
     
-       (*it)->setStrength( (s>0.0) ? ratio * (*it)->Strength() : (*it)->Strength()  );
+    if ( ratio != 0.0  ) {
+         (*it)->setStrength( ratio * (*it)->Strength() );
+    } 
+    else {
+      if ( q = boost::dynamic_pointer_cast<CF_sbend>(*it) ) q->->setStrength(s);
+    }
+   
   }
 
 
