@@ -47,25 +47,29 @@ QWidget* CommandPropagateTwiss::operator()( QWidget* parent, BmlContextPtr& cont
 {
     context->setInitialTwiss( initialConditions );
 
-    LattFuncSage lfs(   boost::const_pointer_cast<beamline>( context->cheatBmlPtr() ) );
-    vector<LattFuncSage::lattFunc> vec = context->getTwissArray(); 
-
-    LattFncData lfd(   vec
-                     , context->getHorizontalFracTune()
-                     , context->getVerticalFracTune()
-                     , context->cheatBmlPtr()            );
-
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "PlotWidget", Qt::WDestructiveClose );
 
-    string theCaption("CHEF: Uncoupled Lattice Functions: ");
-    
-    theCaption += string( context->name() );
+    if( context->isTreatedAsRing() ) {
+      LattFncData lfd(   context->getTwissArray()
+                       , context->getHorizontalFracTune()
+                       , context->getVerticalFracTune()
+                       , context->cheatBmlPtr()            );
+      plotWidget->addData( lfd  );
+    }
+    else {
+      LattFncData lfd(   context->getTwissArray()
+                       , -1.0
+                       , -1.0
+                       , context->cheatBmlPtr()            );
+      plotWidget->addData( lfd  );
+    }
 
+    string theCaption("CHEF: Uncoupled Lattice Functions: ");
+    theCaption += string( context->name() );
     plotWidget->setCaption( theCaption.c_str() );
+
     plotWidget->setGeometry(0,0, parent->width(), parent->height() );
     plotWidget->show();
-
-    plotWidget->addData( lfd  );
 
     return plotWidget;
 }

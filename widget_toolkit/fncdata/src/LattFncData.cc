@@ -45,6 +45,7 @@ LattFncData::LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
                           , double const& horTune
                           , double const& verTune
                           , ConstBmlPtr bml                                       ) 
+: PlotData()
 {
   setTunes( horTune, verTune );
 
