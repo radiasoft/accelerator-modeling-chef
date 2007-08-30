@@ -555,7 +555,7 @@ void CF_rbend::setStrength( double const& s )
 
   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
  
-  CFRBendPtr q;
+  CFRbendPtr q;
 
   for ( beamline::iterator it  = p_bml_->begin(); 
                            it != p_bml_->end(); ++it ) {
@@ -564,7 +564,7 @@ void CF_rbend::setStrength( double const& s )
          (*it)->setStrength( ratio * (*it)->Strength() );
     } 
     else {
-      if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->->setStrength(s);
+      if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->setStrength(s);
     }
    
   }
