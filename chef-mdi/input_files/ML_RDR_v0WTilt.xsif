@@ -1,0 +1,420 @@
+!========1=========2=========3=========4=========5=========6=========7=========8
+! ILC Main Linac Lattice
+! 1Q/3CM, Curved
+! Version 4, 9/7/2006
+! A.Valishev (valishev@fnal.gov)
+!========1=========2=========3=========4=========5=========6=========7=========8
+! MODIFIED:
+! by Leo Michelotti
+! Date: October 6, 2006
+!
+! The file written by Alex Valishev is being changed so that
+! the current version of CHEF can interpret it.  My transposition
+! is not finished. This file is only an intermediate version 
+! -- which I'll rename to ilc_linac_4_1.lat to avoid confusion.
+! I plan to issue a finished version early next week. Concerning
+! this one, nothing is guaranteed except that CHEF will be able
+! to interpret it.
+!
+! ------------------------
+! What I have done so far:
+! ------------------------
+! 1. The DOS file was converted to Unix.
+!
+! 2. Replaced "QUAD" with "QUADRUPOLE
+!             "MONI" with "MONITOR"
+!             "MARK" with "MARKER"
+!
+! 3. Changed "R_Earth     := 6370e3"
+!         to "R_Earth     := 6.37815e6"
+!    This won't make a noticeable difference to anything
+!    important, but the extra significat figures
+!    cost us nothing.
+!
+! 4. References to apertures have been removed. The current
+!    version of chef does not admit apertures. They will be
+!    added when there is a hue and cry for them from at least
+!    one user.
+!
+! 5. A BEAM statement was added at the end with momentum 5.0.
+!    Change this if you want.
+!
+! 6. ELOSS and FREQ parameters of RFCAVITY CAVITY are ignored.  These 
+!    can be included with a minor modification of CHEF's class bmlfactory.
+!    Current implementations of ILC simulations set the frequency
+!    after the model is built using the rfcavity::setFrequency method.
+!
+!    By the way, RFCAVITY MLCAV_SPARE is used nowhere but was not removed
+!    from the file.
+! 
+! 7. Most significantly, I have explicitly expanded the macros.
+!    These have been subsumed within new lines named by using the
+!    macros' arguments: viz.
+! 
+!    CM_NoQuad___MLCAV
+!    CM_QUAD___MLCAV_QF0_YCOR_ST
+!    CM_QUAD___MLCAV_QD0_YCOR_RG
+!    CM_QUAD___MLCAV_QF1_YCOR_RG
+!    CM_QUAD___MLCAV_QD1_YCOR_ST
+!    CM_QUAD___MLCAV_QF1_YCOR_RG
+!    CM_QUAD___MLCAV_QD60_YCOR_ST
+!    CM_QUAD___MLCAV_QF61_YCOR_RG
+!    CM_QUAD___MLCAV_QD62_YCOR_ST
+!    CM_QUAD___MLCAV_QF63_YCOR_RG
+!    CM_QUAD___MLCAV_QD64_YCOR_SG
+!    CM_QUAD___MLCAV_QF65_YCOR_SG
+!    CM_QUAD___MLCAV_QD66_YCOR_ST
+!    CM_QUAD___MLCAV_QF67_YCOR_RG
+!    CM_QUAD___MLCAV_QD68_YCOR_ST
+!    CM_QUAD___MLCAV_QF69_YCOR_RG
+!    CM_QUAD___MLCAV_QD0_YCOR_ST
+!    FODO0___MLCAV
+!    FODO1___MLCAV
+!    FODO30___MLCAV
+!    FODO31___MLCAV
+!    FODO32___MLCAV
+!    FODO33___MLCAV
+!    FODO34___MLCAV
+!    FODO35___MLCAV
+!    STRING___MLCAV
+!    CUNIT1___MLCAV
+!    CUNIT2___MLCAV
+!    CUNIT3___MLCAV
+!    CUNIT4___MLCAV
+!    CUNIT5___MLCAV
+! 
+! ---------------------------------
+! The highest task to be done next: 
+! ---------------------------------
+! 
+! Modify CHEF's bmlfactory to accept a TILT parameter for sbend magnets.
+! The LINAC model that CHEF builds from this lattice is horizontal.
+! 
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+
+BEAM, PARTICLE=POSITRON,  ENERGY=14.990402211586
+
+
+! Define the cavity:
+
+Lc := 1.036
+Fc := 1.3e3
+Vc := 31.5 * Lc
+!  Vc := 0.0 * Lc
+Pc := -5.1
+Ac := 0.078 / 2
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!MLCAV: RFCAVITY, VOLT=Vc, LAG=Pc/360, L=Lc 
+MLCAV : LCAV, L = Lc, DELTAE = Vc, FREQ = Fc, PHI0 = Pc / 360
+!MLCAV: DRIFT, L=Lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! MLCAV : LCAV, L = Lc, DELTAE = Vc, FREQ = Fc, PHI0 = Pc / 360, 		     &
+!!!!         ELOSS = 1.432e13* Lc, APERTURE = Ac,                   		     &
+!!!!         LFILE = "ilc2005.lwake.sr.data",                       		     &
+!!!!         TFILE = "ilc2005.twake.sr.data"
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define an RF cavity with spare (not-on) status.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+MLCAV_SPARE : RFCAVITY, VOLT=0, LAG=Pc/360, L=Lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! MLCAV_SPARE : MLCAV, DELTAE = 0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define the quadrupoles
+
+! Quadrupole gradient switch
+Ksw := 1
+
+Lq :=  0.666
+Aq :=  0.075 / 2
+
+Kf0:= 0.05153421671*Ksw
+Kd0:= -0.047121431376*Ksw
+Kf1:= 0.052562259834*Ksw
+Kd1:= -0.045999875179*Ksw
+
+k60:= -0.045487738533*Ksw
+k61:=  0.045892352368*Ksw
+k62:= -0.041664265842*Ksw
+k63:=  0.045360141965*Ksw
+k64:= -0.039747654733*Ksw
+k65:=  0.040550733921*Ksw
+k66:= -0.045791513117*Ksw
+k67:=  0.046932020262*Ksw
+k68:= -0.043328990535*Ksw
+k69:=  0.051945146326*Ksw
+
+QF0: QUADRUPOLE, L = Lq, K1 = Kf0
+QD0: QUADRUPOLE, L = Lq, K1 = Kd0
+QF1: QUADRUPOLE, L = Lq, K1 = Kf1
+QD1: QUADRUPOLE, L = Lq, K1 = Kd1
+
+QD60: QUADRUPOLE, L = Lq, K1 = k60
+QF61: QUADRUPOLE, L = Lq, K1 = k61
+QD62: QUADRUPOLE, L = Lq, K1 = k62
+QF63: QUADRUPOLE, L = Lq, K1 = k63
+QD64: QUADRUPOLE, L = Lq, K1 = k64
+QF65: QUADRUPOLE, L = Lq, K1 = k65
+QD66: QUADRUPOLE, L = Lq, K1 = k66
+QF67: QUADRUPOLE, L = Lq, K1 = k67
+QD68: QUADRUPOLE, L = Lq, K1 = k68
+QF69: QUADRUPOLE, L = Lq, K1 = k69
+
+
+! Define the cryomodule drift lengths
+
+D_CMEnd : DRIFT, L = 0.501
+D_CC    : DRIFT, L = 0.283
+D_CQ    : DRIFT, L = 0.1775
+D_QC    : DRIFT, L = 0.1775
+D_BPM   : DRIFT, L = 0.184
+D_YCOR  : DRIFT, L = 0.35
+
+! RF Unit end box / segmentation box
+D_ST    : DRIFT, L = 2.50
+! Warm diagnostic section
+D_WRM   : DRIFT, L = 6.271
+
+! Define the angle needed in the vertical correctors to guide the beam
+! around the curved linac
+
+! Curvature switch
+CSW         := 1
+
+R_Earth     := 6.37815e6
+L_CM_NoQuad := 2*D_CMEnd[L] + 7*D_CC[L] + 8*Lc
+L_CM_Quad   := 2*D_CMEnd[L] + 6*D_CC[L] + 8*Lc 					     &
+                 + D_BPM[L] + D_YCOR[L] + D_CQ[L] + D_QC[L] + Lq
+
+ANGLE_CM_NoQuad := -CSW * L_CM_NoQuad / R_Earth / 2
+ANGLE_CM_Quad   := -CSW * L_CM_Quad   / R_Earth / 2
+ANGLE_DST       := -CSW * D_ST[L] / R_Earth / 2
+ANGLE_DSG       := -CSW *(2*D_ST[L]+D_WRM[L]) / R_Earth / 2
+
+YCOR_Angle      := CSW *(  2*ANGLE_CM_Quad 					     &
+                         + 4*ANGLE_CM_NoQuad)
+YCOR_AngleST    := CSW *(  2*ANGLE_CM_Quad 					     &
+                         + 4*ANGLE_CM_NoQuad 					     &
+                         + ANGLE_DST)
+YCOR_AngleSG    := CSW *(  2*ANGLE_CM_Quad 					     &
+                         + 4*ANGLE_CM_NoQuad 					     &
+                         + ANGLE_DSG)
+
+YCOR_RG : SBEND, L=0.35, ANGLE=-YCOR_Angle, TILT
+YCOR_ST : SBEND, L=0.35, ANGLE=-YCOR_AngleST, TILT
+YCOR_SG : SBEND, L=0.35, ANGLE=-YCOR_AngleSG, TILT
+
+!YCOR_RG : SBEND, L=0.35, ANGLE=-YCOR_Angle
+!YCOR_ST : SBEND, L=0.35, ANGLE=-YCOR_AngleST
+!YCOR_SG : SBEND, L=0.35, ANGLE=-YCOR_AngleSG
+
+KINK_CM_NoQuad : MARKER
+KINK_CM_Quad :   MARKER
+KINK_DST :       MARKER
+KINK_DSG :       MARKER
+
+
+! For now, we will define the correctors and BPMs to be zero length
+
+BPM  : MONITOR
+XCOR : HKICK
+YCOR : VKICK
+
+! Define the two cryomodules:  one with a quad, one without
+
+CM_NoQuad___MLCAV : LINE = ( KINK_CM_NoQuad, 					     &
+                          D_CMEnd, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV, D_CC, 						     &
+                          MLCAV,       						     &
+                          D_CMEnd,   						     &
+                          KINK_CM_NoQuad )
+
+CM_QUAD___MLCAV_QF0_YCOR_ST  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF0, YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD0_YCOR_RG  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD0, YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF1_YCOR_RG  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF1, YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD1_YCOR_ST  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD1, YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF1_YCOR_RG  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF1, YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD60_YCOR_ST : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD60,YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF61_YCOR_RG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF61,YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD62_YCOR_ST : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD62,YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF63_YCOR_RG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF63,YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD64_YCOR_SG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD64,YCOR_SG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF65_YCOR_SG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF65,YCOR_SG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD66_YCOR_ST : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD66,YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF67_YCOR_RG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF67,YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD68_YCOR_ST : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD68,YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QF69_YCOR_RG : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QF69,YCOR_RG,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+CM_QUAD___MLCAV_QD0_YCOR_ST  : LINE = (KINK_CM_Quad,D_CMEnd,			     &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CQ,D_BPM,BPM,QD0, YCOR_ST,XCOR,YCOR,D_QC,    &
+                                      MLCAV,D_CC,MLCAV,D_CC,MLCAV,D_CC,MLCAV,	     &
+                                      D_CMEnd,KINK_CM_Quad)
+
+
+! Start and end markers
+
+MLSTART : MARKER
+MLEND   : MARKER
+
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Beamline definitions
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+! FODO cell -- start with an F quad
+
+FODO0___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF0_YCOR_ST,		     &
+                     2*CM_NoQuad___MLCAV,					     &
+                     CM_QUAD___MLCAV_QD0_YCOR_RG, CM_NoQuad___MLCAV )
+FODO1___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF1_YCOR_RG,		     &
+                     2*CM_NoQuad___MLCAV,					     &
+                     CM_QUAD___MLCAV_QD1_YCOR_ST, CM_NoQuad___MLCAV )
+
+FODO30___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF1_YCOR_RG,		     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD60_YCOR_ST, CM_NoQuad___MLCAV )
+FODO31___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF61_YCOR_RG,	     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD62_YCOR_ST, CM_NoQuad___MLCAV )
+FODO32___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF63_YCOR_RG,	     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD64_YCOR_SG, CM_NoQuad___MLCAV )
+
+FODO33___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF65_YCOR_SG,	     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD66_YCOR_ST, CM_NoQuad___MLCAV )
+FODO34___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF67_YCOR_RG,	     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD68_YCOR_ST, CM_NoQuad___MLCAV )
+FODO35___MLCAV : LINE = (CM_NoQuad___MLCAV,CM_QUAD___MLCAV_QF69_YCOR_RG,	     &
+                      2*CM_NoQuad___MLCAV,					     &
+                      CM_QUAD___MLCAV_QD0_YCOR_ST, CM_NoQuad___MLCAV )
+
+BEGELIN : MARKER
+ENDELIN : MARKER
+BPMLAST : MONITOR
+
+! String = 4 RF Units with 2.5 m end box
+STRING___MLCAV : LINE = ( FODO0___MLCAV, FODO1___MLCAV,   			     &
+                       KINK_DST, D_ST, KINK_DST )
+
+! Cryogenic units
+! 1) Long = 16 strings + Warm drift
+CUNIT1___MLCAV : LINE = ( 14*STRING___MLCAV,           				     &
+                       FODO0___MLCAV, FODO30___MLCAV,  				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO31___MLCAV, FODO32___MLCAV,  			     &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT2___MLCAV : LINE = ( FODO33___MLCAV, FODO34___MLCAV, 			     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO35___MLCAV, FODO1___MLCAV, 				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       12*STRING___MLCAV,           				     &
+                       FODO0___MLCAV, FODO30___MLCAV,  				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO31___MLCAV, FODO32___MLCAV,  			     &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT3___MLCAV : LINE = ( FODO33___MLCAV, FODO34___MLCAV, 			     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO35___MLCAV, FODO1___MLCAV, 				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       11*STRING___MLCAV,           				     &
+                       FODO0___MLCAV, FODO30___MLCAV,  				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO31___MLCAV, FODO32___MLCAV,  			     &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT4___MLCAV : LINE = ( FODO33___MLCAV, FODO34___MLCAV, 			     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO35___MLCAV, FODO1___MLCAV, 				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       11*STRING___MLCAV,           				     &
+                       FODO0___MLCAV, FODO30___MLCAV,  				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO31___MLCAV, FODO32___MLCAV,  			     &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+CUNIT5___MLCAV : LINE = ( FODO33___MLCAV, FODO34___MLCAV, 			     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       FODO35___MLCAV, FODO1___MLCAV, 				     &
+                       KINK_DST, D_ST, KINK_DST, 				     &
+                       14*STRING___MLCAV,           				     &
+                       KINK_DSG, D_ST, D_WRM, D_ST, KINK_DSG )
+
+LINAC : LINE = (BEGELIN,YCOR,2*D_ST,D_WRM,CUNIT1___MLCAV,			     &
+                             2*D_ST,D_WRM,CUNIT2___MLCAV,			     &
+                             2*D_ST,D_WRM,CUNIT3___MLCAV,			     &
+                             2*D_ST,D_WRM,CUNIT4___MLCAV,			     &
+                             2*D_ST,D_WRM,CUNIT5___MLCAV,			     &
+                BPMLAST,ENDELIN)
+
+
