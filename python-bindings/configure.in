@@ -142,26 +142,26 @@ else
         glib_inc=`which gcc | sed "s#bin\/gcc#include\/glib-2.0#"`
         if test -r $glib_inc/glib.h; then
                 AC_MSG_RESULT([Header file located in $GLIB_INC])
-                GLIB_INC="-I"$glib_inc
+                GLIB_INC="-I"${glib_inc}
                 AC_SUBST(GLIB_INC)
         else
 		if test -r /usr/local/ap/include/glib-2.0/glib.h; then
-		    GLIB_INC="/usr/local/ap/include/glib-2.0"
+		    glib_inc="/usr/local/ap/include/glib-2.0"
 		elif test -r /usr/local/ap/include/glib-1.2/glib.h; then
-		    GLIB_INC="/usr/local/ap/include/glib-1.2"
+		    glib_inc="/usr/local/ap/include/glib-1.2"
 		elif test -r /usr/include/glib-2.0/glib.h; then
-	            GLIB_INC="/usr/include/glib-2.0"
+	            glib_inc="/usr/include/glib-2.0"
 		elif test -r /usr/local/include/glib-2.0/glib.h; then
-	            GLIB_INC="/usr/local/include/glib-2.0"
+	            glib_inc="/usr/local/include/glib-2.0"
 		elif test -r /usr/include/glib-1.2/glib.h; then
-	            GLIB_INC="/usr/include/glib-1.2"
+	            glib_inc="/usr/include/glib-1.2"
 		elif test -r /usr/local/include/glib-1.2/glib.h; then
-		    GLIB_INC="/usr/local/include/glib-1.2"
+		    glib_inc="/usr/local/include/glib-1.2"
                 else
 		AC_MSG_ERROR([GLIB includes not found, please define GLIB_INC.]);
 		fi
         AC_MSG_RESULT([Header file located in $GLIB_INC])
-        GLIB_INC = "-I"$(GLIB_INC) 
+        GLIB_INC = "-I"${glib_inc} 
         AC_SUBST(GLIB_INC)
 	fi
 fi
@@ -182,22 +182,22 @@ else
                 AC_SUBST(GLIBCONFIG_INC)
         else
 		if test -r /usr/lib/glib-2.0/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/lib/glib-2.0/include"
+		    glibconfig_inc="/usr/lib/glib-2.0/include"
 		elif test -r /usr/local/lib/glib-2.0/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/local/lib/glib-2.0/include"
+		    glibconfig_inc="/usr/local/lib/glib-2.0/include"
 		elif test -r /usr/local/ap/lib/glib-2.0/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/local/ap/lib/glib-2.0/include"
+		    glibconfig_inc="/usr/local/ap/lib/glib-2.0/include"
 		elif test -r /usr/lib/glib-1.2/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/lib/glib-1.2/include"
+		    glibconfig_inc="/usr/lib/glib-1.2/include"
 		elif test -r /usr/local/lib/glib-1.2/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/local/lib/glib-1.2/include"
+		    glibconfig_inc="/usr/local/lib/glib-1.2/include"
 		elif test -r /usr/local/ap/lib/glib-1.2/include/glibconfig.h; then
-		    GLIBCONFIG_INC="/usr/local/ap/lib/glib-1.2/include"
+		    glibconfig_inc="/usr/local/ap/lib/glib-1.2/include"
 		else
                 AC_MSG_ERROR([GLIBCONFIG include not found, please define GLIBCONFIG_INC.]);
 		fi
         AC_MSG_RESULT([Header file located in $GLIBCONFIG_INC])
-        GLIBCONFIG_INC="-I"${GLIBCONFIG_INC}
+        GLIBCONFIG_INC="-I"${glibconfig_inc}
         AC_SUBST(GLIBCONFIG_INC)
 	fi
 fi
@@ -219,22 +219,22 @@ else
                 PYTHON_INC="-I"${python_inc}
                 AC_SUBST(PYTHON_INC)
                 AC_MSG_RESULT([Header file located in $python_inc]) 
-        elif test -r $python_inc/python2.4/Python.h; then
+        elif test -r ${python_inc}/python2.4/Python.h; then
                 PYTHON_INC="-I"${python_inc}
                 AC_SUBST(PYTHON_INC)
                 AC_MSG_RESULT([Header file located in $python_inc])
         else
 		if test -r /usr/include/python2.5/Python.h; then
 		    PYTHON_INC="/usr/include/python2.5"
-	         elif test -r /usr/include/python2.4; then
+	         elif test -r /usr/include/python2.4/Python.h; then
 		    PYTHON_INC="/usr/include/python2.4"
-	         elif test -r /usr/local/include/python2.5; then
+	         elif test -r /usr/local/include/python2.5/Python.h; then
 		    PYTHON_INC="/usr/local/include/python2.5"
-	         elif test -r /usr/local/include/python2.4; then
+	         elif test -r /usr/local/include/python2.4/Python.h; then
 		    PYTHON_INC="/usr/local/include/python2.4"
-	         elif test -r /usr/local/ap/include/python2.5; then
+	         elif test -r /usr/local/ap/include/python2.5/Python.h; then
 		    PYTHON_INC="/usr/local/ap/include/python2.5"
-	         elif test -r /usr/local/ap/include/python2.4; then
+	         elif test -r /usr/local/ap/include/python2.4/Python.h; then
 		    PYTHON_INC="/usr/local/ap/include/python2.4"
                  else
 		AC_MSG_ERROR([PYTHON includes not found, please define PYTHON_INC.]);
@@ -263,22 +263,22 @@ else
                 AC_MSG_RESULT([Header file located in ${boost_inc}])
         else
 		if test -r /usr/include/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/include"
+		    boost_inc="/usr/include"
 		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include"
+		    boost_inc="/usr/local/include"
 		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include/boost-1_34"
+		    boost_inc="/usr/local/include/boost-1_34"
 		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/ap/include/boost-1_34"
+		    boost_inc="/usr/local/ap/include/boost-1_34"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include/boost-1_33"
+		    boost_inc="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/ap/include/boost-1_33"
+		    boost_inc="/usr/local/ap/include/boost-1_33"
                 else
 		AC_MSG_ERROR([BOOST include V 1.33 or 1.34 not found, please define BOOST_INC.]);
 		fi
         AC_MSG_RESULT([Header file located in $BOOST_INC])
-        BOOST_INC="-I"${BOOST_INC}
+        BOOST_INC="-I"${boost_inc}
         AC_SUBST(BOOST_INC)
 	fi
 fi
@@ -286,7 +286,7 @@ fi
 
 AC_ARG_VAR([BOOST_PYTHON_LINK],    [link option for BOOST Python lib, default -lboost_python-gcc])dnl
 if test -z "${BOOST_PYTHON_LINK}" ; then
-        BOOST_PYTHON_LINK='-lboost_python-gcc'
+        BOOST_PYTHON_LINK='-lboost_python'
 fi
 AC_SUBST(BOOST_PYTHON_LINK)
 
