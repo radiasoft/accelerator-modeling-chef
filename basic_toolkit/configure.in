@@ -168,14 +168,14 @@ else
 		    BOOST_INC="/usr/include"
 		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include"
+		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/include/boost-1_34"
+		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
+		    BOOST_INC="/usr/local/ap/include/boost-1_34"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
 		    BOOST_INC="/usr/local/ap/include/boost-1_33"
-		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include/boost-1_32"
-		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/ap/include/boost-1_32"
                 else
 		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
 	        fi
