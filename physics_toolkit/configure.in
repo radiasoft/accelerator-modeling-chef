@@ -127,38 +127,29 @@ else
 # Try to guess the location based on the location of gcc 
         boost_inc=`which gcc | sed "s#bin\/gcc#include#"`
         if test -r $boost_inc/boost/shared_ptr.hpp; then
-                BOOST_INC=$boost_inc
+                BOOST_INC=-"I"${boost_inc}
                 AC_SUBST(BOOST_INC)
-                AC_MSG_RESULT([Header file located in $BOOST_INC])
+                AC_MSG_RESULT([Header file located in ${boost_inc}])
         else
 		if test -r /usr/include/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/include"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		    boost_inc="/usr/include"
 		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		    boost_inc="/usr/local/include"
+		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/include/boost-1_34"
+		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/ap/include/boost-1_34"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include/boost-1_33"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		    boost_inc="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/ap/include/boost-1_33"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
-		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/include/boost-1_32"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
-		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
-		    BOOST_INC="/usr/local/ap/include/boost-1_32"
-		    AC_SUBST(BOOST_INC)
-		    AC_MSG_RESULT([Header file located in $BOOST_INC])
+		    boost_inc="/usr/local/ap/include/boost-1_33"
                 else
 		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
 		fi
 	fi
+        BOOST_INC="-I"${boost_inc}
+        AC_SUBST(BOOST_INC)
+        AC_MSG_RESULT([Header file located in $BOOST_INC])
 fi
 ])
 
