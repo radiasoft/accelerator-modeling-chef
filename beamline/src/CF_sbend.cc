@@ -476,7 +476,7 @@ void CF_sbend::setStrength( double const& s )
 
   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
  
-  CFSBendPtr q;
+  CFSbendPtr q;
 
   for ( beamline::iterator it  = p_bml_->begin(); 
                            it != p_bml_->end(); ++it ) {
@@ -485,7 +485,7 @@ void CF_sbend::setStrength( double const& s )
          (*it)->setStrength( ratio * (*it)->Strength() );
     } 
     else {
-      if ( q = boost::dynamic_pointer_cast<CF_sbend>(*it) ) q->->setStrength(s);
+      if ( q = boost::dynamic_pointer_cast<CF_sbend>(*it) ) q->setStrength(s);
     }
    
   }
