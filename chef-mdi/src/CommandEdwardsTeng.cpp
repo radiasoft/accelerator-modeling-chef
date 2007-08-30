@@ -37,6 +37,7 @@
 
 #include<string>
 #include<vector>
+#include<basic_toolkit/GenericException.h>
 #include<physics_toolkit/BeamlineContext.h>
 #include<physics_toolkit/EdwardsTengSage.h>
 #include<CHEFPlotMain.h>
