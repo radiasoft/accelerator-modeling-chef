@@ -34,7 +34,7 @@ pr = beamline.Proton( energy )
 # read tevatron lattice file
 # 
 
-bfact    = bmlfactory.bmlfactory("Tevatron-E.lat")
+bfact    = bmlfactory.MAD8Factory("Tevatron-E.lat")
 
 #
 # instantiate a beamline
@@ -110,6 +110,10 @@ fftplot = chefplot.CHEFPlotMain()
 fftplot.addData(fftdata)
 fftplot.resize(1000,500)
 fftplot.show()
+
+
+
+
 
 
 
