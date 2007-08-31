@@ -628,25 +628,23 @@ int CF_rbend::setDipoleField( double const& arg_x )
 
 void CF_rbend::setStrength( double const& s )
 {
-
   bmlnElmnt** x = u_;
 
-  if (strength_ == 0.0)  {  
-
-   while( x <= v_ ) {
-      if ( dynamic_cast<rbend*>(*x) ) (*x)->setStrength( s );
+  double B = getDipoleField();
+  if ( 0.0 == B ) {
+    while( x <= v_ ) {
+      if ( dynamic_cast<rbend*>(*x) ) { (*x)->setStrength( s ); }
       ++x;
-   }
-   strength_ = s; 
-   return;
+    }
   }
-  
-  double ratio = s / getDipoleField();
+  else {
+    double ratio = s / B;
+    while( x <= v_ ) {
+      (*x)->setStrength( ratio*((*x)->Strength()) );
+      ++x;
+    }
+  }
 
-  while( x <= v_ ) {
-    (*x)->setStrength( ratio*((*x)->Strength()) );
-    ++x;
-  }
   strength_ = s;
 }
 
