@@ -343,17 +343,6 @@ beamline* DriftsToSlots( beamline const& argbml )
   //   }
   // }
 
-  (*pcerr) << "\n*** WARNING ***                                        "
-       << "\n*** WARNING *** File: " << "  " << __FILE__ 
-       <<                          ", line " << __LINE__
-       << "\n*** WARNING *** DriftsToSlots                          "
-          "\n*** WARNING *** Second preliminary test not yet written."
-          "\n*** WARNING *** Procedure is proceeding notwithstanding."
-          "\n*** WARNING *** Keep your fingers crossed."
-          "\n*** WARNING ***                                        "
-       << endl;
-  
-  
   // Tests passed. Proceeding ...
 
   ElmPtr elPtr;
