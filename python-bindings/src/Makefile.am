@@ -57,7 +57,9 @@ libpurepybeamline_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../bmlfactory/src/libbmlfactory.la \
     -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la
+    ../../basic_toolkit/src/libbasic_toolkit.la \
+    ../../parsers/xsif/src/libxsifparser.la \
+    -lboost_regex-gcc
 
 libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
@@ -65,7 +67,9 @@ libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../bmlfactory/src/libbmlfactory.la \
     -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la
+    ../../basic_toolkit/src/libbasic_toolkit.la \
+    ../../parsers/xsif/src/libxsifparser.la \
+    -lboost_regex-gcc
 
 libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
