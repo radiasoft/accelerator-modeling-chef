@@ -83,7 +83,6 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   void setStrength( double const& );
-  void setStrength( double const&, int );
 
   void setCurrent( double const& );
 

@@ -106,11 +106,10 @@ public:
 
   quadrupole* Clone() const { return new quadrupole( *this ); }
 
-  virtual ~quadrupole();
+ ~quadrupole();
 
   void setStrength( double const& );
-  void setStrength( double const&, int );
-
+ 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&    p )   { (*propfunc_)( this, p );        }
   void localPropagate( JetParticle& p )   { (*propfunc_)( this, p );        }
@@ -127,6 +126,7 @@ public:
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
 private:
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 } ;
