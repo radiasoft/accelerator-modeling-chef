@@ -59,12 +59,15 @@ public:
 	       double const& length_m,
                double const& rfreq_hz,           // RF frequency [Hz]
                double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
-               double const& syncphase_rad );    // synchronous phase [radians]
+               double const& syncphase_rad,      // synchronous phase [radians]
+               bool   wake_on=false  );                   
 
   LinacCavity( LinacCavity const& );
 
   LinacCavity* Clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
+
+  void   setWakeOn( bool );
 
   double const&          getPhi()                const;
   double                 getDesignEnergyGain()   const;
@@ -83,6 +86,9 @@ public:
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
+
+  void acceptInner( BmlVisitor&      v ); 
+  void acceptInner( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
   bool    isMagnet() const;
