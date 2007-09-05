@@ -76,12 +76,8 @@ public:
 
     NoEdge_Prop();
     virtual ~NoEdge_Prop();
-
-  private:
-
-    double _fastArcsin( double const& x     ) const;
-    Jet    _fastArcsin( const Jet& x ) const;
   };
+
   static NoEdge_Prop NoEdge;
 
    class Exact_Prop : public bmlnElmnt::PropFunc
@@ -204,10 +200,6 @@ public:
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
-
-  void makeAsinApproximate( int /* number of terms */);
-  void makeAsinExact();
-  bool isAsinExact();
 
   void releasePropFunc();
   void setupPropFunc();
