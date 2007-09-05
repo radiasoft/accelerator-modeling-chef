@@ -88,6 +88,9 @@ public:
   void clear();                       // Returns state to empty beamline.
 
 
+  double getReferenceTime()                    const;     
+  double setReferenceTime( double const& );               
+
 
   // EDITING LATTICE_____________________________________________________________________
 
@@ -256,11 +259,11 @@ public:
   // QUERIES _________________________________________________________________________________
 
 
-  ElmPtr      firstElement();
-  ElmPtr      firstElement() const;
+  ElmPtr&        firstElement();
+  ElmPtr const&  firstElement() const;
 
-  ElmPtr      lastElement();
-  ElmPtr      lastElement()  const;
+  ElmPtr&        lastElement();
+  ElmPtr const&  lastElement()  const;
 
   bool   twissIsDone()  const;
 
