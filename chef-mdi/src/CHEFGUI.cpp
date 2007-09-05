@@ -245,11 +245,11 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
      p_messages_stderr_stream_ = new std::ostream( messages_stderr_ );
   
 #ifdef _WIN32
-     messages_->append( QString("CHEF (Win32) Beta Version, July 2005)") );
+     messages_->append( QString("CHEF (Win32)  Preview Version ") );
 #else
-     messages_->append( QString("CHEF (Unix/Linux) Beta Version,  July 2005)") );
+     messages_->append( QString("CHEF (Unix/Linux) Preview Version " ) );
 #endif
-     messages_->append( QString("(C) URA/Fermilab, All Rights Reserved.\n") );
+     messages_->append( QString("(C) Fermi Research Alliance/Fermilab, All Rights Reserved.\n") );
     
      iosetup( p_messages_stdout_stream_, p_messages_stdwar_stream_);
 
