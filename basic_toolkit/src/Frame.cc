@@ -253,7 +253,7 @@ Vector Frame::getAxis( int j ) const
   }
 
   else {
-    for( int i=0; i<3; ++i) ret(i) = e_.getElement(i,j);
+    for( int i=0; i<3; ++i) ret(i) = e_(i,j);
   }
 
   return ret;
@@ -265,7 +265,7 @@ Vector Frame::getAxis( int j ) const
 Vector Frame::getxAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; ++i) ret(i) = e_.getElement(i,0);
+  for( int i = 0; i < 3; ++i) ret(i) = e_(i,0);
   return ret;
 }
 
@@ -275,7 +275,7 @@ Vector Frame::getxAxis() const
 Vector Frame::getyAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i<3; ++i) ret(i) = e_.getElement(i,1);
+  for( int i = 0; i<3; ++i) ret(i) = e_(i,1);
   return ret;
 }
 
@@ -285,7 +285,7 @@ Vector Frame::getyAxis() const
 Vector Frame::getzAxis() const
 {
   Vector ret(3);
-  for( int i=0; i< 3; ++i) ret(i) = e_.getElement(i,2);
+  for( int i=0; i< 3; ++i) ret(i) = e_(i,2);
   return ret;
 }
 
