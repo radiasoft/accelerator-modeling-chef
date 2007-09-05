@@ -127,6 +127,11 @@ class DLLEXPORT Particle {
   friend class JetParticle;
   friend class particle_core_access;  
 
+public:
+
+  enum PhaseSpaceIndex { xIndex   = 0, yIndex   = 1, cdtIndex =  2, 
+                         npxIndex = 3, npyIndex = 4, ndpIndex  = 5 };
+
 protected:
 
   std::string tag_;        // tag for arbitrary identification
@@ -168,14 +173,6 @@ public:
 
   Particle&    operator=(Particle const&);
 
-  // Phase space indices
-
-  static int xIndex();     
-  static int yIndex();     
-  static int cdtIndex();   
-  static int npxIndex();   
-  static int npyIndex();   
-  static int ndpIndex();   
 
   // Dimension of phase space
 
@@ -361,12 +358,6 @@ class particle_core_access
 
 // -------------------------------  Inline members --------------------------------------------------------------
 
-  inline int  Particle::xIndex()     { return 0; }
-  inline int  Particle::yIndex()     { return 1; }
-  inline int  Particle::cdtIndex()   { return 2; }
-  inline int  Particle::npxIndex()   { return 3; }
-  inline int  Particle::npyIndex()   { return 4; }
-  inline int  Particle::ndpIndex()   { return 5; }
 
   inline int  Particle::psd()          { return Particle::PSD; }
 
