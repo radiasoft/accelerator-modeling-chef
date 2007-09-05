@@ -37,6 +37,8 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -152,6 +154,9 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   const char* Type() const;
   bool isMagnet() const;
   
+  double          getReferenceTime() const;  
+
+
   double OrbitLength( const Particle& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
@@ -215,10 +220,6 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   // NOT the integrated dipole field.
 
  private:
-
-  bmlnElmnt** u_;           // Address of first internal bmlElmnt pointer
-  bmlnElmnt** v_;           // Address of final internal bmlElmnt pointer
-
 
   double usEdgeAngle_, dsEdgeAngle_;
                             // [radians] as defined in MAD for rbends.

@@ -39,6 +39,9 @@
 ****** - use covariant return types
 ****** - support for reference counted elements
 ******                                                                
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
+******
 **************************************************************************
 *************************************************************************/
 
@@ -69,13 +72,13 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   CF_sbend( double const&,     // length       [ meters ]
             double const&,     // field        [ tesla ]
             double const&,     // bend angle   [ radians ]
-            int = 4 );  // ignored
+            int n = 1 );  
 
   CF_sbend( const char*,// name
             double const&,     // length       [ meters ]
             double const&,     // field        [ tesla ]
             double const&,     // bend angle   [ radians ]
-            int = 4 );  // ignored
+            int n = 1 );  
 
   CF_sbend( double const&,     // length  [ meters ]
             double const&,     // field   [ tesla ]
@@ -85,7 +88,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
             double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for sbends by MAD
-            int = 4 );  // ignored
+            int n = 1 );  
 
   CF_sbend( const char*,// name
             double const&,     // length  [ meters ]
@@ -95,7 +98,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
             double const&,     // downstream edge angle [radians]
                         // signs of previous two parameters
                         // are as defined for sbends by MAD
-            int = 4 );  // ignored
+            int n = 1 );  
 
   CF_sbend( const CF_sbend& );
   CF_sbend* Clone() const 
@@ -119,6 +122,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   const char* Type() const;
   bool isMagnet() const;
   
+  double          getReferenceTime() const;  
+
   double OrbitLength( Particle const& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
@@ -126,20 +131,20 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
 
 
   // Note: entry and exit angles are not arguments
-  // in the rbend constructors. A symmetric bend is assumed
+  // in the sbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
 
   double setEntryAngle( Particle const& ); 
   double setExitAngle ( Particle const& ); 
 
-  double getEntryAngle()   const { return usAngle_; }
-  double getExitAngle()    const { return dsAngle_; }
+  double const& getEntryAngle()   const; 
+  double const& getExitAngle()    const; 
 
   double setEntryAngle( double const& radians); 
   double setExitAngle(  double const& radians); 
 
-  double getEntryEdgeAngle() const { return usEdgeAngle_; }
-  double getExitEdgeAngle()  const { return dsEdgeAngle_; }
+  double const& getEntryEdgeAngle() const { return usEdgeAngle_; }
+  double const& getExitEdgeAngle()  const { return dsEdgeAngle_; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
@@ -171,7 +176,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   //       .getSextupole()  returns B''l/2
   //       .getOctupole()   returns B'''l/6
 
-  double getDipoleField() const;
+  double const& getDipoleField() const;
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
@@ -181,9 +186,6 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   double Angle()        const { return getBendAngle(); }
 
  private:
-
-  bmlnElmnt** u_;           // Address of first internal bmlElmnt pointer
-  bmlnElmnt** v_;           // Address of final internal bmlElmnt pointer
 
   double  angle_;            // total bend angle  [ radians ]
   double  usEdgeAngle_, dsEdgeAngle_;
@@ -199,6 +201,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
                             // upstream and downstream edges of the magnet.
                             // For a (usual) symmetric bend,
                             // sgn( usTan_ ) = - sgn( dsTan_ )
+
+  int  n_;                  // 4*(n_+1) segments 
 
   void calcPropParams();
   void finishConstructor();
