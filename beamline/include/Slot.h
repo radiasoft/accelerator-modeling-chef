@@ -118,7 +118,6 @@ class DLLEXPORT Slot : public bmlnElmnt
    // Functions passed on to tenant
 
    void setStrength   ( double const& );
-   void setStrength   ( double const&, int );
    void setCurrent    ( double const& );
    bool setAlignment  ( const alignmentData& );
    double Current() const;
