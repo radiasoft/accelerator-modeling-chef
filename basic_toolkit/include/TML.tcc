@@ -380,7 +380,7 @@ MLPtr<T> TML<T>::inverse() const
 
 
 template<typename T>
-T& TML<T>::operator()(int i, int j) 
+T& TML<T>::operator()(int const& i, int const& j) 
 {
 
   if((i >= nrows_) || (j >= ncols_) ||
@@ -398,7 +398,7 @@ T& TML<T>::operator()(int i, int j)
 
 
 template<typename T>
-T  TML<T>::operator()(int i, int j) const 
+T  TML<T>::operator()(int const& i, int const&  j) const 
 {
   
   if((i >= nrows_) || (j >= ncols_) ||
@@ -416,7 +416,7 @@ T  TML<T>::operator()(int i, int j) const
 
 
 template<typename T>
-T& TML<T>::operator()(int i) 
+T& TML<T>::operator()(int const& i) 
 {
   // This body must stay in synch with
   // T TMatrix<T>::operator()(int i) const
@@ -450,7 +450,7 @@ T& TML<T>::operator()(int i)
 
 
 template<typename T>
-T TML<T>::operator()(int i) const 
+T TML<T>::operator()(int const& i) const 
 {
   // This body must stay in synch with
   // T& TMatrix<T>::operator()(int i)
