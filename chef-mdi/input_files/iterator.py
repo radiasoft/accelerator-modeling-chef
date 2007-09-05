@@ -25,8 +25,8 @@ pr     = beamline.Proton( energy )
 # read a lattice file and instantiate a beamline
 # 
 
-bfact    = bmlfactory.bmlfactory("Tevatron-E.lat")
-tevatron = bfact.create_beamline("normal_tevatron", pr.ReferenceBRho() )
+bfact    = bmlfactory.XSIFFactory("Tevatron-E.xsif")
+tevatron = bfact.create_beamline("NORMAL_TEVATRON", pr.ReferenceBRho() )
 
 # pre_order iterator
 
@@ -35,6 +35,10 @@ while True:
 	try: element = iter.next()
 	except StopIteration: break
 	print element.Name(), element.Type()
+
+
+
+
 
 
 
