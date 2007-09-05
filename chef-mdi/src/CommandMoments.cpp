@@ -37,6 +37,7 @@
 
 #include<string>
 #include<vector>
+#include<basic_toolkit/GenericException.h>
 #include<physics_toolkit/BeamlineContext.h>
 #include<physics_toolkit/CovarianceSage.h>
 #include<CHEFPlotMain.h>
