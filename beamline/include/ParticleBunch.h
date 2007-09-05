@@ -79,8 +79,6 @@ public:
 
   void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0);
 
-  void clear();
-
   template <typename UnaryPredicate_t>
   void remove( UnaryPredicate_t );          
 
