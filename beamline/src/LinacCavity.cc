@@ -56,7 +56,7 @@ LinacCavity::LinacCavity( const char* name,         // name
 
 {
 
-  p_bml_ = BmlPtr(new beamline("LinacCavityInner") );
+  p_bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
   
   p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
   p_bml_->append( WakeKickPtr       ( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )  );
@@ -231,6 +231,20 @@ double const& LinacCavity::getRadialFrequency() const
 void  LinacCavity::setStrength( double const& eV)
 {
   strength_ = eV*1.0e-9; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void  LinacCavity::setWakeOn( bool set )
+{
+  WakeKickPtr q; 
+
+  for ( beamline::iterator it  = p_bml_->begin(); 
+	                   it != p_bml_->end(); ++it ) {  
+ 
+      if ( q = boost::dynamic_pointer_cast<WakeKick>(*it) ) q->setOn( set );
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
