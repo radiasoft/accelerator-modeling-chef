@@ -61,55 +61,61 @@ struct DLLEXPORT alignmentData {
   bool operator==(const alignmentData&) const;
 };
 
+//---------------------------------------------------------------------------------
 
 class DLLEXPORT alignment {
-private:
-  double       xOffset;         // offset in meters
-  double       yOffset;         // offset in meters
-  double       tilt;            // roll in radians
-                                // we could put in pitch someday
-  double       cosTilt;         // cos(tilt)
-  double       sinTilt;         // sin(tilt)
+
 public:
+
   alignment();
-  alignment( double, // xOffset
-             double, // yOffset
-             double  // roll (=tilt)
-           );
-  alignment(const alignment&);
-  alignment(const alignmentData&);
-  ~alignment();
+  alignment( double const& xOffset,
+             double const& yOffset,
+             double const& roll ); // roll = tilt
+  alignment(alignment     const&);
+  alignment(alignmentData const&);
+ ~alignment();
 
   bool isNull() const;
-  bool operator==( const alignment& ) const;
+  bool operator==( alignment const& ) const;
 
-  alignment& operator=(const alignment&);
+  alignment& operator=(alignment const&);
                                 // these methods will overwrite an array
                                 // BMLM_dynDim in length
                                 // I don\'t think that the Particle or
                                 // JetParticle should be modified directly
-  void    align(Particle const&, Vector&);
-  void    align(Vector&,         Vector&);
-  void misalign(Particle const&, Vector&);
-  void    align(JetParticle&,    Mapping&);
-  void    align(JetVector&,      Mapping&);
 
-  void misalign(JetParticle&,    Mapping&);
-  void misalign(Vector& );
-  void    align(Vector& );
-  void misalign(JetVector& );
-  void    align(JetVector& );
+  // void    align(Particle    const&, Vector&  );
+  // void    align(Vector      const&, Vector&  );
+  // void misalign(Particle    const&, Vector&  );
+  // void    align(JetParticle const&, Mapping& );
+  // void    align(JetVector   const&, Mapping& );
+
+  //void misalign(JetParticle const&, Mapping&);
+  //void misalign(Vector&    );
+  //void    align(Vector&    );
+  //void misalign(JetVector& );
+  //void    align(JetVector& );
 
   void          setAlignment(alignmentData const&);
   alignmentData getAlignment() const;
 
-  double x_offset() { return xOffset; }
-  double y_offset() { return yOffset; }
-  double roll()     { return tilt;    }
-  double cos_roll() { return cosTilt; }
-  double sin_roll() { return sinTilt; }
+  double const& x_offset() { return xOffset_; }
+  double const& y_offset() { return yOffset_; }
+  double const& roll()     { return tilt_;    }
+  double const& cos_roll() { return cosTilt_; }
+  double const& sin_roll() { return sinTilt_; }
 
   friend std::ostream& operator<<(std::ostream&, alignment&);
+
+private:
+
+  double       xOffset_;         // offset in meters
+  double       yOffset_;         // offset in meters
+  double       tilt_;            // roll in radians
+                                 // we could put in pitch someday
+  double       cosTilt_;         // cos(tilt)
+  double       sinTilt_;         // sin(tilt)
+
 };
 
 
