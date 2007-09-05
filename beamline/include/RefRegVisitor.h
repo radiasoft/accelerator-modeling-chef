@@ -57,9 +57,8 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
-
-
 #include <fstream>
+
 
 class DLLEXPORT RefRegVisitor : public BmlVisitor
 {
@@ -70,33 +69,32 @@ class DLLEXPORT RefRegVisitor : public BmlVisitor
   RefRegVisitor( RefRegVisitor const& );
  ~RefRegVisitor();
 
-  void visit( beamline& );
-  void visit( bmlnElmnt& );
-  void visit( CF_rbend& );
-  void visit( CF_sbend& );
-  void visit( sbend& );
-  void visit( rbend& );
+  void visit( beamline&     );
+  void visit( bmlnElmnt&    );
+  void visit( CF_rbend&     );
+  void visit( CF_sbend&     );
+  void visit( sbend&        );
+  void visit( rbend&        );
   void visit( thinrfcavity& );
-  void visit( rfcavity& );
-  void visit( LinacCavity& );
+  void visit( rfcavity&     );
+  void visit( LinacCavity&  );
 
   int  getErrorCode() const;
 
   // Error codes
   static const int OKAY;
+ 
+ double getCdt() const;
+ void   setCdt( double const& ct );
 
-  // So far, these two functions are used exclusively
-  // by class rfcavity.
-
-  double getCdt();
-  void setCdt(double);
 
  private:
 
-  Particle     particle_;
-  int          errorCode_;
-  double       revolutionFrequency_;
-  const double initialMomentum_;
+  Particle      particle_;
+  double        revolutionFrequency_;
+  double  const initialMomentum_;
+  int           errorCode_;
+
 };
 
 #endif // REFREGVISITOR_H
