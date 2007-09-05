@@ -101,6 +101,7 @@ void propagate( bmlnElmnt& elm_arg, Particle_t& p ,bool entrance_kick, bool exit
 
 void  LCavityUpstream::localPropagate( ParticleBunch& b )
 {
+
   for ( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it) { 
     propagate(*it);
   }

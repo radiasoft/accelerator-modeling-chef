@@ -62,7 +62,7 @@ void LinacCavity::localPropagate( JetParticle& p )
 
 void LinacCavity::localPropagate( ParticleBunch& b ) 
 {
-  p_bml_->propagate(b);
+  p_bml_->propagate(b); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
