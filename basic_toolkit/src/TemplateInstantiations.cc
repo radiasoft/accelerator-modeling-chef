@@ -348,36 +348,6 @@ template bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&)
 
 //template std::ostream& operator<< <std::complex<double> >(ostream&, MLPtr<std::complex<double> >const&);
 
-#if  0
-==============================================================================================
-template 
-MLPtr<int> TML<int>::Negate (  MLPtr<int> const& );
-
-template 
-MLPtr<int> TML<int>::add     (  MLPtr<int> const&,  MLPtr<int> const& );  
-template 
-MLPtr<int> TML<int>::add     (  MLPtr<int> const&,  int const& );  
-
-template 
-MLPtr<int> TML<int>::subtract(  MLPtr<int> const&,  MLPtr<int> const& );  
-
-template 
-MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  MLPtr<int> const& );  
-
-template 
-MLPtr<int> TML<int>::multiply(  MLPtr<int> const&,  int const& );  
-
-template 
-MLPtr<int> TML<int>::divide  (  MLPtr<int> const&,  MLPtr<int> const& );  
-
-template 
-MLPtr<int> TML<int>::divide  (  MLPtr<int> const&,  int const& );  
-
-template 
-MLPtr<int> TML<int>::divide  (  int const&,                MLPtr<int> const& );  
-===============================================================================================
-#endif
-
 // ---------------------------------------------------------------------------------------
 
 template 
@@ -440,6 +410,10 @@ divide<std::complex<double> >  (  MLPtr<std::complex<double> > const&,  std::com
 template MLPtr<std::complex<double> > 
 divide<std::complex<double> >  (  std::complex<double> const&,                MLPtr<std::complex<double> > const& );  
 
+
+//----------------------------------------------------------------------------------------------------------------
+// Instantiations for class MLPtr<T>
+//----------------------------------------------------------------------------------------------------------------
 
 template class MLPtr<double>;
 template class MLPtr<std::complex<double> >;
