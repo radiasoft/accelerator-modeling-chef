@@ -66,12 +66,10 @@
 
 template<>
 template<>
-TMatrix<std::complex<double> >::TMatrix( TMatrix<double> const& m){ 
-
+TMatrix<std::complex<double> >::TMatrix( TMatrix<double> const& m)
+{ 
   ml_ = m.ml_; // implicit conversion
-
   return; 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -82,11 +80,10 @@ TMatrix<double> TMatrix<double>::dagger() const {
 
 //  for a real matrix, the Hermitian conjugate and the transpose
 //  are the same
-
-  
-  MLPtr<double> p ( ml_->transpose() );
-  return TMatrix<double>( p );
-
+    
+  TMatrix<double> ret;
+  ret.ml_ = ml_->transpose();
+  return ret;
 }
 
 
@@ -96,86 +93,31 @@ TMatrix<double> TMatrix<double>::dagger() const {
 template<>
 TMatrix<std::complex<double> > TMatrix<std::complex<double> >::dagger() const
 {
-
-  MLPtr<std::complex<double> > p ( ml_->dagger() );
-  return TMatrix<std::complex<double> >( p );
-
+  TMatrix<std::complex<double> > ret;
+  ret.ml_= ml_->dagger();
+  return ret;
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TMatrix<double> real( const TMatrix<std::complex<double> >& x )
+TMatrix<double> real( TMatrix<std::complex<double> > const& x )
 {
-
-
-  MLPtr<double> p( real_part(x.ml_ ) ); 
-  return TMatrix<double>( p ); 
-
+  TMatrix<double> ret; 
+  ret.ml_= real_part(x.ml_); 
+  return ret; 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TMatrix<double> imag( const TMatrix<std::complex<double> >& x ) 
+TMatrix<double> imag( TMatrix<std::complex<double> > const& x ) 
 {
-
-  MLPtr<double> p( imag_part(x.ml_ ) ); 
-  return TMatrix<double>( p ); 
-
+  TMatrix<double> ret; 
+  ret.ml_= imag_part(x.ml_); 
+  return ret; 
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TMatrix<std::complex<double> > TMatrix<double>::eigenValues() const
-{
- 
-  MLPtr<std::complex<double> > p( ml_->eigenValues() ); 
-  return  TMatrix<std::complex<double> >( p ); 
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues() const 
-{
-
-  MLPtr<std::complex<double> > p( ml_->eigenValues() ); 
-  return  TMatrix<std::complex<double> >( p ); 
-
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TMatrix<std::complex<double> > TMatrix<double>::eigenVectors() const
-{
-
-  MLPtr<std::complex<double> > p( ml_->eigenVectors() ); 
-  return  TMatrix<std::complex<double> >(p); 
-
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const
-{
-
-  MLPtr<std::complex<double> > p( ml_->eigenVectors() ); 
-  return  TMatrix<std::complex<double> >(p); 
-
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -189,26 +131,29 @@ void TMatrix<double>::SVD( TMatrix<double>& U, Vector& W, TMatrix<double>& V) co
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TMatrix<std::complex<double>  > operator*(const TMatrix<std::complex<double>  >& x, const TMatrix<double>& y)
+TMatrix<std::complex<double>  > operator*( TMatrix<std::complex<double>  > const& x, TMatrix<double> const& y)
 {
  
   TMatrix<std::complex<double> > z = y; //implicit conversion 
+  TMatrix<std::complex<double> > ret;
 
-  MLPtr<std::complex<double>  > p(  multiply<std::complex<double> >(x.ml_, z.ml_) ); 
-  return TMatrix<std::complex<double>  >(p); 
+  ret.ml_ = multiply<std::complex<double> >(x.ml_, z.ml_); 
+
+  return ret; 
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TMatrix<std::complex<double> > operator*(const TMatrix<double>& x, const TMatrix<std::complex<double> >& y)
+TMatrix<std::complex<double> > operator*(TMatrix<double> const& x, TMatrix<std::complex<double> > const& y)
 {
 
   TMatrix<std::complex<double> > z = x; //implicit conversion 
 
-  MLPtr<std::complex<double>  > p(   multiply<std::complex<double> >(z.ml_, y.ml_) ); 
-  return TMatrix<std::complex<double>  >( p ); 
+  TMatrix<std::complex<double> > ret;
+  ret.ml_ = multiply<std::complex<double> >(z.ml_, y.ml_); 
+  return ret; 
 
 }
 
