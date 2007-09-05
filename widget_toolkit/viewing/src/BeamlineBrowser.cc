@@ -1898,25 +1898,25 @@ void BeamlineBrowser::infoWriter::visit( monitor const& x )
          qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
          qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
-           theValue.setNum( 1000.0*w[ Particle::xIndex()  ] );
+           theValue.setNum( 1000.0*w[ Particle::xIndex  ] );
          qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
 
          qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
-           theValue.setNum( 1000.0*w[ Particle::yIndex()  ] );
+           theValue.setNum( 1000.0*w[ Particle::yIndex  ] );
          qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
 
          qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
          qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
-           theValue.setNum( 1000.0*w[ Particle::npxIndex() ] );
+           theValue.setNum( 1000.0*w[ Particle::npxIndex ] );
          qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
 
          qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
          qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
-           theValue.setNum( 1000.0*w[ Particle::npyIndex() ] );
+           theValue.setNum( 1000.0*w[ Particle::npyIndex ] );
          qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
 
        qwa->adjustSize();
