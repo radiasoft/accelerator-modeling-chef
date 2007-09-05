@@ -39,16 +39,45 @@ class Particle;
 class JetParticle;
 class bmlnElmnt;
 
+
+class  PropagatorFactory {
+
+ class  PropagatorFactoryImpl; 
+
+ public: 
+
+ static PropagatorFactoryImpl& Instance() 
+    {
+      if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
+      return *pInstance_;
+    }
+ 
+ private:
+
+   PropagatorFactory();
+   PropagatorFactory(PropagatorFactory const&);
+
+   static PropagatorFactory pInstance_;
+   
+
+};
+
+
+//-------------------------------------------------------------------------------
+
 class  PropagatorFactoryImpl {
 
- typedef  boost::function<void(bmlnElmnt&,    Particle&) > particle_propagator_t;
- typedef  boost::function<void(bmlnElmnt&, JetParticle&) > jetparticle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&,    Particle&)   >    particle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&, JetParticle&)   > jetparticle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&, ParticleBunch&) > jetparticle_propagator_t;
 
  public:
 
  particle_propagator_t    const& CreateParticlePropagator(int id);
 
  jetparticle_propagator_t const& CreateJetParticlePropagator(int id);
+
+ jetparticle_propagator_t const& ParticleBunchPropagator(int id);
 
  template <typename Propagator_t>
  particle_propagator_t const& RegisterParticlePropagator( int elm_type_id, Propagator_t prop);  
@@ -66,28 +95,8 @@ class  PropagatorFactoryImpl {
 
  };
 
-//-------------------------------------------------------------------------------
-
- class  PropagatorFactory {
-
- static PropagatorFactoryImpl& Instance() 
-    {
-      if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
-      return *pInstance_;
-    }
- 
- private:
-
-   PropagatorFactory();
-   PropagatorFactory(PropagatorFactory const&);
-
-   static PropagatorFactoryImpl*  pInstance_;
-};
-
-
-
-
 // ------------------------------------------------------------------------------
+
 
 
 template <typename Propagator_t>
