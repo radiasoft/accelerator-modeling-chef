@@ -239,10 +239,10 @@ public:
   T      trace() const; 
   bool   isOrthogonal() const;
 
-  T& operator()(int i, int j);  
-  T  operator()(int i, int j) const; 
-  T& operator()(int i); 
-  T  operator()(int i) const; 
+  T& operator()(int const& i, int const& j);  
+  T  operator()(int const& i, int const& j) const; 
+  T& operator()(int const& i); 
+  T  operator()(int const& i) const; 
 
   friend MLPtr<T> add<T>(MLPtr<T> const& x, MLPtr<T> const& y); 
   friend MLPtr<T> add<T>(MLPtr<T> const& x, const T& y);
