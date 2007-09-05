@@ -44,6 +44,7 @@
 ******     on the stack and objects allocated from the free store.
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 #ifndef TMATRIX_H
 #define TMATRIX_H
@@ -94,27 +95,50 @@ template<typename T> bool operator!=( TMatrix<T> const&, T          const& );
 template<typename T> bool operator!=( T          const&, TMatrix<T> const& );
 
 template<typename T>
-
 class DLLEXPORT TMatrix {
+
+public:
 
   template<typename U>
   friend class TMatrix;
 
+#if 0
+  template<typename V>
+  class Matrix1D {
+
+  public:
+    
+    Matrix1D( V*  matrix, int index ): matrix_(matrix), index_(index) {}
+
+    T&         operator[] (int index)             { return  (*matrix_)(index_,index); } 
+    T const&   operator[] (int index) const       { return  (*matrix_)(index_,index); }
+
+  private:
+    V*          matrix_;
+    int         index_; 
+     
+  };
+
+#endif
+
 protected:
 
-  MLPtr<T> ml_;
+  MLPtr<T>       ml_;
+ 
+  // Matrix1D<T>    m1d_;
 
   // Functions used by the eigenroutines.
 
  private:
 
-  void       copy_column(TMatrix<T>& x, int, int );
+  void       copy_column(TMatrix&  x, int, int );
   void       switch_rows( int, int );
   TMatrix    scale() const;
   TMatrix    lu_decompose( int*, int& ) const;
-  void       lu_back_subst( int*, TMatrix<T>& );
+  void       lu_back_subst( int*, TMatrix& );
 
-public:
+
+ public:
 
   // Constructors and destructors_____________________________________
 
@@ -131,11 +155,9 @@ public:
 
   TMatrix(TMatrix const& );
 
-  TMatrix(MLPtr<T> const& ml);
-
-  TMatrix<T>& DeepCopy(TMatrix<T> const& x); // forces a deep copy  
-
  ~TMatrix();
+
+  TMatrix<T>* Clone() const;
 
   // Public member functions__________________________________________
 
@@ -169,16 +191,17 @@ public:
   TMatrix& operator=(TMatrix    const&);
   TMatrix& operator=(TVector<T> const&);
 
-  T      &  operator()(int row, int column);
-  T const&  operator()(int row, int column) const;
+  T      &  operator()(int const& row, int const& column);
+  T const&  operator()(int const& row, int const& column) const;
 
-  T         getElement(int row, int column) const;
+  //Matrix1D<T>&       operator[](int const& index)         { m1d_ = Matrix1D<T>( this, index); return m1d_; } 
+  //Matrix1D<T> const& operator[](int const& index) const   { m1d_ = Matrix1D<T>( this, index); return m1d_; } 
 
-  T&        operator()(int row);
-  T const&  operator()(int row) const;
+  T&        operator()(int const& row);
+  T const&  operator()(int const& row) const;
 
-  TMatrix<T>& operator+=( T const&);
-  TMatrix<T>& operator-=( T const&);
+  TMatrix& operator+=( T const&);
+  TMatrix& operator-=( T const&);
 
   // Friends
 
@@ -214,9 +237,9 @@ public:
 
 };
 
-
+//------------------------------------
 // TMatrix Specializations
-
+//------------------------------------
 
 template<> 
 template<> 
@@ -229,12 +252,6 @@ template<>
 TMatrix<std::complex<double> >  TMatrix<std::complex<double> >::dagger() const; 
 
  
-template<> TMatrix<std::complex<double> > TMatrix<double>::eigenValues()    const;
-template<> TMatrix<std::complex<double> > TMatrix<double>::eigenVectors()   const; 
-
-template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenValues()  const;
-template<> TMatrix<std::complex<double> > TMatrix<std::complex<double> >::eigenVectors() const;
-
 template<> void  TMatrix<double>::SVD( TMatrix<double>&, Vector&, TMatrix<double>& ) const;
 
 template<> 
