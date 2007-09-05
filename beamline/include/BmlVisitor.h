@@ -114,6 +114,9 @@ class DLLEXPORT BmlVisitor
 {
 public:
 
+  void setInnerFlag( bool ) const; 
+  bool getInnerFlag()       const;
+
   virtual void visit( beamline&      x);
 
   virtual void visit( bmlnElmnt&     x) {}
@@ -197,16 +200,22 @@ protected:
 
   BmlVisitor();
   virtual ~BmlVisitor();
+  mutable bool inner_;
 
 };
 
-inline BmlVisitor::BmlVisitor()  {}
 inline BmlVisitor::~BmlVisitor() {}
+
+inline void BmlVisitor::setInnerFlag( bool set) const { inner_ = set; } 
+inline bool BmlVisitor::getInnerFlag()          const { return inner_;}
 
 
 class DLLEXPORT ConstBmlVisitor 
 {
 public:
+
+  void setInnerFlag( bool ) const; 
+  bool getInnerFlag()       const;
 
   virtual void visit( beamline      const& x );
 
@@ -288,12 +297,14 @@ protected:
 
   ConstBmlVisitor();
   virtual ~ConstBmlVisitor();
+  mutable bool inner_; 
 
 };
 
-inline ConstBmlVisitor::ConstBmlVisitor()  {}
 inline ConstBmlVisitor::~ConstBmlVisitor() {}
 
+inline void ConstBmlVisitor::setInnerFlag( bool set) const { inner_ = set; } 
+inline bool ConstBmlVisitor::getInnerFlag()          const { return inner_;}
 
 
 #endif // BMLVISITOR_H
