@@ -182,8 +182,8 @@ OrbitTransformer::OrbitTransformer()
 
 void RectH::toDynamics( Vector const& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::xIndex());
-  *yPtr = state(Particle::npxIndex());
+  *xPtr = state(Particle::xIndex);
+  *yPtr = state(Particle::npxIndex);
   *zPtr = 0.0;
 }
 
@@ -196,8 +196,8 @@ void RectH::toState( double a, double b, Particle& ptr ) const
 
 void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::yIndex());
-  *yPtr = state(Particle::npyIndex());
+  *xPtr = state(Particle::yIndex);
+  *yPtr = state(Particle::npyIndex);
   *zPtr = 0.0;
 }
 
@@ -211,9 +211,9 @@ void RectV::toState( double a, double b, Particle& ptr ) const
 
 void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::xIndex());
-  *yPtr = _alpha*state(Particle::xIndex()) + _beta*state(Particle::npxIndex());
-  *zPtr = state(Particle::yIndex());  // Somewhat arbitrary. Fix this.
+  *xPtr = state(Particle::xIndex);
+  *yPtr = _alpha*state(Particle::xIndex) + _beta*state(Particle::npxIndex);
+  *zPtr = state(Particle::yIndex);  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -226,9 +226,9 @@ void NormH::toState( double a, double b, Particle& ptr ) const
 
 void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::yIndex());
-  *yPtr = _alpha*state(Particle::yIndex()) + _beta*state(Particle::npyIndex());
-  *zPtr = state(Particle::xIndex());  // Somewhat arbitrary. Fix this.
+  *xPtr = state(Particle::yIndex);
+  *yPtr = _alpha*state(Particle::yIndex) + _beta*state(Particle::npyIndex);
+  *zPtr = state(Particle::xIndex);  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -282,13 +282,13 @@ void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* 
   double u, v;
 
   // Horizontal
-  u = state(Particle::xIndex()) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::npxIndex()) - _xp_o );
+  u = state(Particle::xIndex) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::npxIndex) - _xp_o );
   *xPtr = ( u*u + v*v )/( 2.0*_betaH );
   
   // Vertical
-  u = state(Particle::yIndex()) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::npyIndex()) - _yp_o );
+  u = state(Particle::yIndex) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::npyIndex) - _yp_o );
   *yPtr = ( u*u + v*v )/( 2.0*_betaV );
 
   *zPtr = 0.0;
@@ -366,14 +366,14 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
   double u, v, phiH, phiV;
 
   // Horizontal
-  u = state(Particle::xIndex()) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::npxIndex()) - _xp_o );
+  u = state(Particle::xIndex) - _x_o;
+  v = _alphaH*u + _betaH*( state(Particle::npxIndex) - _xp_o );
   phiH = atan2(u,v);
   if( phiH > M_PI ) phiH -= M_TWOPI;
   
   // Vertical
-  u = state(Particle::yIndex()) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::npyIndex()) - _yp_o );
+  u = state(Particle::yIndex) - _y_o;
+  v = _alphaV*u + _betaV*( state(Particle::npyIndex) - _yp_o );
   phiV = atan2(u,v);
   if( phiV > M_PI ) phiV -= M_TWOPI;
   
@@ -463,12 +463,12 @@ void OrbitTransformer::copyCenterFrom( const OrbitTransformer& u )
 void OrbitTransformer::set_center( const Vector& u )
 {
   if( 6 == u.Dim() ) {
-    _x_o   = u( Particle::xIndex());
-    _xp_o  = u( Particle::npxIndex());
-    _y_o   = u( Particle::yIndex());
-    _yp_o  = u( Particle::npyIndex());
-    _cdt_o = u( Particle::cdtIndex());
-    _dpp_o = u( Particle::ndpIndex());
+    _x_o   = u( Particle::xIndex);
+    _xp_o  = u( Particle::npxIndex);
+    _y_o   = u( Particle::yIndex);
+    _yp_o  = u( Particle::npyIndex);
+    _cdt_o = u( Particle::cdtIndex);
+    _dpp_o = u( Particle::ndpIndex);
   }
   else {
     ostringstream uic;
@@ -497,12 +497,12 @@ void OrbitTransformer::set_center( const Particle& u )
 Vector OrbitTransformer::get_center() const
 {
   Vector u(6);
-  u( Particle::xIndex())   = _x_o  ;
-  u( Particle::npxIndex()) = _xp_o ;
-  u( Particle::yIndex())   = _y_o  ;
-  u( Particle::npyIndex()) = _yp_o ;
-  u( Particle::cdtIndex()) = _cdt_o;
-  u( Particle::ndpIndex()) = _dpp_o;
+  u( Particle::xIndex)   = _x_o  ;
+  u( Particle::npxIndex) = _xp_o ;
+  u( Particle::yIndex)   = _y_o  ;
+  u( Particle::npyIndex) = _yp_o ;
+  u( Particle::cdtIndex) = _cdt_o;
+  u( Particle::ndpIndex) = _dpp_o;
   return u;
 }
 
