@@ -21,7 +21,7 @@ energy = kinetic_energy + mass
 momentum = math.sqrt(energy**2 -
                                   mass**2)
 
-factory = bmlfactory("channeln.mad")
+factory = MAD8Factory("channeln.mad")
 proton = Proton(energy)
 brho = proton.ReferenceBRho()
 beamline = factory.create_beamline("channel",brho)

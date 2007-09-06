@@ -41,7 +41,7 @@ class Apron:
         self.momentum = math.sqrt(self.energy**2 -
                                           self.mass**2)
 
-        self.factory = bmlfactory(mad_file)
+        self.factory = MAD8Factory(mad_file)
         brho = self.get_new_particle().ReferenceBRho()
         beamline_orig = self.factory.create_beamline(line_name,brho)
         beamline_orig = beamline_orig.flatten()
