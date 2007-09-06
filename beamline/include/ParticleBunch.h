@@ -60,6 +60,9 @@ public:
   typedef  boost::ptr_vector<Particle>::iterator                iterator;  
   typedef  boost::ptr_vector<Particle>::const_iterator    const_iterator;
 
+  typedef  boost::ptr_vector<Particle>::reverse_iterator                reverse_iterator;  
+  typedef  boost::ptr_vector<Particle>::const_reverse_iterator    const_reverse_iterator;
+
   enum PhaseSpaceProjection { x_npx=0, y_npy, ct_dpp };
 
   ParticleBunch( Particle const& reference, int nparticles=0, double const& population=0.0);
@@ -79,14 +82,17 @@ public:
 
   void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0);
 
+
   template <typename UnaryPredicate_t>
   void remove( UnaryPredicate_t );          
 
   template <typename BinaryPredicate_t>
   void sort( BinaryPredicate_t );          
 
-  int size()   const;
-  bool empty() const;
+  void clear(); 
+  int  size()           const;
+  int  removed_size()   const;
+  bool empty()          const;
 
   // iterators 
  
@@ -98,6 +104,15 @@ public:
 
   const_iterator             removed_begin()  const;
   const_iterator             removed_end()    const;
+
+  reverse_iterator           rbegin();
+  const_reverse_iterator     rbegin()         const;
+
+  reverse_iterator           rend();
+  const_reverse_iterator     rend()           const;
+
+  const_reverse_iterator     removed_rbegin()  const;
+  const_reverse_iterator     removed_rend()    const;
 
 
 private:
@@ -125,12 +140,8 @@ void ParticleBunch::sort( BinaryPredicate_t predicate )
 template <typename UnaryPredicate_t>
 void ParticleBunch::remove( UnaryPredicate_t predicate) 
 {
-  for (ParticleBunch::iterator it=begin(); it != end(); ++it ) {
-     
-    if ( !predicate(*it) ) continue;
-    removed_.transfer( removed_.end(), it, bunch_ );
-
-  }
+  ParticleBunch::iterator it = std::remove_if(begin(), end(), predicate);
+  removed_.transfer( removed_.end(), it, end(), bunch_ );
 }
 
 
