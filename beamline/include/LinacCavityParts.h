@@ -58,8 +58,8 @@ public:
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
-               double const& syncphase_rad,    // synchronous phase [radians]
-               bool   wake_on );   
+               double const& syncphase_rad);   // synchronous phase [radians]
+                 
 
   LCavityUpstream( LCavityUpstream const& );
 
@@ -101,8 +101,7 @@ public:
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
-	       double const& syncphase_rad,
-               bool   wake_on            );   // synchronous phase [radians]
+	       double const& syncphase_rad);   // synchronous phase [radians]
 
   LCavityDnstream( LCavityDnstream const& );
 
