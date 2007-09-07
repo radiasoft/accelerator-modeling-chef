@@ -31,7 +31,7 @@
 
 #include <beamline/PropagatorFactory.h>
 
-PropagatorFactoryImpl* PropagatorFactory::pInstance_ = 0;
+PropagatorFactory* PropagatorFactory::pInstance_ = 0;
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

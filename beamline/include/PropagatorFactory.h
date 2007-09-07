@@ -36,6 +36,7 @@
 #include <boost/function.hpp>
 
 class Particle;
+class ParticleBunch;
 class JetParticle;
 class bmlnElmnt;
 
@@ -48,8 +49,8 @@ class  PropagatorFactory {
 
  static PropagatorFactoryImpl& Instance() 
     {
-      if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
-      return *pInstance_;
+      //if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
+      //return *pInstance_;
     }
  
  private:
@@ -57,7 +58,7 @@ class  PropagatorFactory {
    PropagatorFactory();
    PropagatorFactory(PropagatorFactory const&);
 
-   static PropagatorFactory pInstance_;
+   static PropagatorFactory* pInstance_;
    
 
 };
@@ -69,7 +70,7 @@ class  PropagatorFactoryImpl {
 
  typedef  boost::function<void(bmlnElmnt&,    Particle&)   >    particle_propagator_t;
  typedef  boost::function<void(bmlnElmnt&, JetParticle&)   > jetparticle_propagator_t;
- typedef  boost::function<void(bmlnElmnt&, ParticleBunch&) > jetparticle_propagator_t;
+ typedef  boost::function<void(bmlnElmnt&, ParticleBunch&) >       bunch_propagator_t;
 
  public:
 
