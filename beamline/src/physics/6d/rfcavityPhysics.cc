@@ -94,9 +94,7 @@ void rfcavity::localPropagate( Particle& p )
 
   double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
-    ctRef_ = length_/ p.ReferenceBeta();
     bmlnElmnt::localPropagate( p ); 
-    ctRef_ = ctr;
     return;
   }
 
@@ -196,9 +194,8 @@ void rfcavity::localPropagate( Particle& p )
   ctRef_   = ctr; 
 
   // Fix the time calculation
-  double rfct =   length_
-                * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
-                    / (p.Energy()                          - E_i) );
+  double rfct =  length_ * (  (p.get_npz() * p.ReferenceMomentum() - p_i)
+                         / (p.Energy()                          - E_i) );
 
   state[2] = cdt_i + ( rfct - ctRef_ );
 }
@@ -210,9 +207,7 @@ void rfcavity::localPropagate( JetParticle& p )
 {
   double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
-    ctRef_ = length_/p.ReferenceBeta();
     bmlnElmnt::localPropagate( p ); 
-    ctRef_ = ctr;
     return;
   }
 
@@ -311,9 +306,8 @@ void rfcavity::localPropagate( JetParticle& p )
   ctRef_ = ctr;
 
   // Fix the time calculation
-  Jet rfct =   length_
-             * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
-                 / (p.Energy()                          - E_i) );
+  Jet rfct =   length_ * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
+                           / (p.Energy()                          - E_i) );
 
   state[2] = cdt_i + ( rfct - ctRef_ );
 }
