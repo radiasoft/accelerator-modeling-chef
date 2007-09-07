@@ -616,11 +616,11 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
   
     p_be = p_be_b;
 
+    bml_iter = theList_.erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+
     inList.pop_front();                       // removes top element
     if (inList.empty() ) break;
     p_ile = inList.front();                   // accesses new top element
-
-    bml_iter = theList_.erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
 
     --bml_iter;                               // now points to p_be_b 
 
@@ -757,7 +757,7 @@ void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
 void beamline::putAbove( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ) 
 {
  // Insert y above (before; upstream of) iter in the beamline
- // upon return, iter points Insert y above (before; upstream of) iter in the beamline
+ // upon return, iter points to the position 
 
  unTwiss();
 
