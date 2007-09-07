@@ -94,9 +94,7 @@ void rfcavity::localPropagate( Particle& p )
 
   double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
-    ctRef_ = length_/ p.ReferenceBeta();
     bmlnElmnt::localPropagate( p ); 
-    ctRef_ = ctr;
     return;
   }
 
@@ -210,9 +208,7 @@ void rfcavity::localPropagate( JetParticle& p )
 {
   double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
-    ctRef_ = length_/p.ReferenceBeta();
     bmlnElmnt::localPropagate( p ); 
-    ctRef_ = ctr;
     return;
   }
 
