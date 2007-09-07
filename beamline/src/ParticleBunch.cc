@@ -118,8 +118,8 @@ ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& po
  // For performance, particles objects need to be allocated as contiguously 
  // as possible in memory. This is accomplished by allocating particles 
  // from a dedicated pool with a 10% reserve for more particles. 
- // Note that if new particles are appended, the pool will automatically grow if the
- // reserve is exhausted.
+ // Note that if new particles are appended, the pool capacity will automatically 
+ // grow when reserve is exhausted.
  // The argument of the Particle Clone() function is the address used by 
  // (placement) new when instantiating the cloned particle.
  // 
@@ -195,11 +195,68 @@ ParticleBunch:: const_iterator  ParticleBunch::removed_end() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+ParticleBunch::reverse_iterator     ParticleBunch::rbegin()
+{
+  return bunch_.rbegin();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ParticleBunch::const_reverse_iterator    ParticleBunch:: rbegin()  const
+{
+  return bunch_.rbegin();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ParticleBunch::reverse_iterator          ParticleBunch:: rend()
+{
+  return bunch_.rend();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ParticleBunch::const_reverse_iterator     ParticleBunch::rend()    const
+{
+  return bunch_.rend();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ParticleBunch::const_reverse_iterator     ParticleBunch::removed_rbegin()  const
+{
+  return removed_.rbegin();
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ParticleBunch::const_reverse_iterator     ParticleBunch::removed_rend()    const
+{
+  return removed_.rend();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ParticleBunch::clear()
+{
+  bunch_.clear();
+  removed_.clear();
+  pool_.purge_memory();  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void ParticleBunch::append( Particle const& x )
 {
-
   bunch_.push_back(  x.Clone( pool_.malloc() ) ); 
-
 }
 
 
@@ -214,20 +271,18 @@ double ParticleBunch::Population() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ParticleBunch::clear()
-{
-  clear();
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 int ParticleBunch::size() const
 {
   return bunch_.size();
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int ParticleBunch::removed_size() const
+{
+  return removed_.size();
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
