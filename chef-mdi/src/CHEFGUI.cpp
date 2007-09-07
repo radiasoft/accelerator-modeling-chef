@@ -1869,10 +1869,9 @@ void CHEFGUI::editAddMarkers()
     }
 
     // Find selected elements
+    std::list<ElmPtr> theChosenOnes = browser_->findAllSelected( theRoot );
 
-    std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
-
-    if( theOnes.empty() ) {
+    if( theChosenOnes.empty() ) {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
              "\nIn function: void CHEFGUI::editAddMarkers():"
@@ -1882,10 +1881,10 @@ void CHEFGUI::editAddMarkers()
     }
 
     // Load BmlPtrLists, for use by lower level tools
-
+    std::list<ElmPtr> theOnes;
     std::list<ElmPtr> insertions;
 
-    for ( std::list<ElmPtr>::iterator it = theOnes.begin(); it != theOnes.end(); ++it )
+    for ( std::list<ElmPtr>::iterator it = theChosenOnes.begin(); it != theChosenOnes.end(); ++it )
     {
       theOnes.push_back(*it);
       insertions.push_back( ElmPtr( new marker(markerName.ascii() ) ));
@@ -1923,8 +1922,6 @@ void CHEFGUI::editAddMarkers()
     // Finished!
     emit new_beamline();
   }
-
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
