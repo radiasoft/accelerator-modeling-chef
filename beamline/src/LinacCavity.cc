@@ -51,16 +51,21 @@ LinacCavity::LinacCavity( const char* name,         // name
                           double const& length,     // length [m]
                           double const& f,          // rf frequency 
                           double const& eV,         // rf voltage 
-                          double const& phi_s)      // synchronous phase 
+                          double const& phi_s,      // synchronous phase 
+                          bool   wake_on     )      
  : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
 
 {
 
   p_bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
   
+  WakeKickPtr wake;
+
   p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
-  p_bml_->append( WakeKickPtr       ( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )  );
+  p_bml_->append( wake = WakeKickPtr( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )      );  
   p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
+
+  wake->enable(wake_on);
 
 }
 
@@ -243,7 +248,7 @@ void  LinacCavity::setWakeOn( bool set )
   for ( beamline::iterator it  = p_bml_->begin(); 
 	                   it != p_bml_->end(); ++it ) {  
  
-      if ( q = boost::dynamic_pointer_cast<WakeKick>(*it) ) q->setOn( set );
+      if ( q = boost::dynamic_pointer_cast<WakeKick>(*it) ) q->enable( set );
   }
 }
 
