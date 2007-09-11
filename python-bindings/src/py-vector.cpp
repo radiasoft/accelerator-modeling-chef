@@ -29,51 +29,33 @@
 #include <boost/python.hpp>
 #include <boost/shared_array.hpp>
 #include <basic_toolkit/VectorD.h>
+#include <boost/python/detail/api_placeholder.hpp> // this is needed with boost < 1.34.X
 
 using namespace boost::python;
 
 namespace {
 
-struct VectorWrapper: public Vector {
+  Vector* constructor_wrapper( boost::python::tuple const& components ) { 
 
-  PyObject* m_self;  
+    std::vector<double> comps( boost::python::len(components) );
 
-  VectorWrapper(PyObject* self, const Vector& vec) : m_self(self), Vector(vec)  {}
-
-  VectorWrapper(PyObject* self, int dimension ): m_self(self), Vector(dimension) { }  
-
-  VectorWrapper(PyObject* self,  boost::python::tuple components ) : m_self(self) { 
-    int dim = extract<int>( components.attr("__len__")() );
-    double* comps = new double[dim];
-    for (int i=0; i<dim; ++i) {
-      comps[i] = extract<double>( components[i]);
+    int i=0;
+    for ( std::vector<double>::iterator it  = comps.begin(); 
+	                                it != comps.end(); ++it, ++i ) {
+       (*it) = extract<double>( components[i]);
     } 
-    Vector* v = this;
-    new(v) Vector(dim, comps); 
-    // NOTE: comps is owned and destroyed by Vector
+
+    return new Vector(comps.begin(),comps.end() ); 
   }
    
-  operator Vector () const {
-    int dim = Dim();
-      double* v = new double[ dim ];
-      for ( int i=0; i< dim; ++dim ) {
-	v[i] = (*this)(i);
-      }
-      return *( new Vector(dim,v) ); 
-  }            
-
-  void Set( boost::python::tuple components ) {
+  void Set( Vector& o, boost::python::tuple const&  components ) {
     
-    int dim = extract<int>( components.attr("__len__")() );
+    int dim = boost::python::len(components); //  same effect as: extract<int>( components.attr("__len__")() );
 
-    double* comps = new double[dim];
     for (int i=0; i<dim; ++i) {
-      comps[i] = extract<double>( components[i] );
+      o[i] = extract<double>( components[i] );
     } 
-    Vector::Set(comps);
-    delete [] comps; 
   }
-};
 
 } // anonymous namespace
 
@@ -84,17 +66,16 @@ struct VectorWrapper: public Vector {
 
 void wrap_vector () {
 
- class_<Vector,VectorWrapper> Vector_class_("Vector", init<int>() );
-
- Vector_class_.def( init<boost::python::tuple>() );
- Vector_class_.def("Dim",       &VectorWrapper::Dim);
- Vector_class_.def("Set",       &VectorWrapper::Set);     // void        Set              ( const double* );
- Vector_class_.def("IsNull",    &VectorWrapper::IsNull);  // char        IsNull           () const;
- Vector_class_.def("IsUnit",    &VectorWrapper::IsUnit);  // char        IsUnit           () const;
- Vector_class_.def("Abs",       &VectorWrapper::Abs);     // Vector      Abs              () const;
- Vector_class_.def("Norm",      &VectorWrapper::Norm);    // double      Norm             () const;
- Vector_class_.def("Unit",      &VectorWrapper::Unit);    // Vector      Unit             () const;           // returns unit vector
- Vector_class_.def("Rotate",    &VectorWrapper::Rotate);  // void        Rotate           ( Vector& v,       double  theta ) const;
+ class_<Vector> Vector_class_("Vector", init<int>() );
+ Vector_class_.def("__init__",  make_constructor( &::constructor_wrapper ) );
+ Vector_class_.def("Dim",       &Vector::Dim);
+ Vector_class_.def("Set",       &::Set);               
+ Vector_class_.def("IsNull",    &Vector::IsNull);  // char        IsNull           () const;
+ Vector_class_.def("IsUnit",    &Vector::IsUnit);  // char        IsUnit           () const;
+ Vector_class_.def("Abs",       &Vector::Abs);     // Vector      Abs              () const;
+ Vector_class_.def("Norm",      &Vector::Norm);    // double      Norm             () const;
+ Vector_class_.def("Unit",      &Vector::Unit);    // Vector      Unit             () const;           // returns unit vector
+ Vector_class_.def("Rotate",    &Vector::Rotate);  // void        Rotate           ( Vector& v,       double  theta ) const;
 
 
 //-----------------------------------
