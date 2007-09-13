@@ -71,10 +71,7 @@ public:
 
  ~ChromaticityAdjuster();
 
-  void addCorrector( sextupole     const&, double, double );
   void addCorrector( SextupolePtr,         double, double );
-
-  void addCorrector( thinSextupole const&, double, double );
   void addCorrector( ThinSextupolePtr,     double, double );
 
   void  addCorrector(  ElmPtr x, double a, double b ); // This form is used by the GUI code. It MUST go away !

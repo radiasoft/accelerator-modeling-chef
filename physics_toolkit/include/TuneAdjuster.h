@@ -83,10 +83,7 @@ public:
 
  ~TuneAdjuster();
 
-  void addCorrector( quadrupole     const&,  double, double );
   void addCorrector( QuadrupolePtr,          double, double );
-
-  void addCorrector( thinQuad       const&,  double, double );
   void addCorrector( ThinQuadPtr,            double, double );
 
   void addCorrector( ElmPtr,          double, double );      // Form used by GUI code. Needs to go away ! 
