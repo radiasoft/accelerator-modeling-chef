@@ -44,7 +44,7 @@
 using namespace std;
 
 WakeKick::WakeKick( char const* name )
-  : bmlnElmnt(name, 0.0, 0.0, 0), wake_enabled_(true)
+  : bmlnElmnt(name, 0.0, 0.0, 0)
 { 
   // propagator_ = PropagatorFactory::
 }
@@ -52,7 +52,7 @@ WakeKick::WakeKick( char const* name )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 WakeKick::WakeKick( WakeKick const& x )
-  : bmlnElmnt(x), wake_enabled_(x.wake_enabled_), propagator_(x.propagator_) 
+  : bmlnElmnt(x), propagator_(x.propagator_) 
 { }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -98,7 +98,7 @@ void WakeKick::accept( ConstBmlVisitor& v ) const
 
 void WakeKick::localPropagate( ParticleBunch& bunch )
 {
-  if (wake_enabled_ ) propagator_(bunch);
+  propagator_(bunch);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -116,14 +116,6 @@ void  WakeKick::localPropagate( JetParticle&   p )
 {
   // this does nothing at the moment
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-   
-void  WakeKick::enable( bool set ) 
-{
-  wake_enabled_ = set;
-} 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
