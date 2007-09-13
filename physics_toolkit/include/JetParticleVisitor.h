@@ -68,13 +68,6 @@ class JetParticleVisitor : public BmlVisitor {
 
   JetParticle  particle_;
   Mapping      state_;
-  int          dim_;
-  int          x_;
-  int          xp_;
-  int          y_;
-  int          yp_;
-  int          cdt_;
-  int          dpop_;
 };
 
 

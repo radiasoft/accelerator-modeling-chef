@@ -75,13 +75,6 @@ class ParticleVisitor : public BmlVisitor {
 
   Particle  particle_;
   Vector    state_;
-  int       x_;
-  int       xp_;
-  int       y_;
-  int       yp_;
-  int       cdt_;
-  int       dpop_;
-
 
 };
 
