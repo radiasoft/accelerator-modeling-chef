@@ -329,16 +329,16 @@ void XsifParserDriver::dumpDatabase()
 int XsifParserDriver::parse(string const& f)
 {
  
-  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
 
 #ifdef _WIN32
+  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
   GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
   for (int i=strlen(saved_cwd)-1; i >=0; --i) {
    if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
   }
 
 #else
-  saved_cwd = get_current_dir_name(); // save current working directory
+  char* saved_cwd = get_current_dir_name(); // save current working directory
 #endif
  
 
@@ -375,6 +375,18 @@ int XsifParserDriver::parse(string const& f)
 int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
+#ifdef _WIN32
+  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
+  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
+   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
+  }
+
+#else
+  char* saved_cwd = get_current_dir_name(); // save current working directory
+#endif
+ 
+
   m_buffer = buffer; 
   m_input_is_file = false;    
    
@@ -390,6 +402,14 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
 
   scan_end(  m_yyscanner);
   
+#ifdef _WIN32
+  setCurrentDirectory(saved_cwd);
+#else
+  chdir(saved_cwd);  
+#endif 
+
+  free(saved_cwd); 
+
   return ret;
 
 }
