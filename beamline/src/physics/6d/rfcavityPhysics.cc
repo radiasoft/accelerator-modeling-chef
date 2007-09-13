@@ -92,7 +92,6 @@ using FNAL::pcout;
 void rfcavity::localPropagate( Particle& p ) 
 {
 
-  double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
     bmlnElmnt::localPropagate( p ); 
     return;
@@ -121,8 +120,11 @@ void rfcavity::localPropagate( Particle& p )
 
   double x_in  = state[0];
   double y_in  = state[1];
-  double ct_in = state[2];
+  //double ct_in = state[2];
 
+  double ctr = ctRef_;
+
+  ctRef_ = 0.0;
   length_  = oldLength/2.0;
   bmlnElmnt::localPropagate( p );
 
@@ -132,7 +134,7 @@ void rfcavity::localPropagate( Particle& p )
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
-  state[2] = ct_in;
+  //state[2] = ct_in;
 
   // Cavity increases energy and momentum of the particle
   double E  = p.Energy() + onaxisEnergyGain/2.0;
@@ -168,10 +170,11 @@ void rfcavity::localPropagate( Particle& p )
   // Free space propagation through "effective half length"
   // of the cavity.
 
-  x_in  = state[0];
-  y_in  = state[1];
-  ct_in = state[2];
+   x_in  = state[0];
+   y_in  = state[1];
+ //ct_in = state[2];
 
+   ctRef_   = 0.0;
   length_  = oldLength/2.0;
   bmlnElmnt::localPropagate( p );
 
@@ -181,7 +184,7 @@ void rfcavity::localPropagate( Particle& p )
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
-  state[2] = ct_in;
+  //state[2] = ct_in;
 
 
   // Thin lens kick upon exit
@@ -190,15 +193,19 @@ void rfcavity::localPropagate( Particle& p )
   state[4] += k*state[1];
 
   // Restore parameters
+
   length_  = oldLength;
   ctRef_   = ctr; 
 
+#if 0
   // Fix the time calculation
   double rfct =   length_
                 * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
                     / (p.Energy()                          - E_i) );
-
   state[2] = cdt_i + ( rfct - ctRef_ );
+#endif
+  state[2] -= ctRef_;
+  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -206,7 +213,6 @@ void rfcavity::localPropagate( Particle& p )
 
 void rfcavity::localPropagate( JetParticle& p ) 
 {
-  double const ctr       = ctRef_;
   if( 0 == strength_ ) { 
     bmlnElmnt::localPropagate( p ); 
     return;
@@ -236,6 +242,8 @@ void rfcavity::localPropagate( JetParticle& p )
   Jet y_in  = state[1];
   Jet ct_in = state[2];
 
+  double ctr = ctRef_; 
+  ctRef_     = 0.0; 
   length_  = oldLength/2.0;
   bmlnElmnt::localPropagate( p );
 
@@ -245,7 +253,7 @@ void rfcavity::localPropagate( JetParticle& p )
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
-  state[2] = ct_in;
+//state[2] = ct_in;
 
 
   // Cavity increases energy and momentum of the particle
@@ -283,9 +291,10 @@ void rfcavity::localPropagate( JetParticle& p )
   // of the cavity.
   x_in  = state[0];
   y_in  = state[1];
-  ct_in = state[2];
+//ct_in = state[2];
 
-  length_  = oldLength/2.0;
+  length_   = oldLength/2.0;
+  ctRef_    = 0.0; 
   bmlnElmnt::localPropagate( p );
 
   w = (onaxisEnergyGain/2.0) / p.Energy();
@@ -294,7 +303,7 @@ void rfcavity::localPropagate( JetParticle& p )
 
   state[0] = ( 1.0 - w )*x_in + w*state[0];
   state[1] = ( 1.0 - w )*y_in + w*state[1];
-  state[2] = ct_in;
+//state[2] = ct_in;
 
 
   // Thin lens kick upon exit
@@ -304,14 +313,19 @@ void rfcavity::localPropagate( JetParticle& p )
 
   // Restore length
   length_ = oldLength;
-  ctRef_ = ctr;
+  ctRef_  = ctr;
 
+#if 0
   // Fix the time calculation
   Jet rfct =   length_
              * (   (p.get_npz() * p.ReferenceMomentum() - p_i)
                  / (p.Energy()                          - E_i) );
 
   state[2] = cdt_i + ( rfct - ctRef_ );
+#endif
+
+  state[2] -= ctRef_;
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

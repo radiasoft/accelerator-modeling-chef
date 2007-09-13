@@ -27,6 +27,7 @@
 **************************************************************************
 **************************************************************************/
 
+#include <basic_toolkit/iosetup.h>
 #include <beamline/BunchProjector.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Particle.h>
@@ -34,6 +35,7 @@
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 
+using FNAL::pcout;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -95,10 +97,18 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int 
 {
 
    bunch.sort( LPositionOrder() );
-
+  
    cdt_min_     =    (bunch.begin())->get_cdt(); 
    cdt_max_     =    cdt_min_ + length;
   
+   if (( (--bunch.end())->get_cdt() - bunch.begin()->get_cdt() ) > length ) {
+
+     (*pcout) << "*** WARNING ***: BunchProjector: Sampled region is smaller than total bunch length." << std::endl;
+     (*pcout) << "*** WARNING ***: BunchProjector: Sampled region width is " << length <<  std::endl;
+     (*pcout) << "*** WARNING ***: BunchProjector: Bunch length is " 
+              <<  ( (--bunch.end())->get_cdt() - bunch.begin()->get_cdt() ) <<  std::endl;
+   }
+
    populateHistograms( bunch, cdt_min_, cdt_min_ + length, nsamples);  
 }
 
@@ -117,12 +127,13 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
 
    ParticleBunch::const_iterator itb = bunch.begin(); 
 
+   int sliceno = 0;
    while ( itb != bunch.end() ) {
 
     position  += binsize; 
 
-    while (  itb->get_cdt() <=  position )  { 
-
+     while (  itb->get_cdt() <=  position )  { 
+      
        ++(itslice->npart);
 
        itslice->xbar += itb->get_x();
@@ -137,11 +148,11 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
 
        ++itb; 
 
-       if ( itb ==  bunch.end() ) break;
+       if ( itb ==  bunch.end() ) break; 
       
-    }   
+     } // while   
  
-
+ 
     int npslice  = itslice->npart;
 
     if ( itslice->npart == 0  ) npslice = 1; // this prevents division by zero
@@ -165,12 +176,19 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
 ====================================
 #endif
           
-    if ( itb ==  bunch.end() ) break;
 
+    if ( itb == bunch.end() ) break;
+
+    ++sliceno;
     ++itslice; ++it_monopole; ++it_dipole_hor;  ++it_dipole_ver; 
-    
-  }
 
+    if ( itslice ==  histogram_.end()  ) { 
+        (*pcout) << "*** WARNING ***: Not all particles included in the histogram.\n"
+	            "*** WARNING ***: The sampled interval width is probably smaller than the total bunch length." << std::endl;
+         break;  // We just exit after issuing a warning. Perhaps an execption should be thrown.
+    }
+ 
+  } // while
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -186,7 +204,7 @@ void BunchProjector::debug( ParticleBunch const& bunch) const
  
    std::cout << "----------------------------------------------------------------------------------" << std::endl;
    std::cout << "No of particles computed by summing slices   = " << sum          << std::endl;
-   std::cout << "No of particles as reported by bunch.szie()  = " << bunch.size() << std::endl;
+   std::cout << "No of particles as reported by bunch.size()  = " << bunch.size() << std::endl;
 
    std::cout << "----------------------------------------------------------------------------------" << std::endl;
    std::cout << "Line density " << std::endl;

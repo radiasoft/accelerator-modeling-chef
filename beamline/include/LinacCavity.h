@@ -31,6 +31,10 @@
 #define LINACCAVITY_H
 
 #include <beamline/bmlnElmnt.h>
+#include <beamline/WakeKick.h>
+#include <beamline/WakeKickPropagator.h>
+
+#include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
@@ -43,7 +47,6 @@ class thinLinacCavity;
 typedef boost::shared_ptr<LinacCavity>            LinacCavityPtr;
 typedef boost::shared_ptr<LinacCavity const> ConstLinacCavityPtr;
 
-
 //-------------------------------------------------------------------------------
 
 class LinacCavity: public bmlnElmnt {
@@ -54,17 +57,20 @@ public:
 
   LinacCavity( const  char*  name,
 	       double const& length_m,
-               double const& rfreq_hz,         // RF frequency [Hz]
-               double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
-               double const& syncphase_rad);   // synchronous phase [radians]
+               double const& rfreq_hz,           // RF frequency [Hz]
+               double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
+               double const& syncphase_rad,      // synchronous phase [radians]
+               bool   wake_on=true );                   
 
   LinacCavity( LinacCavity const& );
 
   LinacCavity* Clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
 
-  double const&  getPhi()                const;
-  double         getDesignEnergyGain()   const;
+  void   setWakeOn( bool );
+
+  double const&          getPhi()                const;
+  double                 getDesignEnergyGain()   const;
 
   void                   setFrequency( double const& );
   double                 getFrequency() const;
@@ -72,6 +78,7 @@ public:
   void                 setPhi( double const& radians);  
   void            setStrength( double const& eV);  
 
+  double          getReferenceTime() const;  
 
   void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
@@ -79,6 +86,9 @@ public:
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
+
+  void acceptInner( BmlVisitor&      v ); 
+  void acceptInner( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
   bool    isMagnet() const;
@@ -93,12 +103,6 @@ private:
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
 
- public:
-
-  double                ctRef_part_1_;  // reference time for part 1
-  double                ctRef_part_2_;  // reference time for part 2
-
 };
-
 
 #endif // LINACCAVITY_H

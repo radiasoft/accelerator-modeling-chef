@@ -29,12 +29,27 @@
 *************************************************************************/
 
 #include <iomanip>
+#include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
+#include <beamline/LinacCavityParts.h>
+#include <beamline/WakeKick.h>
+#include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
 
 using namespace std;
 
+
+namespace 
+{ 
+
+ //  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
+ //        the boost function object. 
+
+  WakeKickPropagator wake_propagator(512 , 10.0e-6 ); 
+  boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
+  
+} // anonymous namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -44,21 +59,33 @@ LinacCavity::LinacCavity( const char* name,         // name
                           double const& length,     // length [m]
                           double const& f,          // rf frequency 
                           double const& eV,         // rf voltage 
-                          double const& phi_s)      // synchronous phase 
+                          double const& phi_s,      // synchronous phase 
+                          bool   wake_on     )      
  : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
 
-{}
+{
+
+  p_bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
+  
+  p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
+
+  bml_e_ = WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref )  );  
+ 
+  if (wake_on) p_bml_->append(bml_e_); 
+
+  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
- : bmlnElmnt( x.ident_.c_str(), x.length_, x.strength_), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
+ : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 LinacCavity::~LinacCavity()
 {}
@@ -78,7 +105,6 @@ ostream& LinacCavity::writeTo(ostream& os)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 istream& LinacCavity::readFrom(istream& is) 
 {
   double w, phi_s;
@@ -88,7 +114,6 @@ istream& LinacCavity::readFrom(istream& is)
   return is;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -96,7 +121,6 @@ const char* LinacCavity::Type() const
 {
   return "LinacCavity"; 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,7 +135,7 @@ bool    LinacCavity::isMagnet() const
 
 void LinacCavity::accept( BmlVisitor& v ) 
 { 
-  v.visit( *this ); 
+  v.visit( *this); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -119,9 +143,50 @@ void LinacCavity::accept( BmlVisitor& v )
 
 void LinacCavity::accept( ConstBmlVisitor& v ) const 
 { 
-  v.visit( *this ); 
+  v.visit( *this); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LinacCavity::acceptInner( BmlVisitor&      v )
+{
+// visit the inner beamline elements 
+
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LinacCavity::acceptInner( ConstBmlVisitor& v ) const 
+{
+// visit the inner beamline elements 
+
+  v.setInnerFlag(true);
+  v.visit(*p_bml_);
+  v.setInnerFlag(false);
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double LinacCavity::getReferenceTime() const 
+{
+
+  ctRef_ = 0.0;
+
+  for ( beamline::const_iterator it  = p_bml_->begin(); 
+                                 it != p_bml_->end(); ++it ) {
+        
+   ctRef_  += (*it)->getReferenceTime();
+  }
+
+  return ctRef_;
+
+}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -143,7 +208,6 @@ double LinacCavity::getDesignEnergyGain()   const
 
 void   LinacCavity::setFrequency( double const& freq)
 {
-
   w_rf_ = 2.0*M_PI*freq;
 }
 
@@ -160,7 +224,6 @@ double   LinacCavity::getFrequency() const
 
 double const& LinacCavity::getRadialFrequency() const
 {
-
   return w_rf_;
 }
 
@@ -170,7 +233,6 @@ double const& LinacCavity::getRadialFrequency() const
 
  void  LinacCavity::setPhi( double const& radians)
 {
-
   phi_s_ = radians;
 }
 
@@ -179,8 +241,29 @@ double const& LinacCavity::getRadialFrequency() const
 
 void  LinacCavity::setStrength( double const& eV)
 {
-
   strength_ = eV*1.0e-9; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void  LinacCavity::setWakeOn( bool set )
+{
+
+  if (set) { 
+
+     if  ( p_bml_->howMany() == 3 )  return; // wake is already enabled
+
+     beamline::iterator it = p_bml_->begin();
+     p_bml_->putBelow( it, bml_e_ );  
+  }
+  else { 
+   
+     if  ( p_bml_->howMany() == 2 )  return; // wake is already disabled
+
+     beamline::iterator it = p_bml_->begin(); ++it;
+     p_bml_->erase( it );  
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  

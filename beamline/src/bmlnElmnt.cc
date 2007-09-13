@@ -67,6 +67,19 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+namespace {
+
+  int const i_x   = Particle::xIndex();
+  int const i_y   = Particle::yIndex();
+  int const i_cdt = Particle::cdtIndex();
+  int const i_npx = Particle::npxIndex();
+  int const i_npy = Particle::npyIndex();
+  int const i_ndp = Particle::ndpIndex();
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double PropagatorTraits<Particle>::norm(  PropagatorTraits<Particle>::Component_t const& comp)
 { 
@@ -78,6 +91,9 @@ double PropagatorTraits<JetParticle>::norm(  PropagatorTraits<JetParticle>::Comp
 { 
   return std::abs( comp.standardPart() ); 
 }    
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 
@@ -359,20 +375,21 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
  }
     
  //--------------------------------------------------------------------------------------------------------------------------
- // If we get here, this means that the element of interest exists, but was not found within the beamline. This is 
- // most likely a bug. Clone the element, and continue nevertheless, and  issue a warning.   
+ // If we get here, this means that the element of interest exists, but was not found within the beamline.  
+ // In that case, we simply clone the element.
  //--------------------------------------------------------------------------------------------------------------------------
 
  bml_e_ = ElmPtr( a.bml_e_->Clone() );
  
  
+ #if 0
    (*pcerr) << "*** WARNING *** \n"
             << "*** WARNING *** bmlnElmnt::bmlnElmnt( bmlnElmnt const& )\n"
             << "*** WARNING *** The element pointed to by bml_e_ does not exist\n"
             << "*** WARNING *** within the beamline pointed to by p_bml_ .\n"
             << "*** WARNING *** "
             << endl;
-
+ #endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -525,9 +542,7 @@ void bmlnElmnt::propagate( ParticleBunch& x )
   else {
 
     for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
-
     localPropagate  ( x );
-
     for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
 
   }
@@ -1040,7 +1055,7 @@ void bmlnElmnt::markPins()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, double pct )
+void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, double pct )
 {
   // #error *** WARNING ***
   // #error *** WARNING ***  bmlnElmnt::loadPinnedCoordinates is not tested!!
@@ -1051,17 +1066,8 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
   //                         |
   //                         +--------- Not foolproof.
 
-  static int x  = Particle::xIndex();
-  static int y  = Particle::yIndex();
-  static int z  = Particle::cdtIndex();
-  //                         |
-  //                         +--------- Not quite what I want.
-  static int xp = Particle::npxIndex();
-  static int yp = Particle::npyIndex();
-  static int zp = Particle::ndpIndex();
-  //                         |
-  //                         +--------- Not quite what I want.
 
+  Vector const& state = prtcl.State();
 
   if( pinnedFrames_.altered() ) 
   {
@@ -1069,15 +1075,16 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
     if( 0.999999 < pct ) { pct = 1; }
 
     Frame  ref;
+
     if( Particle::PSD == ret.Dim() ) {
       // Load position and momentum vectors
-      p(x) = prtcl.get_x();   
-      p(y) = prtcl.get_y();   
-      p(z) = 0;
+      p[i_x  ] = state[i_x];
+      p[i_y  ] = state[i_y];   
+      p[i_cdt] = 0;
 
-      v(x) = prtcl.get_npx(); 
-      v(y) = prtcl.get_npy(); 
-      v(z) = prtcl.get_npz();
+      v[i_x  ] = state[i_npx];  
+      v[i_y  ] = state[i_npy];  
+      v[i_cdt] = prtcl.get_npz();
 
       // Downstream end (default)
       if( (1.0 - pct) < 0.001 ) {
@@ -1096,12 +1103,12 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
       }
 
       // Transfer the answer
-      ret(x)  = p(x);
-      ret(y)  = p(y);
-      ret(z)  = prtcl.get_cdt();
-      ret(xp) = v(x);
-      ret(yp) = v(y);
-      ret(zp) = prtcl.get_ndp();
+      ret[i_x  ] = p[i_x];
+      ret[i_y  ] = p[i_y];
+      ret[i_cdt] = prtcl.get_cdt();
+      ret[i_npx] = v[i_x];
+      ret[i_npy] = v[i_y];
+      ret[i_ndp] = prtcl.get_ndp();
     }  
 
     else {
@@ -1121,12 +1128,7 @@ void bmlnElmnt::loadPinnedCoordinates( const Particle& prtcl, Vector& ret, doubl
 
   else // bmlnElmnt Frames have not been altered
   {
-    ret(x)  = prtcl.get_x();
-    ret(y)  = prtcl.get_y();
-    ret(z)  = prtcl.get_cdt();
-    ret(xp) = prtcl.get_npx();
-    ret(yp) = prtcl.get_npy();
-    ret(zp) = prtcl.get_ndp();
+    std::copy ( state.begin(), state.end(), ret.begin() );
   }
 }
 
@@ -1290,7 +1292,7 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
   double cs = align_->cos_roll();
   double sn = align_->sin_roll();
 
-  JetVector& state = p.State();
+  Mapping& state = p.State();
 
   if( align_->roll() != 0.0) {
     Jet temp   = state[0] * cs - state[1] * sn;
@@ -1518,5 +1520,4 @@ void  bmlnElmnt::attributeClear()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 

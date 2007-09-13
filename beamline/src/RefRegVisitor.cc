@@ -44,17 +44,7 @@
 ****** May 2007 ostiguy@fnal.gov
 ******
 ****** - eliminated uncessary two-step registration process. 
-******   Registration is now done in a single loop.
-****** - revolution frequency was computed assuming v = c. 
-******   Added missing Beta() factor, important for low energy machines.
-******  
-****** August 10, 2007  (Friday)  michelotti@fnal.gov
-****** 
-****** Introducing particle_.Beta()in the line that computes
-****** revolution frequency (see above) was not correct. Using c
-****** here - i.e. PH_MKS_c - is not a high energy approximation.
-****** That is: cdt IS c x time, and frequency is 1/time.  This
-****** line is being returned to its previous form.
+******   Registration now done in a single loop.
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -284,39 +274,7 @@ void RefRegVisitor::visit( rfcavity& x )
 
 void RefRegVisitor::visit( LinacCavity& x ) 
 {
- 
-  if( x.Strength() == 0.0) 
-  {   x.ctRef_part_1_ =  x.ctRef_part_2_  = x.Length()/particle_.BetaZ()/2.0;
-      x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );
-      return;
-  }
-                        
-  Vector& state = particle_.State();
-
-  const  double length     =  x.Length();
-  const  double energyGain =  x.Strength()*cos( x.getPhi());
- 
-  state[2] = 0;
-  x.setLength( length/2.0 );
-  x.setReferenceTime(0.0);
-  x.bmlnElmnt::localPropagate( particle_ );
-
-  x.ctRef_part_1_ = state[2];
-
-  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
-
-  state[2] = 0;
-  x.setReferenceTime(0.0);
-  x.bmlnElmnt::localPropagate( particle_ );
-
-  x.ctRef_part_2_ =  state[2];  
-
-  particle_.SetReferenceEnergy( particle_.ReferenceEnergy() + energyGain/2.0 );
-
-  x.setLength(length);  // restore length to its original value
-
-  x.setReferenceTime( x.ctRef_part_1_ + x.ctRef_part_2_ );     
- 
+  x.acceptInner( *this );
 }
 
 
