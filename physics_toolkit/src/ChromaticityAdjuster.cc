@@ -161,13 +161,6 @@ void  ChromaticityAdjuster::addCorrector(  ElmPtr x, double a, double b )
 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ChromaticityAdjuster::addCorrector( sextupole const& x, double a, double b )
-{
-  addCorrector_private( ElmPtr( x.Clone() ), a, b );
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -177,13 +170,6 @@ void ChromaticityAdjuster::addCorrector( SextupolePtr x, double a, double b )
   addCorrector_private( x, a, b );
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ChromaticityAdjuster::addCorrector( thinSextupole const& x, double a, double b )
-{
-  addCorrector_private( ElmPtr( x.Clone() ), a, b );
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
