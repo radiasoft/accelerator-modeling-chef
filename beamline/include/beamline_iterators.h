@@ -34,8 +34,11 @@
 
 // **** NOTE: this is a private include file meant to be included *only* from beamline.h ...  
 
+#ifdef  BEAMLINE_H
+ 
 #ifndef BEAMLINE_ITERATORS_H
 #define BEAMLINE_ITERATORS_H
+
 
 #include <boost/utility.hpp>
 
@@ -52,57 +55,6 @@
 //        not be the optimal type-safe solution ...   
 //    
 // -----------------------------------------------------------------------------
-
-    template<typename held_type>
-    class iter;
-
-    typedef iter<ElmPtr>                                                   iterator;     
-    typedef iter <ElmPtr const>                                      const_iterator;     
-
-    template<typename held_type>
-    class reverse_iter;
-
-    typedef reverse_iter<ElmPtr>                                   reverse_iterator;     
-    typedef reverse_iter<ElmPtr const>                       const_reverse_iterator;     
-
-    template<typename held_type>
-    class pre_order_iter;
-
-    typedef pre_order_iter<ElmPtr>                               pre_order_iterator;     
-    typedef pre_order_iter<ElmPtr const>                   const_pre_order_iterator;     
-
-    template<typename held_type>
-    class reverse_pre_order_iter;
-
-    typedef reverse_pre_order_iter<ElmPtr>               reverse_pre_order_iterator;
-    typedef reverse_pre_order_iter<ElmPtr const>   const_reverse_pre_order_iterator;
-
-    template<typename held_type>
-    class post_order_iter;
-
-    typedef post_order_iter<ElmPtr>                             post_order_iterator;     
-    typedef post_order_iter<ElmPtr const>                 const_post_order_iterator;     
-
-
-    template<typename held_type>
-    class reverse_post_order_iter;
-
-    typedef reverse_post_order_iter<ElmPtr>              reverse_post_order_iterator;
-    typedef reverse_post_order_iter<ElmPtr const>  const_reverse_post_order_iterator;
-
-    template<typename held_type>
-    class deep_iter;
-
-    typedef deep_iter<ElmPtr>                                          deep_iterator;
-    typedef deep_iter<ElmPtr const>                              const_deep_iterator;
-
-
-    template<typename held_type>
-    class reverse_deep_iter;    
-
-    typedef  reverse_deep_iter<ElmPtr>                         reverse_deep_iterator;
-    typedef  reverse_deep_iter<ElmPtr const>             const_reverse_deep_iterator;
-
 
 //-------------------------------------------------------------------------------------------------------------
 // Note:  beamline_iter_traits is defined as a nested class with two parameters and only 
@@ -169,7 +121,7 @@
     
       typedef typename beamline_iter_traits<held_type,0>::bmlptr_type bmlptr_type;
  
-      iter() 
+      iter( ) 
               : iter::iterator_adaptor_(), m_bml(0) {}
 
        template <typename OtherType>
@@ -183,8 +135,10 @@
        
 
 
-       iter end()   const { return m_bml->end();       } 
-       iter begin() const { return m_bml->begin();     } 
+       iter end()   const   { return m_bml->end();       } 
+       iter begin() const   { return m_bml->begin();     } 
+
+       operator typename iter::base_type () { return iter::base_reference();  }
 
 
     private:
@@ -837,4 +791,4 @@
 
 
 #endif // BEAMLINE_ITERATORS_H
-
+#endif // BEAMLINE_H
