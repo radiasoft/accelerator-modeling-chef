@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******                                    
@@ -64,15 +64,17 @@
 #include <string>
 
 #include <basic_toolkit/iosetup.h>
+#include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/combinedFunction.h>
+#include <beamline/drift.h>
 #include <beamline/Slot.h>
-#include <beamline/sector.h>
-#include <beamline/FramePusher.h>
-#include <beamline/beamline.h>
-#include <beamline/BmlVisitor.h>
 #include <beamline/sbend.h>
 #include <beamline/rbend.h>
+#include <beamline/sector.h>
+#include <beamline/FramePusher.h>
+#include <beamline/BmlVisitor.h>
+
 
 #include <iomanip>
 #include <algorithm>
@@ -520,9 +522,9 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
  static const ElmPtr null;
 
- std::list<ElmPtr>::iterator bml_iter = theList_.begin();
+ beamline::iterator bml_iter = begin();
 
- ElmPtr  p_be   = ( bml_iter == theList_.end() ) ? null : *bml_iter;
+ ElmPtr  p_be   = ( bml_iter == end() ) ? null : *bml_iter;
 
  ElmPtr p_be_a;
  ElmPtr p_be_b;
@@ -564,14 +566,14 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
     p_ile = inList.front();   // this may have changed
     ++bml_iter; 
-    p_be = (bml_iter == theList_.end()) ? null : *bml_iter; 
+    p_be = (bml_iter == end()) ? null : *bml_iter; 
   }
 
   else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second ) {
 
     s += p_be->OrbitLength( lparticle );
     ++bml_iter; 
-    p_be = (bml_iter == theList_.end()) ? null : *bml_iter;     
+    p_be = (bml_iter == end()) ? null : *bml_iter;     
   }
 
   else if ( s == p_ile.second ) {
@@ -589,7 +591,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
     p_ile = inList.front();     // this may have changed
 
     ++bml_iter; 
-    p_be = (bml_iter == theList_.end()) ? null : *bml_iter;     
+    p_be = (bml_iter == end()) ? null : *bml_iter;     
 
     if( firstWarning ) {
       (*pcerr) << "\n*** WARNING:                                   *** "
@@ -616,7 +618,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
   
     p_be = p_be_b;
 
-    bml_iter = theList_.erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+    bml_iter = erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
 
     inList.pop_front();                       // removes top element
     if (inList.empty() ) break;
@@ -661,7 +663,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
     s += p_be->OrbitLength( lparticle );
 
     ++bml_iter;
-    p_be =  ( bml_iter == theList_.end() ) ? null: *bml_iter;
+    p_be =  ( bml_iter == end() ) ? null: *bml_iter;
 
   }
  }
@@ -676,9 +678,9 @@ int beamline::replace( ElmPtr a, ElmPtr b )
 {
 
  
-  std::list<ElmPtr>::iterator it =  std::find( theList_.begin(), theList_.end(), a );   
+  beamline::iterator it =  std::find( begin(), end(), a );   
  
-  if ( it == theList_.end() ) return 1; // not found 
+  if ( it == end() ) return 1; // not found 
 
   (*it) = b;
 
@@ -697,7 +699,7 @@ int beamline::deepReplace( ElmPtr a, ElmPtr b )
   if( !a || !b ) { return 2; }
 
 
-  for (std::list<ElmPtr>::iterator it = theList_.begin(); it != theList_.end(); ++it ) {
+  for (beamline::iterator it = begin(); it != end(); ++it ) {
 
     if( (*it) == a ) {
 
@@ -754,45 +756,50 @@ void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::putAbove( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ) 
+void beamline::putAbove( beamline::iterator it, ElmPtr const&  y ) 
 {
  // Insert y above (before; upstream of) iter in the beamline
- // upon return, iter points to the position 
+ // UPON RETURN: iter points to the same element, i.e. the position downstream of the 
+ // inserted element.  
 
  unTwiss();
 
- theList_.insert( iter, y );
+ theList_.insert( it, y );
 
  length_ += y->length_;
 
- numElem_++;
+ ++numElem_;
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::putBelow( std::list<ElmPtr>::iterator const& iter, ElmPtr y ) 
+beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr const& y ) 
 {
- // Insert y below (after; downstream of) x in the beamline
+
+ //------------------------------------------------------------------
+ // Insert y below (after; downstream of) x in the beamline.
+ // UPON RETURN: iter points to the newly inserted element's position. 
+ //-------------------------------------------------------------------
 
  unTwiss();
 
- std::list<ElmPtr>::iterator tmp_iter = iter; 
-
- if ( iter == theList_.end() ) {
+ if ( iter == end() ) {
    (*pcout) << "*** WARNING **** : attempt to insert an element downstream of a beamline's end." << std::endl;
    (*pcout) << "                   beamline name :" << Name()  << std::endl;
-   return;
+   return iter;
  }
 
- ++tmp_iter;
+ ++iter;
 
- theList_.insert( tmp_iter, y );
+ theList_.insert( iter, y );
  
  length_ += y->length_;
  
  ++numElem_;
+
+ return iter;
 
 }
 
@@ -831,7 +838,7 @@ int beamline::startAt( ConstElmPtr const& x, int n ) {
   std::list<ElmPtr> newList;
   std::list<ElmPtr>::iterator pos;
 
-  for ( std::list<ElmPtr>::iterator it =theList_.begin();  it != theList_.end(); ++it) { 
+  for ( beamline::iterator it = begin();  it != end(); ++it) { 
        if ( *it == x )   ++count;            
        if ( count == n ) {  
           pos = it;
@@ -839,7 +846,7 @@ int beamline::startAt( ConstElmPtr const& x, int n ) {
        }
   }
        
-  if  ( pos == theList_.end()) return 1; // new starting element not found  
+  if  ( pos == end()) return 1; // new starting element not found  
 
   for ( std::list<ElmPtr>::iterator it = pos;  it != theList_.end(); ++it) { 
     newList.push_back(*it);
@@ -1144,7 +1151,7 @@ beamline beamline::sectorize( ElmPtr x, ElmPtr y, int degree, JetParticle& pd, c
 
   s->rename( sectorName );
 
-  std::list<ElmPtr>::iterator xpos = std::find( theList_.begin(), theList_.end(), y ); 
+  beamline::iterator xpos = std::find( begin(), end(), y ); 
    
   putAbove( xpos, s );
 
@@ -1569,17 +1576,19 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
 
   // Continue program ...
 
-  ElmPtr upStreamPtr;
-  ElmPtr downStreamPtr;
+  ElmPtr  upStreamPtr;
+  ElmPtr  downStreamPtr;
+  SlotPtr sp;
 
   Frame frameZero, frameOne, frameTwo, frameThree;
   Frame pinnedFrameOne, pinnedFrameTwo;
 
   // Note: frameZero never changes; it remains the identity.
 
-  if( this->find( upStreamPtr, thePtr, downStreamPtr ) )
+  if( find( upStreamPtr, thePtr, downStreamPtr ) )
   {
-    if( (0 != upStreamPtr) && (0 != downStreamPtr ) ) {
+
+    if( upStreamPtr && (!downStreamPtr) ) {
       FramePusher fp( frameZero );
       upStreamPtr->accept( fp );
       frameOne = fp.getFrame();
@@ -1601,40 +1610,39 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
-      if( 0 == strcmp("Slot", upStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
+    
+      if( sp = boost::dynamic_pointer_cast<Slot>(upStreamPtr) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream ( (thePtr->pinnedFrames_).upStream() );
         // ??? This is not quite right.
       }
-      if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
+    
+      if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
         // ??? This is not quite right.
       }
-      if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
 
+      if( typeid(*upStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(theList_.begin(), theList_.end(), thePtr),  slotPtr ); // !!!! TERRIBLY INEFFICIENT !
+        putAbove( std::find( begin(), end(), thePtr),  slotPtr ); // !!!! TERRIBLY INEFFICIENT !
         remove( upStreamPtr );
       }
-      if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
+      if(  typeid(*downStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // !!!! TERRIBLY INNEFFICIENT  !
+        putBelow( std::find(begin(), end(), thePtr), slotPtr ); // !!!! TERRIBLY INNEFFICIENT  !
         remove( downStreamPtr );
         replaced_list.push_back( downStreamPtr );
       }
     }
 
-    else if( (0 == upStreamPtr) && (0 != downStreamPtr ) ) {
+    else if(  !upStreamPtr && downStreamPtr ) {
       frameOne = frameZero;
       FramePusher fp( frameOne );
       thePtr->accept( fp );
@@ -1662,24 +1670,22 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
            << endl;
 
       // Note: this is done inefficiently
-      if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
+      if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream ((thePtr->pinnedFrames_).downStream() );
       }
-      if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
+      if( typeid(*downStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
+        putBelow( std::find(begin(), end(), thePtr), slotPtr );
         remove( downStreamPtr );
         replaced_list.push_back( downStreamPtr );
       }
     }
 
-    else if( (0 != upStreamPtr) && (0 == downStreamPtr ) ) {
+    else if(  upStreamPtr && (!downStreamPtr) ) {
       FramePusher fp( frameZero );
       upStreamPtr->accept( fp );
       frameOne = fp.getFrame();
@@ -1698,23 +1704,22 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
       (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
 
       // Note: this is done inefficiently
-      if( 0 == strcmp("Slot", upStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
+      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
       }
-      if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
+      if( typeid( *upStreamPtr ) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );  // ?????
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
+        putAbove( std::find(begin(), end(), thePtr), slotPtr ); // TERRIBLE !
         remove( upStreamPtr );
         replaced_list.push_back( upStreamPtr );
       }
     }
 
-    else if( (0 == upStreamPtr) && (0 == downStreamPtr ) ) {
+    else if( (!upStreamPtr) && (!downStreamPtr ) ) {
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
              "void beamline::moveRel( int axis, double const& u, ... )",
              "An impossibility has occurred. Am stopping." ) );
@@ -1791,8 +1796,7 @@ void beamline::rotateRel(   int axis, double const& angle
   //               elements. *thePtr is not changed at all. Only its
   //               neighbors are altered. In fact, they may have been
   //               replaced.
-  //             *recycleBinPtr: appended zero, one, or two
-  //               neighboring free-space elements that have been replaced.
+  //              neighboring free-space elements that have been replaced.
   //              errorCode  = 0, nothing wrong
   //                           1, errorCodePtr, recycleBinPtr, or thePtr 
   //                              is null on entry
@@ -1840,8 +1844,9 @@ void beamline::rotateRel(   int axis, double const& angle
 
   // Continue program ...
 
-  ElmPtr upStreamPtr;
-  ElmPtr downStreamPtr;
+  ElmPtr  upStreamPtr;
+  ElmPtr  downStreamPtr;
+  SlotPtr sp; 
 
   Frame frameZero, frameOne, frameTwo, frameThree;
   Frame pinnedFrameOne, pinnedFrameTwo;
@@ -1850,7 +1855,7 @@ void beamline::rotateRel(   int axis, double const& angle
 
     if( (upStreamPtr) && (downStreamPtr) ) {
       FramePusher fp( frameZero );
-      upStreamPtr->accept( fp );
+      upStreamPtr->accept(fp); 
       frameOne = fp.getFrame();
       thePtr->accept( fp );
       frameTwo = fp.getFrame();
@@ -1881,6 +1886,7 @@ void beamline::rotateRel(   int axis, double const& angle
 
       // !!! The next lines can be modified (maybe) to do pinned-referenced movements
       // Do the rotation
+ 
       Vector rotationAxis( midFrame.getAxis(axis) );
       Frame uFrame( frameOne.relativeTo(midFrame) );
       Frame dFrame( frameTwo.relativeTo(midFrame) );
@@ -1894,37 +1900,34 @@ void beamline::rotateRel(   int axis, double const& angle
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
-      if( 0 == strcmp("Slot", upStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
+
+      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
       }
-      if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
+      if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
       }
-      if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
+      if( typeid(*upStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
+        putAbove( std::find(begin(), end(), thePtr), slotPtr ); // TERRIBLE !
         remove( upStreamPtr );
       }
-      if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
+      if( typeid(*downStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr ); // TERRIBLE !
+        putBelow( std::find( begin(), end(), thePtr), slotPtr ); // TERRIBLE !
         remove( downStreamPtr );
       }
-    }
+    }  // --- if( (upStreamPtr) && (downStreamPtr) ) ---
 
-    else if( (0 == upStreamPtr) && (0 != downStreamPtr ) ) {
+    else if( (!upStreamPtr) && downStreamPtr ) {
       frameOne = frameZero;
       FramePusher fp( frameOne );
       thePtr->accept( fp );
@@ -1970,24 +1973,23 @@ void beamline::rotateRel(   int axis, double const& angle
       // Note: this is done inefficiently
 
       SlotPtr slotPtr( new Slot( frameOne ) );
-      putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
+      putAbove( std::find( begin(), end(), thePtr), slotPtr );
    
-      if( 0 == strcmp("Slot", downStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr );
+      if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
       }
-      if( 0 == strcmp("drift", downStreamPtr->Type() ) ) {
+      if(  typeid(*downStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
         slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find( theList_.begin(), theList_.end(), thePtr), slotPtr );
+        putBelow( std::find( begin(), end(), thePtr), slotPtr );
         remove( downStreamPtr );
       }
     }
 
-    else if( (0 != upStreamPtr) && (0 == downStreamPtr ) ) {
+    else if( upStreamPtr && (!downStreamPtr) ) {
       FramePusher fp( frameZero );
       upStreamPtr->accept( fp );
       frameOne   = fp.getFrame();
@@ -2031,23 +2033,21 @@ void beamline::rotateRel(   int axis, double const& angle
 
       // Reset upstream and downstream elements
       // Note: this is done inefficiently
-      if( 0 == strcmp("Slot", upStreamPtr->Type() ) ) {
-        SlotPtr sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr );
+
+      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream( thePtr->pinnedFrames_.upStream() );
       }
-      if( 0 == strcmp("drift", upStreamPtr->Type() ) ) {
-        // DANGEROUS!!  Creates free object
+      if( typeid(*upStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr(new Slot(upStreamPtr->Name().c_str(), frameOne ));
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
+        putAbove( std::find( begin(), end(), thePtr), slotPtr );
         remove( upStreamPtr );
-        //recycleBinPtr->append( upStreamPtr );
       }
       SlotPtr slotPtr( new Slot( frameThree.relativeTo(frameTwo) ) );
-      putBelow( std::find(theList_.begin(), theList_.end(), thePtr), slotPtr );
+      putBelow( std::find( begin(), end(), thePtr), slotPtr );
     }
 
     else if( (!upStreamPtr) && (!downStreamPtr) ) {
@@ -2238,3 +2238,24 @@ double beamline::setReferenceTime( double const& ct)
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::iterator beamline::erase(beamline::iterator it)
+{
+  std::list<ElmPtr>::iterator lit = it; // implicit conversion
+ 
+  lit = theList_.erase( lit );    
+
+  return beamline::iterator( this, lit);
+  
+} 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+bool  beamline::isBeamline() const 
+{ 
+  return true; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
