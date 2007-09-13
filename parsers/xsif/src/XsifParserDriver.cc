@@ -28,8 +28,10 @@
 
 #include <iomanip>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 
+#include <boost/assign/std/vector.hpp> 
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
@@ -169,48 +171,200 @@ XsifParserDriver::XsifParserDriver()
  : m_trace_scanning(false), m_trace_parsing(false)
 {
 
-
-  // Predefined constants in XSIF
+  //------------------------------------------------------------------------------------ 
+  // Predefined constants in XSIF spec
+  //------------------------------------------------------------------------------------
 
   m_constants["PI"]       = M_PI;          
   m_constants["TWOPI"]    = 2.0*M_PI;          
   m_constants["DEGRAD"]   = 180.0/M_PI;
   m_constants["RADDEG"]   = M_PI/180.0;
   m_constants["E"]        = exp(1.0);
-  m_constants["EMASS"]    = 0.510998902e-3;     // electron mass in GeV
-  m_constants["PMASS"]    = 0.938271998;        // proton mass in GeV
-  m_constants["MUMASS"]   = 0.1056583568;       // muon mass in GeV
-  m_constants["CLIGHT"]   = 2.99792458e8;       // speed of light in m/s
-  m_constants["QELECT"]   = 1.602176462e-19;    // elementary charge  in A-s
+  m_constants["EMASS"]    = PH_NORM_me;    //  ~0.510998902e-3;     electron mass in GeV
+  m_constants["PMASS"]    = PH_NORM_mp;    //  ~0.938271998;        proton mass in GeV
+  m_constants["MUMASS"]   = PH_NORM_mmu;   //  ~0.1056583568;       muon mass in GeV
+  m_constants["CLIGHT"]   = PH_MKS_c;      //  ~2.99792458e8;       speed of light in m/s
+  m_constants["QELECT"]   = PH_MKS_e;      //  ~1.602176462e-19;    elementary charge  in A-s
    
-  init();    // initialize jump table
+  //------------------------------------------------------------------------------------ 
+  // jump table for element creation  
+  //------------------------------------------------------------------------------------
 
+  //........................................................
+  // not really a beamline element, but treated as such
+  //........................................................ 
+  m_makefncs["BETA0"      ] = &XsifParserDriver::make_beta0;      
+
+
+  m_makefncs["DRIFT"      ] = &XsifParserDriver::make_drift;
+  m_makefncs["SBEND"      ] = &XsifParserDriver::make_sbend;
+  m_makefncs["RBEND"      ] = &XsifParserDriver::make_rbend;
+  m_makefncs["QUADRUPOLE" ] = &XsifParserDriver::make_quadrupole;
+  m_makefncs["SEXTUPOLE"  ] = &XsifParserDriver::make_sextupole;
+  m_makefncs["QUADSEXT"   ] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["OCTUPOLE"   ] = &XsifParserDriver::make_octupole;
+  m_makefncs["MULTIPOLE"  ] = &XsifParserDriver::make_multipole;
+  m_makefncs["DIMULTIPOLE"] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["SOLENOID"   ] = &XsifParserDriver::make_solenoid;
+  m_makefncs["RFCAVITY"   ] = &XsifParserDriver::make_rfcavity; 
+  m_makefncs["LCAVITY"    ] = &XsifParserDriver::make_lcavity;
+  m_makefncs["SROT"       ] = &XsifParserDriver::make_srot;
+  m_makefncs["YROT"       ] = &XsifParserDriver::make_yrot;
+  m_makefncs["HKICKER"    ] = &XsifParserDriver::make_hkicker;
+  m_makefncs["VKICKER"    ] = &XsifParserDriver::make_vkicker;
+  m_makefncs["KICKER"     ] = &XsifParserDriver::make_kicker;
+  m_makefncs["GKICK"      ] = &XsifParserDriver::make_gkick;
+  m_makefncs["HMONITOR"   ] = &XsifParserDriver::make_hmonitor;
+  m_makefncs["VMONITOR"   ] = &XsifParserDriver::make_vmonitor;
+  m_makefncs["MONITOR"    ] = &XsifParserDriver::make_monitor;
+  m_makefncs["BLMONITOR"  ] = &XsifParserDriver::make_blmonitor;
+  m_makefncs["PROFILE"    ] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["WIRE"       ] = &XsifParserDriver::make_wire;
+  m_makefncs["SLMONITOR"  ] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["IMONITOR"   ] = &XsifParserDriver::make_notimplemented;   
+  m_makefncs["INSTRUMENT" ] = &XsifParserDriver::make_instrument;
+  m_makefncs["MARKER"     ] = &XsifParserDriver::make_marker;
+  m_makefncs["ECOLLIMATOR"] = &XsifParserDriver::make_matrix;
+  m_makefncs["RCOLLIMATOR"] = &XsifParserDriver::make_rcollimator;
+  m_makefncs["ARBITLM"    ] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["MTWISS"     ] = &XsifParserDriver::make_notimplemented; 
+  m_makefncs["MATRIX"     ] = &XsifParserDriver::make_matrix;
+
+  //----------------------------------------------------
+  // EXTENSIONS 
+  // Elements types not formally part of the XSIF spec.
+  //----------------------------------------------------
+
+  m_makefncs["BEAMBEAM"   ] = &XsifParserDriver::make_beambeam;
+  m_makefncs["LUMP"       ] = &XsifParserDriver::make_lump;
+
+  init();
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void
+XsifParserDriver::init() 
+{
+
+  //------------------------------------------------------------------------------------ 
+  // valid command/element attributes
+  //------------------------------------------------------------------------------------
+
+  using namespace boost::assign;
+
+  valid_attributes_["BEAM"       ] += "LABEL", "ET", "EX", "EY", "EXN", "EYN", "SIGT", "SIGE", "KBUNCH", "NPART", "BCURRENR", "BUNCHED", "RADIATE";
+  valid_attributes_["BETA0"      ] += "LABEL";  
+  valid_attributes_["DRIFT"      ] += "LABEL", "L"; 
+  valid_attributes_["SBEND"      ] += "LABEL", "L", "ANGLE",  "K1",  "E1", "E2", "TILT", "K2", "H1", "H2", "HGAP", "FINT", "HGAPX", "FINTX";
+  valid_attributes_["RBEND"      ] += "LABEL", "L", "ANGLE",  "K1",  "E1", "E2", "TILT", "K2", "H1", "H2", "HGAP", "FINT", "HGAPX", "FINTX";
+  valid_attributes_["QUADRUPOLE" ] += "LABEL", "L", "K1",          "TILT",  "APERTURE";
+  valid_attributes_["SEXTUPOLE"  ] += "LABEL", "L", "K2",          "TILT",  "APERTURE";
+  valid_attributes_["QUADSEXT"   ] += "LABEL", "L", "K1",  "K2",   "TILT",  "APERTURE";
+  valid_attributes_["OCTUPOLE"   ] += "LABEL", "L", "K3",          "TILT",  "APERTURE";
+  valid_attributes_["MULTIPOLE"  ] += "LABEL", "L", "LRAD",   
+    "K0L","K1L", "K2L","K3L", "K4L", "K5L", "K6L", "K7L", "K8L", "K9L", "K10L", "K11L", "K12L", "K13L", "K14L", "K15L", "K16L", "K17L", "K18L", "K19L", "K20L",  
+    "T0", "T1",  "T2", "T3",  "T4",  "T5",  "T6",  "T7",  "T8",  "T9",  "T10",  "T11",  "T12",  "T13",  "T14",  "T15",  "T16",  "T17",  "T18",  "T19",  "T20",  
+    "KZL", "KRL", "THETA", "Z", "SCALEFAC",  "TILT", "APERTURE";
+
+  valid_attributes_["DIMULTIPOLE"] += "LABEL", "L", "LRAD",   
+    "K0", "K1", "K2","K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10", "K11", "K12", "K13", "K14", "K15", "K16", "K17", "K18", "K19", "K20",  
+    "T0", "T1", "T2","T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "T13", "T14", "T15", "T16", "T17", "T18", "T19", "T20",  
+    "SCALEFAC",  "TILT", "APERTURE";
+
+  valid_attributes_["SOLENOID"   ] += "LABEL", "L", "KS",  "K1", "TILT", "APERTURE";
+  valid_attributes_["RFCAVITY"   ] += "LABEL", "L", "VOLTS", "LAG", "FREQ", "HARMON", "ENERGY", "ELOSS", "LFILE", "TFILE", "NBIN", "BINMAX", "APERTURE";
+  valid_attributes_["LCAVITY"    ] += "LABEL", "L", "E0", "DELTAE", "PHI0", "FREQ", "ELOSS", "LFILE", "TFILE", "NBIN", "BINMAX", "APERTURE", "WAKEON"; 
+                                 // WAKEON is an extension    
+
+  valid_attributes_["SROT"       ] += "LABEL", "ANGLE";
+  valid_attributes_["YROT"       ] += "LABEL", "ANGLE";
+  valid_attributes_["HKICKER"    ] += "LABEL", "L", "KICK", "TILT"; // Note: L is an extension of the XSIF spec
+  valid_attributes_["VKICKER"    ] += "LABEL", "L", "KICK", "TILT"; // Note: L is an extension of the XSIF spec
+  valid_attributes_["KICKER"     ] += "LABEL", "L", "KICK", "TILT"; // Note: L is an extension of the XSIF spec
+  valid_attributes_["GKICK"      ] += "LABEL", "L", "DX",  "DXP",  "DY",  "DYP",  "DL",  "DP",  "ANGLE", "DZ", "V", "T";      
+
+  valid_attributes_["HMONITOR"   ] += "LABEL", "L", "XSERR", "YSERR",  "XRERR", "YRERR";
+  valid_attributes_["VMONITOR"   ] += "LABEL", "L", "XSERR", "YSERR",  "XRERR", "YRERR";
+  valid_attributes_["MONITOR"    ] += "LABEL", "L", "XSERR", "YSERR",  "XRERR", "YRERR";
+  valid_attributes_["BLMONITOR"  ] += "LABEL", "L";
+  valid_attributes_["PROFILE"    ] += "LABEL", "L";
+  valid_attributes_["WIRE"       ] += "LABEL", "L";
+  valid_attributes_["SLMONITOR"  ] += "LABEL", "L";
+  valid_attributes_["IMONITOR"   ] += "LABEL", "L";
+  valid_attributes_["INSTRUMENT" ] += "LABEL", "L";
+
+  valid_attributes_["MARKER"     ] += "LABEL"; 
+  valid_attributes_["ECOLLIMATOR"] += "LABEL", "L", "XSIZE", "YSIZE";
+  valid_attributes_["RCOLLIMATOR"] += "LABEL", "L";
+
+  valid_attributes_["ARBITLM"    ] += "LABEL", "L", "P1", "P2","P3","P4","P5","P6","P7","P8","P9","P10",
+                                                    "P11","P12","P13","P14","P15","P16","P17","P18","P19", "P20";
+  valid_attributes_["MTWISS"     ] += "LABEL", "L", "MUX", "BETAX", "ALPHAX", "MUY", "BETAY", "ALPHAY";
+  valid_attributes_["MATRIX"     ] += "LABEL", "L", "R11", "R12", "R13", "R14", "R15", "R16",
+                                                    "R21", "R22", "R23", "R24", "R25", "R26",
+                                                    "R31", "R32", "R33", "R34", "R35", "R36",
+                                                    "R41", "R42", "R43", "R44", "R45", "R46",
+                                                    "R51", "R52", "R53", "R54", "R55", "R56",
+                                                    "R61", "R62", "R63", "R64", "R65", "R66"; // L is an extension of the XSIF spec.  
+
+  //----------------------------------------------------
+  // EXTENSIONS 
+  // Elements types not formaly part of the XSIF spec.
+  //----------------------------------------------------
+
+  valid_attributes_["BEAMBEAM"   ] += "LABEL", "L";
+  valid_attributes_["LUMP"       ] += "LABEL", "L";
+
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 XsifParserDriver::~XsifParserDriver() 
 {
-
   xsif_yylex_destroy(m_yyscanner);
-  //dumpDatabase();
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool XsifParserDriver::validate_attributes( std::string const& name, std::map<std::string, std::vector<std::string> > const& attributes) const
+{
+  using namespace std;
+  
+  std::vector<string> const& vattr =  const_cast<map<string,vector<string> >& >(valid_attributes_)[name];   
+
+  for (   std::map<std::string, std::vector<std::string> >::const_iterator it = attributes.begin();  
+                                                                           it != attributes.end(); ++it ) {
+    if ( vattr.end() != std::find_if(vattr.begin(), vattr.end(), bind2nd(equal_to<string>(), it->first ) ) ) 
+       return false; // **** this should throw   
+  }
+
+  return true;   
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int XsifParserDriver::parse(string const& f)
 {
+
+#ifdef _WIN32
+  char* saved_cwd = (char*) malloc(1024*sizeof(char));
+  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
+   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
+  }
+
+#else
+  char* saved_cwd = get_current_dir_name(); // save current working directory
+#endif
  
+
   m_file = f; 
   m_input_is_file = true;    
 
@@ -226,8 +380,14 @@ int XsifParserDriver::parse(string const& f)
 
   scan_end(  m_yyscanner);
   
-  return ret;
+#ifdef _WIN32
+  setCurrentDirectory(saved_cwd);
+#else
+  chdir(saved_cwd);  
+#endif 
 
+  free(saved_cwd); 
+  return ret;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -236,6 +396,16 @@ int XsifParserDriver::parse(string const& f)
 int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
+#ifdef _WIN32
+  char* saved_cwd = (char*) malloc(1024*sizeof(char));
+  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
+   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
+  }
+#else
+  char* saved_cwd = get_current_dir_name(); // save current working directory
+#endif
+
   m_buffer = buffer; 
   m_input_is_file = false;    
    
@@ -251,6 +421,13 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
 
   scan_end(  m_yyscanner);
   
+#ifdef _WIN32
+  setCurrentDirectory(saved_cwd);
+#else
+  chdir(saved_cwd);  
+#endif 
+
+  free(saved_cwd); 
   return ret;
 
 }
@@ -477,12 +654,12 @@ void XsifParserDriver::defineLineMacro(xsif_yy::location const& yyloc, string co
 BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string const& name_and_args) 
 { 
 
-  //-------------------------------------------------------------------------------------------------------------------------------------
+  //-------------------------------------- --------------------------------------------------------------------
   // Recursively expands the line defined by the macro call 'name_and_args', which includes the parentheses and 
   // comma separated arguments. If the line does not exists it is created; otherwise, the existing one is cloned. 
   // The expanded line is given a name formed by concatenating its basename and its arguments.
   // Upon return, 'expanded line' contains a text version of the expanded line. 
-  // ------------------------------------------------------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------------------------
 
   vector<string> expanded_line; 
 
@@ -493,9 +670,9 @@ BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string 
   string basename(macro_name.begin(), ir.begin() );
   string args( ++ir.begin(), --ir.end() );
 
-  //--------------------------------------------------------------------------------------------------------
+  //----------------------------------------
   /* determine the number of arguments */
-  //--------------------------------------------------------------------------------------------------------
+  //----------------------------------------
 
   // ... extract the arguments  
 
@@ -709,48 +886,6 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 }
 
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void
-XsifParserDriver::init() 
-{
-  
-     m_makefncs["BETA0"      ] = &XsifParserDriver::make_beta0;      // not really a beamline element, but treated as such
-     m_makefncs["DRIFT"      ] = &XsifParserDriver::make_drift;
-     m_makefncs["MARKER"     ] = &XsifParserDriver::make_marker;
-     m_makefncs["SBEND"      ] = &XsifParserDriver::make_sbend;
-     m_makefncs["RBEND"      ] = &XsifParserDriver::make_rbend;
-     m_makefncs["QUADRUPOLE" ] = &XsifParserDriver::make_quadrupole;
-     m_makefncs["SEXTUPOLE"  ] = &XsifParserDriver::make_sextupole;
-     m_makefncs["OCTUPOLE"   ] = &XsifParserDriver::make_octupole;
-     m_makefncs["MULTIPOLE"  ] = &XsifParserDriver::make_multipole;
-     m_makefncs["SOLENOID"   ] = &XsifParserDriver::make_solenoid;
-     m_makefncs["KICKER"     ] = &XsifParserDriver::make_kicker;
-     m_makefncs["VKICKER"    ] = &XsifParserDriver::make_vkicker;
-     m_makefncs["HKICKER"    ] = &XsifParserDriver::make_hkicker;
-     m_makefncs["RFCAVITY"   ] = &XsifParserDriver::make_rfcavity; 
-     m_makefncs["MONITOR"    ] = &XsifParserDriver::make_monitor;
-     m_makefncs["HMONITOR"   ] = &XsifParserDriver::make_hmonitor;
-     m_makefncs["VMONITOR"   ] = &XsifParserDriver::make_vmonitor;
-     m_makefncs["MATRIX"     ] = &XsifParserDriver::make_matrix;
-     m_makefncs["BEAMBEAM"   ] = &XsifParserDriver::make_beambeam;
-     m_makefncs["SROT"       ] = &XsifParserDriver::make_srot;
-     m_makefncs["YROT"       ] = &XsifParserDriver::make_yrot;
-     m_makefncs["LUMP"       ] = &XsifParserDriver::make_lump;
-     m_makefncs["LCAVITY"    ] = &XsifParserDriver::make_lcavity;
-     m_makefncs["ECOLLIMATOR"] = &XsifParserDriver::make_matrix;
-     m_makefncs["RCOLLIMATOR"] = &XsifParserDriver::make_rcollimator;
-     m_makefncs["INSTRUMENT" ] = &XsifParserDriver::make_instrument;
-     m_makefncs["BLMONITOR"  ] = &XsifParserDriver::make_blmonitor;
-     m_makefncs["WIRE"       ] = &XsifParserDriver::make_wire;
-     m_makefncs["GKICK"      ] = &XsifParserDriver::make_gkick;
-
-
-}
-
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -805,7 +940,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
 
    std::map<std::string, boost::any> new_attributes = merge_attributes( elm_it->second.attributes, attributes);
 
-   ElmPtr elm = m_makefncs[basic_type]( user_defined_elm,  BRHO,  label, new_attributes);   // unambiguous match;
+   ElmPtr elm = (this->*m_makefncs[basic_type])( user_defined_elm,  BRHO,  label, new_attributes);   // unambiguous match;
 
    addElmToDictionary( label, elm, new_attributes ); 
 
@@ -842,7 +977,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
     }
 
     double BRHO   = m_variables["BRHO"].evaluate();
-    elm = m_makefncs[result.first->first](user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
+    elm = (this->*m_makefncs[result.first->first])(user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
  }
  else {
 
@@ -1191,7 +1326,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
 ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes )
 {
   //---------------------------------------------------------------------
-  // valid attributes for type SEXTUPOLE
+  // valid attributes for type OCTUPOLE
   // --------------------------------------------------------------------
   // L         length in                   [m  ]
   // K3        octupole component of the field [   ]  
@@ -1536,43 +1671,45 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
  // FREQ      frequency in MHz                              
  // ELOSS     beam loading factor in V/C                       
  // LFILE     Longitudinal wakefield  (Impulse response) V/C/m
+ // TFILE     Transverse   wakefield  (Impulse response) V/C/m/m
+ // NBIN      Number of bins used for histogramming (sampling)
+ // BINMAX 
+ // APERTURE
+ // WAKEON    T when the wakefield is on (default = F) 
  //---------------------------------------------------------------------------------------------------
   
-  /***************
-   rfcavity( const char* = "NONAME" ); // Name
-  rfcavity( double const&,   // length [m]
-            double const&,   // RF frequency [Hz]
-            double const&,   // max energy gain per turn [eV] (strength*10**9)
-            double const&,   // synchronous phase [radians]
-            double const&,   // Q
-            double const&    // R shunt impedance
-          );
-  ******************/
-
   any value;
   LinacCavity* elm   = 0;
 
-  double length    =  0.0;    bool attribute_length = false;       
-  double e0        =  0.0;    bool attribute_e0     = false; 
-  double deltae    =  0.0;    bool attribute_deltae = false;
-  double phi0      =  0.0;    bool attribute_phi0   = false;
-  double freq      =  0.0;    bool attribute_freq   = false;
-  double eloss     =  0.0;    bool attribute_eloss  = false;
-  string lfile     =  "";     bool attribute_lfile  = false;
+  double length    =  0.0;    bool attribute_length   = false;       
+  double e0        =  0.0;    bool attribute_e0       = false; 
+  double deltae    =  0.0;    bool attribute_deltae   = false;
+  double phi0      =  0.0;    bool attribute_phi0     = false;
+  double freq      =  0.0;    bool attribute_freq     = false;
+  double eloss     =  0.0;    bool attribute_eloss    = false;
+  string lfile     =  "";     bool attribute_lfile    = false;
+  string tfile     =  "";     bool attribute_tfile    = false;
+  int    nbin      =  256;    bool attribute_nbin     = false;
+  int    binmax    =  2048;   bool attribute_binmax   = false;
+  double aperture  =  0.0;    bool attribute_aperture = false;
+  bool   wakeon    =  false;  bool attribute_wakeon   = false;
    
-  if ( eval( string("L"),         attributes, value) ) {  attribute_length = true; length   = any_cast<double>(value); }
-  if ( eval( string("E0"),        attributes, value) ) {  attribute_e0     = true; e0       = any_cast<double>(value); }
-  if ( eval( string("DELTAE"),    attributes, value) ) {  attribute_deltae = true; deltae   = any_cast<double>(value); }
-  if ( eval( string("PHI0"),      attributes, value) ) {  attribute_phi0   = true; phi0     = any_cast<double>(value); }
-  if ( eval( string("FREQ"),      attributes, value) ) {  attribute_freq   = true; freq     = any_cast<double>(value); }
-  if ( eval( string("ELOSS"),     attributes, value) ) {  attribute_eloss  = true; eloss    = any_cast<double>(value); }
-  if ( eval( string("LFILE"),     attributes, value) ) {  attribute_lfile  = true; lfile    = any_cast<string>(value); }
+  if ( eval( string("L"),         attributes, value) ) {  attribute_length  = true; length   = any_cast<double>(value); }
+  if ( eval( string("E0"),        attributes, value) ) {  attribute_e0      = true; e0       = any_cast<double>(value); }
+  if ( eval( string("DELTAE"),    attributes, value) ) {  attribute_deltae  = true; deltae   = any_cast<double>(value); }
+  if ( eval( string("PHI0"),      attributes, value) ) {  attribute_phi0    = true; phi0     = any_cast<double>(value); }
+  if ( eval( string("FREQ"),      attributes, value) ) {  attribute_freq    = true; freq     = any_cast<double>(value); }
+  if ( eval( string("ELOSS"),     attributes, value) ) {  attribute_eloss   = true; eloss    = any_cast<double>(value); }
+  if ( eval( string("LFILE"),     attributes, value) ) {  attribute_lfile   = true; lfile    = any_cast<string>(value); }
+  if ( eval( string("TLFILE"),    attributes, value) ) {  attribute_tfile   = true; tfile    = any_cast<string>(value); }
+  if ( eval( string("NBIN")  ,    attributes, value) ) {  attribute_nbin    = true; nbin     = any_cast<int>(value);    }
+  if ( eval( string("BINMAX"),    attributes, value) ) {  attribute_binmax  = true; binmax   = any_cast<int>(value);    }
+  if ( eval( string("APERTURE"),  attributes, value) ) {  attribute_aperture= true; aperture = any_cast<double>(value); }
+  if ( eval( string("WAKEON"),    attributes, value) ) {  attribute_wakeon  = true; wakeon   = any_cast<bool>(value);   }
 
-  //----------------------------------------------------------------------------------------------------------
-  // NOTE: for a linac, PHI0=0 implies being on crest. LinacCavity is based on rfcavity, which
-  //       assumes no voltage at PHI=0. The LinacCavity constructor performs the appropriate phase translation.  
-  //----------------------------------------------------------------------------------------------------------
-
+  //------------------------- ------------------------
+  // NOTE: for a linac, PHI0=0 implies being on crest.  
+  //--------------------------------------------------
 
    elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*2*M_PI);
 
@@ -2034,24 +2171,26 @@ ElmPtr  XsifParserDriver::make_blmonitor(    ConstElmPtr& udelm, double const& B
 
 ElmPtr  XsifParserDriver::make_gkick(    ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
 {
-  /*******************************************************************************
-         l        is the length.
-         dx       is the change in x.
-         dxp      is the change in x'.
-         dy       is the change in y.
-         dyp      is the change in y'.
-         dl       is the change in path length.
-         dp       is the change in dp/p.
-         angle    is  the  angle  through  which  the  coordinates  are
-                  rotated about the longitudinal axis.
-         dz       is the longitudinal displacement.
-         v        is the  extrance-exit parameter  of the  kick.  v  is
-                  positive for an  entrance kick,  and negative  for an
-                  exit kick.   The absolute value of v is used to force
-                  the  kick to  be applied  every  abs(v)  turns.   The
-                  default value of v is 1.
-         t    
-  *************************************************************************/
+  //---------------------------------------------------------------------------
+  //  Attributes for element type GKICK
+  //---------------------------------------------------------------------------
+  //       L        is the length.
+  //       DX       is the change in x.
+  //       DXP      is the change in x'.
+  //       DY       is the change in y.
+  //       DYP      is the change in y'.
+  //       DL       is the change in path length.
+  //       DP       is the change in dp/p.
+  //       ANGLE    is  the  angle  through  which  the  coordinates  are
+  //                rotated about the longitudinal axis.
+  //       DZ       is the longitudinal displacement.
+  //       V        is the  extrance-exit parameter  of the  kick.  v  is
+  //                positive for an  entrance kick,  and negative  for an
+  //                exit kick.   The absolute value of v is used to force
+  //                the  kick to  be applied  every  abs(v)  turns.   The
+  //                default value of v is 1.
+  //       T   
+  //---------------------------------------------------------------------------
 
   any value;
   bmlnElmnt* elm = 0;
@@ -2101,18 +2240,35 @@ ElmPtr  XsifParserDriver::make_gkick(    ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ElmPtr  XsifParserDriver::make_beta0(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
-				      map<string,boost::any> const& attributes) 
+				       map<string,boost::any> const& attributes) 
 {
-
- 
-  // return a null pointer 
+  // not implemented -- returns a null pointer for the moment 
 
   return ElmPtr();  
-   
-
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+ElmPtr XsifParserDriver::make_notimplemented( ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
+                                             map<string,boost::any> const& attributes) 
+{
+
+  //---------------------------------------------------------------------------------------------------------  
+  // catchall for not implemented element types: substitute a DRIFT of length L (if this parameter is defined)
+  //---------------------------------------------------------------------------------------------------------
+   any value;
+   drift* elm = 0; 
+
+   double length = 0.0;  bool attribute_length = false; 
+   if ( eval( string("L"), attributes, value) )  { attribute_length = true; length = any_cast<double>(value); } 
+   
+   elm = (udelm) ?  dynamic_cast<drift*>( udelm->Clone() ) : new drift();           
+
+   elm->rename( label.c_str() );
+   if (  attribute_length ) elm->setLength( length );
+
+   elm->setTag("NOTIMPLEMENTED");
+   return ElmPtr(elm);
+
+}
