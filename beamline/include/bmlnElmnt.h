@@ -250,6 +250,8 @@ public:
 
   bmlnElmnt& operator=( bmlnElmnt const& a );  
  
+  virtual bool     isBeamline() const;                   
+
   boost::any& operator[](std::string const& s);   // a type-safe facility to attach attributes of any type
   bool attributeExists(std::string const& s);     
   void attributeClear (std::string const& s);           
@@ -439,7 +441,6 @@ public:
 
 
 };
-
 
 
 //---------------------------------------------------------------------------------
