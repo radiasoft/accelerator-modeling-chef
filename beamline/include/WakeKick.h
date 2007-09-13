@@ -64,8 +64,6 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
   ~WakeKick();
 
-   void enable( bool ); 
-
    void localPropagate( Particle&      p );
    void localPropagate( JetParticle&   p );
    void localPropagate( ParticleBunch& b );
@@ -79,10 +77,8 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
  private:
 
    void init();
-
    boost::function< void( ParticleBunch& ) > propagator_;
    
-   bool wake_enabled_; 
 
 } ;
 
@@ -91,7 +87,6 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 template <typename Propagator>  
 WakeKick::WakeKick( char const* name,  Propagator propagator )      
  : bmlnElmnt(name, 0.0, 0.0),
-   wake_enabled_(true), 
    propagator_(propagator)
 {}
 
