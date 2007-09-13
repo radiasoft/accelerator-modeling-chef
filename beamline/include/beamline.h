@@ -68,56 +68,113 @@ class beamline: public bmlnElmnt {
 
 public:
 
-  enum LineMode { line, ring, unknown };
+   enum LineMode { line, ring, unknown };
 
-public:
+   // ... iterator forward declarations
+   //-----------------------------------
 
-  // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
+   template<typename held_type>
+   class iter;
 
-  beamline( const char* nm = "NONAME" );
-  beamline( beamline const& );
-  beamline( FILE* );                  // Reading persistent object stored
+   typedef iter<ElmPtr>                                                   iterator;     
+   typedef iter <ElmPtr const>                                      const_iterator;     
+
+   template<typename held_type>
+   class reverse_iter;
+
+   typedef reverse_iter<ElmPtr>                                   reverse_iterator;     
+   typedef reverse_iter<ElmPtr const>                       const_reverse_iterator;     
+
+   template<typename held_type>
+   class pre_order_iter;
+
+   typedef pre_order_iter<ElmPtr>                               pre_order_iterator;     
+   typedef pre_order_iter<ElmPtr const>                   const_pre_order_iterator;     
+
+   template<typename held_type>
+   class reverse_pre_order_iter;
+
+   typedef reverse_pre_order_iter<ElmPtr>               reverse_pre_order_iterator;
+   typedef reverse_pre_order_iter<ElmPtr const>   const_reverse_pre_order_iterator;
+
+   template<typename held_type>
+   class post_order_iter;
+
+   typedef post_order_iter<ElmPtr>                             post_order_iterator;     
+   typedef post_order_iter<ElmPtr const>                 const_post_order_iterator;     
+
+
+   template<typename held_type>
+   class reverse_post_order_iter;
+
+   typedef reverse_post_order_iter<ElmPtr>              reverse_post_order_iterator;
+   typedef reverse_post_order_iter<ElmPtr const>  const_reverse_post_order_iterator;
+
+   template<typename held_type>
+   class deep_iter;
+
+   typedef deep_iter<ElmPtr>                                          deep_iterator;
+   typedef deep_iter<ElmPtr const>                              const_deep_iterator;
+
+
+   template<typename held_type>
+   class reverse_deep_iter;    
+
+   typedef  reverse_deep_iter<ElmPtr>                         reverse_deep_iterator;
+   typedef  reverse_deep_iter<ElmPtr const>             const_reverse_deep_iterator;
+
+
+ // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
+
+   beamline( const char* nm = "NONAME" );
+   beamline( beamline const& );
+   beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
 
- ~beamline();
-  beamline* Clone() const;
+  ~beamline();
+   beamline* Clone() const;
 
-  beamline& operator=( beamline const& rhs);
-
-
-  void clear();                       // Returns state to empty beamline.
+   beamline& operator=( beamline const& rhs);
 
 
-  double getReferenceTime()                    const;     
-  double setReferenceTime( double const& );               
+   void clear();                       // Returns state to empty beamline.
+
+
+   double getReferenceTime()                    const;     
+   double setReferenceTime( double const& );               
 
 
   // EDITING LATTICE_____________________________________________________________________
 
-  void insert( ElmPtr    const&  );
-  void insert( bmlnElmnt const&  );
+   void     putAbove( iterator   it, ElmPtr const&  y ); // Insert y above (before;  upstream of) x
+   iterator putBelow( iterator   it, ElmPtr const&  y ); // Insert y below (after, downstream of) x
 
-  void append( ElmPtr    const&  );
-  void append( bmlnElmnt const&  );
+   iterator erase   ( iterator it );
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+   void insert( ElmPtr    const&  );
+   void insert( bmlnElmnt const&  );
 
-  beamline*  reverse() const;                
+   void append( ElmPtr    const&  );
+   void append( bmlnElmnt const&  );
 
-  void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );                 // NOT IMPLEMENTED !!!!
-                                      // Will insert q into the beamline at
-                                      // OrbitLength s, assuming the beamline
-                                      // begins at OrbitLength s_0.  Normally
-                                      // will be invoked by a user program using
-                                      // s_0 = 0, but s_0 is included so the
-                                      // module can be used recursively.
+   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
-  void InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList);
+   beamline*  reverse() const;                
+
+   void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );                 // NOT IMPLEMENTED !!!!
+                                       // Will insert q into the beamline at
+                                       // OrbitLength s, assuming the beamline
+                                       // begins at OrbitLength s_0.  Normally
+                                       // will be invoked by a user program using
+                                       // s_0 = 0, but s_0 is included so the
+                                       // module can be used recursively.
+
+   void InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList);
                                       // Will insert elements from the list into
                                       // the beamline at locations specified in
                                       // the list.  
 
-  int replace( ElmPtr elm1, ElmPtr elm2);
+   int replace( ElmPtr elm1, ElmPtr elm2);
                                       // Will replace the first argument with
                                       // the second. Return values:
                                       // 0 everything went as planned
@@ -165,16 +222,10 @@ public:
   sector*     MakeSectorToEnd (ElmPtr,  int,  JetParticle& );
 
 
-  void     sectorize ( int, JetParticle& );                                                                         // Alters the object itself.
+  void     sectorize ( int, JetParticle& );                                                                    // Alters the object itself.
   beamline sectorize ( ElmPtr start,  ElmPtr finish, int degree,  JetParticle& p,   const char* = "NONAME");   // Alters the object: everything between
-                                                                                                                    // the bmlnElmnt arguments replaced by a map.
-                                                                                                                    // <-- This argument is the degree of the map.
-                        
-                
-
-  void putAbove( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ); // Insert y above (before;  upstream of) x
-  void putBelow( std::list<ElmPtr>::iterator const& iter, ElmPtr  y ); // Insert y below (after, downstream of) x
-
+                                                                                                               // the bmlnElmnt arguments replaced by a map.
+                                                                                                               // <-- This argument is the degree of the map.
   beamline remove( ElmPtr start_elm, ElmPtr end_elm);
   void     remove( ElmPtr elm);
 
@@ -272,6 +323,7 @@ public:
 
   double Energy() const; 
 
+  bool           isBeamline() const;
   bool                empty() const;
   void                peekAt( double& s, Particle const& ) const;
   lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
@@ -319,9 +371,6 @@ public:
   //             rbend B; ...
   //             if( A.find( u, &B, w ) ) { ... }
   // 
-
-
-
 
 
   const char*  Type()                           const;
@@ -372,6 +421,4 @@ private:
 
 
 }; 
-
-
 #endif // BEAMLINE_H
