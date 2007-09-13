@@ -375,20 +375,21 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
  }
     
  //--------------------------------------------------------------------------------------------------------------------------
- // If we get here, this means that the element of interest exists, but was not found within the beamline. This is 
- // most likely a bug. Clone the element, and continue nevertheless, and  issue a warning.   
+ // If we get here, this means that the element of interest exists, but was not found within the beamline.  
+ // In that case, we simply clone the element.
  //--------------------------------------------------------------------------------------------------------------------------
 
  bml_e_ = ElmPtr( a.bml_e_->Clone() );
  
  
+ #if 0
    (*pcerr) << "*** WARNING *** \n"
             << "*** WARNING *** bmlnElmnt::bmlnElmnt( bmlnElmnt const& )\n"
             << "*** WARNING *** The element pointed to by bml_e_ does not exist\n"
             << "*** WARNING *** within the beamline pointed to by p_bml_ .\n"
             << "*** WARNING *** "
             << endl;
-
+ #endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1512,7 +1513,7 @@ void  bmlnElmnt::attributeClear( const std::string& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  bmlnElmnt::attributeClear() 
+void  bmlnElmnt::attributeClear()
 {
   attributes_.clear();
 }
@@ -1520,4 +1521,11 @@ void  bmlnElmnt::attributeClear()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool  bmlnElmnt::isBeamline()
+{
+   return false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
