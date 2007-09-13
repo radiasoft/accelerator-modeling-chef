@@ -232,14 +232,14 @@ private:
 
   Options                          userOptions_;
 
-  void buildVTuneCircuit ( ConstElmPtr  ) const;
-  void buildHTuneCircuit ( ConstElmPtr  ) const;
-  void buildVChromCircuit( ConstElmPtr  ) const;
-  void buildHChromCircuit( ConstElmPtr  ) const;
+  void buildVTuneCircuit ( ElmPtr  ) const;
+  void buildHTuneCircuit ( ElmPtr  ) const;
+  void buildVChromCircuit( ElmPtr  ) const;
+  void buildHChromCircuit( ElmPtr  ) const;
 
-  void testFC( ACTFUNC11 ) const;
+  void testFC( ACTFUNC10 ) const;
 
-  void traverseTree( QBmlRoot const*, ACTFUNC11 ) const;
+  void traverseTree( QBmlRoot const*, ACTFUNC10 ) const;
   void pushArgs();
 
   insDlgData     insertionDialog() const;

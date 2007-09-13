@@ -1052,34 +1052,34 @@ void CHEFGUI::verChromCtrl()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildHTuneCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildHTuneCircuit(  ElmPtr bPtr ) const
 {
-  // ????????? p_currBmlCon_->addHTuneCorrector( bPtr );
+  p_currBmlCon_->addHTuneCorrector( bPtr );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildVTuneCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildVTuneCircuit(  ElmPtr bPtr ) const
 {
-  //????????????p_currBmlCon_->addVTuneCorrector( bPtr );
+  p_currBmlCon_->addVTuneCorrector( bPtr );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildHChromCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildHChromCircuit(  ElmPtr bPtr ) const
 {
-  //????????????? p_currBmlCon_->addHChromCorrector( bPtr );
+  p_currBmlCon_->addHChromCorrector( bPtr );
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::buildVChromCircuit(  ConstElmPtr bPtr ) const
+void CHEFGUI::buildVChromCircuit(  ElmPtr bPtr ) const
 {
-  // ???????????? p_currBmlCon_->addVChromCorrector( bPtr );
+  p_currBmlCon_->addVChromCorrector( bPtr );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2997,7 +2997,7 @@ void CHEFGUI::processFilter( BoolNode const& query )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::testFC( ACTFUNC11 actfcn ) const
+void CHEFGUI::testFC( ACTFUNC10 actfcn ) const
 {
 
   QListViewItem* fc = browser_->firstChild();
@@ -3017,7 +3017,7 @@ void CHEFGUI::testFC( ACTFUNC11 actfcn ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC11 actfcn ) const
+void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC10 actfcn ) const
 {
 
   // Applies actfcn on selected elements. If element is a beamline, 
