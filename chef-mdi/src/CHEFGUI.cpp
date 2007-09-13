@@ -3029,7 +3029,7 @@ void CHEFGUI::traverseTree( QBmlRoot const* x, ACTFUNC10 actfcn ) const
   {
     if(typeid(*fc) == typeid(QBmlElmt)) {
       if( fc->isSelected() ) {
-        (this->*actfcn)( dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() );
+        (this->*actfcn)( boost::const_pointer_cast<bmlnElmnt>( dynamic_cast<QBmlElmt*>(fc)->cheatElementPtr() ));
       }
     }
 
