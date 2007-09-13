@@ -39,6 +39,14 @@
 #include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline_elements.h>
+
+/* windows.h is required for WIN32 specific file io */
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <cstdlib>
 #include <sstream>
 
@@ -321,6 +329,19 @@ void XsifParserDriver::dumpDatabase()
 int XsifParserDriver::parse(string const& f)
 {
  
+  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
+
+#ifdef _WIN32
+  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
+   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
+  }
+
+#else
+  saved_cwd = get_current_dir_name(); // save current working directory
+#endif
+ 
+
   m_file = f; 
   m_input_is_file = true;    
 
@@ -336,6 +357,14 @@ int XsifParserDriver::parse(string const& f)
 
   scan_end(  m_yyscanner);
   
+#ifdef _WIN32
+  setCurrentDirectory(saved_cwd);
+#else
+  chdir(saved_cwd);  
+#endif 
+
+  free(saved_cwd); 
+
   return ret;
 
 }
@@ -1077,6 +1106,11 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   bool simple = (    (!attribute_k1 || (0 == k1))
                   && (!attribute_k2 || (0 == k2))
                   && (!attribute_k3 || (0 == k3))  );
+ 
+  //***** DGN  
+ 
+  simple = false; 
+  
   if( simple) {
     elm =  new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
     elm->setTag("SBEND");
