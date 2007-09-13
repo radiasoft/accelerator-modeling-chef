@@ -28,11 +28,6 @@
 **************************************************************************
 **************************************************************************
 *************************************************************************/
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <boost/bind.hpp>
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
@@ -51,7 +46,11 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
+//----------------------------------------------------------------------------------------------------
+// NOTE: In the code below, the ConvolutionFunctor uses the wakefunction sampled at nsample locations.
+//       The wakefunction is *truncated* at 0.5*interval, i.e. for z > 0.5*interval the samples are 0. 
+//----------------------------------------------------------------------------------------------------
+ 
 WakeKickPropagator::WakeKickPropagator( int nsamples, double const& interval)
   :  nsamples_(nsamples), 
      interval_(interval),
@@ -75,29 +74,41 @@ WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+//----------------------------------------------------------------------------------------------
+// NOTE: both the bunch and the wakefunction are sampled over an interval of length "interval_".
+//       For the convolution to return a sensible result (no aliasing), the sum of width of the
+//       non-zero support of the two functions must be < length. Here, we just assume that 
+//       length was set a-priori in such a way that this condition is met.  
+//----------------------------------------------------------------------------------------------
+
 void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 {
 
   BunchProjector projector(bunch, interval_, nsamples_);
-  
+
+  const double bunch_length = ( (--bunch.end() )->get_cdt() - bunch.begin()->get_cdt() );
+  if (bunch_length > 0.5*interval_ ) {
+    (*pcout ) << " *** WARNING ***: WakeKickPhysics: aliasing detected in wake computation. \n"  
+              << " *** WARNING ***: WakeKickPhysics: Increase the size of the sampling interval.\n"
+              << " *** WARNING ***: bunch length    = " << bunch_length << "\n"
+              << " *** WARNING ***: interval length = " << interval_ 
+              << std::endl;
+  }      
+
   //-------------------------------------------------------------------------- 
-  // NOTE: the result of the convolution need to be scaled by binsize. 
+  // NOTE: the result of the convolution needs to be scaled by binsize. 
   //       This is is done below, when the kicks are actually applied
   //--------------------------------------------------------------------------
 
   std::vector<double> const dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
-
   std::vector<double> const dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
-
-  // **** the longitudinal wake is disabled for the moment
-  // std::vector<double> const dpz_vec =  lwake_( projector.monopoleLineDensity() );   
+  std::vector<double> const dpz_vec =  lwake_( projector.monopoleLineDensity()  );   
 
   //------------------------------------------------------------------
   // For each particle in the bunch, apply appropriate wakefield kicks 
   // -----------------------------------------------------------------  
 
-  double binsize  = interval_/(nsamples_-1);
-  int    ibin = 0;
+  const double binsize  = interval_/(nsamples_-1);
 
   // ------------------------------------------------------------------------------
   // At this point, the bunch has been longitudinally sorted by the BunchProjector. 
@@ -111,15 +122,19 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 
   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
   {
- 
       Vector& state         =  it->State();
 
-      ibin = int( (state[5] - cdt_min) / binsize ); 
+      int ibin = int( (state[5] - cdt_min) / binsize ); 
        
+      if ( ibin > (nsamples_-1) ) break;  //  this happens if histogramming has truncated the bunch profile  
+
       state[3]  +=  npart *( dpx_vec[ibin] * binsize ) /p0;
       state[4]  +=  npart *( dpy_vec[ibin] * binsize )/ p0; 
 
+      //------------------------------------------------------
       // **** the longitudinal wake is disabled for the moment
+      //------------------------------------------------------
+
       // double npz  =  it->get_npz() + npart*(dpz_vec[ibin] * binsize)/p0;   
          double npz  =  it->get_npz();
 
