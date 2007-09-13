@@ -40,8 +40,16 @@
 using namespace std;
 
 
-WakeKickPropagator wake_propagator(256, 10.0e-6);
+namespace 
+{ 
 
+ //  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
+ //        the boost function object. 
+
+  WakeKickPropagator wake_propagator(512 , 10.0e-6 ); 
+  boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
+  
+} // anonymous namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -59,13 +67,13 @@ LinacCavity::LinacCavity( const char* name,         // name
 
   p_bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
   
-  WakeKickPtr wake;
-
   p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
-  p_bml_->append( wake = WakeKickPtr( new WakeKick       ( "Wake", WakeKickPropagator(wake_propagator)) )      );  
-  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
 
-  wake->enable(wake_on);
+  bml_e_ = WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref )  );  
+ 
+  if (wake_on) p_bml_->append(bml_e_); 
+
+  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
 
 }
 
@@ -73,10 +81,8 @@ LinacCavity::LinacCavity( const char* name,         // name
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
- : bmlnElmnt( x.ident_.c_str(), x.length_, x.strength_), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
-{
-  p_bml_ = BmlPtr( x.p_bml_->Clone() );
-}
+ : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -243,12 +249,20 @@ void  LinacCavity::setStrength( double const& eV)
 
 void  LinacCavity::setWakeOn( bool set )
 {
-  WakeKickPtr q; 
 
-  for ( beamline::iterator it  = p_bml_->begin(); 
-	                   it != p_bml_->end(); ++it ) {  
- 
-      if ( q = boost::dynamic_pointer_cast<WakeKick>(*it) ) q->enable( set );
+  if (set) { 
+
+     if  ( p_bml_->howMany() == 3 )  return; // wake is already enabled
+
+     beamline::iterator it = p_bml_->begin();
+     p_bml_->putBelow( it, bml_e_ );  
+  }
+  else { 
+   
+     if  ( p_bml_->howMany() == 2 )  return; // wake is already disabled
+
+     beamline::iterator it = p_bml_->begin(); ++it;
+     p_bml_->erase( it );  
   }
 }
 
