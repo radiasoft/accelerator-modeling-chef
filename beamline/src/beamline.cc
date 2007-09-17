@@ -1588,7 +1588,7 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
   if( find( upStreamPtr, thePtr, downStreamPtr ) )
   {
 
-    if( upStreamPtr && (!downStreamPtr) ) {
+    if( upStreamPtr &&  downStreamPtr ) {
       FramePusher fp( frameZero );
       upStreamPtr->accept( fp );
       frameOne = fp.getFrame();
