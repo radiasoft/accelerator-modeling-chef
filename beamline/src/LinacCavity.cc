@@ -252,14 +252,14 @@ void  LinacCavity::setWakeOn( bool set )
 
   if (set) { 
 
-     if  ( p_bml_->howMany() == 3 )  return; // wake is already enabled
+     if  ( p_bml_->countHowMany() == 3 )  return; // wake is already enabled
 
      beamline::iterator it = p_bml_->begin();
      p_bml_->putBelow( it, bml_e_ );  
   }
   else { 
    
-     if  ( p_bml_->howMany() == 2 )  return; // wake is already disabled
+     if  ( p_bml_->countHowMany() == 2 )  return; // wake is already disabled
 
      beamline::iterator it = p_bml_->begin(); ++it;
      p_bml_->erase( it );  
