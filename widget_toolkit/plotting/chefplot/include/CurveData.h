@@ -48,6 +48,7 @@ class CurveData : public QwtData {
     int b;
   };
 
+
   CurveData(boost::shared_array<double> x, boost::shared_array<double> y, int size, std::string label); 
 
   CurveData(std::vector<double>  const& x,  std::vector<double> const& y, std::string label);      
@@ -62,31 +63,34 @@ class CurveData : public QwtData {
   
   CurveData&  operator=( CurveData const& cd); 
 
-  size_t          size ()         const;
-  double          x (size_t i)    const;
-  double          y (size_t i)    const;
+  size_t             size ()         const;
+  double             x (size_t i)    const;
+  double             y (size_t i)    const;
 
-  void                    setColor( CurveData::Color const& color);
-  CurveData::Color const& getColor() const;
+  void               setColor( CurveData::Color const& color);
+  CurveData::Color const& 
+                     getColor() const;
 
-  void   setAxes( Axis xid, Axis yid);
+  void               setAxes( Axis xid, Axis yid);
 
   void               setLabel( std::string const& label);
   std::string const& getLabel()  const;
 
-  Axis   getXAxis() const;
-  Axis   getYAxis() const;
+  Axis               getXAxis() const;
+  Axis               getYAxis() const;
 
-  double xMin() const;
-  double xMax() const;
-  double yMin() const;
-  double yMax() const;
+  double             xMin()     const;
+  double             xMax()     const;
+  double             yMin()     const;
+  double             yMax()     const;
+
+  void               setConnected(bool set);
+  bool               isConnected() const;
 
  private:
 
   boost::shared_array<double>   xarray_;
   boost::shared_array<double>   yarray_;
-
 
   int          size_;
   double       xmin_;
@@ -99,6 +103,7 @@ class CurveData : public QwtData {
 
   
   Color        color_;
+  bool         connected_;
   std::string  label_;
 
 
