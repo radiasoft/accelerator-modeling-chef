@@ -79,19 +79,18 @@ class PlotData {
     
     std::vector<CurveData> curves_;   
 
-    std::string   label_top;
-    std::string   label_bottom_;
-    std::string   label_left_;
-    std::string   label_right_;
+    std::string            label_top_;
+    std::string            label_bottom_;
+    std::string            label_left_;
+    std::string            label_right_;
         
-    double   scalemag_top_;
-    double   scalemag_bottom_;
-    double   scalemag_left_;
-    double   scalemag_right_;
+    double                 scalemag_top_;
+    double                 scalemag_bottom_;
+    double                 scalemag_left_;
+    double                 scalemag_right_;
     
-    Tunes       tunes_;
-
-    ConstBmlPtr bml_;
+    Tunes                  tunes_;
+    ConstBmlPtr            bml_;
 
 };
 
