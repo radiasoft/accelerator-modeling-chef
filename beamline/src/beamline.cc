@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      beamline.cc
-******  Version:   3.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -43,25 +42,24 @@
 ******
 ****** - beamline: decoupled list container from public interface
 ******             now using std::list<> instead of dlist                                                   
-******                                                                
+****** - introduced new iterators with stl-compatible interface                                                                
 ****** - eliminated all references to old-style BeamlineIterator, DeepBeamlineIterator etc ..
 ******
-****** Jan-Mar 2007
+****** Jan-Mar 2007  ostiguy@fnal.gov
 ******
 ****** - added support for reference counted elements 
 ****** - eliminated unneeded dynamic casts             
 ******
+****** Sep 2007      ostiguy@fnal.gov
+****** - new iterator based interface for misalignments and rotations.  
+******   introducing a misalignments trough an entire beamline is now 
+******   a O(N) operation.
+****** - refactored rotateRel(..) moveRel(..): eliminate duplicated code 
+****** - eliminated find( ..):    use stl::algorithm instead 
+****** - eliminated replace/deepReplace
+******        
 **************************************************************************
 *************************************************************************/
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifndef NO_RTTI 
-#include <typeinfo>
-#endif
-#include <string>
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/beamline.h>
@@ -76,6 +74,7 @@
 #include <beamline/BmlVisitor.h>
 
 
+#include <string>
 #include <iomanip>
 #include <algorithm>
 
@@ -135,7 +134,6 @@ beamline::beamline( const char* nm )
 : bmlnElmnt( nm ), theList_() 
 {
  mode_           = unknown;
- numElem_        = 0;
  nominalEnergy_  = NOTKNOWN;
  twissDone_      = false;
 } 
@@ -148,7 +146,6 @@ beamline::beamline( beamline const& a )
   : bmlnElmnt(a), 
     mode_(a.mode_),  
     nominalEnergy_(a.nominalEnergy_), 
-    numElem_(a.numElem_), 
     twissDone_(false), 
     theList_( a.theList_) 
 {}
@@ -171,7 +168,6 @@ beamline* beamline::Clone() const {
  
  bml->mode_          = mode_;  
  bml->nominalEnergy_ = nominalEnergy_; 
- bml->numElem_       = numElem_; 
  bml->twissDone_     = false; 
 
  // Recursively clone all the beamlines and all the elements.
@@ -195,7 +191,6 @@ beamline& beamline::operator=( beamline const& rhs) {
 
     mode_          = rhs.mode_;  
     nominalEnergy_ = rhs.nominalEnergy_; 
-    numElem_       = rhs.numElem_; 
     twissDone_     = rhs.twissDone_;
     theList_       = rhs.theList_;
 
@@ -211,7 +206,6 @@ const char*  beamline::Type() const
   return "beamline"; 
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -219,7 +213,6 @@ bool    beamline::isMagnet()  const
 {
   return false;
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -249,7 +242,6 @@ ElmPtr&  beamline::lastElement()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ElmPtr const& beamline::lastElement() const
-
 { 
    return   theList_.back(); 
 }
@@ -289,11 +281,8 @@ double beamline::Energy() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
 double beamline::OrbitLength( Particle const& x )
 {
-
  double s = 0.0;
 
  for ( beamline::const_iterator it = begin(); it != end(); ++it) {
@@ -302,34 +291,30 @@ double beamline::OrbitLength( Particle const& x )
  return s;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void beamline::clear() 
 {
   theList_.clear();
-  numElem_ = 0;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void beamline::localPropagate( Particle& x ) {
+void beamline::localPropagate( Particle& x ) 
+{
  for ( beamline::iterator it = begin(); it != end();  ++it ) { 
 
    (*it)->propagate( x );
-
  }
 } 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( ParticleBunch& x ) {
+void beamline::localPropagate( ParticleBunch& x ) 
+{
  for (beamline::iterator it = begin(); it != end();  ++it ) { 
    (*it) -> propagate( x );
  }
@@ -338,7 +323,8 @@ void beamline::localPropagate( ParticleBunch& x ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( JetParticle& x ) {
+void beamline::localPropagate( JetParticle& x ) 
+{
 
  for (beamline::iterator it = begin(); it != end();  ++it ) { 
  
@@ -350,15 +336,16 @@ void beamline::localPropagate( JetParticle& x ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::setEnergy( double const& E ) {
+void beamline::setEnergy( double const& E ) 
+{
  nominalEnergy_ = E;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::unTwiss() {
-
+void beamline::unTwiss() 
+{
  if  (!twissDone_ ) return;
 
  dataHook.eraseFirst( "Ring" );
@@ -371,7 +358,6 @@ void beamline::unTwiss() {
  twissDone_ = false;   
 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -389,8 +375,8 @@ void beamline::eraseBarnacles( const char* s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-lattRing beamline::whatIsRing() {
-
+lattRing beamline::whatIsRing() 
+{
   lattRing errRet;
 
   BarnacleList::iterator it = dataHook.find( "Ring" ); 
@@ -410,14 +396,21 @@ lattRing beamline::whatIsRing() {
   return any_cast<lattRing>(it->info);
 }
 
-lattFunc beamline::whatIsLattice( int n ) {
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+lattFunc beamline::whatIsLattice( int n ) 
+{
+
  lattFunc errRet;
 
- if ( ( n < 0 ) || ( numElem_ <= n ) ){
+ int numElem = howMany();
+ 
+ if ( ( n < 0 ) || ( numElem <= n ) ){
     ostringstream uic;
     uic  << "Argument n = " << n 
          << " lies outside [0," 
-         << (numElem_-1) << "].";
+         << (numElem-1) << "].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
            "lattFunc beamline::whatIsLattice( int n ) {", 
            uic.str().c_str() ) );
@@ -469,10 +462,6 @@ void beamline::insert( ElmPtr const& q ) {
  if( twissDone_ ) unTwiss();
 
  length_ += q -> length_;
-
- if ( ConstBmlPtr bml = boost::dynamic_pointer_cast<beamline const>(q) )  
-      numElem_ += bml->numElem_;
- else ++numElem_;
 }  
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -497,20 +486,15 @@ void beamline::append( ElmPtr const& q ) {
 
  length_ += q->length_;
 
- if(  ConstBmlPtr bml = boost::dynamic_pointer_cast<beamline const>(q) ) 
-      numElem_ += bml->numElem_;
- else 
-      ++numElem_;
 } 
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::append( bmlnElmnt const& elm ) {
-
+void beamline::append( bmlnElmnt const& elm ) 
+{
   append( ElmPtr( elm.Clone() ) );
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -642,7 +626,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
          << endl;
 
     (*pcerr) << "Here are the tests:\n";
-    (*pcerr) << "else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second )\n"
+   (*pcerr) << "else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second )\n"
          << "else if ( " << setprecision(10) << ( s + p_be->OrbitLength( lparticle ) )
          << " <= "       << setprecision(10) << ( p_ile.second )
          << " )\n";
@@ -668,52 +652,6 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
   }
  }
 
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int beamline::replace( ElmPtr a, ElmPtr b ) 
-{
-
- 
-  beamline::iterator it =  std::find( begin(), end(), a );   
- 
-  if ( it == end() ) return 1; // not found 
-
-  (*it) = b;
-
-  return  0;
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-int beamline::deepReplace( ElmPtr a, ElmPtr b ) 
-{
-
-  if( !a || !b ) { return 2; }
-
-
-  for (beamline::iterator it = begin(); it != end(); ++it ) {
-
-    if( (*it) == a ) {
-
-      (*it) = b; 
-      return 0; 
-    }
-
-    else if( typeid( **it ) == typeid(beamline) ) {
-
-      if( boost::dynamic_pointer_cast<beamline>(*it)->deepReplace( a, b ) == 0  ) { return 0; }
-    }
-
-  }
-  return 1;
 }
 
 
@@ -767,9 +705,6 @@ void beamline::putAbove( beamline::iterator it, ElmPtr const&  y )
  theList_.insert( it, y );
 
  length_ += y->length_;
-
- ++numElem_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -797,8 +732,6 @@ beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr const& y
  
  length_ += y->length_;
  
- ++numElem_;
-
  return iter;
 
 }
@@ -829,7 +762,6 @@ beamline beamline::flatten() const {
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 int beamline::startAt( ConstElmPtr const& x, int n ) {
 
@@ -898,264 +830,58 @@ int beamline::startAt( char const* s, int n ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector* beamline::MakeSector (ElmPtr be_1, ElmPtr be_2, int deg, JetParticle& jp ) {
+sector* beamline::makeSector ( beamline::iterator pos1, beamline::iterator pos2, int deg, JetParticle& jp )  const
+{
 
- // This assumes that the argument jp has been initialized as
- // desired by the calling program.  This routine does NOT
- // initialize the state of jp.
+ //------------------------------------------------------------------------------------
+ // Assumes that the argument jp has been initialized as desired by the calling program.  
+ // This routine does NOT initialize the state of jp.
+ //-------------------------------------------------------------------------------------
 
- bool       firstFound  = false;
- bool       secondFound = false;
- 
- Particle       particle(jp);
- 
- double     s           = 0.0;
+ if (pos1 == end() ) return 0;
 
- for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) {
+ Particle particle(jp);
+ double s = 0;
 
-  if( (*it) == be_2 ) {
-   (*pcout) << "*** WARNING ***                                      \n" 
-        << "*** WARNING *** beamline::MakeSector                 \n" 
-        << "*** WARNING *** Second element found first.          \n" 
-        << "*** WARNING *** Returning zero.                      \n" 
-        << "*** WARNING ***                                      \n" 
-        << endl;
-   return 0;
-  }
-
-  else if( (*it) == be_1 ) { 
-    firstFound = true;
-    break;
-  }
- }
-
- if( !firstFound ) {
-  (*pcout) << "*** WARNING ***                                      \n" 
-       << "*** WARNING *** beamline::MakeSector                 \n" 
-       << "*** WARNING *** Unable to find first element.        \n" 
-       << "*** WARNING *** Returning zero.                      \n" 
-       << "*** WARNING ***                                      \n" 
-       << endl;
-   return 0;
- }
- 
- for (beamline::deep_iterator it = deep_begin(); it != deep_end(); ++it) { // Notice: we do not propagate through
-
-  if( (*it) == be_2 ) {                                                    // be_1 and be_2
-    secondFound = true;
-    break;
-  }
-  else {
+ for (beamline::const_iterator it = pos1; it != pos2; ++it) { 
     (*it)->propagate( jp);
     s += (*it)->OrbitLength( particle );
-  }
  }
 
- if( !secondFound ) {
-  (*pcout) << "*** WARNING ***                                      \n" 
-       << "*** WARNING *** beamline::MakeSector                 \n" 
-       << "*** WARNING *** Unable to find second element.       \n" 
-       << "*** WARNING *** Returning zero.                      \n" 
-       << "*** WARNING ***                                      \n" 
-       << endl;
-  return 0;
- }
- 
+ // FIXME: it is not clear how those attribues should be set 
+
+ //s->length_       = length_;
+ //s->strength_     = strength_;
+ //s->align_        = align_;
+ //s->pAperture_    = pAperture_;
 
  return new sector( jp.State().filter( 0, deg ), s );
+
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector* beamline::MakeSectorFromStart ( ElmPtr be_1, int deg, JetParticle& jp ) {
-
- // This assumes that the argument jp has been initialized as
- // desired by the calling program.  This routine does NOT
- // initialize the state of jp.
-
- bool       firstFound  = false;
- double     s           = 0.0;
- 
- Particle particle(jp);
-
- // Check first element against the argument ------------
-
- beamline::iterator it = begin();
-
- ElmPtr p_be = *it;
-
- if( !p_be ) {
-  (*pcout) << "*** WARNING ***                                      \n" 
-       << "*** WARNING *** beamline::MakeSectorFromStart        \n" 
-       << "*** WARNING *** The beamline was empty!!             \n" 
-       << "*** WARNING *** Returning zero.                      \n" 
-       << "*** WARNING ***                                      \n" 
-       << endl;
-   return 0;
- }
-
- if( p_be == be_1 ) {
-   return 0;
- }
-
- // Propagate the JetParticle through first element -----------
- p_be->propagate( jp );
- s += p_be->OrbitLength( particle );
-
-
- // Find element that matches argument ------------------
- for ( beamline::iterator it = begin(); it != end(); ++it) {
+void beamline::sectorize( beamline::iterator pos1,  beamline::iterator pos2, int degree, JetParticle& pd, char const* sectorName ) 
+{
   
-   p_be = *it; 
+  // sectorize the interval [ pos1, pos2 )
  
-  if( p_be == be_1 ) {     // Notice: we do not propagate through be_1
-    firstFound = true;
-    break;
-  }
-  else {
-    p_be->propagate( jp );
-    s += p_be->OrbitLength( particle );
-  }
- }
-
- if( !firstFound ) {
-  (*pcout) << "*** WARNING ***                                      \n" 
-       << "*** WARNING *** beamline::MakeSectorFromStart        \n" 
-       << "*** WARNING *** Unable to find element.              \n" 
-       << "*** WARNING *** Returning zero.                      \n" 
-       << "*** WARNING ***                                      \n" 
-       << endl;
-  return 0;
- }
- 
- // Construct the map and return the sector -----------------------------------
-
- return new sector( jp.State().filter( 0, deg ), s );
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-sector* beamline::MakeSectorToEnd ( ElmPtr be_1, int deg, JetParticle&  jp ) {
-
- // This assumes that the argument jp has been initialized as
- // desired by the calling program.  This routine does NOT
- // initialize the state of jp.
-
- ElmPtr     p_be;
- bool       firstFound  = false;
- double     s           = 0.0;
-
- Particle particle(jp);
-
- // Find the element that matches argument ---------------------------------
-
- beamline::iterator it = begin(); 
-
- for (  ; it != end(); ++it) {
-  if( (*it) == be_1 ) { 
-    firstFound = true;
-    break;
-  }
- }
-
- if( !firstFound ) {
-  (*pcout) << "*** WARNING ***                                      \n" 
-       << "*** WARNING *** beamline::MakeSectorToEnd            \n" 
-       << "*** WARNING *** Unable to find first element.        \n" 
-       << "*** WARNING *** Returning zero.                      \n" 
-       << "*** WARNING ***                                      \n" 
-       << endl;
-  return 0;
- }
- 
- // Check that it is not the last element --------------------------------
- p_be = *( ++it );
-
- if( p_be ) {
-    return 0;
- }
- else {
-    p_be->propagate( jp );
-    s += p_be->OrbitLength( particle );
- }
-
- // Construct the map and return sector ------------------------------------
-
- for ( ; it != end(); ++it) {
-   p_be = (*it);
-   p_be->propagate( jp );
-   s += p_be->OrbitLength( particle );
- }
-
- return new sector( jp.State().filter( 0, deg ), s );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sector* beamline::makeSector( int degree, JetParticle& pd ) {
- 
-
- Mapping& zd = pd.State();
-
- pd.setState( zd.Dim() ); 
-
- propagate   ( pd );
-
- for( int i = 0; i < zd.Dim(); ++i)
-   zd[i] = zd[i].filter( 0, degree );
-
- sector* s        = new sector ( ident_.c_str(), zd, length_ );
- s->length_       = length_;
- s->strength_     = strength_;
- s->align_        = align_;
- s->pAperture_    = pAperture_;
-
- return s;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::sectorize( int degree, JetParticle& pd ) {
-
- sector* s = makeSector( degree, pd );
-
- theList_.clear();
- unTwiss();
- numElem_      = 0;
- length_       = 0.0;
- strength_     = 0.0;
- align_        = 0;
-
- append( SectorPtr(s) );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamline beamline::sectorize( ElmPtr x, ElmPtr y, int degree, JetParticle& pd, char const* sectorName ) {
-
-  beamline a = remove( x, y ); // remove should peharps somehow return the iterator position for x
-
-  SectorPtr s ( a.makeSector( degree, pd ) );
-
+  SectorPtr s ( makeSector( pos1, pos2, degree, pd ) );
   s->rename( sectorName );
-
-  beamline::iterator xpos = std::find( begin(), end(), y ); 
+  
+  iterator pos = erase( pos1, pos2 );  
    
-  putAbove( xpos, s );
+  putAbove( pos, s );
 
-  return a;
+  unTwiss();
+  
+  // FIXME: it is not clear what should be done with the beamline attributes 
+
+  // length_       = 0.0;
+  // strength_     = 0.0;
+  // align_        = 0;
 }
 
 
@@ -1201,7 +927,6 @@ bool beamline::empty() const {
 
 int beamline::countHowMany() const {
 
-
  int count = 0;
 
  for (beamline::const_iterator it = begin(); it != end(); ++it, ++count);
@@ -1228,7 +953,6 @@ int beamline::countHowManyDeeply() const {
 
 int beamline::countHowMany(  boost::function<bool(bmlnElmnt const&)> query,  std::list<ElmPtr>& elmlist ) const 
 {
-
   elmlist.clear();
   int ret = 0;
 
@@ -1261,7 +985,6 @@ int beamline::countHowManyDeeply( boost::function<bool(bmlnElmnt const&)> query,
 
   }
    
-
  return ret;
 }
 
@@ -1297,263 +1020,85 @@ int beamline::depth() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int beamline::contains( ElmPtr& x ) const
+beamline::iterator beamline::erase( beamline::iterator pos1, beamline::iterator pos2 ) 
 {
-
-  int ret = 0;
-
-  for (beamline::const_deep_iterator it = deep_begin(); it != deep_end(); ++it) {
-    if( (*it) == x ) { ++ret; }
-  }
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-beamline beamline::remove( ElmPtr x, ElmPtr y ) {
-
- // remove the elements in the interval  ] x, y [  and return them in a new beamline
+//--------------------------------------------------
+// NOTE: erase the range [ pos1, pos2 )
+//--------------------------------------------------
 
  unTwiss();
-
- beamline a;
-
- if (x == y ) return a; // empty
-
- std::list<ElmPtr>::iterator pos1 = std::find(theList_.begin(), theList_.end(), x); 
- std::list<ElmPtr>::iterator pos2 = std::find(pos1,             theList_.end(), y);  
-
- if ( (pos1 == theList_.end()) || (pos2 == theList_.end() ) ) 
-   return a; // one of the element not found. return an empty line  
-
- ++pos1; --pos2; // exclude the boundary elements
-
- ++pos2;
-
- for ( std::list<ElmPtr>::iterator it = pos1; it != pos2;  ++it ) { 
-   a.append(*it);
- }
-
- --pos2; 
-
- theList_.erase( pos1, pos2 ); 
-
- numElem_ = numElem_ - a.numElem_; 
-
- return a;
-
+ return iterator( this, theList_.erase( pos1, pos2) ); 
 
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool beamline::find( ElmPtr& u, ElmPtr& v, ElmPtr& w ) const
+beamline::iterator beamline::moveRelX( beamline::iterator ipos, double const& u )
 {
-  // Upon entry: u and w should have null value but can, in fact
-  //               be anything. 
-  //               WARNING: they will be reset, so don't use addresses
-  //               of valid elements.
-  //             v points to the element to be searched for.
-  // Upon exit:  u points to the element upstream of v
-  //             w points to the element downstream of v
-  //               Return value of u or w can be null (i.e. 0) if
-  //               this beamline is not treated as a ring and *v is
-  //               either the first or last element, respectively.
-  //
-  //             Value returned: true,  if *v is found
-  //                             false, if *v is not found
-  //               If false is returned, then return values of 
-  //               u and w are unspecified.
-  // 
-  // Comments:   Only one instance, the first instance, of *v is found.
-  //             This routine is meant to work on lines containing
-  //               unique elements. For some cases, it may work with
-  //               multiple instances of the same element.
-  // 
-  // Example:    beamline A; ...
-  //             bmlnElmnt* u = 0; bmlnElmnt* w = 0;
-  //             rbend B; ...
-  //             if( A.find( u, &B, w ) ) { ... }
-  // 
-
-  // There should be at least three elements in the line
-
-  int elementCount = countHowManyDeeply();
- 
-  if( 0 == elementCount ) { 
-    return false; 
-  }
-
-  if( 1 == elementCount ) { 
-    if( v == firstElement() ) {
-      u = w = ElmPtr();
-      return true;
-    }
-    return false;
-  }
- 
-  if( 2 == elementCount ) { 
-    if( v == firstElement() ) {
-      u = ElmPtr();
-      w = lastElement();
-      return true;
-    }
-    if( v == lastElement() ) {
-      u = firstElement();
-      w = ElmPtr();
-      return true;
-    }
-    return false;
-  }
-
-  // Setup iterator
-
-
-   beamline::const_deep_iterator dbi = deep_begin();
-
-   ElmPtr q;
-     
-  // Check for possibility that *v is the first element.
-
-  if( v == this->firstElement() ) {
-    if( beamline::ring == getLineMode() ) {
-        u = lastElement();
-      } else {
-        u = ElmPtr();
-      }
-  
-    w = *(++dbi);
-    return true;
-  } 
-
-  // Continuing ...
-  q = *(++dbi);
-  u = q;
-  q = *(++dbi);
-
-  for ( ; dbi != deep_end(); ++dbi ) {
-
-    q = (*dbi);
-
-    if( v == q ) {
-      if( v == lastElement() ) {
-        if( beamline::ring == getLineMode() ) {
-          w = firstElement();
-        }
-        else {
-          w = ElmPtr();
-        }
-      }
-      else {
-        w = *(++dbi);
-      }
-      return true;
-    }
-
-    u = q;
-  }
-
-  // Target element was never found.
-  return false;
+  return moveRel( Frame::xAxisIndex(), u, ipos, string("beamline::moveRelX") );
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelX(   ElmPtr thePtr, double const& u, int& errorCode )
+beamline::iterator beamline::moveRelY(  beamline::iterator ipos, double const& u )
 {
-  // Upon entry: thePtr      = pointer to element to be translated
-  //                           longitudinally
-  //             u      [m]  = displacement
-  // 
-  // Upon exit:  *thePtr will have been displaced in the direction
-  //               of its local z coordinate by adjusting its neighboring
-  //               free-space elements. 
-  // 
-  // Returned      BmlPtrList: appended zero, one, or two
-  //               neighboring free-space elements that have been replaced.
-  // 
-
-  std::list<ElmPtr> replaced_list;
-
-  moveRel( Frame::xAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
-
-  return replaced_list;
-
+  return moveRel( Frame::yAxisIndex(), u, ipos, string("beamline::moveRelX") );
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelY(   ElmPtr thePtr, double const& u, int &errorCode )
+beamline::iterator beamline::moveRelZ(  beamline::iterator ipos, double const& u )
 {
-
-   std::list<ElmPtr> replaced_list;
-
-  moveRel( Frame::yAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
- 
-
-  return replaced_list;
-
+  return moveRel( Frame::zAxisIndex(), u, ipos, string("beamline::moveRelX") );
 }
 
-
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::moveRelZ(  ElmPtr thePtr, double const& u, int& errorCode)
+beamline::iterator beamline::moveRel( int axis, double const& u, beamline::iterator ipos, string invoker )
 {
-
-
-  std::list<ElmPtr> replaced_list;
-
-  moveRel( Frame::zAxisIndex(), u, thePtr, errorCode, replaced_list, string("beamline::moveRelX") );
-
-  return replaced_list;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCode, std::list<ElmPtr>& replaced_list, string invoker )
-{
+  //----------------------------------------------------------------------------------------------------
   // Upon entry: axis            = index of axis along displacement
   //             u          [m]  = displacement
-  //             thePtr          = pointer to element to be translated
-  //             errorCode       = pointer to a valid int 
-  //             recycleBinPtr   = pointer to a valid BmlPtrList
+  //             ipos            = iterator pointing at element to be translated
   //             invoker         = name of calling routine (used in error messages)
   //             
-  // Upon exit:  *thePtr will have been displaced in the direction
-  //               of its local x coordinate by adjusting its neighboring
-  //               free-space elements. in fact, *thePtr is not changed
-  //               at all. Only its neighbors are altered. In fact, they
-  //               may have been replaced.
-  //             *bmlPtrList: appended zero, one, or two
-  //               neighboring free-space elements that have been replaced.
-  //              errorCode  = 0, nothing wrong
-  //                           1, errorCode, ret, or thePtr is null on entry
-  //                           2, i != 0, 1, or 2
-  //                           3, |u| < 1 nanometer displacement
-  // 
-  //               NOTE WELL: if the returned list is not empty, it means
-  //               that Slots have been created and installed in the line.
+  // Upon exit:  The element pointed at  will have been displaced in the direction
+  //             of its local x coordinate by adjusting its neighboring
+  //             free-space elements. 
+  //             The element is not altered; only its
+  //             neighbors are. altered. 
+  //             The iterator is modified, but still points 
+  //             to the same element as upon entry.
+  //             errorCode  = 0, nothing wrong
+  //                          1, errorCode, ret, or thePtr is null on entry
+  //                          2, i != 0, 1, or 2
+  //                          3, |u| < 1 nanometer displacement
+  //-----------------------------------------------------------------------------------------------------  
+
+  //-----------------------------------------------------------------------------------------------------
+  //
+  //          ------------- ---------- ------------
+  //          UPSTREAM ELM |   ELM   | DWSTREAM ELM
+  //          ------------- ---------- ------------
+  //         F0            F1        F2           F3
+  //-----------------------------------------------------------------------------------------------------
+
 
   // Argument filter
-  if( !thePtr ) { errorCode = 1; return;}
+
+  int errorCode = 0;
+ 
+  ElmPtr thePtr = *ipos; 
+
+  if( !thePtr ) { errorCode = 1; return ipos;}
 
   if( axis < 0 || 2 < axis ) {
     errorCode = 2;
-    return;
+    return ipos;
   }
 
   // Will not displace anything less than 1 nanometer
@@ -1570,244 +1115,149 @@ void beamline::moveRel(   int axis, double const& u, ElmPtr thePtr, int& errorCo
             "\n*** ERROR *** "
          << endl;
     errorCode = 3;
-    return;
+    return ipos;
   }
 
+  beamline::iterator it  = ipos;
+ 
+  ElmPtr  downStreamPtr    = ( ++it != end()    ) ?  *it :  ElmPtr();
+  it = ipos;
+  ElmPtr  upStreamPtr      = ( it   == begin()  ) ? ElmPtr() : *(--it);
+  it = ipos;
 
-  // Continue program ...
+  
+  Frame const frameZero; 
+  FramePusher fp(frameZero); 
 
-  ElmPtr  upStreamPtr;
-  ElmPtr  downStreamPtr;
+  Frame frameOne   =    upStreamPtr ? upStreamPtr->accept(fp),   fp.getFrame() : fp.getFrame();
+  Frame frameTwo   =  ( thePtr->accept( fp ),  fp.getFrame() );
+  Frame frameThree =  downStreamPtr ? downStreamPtr->accept(fp), fp.getFrame() : fp.getFrame();
+
+  if( !upStreamPtr) {
+     (*pcerr) << "\n*** WARNING *** "
+              << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+              << "\n*** WARNING *** Called by " << invoker
+              << "\n*** WARNING *** Will displace using downstream end of "
+              << thePtr->Type() << "  " << thePtr->Name() << "."
+              << "\n*** WARNING *** There is no upstream neighbor."
+              << "\n*** WARNING *** "
+              << endl;
+  }
+
+  Frame pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
+  Frame pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
+
+
+
+  //.............................................................................. 
+  // !!! The next lines can be modified (maybe) to do pinned-referenced movements
+  //..............................................................................
+
+  Vector displacement(u*frameOne.getAxis(axis));
+
+  frameOne.translate( displacement );
+  frameTwo.translate( displacement );
+
+  (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
+  (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
+
   SlotPtr sp;
 
-  Frame frameZero, frameOne, frameTwo, frameThree;
-  Frame pinnedFrameOne, pinnedFrameTwo;
-
-  // Note: frameZero never changes; it remains the identity.
-
-  if( find( upStreamPtr, thePtr, downStreamPtr ) )
-  {
-
-    if( upStreamPtr && (!downStreamPtr) ) {
-      FramePusher fp( frameZero );
-      upStreamPtr->accept( fp );
-      frameOne = fp.getFrame();
-      thePtr->accept( fp );
-      frameTwo = fp.getFrame();
-      downStreamPtr->accept( fp );
-      frameThree = fp.getFrame();
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      // !!! The next lines can be modified (maybe) to do pinned-referenced movements
-      Vector displacement(u*frameOne.getAxis(axis));
-      frameOne.translate( displacement );
-      frameTwo.translate( displacement );
-
-      (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
-
-      // Reset upstream and downstream elements
-      // Note: this is done inefficiently
-    
-      if( sp = boost::dynamic_pointer_cast<Slot>(upStreamPtr) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameOne );
-        sp->pinnedFrames_.downStream ( (thePtr->pinnedFrames_).upStream() );
-        // ??? This is not quite right.
-      }
-    
-      if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        // ??? This is not quite right.
-      }
-
-      if( typeid(*upStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
-        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find( begin(), end(), thePtr),  slotPtr ); // !!!! TERRIBLY INEFFICIENT !
-        remove( upStreamPtr );
-      }
-      if(  typeid(*downStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
-        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find(begin(), end(), thePtr), slotPtr ); // !!!! TERRIBLY INNEFFICIENT  !
-        remove( downStreamPtr );
-        replaced_list.push_back( downStreamPtr );
-      }
-    }
-
-    else if(  !upStreamPtr && downStreamPtr ) {
-      frameOne = frameZero;
-      FramePusher fp( frameOne );
-      thePtr->accept( fp );
-      frameTwo = fp.getFrame();
-      downStreamPtr->accept( fp );
-      frameThree = fp.getFrame();
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      Vector displacement(u*frameTwo.getAxis(axis));
-      frameOne.translate( displacement );
-      frameTwo.translate( displacement );
-
-      (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
-
-      (*pcerr) << "\n*** WARNING *** "
-           << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-           << "\n*** WARNING *** Called by " << invoker
-           << "\n*** WARNING *** Will displace using downstream end of "
-           << thePtr->Type() << "  " << thePtr->Name() << "."
-           << "\n*** WARNING *** There is no upstream neighbor."
-              "\n*** WARNING *** "
-           << endl;
-
-      // Note: this is done inefficiently
-      if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_.upStream ((thePtr->pinnedFrames_).downStream() );
-      }
-      if( typeid(*downStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
-        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find(begin(), end(), thePtr), slotPtr );
-        remove( downStreamPtr );
-        replaced_list.push_back( downStreamPtr );
-      }
-    }
-
-    else if(  upStreamPtr && (!downStreamPtr) ) {
-      FramePusher fp( frameZero );
-      upStreamPtr->accept( fp );
-      frameOne = fp.getFrame();
-      thePtr->accept( fp );
-      frameTwo = fp.getFrame();
-      frameThree = frameTwo;
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      Vector displacement(u*frameOne.getAxis(axis));
-      frameOne.translate( displacement );
-      frameTwo.translate( displacement );
-
-      (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
-
-      // Note: this is done inefficiently
-      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameOne );
-        sp->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
-      }
-      if( typeid( *upStreamPtr ) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );  // ?????
-        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(begin(), end(), thePtr), slotPtr ); // TERRIBLE !
-        remove( upStreamPtr );
-        replaced_list.push_back( upStreamPtr );
-      }
-    }
-
-    else if( (!upStreamPtr) && (!downStreamPtr ) ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-             "void beamline::moveRel( int axis, double const& u, ... )",
-             "An impossibility has occurred. Am stopping." ) );
-    }
-  }
-
-  return;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-std::list<ElmPtr> beamline::pitch(   ElmPtr thePtr, double const& angle, double const& pct, int& errorCode)
-{
-
-  std::list<ElmPtr> replaced_list;
-
-  rotateRel( Frame::xAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch") );
+  if( typeid(*upStreamPtr) == typeid(drift) ) {
+      SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
+      slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
+      slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
+      it = erase( --it );
+      putAbove( it, slotPtr ); 
+  } 
+  else if( sp = boost::dynamic_pointer_cast<Slot>(upStreamPtr) ) {
+    sp->setInFrame ( frameZero );
+    sp->setOutFrame( frameOne );
+    sp->pinnedFrames_.downStream ( (thePtr->pinnedFrames_).upStream() );  // ??? This is not quite right.
+  } 
  
-  return  replaced_list;
+  
+  if( typeid(*downStreamPtr) == typeid(drift) ) {
+      SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
+      slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
+      slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
+      it =  erase( ++it );
+      putAbove( it, slotPtr ); 
+      --it; --it;
+   }
+   else if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
+      sp->setInFrame( frameZero );
+      sp->setOutFrame( frameThree.relativeTo(frameTwo) );
+      sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() ); // ??? This is not quite right.
+   }
+   
+  return it; 
+
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::yaw( ElmPtr thePtr, double const& angle, double const& pct, int& errorCode )
+ beamline::iterator beamline::pitch(  beamline::iterator pos, double const& angle, double const& pct )
 {
-
-  std::list<ElmPtr> replaced_list;
-
-  rotateRel( Frame::yAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch"));
-
-  return  replaced_list;
+  return rotateRel( Frame::xAxisIndex(), angle, pos, pct, string("beamline::pitch") );
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::list<ElmPtr> beamline::roll(   ElmPtr thePtr, double const& angle, double const& pct, int& errorCode )
+beamline::iterator beamline::yaw(   beamline::iterator pos, double const& angle, double const& pct )
 {
-
-  std::list<ElmPtr> replaced_list;
-
-  rotateRel( Frame::zAxisIndex(), angle, thePtr, pct, errorCode, replaced_list, string("beamline::pitch") );
- 
-  return replaced_list;
+  return rotateRel( Frame::yAxisIndex(), angle, pos, pct, string("beamline::yaw"));
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::rotateRel(   int axis, double const& angle
-                           , ElmPtr thePtr
-                           , double pct
-                           , int& errorCode, std::list<ElmPtr>& replaced_list
-                           , string invoker )
+beamline::iterator beamline::roll(   beamline::iterator pos, double const& angle, double const& pct )
 {
-  // Upon entry: axis            = rotation direction
-  //                               (should be a unit vector)
-  //             angle [radians] = displacement
-  //             thePtr          = pointer to element to be translated
+  return rotateRel( Frame::zAxisIndex(), angle, pos, pct, string("beamline::roll") );
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterator ipos, double pct, string invoker )
+{
+  //-----------------------------------------------------------------------------------------------
+  // Upon entry: axis            = rotation direction, expressed a unit vector
+  //             angle [radians] = displacement 
+  //             pos             = iterator pointing to element to be translated
   //             pct             = percentage downstream of element to serve
   //                               as fixed point of the rotation
-  //             errorCodePtr    = pointer to a valid int 
-  //             recycleBinPtr   = pointer to a valid BmlPtrList
   //             invoker         = name of calling routine (used in error messages)
   //             
-  // Upon exit:  *thePtr will have been rotated along the direction "axis"
-  //               by adjusting its neighboring free-space 
-  //               elements. *thePtr is not changed at all. Only its
-  //               neighbors are altered. In fact, they may have been
-  //               replaced.
-  //              neighboring free-space elements that have been replaced.
-  //              errorCode  = 0, nothing wrong
-  //                           1, errorCodePtr, recycleBinPtr, or thePtr 
-  //                              is null on entry
-  //                           2, |angle| < 1 nanoradian displacement
-  //                           3, *thePtr is a sector element
-  // 
-  //             NOTE WELL: if the returned list is not empty, it means
-  //               that Slots have been created and installed in the line
+  // Upon exit:  element at pos will have been rotated along the direction "axis"
+  //             by adjusting its neighboring free-space elements. 
+  //             The element at pos is not changed; only its neighbors are altered.
+  //             
+  //             errorCode  = 0, nothing wrong
+  //                          2, |angle| < 1 nanoradian displacement
+  //                          3, the element pointed at by the iterator is a sector element
+  //-------------------------------------------------------------------------------------------------  
+
+  //-----------------------------------------------------------------------------------------------------
+  //
+  //          ------------- ---------- ------------
+  //          UPSTREAM ELM |   ELM   | DWSTREAM ELM
+  //          ------------- ---------- ------------
+  //         F0            F1        F2           F3
+  //-----------------------------------------------------------------------------------------------------
+
 
   // Argument filter
-  if( !thePtr ) { errorCode = 1; return;}
+
+  int errorCode = 0;
+  ElmPtr thePtr = *ipos; 
 
   if( pct < 0.0 || pct > 1.0 )       { pct = 0.5; }
   if( std::abs(pct) < 1.0e-8 )       { pct = 0.0; }
@@ -1827,7 +1277,7 @@ void beamline::rotateRel(   int axis, double const& angle
             "\n*** ERROR *** "
          << endl;
     errorCode = 2;
-    return;
+    return ipos;
   }
 
   // Check for a valid element
@@ -1839,225 +1289,95 @@ void beamline::rotateRel(   int axis, double const& angle
          << thePtr->Type() << "  " << thePtr->Name() << "."
          << endl;
     errorCode = 3;
-    return;
+    return ipos;
   }
 
-  // Continue program ...
+  beamline::iterator it  = ipos;
+ 
+  ElmPtr  downStreamPtr    = ( ++it != end()    ) ?  *it :  ElmPtr();
+  it = ipos;
+  ElmPtr  upStreamPtr      = ( it   == begin()  ) ? ElmPtr() : *(--it);
+  it = ipos;
 
-  ElmPtr  upStreamPtr;
-  ElmPtr  downStreamPtr;
   SlotPtr sp; 
 
-  Frame frameZero, frameOne, frameTwo, frameThree;
-  Frame pinnedFrameOne, pinnedFrameTwo;
+  Frame const frameZero;
+  Frame frameOne, frameTwo, frameThree;
+  Frame pinnedFrameOne, pinnedFrameTwo; 
 
-  if( find( upStreamPtr, thePtr, downStreamPtr ) ) {
+  FramePusher fp( frameZero );
 
-    if( (upStreamPtr) && (downStreamPtr) ) {
-      FramePusher fp( frameZero );
-      upStreamPtr->accept(fp); 
-      frameOne = fp.getFrame();
-      thePtr->accept( fp );
-      frameTwo = fp.getFrame();
-      downStreamPtr->accept( fp );
-      frameThree = fp.getFrame();
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      // Construct a Frame in between frameOne and frameTwo
-      Frame midFrame;
-      if     ( 0.0 == pct ) { midFrame = frameOne; }
-      else if( 1.0 == pct ) { midFrame = frameTwo; }
-      else {
-        if(    typeid( *thePtr )  == typeid(Slot) 
-            || typeid( *thePtr )  == typeid(beamline) ) {
-          midFrame = Frame::tween( frameOne, frameTwo, pct );
-        }
-        else {
-          ElmPtr usHalfPtr;
-          ElmPtr dsHalfPtr;
-          thePtr->Split( pct, usHalfPtr, dsHalfPtr );
-          FramePusher fp2( frameOne );
-          usHalfPtr->accept(fp2);
-          midFrame = fp2.getFrame();
-        }
-      }
-
-      // !!! The next lines can be modified (maybe) to do pinned-referenced movements
-      // Do the rotation
+  frameOne   =  upStreamPtr ? upStreamPtr->accept(fp),  fp.getFrame() : fp.getFrame();
+  frameTwo   =  ( thePtr->accept( fp ),  fp.getFrame() );
+  frameThree =  downStreamPtr ? downStreamPtr->accept(fp), fp.getFrame() : fp.getFrame();
  
-      Vector rotationAxis( midFrame.getAxis(axis) );
-      Frame uFrame( frameOne.relativeTo(midFrame) );
-      Frame dFrame( frameTwo.relativeTo(midFrame) );
-      uFrame.rotate( angle, rotationAxis, true );
-      dFrame.rotate( angle, rotationAxis, true );
-      frameOne = uFrame.patchedOnto(midFrame);
-      frameTwo = dFrame.patchedOnto(midFrame);
+  pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
+  pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
 
-      (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
+  //................................................... 
+  // Construct a Frame in between frameOne and frameTwo
+  //...................................................
 
-      // Reset upstream and downstream elements
-      // Note: this is done inefficiently
+  Frame midFrame;
+  if     ( 0.0 == pct ) { 
+      midFrame = frameOne; 
+  } else if( 1.0 == pct ){ 
+      midFrame = frameTwo; 
+  } else if(    typeid( *thePtr )  == typeid(Slot) || typeid( *thePtr )  == typeid(beamline) ) {
+      midFrame = Frame::tween( frameOne, frameTwo, pct );
+  } else {
+      ElmPtr usHalfPtr, dsHalfPtr;
+      thePtr->Split( pct, usHalfPtr, dsHalfPtr );
+      FramePusher fp2( frameOne );
+      usHalfPtr->accept(fp2);
+      midFrame = fp2.getFrame();
+  }
 
-      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
+  //................................................... 
+  // !!! The next lines can be modified (maybe) to do pinned-referenced movements
+  // Do the rotation
+  //................................................... 
+ 
+   Vector rotationAxis( midFrame.getAxis(axis) );
+   Frame uFrame( frameOne.relativeTo(midFrame) );
+   Frame dFrame( frameTwo.relativeTo(midFrame) );
+   uFrame.rotate( angle, rotationAxis, true );
+   dFrame.rotate( angle, rotationAxis, true );
+   frameOne = uFrame.patchedOnto(midFrame);
+   frameTwo = dFrame.patchedOnto(midFrame);
+
+   (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
+   (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
+
+   // Reset upstream and downstream elements
+
+   if(  sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-      }
-      if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
+   }
+   if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-      }
-      if( typeid(*upStreamPtr) == typeid(drift) ) {
+   }
+   if( typeid(*upStreamPtr) == typeid(drift) ) {
         SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find(begin(), end(), thePtr), slotPtr ); // TERRIBLE !
-        remove( upStreamPtr );
-      }
-      if( typeid(*downStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
-        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find( begin(), end(), thePtr), slotPtr ); // TERRIBLE !
-        remove( downStreamPtr );
-      }
-    }  // --- if( (upStreamPtr) && (downStreamPtr) ) ---
+        it = erase( --it );
+        putAbove( it, slotPtr ); 
+   }
+   if( typeid(*downStreamPtr) == typeid(drift) ) {
+       SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
+       slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
+       slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
+       it = erase( ++it );
+       putAbove( it, slotPtr ); 
+       --it; --it;
+   }
 
-    else if( (!upStreamPtr) && downStreamPtr ) {
-      frameOne = frameZero;
-      FramePusher fp( frameOne );
-      thePtr->accept( fp );
-      frameTwo = fp.getFrame();
-      downStreamPtr->accept( fp );
-      frameThree = fp.getFrame();
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      // Construct a Frame in between frameOne and frameTwo
-      Frame midFrame;
-      if     ( 0.0 == pct ) { midFrame = frameOne; }
-      else if( 1.0 == pct ) { midFrame = frameTwo; }
-      else {
-        if(    typeid(*thePtr) == typeid(Slot) 
-            || typeid(*thePtr) == typeid(beamline) ) {
-          midFrame = Frame::tween( frameOne, frameTwo, pct );
-        }
-        else {
-          ElmPtr usHalfPtr;
-          ElmPtr dsHalfPtr;
-          thePtr->Split( pct, usHalfPtr, dsHalfPtr );
-          FramePusher fp2( frameOne );
-          usHalfPtr->accept(fp2);
-          midFrame = fp2.getFrame();
-        }
-      }
-
-      // Do the rotation
-      Vector rotationAxis( midFrame.getAxis(axis) );
-      Frame uFrame( frameOne.relativeTo(midFrame) );
-      Frame dFrame( frameTwo.relativeTo(midFrame) );
-      uFrame.rotate( angle, rotationAxis, true );
-      dFrame.rotate( angle, rotationAxis, true );
-      frameOne = uFrame.patchedOnto(midFrame);
-      frameTwo = dFrame.patchedOnto(midFrame);
-
-      (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
-
-      // Reset upstream and downstream elements
-      // Note: this is done inefficiently
-
-      SlotPtr slotPtr( new Slot( frameOne ) );
-      putAbove( std::find( begin(), end(), thePtr), slotPtr );
-   
-      if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameThree.relativeTo(frameTwo) );
-        sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-      }
-      if(  typeid(*downStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
-        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
-        putBelow( std::find( begin(), end(), thePtr), slotPtr );
-        remove( downStreamPtr );
-      }
-    }
-
-    else if( upStreamPtr && (!downStreamPtr) ) {
-      FramePusher fp( frameZero );
-      upStreamPtr->accept( fp );
-      frameOne   = fp.getFrame();
-      thePtr->accept( fp );
-      frameTwo   = fp.getFrame();
-      frameThree = frameTwo;
-
-      pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-      pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
-
-      // Construct a Frame in between frameOne and frameTwo
-      Frame midFrame;
-      if     ( 0.0 == pct ) { midFrame = frameOne; }
-      else if( 1.0 == pct ) { midFrame = frameTwo; }
-      else {
-        if(    typeid(*thePtr) == typeid(Slot) 
-            || typeid(*thePtr) == typeid(beamline) ) {
-          midFrame = Frame::tween( frameOne, frameTwo, pct );
-        }
-        else {
-          ElmPtr usHalfPtr;
-          ElmPtr dsHalfPtr;
-          thePtr->Split( pct, usHalfPtr, dsHalfPtr );
-          FramePusher fp2( frameOne );
-          usHalfPtr->accept(fp2);
-          midFrame = fp2.getFrame();
-        }
-      }
-
-      // Do the rotation
-      Vector rotationAxis( midFrame.getAxis(axis) );
-      Frame uFrame( frameOne.relativeTo(midFrame) );
-      Frame dFrame( frameTwo.relativeTo(midFrame) );
-      uFrame.rotate( angle, rotationAxis, true );
-      dFrame.rotate( angle, rotationAxis, true );
-      frameOne = uFrame.patchedOnto(midFrame);
-      frameTwo = dFrame.patchedOnto(midFrame);
-
-      (thePtr->pinnedFrames_).upStream( pinnedFrameOne.relativeTo( frameOne ) );
-      (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
-
-      // Reset upstream and downstream elements
-      // Note: this is done inefficiently
-
-      if( sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
-        sp->setInFrame( frameZero );
-        sp->setOutFrame( frameOne );
-        sp->pinnedFrames_.downStream( thePtr->pinnedFrames_.upStream() );
-      }
-      if( typeid(*upStreamPtr) == typeid(drift) ) {
-        SlotPtr slotPtr(new Slot(upStreamPtr->Name().c_str(), frameOne ));
-        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
-        slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
-        putAbove( std::find( begin(), end(), thePtr), slotPtr );
-        remove( upStreamPtr );
-      }
-      SlotPtr slotPtr( new Slot( frameThree.relativeTo(frameTwo) ) );
-      putBelow( std::find( begin(), end(), thePtr), slotPtr );
-    }
-
-    else if( (!upStreamPtr) && (!downStreamPtr) ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-             "void beamline::moveRel( int axis, double const& u, ... )",
-             "An impossibility has occurred. Am stopping." ) );
-    }
-  }
-
-  return;
+   return it;
 }
 
 
@@ -2092,11 +1412,8 @@ bool beamline::setAlignment( alignmentData const& al ) {
 void beamline::remove( ElmPtr Element2remove){ 
   if ( theList_.empty() ) return;
   theList_.remove( Element2remove );
-  --numElem_;
   return; 
 }
-
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2246,11 +1563,10 @@ beamline::iterator beamline::erase(beamline::iterator it)
   lit = theList_.erase( lit );    
 
   return beamline::iterator( this, lit);
-  
 } 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool  beamline::isBeamline() const 
 { 
@@ -2258,4 +1574,12 @@ bool  beamline::isBeamline() const
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+int beamline::howMany() const 
+{
+  return theList_.size();
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
