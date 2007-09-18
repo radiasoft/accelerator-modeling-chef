@@ -76,8 +76,8 @@ WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other )
 
 //----------------------------------------------------------------------------------------------
 // NOTE: both the bunch and the wakefunction are sampled over an interval of length "interval_".
-//       For the convolution to return a sensible result (no aliasing), the sum of width of the
-//       non-zero support of the two functions must be < length. Here, we just assume that 
+//       For the convolution finctor to return a sensible result (no aliasing), the sum of the widths 
+//       of the non-zero support of the two functions must be < interval_. Here, we just assume that 
 //       length was set a-priori in such a way that this condition is met.  
 //----------------------------------------------------------------------------------------------
 
@@ -87,13 +87,42 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   BunchProjector projector(bunch, interval_, nsamples_);
 
   const double bunch_length = ( (--bunch.end() )->get_cdt() - bunch.begin()->get_cdt() );
-  if (bunch_length > 0.5*interval_ ) {
-    (*pcout ) << " *** WARNING ***: WakeKickPhysics: aliasing detected in wake computation. \n"  
-              << " *** WARNING ***: WakeKickPhysics: Increase the size of the sampling interval.\n"
-              << " *** WARNING ***: bunch length    = " << bunch_length << "\n"
-              << " *** WARNING ***: interval length = " << interval_ 
+
+  bool interval_has_changed = false;
+
+  //-------------------------------------------------------------------------------- 
+  // Detect aliasing. If necessary, increase the sampling interval size
+  // Then, reset the LHS in the convolution function object. 
+  //--------------------------------------------------------------------------------
+
+  while ( bunch_length > 0.5*interval_ ) {
+  
+    interval_ *= 1.25 * interval_;
+
+    (*pcout ) << " *** WARNING ***: WakeKickPhysics: aliasing   detected in wake computation. \n"  
+              << " *** WARNING ***: WakeKickPhysics: Increasing the size of the sampling interval.\n"
+              << " *** WARNING ***: bunch length    = " << bunch_length  << "\n"
+              << " *** WARNING ***: old interval length = " << interval_ << "\n"
+              << " *** WARNING ***: new interval length = " << interval_ << "\n"
               << std::endl;
+
+    interval_has_changed = true;
   }      
+
+  if ( interval_has_changed ) {
+
+    boost::function<double(int)> lwake = boost::bind<double>(ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ );
+    boost::function<double(int)> twake = boost::bind<double>(ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ );
+
+    std::vector<double> lwake_lhs(nsamples_);  
+    std::vector<double> twake_lhs(nsamples_);  
+    
+    for (int i=0; i<nsamples_; ++i) { lwake_lhs[i] = lwake(i); } 
+    for (int i=0; i<nsamples_; ++i) { twake_lhs[i] = twake(i); } 
+   
+    lwake_.resetLHS( lwake_lhs );
+    twake_.resetLHS( twake_lhs ); 
+  }
 
   //-------------------------------------------------------------------------- 
   // NOTE: the result of the convolution needs to be scaled by binsize. 
