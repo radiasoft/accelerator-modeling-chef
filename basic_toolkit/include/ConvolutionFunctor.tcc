@@ -136,3 +136,18 @@ std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> cons
   return result_;
 } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  
+template <typename T>
+void  ConvolutionFunctorImpl<T>::resetLHS( std::vector<T>  const& lhs) 
+{
+  //---------------------------------------------------
+  // recompute and store new lhs operand transform ...  
+  //---------------------------------------------------
+
+   std::copy( (FFT_Input_t*) &lhs[0],  (FFT_Input_t*) &lhs[0] + fft_input_array_size_,   (FFT_Input_t*)  &lhsdata_[0] );   
+
+   forward_transform_( (FFT_Input_t*) &lhsdata_[0] );
+
+}
