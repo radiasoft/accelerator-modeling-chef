@@ -39,9 +39,13 @@
 ****** - use covariant return types
 ****** - support for reference counted elements
 ******
+****** Sep 2007           ostiguy@fnal.gov
+******
+****** - added systematic and random errors 
+****** - added bunch propagation
+******   
 **************************************************************************
 *************************************************************************/
-
 #ifndef MONITOR_H
 #define MONITOR_H
 
@@ -67,77 +71,66 @@ class DLLEXPORT monitor : public bmlnElmnt {
 
 public:
 
-  // Constructors
-
   monitor();
-  monitor( const char* name );
-  monitor( const char* name, double const& length);
-  monitor( const monitor& );
+  monitor( char const* name );
+  monitor( char const* name, double const& length);
+  monitor( monitor const& );
 
   monitor* Clone() const  { return new monitor( *this ); }
 
-  virtual ~monitor();
+ ~monitor();
 
-  // ---------------------
-  void setOutputStream( std::ostream& );
-  void setOutputStream( std::ostream* );
+  double hposition() const; 
+  double vposition() const; 
 
-  virtual bool on();  // returns previous state
-  virtual bool off();
+  double const& npx() const; 
+  double const& npy() const; 
 
-  virtual const char* version();
+  double        setDriftFraction( double f ); 
+  double const& getDriftFraction()  const;
 
-  double operator[]( int );  // Readout of data
-
-  double setDriftFraction( double f ) 
-  { double ret = _driftFraction; 
-    if ( f <= 1 && f >= 0 ) _driftFraction = f; 
-    return ret; 
-  }
-
-  double getDriftFraction() { return _driftFraction; }
-
-
-  std::ostream& writeTo(std::ostream&); 
+  std::ostream& writeTo (std::ostream&); 
   std::istream& readFrom(std::istream&);
-
-  void getState(double *s) const
-  { for ( int i=0; i<6; i++ ) s[i] = _rgr[i]; } // DANGEROUS!!
-
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
   
-  inline bool State() const { return _onOffSwitch; }
+  bool isEnabled() const;
+  bool enable( bool set);
 
   const char* Type()     const;
   bool        isMagnet() const;
 
-private:
-
-  double   _driftFraction;
-
 protected:
 
-  std::ostream* _outputStreamPtr;  // not owned
-  bool          _onOffSwitch;
-  double*       _rgr;
-  
+  bool          enabled_;          // enabled or defective/disabled   
 
+  double        xpos_;   // recorded single particle or bunch averaged position
+  double        ypos_;   // recorded single particle or bunch averaged position
+  double        npx_;    // recorded single particle npx -- not really belongs in a monitor this is an extension
+  double        npy_;    // recorded single particle npy -- not really belongs in a monitor this is an extension
+
+  double        dx_;     // systematic offset
+  double        dy_;     // systematic offset
+
+  double        xrerr_;  // random relative error amplitude (gaussian distributed)
+  double        yrerr_;  // random relative error amplitude (gaussian distributed)
+
+ private:
+
+  double   driftFraction_;
 
 };
 
+//==================================================================================
 
 class DLLEXPORT hmonitor : public monitor {
 
  public:
-
-  // Constructors
 
   hmonitor();
   hmonitor( const char*  name );
@@ -146,39 +139,35 @@ class DLLEXPORT hmonitor : public monitor {
 
   hmonitor* Clone() const  { return new hmonitor( *this ); }
 
-  virtual ~hmonitor();
+ ~hmonitor();
 
-  double operator[]( int );    // Readout of data
-
-  void localPropagate( ParticleBunch& x )  { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x );
 
   const char* Type()     const;
   bool        isMagnet() const;
 
  } ;
 
+//======================================================================================
 
 class DLLEXPORT vmonitor : public monitor {
 
 public:
-  // Constructors
 
-  vmonitor();  // Data to be written to standard output
+  vmonitor();  
   vmonitor( const char* name );
   vmonitor( const char* name, double const& length); 
   vmonitor( const vmonitor& );
 
   vmonitor* Clone() const  { return new vmonitor( *this ); }
 
-  virtual ~vmonitor();
+ ~vmonitor();
 
-  double operator[]( int );    // Readout of data
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x );
 
   const char* Type()     const;
   bool        isMagnet() const;
