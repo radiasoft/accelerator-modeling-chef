@@ -150,6 +150,9 @@ public:
    iterator putBelow( iterator   it, ElmPtr const&  y ); // Insert y below (after, downstream of) x
 
    iterator erase   ( iterator it );
+   iterator erase   ( iterator pos1, iterator pos2 );
+
+   void     remove( ElmPtr elm);
 
    void insert( ElmPtr    const&  );
    void insert( bmlnElmnt const&  );
@@ -174,23 +177,6 @@ public:
                                       // the beamline at locations specified in
                                       // the list.  
 
-   int replace( ElmPtr elm1, ElmPtr elm2);
-                                      // Will replace the first argument with
-                                      // the second. Return values:
-                                      // 0 everything went as planned
-                                      // 1 first argument was not found
-                                      // 2 at least one argument was null
-                                      // NOTE: works only at the highest
-                                      // level of the tree hierarchy; does
-                                      // not descend into the tree.
-                                      // NOTE ALSO: will replace only the
-                                      // first object found whose address
-                                      // matches that of the second.
-
-  int deepReplace( ElmPtr elm1, ElmPtr elm2 );
-                                      // Like replace() but descends into
-                                      // the hierarchy. Either argument
-                                      // may be a pointer to a beamline.
 
 
   int startAt( ConstElmPtr const&,      // Resets the "beginning" of the
@@ -206,40 +192,21 @@ public:
                                         // name is given by the argument.
 
 
-  sector* makeSector ( int, JetParticle& );
-                                     // Returns a pointer to a new
-                                     // sector equivalent to the entire
-                                     // beamline.  The argument is the
-                                     // degree of the map.
+  sector*  makeSector ( iterator pos1, iterator pos2,  int degree, JetParticle& )  const;  //  sector equivalent to [ pos1, pos2 )
 
-  sector* MakeSector ( ElmPtr start, ElmPtr finish, int,  JetParticle&);          // Returns a pointer to a new sector
-                                                                                  // equivalent to everything between
-                                                                                  // the first two arguments( exclusive).
-                 
-
-
-  sector* MakeSectorFromStart (ElmPtr,  int,  JetParticle& );
-  sector*     MakeSectorToEnd (ElmPtr,  int,  JetParticle& );
-
-
-  void     sectorize ( int, JetParticle& );                                                                    // Alters the object itself.
-  beamline sectorize ( ElmPtr start,  ElmPtr finish, int degree,  JetParticle& p,   const char* = "NONAME");   // Alters the object: everything between
-                                                                                                               // the bmlnElmnt arguments replaced by a map.
-                                                                                                               // <-- This argument is the degree of the map.
-  beamline remove( ElmPtr start_elm, ElmPtr end_elm);
-  void     remove( ElmPtr elm);
+  void     sectorize  ( iterator pos1,  iterator pos2, int degree, JetParticle& p, const char* = "NONAME");   
 
 
   // Change geometry of the line
 
   bool     setAlignment( alignmentData const& );
  
-  std::list<ElmPtr> moveRelX( ElmPtr, double const&, int& errcode );
-  std::list<ElmPtr> moveRelY( ElmPtr, double const&, int& errcode );
-  std::list<ElmPtr> moveRelZ( ElmPtr, double const&, int& errcode );
-  std::list<ElmPtr>    pitch( ElmPtr, double const&, double const&, int& errcode);
-  std::list<ElmPtr>      yaw( ElmPtr, double const&, double const&, int& errcode);
-  std::list<ElmPtr>     roll( ElmPtr, double const&, double const&, int& errcode);
+  iterator moveRelX( iterator pos, double const& dx);
+  iterator moveRelY( iterator pos, double const& dy);
+  iterator moveRelZ( iterator pos, double const& dz);
+  iterator    pitch( iterator pos, double const& angle, double const& rpos);
+  iterator      yaw( iterator pos, double const& angle, double const& rpos);
+  iterator     roll( iterator pos, double const& angle, double const& rpos);
 
 
   // PROPAGATE PARTICLES
@@ -254,8 +221,6 @@ public:
 
   void leaveLocalFrame( Particle&    )    const;   
   void leaveLocalFrame( JetParticle&    ) const;   
-
-
 
 
   void accept( BmlVisitor& v );
@@ -328,7 +293,7 @@ public:
   void                peekAt( double& s, Particle const& ) const;
   lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
   lattFunc     whatIsLattice( std::string name );                                    
-  int                howMany()                           const { return numElem_; } // WARNING: not reliable!
+  int                howMany() const; 
   int           countHowMany() const;
   int     countHowManyDeeply() const;
 
@@ -340,38 +305,6 @@ public:
                                                                                     //            or all its subbeamlines are empty.
                                                                                     // Otherwise returns 1 + largest
                                                                                     // depth of all subbeamlines.
-
-  int    contains( ElmPtr &) const;     // Returns the number of times the argument appears.
-
-  bool find( ElmPtr&  u, ElmPtr&  v, ElmPtr&  w ) const;
-
-  // Upon entry: u and w should have null value but can, in fact
-  //               be anything. 
-  //               WARNING: they will be reset, so don't use addresses
-  //               of valid elements.
-  //             *v is the element to be searched for.
-  // Upon exit:  u points to the element upstream of v
-  //             w points to the element downstream of v
-  //               Return value of u or w can be null (i.e. 0) if
-  //               this beamline is not treated as a ring and *v is
-  //               either the first or last element, respectively.
-  //
-  //             Value returned: true,  if *v is found
-  //                             false, if *v is not found
-  //               If false is returned, then return values of 
-  //               u and w are unspecified.
-  // 
-  // Comments:   Only one instance, the first instance, of *v is found.
-  //             This routine is meant to work on lines containing
-  //               unique elements. For some cases, it may work with
-  //               multiple instances of the same element.
-  // 
-  // Example:    beamline A; ...
-  //             bmlnElmnt* u = 0; bmlnElmnt* w = 0;
-  //             rbend B; ...
-  //             if( A.find( u, &B, w ) ) { ... }
-  // 
-
 
   const char*  Type()                           const;
   bool         isMagnet()                       const;
@@ -402,22 +335,16 @@ public:
 
 private:
 
-  // Methods
-  void   moveRel(   int axis, double const& u,     ElmPtr thePtr,             int&   errorCode, std::list<ElmPtr>& replaced_list, std::string invoker );
-  void rotateRel(   int axis, double const& angle, ElmPtr thePtr, double pct, int&   errorCode, std::list<ElmPtr>& replaced_list, std::string invoker );
+  iterator   moveRel(   int axis, double const& u,     iterator pos,             std::string invoker );
+  iterator rotateRel(   int axis, double const& angle, iterator pos, double pct, std::string invoker );
 
-  std::ostream& writeTo(std::ostream&);
+  std::ostream&           writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );
 
-
-  // Data
-
   double                  nominalEnergy_;    // In GeV
-  int                     numElem_;          // Number of elements in the beamline
   bool                    twissDone_;
   LineMode                mode_;
   std::list<ElmPtr>       theList_; 
-
 
 
 }; 
