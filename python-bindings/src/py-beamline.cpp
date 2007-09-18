@@ -186,7 +186,6 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("isFlat",                     &beamline::isFlat);
  beamline_.def("empty",                      &beamline::empty);
  beamline_.def("depth",                      &beamline::depth);
- beamline_.def("contains",                   &beamline::contains);
  beamline_.def("firstElement",               &beamline_firstElement, return_value_policy<reference_existing_object>() );
  beamline_.def("lastElement",                &beamline_lastElement,  return_value_policy<reference_existing_object>() );
  beamline_.def("twissIsDone",                &beamline::twissIsDone);
