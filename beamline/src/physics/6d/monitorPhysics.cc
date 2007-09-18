@@ -34,18 +34,19 @@
 ******                                             
 ****** April 2007  ostiguy@fnal.gov
 ****** - efficiency improvements: avoid unnecessary copying of Particle/JetParticle State.
+******
 ****** August 2007 ostiguy@fnal.gov
-****** - templatized propagation functions
+******
+****** - templatized propagators 
+****** - bunch propagation
+****** - added systematic and random errors
 ******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 #include <beamline/JetParticle.h>
 #include <beamline/monitor.h>
 
@@ -54,26 +55,22 @@ using namespace std;
 
 void monitor::localPropagate( Particle& p )
 {
-  double realLength, realCt;
 
   Vector& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_   *= getDriftFraction();
-    ctRef_    *= getDriftFraction();
+
+    double realLength = length_;
+    double realCt     = ctRef_;
+    length_          *= getDriftFraction();
+    ctRef_           *= getDriftFraction();
+
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( int i=0; i<BMLN_dynDim; ++i) { _rgr[i] = state[i]; }
-    
-    if ( _onOffSwitch ) {
-      for ( int i=0; i < BMLN_dynDim; ++i) {
-        (*_outputStreamPtr) << _rgr[i] << "  ";
-      }
-      (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
-    }
+    xpos_  = state[0];
+    ypos_  = state[1];
+    npx_   = state[3];
+    npy_   = state[4];
 
     length_ = realLength - length_;
     ctRef_ = realCt - ctRef_;
@@ -81,19 +78,15 @@ void monitor::localPropagate( Particle& p )
     
     length_ = realLength;
     ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+  } 
 
   else {
-    for ( int i=0; i<BMLN_dynDim; ++i) _rgr[i] = state[i];
-    
-    if ( _onOffSwitch ) {
-      for ( int i=0; i < BMLN_dynDim; ++i) {
-        (*_outputStreamPtr) << _rgr[i] << "  ";
-      }
-      (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
-    }
-  }
-
+    xpos_  = state[0];
+    ypos_  = state[1];
+    npx_   = state[3];
+    npy_   = state[4];
+  }    
+  
 }
 
 
@@ -103,47 +96,39 @@ void monitor::localPropagate( Particle& p )
 
 void monitor::localPropagate( JetParticle& p ) 
 {
-  int i;
-  double realLength, realCt;
 
   Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ *= getDriftFraction();
-    ctRef_ *= getDriftFraction();
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( state(i) ).standardPart();
-    
-    if ( _onOffSwitch ) {
-      for ( i = 0; i < BMLN_dynDim; i++ ) {
-        (*_outputStreamPtr) << _rgr[i] << "  ";
-      }
-      (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
-    }
 
-    length_ = realLength - length_;
-    ctRef_ = realCt - ctRef_;
-    bmlnElmnt::localPropagate( p ); // Drift through the other half.
+   double realLength = length_;
+   double realCt     = ctRef_;
+   length_          *= getDriftFraction();
+   ctRef_           *= getDriftFraction();
+
+   bmlnElmnt::localPropagate( p );   // Drift through half the length.
+    
+   xpos_  = state[0].standardPart();
+   ypos_  = state[1].standardPart();
+   npx_   = state[3].standardPart();
+   npy_   = state[4].standardPart();
+   
+   length_ = realLength - length_;
+   ctRef_  = realCt - ctRef_;
+ 
+   bmlnElmnt::localPropagate( p ); // Drift through the other half.
     
     length_ = realLength;
-    ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+    ctRef_  = realCt;
+  } 
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = ( state(i) ).standardPart();
-    
-    if ( _onOffSwitch ) {
-      for ( i = 0; i < BMLN_dynDim; i++ ) {
-        (*_outputStreamPtr) << _rgr[i] << "  ";
-      }
-      (*_outputStreamPtr) << "   BPM: " << ident_ << endl;
-    }
+    xpos_  = state[0].standardPart();
+    ypos_  = state[1].standardPart();
+    npx_   = state[3].standardPart();
+    npy_   = state[4].standardPart();
   }
-
+    
 }
 
 
@@ -152,45 +137,35 @@ void monitor::localPropagate( JetParticle& p )
 
 void hmonitor::localPropagate( Particle& p ) 
 {
-  int i;
-  double realLength, realCt;
   Vector& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ *= getDriftFraction(); 
-    ctRef_ *= getDriftFraction();
+
+    double realLength  = length_;
+    double realCt      = ctRef_;
+
+    length_    *= getDriftFraction(); 
+    ctRef_     *= getDriftFraction();
+
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
+    xpos_  = state[0];
+    npx_   = state[3];
     
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::xIndex  ] 
-                          << "  " << _rgr[Particle::npxIndex]
-                          << "   HBPM: " << ident_ 
-                          << endl;
-    }
-
     length_ = realLength - length_;
-    ctRef_ = realCt - ctRef_;
+    ctRef_  = realCt - ctRef_;
+
     bmlnElmnt::localPropagate( p ); // Drift through the other half.
     
     length_ = realLength;
     ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+  
+ } 
+ else {
+    xpos_  = state[0];
+    npx_   = state[3];
+ }
 
-  else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
-    
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[ Particle::xIndex    ] 
-                          << "  " << _rgr[ Particle::npxIndex  ]
-                          << "   HBPM: " << ident_ 
-                          << endl;
-    }
-  }
 }
 
 
@@ -199,45 +174,36 @@ void hmonitor::localPropagate( Particle& p )
 
 void hmonitor::localPropagate( JetParticle& p ) 
 {
-  int i;
-  double realLength, realCt;
+
   Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ *= getDriftFraction();
-    ctRef_ *= getDriftFraction();
+
+    double realLength = length_;
+    double realCt     = ctRef_;
+    length_          *= getDriftFraction();
+    ctRef_           *= getDriftFraction();
+
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] =  state(i).standardPart();
-    
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::xIndex  ] 
-                          << "  " << _rgr[Particle::npxIndex]
-                          << "   HBPM: " << ident_ 
-                          << endl;
-    }
+    xpos_  = state[0].standardPart();
+    npx_   = state[3].standardPart();
 
+    
     length_ = realLength - length_;
-    ctRef_ = realCt - ctRef_;
+    ctRef_  = realCt - ctRef_;
+
     bmlnElmnt::localPropagate( p ); // Drift through the other half.
     
     length_ = realLength;
-    ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+    ctRef_  = realCt;
+  } 
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
-    
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::xIndex   ] 
-                          << "  " << _rgr[Particle::npxIndex ]
-                          << "   HBPM: " << ident_ 
-                          << endl;
-    }
+    xpos_ = state[0].standardPart();
+    npx_  = state[3].standardPart();
   }
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -245,45 +211,36 @@ void hmonitor::localPropagate( JetParticle& p )
 
 void vmonitor::localPropagate( Particle& p ) 
 {
-  int i;
-  double realLength, realCt;
   Vector& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ *= getDriftFraction();
-    ctRef_ *= getDriftFraction();
+
+    double realLength = length_;
+    double realCt     = ctRef_;
+    length_          *= getDriftFraction();
+    ctRef_           *= getDriftFraction();
+
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
+    ypos_  = state[1];
+    npy_   = state[4];
     
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
-                          << "  " << _rgr[Particle::npyIndex]
-                          << "   VBPM: " << ident_ 
-                          << endl;
-    }
-
     length_ = realLength - length_;
     ctRef_ = realCt - ctRef_;
+
     bmlnElmnt::localPropagate( p ); // Drift through the other half.
     
     length_ = realLength;
-    ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+    ctRef_  = realCt;
+  } 
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state[i];
-    
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
-                          << "  " << _rgr[Particle::npyIndex]
-                          << "   VBPM: " << ident_ 
-                          << endl;
-    }
-  }
+
+    ypos_  = state[1];
+    npy_   = state[4];
+
+  }    
+
 }
 
 
@@ -292,45 +249,97 @@ void vmonitor::localPropagate( Particle& p )
 
 void vmonitor::localPropagate( JetParticle& p ) 
 {
-  int i;
-  double realLength, realCt;
   Mapping& state = p.State();
 
   if( length_ > 0.0 ) {
-    // ---------------------------------------------------------------------
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ *= getDriftFraction();
-    ctRef_ *= getDriftFraction();
+
+    double realLength = length_;
+    double realCt     = ctRef_;
+    length_          *= getDriftFraction();
+    ctRef_           *= getDriftFraction();
+
     bmlnElmnt::localPropagate( p );   // Drift through half the length.
     
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
+    ypos_  = state[1].standardPart();
+    npy_   = state[4].standardPart();
     
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[ Particle::yIndex  ] 
-                          << "  " << _rgr[ Particle::npyIndex]
-                          << "   VBPM: " << ident_ 
-                          << endl;
-    }
+    length_  = realLength - length_;
+    ctRef_   = realCt - ctRef_;
 
-    length_ = realLength - length_;
-    ctRef_ = realCt - ctRef_;
     bmlnElmnt::localPropagate( p ); // Drift through the other half.
     
     length_ = realLength;
-    ctRef_ = realCt;
-  } // ---------------------------------------------------------------------
+    ctRef_  = realCt;
+  } 
 
   else {
-    for ( i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = state(i).standardPart();
-    
-    if ( _onOffSwitch ) {
-      (*_outputStreamPtr) <<         _rgr[Particle::yIndex  ] 
-                          << "  " << _rgr[Particle::npyIndex]
-                          << "   VBPM: " << ident_ 
-                          << endl;
-    }
+    ypos_ = state[1].standardPart();
+    npy_  = state[4].standardPart();
   }
+  
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void monitor::localPropagate( ParticleBunch& b ) 
+{ 
+
+  double xpos = 0.0;
+  double ypos = 0.0;
+
+  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    localPropagate(*it); 
+    xpos +=  xpos_; 
+    ypos +=  ypos_; 
+  }
+  
+  // record the bunch position
+ 
+  xpos_ /= b.size();
+  ypos_ /= b.size();
+
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void hmonitor::localPropagate( ParticleBunch& b ) 
+{ 
+
+  double xpos = 0.0;
+
+  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    localPropagate(*it); 
+    xpos +=  xpos_; 
+  }
+  
+  // record the bunch position
+ 
+  xpos_ /= b.size();
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void vmonitor::localPropagate( ParticleBunch& b ) 
+{ 
+
+  double ypos = 0.0;
+
+  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    localPropagate(*it); 
+    ypos +=  ypos_; 
+  }
+  
+  // record the bunch position
+ 
+  ypos_ /= b.size();
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
