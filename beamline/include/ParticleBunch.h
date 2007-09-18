@@ -63,7 +63,7 @@ public:
   typedef  boost::ptr_vector<Particle>::reverse_iterator                reverse_iterator;  
   typedef  boost::ptr_vector<Particle>::const_reverse_iterator    const_reverse_iterator;
 
-  enum PhaseSpaceProjection { x_npx=0, y_npy, ct_dpp };
+  enum PhaseSpaceProjection { x_npx=0, y_npy, cdt_ndp };
 
   ParticleBunch( Particle const& reference, int nparticles=0, double const& population=0.0);
  ~ParticleBunch();
@@ -94,6 +94,9 @@ public:
   int  removed_size()   const;
   bool empty()          const;
 
+  std::vector<double>   emittances() const; 
+
+ 
   // iterators 
  
   iterator                   begin();
