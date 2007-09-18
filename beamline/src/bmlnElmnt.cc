@@ -576,7 +576,7 @@ void bmlnElmnt::setLength( double const& x ) {
     length_ = x;
   }
 
-  if( 0 != propfunc_ ) { this->setupPropFunc(); }
+  if( 0 != propfunc_ ) { setupPropFunc(); }
 }
 
 
@@ -604,7 +604,7 @@ void bmlnElmnt::releasePropFunc()
 {
   ostringstream uic;
   uic  << "Base class method called by "
-       << this->Type()
+       << Type()
        << " object.";
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__
          , "void bmlnElmnt::releasePropFunc()"
@@ -619,7 +619,7 @@ void bmlnElmnt::setupPropFunc()
 {
   ostringstream uic;
   uic  << "Base class method called by "
-       << this->Type()
+       << Type()
        << " object.";
   throw( bmlnElmnt::GenericException( __FILE__, __LINE__
          , "void bmlnElmnt::setupPropFunc()"
@@ -633,7 +633,7 @@ void bmlnElmnt::setupPropFunc()
 
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( PropFunc const* a ) 
 { 
-  bmlnElmnt::PropFunc* ret = this->propfunc_;
+  bmlnElmnt::PropFunc* ret = propfunc_;
 
   if( !a ) {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
@@ -641,9 +641,9 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( PropFunc const* a )
            "Argument is null." ) );
   }
   else {
-    this->releasePropFunc();  // virtual
-    this->propfunc_ = const_cast<PropFunc*>(a);
-    this->setupPropFunc();    // virtual
+    releasePropFunc();  // virtual
+    propfunc_ = const_cast<PropFunc*>(a);
+    setupPropFunc();    // virtual
   }
 
   return ret;
@@ -655,7 +655,7 @@ bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( PropFunc const* a )
 
 bmlnElmnt::PropFunc* bmlnElmnt::setPropFunction ( const PropFunc& a ) 
 { 
-  return this->setPropFunction( &a );
+  return setPropFunction( &a );
 }
 
 
@@ -738,15 +738,15 @@ bool bmlnElmnt::isSimple() const
 bool bmlnElmnt::alignRelX( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() ) {
+  if( hasParallelFaces() ) {
     if( !align_ ) {
       align_ = new alignment(u, 0.0, 0.0);
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.xOffset += u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -754,7 +754,7 @@ bool bmlnElmnt::alignRelX( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -777,9 +777,9 @@ bool bmlnElmnt::alignRelY( double const& u )
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.yOffset += u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -787,7 +787,7 @@ bool bmlnElmnt::alignRelY( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -804,15 +804,15 @@ bool bmlnElmnt::alignRelY( double const& u )
 bool bmlnElmnt::alignAbsX( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() ) {
+  if( hasParallelFaces() ) {
     if( !align_ ) {
       align_ = new alignment(u, 0.0, 0.0);
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.xOffset = u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -820,7 +820,7 @@ bool bmlnElmnt::alignAbsX( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -837,15 +837,15 @@ bool bmlnElmnt::alignAbsX( double const& u )
 bool bmlnElmnt::alignAbsY( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() ) {
+  if( hasParallelFaces() ) {
     if( !align_ ) {
       align_ = new alignment(0.0, u, 0.0);
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.yOffset = u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -853,7 +853,7 @@ bool bmlnElmnt::alignAbsY( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -906,15 +906,15 @@ bool bmlnElmnt::alignAbsYmm( double const& u )
 bool bmlnElmnt::alignRelRoll( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() && this->hasStandardFaces() ) {
+  if( hasParallelFaces() && hasStandardFaces() ) {
     if( !align_ ) {
       align_ = new alignment(0.0, 0.0, u);
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.tilt += u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -922,7 +922,7 @@ bool bmlnElmnt::alignRelRoll( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double const& u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -939,15 +939,15 @@ bool bmlnElmnt::alignRelRoll( double const& u )
 bool bmlnElmnt::alignAbsRoll( double const& u )
 {
   bool ret = true;
-  if( this->hasParallelFaces() && this->hasStandardFaces() ) {
+  if( hasParallelFaces() && hasStandardFaces() ) {
     if( !align_ ) {
       align_ = new alignment(0.0, 0.0, u);
     }
     else {
       // This is stupid!
-      alignmentData w(this->Alignment());
+      alignmentData w(Alignment());
       w.tilt = u;
-      this->setAlignment( w );
+      setAlignment( w );
     }
   }
   else {
@@ -955,7 +955,7 @@ bool bmlnElmnt::alignAbsRoll( double const& u )
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::alignRelX( double const& u )"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing will be done."
             "\n*** WARNING *** "
@@ -980,7 +980,7 @@ bool bmlnElmnt::alignRelRollmrad( double const& u )
 
 bool bmlnElmnt::alignAbsRollmrad( double const& u )
 {
-  return (this->alignAbsRoll( 0.001*u ));
+  return (alignAbsRoll( 0.001*u ));
 }
 
 
@@ -1055,81 +1055,79 @@ void bmlnElmnt::markPins()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, double pct )
+void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, double pct ) const
 {
   // #error *** WARNING ***
   // #error *** WARNING ***  bmlnElmnt::loadPinnedCoordinates is not tested!!
   // #error *** WARNING ***
 
-  static Vector p( Particle::PSD / 2 );
-  static Vector v( Particle::PSD / 2 );
+  Vector p( Particle::PSD / 2 );
+  Vector v( Particle::PSD / 2 );
   //                         |
   //                         +--------- Not foolproof.
 
-
   Vector const& state = prtcl.State();
 
-  if( pinnedFrames_.altered() ) 
-  {
-    if( pct < 0.000001 ) { pct = 0; }
-    if( 0.999999 < pct ) { pct = 1; }
-
-    Frame  ref;
-
-    if( Particle::PSD == ret.Dim() ) {
-      // Load position and momentum vectors
-      p[i_x  ] = state[i_x];
-      p[i_y  ] = state[i_y];   
-      p[i_cdt] = 0;
-
-      v[i_x  ] = state[i_npx];  
-      v[i_y  ] = state[i_npy];  
-      v[i_cdt] = prtcl.get_npz();
-
-      // Downstream end (default)
-      if( (1.0 - pct) < 0.001 ) {
-        pinnedFrames_.downStream().convertInPlace( p, v );
-      }
-
-      // Upstream end
-      else if( pct < 0.001 ) {
-        pinnedFrames_.upStream().convertInPlace( p, v );
-      }
-
-      // Somewhere in the middle
-      else {
-        Frame ref( Frame::tween( pinnedFrames_.upStream(), pinnedFrames_.downStream(), pct, false ) );
-        ref.convertInPlace( p, v );
-      }
-
-      // Transfer the answer
-      ret[i_x  ] = p[i_x];
-      ret[i_y  ] = p[i_y];
-      ret[i_cdt] = prtcl.get_cdt();
-      ret[i_npx] = v[i_x];
-      ret[i_npy] = v[i_y];
-      ret[i_ndp] = prtcl.get_ndp();
-    }  
-
-    else {
-      (*pcerr) << "\n*** WARNING *** "
-               << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-               << "\n*** WARNING *** void bmlnElmnt::loadPinnedCoordinates(...)"
-               << "\n*** WARNING *** Dimension of vector argument is "
-               << (ret.Dim())
-               << ';'
-               << "\n*** WARNING *** current implementation only allows "
-               << BMLN_dynDim
-               << '.'
-               << "\n*** WARNING *** This function will do nothing."
-               << endl;
-    }
-  }
-
-  else // bmlnElmnt Frames have not been altered
+  if( ! pinnedFrames_.altered() ) 
   {
     std::copy ( state.begin(), state.end(), ret.begin() );
+    return; 
   }
+
+  //....................................................................................
+
+  if( Particle::PSD != ret.Dim() ) {
+    (*pcerr) << "\n*** WARNING *** "
+             << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+             << "\n*** WARNING *** void bmlnElmnt::loadPinnedCoordinates(...)"
+             << "\n*** WARNING *** Dimension of vector argument is "
+             << (ret.Dim())
+             << ';'
+             << "\n*** WARNING *** current implementation only allows "
+             << BMLN_dynDim
+             << '.'
+             << "\n*** WARNING *** This function will do nothing."
+             << endl;
+    std::copy ( state.begin(), state.end(), ret.begin() );
+    return; 
+  }
+
+  //....................................................................................
+
+  if( pct < 0.000001 ) { pct = 0; }
+  if( 0.999999 < pct ) { pct = 1; }
+
+  // Load position and momentum vectors
+
+  p[i_x  ] = state[i_x];
+  p[i_y  ] = state[i_y];   
+  p[i_cdt] = 0.0;
+
+  v[i_x  ] = state[i_npx];  
+  v[i_y  ] = state[i_npy];  
+  v[i_cdt] = prtcl.get_npz();
+
+  if( (1.0 - pct) < 0.001 ) {  // *** Downstream end (default)
+    pinnedFrames_.downStream().convertInPlace( p, v );
+  }
+  else if( pct < 0.001 ) {    //  *** Upstream end
+    pinnedFrames_.upStream().convertInPlace( p, v );
+      }
+  else {                      //  *** Somewhere in the middle
+    Frame ref( Frame::tween( pinnedFrames_.upStream(), pinnedFrames_.downStream(), pct, false ) );
+    ref.convertInPlace( p, v );
+
+  }
+
+  // Transfer and return the answer
+
+  ret[i_x  ] = p[i_x];
+  ret[i_y  ] = p[i_y];
+  ret[i_cdt] = prtcl.get_cdt();
+  ret[i_npx] = v[i_x];
+  ret[i_npy] = v[i_y];
+  ret[i_ndp] = prtcl.get_ndp();
+
 }
 
 
@@ -1147,13 +1145,13 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
     delete nuAlignPtr;
     nuAlignPtr = 0;
   }
-  else if( this->hasParallelFaces() ) {
+  else if( hasParallelFaces() ) {
     if( 0.0 == a.tilt ) {
       if( (a.xOffset != 0.0) || (a.yOffset != 0.0) ) {
-        this->align_ = nuAlignPtr;
+        align_ = nuAlignPtr;
       }
     }
-    else if( this->hasStandardFaces() ) {
+    else if( hasStandardFaces() ) {
       align_ = nuAlignPtr;
     }
     else { 
@@ -1169,7 +1167,7 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** bool bmlnElmnt::setAlignment(const alignmentData& a)"
             "\n*** WARNING *** Cannot use this method on an element "
-         << this->Type() << "  " << this->Name()
+         << Type() << "  " << Name()
          << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing has been done."
             "\n*** WARNING *** "
@@ -1374,12 +1372,6 @@ Aperture* bmlnElmnt::getAperture() {
 void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
 
-  if( p_bml_ || bml_e_ ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double const& pc,  ElmPtr& a, ElmPtr& b )", 
-           "Cannot use base ::Split function when the element is composite." ) );
-  }
-
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
@@ -1405,9 +1397,9 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::setShunt(double const& a) 
-{               // Set the value of the shunt, creating it if necessary
-  // REMOVE: strength_ += ( shuntCurrent_ - a ) * IToField();
-  this->setStrength( strength_ + ( shuntCurrent_ - a ) * IToField() );
+{ 
+  // Set the value of the shunt, creating it if necessary
+  setStrength( strength_ + ( shuntCurrent_ - a ) * IToField() );
   shuntCurrent_ = a;
 }
 
