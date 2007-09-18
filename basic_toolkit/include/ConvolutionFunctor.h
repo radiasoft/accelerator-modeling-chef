@@ -83,6 +83,8 @@ class ConvolutionFunctorImpl {
   std::vector<T> const&   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs );
   std::vector<T> const&   operator()( std::vector<T>  const& rhs );
 
+  void resetLHS( std::vector<T>  const& lhs);
+
  private:
 
   int                                                  nsamples_;
@@ -113,6 +115,9 @@ class ConvolutionFunctor {
     { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, lhs, measure) ); }
 
   ~ConvolutionFunctor() { }
+
+  void resetLHS( std::vector<T>  const& lhs)
+    { return pimpl_->resetLHS( lhs); }
 
   std::vector<T>   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
     { return pimpl_->operator()( lhs, rhs); }
