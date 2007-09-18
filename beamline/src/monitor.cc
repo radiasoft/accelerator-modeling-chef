@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      monitor.cc
-******  Version:   3.0
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -32,6 +31,7 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
+******
 ****** REVISION HISTORY
 ******
 ****** Mar 2007           ostiguy@fnal.gov
@@ -43,17 +43,24 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <beamline/monitor.h>
 #include <beamline/Particle.h>
 #include <beamline/BmlVisitor.h>
+#include <boost/random.hpp>
 
 
 using namespace std;
 
+//-------------------------------------------------
+// gaussian random number generator for BPM errors.
+//-------------------------------------------------
+
+namespace { 
+  
+  boost::mt19937               rng;              // pseudo-random number generator
+  boost::normal_distribution<> gauss(0.0,1.0 );        
+  boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > error(rng, gauss);             
+}  
 
 // **************************************************
 //   class monitor 
@@ -61,183 +68,245 @@ using namespace std;
 
 monitor::monitor() 
 : bmlnElmnt(),
-  _outputStreamPtr( &std::cout ), 
-  _onOffSwitch( false ), 
-  _driftFraction( 0.5 )
-{
+          enabled_( true ), 
+    driftFraction_( 0.5 ),
+               dx_(0.0),  
+               dy_(0.0),
+              npx_(0.0),  
+              npy_(0.0),
+             xrerr_(0.0),
+             yrerr_(0.0)
+{}  
 
-
-  _rgr   = new double [ BMLN_dynDim ];
-  for( int i = 0; i < BMLN_dynDim; i++ ) { _rgr[i] = 0.0; }
-
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 monitor::monitor( const char* n ) 
 : bmlnElmnt(n),
-  _outputStreamPtr( &std::cout ), 
-  _onOffSwitch( false ), 
-  _driftFraction( 0.5 )
-{
+          enabled_( true ), 
+    driftFraction_( 0.5 ),
+               dx_(0.0),  
+               dy_(0.0),
+              npx_(0.0),  
+              npy_(0.0),
+             xrerr_(0.0),
+             yrerr_(0.0)
+{}
 
-  _rgr   = new double [ BMLN_dynDim ];
-  for( int i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = 0.0;
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 monitor::monitor( const char* n, double const& l )
 : bmlnElmnt(n,l),
-  _outputStreamPtr( &std::cout ), 
-  _onOffSwitch( false ), 
-  _driftFraction( 0.5 )
-{
-  _rgr   = new double [ BMLN_dynDim ];
-  for( int i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = 0.0;
-}
+          enabled_( true ), 
+    driftFraction_( 0.5 ),
+               dx_(0.0),  
+               dy_(0.0),
+              npx_(0.0),  
+              npy_(0.0),
+            xrerr_(0.0),
+            yrerr_(0.0)
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-monitor::monitor( monitor const& x )
-: bmlnElmnt( x ),
-  _outputStreamPtr( x._outputStreamPtr ), 
-  _onOffSwitch( x._onOffSwitch ), 
-  _driftFraction( x._driftFraction )
-{
+monitor::monitor( monitor const& o )
+: bmlnElmnt( o ),
+          enabled_( o.enabled_         ), 
+    driftFraction_( o.driftFraction_   ),
+               dx_( o.dx_              ),  
+               dy_( o.dy_              ),
+              npx_( o.npx_             ),  
+              npy_( o.npy_             ),
+            xrerr_( o.xrerr_           ),
+            yrerr_( o.yrerr_           ) 
+{}
 
-  _rgr   = new double [ BMLN_dynDim ];
-  for( int i = 0; i < BMLN_dynDim; i++ ) _rgr[i] = x._rgr[i];
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 monitor::~monitor() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool monitor::enable( bool set) 
 {
- delete [] _rgr;
+  enabled_= set;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void monitor::setOutputStream( ostream& x )
+bool monitor::isEnabled() const 
 {
-  if( x.good() ) { _outputStreamPtr = &x; }
-  else {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void monitor::setOutputStream( ostream& x )", 
-           "Argument x is not available for writing." ) );
-  }
+ return enabled_;
 }
 
-
-void monitor::setOutputStream( ostream* x )
-{
-  this->setOutputStream( *x );
-}
-
-
-bool monitor::on() 
-{
- static bool ret;
- ret = _onOffSwitch;
- _onOffSwitch = true;
- return ret;
-}
-
-
-bool monitor::off() 
-{
- static bool ret;
- ret = _onOffSwitch;
- _onOffSwitch = false;
- return ret;
-}
-
-
-const char* monitor::version()
-{
-  return "3.0";
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* monitor::Type() const 
 { 
   return "monitor"; 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool monitor::isMagnet() const 
 { 
   return false; 
 }
 
-
-double monitor::operator[]( int n ) 
-{
- if( n < 0 || n > 5 ) return 0.0;
- return _rgr[n];
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& monitor::writeTo(ostream &os) 
 {
   if ( Length() != 0 ) 
-    os << _driftFraction << endl;
+    os << driftFraction_ << endl;
   return os;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 istream& monitor::readFrom(istream &is) 
 {
   if ( Length() != 0 ) {
-    is >> _driftFraction ;
-    if ( _driftFraction < 0 || _driftFraction > 1 ) {
+    is >> driftFraction_ ;
+    if (  driftFraction_ < 0 || driftFraction_ > 1 ) {
       cerr << "monitor::readFrom(istream&): Read a drift fraction of " 
-           << _driftFraction << "; substituting 0.5" 
+           << driftFraction_ << "; substituting 0.5" 
            << endl;
-      _driftFraction = 0.5;
+      driftFraction_ = 0.5;
     }
   } else {
-    _driftFraction = 0.5; // Basically irrelevant if the monitor has no length!
+     driftFraction_ = 0.5; // Basically irrelevant if the monitor has no length!
   }
   return is;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+void monitor::accept( BmlVisitor& v )            
+{ 
+  v.visit( *this ); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void monitor::accept( ConstBmlVisitor& v ) const 
+{ 
+  v.visit( *this ); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double monitor::setDriftFraction( double f ) 
+{ 
+  double ret = driftFraction_; 
+  if ( f <= 1 && f >= 0 ) driftFraction_ = f; 
+  return ret; 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const& monitor::getDriftFraction() const
+{ 
+  return driftFraction_; 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double monitor::hposition() const
+{ 
+  return (enabled_) ?   (xpos_  +  xrerr_* ::error()  + dx_ ) : ( xrerr_* ::error()); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double monitor::vposition() const
+{ 
+  return  (enabled_) ?  ( ypos_ + yrerr_* ::error()  + dy_  ) :  ( yrerr_* ::error() );  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const& monitor::npx() const
+{
+  return npx_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const& monitor::npy() const
+{
+  return npy_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 
 
 // **************************************************
 //   class vmonitor 
 // **************************************************
 
-vmonitor::vmonitor() : monitor() 
-{
-}
+vmonitor::vmonitor() 
+: monitor() 
+{}
 
-vmonitor::vmonitor( const char* n ) : monitor( n )
-{
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-vmonitor::vmonitor( const char* n, double const& l ) : monitor( n,l )
-{
-}
+vmonitor::vmonitor( const char* n ) 
+: monitor( n )
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+vmonitor::vmonitor( const char* n, double const& l ) 
+ : monitor( n,l )
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vmonitor::vmonitor( vmonitor const& x ) 
 : monitor( x ) 
-{
+{}
 
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vmonitor::~vmonitor() 
-{
-}
+{}
 
-double vmonitor::operator[]( int n ) 
-{
- if( n == 0 ) return _rgr[1];
- if( n == 1 ) return _rgr[4];
- return 0.0;
-}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* vmonitor::Type() const 
 { 
   return "vmonitor"; 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool vmonitor::isMagnet() const 
 { 
@@ -250,53 +319,48 @@ bool vmonitor::isMagnet() const
 // **************************************************
 
 hmonitor::hmonitor() : monitor() 
-{
-}
+{}
 
-hmonitor::hmonitor( const char* n ) : monitor( n )
-{
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-hmonitor::hmonitor( const char* n, double const& l ) : monitor( n, l )
-{
-}
+hmonitor::hmonitor( char const* n ) 
+: monitor( n )
+{}
 
-hmonitor::hmonitor( const hmonitor& x ) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+hmonitor::hmonitor( char const* n, double const& l ) 
+: monitor( n, l )
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+hmonitor::hmonitor( hmonitor const& x ) 
 : monitor( x ) 
 {}
 
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hmonitor::~hmonitor() 
 {}
 
-double hmonitor::operator[]( int n ) 
-{
- if( n == 0 ) return _rgr[0];
- if( n == 1 ) return _rgr[3];
- return 0.0;
-}
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* hmonitor::Type() const 
 { 
   return "hmonitor"; 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool hmonitor::isMagnet() const 
 { 
   return false; 
 }
 
-
-void monitor::accept( BmlVisitor& v )            
-{ 
-  v.visit( *this ); 
-}
-
-
-void monitor::accept( ConstBmlVisitor& v ) const 
-{ 
-  v.visit( *this ); 
-}
