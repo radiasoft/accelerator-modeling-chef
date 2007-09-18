@@ -7,9 +7,7 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      bmlnElmnt.h
-******  Version:   3.1
 ******
-******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
 ******
@@ -291,13 +289,10 @@ public:
   virtual bool alignAbsRollmrad( double const& mrad    );
   virtual bool     setAlignment( alignmentData const& );
 
-  bool    hasMoved() const { return ( pinnedFrames_.altered() || align_  ); }
-
+  bool    hasMoved()  const  { return ( pinnedFrames_.altered() || align_  ); }
   void    realign();  // Resets element to its original position.
-
   void    markPins(); // WRITE // Marks the current positions of the element as "original"
-
-  void    loadPinnedCoordinates( Particle const &, Vector&, double = 1.0 );  // WRITE
+  void    loadPinnedCoordinates( Particle const &, Vector&, double=1.0 ) const; 
 
     // Pinned coordinates of the particle are returned in the vector
     //   argument.  
@@ -399,7 +394,7 @@ protected:
 
   PinnedFrameSet                 pinnedFrames_;
 
-  mutable double                     ctRef_;         // (normalized) time required for
+  mutable double                 ctRef_;             // (normalized) time required for
                                                      // a reference particle to cross
                                                      // the element. Established by a
                                                      // RefRegVisitor.
