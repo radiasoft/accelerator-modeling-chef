@@ -1874,18 +1874,6 @@ void BeamlineBrowser::infoWriter::visit( sector const& x )
 
 void BeamlineBrowser::infoWriter::visit( monitor const& x )
 {
-  if( 6 != Particle::PSD ) {
-    QMessageBox::warning( 0, QString( "monitor: " ) + QString( x.Name() ),
-                             "SORRY: Current version of software"
-                             "\nrequires 6 dimensional phase space." );
-    return;
-  }
-
-  // Load the coordinates into an array
-  int n = Particle::PSD;
-  double w[n];
-  x.getState(w);  // This is the only statement that requires
-                   //   six-dimensional phase space. 
 
   // Set up the display widget
   QString theValue;
@@ -1898,25 +1886,25 @@ void BeamlineBrowser::infoWriter::visit( monitor const& x )
          qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
          qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
-           theValue.setNum( 1000.0*w[ Particle::xIndex  ] );
+           theValue.setNum( 1000.0*x.hposition() );
          qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
 
          qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
-           theValue.setNum( 1000.0*w[ Particle::yIndex  ] );
+           theValue.setNum( 1000.0*x.vposition());
          qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
 
          qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
          qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
-           theValue.setNum( 1000.0*w[ Particle::npxIndex ] );
+           theValue.setNum( 1000.0*x.npx() );
          qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
 
          qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
          qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
          qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
-           theValue.setNum( 1000.0*w[ Particle::npyIndex ] );
+           theValue.setNum( 1000.0*x.npy() );
          qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
 
        qwa->adjustSize();
