@@ -28,7 +28,6 @@ libpurepybeamline_la_SOURCES = $(libpybeamline_la_SOURCES)
 libpurepybmlfactory_la_SOURCES = $(libpybmlfactory_la_SOURCES)
 libpurepyphysics_toolkit_la_SOURCES = $(libpyphysics_toolkit_la_SOURCES)
 
-
 ### the following depend on CHEF 
 
 # libpychefplot_la_SOURCES        =   py-chefplot-module.cpp py-chefplotmain.cpp py-chefcurve.cpp py-chefplotdata.cpp
@@ -65,7 +64,9 @@ libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../bmlfactory/src/libbmlfactory.la \
     -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la
+    ../../basic_toolkit/src/libbasic_toolkit.la \
+    ../../parsers/xsif/src/libxsifparser.la \
+    -lboost_regex
 
 libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
