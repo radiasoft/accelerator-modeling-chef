@@ -1127,10 +1127,6 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
                   && (!attribute_k2 || (0 == k2))
                   && (!attribute_k3 || (0 == k3))  );
  
-  //***** DGN  
- 
-  simple = false; 
-  
   if( simple) {
     elm =  new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
     elm->setTag("SBEND");
