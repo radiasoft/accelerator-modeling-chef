@@ -51,6 +51,8 @@
 #include <config.h>
 #endif
 
+#include <algorithm>
+
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
 
@@ -644,8 +646,14 @@ int BeamlineContext::setAlignment( ElmPtr v, alignmentData const& u )
   static const int errCode_nullArg  = 1;
   static const int errCode_notFound = 2;
 
-  if( v == 0 )                   { return errCode_nullArg; }
-  if( 0 == p_bml_->contains(v) ) { return errCode_notFound; }
+  if( !v ) { 
+     return errCode_nullArg; 
+  }
+
+  beamline::deep_iterator it; 
+  if( (it = std::find(p_bml_->deep_begin(), p_bml_->deep_end(), v )) == p_bml_->deep_end() ) { 
+   return errCode_notFound; 
+  }
 
   v->setAlignment( u );
   // ??? Check for passive element!!!
@@ -717,14 +725,17 @@ int BeamlineContext::replaceElement( ElmPtr a, ElmPtr b )
   // the second. Return values:
   // 0 everything went as planned
   // 1 first argument was not found
-  // 2 at least one argument was null
-  // 
 
-  int ret = p_bml_->replace(a,b);
+  int ret = 0;
 
-  if( 0 == ret ) { reset(); }
-
-  // This step will not always be necessary.
+  beamline::deep_iterator it = std::find( p_bml_->deep_begin(),  p_bml_->deep_end(), a );
+  
+  if( it ==p_bml_-> deep_end() ) { 
+    reset(); ret = 1; 
+  } 
+  else {
+    (*it) = b;
+  }
 
   return ret;
 }
@@ -738,8 +749,12 @@ alignmentData BeamlineContext::getAlignmentData( ElmPtr v ) const
   static const alignment err1Ret(  137.,  137.,  137. );
   static const alignment err2Ret( -137., -137., -137. );
 
-  if( v == 0 )                   { return err1Ret.getAlignment(); }
-  if( 0 == p_bml_->contains(v) ) { return err2Ret.getAlignment(); }
+  if( !v  ) { return err1Ret.getAlignment(); }
+  
+  beamline::deep_iterator it = p_bml_->deep_begin(); 
+  if( (it = std::find(it,  p_bml_->deep_end(), v )) == p_bml_->deep_end() ) { 
+    return err2Ret.getAlignment(); 
+  }
 
   return v->Alignment();
 }
