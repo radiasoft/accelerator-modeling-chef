@@ -32,6 +32,12 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
+******  REVISION HISTORY 
+******
+******  Mar 2007 ostiguy@fnal.gov
+****** - function signatures based on references rather than ptrs
+****** - take advantage of use dynamic type resolution for visit() functions
+******
 **************************************************************************
 *************************************************************************/
 
@@ -68,30 +74,33 @@ const int FramePusher::SECTORVISITED = 1;
 
 using namespace std;
 
-// Constructors
 
 FramePusher::FramePusher()
-: frame_()
-  , errorCode_(OKAY)
-{
-}
+: frame_(), errorCode_(OKAY)
+{}
 
-FramePusher::FramePusher( const Frame& f )
-: frame_(f)
-  , errorCode_(OKAY)
-{
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+FramePusher::FramePusher( Frame const& f )
+: frame_(f), errorCode_(OKAY)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 FramePusher::FramePusher( const FramePusher& x )
-: frame_( x.frame_ )
-  , errorCode_(x.errorCode_)
-{
-}
+: frame_( x.frame_ ), errorCode_(x.errorCode_)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 FramePusher::~FramePusher()
-{
-}
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Visiting functions
 
@@ -102,6 +111,8 @@ void FramePusher::visit( bmlnElmnt const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( rbend const& x )
 {
@@ -122,6 +133,8 @@ void FramePusher::visit( rbend const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( CF_rbend const& x )
 {
@@ -142,17 +155,16 @@ void FramePusher::visit( CF_rbend const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( sbend const& x    )
 {
-  double angle;
-  double displacement;
-  double rho;
 
-  angle = x.getAngle();
-  rho = x.Length() / angle;
+  double angle = x.getAngle();
+  double rho   = x.Length() / angle;
   angle /= 2.0;
-  displacement = 2.0*rho*sin(angle);
+  double displacement = 2.0*rho*sin(angle);
 
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
@@ -167,17 +179,15 @@ void FramePusher::visit( sbend const& x    )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( CF_sbend const& x )
 {
-  double angle;
-  double displacement;
-  double rho;
-
-  angle = x.getAngle();
-  rho = x.Length() / angle;
+  double angle = x.getAngle();
+  double rho   = x.Length() / angle;
   angle /= 2.0;
-  displacement = 2.0*rho*sin(angle);
+  double displacement = 2.0*rho*sin(angle);
 
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
@@ -192,6 +202,8 @@ void FramePusher::visit( CF_sbend const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( sector const&)
 {
@@ -208,8 +220,13 @@ void FramePusher::visit( sector const&)
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void FramePusher::visit( Slot const& x     )
 {
   frame_ = ( ( x.getOutFrame() ).relativeTo( x.getInFrame() ) ) 
            .patchedOnto( frame_ );
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
