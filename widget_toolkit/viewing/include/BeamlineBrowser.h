@@ -7,7 +7,6 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      BeamlineBrowser.h
-******  Version:   3.4
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -99,7 +98,7 @@ public:
   friend class BeamlineBrowser;
 
 private:
-  ConstElmPtr       myElement_;
+  ElmPtr            myElement_;
   double            azimuth_;   
 };
 
@@ -196,7 +195,7 @@ struct infoWriter : public ConstBmlVisitor
   int findElement( QBml*, const BoolNode&, std::list<ConstElmPtr>& );
   int findElement( QBml*, const BoolNode*, std::list<ConstElmPtr>& );
 
-  std::list<ElmPtr> findAllSelected( QBmlRoot* ) const;
+  std::list<ConstElmPtr> findAllSelected( QBmlRoot* ) const;
 
 public slots:
     void setDir( const QString & );

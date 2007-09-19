@@ -93,10 +93,10 @@ class BmlUtil
   //   compatability.
 
 
-  static BmlPtr    cloneLineAndInsert( double              percent,
-                                       std::list<ElmPtr>&  insertions,
-                                       std::list<ElmPtr>&  targets,
-                                       ConstBmlPtr  linePtr );
+  static BmlPtr cloneLineAndInsert( double                   percent,
+                                    std::list<ConstElmPtr>&  insertions,
+                                    std::list<ConstElmPtr>&  targets,
+                                    ConstBmlPtr              linePtr );
   // Creates a new beamline and returns its address. The
   //   invoking program takes responsibility for deleting the
   //   created beamline. It also takes the responsibility of 

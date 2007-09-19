@@ -374,12 +374,11 @@ int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
-                                       std::list<ElmPtr>&         insertions,
-                                       std::list<ElmPtr>&         targets,
-                                       ConstBmlPtr                linePtr )
+BmlPtr BmlUtil::cloneLineAndInsert( double                  percent,
+                                    std::list<ConstElmPtr>& insertions,
+                                    std::list<ConstElmPtr>& targets,
+                                    ConstBmlPtr             linePtr )
 {
-
   if( !linePtr ) { return BmlPtr(); }
 
   if( 0 == insertions.size() || 0 == targets.size() ) {
@@ -407,12 +406,11 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
     if( insertions.empty() || targets.empty() ) break; 
 
-    ElmPtr ins = insertions.front(); insertions.erase( insertions.begin() );
-    ElmPtr trg = targets.front();       targets.erase(    targets.begin() );
+    ConstElmPtr ins = insertions.front(); insertions.erase( insertions.begin() );
+    ConstElmPtr trg = targets.front();       targets.erase(    targets.begin() );
 
 
     if( typeid(**it) == typeid(beamline) ) {
-
       insertions.push_front(ins);
       targets.push_front(trg);
       ret->append( cloneLineAndInsert ( percent, insertions, targets,  dynamic_pointer_cast<const beamline>(*it) ) );
@@ -445,17 +443,17 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
       }
     }
   }
+
+
   // If there are elements left over, handle them.
 
   for (  ; it != linePtr->end(); ++it ) {
     ret->append( ElmPtr( (*it)->Clone() ) );
   }
 
+
   // Finished ...
 
   ret->setEnergy( linePtr->Energy() );
   return ret;
-  }
-
-
-
+}

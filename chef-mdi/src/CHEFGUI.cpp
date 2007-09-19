@@ -139,6 +139,7 @@ struct DataStore {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
   :CHEFGUIBase(parent,name,f), browser_(0)
 
@@ -1492,6 +1493,7 @@ void CHEFGUI::editEditElement()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 void CHEFGUI::editAlign()
 {
   bool handleSpace   = true;
@@ -1563,15 +1565,25 @@ void CHEFGUI::editAlign()
       euclidData.tilt    *= 0.001;  // milliradians -> radians
 
       // Search for selected elements
-     
-      std::list<ElmPtr> theOnes = browser_->findAllSelected(dynamic_cast<QBmlRoot*>(p_clickedQBml_));
+      std::list<ConstElmPtr> theChosenOnes = browser_->findAllSelected(dynamic_cast<QBmlRoot*>(p_clickedQBml_));
 
-      ElmPtr elementPtr;
+      if( theChosenOnes.empty() ) {
+        std::ostringstream uic;
+        uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
+               "\nIn function: void CHEFGUI::editAlign(): "
+               "\nNo elements selected; no action will be taken.";
+        QMessageBox::warning( 0, "CHEF: WARNING", uic.str().c_str() );
+        delete wpu;
+        return;
+      }
 
-      for ( std::list<ElmPtr>::iterator it  = theOnes.begin();  
-                                        it != theOnes.end(); ++it )
+      ConstElmPtr elementPtr;
+      std::list<ElmPtr> theOnes;
+      for ( std::list<ConstElmPtr>::iterator it  = theChosenOnes.begin();  
+                                             it != theChosenOnes.end(); ++it )
       { 
-        if( BmlUtil::isSpace(**it) ) {
+        elementPtr = *it;
+        if( BmlUtil::isSpace(*elementPtr) ) {
           if(handleSpace) {
             QMessageBox::warning( 0, "CHEF: WARNING", 
               "This function will not align empty space."
@@ -1589,6 +1601,9 @@ void CHEFGUI::editAlign()
             handleSbend = false;
           }
         }
+        else {
+          theOnes.push_back( boost::const_pointer_cast<bmlnElmnt>(elementPtr) );
+        }
       }
 
      // Do the alignment
@@ -1597,8 +1612,9 @@ void CHEFGUI::editAlign()
       if( p_currBmlCon_) { p_currBmlCon_->accept( euclid ); }
      }
   }
-}
 
+  delete wpu;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1830,9 +1846,9 @@ void CHEFGUI::editAddMarkers()
     }
 
     // Find selected elements
-    std::list<ElmPtr> theChosenOnes = browser_->findAllSelected( theRoot );
+    std::list<ConstElmPtr> theOnes = browser_->findAllSelected( theRoot );
 
-    if( theChosenOnes.empty() ) {
+    if( theOnes.empty() ) {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
              "\nIn function: void CHEFGUI::editAddMarkers():"
@@ -1842,13 +1858,10 @@ void CHEFGUI::editAddMarkers()
     }
 
     // Load BmlPtrLists, for use by lower level tools
-    std::list<ElmPtr> theOnes;
-    std::list<ElmPtr> insertions;
-
-    for ( std::list<ElmPtr>::iterator it = theChosenOnes.begin(); it != theChosenOnes.end(); ++it )
+    std::list<ConstElmPtr> insertions;
+    for ( std::list<ConstElmPtr>::iterator it = theOnes.begin(); it != theOnes.end(); ++it )
     {
-      theOnes.push_back(*it);
-      insertions.push_back( ElmPtr( new marker(markerName.ascii() ) ));
+      insertions.push_back( ConstElmPtr( new marker(markerName.ascii() ) ));
     }
 
     // Create the new beamline with inserted markers included
@@ -1885,12 +1898,13 @@ void CHEFGUI::editAddMarkers()
   }
 }
 
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void CHEFGUI::editAddQtMons()
 {
-
   insDlgData options = insertionDialog();
 
   if( options.accepted ) {
@@ -1905,7 +1919,7 @@ void CHEFGUI::editAddQtMons()
 
     // Find selected elements
 
-    std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
+    std::list<ConstElmPtr> theOnes = browser_->findAllSelected( theRoot );
 
     if( theOnes.empty() ) {
       std::ostringstream uic;
@@ -1916,18 +1930,14 @@ void CHEFGUI::editAddQtMons()
       return;
     }
 
-    std::list<ElmPtr> insertions;
-
+    std::list<ConstElmPtr> insertions;
     QtMonitorPtr qtmPtr;
 
-    for ( std::list<ElmPtr>::iterator   it  = theOnes.begin();  
-                                   it != theOnes.end(); ++it) {
-
-      
+    for ( std::list<ConstElmPtr>::iterator   it  = theOnes.begin();  
+                                             it != theOnes.end(); ++it) {
       qtmPtr = QtMonitorPtr( new QtMonitor(markerName.ascii()) );
       qtmPtr->setStrength(5.0);  // to survive condensation
       insertions.push_back( qtmPtr );
-
     }
 
     // Create the new beamline with inserted monitors included
@@ -1971,6 +1981,7 @@ void CHEFGUI::editAddQtMons()
   }
 
 }
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2060,7 +2071,6 @@ void CHEFGUI::editMode()
 
 void CHEFGUI::editPartition()
 {
-
   // Locate the root beamline
 
   QBmlRoot* theRoot = dynamic_cast<QBmlRoot*>(p_clickedQBml_);
@@ -2071,7 +2081,7 @@ void CHEFGUI::editPartition()
 
   // Find selected elements
  
-  std::list<ElmPtr> theOnes = browser_->findAllSelected( theRoot );
+  std::list<ConstElmPtr> theOnes = browser_->findAllSelected( theRoot );
 
   if( theOnes.empty() ) {
     std::ostringstream uic;
@@ -2095,7 +2105,7 @@ void CHEFGUI::editPartition()
 
   ElmPtr spa, spb;
 
-  std::list<ElmPtr>::iterator it   = theOnes.begin();
+  std::list<ConstElmPtr>::iterator it   = theOnes.begin();
   
   for ( beamline::const_deep_iterator dit  = oldbmlPtr->deep_begin();  
                                       dit != oldbmlPtr->deep_end();  ++dit ) 
@@ -3404,6 +3414,5 @@ void CHEFGUI::databaseRetrieve()
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 

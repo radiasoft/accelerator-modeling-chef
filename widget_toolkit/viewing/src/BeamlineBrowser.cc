@@ -1287,10 +1287,10 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
 }
 
 
-std::list<ElmPtr> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
+std::list<ConstElmPtr> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
 {
 
-  std::list<ElmPtr> ret;
+  std::list<ConstElmPtr> ret;
 
   QBml*      qbmlPtr;
   QBmlElmt*  qbmlelmtPtr;
@@ -1324,7 +1324,7 @@ std::list<ElmPtr> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
     // Apply the test and, if passed, add element pointer to the list.
     if( qbmlPtr->isSelected() ) {
       if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>(qbmlPtr) ) ) {
-        ret.push_back( boost::const_pointer_cast<bmlnElmnt>(qbmlelmtPtr->cheatElementPtr()) );
+        ret.push_back( qbmlelmtPtr->cheatElementPtr() );
       }
     }
 
