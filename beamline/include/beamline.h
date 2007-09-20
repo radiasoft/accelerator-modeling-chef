@@ -64,6 +64,8 @@ class BmlVisitor;
 class ConstBmlVisitor;
 
  
+// -------------------------------------------------------------------------------
+
 class beamline: public bmlnElmnt {
 
 public:
@@ -266,7 +268,7 @@ public:
                            // the beginning of the ring.
                            // Uses the same method as MAD.
 
-  int twiss( lattFunc&,    JetParticle&,  int attachFlag = 1);
+  int twiss( LattFunc&,    JetParticle&,  int attachFlag = 1);
                            // Computes lattice functions for a
                            // non-periodic beamline.
                            // Uses the same method as MAD.
@@ -291,8 +293,8 @@ public:
   bool           isBeamline() const;
   bool                empty() const;
   void                peekAt( double& s, Particle const& ) const;
-  lattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
-  lattFunc     whatIsLattice( std::string name );                                    
+  LattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
+  LattFunc     whatIsLattice( std::string name );                                    
   int                howMany() const; 
   int           countHowMany() const;
   int     countHowManyDeeply() const;
@@ -310,7 +312,7 @@ public:
   bool         isMagnet()                       const;
   double       OrbitLength( Particle const& );
   bool         isFlat()                         const;
-  lattRing     whatIsRing();
+  LattRing     whatIsRing();
 
 
   // STORING_______________________________________________________________________
