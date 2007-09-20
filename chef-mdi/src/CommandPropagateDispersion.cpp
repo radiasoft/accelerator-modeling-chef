@@ -44,19 +44,11 @@
 
 using namespace std;
 
-QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initial) 
+QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr& context, DispersionSage::Info const& initial) 
 
 {
 
-    DispersionSage::Info initialDispersion;
-
-    initialDispersion.arcLength      = 0.0;
-    initialDispersion.dispersion.hor = initial.dispersion.hor;
-    initialDispersion.dispersion.ver = initial.dispersion.ver;
-    initialDispersion.dPrime.hor     = initial.dPrime.hor;
-    initialDispersion.dPrime.ver     = initial.dPrime.ver;
-
-    context->setInitialDispersion( initialDispersion );
+    context->setInitialDispersion( initial );
 
     DspnFncData dfd( context->getDispersionArray(), context->cheatBmlPtr() );
 
