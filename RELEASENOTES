@@ -1,1 +1,29 @@
-This is a temporary placeholder file.  Ignore for now.
+Summary of changes since 20070808 release
+-----------------------------------------
+
+ParticleBunch  
+
+- rms emittance calculation capability
+- reported intensity reflects lost particles
+
+monitor element 
+
+- now detects bunch centroid when a bunch is propagated
+- support for systematic and random errors
+
+XSIF parser
+
+ - improved command/element valid argument checking
+ - support for BETA0 (initital conditions)
+ 
+beamline class
+ 
+ - streamlined iterator based interface 
+ - misaligment and rotations speedup
+
+GUI
+ 
+ - new bunch generation dialog
+ - bunch projection plots 
+ - bunch scatter plots 
+
