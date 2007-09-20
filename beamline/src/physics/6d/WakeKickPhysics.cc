@@ -30,6 +30,7 @@
 *************************************************************************/
 #include <boost/bind.hpp>
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/PhysicsConstants.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/JetParticle.h>
@@ -142,23 +143,38 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   // ------------------------------------------------------------------------------
   // At this point, the bunch has been longitudinally sorted by the BunchProjector. 
   // We get the min value of cdt from the first particle.
-  // ------------------------------------------------------------------------------
+  //
+  // NOTE: particle reference momentum in expressed internally in  GeV, 
+  //       The wake is assumed to be expressed in V/pC/m   longitudinal 
+  //                                              V/pC/m/m transverse 
+  // --------------------------------------------------------------------------------------------
 
   double  cdt_min =  projector.cdt_min(); 
-  double  p0      =  bunch.begin()->ReferenceMomentum(); 
+  double  p0      =  bunch.begin()->ReferenceMomentum(); // in 1.0e9 eV 
 
-  double npart = bunch.Population(); 
+  double npart = ( bunch.Intensity() * PH_MKS_e );       // in 1.0e9 pC 
+
+  double const coeff = npart * binsize / p0; // normalization 
+                                             // THIS SHOULD BE MULTIPLIED BY CAVITY EFFECTIVE LENTGH (for ILC, l = 1.036m)   
 
   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
   {
       Vector& state         =  it->State();
 
-      int ibin = int( (state[5] - cdt_min) / binsize ); 
+      int ibin = int( (state[2] - cdt_min) / binsize ); 
        
-      if ( ibin > (nsamples_-1) ) break;  //  this happens if histogramming has truncated the bunch profile  
+      if ( ibin > (nsamples_-1) ) { 
 
-      state[3]  +=  npart *( dpx_vec[ibin] * binsize ) /p0;
-      state[4]  +=  npart *( dpy_vec[ibin] * binsize )/ p0; 
+	(*pcerr) << "*** WARNING *** "                                                                << std::endl; 
+	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Histogram bin index out of range  "       << std::endl; 
+	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Total bunch length : "    << bunch_length << std::endl;
+	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Sampling region width : " << interval_    << std::endl;
+
+         break;  //  just a sanity check ... this should never happen !
+      }
+
+      state[3]  +=  coeff* dpx_vec[ibin];
+      state[4]  +=  coeff* dpy_vec[ibin]; 
 
       //------------------------------------------------------
       // **** the longitudinal wake is disabled for the moment
