@@ -89,7 +89,7 @@ using FNAL::pcout;
 
 #define PREC setprecision(4)
 
-ostream& operator<<(ostream& os, const lattFunc& x) {
+ostream& operator<<(ostream& os, LattFunc const& x) {
   os << PREC << x.alpha.hor << " " << x.beta.hor << " " << x.psi.hor;
   os << " " << x.alpha.ver << " " << x.beta.ver << " " << x.psi.ver;
   os << " " << x.dispersion.hor << " " << x.dPrime.hor;
@@ -97,7 +97,7 @@ ostream& operator<<(ostream& os, const lattFunc& x) {
   return (os << endl);
 }
 
-istream& operator>>(istream& is, lattFunc& x) {
+istream& operator>>(istream& is, LattFunc& x) {
   is >> x.alpha.hor;
   is >> x.beta.hor; 
   is >> x.psi.hor ;
@@ -115,7 +115,7 @@ istream& operator>>(istream& is, lattFunc& x) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ostream& operator<<(ostream& os, const lattRing& x) {
+ostream& operator<<(ostream& os, LattRing const& x) {
   os << x.tune.hor << " " << x.tune.ver << " ";
   os << " " << x.chromaticity.hor << " " << x.chromaticity.ver;
   return (os << endl);
@@ -375,9 +375,9 @@ void beamline::eraseBarnacles( const char* s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-lattRing beamline::whatIsRing() 
+LattRing beamline::whatIsRing() 
 {
-  lattRing errRet;
+  LattRing errRet;
 
   BarnacleList::iterator it = dataHook.find( "Ring" ); 
 
@@ -393,16 +393,16 @@ lattRing beamline::whatIsRing()
   return errRet;
  }
  
-  return any_cast<lattRing>(it->info);
+  return any_cast<LattRing>(it->info);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-lattFunc beamline::whatIsLattice( int n ) 
+LattFunc beamline::whatIsLattice( int n ) 
 {
 
- lattFunc errRet;
+ LattFunc errRet;
 
  int numElem = howMany();
  
@@ -412,14 +412,14 @@ lattFunc beamline::whatIsLattice( int n )
          << " lies outside [0," 
          << (numElem-1) << "].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "lattFunc beamline::whatIsLattice( int n ) {", 
+           "LattFunc beamline::whatIsLattice( int n ) {", 
            uic.str().c_str() ) );
  }
 
 int count = 0;
 for (beamline::iterator it = begin(); it != end(); ++it ) { 
   if( n == count++ ) 
-  return any_cast<lattFunc>( (*it)->dataHook.find( "Twiss")->info ) ;
+  return any_cast<LattFunc>( (*it)->dataHook.find( "Twiss")->info ) ;
 }
 
  (*pcout) << endl;
@@ -436,14 +436,14 @@ for (beamline::iterator it = begin(); it != end(); ++it ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-lattFunc beamline::whatIsLattice( std::string n ) {
+LattFunc beamline::whatIsLattice( std::string n ) {
 
-  lattFunc errRet;
+  LattFunc errRet;
   
   for (beamline::iterator it = begin(); it != end(); ++it ) { 
 
     if( (*it)->Name() == n  ) 
-      return any_cast<lattFunc>( (*it)->dataHook.find( "Twiss" )->info );
+      return any_cast<LattFunc>( (*it)->dataHook.find( "Twiss" )->info );
   } 
 
     return errRet;  
