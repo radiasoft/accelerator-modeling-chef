@@ -105,10 +105,10 @@ std::istream& operator >>( std::istream &is, ParticleBunch& bunch)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& population)
+ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& intensity)
 :
   reference_(  p.Clone() ), 
-  population_(population ), 
+  intensity_( intensity ), 
   bunch_(),
   pool_( sizeof(Particle) , max( 128, (nparticles*110/100) ))  
 
@@ -263,9 +263,17 @@ void ParticleBunch::append( Particle const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double ParticleBunch::Population() const
-{
-  return population_;
+double  ParticleBunch::Intensity() const 
+{      
+  return intensity_* (1.0 - (double(removed_size()) / double( size()) )); 
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ParticleBunch::setIntensity( double const& value)
+{      
+  intensity_ = value * double( size() ) / double( size() - removed_size() );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
