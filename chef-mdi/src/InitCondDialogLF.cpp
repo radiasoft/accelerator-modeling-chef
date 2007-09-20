@@ -25,6 +25,8 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
 #include <InitCondDialogLF.h>
@@ -32,9 +34,8 @@
 #include <qvalidator.h>
 #include <qlineedit.h>
 
-InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f):
-
-InitCondDialogLFBase(parent,name,f)
+InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f)
+ : InitCondDialogLFBase(parent,name,f)
 {
   QDoubleValidator* positiveValidator = new QDoubleValidator(0.0, 1.0e9, 6, this, "betaValidator");  
   QDoubleValidator* dbleValidator     = new QDoubleValidator(this, "dbleValidator");  
@@ -55,6 +56,9 @@ InitCondDialogLFBase(parent,name,f)
   vPsiLineEdit->setValidator( dbleValidator );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void InitCondDialogLF::readInputValues()
 {
   lf_.beta.hor       = hBetaLineEdit->text().toDouble();
@@ -72,19 +76,22 @@ void InitCondDialogLF::readInputValues()
   lf_.psi.ver        = vPsiLineEdit->text().toDouble();
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFuncSage::lattFunc const& 
-InitCondDialogLF::getInitCond()
+LattFuncSage::lattFunc const& InitCondDialogLF::getInitCond()
 {
   readInputValues();
   return lf_;
 }
 
-void
-InitCondDialogLF:: setInitCond(const LattFuncSage::lattFunc& lf) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void InitCondDialogLF:: setInitCond( LattFuncSage::lattFunc const& lf) 
 {
 
-  QString s; 
+  QString s("%1"); 
 
   hBetaLineEdit->setText(  s.arg(lf.beta.hor) );
   vBetaLineEdit->setText(  s.arg(lf.beta.ver) );
@@ -101,6 +108,9 @@ InitCondDialogLF:: setInitCond(const LattFuncSage::lattFunc& lf)
   vPsiLineEdit->setText( s.arg( lf.psi.ver ) );
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 InitCondDialogLF::dispersionMode()
@@ -124,6 +134,9 @@ InitCondDialogLF::dispersionMode()
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void 
 InitCondDialogLF::ULFMode()
 {
@@ -143,6 +156,9 @@ InitCondDialogLF::ULFMode()
  vPsiLineEdit->setEnabled(false);
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 InitCondDialogLF::momentsMode()
