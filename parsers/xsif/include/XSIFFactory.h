@@ -53,18 +53,21 @@ class XSIFFactory: public bmlfactory {
 
     const char* getUseStatementBeamlineName() const;           
 
-    const char* getParticleType() const;
-    double getEnergy()            const;
-    double getBrho()              const;
+    char const* getParticleType()             const;
+    double      getEnergy()                   const;
+    double      getBrho()                     const;
 
     bool    variableIsDefined(const char* varname) const;
-    double  getVariableValue(const char* varname) const;   
+    double   getVariableValue(const char* varname) const;   
+
+    LattFunc getInitialValues()               const;   
 
     void dumpVariables() const;
    
 
   private:
  
+    LattFunc         initial_values_;
     XsifParserDriver driver_;
 
 };

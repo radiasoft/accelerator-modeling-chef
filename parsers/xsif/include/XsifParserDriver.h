@@ -153,6 +153,7 @@ class XsifParserDriver {
 
   BmlPtr    getLine(std::string label);
 
+  void      command_BETA0 (  xsif_yy::location const& yyloc,  std::map<std::string, boost::any> const& attributes);
   void      command_BEAM  (  xsif_yy::location const& yyloc,  std::map<std::string, boost::any> const& attributes);
   void      command_CALL  (  xsif_yy::location      & yyloc,  std::map<std::string, boost::any> const& attributes, yyscan_t yyscanner);
   void      command_RETURN(  xsif_yy::location      & yyloc,  yyscan_t yyscanner);
@@ -194,6 +195,7 @@ class XsifParserDriver {
 
   std::map<std::string, std::vector<std::string> >  valid_attributes_;
 
+  LattFunc                                          initial_values_;
 
   class ParserException: public GenericException {
 
@@ -234,7 +236,7 @@ class XsifParserDriver {
   ElmPtr      make_blmonitor(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
   ElmPtr           make_wire(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
   ElmPtr          make_gkick(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
-  ElmPtr          make_beta0(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
+  //ElmPtr          make_beta0(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
   ElmPtr make_notimplemented(ConstElmPtr&, double const&, std::string const& label, std::map<std::string, boost::any> const& attributes );
 
 

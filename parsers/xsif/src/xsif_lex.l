@@ -151,6 +151,7 @@ blk             [ \t]
 (NLC|nlc)                                                { return token::XSIF_NLC;        }  
 (NONLC|nonlc)                                            { return token::XSIF_NONLC;      }  
 (BEAM|beam)                                              { return token::XSIF_BEAM;       }  
+(BETA0|beta0)                                            { return token::XSIF_BETA0;      }  
 
 
    /* ----------------------------------------------- */
