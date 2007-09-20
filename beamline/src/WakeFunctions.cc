@@ -77,37 +77,46 @@ namespace {
 //
 //
 //  w_t(s) =   A_T   u(s) [ 1- (1 + sqrt(s/s_1))* exp(s/s_1) ]
-
+//
 //           
 // -------------------------------------------------------------------------------------------
+//
 // The parameter values below were extracted from
 // I. Zagorodnov, N. Solyak "Wakefield Effects of New ILC Cavity Shapes"  EPAC 2006
+// The constants in the paper are for a wake expressed in V/pC/module (L) or V/pC/m/module (T)
+//
+// The wakefield kick code assumes that the wake is expressed in V/pC/m (L) and V/pC/m/m (T)
+//
+// One ILC module ~ 12 m ... 
+// There are 8 structures per module and each structure is 1.03 m long. To express the wake per 
+// unit of structure length, we need to divide by (8 * 1.03)  
+//
 //--------------------------------------------------------------------------------------------
 
 // ILC Cavity high gradient (RE)
 
 namespace RE {
-  double A_L = -388.0;
-  double A_T = 1300.0;
-  double s_0 = 1.90e-3;
-  double s_1 = 0.91e-3;
+  double A_L = -388.0 * (8* 1.036);
+  double A_T = 1300.0 * (8* 1.036);
+  double s_0 = 1.90e-3; // in meters
+  double s_1 = 0.91e-3; // in meters
 }
  
 // ILC Cavity low loss (LL)
 
 namespace LL {   
-  double A_L = -459.0;
-  double A_T = 1720.0;
-  double s_0 = 1.85e-3;
-  double s_1 = 0.84e-3;
+  double A_L = -459.0 * (8* 1.036); 
+  double A_T = 1720.0 * (8* 1.036);
+  double s_0 = 1.85e-3; // in meters 
+  double s_1 = 0.84e-3; // in meters
 }
 // ILC Cavity TESLA (LL)
 
 namespace TESLA {
-  double A_L = -344.0;
-  double A_T = 1000.0;
-  double s_0 = 1.74e-3;
-  double s_1 = 0.92e-3;
+  double A_L = -344.0 * (8* 1.036);
+  double A_T = 1000.0 * (8* 1.036);
+  double s_0 = 1.74e-3; // in meters
+  double s_1 = 0.92e-3; // in meters
 }
 
 
