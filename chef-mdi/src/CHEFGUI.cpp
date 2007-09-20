@@ -363,7 +363,7 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
     command_computeDispersion_ = 
       boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandDispersion()        ); 
     command_propagateDispersion_ = 
-          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)  >       ( CommandPropagateDispersion() ); 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  DispersionSage::Info const&)  >   ( CommandPropagateDispersion() ); 
 
 
 
@@ -2579,9 +2579,18 @@ void CHEFGUI::propagateDispersion()
   {
 
     initCondDialogDisp_->readInputValues();
-    LattFuncSage::lattFunc initialConditions = initCondDialogDisp_->getInitCond();
 
-    QWidget* plot = command_propagateDispersion_( centralWidget(), p_currBmlCon_ , initialConditions); 
+    LattFuncSage::lattFunc initialConditions = initCondDialogDisp_->getInitCond();
+    
+    DispersionSage::Info info;
+ 
+    info.dispersion.hor =  initialConditions.dispersion.hor;
+    info.dispersion.ver =  initialConditions.dispersion.ver;
+
+    info.dPrime.hor =  initialConditions.dPrime.hor;
+    info.dPrime.ver =  initialConditions.dPrime.ver;
+     
+    QWidget* plot = command_propagateDispersion_( centralWidget(), p_currBmlCon_ , info); 
    
     plot->show();
   }

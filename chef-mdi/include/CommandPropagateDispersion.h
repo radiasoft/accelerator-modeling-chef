@@ -40,7 +40,7 @@ class CommandPropagateDispersion {
 
  public:
     
-  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initialConditions ); 
+  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, DispersionSage::Info const& initialConditions ); 
 
 };
 

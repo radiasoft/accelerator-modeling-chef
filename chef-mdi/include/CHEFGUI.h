@@ -60,6 +60,7 @@
 
 #include <physics_toolkit/DriftEliminator.h>
 #include <physics_toolkit/QuadEliminator.h>
+#include <physics_toolkit/DispersionSage.h>
 
 
 #include <BeamlineExpressionTree.h>
@@ -355,7 +356,7 @@ private slots:
 
   void parseEditorPython( CF_Editor* editor );
   void parseEditorMAD8( CF_Editor* editor );
-                                             // END   CHEFGUI SPECIFIC CODE
+
 
 signals:
 
@@ -376,7 +377,7 @@ signals:
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEigenmodes_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeDispersion_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&, LattFuncSage::lattFunc const&) > command_propagateDispersion_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&, DispersionSage::Info const&) >   command_propagateDispersion_; 
 
 
 };
