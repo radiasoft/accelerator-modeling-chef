@@ -43,6 +43,7 @@
 
 class   beamline;
 class   bmlnElmnt;
+struct  LattFunc;
 
 typedef boost::shared_ptr<beamline>  BmlPtr;
 typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
@@ -59,18 +60,17 @@ class bmlfactory {
     virtual BmlPtr create_beamline( std::string bmlname ,  double brho) = 0;
     virtual BmlPtr create_beamline( std::string bmlname)                = 0;
         
-    virtual std::list<std::string>  getBeamlineList() =0;          // list of all available beamlines  
+    virtual std::list<std::string>  getBeamlineList()=0; // list of all available beamlines  
 
-    virtual const char* getUseStatementBeamlineName()   const =0; 
+    virtual const char* getUseStatementBeamlineName()   const=0; 
           
-    virtual const char* getParticleType()               const =0;
-    virtual double      getEnergy()                     const =0;
-    virtual double      getBrho()                       const =0;
+    virtual const char* getParticleType()               const=0;
+    virtual double      getEnergy()                     const=0;
+    virtual double      getBrho()                       const=0;
 
-    virtual bool        variableIsDefined(const char* varname) const =0;
-    virtual double      getVariableValue (const char* varname) const =0;   
-
-
+    virtual bool        variableIsDefined(const char* varname) const=0;
+    virtual double      getVariableValue (const char* varname) const=0;   
+    virtual LattFunc    getInitialValues()                     const=0;   
 
   protected:
 

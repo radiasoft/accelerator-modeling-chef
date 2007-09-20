@@ -1134,4 +1134,10 @@ MAD8Factory::getBrho( ) const {
   return madparser_get_brho( mp_ ); 
 
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+LattFunc MAD8Factory::getInitialValues() const  
+{
+  return LattFunc(); // FIXME: NOT IMPLEMENTED !
+}
