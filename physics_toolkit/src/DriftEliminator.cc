@@ -126,10 +126,8 @@ void DriftEliminator::visit( beamline const& x )
 
 void DriftEliminator::visit( bmlnElmnt const& x )
 {
-
   if( !bmlPtr_ ) {  // Not paranoia!
-       handlePassiveElement( x );
-       return;
+      return;
   }
 
   if( x.Strength() != 0.0  ) {
@@ -140,6 +138,9 @@ void DriftEliminator::visit( bmlnElmnt const& x )
         driftPtr_ = DriftPtr();
       }
       bmlPtr_->append( ElmPtr( x.Clone() ) ); 
+  }
+  else {
+      handlePassiveElement( x );
   }
 }
 
