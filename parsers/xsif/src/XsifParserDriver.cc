@@ -190,12 +190,6 @@ XsifParserDriver::XsifParserDriver()
   // jump table for element creation  
   //------------------------------------------------------------------------------------
 
-  //........................................................
-  // not really a beamline element, but treated as such
-  //........................................................ 
-  m_makefncs["BETA0"      ] = &XsifParserDriver::make_beta0;      
-
-
   m_makefncs["DRIFT"      ] = &XsifParserDriver::make_drift;
   m_makefncs["SBEND"      ] = &XsifParserDriver::make_sbend;
   m_makefncs["RBEND"      ] = &XsifParserDriver::make_rbend;
@@ -256,7 +250,8 @@ XsifParserDriver::init()
   using namespace boost::assign;
 
   valid_attributes_["BEAM"       ] += "LABEL", "ET", "EX", "EY", "EXN", "EYN", "SIGT", "SIGE", "KBUNCH", "NPART", "BCURRENR", "BUNCHED", "RADIATE";
-  valid_attributes_["BETA0"      ] += "LABEL";  
+  valid_attributes_["BETA0"      ] += "LABEL", "BETX", "ALFX", "MUX",  "BETY", "ALFY", "MUY", "DX",    "DPX", "X", "PX", "Y", "PY", "T", "PT", "WX", 
+                                      "PHIX",  "DMUX", "WY",   "PHIY", "DMUY", "DDX",  "DDY", "DDPX", "DDPY";
   valid_attributes_["DRIFT"      ] += "LABEL", "L"; 
   valid_attributes_["SBEND"      ] += "LABEL", "L", "ANGLE",  "K1",  "E1", "E2", "TILT", "K2", "H1", "H2", "HGAP", "FINT", "HGAPX", "FINTX";
   valid_attributes_["RBEND"      ] += "LABEL", "L", "ANGLE",  "K1",  "E1", "E2", "TILT", "K2", "H1", "H2", "HGAP", "FINT", "HGAPX", "FINTX";
@@ -352,19 +347,19 @@ bool XsifParserDriver::validate_attributes( std::string const& name, std::map<st
 
 int XsifParserDriver::parse(string const& f)
 {
+  int bufsize     = 1024; 
+  char* saved_cwd = new char[bufsize];
 
 #ifdef _WIN32
-  char* saved_cwd = (char*) malloc(1024*sizeof(char));
-  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
   for (int i=strlen(saved_cwd)-1; i >=0; --i) {
    if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
   }
 
 #else
-  char* saved_cwd = get_current_dir_name(); // save current working directory
+  getcwd( saved_cwd, bufsize);
 #endif
  
-
   m_file = f; 
   m_input_is_file = true;    
 
@@ -386,7 +381,7 @@ int XsifParserDriver::parse(string const& f)
   chdir(saved_cwd);  
 #endif 
 
-  free(saved_cwd); 
+  delete [] saved_cwd; 
   return ret;
 }
 
@@ -396,16 +391,18 @@ int XsifParserDriver::parse(string const& f)
 int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
+  int bufsize     = 1024; 
+  char* saved_cwd = new char[bufsize];
+
 #ifdef _WIN32
-  char* saved_cwd = (char*) malloc(1024*sizeof(char));
-  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
   for (int i=strlen(saved_cwd)-1; i >=0; --i) {
    if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
   }
 #else
-  char* saved_cwd = get_current_dir_name(); // save current working directory
+  getcwd( saved_cwd, bufsize);
 #endif
-
+ 
   m_buffer = buffer; 
   m_input_is_file = false;    
    
@@ -427,7 +424,7 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
   chdir(saved_cwd);  
 #endif 
 
-  free(saved_cwd); 
+  delete [] saved_cwd; 
   return ret;
 
 }
@@ -885,6 +882,113 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void XsifParserDriver::command_BETA0( xsif_yy::location const& yyloc,std::map<std::string, boost::any> const& attributes) 
+{
+
+  //---------------------------------------------------------------------------
+  //  Attributes for element type BETA0
+  //---------------------------------------------------------------------------
+  //
+  // BETX   initial beta_x  [m]
+  // ALFX   initial alpha_x 
+  // MUX    initial phase   [rad ]
+  // BETY   initial beta_y  [m]
+  // ALFY   initial alpha_y
+  // MUY    initial mu_y
+  // DX     initial hor dispersion
+  // DPX    initial hor dispersion derivative,
+  // DY     initial ver dispersion
+  // DPY    initial ver dispersion derivative
+  // X      initial hor position x
+  // PX     initial hor momentum 
+  // Y      initial ver position
+  // PY     initial ver momentum
+  // T      initial (long) time
+  // PT     initial long momentum
+  // WX     
+  // PHIX   
+  // DMUX   
+  // WY     
+  // PHIY   
+  // DMUY   
+  // DDX    
+  // DDY    
+  // DDPX   
+  // DDPY   
+  //--------------------------------------------------------------------
+
+  any value;
+
+  double betx    = 0.0; bool attribute_betx       = false; 
+  double alfx    = 0.0; bool attribute_alfx       = false; 
+  double mux     = 0.0; bool attribute_mux        = false; 
+  double bety    = 0.0; bool attribute_bety       = false; 
+  double alfy    = 0.0; bool attribute_alfy       = false; 
+  double muy     = 0.0; bool attribute_muy        = false; 
+  double dx      = 0.0; bool attribute_dx         = false; 
+  double dpx     = 0.0; bool attribute_dpx        = false; 
+  double dy      = 0.0; bool attribute_dy         = false; 
+  double dpy     = 0.0; bool attribute_dpy        = false; 
+  double x       = 0.0; bool attribute_x          = false; 
+  double px      = 0.0; bool attribute_px         = false; 
+  double y       = 0.0; bool attribute_y          = false; 
+  double py      = 0.0; bool attribute_py         = false; 
+  double t       = 0.0; bool attribute_t          = false; 
+  double pt      = 0.0; bool attribute_pt         = false; 
+  double wx      = 0.0; bool attribute_wx         = false; 
+  double phix    = 0.0; bool attribute_phix       = false; 
+  double dmux    = 0.0; bool attribute_dmux       = false; 
+  double wy      = 0.0; bool attribute_wy         = false; 
+  double phiy    = 0.0; bool attribute_phiy       = false; 
+  double dmuy    = 0.0; bool attribute_dmuy       = false; 
+  double ddx     = 0.0; bool attribute_ddx        = false; 
+  double ddy     = 0.0; bool attribute_ddy        = false; 
+  double ddpx    = 0.0; bool attribute_ddpx       = false; 
+  double ddpy    = 0.0; bool attribute_ddpy       = false; 
+
+  if ( attribute_betx = eval( string("BETX"),     attributes, value) )    { betx       = any_cast<double>(value); } 
+  if ( attribute_alfx = eval( string("ALFX"),     attributes, value) )    { alfx       = any_cast<double>(value); } 
+  if ( attribute_mux  = eval( string("MUX" ),     attributes, value) )    { mux        = any_cast<double>(value); } 
+  if ( attribute_bety = eval( string("BETY"),     attributes, value) )    { bety       = any_cast<double>(value); } 
+  if ( attribute_alfy = eval( string("ALFY"),     attributes, value) )    { alfy       = any_cast<double>(value); } 
+  if ( attribute_muy  = eval( string("MUY" ),     attributes, value) )    { muy        = any_cast<double>(value); } 
+  if ( attribute_dx   = eval( string("DX"  ),     attributes, value) )    { dx         = any_cast<double>(value); } 
+  if ( attribute_dpx  = eval( string("DPX" ),     attributes, value) )    { dpx        = any_cast<double>(value); } 
+  if ( attribute_dy   = eval( string("DY"  ),     attributes, value) )    { dy         = any_cast<double>(value); } 
+  if ( attribute_dpy  = eval( string("DPY" ),     attributes, value) )    { dpy        = any_cast<double>(value); } 
+  if ( attribute_x    = eval( string("X"   ),     attributes, value) )    { x          = any_cast<double>(value); } 
+  if ( attribute_px   = eval( string("PX"  ),     attributes, value) )    { px         = any_cast<double>(value); } 
+  if ( attribute_y    = eval( string("Y"   ),     attributes, value) )    { y          = any_cast<double>(value); }
+  if ( attribute_py   = eval( string("PY"  ),     attributes, value) )    { py         = any_cast<double>(value); } 
+  if ( attribute_t    = eval( string("T"   ),     attributes, value) )    { t          = any_cast<double>(value); } 
+  if ( attribute_pt   = eval( string("PT"  ),     attributes, value) )    { pt         = any_cast<double>(value); } 
+  if ( attribute_wx   = eval( string("WX"  ),     attributes, value) )    { wx         = any_cast<double>(value); } 
+  if ( attribute_phix = eval( string("PHIX"),     attributes, value) )    { phix       = any_cast<double>(value); } 
+  if ( attribute_dmux = eval( string("DMUX"),     attributes, value) )    { dmux       = any_cast<double>(value); } 
+  if ( attribute_wy   = eval( string("WY"  ),     attributes, value) )    { wy         = any_cast<double>(value); } 
+  if ( attribute_phiy = eval( string("PHIY"),     attributes, value) )    { phiy       = any_cast<double>(value); } 
+  if ( attribute_dmuy = eval( string("DMUY"),     attributes, value) )    { dmuy       = any_cast<double>(value); } 
+  if ( attribute_ddx  = eval( string("DDX" ),     attributes, value) )    { ddx        = any_cast<double>(value); } 
+  if ( attribute_ddy  = eval( string("DDY" ),     attributes, value) )    { ddy        = any_cast<double>(value); } 
+  if ( attribute_ddpx = eval( string("DDPX"),     attributes, value) )    { ddpx       = any_cast<double>(value); }
+  if ( attribute_ddpy =	eval( string("DDPY"),     attributes, value) )    { ddpy       = any_cast<double>(value); }
+
+
+  initial_values_.arcLength        = 0.0;
+  initial_values_.dispersion.hor   = dx;
+  initial_values_.dispersion.ver   = dy;
+  initial_values_.dPrime.hor       = dpx; 
+  initial_values_.dPrime.ver       = dpy;
+  initial_values_.beta.hor         = betx;
+  initial_values_.beta.ver         = bety;
+  initial_values_.alpha.hor        = alfx;
+  initial_values_.alpha.ver        = alfy;
+  initial_values_.psi.hor          = mux;
+  initial_values_.psi.ver          = muy;
+};
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -896,7 +1000,7 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
  // we define Ordering in the anonymous namespace. 
  // ---------------------------------------------------------------------------------------- 
 
- 
+
 namespace {
 
  class Ordering : public binary_function< pair<string, XsifParserDriver::make_fnc_ptr> const&,  
@@ -2239,27 +2343,19 @@ ElmPtr  XsifParserDriver::make_gkick(    ConstElmPtr& udelm, double const& BRHO,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ElmPtr  XsifParserDriver::make_beta0(  ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
-				       map<string,boost::any> const& attributes) 
-{
-  // not implemented -- returns a null pointer for the moment 
-
-  return ElmPtr();  
-}
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+						      
 ElmPtr XsifParserDriver::make_notimplemented( ConstElmPtr& udelm, double const& BRHO, std::string const& label,  
                                              map<string,boost::any> const& attributes) 
-{
-
+{						      
+						      
   //---------------------------------------------------------------------------------------------------------  
   // catchall for not implemented element types: substitute a DRIFT of length L (if this parameter is defined)
   //---------------------------------------------------------------------------------------------------------
-   any value;
-   drift* elm = 0; 
-
+   any value;					      
+   drift* elm = 0;				      
+						      
    double length = 0.0;  bool attribute_length = false; 
    if ( eval( string("L"), attributes, value) )  { attribute_length = true; length = any_cast<double>(value); } 
    

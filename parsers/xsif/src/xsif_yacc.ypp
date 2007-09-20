@@ -113,6 +113,7 @@ using FNAL::pcerr;
 %token    XSIF_NONLC             
 
 %token    XSIF_BEAM              
+%token    XSIF_BETA0              
 
 %token    XSIF_SQRT
 %token    XSIF_SIN
@@ -175,6 +176,14 @@ action:
                                                                                      }
    |                                                                                  
    XSIF_BEAM   ',' attributes                                                        { driver.command_BEAM( yylloc, driver.m_attributes);
+                                                                                       driver.m_attributes.clear(); 
+                                                                                     } 
+   |
+   XSIF_IDENTIFIER ':' XSIF_BETA0   ',' attributes                                   { /*** do nothing ***/ 
+                                                                                      driver.m_attributes.clear(); 
+                                                                                     }
+   |                                                                                  
+   XSIF_BETA0   ',' attributes                                                       { driver.command_BETA0( yylloc, driver.m_attributes);
                                                                                        driver.m_attributes.clear(); 
                                                                                      } 
    |
