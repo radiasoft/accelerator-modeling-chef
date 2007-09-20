@@ -556,6 +556,28 @@ void CHEFGUI::openFile()
 
           ++nlines;
      }
+     
+    LattFunc initial = bfp->getInitialValues();
+
+    //++++++++ FIXME ++++++++ 
+    
+    LattFuncSage::lattFunc initialLattFunc;
+    DispersionSage::Info   initialDispersion;
+    CovarianceSage::Info   initialCovariance;
+
+    initialLattFunc.beta.hor       = initial.beta.hor;
+    initialLattFunc.alpha.hor      = initial.alpha.hor;
+    initialLattFunc.dispersion.hor = initial.dispersion.hor;
+    initialLattFunc.dPrime.hor     = initial.dPrime.hor;
+
+    initialLattFunc.beta.ver       = initial.beta.ver;
+    initialLattFunc.alpha.ver      = initial.alpha.ver;
+    initialLattFunc.dispersion.ver = initial.dispersion.ver;
+    initialLattFunc.dPrime.ver     = initial.dPrime.ver;
+
+
+    //p_currBmlCon_->setInitialDispersion( initialLattFunc );
+    p_currBmlCon_->setInitialTwiss( initialLattFunc );
 
  }
 
@@ -2353,7 +2375,7 @@ void CHEFGUI::slot_contextGenerated( BmlContextPtr x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::twissDispatch(){
+void CHEFGUI::twissDispatch( ){
 
  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
@@ -2390,7 +2412,8 @@ void CHEFGUI::momentsDispatch(){
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::dispersionDispatch(){
+void CHEFGUI::dispersionDispatch()
+{
 
  if( !p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
@@ -2550,7 +2573,9 @@ void CHEFGUI::propagateDispersion()
     return;
   }
 
-  if( QDialog::Accepted == initCondDialogDisp_->exec() )
+ initCondDialogDisp_->setInitCond( p_currBmlCon_->getInitialTwiss() );
+
+ if( QDialog::Accepted == initCondDialogDisp_->exec() )
   {
 
     initCondDialogDisp_->readInputValues();
@@ -2582,6 +2607,8 @@ void CHEFGUI::propagateTwiss()
     return;
   }
 
+
+  initCondDialogLF_->setInitCond( p_currBmlCon_->getInitialTwiss() );
 
   if( QDialog::Accepted == initCondDialogLF_->exec() ) 
   {
