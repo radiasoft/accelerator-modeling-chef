@@ -882,7 +882,7 @@ void CHEFGUI::editCopyLine()
   // Procedure copied from CHEF.builders.cc
   // and slightly modified.
 
-  if( !p_currBmlCon_ ) {
+  if( p_currBmlCon_ ) {
     p_currBmlCon_ = 
      BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(),
                                          BmlPtr( p_currBmlCon_->cheatBmlPtr()->Clone() ) ) );
