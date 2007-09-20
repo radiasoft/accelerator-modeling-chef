@@ -73,7 +73,8 @@ public:
   void            setReferenceParticle ( Particle const& p);
   Particle const& getReferenceParticle () const;
 
-  double Population() const;
+  double  Intensity() const;      // actual population i.e. no of particles, as opposed to no of pseudo-particles
+  void setIntensity( double const& value);      
 
   void populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
   void populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
@@ -86,8 +87,8 @@ public:
   template <typename UnaryPredicate_t>
   void remove( UnaryPredicate_t );          
 
-  template <typename BinaryPredicate_t>
-  void sort( BinaryPredicate_t );          
+  template <typename LessThanOperator_t>
+  void sort( LessThanOperator_t );          
 
   void clear(); 
   int  size()           const;
@@ -123,7 +124,7 @@ private:
   ParticleBunch (ParticleBunch const&);
 
   Particle*                    reference_;       // use pointer to preserve dynamic type 
-  double                       population_;      // actual population (as opposed to no of pseudo-particles)
+  double                       intensity_;       // actual population (as opposed to no of pseudo-particles)
 
   boost::ptr_vector<Particle,  boost::view_clone_allocator>  bunch_;
   boost::ptr_vector<Particle,  boost::view_clone_allocator>  removed_;
@@ -133,10 +134,10 @@ private:
 };
 
 
-template <typename BinaryPredicate_t>
-void ParticleBunch::sort( BinaryPredicate_t predicate ) 
+template <typename LessThanOperator_t>
+void ParticleBunch::sort( LessThanOperator_t op ) 
 {  
-  bunch_.sort( predicate ); 
+  bunch_.sort( op ); 
 }          
 
 
