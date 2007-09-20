@@ -29,7 +29,7 @@
 #define LATTFUNC_H
 
 
-struct lattRing  {
+struct LattRing  {
   struct {
     double hor;
     double ver;
@@ -42,10 +42,10 @@ struct lattRing  {
 } ;
 
 
-std::ostream& operator<<(std::ostream&, const lattRing&);
+std::ostream& operator<<(std::ostream&, LattRing const&);
 
 
-struct lattFunc {
+struct LattFunc {
 
   double arcLength;
   struct {
@@ -71,7 +71,7 @@ struct lattFunc {
 
 } ;
 
-std::ostream& operator<<(std::ostream&, const lattFunc&);
-std::istream& operator>>(std::istream&, lattFunc&);
+std::ostream& operator<<(std::ostream&, LattFunc const&);
+std::istream& operator>>(std::istream&, LattFunc&);
 
 #endif // LATTFUNC_H
