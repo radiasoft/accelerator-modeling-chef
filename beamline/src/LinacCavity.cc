@@ -28,6 +28,40 @@
 **************************************************************************
 *************************************************************************/
 
+//=====================================================================================
+//
+// NOTE:  The phase convention for LinacCavity is the same as used for LCAV in MAD.
+// By convention, in a Linac, the acceleration is *maximum* at 0 phase. 
+// For phase > 0 the RF crest precedes a particle with z=0 i.e phase > 0 causes 
+// the unloaded voltage to be greater for the head of a bunch than for the tail 
+// (the correct sign for BNS damping). 
+//
+//			  
+//          * *	                              			  	  
+//        *     * 	  		                * *		  
+//       O       *	  		              *     * 	  
+//      O         *	  		             *       O	  
+//     O           *	  		            *         O	  
+//    *             *	  		           *           O	  
+//   *               *	  		          *             *	  
+//  *                 *	  		         *               *	  
+//			  		        *                 *	  
+//    Bunch Phase > 0     		      			  
+//					          Bunch Phase < 0     
+//  <<=== increasing phase 
+//        increasing cdt ====>  
+
+// Phase < 0 causes the unloaded voltage to be greater for the tail of a bunch than 
+// for the head  (the correct sign for beam loading compensation).  
+//
+// In CHEF, cdt > 0  implies that a particle is _late_ w/r to the synchronous particle. 
+// 
+// so we need the following form to compute the kick
+// 
+// Volts = cos ( -phase + cdt )  
+//
+//=====================================================================================
+
 #include <iomanip>
 #include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
@@ -268,3 +302,33 @@ void  LinacCavity::setWakeOn( bool set )
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void LinacCavity::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  //----------------------------------------------------------------------
+  // For a LinacCavity, strength_ represents the integrated strength 
+  // Splitting the cavity results in different value of strength_ both 
+  // each part.
+  //----------------------------------------------------------------------
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "Requested percentage = " << pc << "; not within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
+
+  a = ElmPtr( Clone() );
+  b = ElmPtr( Clone() );
+
+  a->rename( Name() + string("_1") );
+  b->rename( Name() + string("_2") );
+  
+  a->setStrength( pc*Strength() );
+  b->setStrength( (1.0 - pc )*Strength() );
+
+  a->setLength(  pc* Length() );
+  b->setLength( ( 1.0 - pc )*Length() );
+
+}
