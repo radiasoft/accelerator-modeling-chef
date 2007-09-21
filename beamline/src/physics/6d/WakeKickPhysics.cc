@@ -181,9 +181,9 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
       //------------------------------------------------------
 
       // double npz  =  it->get_npz() + npart*(dpz_vec[ibin] * binsize)/p0;   
-         double npz  =  it->get_npz();
+      //   double npz  =  it->get_npz();
 
-      state[5] =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
+      //state[5] =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
   }   
 
 }
