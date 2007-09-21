@@ -1386,8 +1386,13 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   a->ident_ = ident_ + string("_1") ;
   b->ident_ = ident_ + string("_2") ;
   
-  a->strength_ = pc*strength_;
-  b->strength_ = ( 1.0 - pc )*strength_;
+  //-----------------------------------------------------------------------------
+  //  strength_  is changed only when it represents the  
+  //  *integrated* strength. This is the case for thin (length_ == 0.0 elements) 
+  //-----------------------------------------------------------------------------
+
+  a->strength_ = (length_ == 0.0) ? strength_  : pc*strength_;
+  b->strength_ = (length_ == 0.0) ? strength_  : ( 1.0 - pc )*strength_;
 
   a->length_   = pc*length_;
   b->length_   = ( 1.0 - pc )*length_;
