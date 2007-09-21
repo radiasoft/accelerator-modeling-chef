@@ -54,8 +54,17 @@ BunchProjector::SliceData::SliceData( int n, double x, double y, double x2, doub
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+//---------------------------------------------------------------------------------
+// NOTE: When longitudinal projections are performed to compute wakefields. 
+//       is important to remember that cdt > 0 implies that a particle arrives 
+//       *later* than the reference. 
+//   
+//       To compute a wake by convolution, we need to have the particles order 
+//       in *inverse* cdt order !       
+//-----------------------------------------------------------------------------------
+
 namespace { 
- struct  LPositionOrder {
+ struct  LWakeOrder {
 
   typedef  Particle const& first_argument_type;
   typedef  Particle const& second_argument_type;
@@ -78,7 +87,7 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LPositionOrder() );
+   bunch.sort( LWakeOrder() );
 
    cdt_min_     =    (bunch.begin()  )->get_cdt(); 
    cdt_max_     =    ( --bunch.end() )->get_cdt();  
@@ -96,7 +105,7 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int 
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LPositionOrder() );
+   bunch.sort( LWakeOrder() );
   
    cdt_min_     =    (bunch.begin())->get_cdt(); 
    cdt_max_     =    cdt_min_ + length;
