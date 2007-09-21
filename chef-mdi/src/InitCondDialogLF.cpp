@@ -59,30 +59,26 @@ InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void InitCondDialogLF::readInputValues()
+LattFuncSage::lattFunc InitCondDialogLF::getInitCond() const
 {
-  lf_.beta.hor       = hBetaLineEdit->text().toDouble();
-  lf_.beta.ver       = vBetaLineEdit->text().toDouble();
-  lf_.alpha.hor      = hAlphaLineEdit->text().toDouble();
-  lf_.alpha.ver      = vAlphaLineEdit->text().toDouble();
 
-  lf_.dispersion.hor = hEtaLineEdit->text().toDouble();
-  lf_.dispersion.ver = vEtaLineEdit->text().toDouble();
+  LattFuncSage::lattFunc lf;
 
-  lf_.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
-  lf_.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
+  lf.beta.hor       = hBetaLineEdit->text().toDouble();
+  lf.beta.ver       = vBetaLineEdit->text().toDouble();
+  lf.alpha.hor      = hAlphaLineEdit->text().toDouble();
+  lf.alpha.ver      = vAlphaLineEdit->text().toDouble();
 
-  lf_.psi.hor        = hPsiLineEdit->text().toDouble();
-  lf_.psi.ver        = vPsiLineEdit->text().toDouble();
-}
+  lf.dispersion.hor = hEtaLineEdit->text().toDouble();
+  lf.dispersion.ver = vEtaLineEdit->text().toDouble();
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  lf.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
+  lf.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
 
-LattFuncSage::lattFunc const& InitCondDialogLF::getInitCond()
-{
-  readInputValues();
-  return lf_;
+  lf.psi.hor        = hPsiLineEdit->text().toDouble();
+  lf.psi.ver        = vPsiLineEdit->text().toDouble();  
+
+  return lf;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

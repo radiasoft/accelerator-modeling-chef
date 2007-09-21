@@ -25,16 +25,19 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
 #ifndef INITCONDDIALOGLF_H
 #define INITCONDDIALOGLF_H
 
 #include <initconddialoglfbase.h>
-#include <LattFuncSage.h>
+#include <InitCondDialogCovarianceBase.h>
+#include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/CovarianceSage.h>
 
-class InitCondDialogLF : public InitCondDialogLFBase 
-{
+class InitCondDialogLF : public InitCondDialogLFBase {
 
 Q_OBJECT
 
@@ -48,15 +51,26 @@ Q_OBJECT
 
  public slots:
 
-   LattFuncSage::lattFunc const&   getInitCond();
-   void                            setInitCond( LattFuncSage::lattFunc const& lf );
-
-   void                            readInputValues();
+   LattFuncSage::lattFunc getInitCond() const;
+   void                   setInitCond( LattFuncSage::lattFunc const& lf );
   
- private:
-
-   LattFuncSage::lattFunc lf_;
- 
 };
 
+//-------------------------------------------------------------------------------------
+
+class InitCondDialogCovariance: public InitCondDialogCovarianceBase {
+
+Q_OBJECT
+
+   InitCondDialogCovariance(QWidget* parent, const char* name, WFlags f=0);
+
+ public slots:
+
+   CovarianceSage::Info   getInitCond()  const;
+   void                   setInitCond( CovarianceSage::Info const& info);
+
+};
+
+
 #endif
+
