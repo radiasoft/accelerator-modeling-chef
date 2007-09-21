@@ -67,8 +67,8 @@ void propagate( bmlnElmnt& elm_arg, Particle_t& p )
     return;
   }
 
-  double         const referenceEnergyGain = strength*cos ( phi_s);
-  Component_t    const onaxisEnergyGain    = strength*cos ( phi_s + state[2] * w_rf / PH_MKS_c );
+  double         const referenceEnergyGain = strength*cos ( -phi_s);
+  Component_t    const onaxisEnergyGain    = strength*cos ( -phi_s + state[2] * w_rf / PH_MKS_c );
   Component_t    const eE_z                = onaxisEnergyGain / length;
 
 
