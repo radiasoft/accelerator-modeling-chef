@@ -2542,13 +2542,9 @@ void CHEFGUI::propagateMoments()
     return;
   }
 
-
   if( QDialog::Accepted == initCondDialogMoments_->exec() ){
-    initCondDialogMoments_->readInputValues();
     LattFuncSage::lattFunc initialConditions = initCondDialogMoments_->getInitCond();
-
     QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
-
     plot->show();
 
   }
@@ -2577,9 +2573,6 @@ void CHEFGUI::propagateDispersion()
 
  if( QDialog::Accepted == initCondDialogDisp_->exec() )
   {
-
-    initCondDialogDisp_->readInputValues();
-
     LattFuncSage::lattFunc initialConditions = initCondDialogDisp_->getInitCond();
     
     DispersionSage::Info info;
