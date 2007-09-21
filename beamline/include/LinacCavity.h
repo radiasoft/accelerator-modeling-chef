@@ -93,6 +93,9 @@ public:
   const char* Type() const;
   bool    isMagnet() const;
 
+ 
+  void Split( double const& pc, ElmPtr& a, ElmPtr& b ) const;
+
 private:
 
   std::ostream& writeTo(std::ostream&);
