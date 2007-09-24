@@ -559,7 +559,7 @@ void CHEFGUI::openFile()
      
     LattFunc initial = bfp->getInitialValues();
 
-    //++++++++ FIXME ++++++++ 
+    //++++++++ FIXME !!!! ++++++++ 
     
     LattFuncSage::lattFunc initialLattFunc;
     DispersionSage::Info   initialDispersion;
@@ -576,8 +576,7 @@ void CHEFGUI::openFile()
     initialLattFunc.dPrime.ver     = initial.dPrime.ver;
 
 
-    //p_currBmlCon_->setInitialDispersion( initialLattFunc );
-    p_currBmlCon_->setInitialTwiss( initialLattFunc );
+    if ( p_currBmlCon_) p_currBmlCon_->setInitialTwiss( initialLattFunc );
 
  }
 
