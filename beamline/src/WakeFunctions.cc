@@ -96,8 +96,8 @@ namespace {
 // ILC Cavity high gradient (RE)
 
 namespace RE {
-  double A_L = -388.0 * (8* 1.036);
-  double A_T = 1300.0 * (8* 1.036);
+  double A_L = -388.0 / (8* 1.036);
+  double A_T = 1300.0 / (8* 1.036);
   double s_0 = 1.90e-3; // in meters
   double s_1 = 0.91e-3; // in meters
 }
@@ -105,16 +105,16 @@ namespace RE {
 // ILC Cavity low loss (LL)
 
 namespace LL {   
-  double A_L = -459.0 * (8* 1.036); 
-  double A_T = 1720.0 * (8* 1.036);
+  double A_L = -459.0 / (8* 1.036); 
+  double A_T = 1720.0 / (8* 1.036);
   double s_0 = 1.85e-3; // in meters 
   double s_1 = 0.84e-3; // in meters
 }
 // ILC Cavity TESLA (LL)
 
 namespace TESLA {
-  double A_L = -344.0 * (8* 1.036);
-  double A_T = 1000.0 * (8* 1.036);
+  double A_L = -344.0 / (8* 1.036);
+  double A_T = 1000.0 / (8* 1.036);
   double s_0 = 1.74e-3; // in meters
   double s_1 = 0.92e-3; // in meters
 }
