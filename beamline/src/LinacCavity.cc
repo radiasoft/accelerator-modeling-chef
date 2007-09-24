@@ -30,36 +30,49 @@
 
 //=====================================================================================
 //
-// NOTE:  The phase convention for LinacCavity is the same as used for LCAV in MAD.
-// By convention, in a Linac, the acceleration is *maximum* at 0 phase. 
-// For phase > 0 the RF crest precedes a particle with z=0 i.e phase > 0 causes 
-// the unloaded voltage to be greater for the head of a bunch than for the tail 
-// (the correct sign for BNS damping). 
+// PHASE SIGN CONVENTION IN CAVITIES 
+//
+// In CHEF, cdt > 0  implies that a particle is **late** w/r to the synchronous 
+// particle. In a synchrotron, the phase 0 is chosen to correspond to a stationary 
+// bucket. 
+// 
+// Volts = sin(  phase + cdt )
+//
+// Below transition, phase stability is achieved if particles arriving later (i.e. the 
+// slowest ones, with smaller momomenta) are given a larger kick. 
+// Above transition, the reverse applies i.e. phase stability requires phase = pi 
+// in that case.
+//  
+// By convention, in a Linac, the acceleration is chosen to be ****maximum**** when 
+// phase = 0.0 
+//
+// So, assuming the following form to compute the kick
+// 
+// Volts = cos (  phase + cdt )                   
+// 
+// one can observe that for phase > 0, the RF crest precedes a particle with cdt=0 
+// i.e phase > 0 causes the (unloaded) voltage to be greater for the head of a bunch 
+// than for its tail (the correct sign for BNS damping). 
 //
 //			  
 //          * *	                              			  	  
 //        *     * 	  		                * *		  
-//       O       *	  		              *     * 	  
-//      O         *	  		             *       O	  
+//       OTail   *	  		              *     * 	  
+//      O         *	  		             *       O Head	  
 //     O           *	  		            *         O	  
-//    *             *	  		           *           O	  
+//    *Head         *	  		           *           O Tail	  
 //   *               *	  		          *             *	  
 //  *                 *	  		         *               *	  
 //			  		        *                 *	  
-//    Bunch Phase > 0     		      			  
-//					          Bunch Phase < 0     
+//    Bunch Phase < 0     		      			  
+//					          Bunch Phase > 0     
 //  <<=== increasing phase 
 //        increasing cdt ====>  
-
-// Phase < 0 causes the unloaded voltage to be greater for the tail of a bunch than 
-// for the head  (the correct sign for beam loading compensation).  
 //
-// In CHEF, cdt > 0  implies that a particle is _late_ w/r to the synchronous particle. 
-// 
-// so we need the following form to compute the kick
-// 
-// Volts = cos ( -phase + cdt )  
+// Conversely, phase < 0 causes the (unloaded) voltage to be greater for the tail 
+// of a bunch than for its head  (the correct sign for beam loading compensation).  
 //
+// 
 //=====================================================================================
 
 #include <iomanip>
