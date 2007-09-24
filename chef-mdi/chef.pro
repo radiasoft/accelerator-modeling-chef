@@ -62,6 +62,7 @@ SOURCES	+= src/BmlSelectionDialog.cpp \
 	src/CF_Editor.cpp \
 	src/CHEFGUI.cpp \
 	src/InitCondDialogLF.cpp \
+	src/InitCondDialogCovariance.cpp \
 	src/DialogGenerateBunch.cpp \
 	src/about.cpp \
 	src/appworkspace.cpp \
@@ -84,6 +85,7 @@ FORMS	= src/chefguibase.ui \
 	src/bmlselectiondialogbase.ui \
 	src/aboutbase.ui \
 	src/initconddialoglfbase.ui \
+	src/InitCondDialogCovarianceBase.ui \
 	src/DialogGenerateBunchBase.ui
 
 IMAGES	= src/images/filenew \
