@@ -1,14 +1,14 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                     
+******                                                                   
 ******                                    
 ******  File:      BunchProjector.cc
 ******                                                               
 ******  Copyright (c) Fermi Research Alliance LLC / Fermilab    
 ******                All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
@@ -18,8 +18,8 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
-******             ostiguy@fnal.gov                                                                
+******  Author:    Jean-Francois Ostiguy
+******             ostiguy@fnal.gov
 ******
 ******
 ******
@@ -58,9 +58,10 @@ BunchProjector::SliceData::SliceData( int n, double x, double y, double x2, doub
 // NOTE: When longitudinal projections are performed to compute wakefields. 
 //       is important to remember that cdt > 0 implies that a particle arrives 
 //       *later* than the reference. 
-//   
-//       To compute a wake by convolution, we need to have the particles order 
-//       in *inverse* cdt order !       
+//
+//       To compute a wake by convolution, we need to have the wake specified 
+//       in the same order, that is z represents the distance behind the 
+//       excitation !
 //-----------------------------------------------------------------------------------
 
 namespace { 
@@ -72,7 +73,7 @@ namespace {
 
   bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
    { 
-      return  ( lhs.get_cdt() < rhs.get_cdt() ); 
+     return  ( lhs.get_cdt() < rhs.get_cdt() );  
    }
  };
 }
@@ -198,6 +199,7 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
     }
  
   } // while
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -233,9 +235,7 @@ void BunchProjector::debug( ParticleBunch const& bunch) const
 
 std::vector<double> const& BunchProjector::monopoleLineDensity() const 
 {
-
   return monopole_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
