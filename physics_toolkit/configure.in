@@ -117,6 +117,33 @@ else
 fi
 
 
+#---------------------------------------------------------------------
+# FFTW3
+#---------------------------------------------------------------------
+
+AC_ARG_VAR([FFTW3_INC],    [FFTW3 include directory])dnl
+if test ${FFTW3_INC} && test -r ${FFTW3_INC}; then
+        FFTW3_INC="-I"${FFTW3_INC}
+        AC_SUBST(FFTW3_INC)
+        AC_MSG_RESULT([Location specified: ${FFTW3_INC}])
+else
+	AC_CHECK_HEADER(fftw3.h,,[
+		AC_MSG_ERROR([FFTW3 includes not found, please define FFTW3_INC.])
+	])
+fi
+
+AC_ARG_VAR([FFTW3_LIB],    [FFTW3 lib directory])dnl
+AC_LANG_PUSH(C)
+if test ${FFTW3_LIB} && test -r ${FFTW3_LIB}; then
+        AC_MSG_RESULT([Location specified: ${FFTW3_LIB}]) 
+        FFTW3_LIB="-L"${FFTW3_LIB}
+        AC_SUBST(FFTW3_LIB)
+else
+	AC_CHECK_LIB(fftw3,fftw_execute,,[ 
+		AC_MSG_ERROR([FFTW3 library not found, please define FFTW3_LIB.])
+	])
+fi
+AC_LANG_POP(C)
 
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[

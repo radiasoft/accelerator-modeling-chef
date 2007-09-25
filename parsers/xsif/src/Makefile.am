@@ -2,7 +2,7 @@ lib_LTLIBRARIES                   =    libxsifparser.la
 
 libxsifparser_la_SOURCES          =    XsifParser_ypp.cc lex.xsif_yy.cc Expression.cc XSIFFactory.cc XsifParserDriver.cc 
 
-AM_CPPFLAGS                       =   -I$(BOOST_INC) -I$(VSQLITEXX_INC) -I. -I$(top_srcdir)/include  -I$(top_srcdir)/include/tree-container -I$(top_srcdir)/../../include -I$(GLIB_INC) -I$(GLIBCONFIG_INC) 
+AM_CPPFLAGS                       =   -I$(BOOST_INC) $(FFTW3_INC) -I$(VSQLITEXX_INC) -I. -I$(top_srcdir)/include  -I$(top_srcdir)/include/tree-container -I$(top_srcdir)/../../include -I$(GLIB_INC) -I$(GLIBCONFIG_INC) 
 
 LEX  = flex
 YACC = bison 
