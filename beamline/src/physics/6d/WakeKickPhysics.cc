@@ -37,6 +37,7 @@
 #include <beamline/BunchProjector.h>
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/WakeFunctions.h>
+#include <algorithm>
 #include <vector>
 #include <cmath>
 
@@ -113,7 +114,7 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   if ( interval_has_changed ) {
 
     boost::function<double(int)> lwake = boost::bind<double>(ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ );
-    boost::function<double(int)> twake = boost::bind<double>(ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ );
+    boost::function<double(int)> twake = boost::bind<double>(ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ );
 
     std::vector<double> lwake_lhs(nsamples_);  
     std::vector<double> twake_lhs(nsamples_);  
@@ -130,9 +131,9 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   //       This is is done below, when the kicks are actually applied
   //--------------------------------------------------------------------------
 
-  std::vector<double> const dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
-  std::vector<double> const dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
-  std::vector<double> const dpz_vec =  lwake_( projector.monopoleLineDensity()  );   
+  std::vector<double> dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
+  std::vector<double> dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
+  std::vector<double> dpz_vec =  lwake_( projector.monopoleLineDensity()  );   
 
   //------------------------------------------------------------------
   // For each particle in the bunch, apply appropriate wakefield kicks 
@@ -140,25 +141,40 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 
   const double binsize  = interval_/(nsamples_-1);
 
-  // ------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------------------------------------------
+  // 
   // At this point, the bunch has been longitudinally sorted by the BunchProjector. 
   // We get the min value of cdt from the first particle.
   //
-  // NOTE: particle reference momentum in expressed internally in  GeV, 
-  //       The wake is assumed to be expressed in V/pC/m   longitudinal 
-  //                                              V/pC/m/m transverse 
-  // --------------------------------------------------------------------------------------------
+  // NOTES: 
+  // ====== 
+  //      - particle reference momentum in expressed internally in  GeV, 
+  //      - The wake is assumed to be expressed in V/pC/m   = GeV/C    longitudinal  (already integrated over length of the cavity)
+  //                                               V/pC/m/m = GeV/C/m  transverse    (already integrated over length of the cavity)
+  //      - the mono/dipole distributions are normalized w/r the total no of pseudo-particles.
+  //        so  integral monopoleLineDensity() = 1.0 
+  //            integral dipoleLineDensity()   = integral [ w(z) x ] where w(z) is the particle
+  //                                             density at position z  
+  //                                               
+  // -----------------------------------------------------------------------------------------------------------------------------------
 
-  double  cdt_min =  projector.cdt_min(); 
-  double  p0      =  bunch.begin()->ReferenceMomentum(); // in 1.0e9 eV 
+  double  const cdt_min =  projector.cdt_min(); 
+  double  const p0      =  bunch.begin()->ReferenceMomentum();      // in GeV 
+  double  const charge  =  bunch.begin()->Charge();                 // particle charge in C
 
-  double npart = ( bunch.Intensity() * PH_MKS_e );       // in 1.0e9 pC 
+  double bunch_charge = ( bunch.Intensity() * charge * 1.0e12 );    // in pC. wake is in V/pC/m    
 
-  double const coeff = npart * binsize / p0; // normalization 
-                                             // THIS SHOULD BE MULTIPLIED BY CAVITY EFFECTIVE LENTGH (for ILC, l = 1.036m)   
+  double const coeff =  1.0e-9 * bunch_charge / (p0 * binsize );    // converts kick to GeV / p0   
+                                                                    // normalization THIS SHOULD BE MULTIPLIED BY CAVITY EFFECTIVE LENGTH 
+                                                                    // (for ILC, l = 1.036m)   
 
-  for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
-  {
+  std::for_each( dpx_vec.begin(), dpx_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
+  std::for_each( dpy_vec.begin(), dpy_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
+  std::for_each( dpz_vec.begin(), dpz_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
+
+
+   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
+   {
       Vector& state         =  it->State();
 
       int ibin = int( (state[2] - cdt_min) / binsize ); 
@@ -168,20 +184,20 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 	(*pcerr) << "*** WARNING *** "                                                                << std::endl; 
 	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Histogram bin index out of range  "       << std::endl; 
 	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Total bunch length : "    << bunch_length << std::endl;
-	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Sampling region width : " << interval_    << std::endl;
+	(*pcerr) << "*** WARNING ***   WakeKickPhysics.cc : Sampling region width : " << interval_     << std::endl;
 
          break;  //  just a sanity check ... this should never happen !
       }
 
-      state[3]  +=  coeff* dpx_vec[ibin];
-      state[4]  +=  coeff* dpy_vec[ibin]; 
+      state[3]  +=  dpx_vec[ibin] ;
+      state[4]  +=  dpy_vec[ibin] ; 
 
       //------------------------------------------------------
       // **** the longitudinal wake is disabled for the moment
       //------------------------------------------------------
 
-      // double npz  =  it->get_npz() + npart*(dpz_vec[ibin] * binsize)/p0;   
-      //   double npz  =  it->get_npz();
+      // double npz  =  it->get_npz() + dpz_vec[ibin];   
+      // double npz  =  it->get_npz();
 
       //state[5] =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
   }   
