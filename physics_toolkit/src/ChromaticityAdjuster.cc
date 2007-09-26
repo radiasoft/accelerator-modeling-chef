@@ -267,7 +267,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     }
   }
   
-  // Adjust tunes and recalculate
+  // Adjust chromaticity
 
   delta_xi(0,0) = delta_H;
   delta_xi(1,0) = delta_V;
@@ -290,7 +290,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   }
  
   return 0;
-  }
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
