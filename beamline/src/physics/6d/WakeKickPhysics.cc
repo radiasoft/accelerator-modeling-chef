@@ -57,9 +57,8 @@ WakeKickPropagator::WakeKickPropagator( int nsamples, double const& interval)
   :  nsamples_(nsamples), 
      interval_(interval),
      lwake_( nsamples_,  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true), 
-     twake_( nsamples_,  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true) 
+     twake_( nsamples_,  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true)
 {}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -78,7 +77,7 @@ WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other )
 
 //----------------------------------------------------------------------------------------------
 // NOTE: both the bunch and the wakefunction are sampled over an interval of length "interval_".
-//       For the convolution finctor to return a sensible result (no aliasing), the sum of the widths 
+//       For the convolution functor to return a sensible result (no aliasing), the sum of the widths 
 //       of the non-zero support of the two functions must be < interval_. Here, we just assume that 
 //       length was set a-priori in such a way that this condition is met.  
 //----------------------------------------------------------------------------------------------
@@ -99,13 +98,14 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 
   while ( bunch_length > 0.5*interval_ ) {
   
-    interval_ *= 1.25 * interval_;
+    double old_interval = interval_;
+    interval_ *= 1.25;
 
     (*pcout ) << " *** WARNING ***: WakeKickPhysics: aliasing   detected in wake computation. \n"  
               << " *** WARNING ***: WakeKickPhysics: Increasing the size of the sampling interval.\n"
-              << " *** WARNING ***: bunch length    = " << bunch_length  << "\n"
-              << " *** WARNING ***: old interval length = " << interval_ << "\n"
-              << " *** WARNING ***: new interval length = " << interval_ << "\n"
+              << " *** WARNING ***: bunch length    = "     << bunch_length     << "\n"
+              << " *** WARNING ***: old interval length = " << old_interval << "\n"
+              << " *** WARNING ***: new interval length = " << interval_    << "\n"
               << std::endl;
 
     interval_has_changed = true;
@@ -127,19 +127,17 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   }
 
   //-------------------------------------------------------------------------- 
-  // NOTE: the result of the convolution needs to be scaled by binsize. 
+  // NOTE: the result of the convolution will need to be scaled by binsize. 
   //       This is is done below, when the kicks are actually applied
   //--------------------------------------------------------------------------
 
+  std::vector<double> dpz_vec =  lwake_( projector.monopoleLineDensity()  );   
   std::vector<double> dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
   std::vector<double> dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
-  std::vector<double> dpz_vec =  lwake_( projector.monopoleLineDensity()  );   
 
   //------------------------------------------------------------------
   // For each particle in the bunch, apply appropriate wakefield kicks 
   // -----------------------------------------------------------------  
-
-  const double binsize  = interval_/(nsamples_-1);
 
   // -------------------------------------------------------------------------------------------------------------------------------
   // 
@@ -149,31 +147,29 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   // NOTES: 
   // ====== 
   //      - particle reference momentum in expressed internally in  GeV, 
-  //      - The wake is assumed to be expressed in V/pC/m   = GeV/C    longitudinal  (already integrated over length of the cavity)
-  //                                               V/pC/m/m = GeV/C/m  transverse    (already integrated over length of the cavity)
+  //      - The wake is assumed to be expressed in V/pC    =  longitudinal  (already integrated over length of the cavity)
+  //                                               V/pC/m  =  transverse    (already integrated over length of the cavity)
   //      - the mono/dipole distributions are normalized w/r the total no of pseudo-particles.
   //        so  integral monopoleLineDensity() = 1.0 
-  //            integral dipoleLineDensity()   = integral [ w(z) x ] where w(z) is the particle
+  //            integral dipoleLineDensity()   = integral [ w(z) x(z) dz  ] where w(z) is the particle
   //                                             density at position z  
   //                                               
   // -----------------------------------------------------------------------------------------------------------------------------------
 
+  double  const binsize  = interval_/(nsamples_-1);
   double  const cdt_min =  projector.cdt_min(); 
-  double  const p0      =  bunch.begin()->ReferenceMomentum();      // in GeV 
+  double  const p0      =  bunch.begin()->ReferenceMomentum();      // in  [GeV/c] 
   double  const charge  =  bunch.begin()->Charge();                 // particle charge in C
 
-  double bunch_charge = ( bunch.Intensity() * charge * 1.0e12 );    // in pC. wake is in V/pC/m    
+  double const bunch_charge = ( bunch.Intensity() * charge * 1.0e12 );     // in pC. wake is assumed to be in V/pC/m [ integrated     
+  double const coeff        = ( 1.0e-9 * bunch_charge /p0 )* binsize;      // converts kick to [GeV/c] / p0 
+                                                                           // binsize is needed (see above comment)                      
 
-  double const coeff =  1.0e-9 * bunch_charge / (p0 * binsize );    // converts kick to GeV / p0   
-                                                                    // normalization THIS SHOULD BE MULTIPLIED BY CAVITY EFFECTIVE LENGTH 
-                                                                    // (for ILC, l = 1.036m)   
+  std::transform( dpx_vec.begin(), dpx_vec.end(), dpx_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
+  std::transform( dpy_vec.begin(), dpy_vec.end(), dpy_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
+  std::transform( dpz_vec.begin(), dpz_vec.end(), dpz_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
 
-  std::for_each( dpx_vec.begin(), dpx_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
-  std::for_each( dpy_vec.begin(), dpy_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
-  std::for_each( dpz_vec.begin(), dpz_vec.end(), std::bind2nd( multiplies<double>(), coeff) );
-
-
-   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
+  for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
    {
       Vector& state         =  it->State();
 
@@ -196,10 +192,8 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
       // **** the longitudinal wake is disabled for the moment
       //------------------------------------------------------
 
-      // double npz  =  it->get_npz() + dpz_vec[ibin];   
-      // double npz  =  it->get_npz();
-
-      //state[5] =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
+      // double npz =  it->get_npz() + dpz_vec[ibin];   
+      // state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
   }   
 
 }
