@@ -98,7 +98,7 @@ public:
   friend class BeamlineBrowser;
 
 private:
-  ElmPtr            myElement_;
+  ConstElmPtr       myElement_;
   double            azimuth_;   
 };
 
