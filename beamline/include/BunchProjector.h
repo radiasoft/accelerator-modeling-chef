@@ -35,17 +35,6 @@ class ParticleBunch;
 
 class BunchProjector {
 
-  struct SliceData {
-    SliceData();
-    SliceData( int n, double x, double y, double x2, double y2);
-    int    npart; 
-    double xbar;
-    double ybar;
-    double x2bar;
-    double y2bar;
-  };
-
-
  public:
 
     BunchProjector( ParticleBunch& bunch, int nsamples=128 );  
@@ -68,7 +57,6 @@ class BunchProjector {
     double cdt_min_;
     double cdt_max_;
 
-    std::vector<SliceData>             histogram_;
     std::vector<double>                monopole_;
     std::vector<double>                dipole_hor_;
     std::vector<double>                dipole_ver_;
