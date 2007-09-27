@@ -44,7 +44,6 @@ ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, bool measu
 
   lhsdata_.resize(  2 * (nsamples/2+ 1) ); 
   rhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-   result_.resize(  2 * (nsamples/2+ 1) ); 
 
   forward_transform_ =  FFTFunctor<double, std::complex<double>, fft_forward >( nsamples_, measure);  
   inverse_transform_ =  FFTFunctor<std::complex<double>, double, fft_backward>( nsamples_, measure);
@@ -63,7 +62,6 @@ ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamp
 
   lhsdata_.resize(  2 * nsamples );
   rhsdata_.resize(  2 * nsamples );
-   result_.resize(  2 * nsamples ); 
 
   forward_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >( nsamples, measure);  
   inverse_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>( nsamples, measure);
