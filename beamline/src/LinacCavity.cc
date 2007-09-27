@@ -93,7 +93,7 @@ namespace
  //  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
  //        the boost function object. 
 
-  WakeKickPropagator wake_propagator(512 , 10.0e-6 ); 
+  WakeKickPropagator wake_propagator(256, 12 * 300.0e-6 );  
   boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
   
 } // anonymous namespace
