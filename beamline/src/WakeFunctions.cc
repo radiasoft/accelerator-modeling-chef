@@ -88,16 +88,19 @@ namespace {
 // The wakefield kick code assumes that the wake is expressed in V/pC/m (L) and V/pC/m/m (T)
 //
 // One ILC module ~ 12 m ... 
-// There are 8 structures per module and each structure is 1.03 m long. To express the wake per 
-// unit of structure length, we need to divide by (8 * 1.03)  
+// There are 8 structures per module and each structure is 1.03 m long. 
+// To express the wake structure length, we need to divide by 8. 
+//
+// The WakeKick element expects a wake function that represents the integrated value over the 
+// length of the structure.   
 //
 //--------------------------------------------------------------------------------------------
 
 // ILC Cavity high gradient (RE)
 
 namespace RE {
-  double A_L = -388.0 / (8* 1.036);
-  double A_T = 1300.0 / (8* 1.036);
+  double A_L = -388.0 / 8;
+  double A_T = 1300.0 / 8;
   double s_0 = 1.90e-3; // in meters
   double s_1 = 0.91e-3; // in meters
 }
@@ -105,16 +108,16 @@ namespace RE {
 // ILC Cavity low loss (LL)
 
 namespace LL {   
-  double A_L = -459.0 / (8* 1.036); 
-  double A_T = 1720.0 / (8* 1.036);
+  double A_L = -459.0 / 8; 
+  double A_T = 1720.0 / 8;
   double s_0 = 1.85e-3; // in meters 
   double s_1 = 0.84e-3; // in meters
 }
 // ILC Cavity TESLA (LL)
 
 namespace TESLA {
-  double A_L = -344.0 / (8* 1.036);
-  double A_T = 1000.0 / (8* 1.036);
+  double A_L = -344.0 / 8;
+  double A_T = 1000.0 / 8;
   double s_0 = 1.74e-3; // in meters
   double s_1 = 0.92e-3; // in meters
 }
@@ -145,7 +148,7 @@ double ShortRangeTWakeFunction::operator()( int i, double const& ds, double cons
 
   const double s = i*ds;
   
-  return  ( s > cutoff) ? 0.0 : A_T * (1.0 - ( 1.0 + sqrt(s/s_1) )*exp( -sqrt(s/s_1) ) );
+  return  ( s > cutoff) ? 0.0 : A_T * (1.0 - (( 1.0 + sqrt(s/s_1) )* exp( -sqrt(s/s_1) )) );
 
 }
 
