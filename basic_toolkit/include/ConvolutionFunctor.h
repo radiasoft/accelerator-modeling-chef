@@ -40,7 +40,7 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <basic_toolkit/FFTFunctor.h>
-
+#include <iostream>
 
 
 
@@ -94,9 +94,9 @@ class ConvolutionFunctorImpl {
   boost::function< FFT_Output_t* ( FFT_Input_t*  ) >   forward_transform_; 
   boost::function< FFT_Input_t*  ( FFT_Output_t* ) >   inverse_transform_; 
 
-  std::vector<double, FFTWAllocator<double> >          lhsdata_;
   std::vector<double, FFTWAllocator<double> >          rhsdata_;
-  std::vector<T>                                       result_;
+  std::vector<double, FFTWAllocator<double> >          lhsdata_;
+  std::vector<double, FFTWAllocator<double> >          result_;
 
 };
 
@@ -150,11 +150,9 @@ ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, Fnct lhs, 
   : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
 {
   
-
   lhsdata_.resize(  2 * (nsamples/2+ 1) ); 
   rhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-   result_.resize(  2 * (nsamples/2+ 1) ); 
-  
+   result_.resize(  2 * nsamples ); 
 
   forward_transform_ =  FFTFunctor<double, std::complex<double>, fft_forward >( nsamples_, measure);  
   inverse_transform_ =  FFTFunctor<std::complex<double>, double, fft_backward>( nsamples_, measure);

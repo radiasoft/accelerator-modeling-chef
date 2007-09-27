@@ -106,9 +106,9 @@ public:
 
   // Constructors and the destructor __________________________
 
-  TVector( int  dimension= 3, const T* components=0, OutputFormat* ofmt=0 );
+  TVector( int  dimension= 3,  T const* components=0, OutputFormat* ofmt=0 );
   TVector( const_iterator first,  const_iterator last);
-  TVector( TVector const& );
+  TVector( TVector    const& );
   TVector( TMatrix<T> const& m); // implicit conversion
 
   void reset();
