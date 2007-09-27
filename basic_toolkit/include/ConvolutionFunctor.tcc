@@ -84,9 +84,7 @@ std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> cons
   
   inverse_transform_( (FFT_Output_t*) &lhsdata_[0] );
   
-  std::copy(  (T*) &lhsdata_[0], (T*) &lhsdata_[0]+ fft_input_array_size_, (T*) &result_[0] );
-  
-  return result_;
+  return reinterpret_cast<std::vector<T> const&> ( lhsdata_ );
 } 
 
 
@@ -119,20 +117,36 @@ std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> cons
   FFT_Output_t*  it_rhs     =  ( FFT_Output_t* ) &rhsdata_[0];
   FFT_Output_t*  it_rhs_end =  ( FFT_Output_t* ) &rhsdata_[0] + fft_output_array_size_;
 
+  FFT_Output_t*  it_result     =  ( FFT_Output_t* ) &result_[0];
+  FFT_Output_t*  it_result_end =  ( FFT_Output_t* ) &result_[0] + fft_output_array_size_;
 
-  for ( ; it_lhs != it_lhs_end;  ++it_lhs, ++it_rhs )
+  std::copy( it_lhs, it_lhs_end, it_result);
+
+  for ( ; it_result != it_result_end;  ++it_result, ++it_rhs )
   {
-    (*it_lhs) *= (*it_rhs);
+    (*it_result) *= (*it_rhs);
   }
  
   //------------------------------------
   // invert and return ...
   //-------------------------------------
   
-  inverse_transform_( (FFT_Output_t*) &lhsdata_[0] );
-  
-  std::copy(  (T*) &lhsdata_[0], (T*) &lhsdata_[0]+ fft_input_array_size_, (T*) &result_[0] );
-  
-  return result_;
+  inverse_transform_( (FFT_Output_t*) &result_[0] );
+  return reinterpret_cast<std::vector<T> const&> (result_ );
 } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  
+template <typename T>
+void  ConvolutionFunctorImpl<T>::resetLHS( std::vector<T>  const& lhs) 
+{
+  //---------------------------------------------------
+  // recompute and store new lhs operand transform ...  
+  //---------------------------------------------------
+
+   std::copy( (FFT_Input_t*) &lhs[0],  (FFT_Input_t*) &lhs[0] + fft_input_array_size_,   (FFT_Input_t*)  &lhsdata_[0] );   
+
+   forward_transform_( (FFT_Input_t*) &lhsdata_[0] );
+
+}
