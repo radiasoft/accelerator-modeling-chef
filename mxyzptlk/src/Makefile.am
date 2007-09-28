@@ -2,7 +2,7 @@
 lib_LTLIBRARIES		= libmxyzptlk.la
 include source_files
 
-CPPFLAGS		= $(BOOST_INC) -I$(top_srcdir)/../include 
+CPPFLAGS		= -I$(top_srcdir)/../include $(BOOST_INC) 
 
 if IMPLICIT_TEMPLATES
 
