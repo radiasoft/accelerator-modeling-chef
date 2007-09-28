@@ -325,23 +325,22 @@ void XsifParserDriver::dumpDatabase()
 #endif
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+ 
 int XsifParserDriver::parse(string const& f)
 {
- 
+  int bufsize     = 1024; 
+  char* saved_cwd = new char[bufsize];
 
 #ifdef _WIN32
-  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
-  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
   for (int i=strlen(saved_cwd)-1; i >=0; --i) {
    if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
   }
 
 #else
-  char* saved_cwd = get_current_dir_name(); // save current working directory
+  getcwd( saved_cwd, bufsize);
 #endif
  
-
   m_file = f; 
   m_input_is_file = true;    
 
@@ -363,10 +362,8 @@ int XsifParserDriver::parse(string const& f)
   chdir(saved_cwd);  
 #endif 
 
-  free(saved_cwd); 
-
+  delete [] saved_cwd; 
   return ret;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -375,18 +372,18 @@ int XsifParserDriver::parse(string const& f)
 int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
+  int bufsize     = 1024; 
+  char* saved_cwd = new char[bufsize];
+
 #ifdef _WIN32
-  char* saved_cwd = (char*) malloc( 1024*sizeof(char) );
-  GetFullPathName( f.cstr(), 1024, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
+  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
   for (int i=strlen(saved_cwd)-1; i >=0; --i) {
    if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
   }
-
 #else
-  char* saved_cwd = get_current_dir_name(); // save current working directory
+  getcwd( saved_cwd, bufsize);
 #endif
  
-
   m_buffer = buffer; 
   m_input_is_file = false;    
    
@@ -408,12 +405,10 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
   chdir(saved_cwd);  
 #endif 
 
-  free(saved_cwd); 
-
+  delete [] saved_cwd; 
   return ret;
 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
