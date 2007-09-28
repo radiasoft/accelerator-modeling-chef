@@ -1,14 +1,14 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                     
+******                                                                   
 ******                                    
 ******  File:      BunchProjector.cc
 ******                                                               
 ******  Copyright (c) Fermi Research Alliance LLC / Fermilab    
 ******                All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
@@ -18,8 +18,8 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
-******             ostiguy@fnal.gov                                                                
+******  Author:    Jean-Francois Ostiguy
+******             ostiguy@fnal.gov
 ******
 ******
 ******
@@ -37,25 +37,18 @@
 
 using FNAL::pcout;
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-BunchProjector::SliceData::SliceData()
-  : npart(0), xbar(0.0), ybar(0.0), x2bar(0.0), y2bar(0.0)
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-BunchProjector::SliceData::SliceData( int n, double x, double y, double x2, double y2)
-  : npart(n), xbar(x), ybar(y), x2bar(x2), y2bar(y2)
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//---------------------------------------------------------------------------------
+// NOTE: When longitudinal projections are performed to compute wakefields. 
+//       is important to remember that cdt > 0 implies that a particle arrives 
+//       *later* than the reference. 
+//
+//       To compute a wake by convolution, we need to have the wake specified 
+//       in the same order, that is z represents the distance behind the 
+//       excitation !
+//-----------------------------------------------------------------------------------
 
 namespace { 
- struct  LPositionOrder {
+ struct  LWakeOrder {
 
   typedef  Particle const& first_argument_type;
   typedef  Particle const& second_argument_type;
@@ -63,7 +56,7 @@ namespace {
 
   bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
    { 
-      return  ( lhs.get_cdt() < rhs.get_cdt() ); 
+     return  ( lhs.get_cdt() < rhs.get_cdt() );  
    }
  };
 }
@@ -72,13 +65,12 @@ namespace {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
-  :  histogram_( nsamples, SliceData() ), 
-      monopole_( nsamples, double()    ), 
+  :   monopole_( nsamples, double()    ), 
     dipole_hor_( nsamples, double()    ),     
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LPositionOrder() );
+   bunch.sort( LWakeOrder() );
 
    cdt_min_     =    (bunch.begin()  )->get_cdt(); 
    cdt_max_     =    ( --bunch.end() )->get_cdt();  
@@ -90,13 +82,12 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int nsamples )
-  :  histogram_( nsamples, SliceData() ), 
-      monopole_( nsamples, double()    ), 
+  : monopole_( nsamples, double()    ), 
     dipole_hor_( nsamples, double()    ),     
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LPositionOrder() );
+   bunch.sort( LWakeOrder() );
   
    cdt_min_     =    (bunch.begin())->get_cdt(); 
    cdt_max_     =    cdt_min_ + length;
@@ -120,75 +111,53 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
    double binsize  = (smax-smin) / ( nsamples-1 );
    double position = smin - (0.5*binsize);     //  Note: the first bin is the interval  ] smin-0.5*binsize, smin+0.5*binsize ]  
 
-   std::vector<SliceData>::iterator  itslice         =  histogram_.begin();
    std::vector<double>::iterator     it_monopole     =   monopole_.begin();
    std::vector<double>::iterator     it_dipole_hor   = dipole_hor_.begin();
    std::vector<double>::iterator     it_dipole_ver   = dipole_ver_.begin();
 
    ParticleBunch::const_iterator itb = bunch.begin(); 
 
-   int sliceno = 0;
+   double xsum = 0.0;
+   double ysum = 0.0;
+
+   int nslice = 0;
+
    while ( itb != bunch.end() ) {
 
-    position  += binsize; 
+       position  += binsize; 
 
-     while (  itb->get_cdt() <=  position )  { 
+       while (  itb->get_cdt() <=  position )  { 
       
-       ++(itslice->npart);
+         xsum += itb->get_x();
+         ysum += itb->get_y();
+   
+         ++nslice;
 
-       itslice->xbar += itb->get_x();
-       itslice->ybar += itb->get_y();
+         if ( ++itb ==  bunch.end() ) break; 
 
-#if 0
-============================================================
-       itslice->x2bar += ( p->get_x() ) * ( p->get_x() );
-       itslice->y2bar += ( p->get_y() ) * ( p->get_y() );
-============================================================
-#endif
-
-       ++itb; 
-
-       if ( itb ==  bunch.end() ) break; 
-      
-     } // while   
+       } // while   
  
  
-    int npslice  = itslice->npart;
+       *it_monopole    =  static_cast<double>( nslice )/ static_cast<double>(bunch.size()) / binsize; 
+       *it_dipole_hor  =  xsum / bunch.size() / binsize; 
+       *it_dipole_ver  =  ysum / bunch.size() / binsize;           
 
-    if ( itslice->npart == 0  ) npslice = 1; // this prevents division by zero
-                                             // the numerators should be zero so the 
-                                             // results should be the same  
-      
-    *it_monopole    =  static_cast<double>( itslice->npart )/ static_cast<double>(bunch.size()); 
+       if ( itb == bunch.end() ) break;
 
+       xsum   = 0.0;
+       ysum   = 0.0;
+       nslice = 0;
 
-    itslice->xbar   /= npslice;
-    itslice->ybar   /= npslice;
+       ++it_monopole; ++it_dipole_hor;  ++it_dipole_ver; 
 
-
-    *it_dipole_hor  =  itslice->xbar; 
-    *it_dipole_ver  =  itslice->ybar;           
-
-#if 0
-====================================
-    itslice->x2bar  /= npslice;
-    itslice->y2bar  /= npslice;
-====================================
-#endif
-          
-
-    if ( itb == bunch.end() ) break;
-
-    ++sliceno;
-    ++itslice; ++it_monopole; ++it_dipole_hor;  ++it_dipole_ver; 
-
-    if ( itslice ==  histogram_.end()  ) { 
-        (*pcout) << "*** WARNING ***: Not all particles included in the histogram.\n"
-	            "*** WARNING ***: The sampled interval width is probably smaller than the total bunch length." << std::endl;
-         break;  // We just exit after issuing a warning. Perhaps an execption should be thrown.
-    }
+       if ( it_monopole ==  monopole_.end()  ) { 
+         (*pcout) << "*** WARNING ***: Not all particles included in the histogram.\n"
+	             "*** WARNING ***: The sampled interval width is probably smaller than the total bunch length." << std::endl;
+          break;  // We just exit after issuing a warning. Perhaps an execption should be thrown.
+       }
  
   } // while
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -197,25 +166,22 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
 void BunchProjector::debug( ParticleBunch const& bunch) const
 {
 
-   int sum = 0;
-
-   for ( std::vector<SliceData>::const_iterator it = histogram_.begin(); it != histogram_.end(); ++it ) 
-     sum += it->npart;
- 
-   std::cout << "----------------------------------------------------------------------------------" << std::endl;
-   std::cout << "No of particles computed by summing slices   = " << sum          << std::endl;
-   std::cout << "No of particles as reported by bunch.size()  = " << bunch.size() << std::endl;
-
    std::cout << "----------------------------------------------------------------------------------" << std::endl;
    std::cout << "Line density " << std::endl;
    std::cout << "----------------------------------------------------------------------------------" << std::endl;
 
    int idx = 0;
+   double sum = 0;
    for ( std::vector<double>::const_iterator it=monopole_.begin();  it != monopole_.end(); ++it, ++idx ) {
 
       std::cout << idx << "   " << *it << std::endl; 
-
+      sum +=  (*it); 
   }
+ 
+   std::cout << "----------------------------------------------------------------------------------" << std::endl;
+   std::cout << "No of particles accounted for by summing slices (%) = " << sum          << std::endl;
+   std::cout << "No of particles as reported by bunch.size()         = " << bunch.size() << std::endl;
+
   std::cout << "----------------------------------------------------------------------------------" << std::endl;
 }
 
@@ -224,9 +190,7 @@ void BunchProjector::debug( ParticleBunch const& bunch) const
 
 std::vector<double> const& BunchProjector::monopoleLineDensity() const 
 {
-
   return monopole_;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
