@@ -105,10 +105,10 @@ std::istream& operator >>( std::istream &is, ParticleBunch& bunch)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& population)
+ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& intensity)
 :
   reference_(  p.Clone() ), 
-  population_(population ), 
+  intensity_( intensity ), 
   bunch_(),
   pool_( sizeof(Particle) , max( 128, (nparticles*110/100) ))  
 
@@ -263,9 +263,17 @@ void ParticleBunch::append( Particle const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double ParticleBunch::Population() const
-{
-  return population_;
+double  ParticleBunch::Intensity() const 
+{      
+  return intensity_* (1.0 - (double(removed_size()) / double( size()) )); 
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ParticleBunch::setIntensity( double const& value)
+{      
+  intensity_ = value * double( size() ) / double( size() - removed_size() );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -411,3 +419,64 @@ Particle const& ParticleBunch::getReferenceParticle () const
   return *reference_;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double>  ParticleBunch::emittances() const 
+{
+  //-----------------------------------------------------------------------------------
+  // compute the *geometric* transverse rms emittance or the longitudinal rms emittance  
+  //
+  // 
+  //  emittance is defined as using Sacharer's convention.
+  //
+  //  sqrt( <x^2><x'^2> - <x x'>^2 )
+  //
+  //  Multiply by 4 for Lapostolle's definition  
+  //  
+  //-----------------------------------------------------------------------------------
+
+  
+
+  std::vector<double> u_2 (3, 0.0);
+  std::vector<double> up_2(3, 0.0);
+  std::vector<double> u_up(3, 0.0);
+
+
+  for (ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+
+    Vector const& state = it->State();
+
+    double const npz = it->get_npz();
+     
+     u_2[0] +=  (state[0] * state[0]);  
+    up_2[0] +=  (state[3] * state[3])/( npz*npz);
+    u_up[0] +=  (state[0] * state[3])/ npz;  
+
+     u_2[1] +=  (state[1] * state[1]);  
+    up_2[1] +=  (state[4] * state[4])/( npz*npz);
+    u_up[1] +=  (state[1] * state[4])/ npz;  
+
+     u_2[2] +=  (state[2] * state[2]);  
+    up_2[2] +=  (state[5] * state[5]);
+    u_up[2] +=  (state[2] * state[5]);
+
+  }
+
+  int const n = size();
+
+  for ( int i=0; i<3; ++i ) {
+     u_2[i] /= n; 
+    up_2[i] /= n; 
+    u_up[i] /= n;
+  }
+
+  std::vector<double> eps(3);
+
+  for (int i=0; i<3; ++i ) {
+    eps[i] = sqrt( u_2[i]*up_2[i] - u_up[i]*u_up[i] ); 
+  }
+
+  return eps;
+
+}
