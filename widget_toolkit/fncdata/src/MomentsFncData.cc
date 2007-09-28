@@ -45,10 +45,13 @@ using namespace std;
 MomentsFncData::MomentsFncData(   std::vector<CovarianceSage::Info> const& covar_vec
                                 , double const& horTune
                                 , double const& verTune
+                                , double const& horChrom
+                                , double const& verChrom
                                 , ConstBmlPtr bml                                     )
 : PlotData() 
 {
   setTunes( horTune, verTune );
+  setChromaticities( horChrom, verChrom );
 
   std::vector<double>    azimuth;
   std::vector<double>    beta_H;

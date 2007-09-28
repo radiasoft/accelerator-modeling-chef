@@ -44,10 +44,13 @@
 LattFncData::LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
                           , double const& horTune
                           , double const& verTune
+                          , double const& horChrom
+                          , double const& verChrom
                           , ConstBmlPtr bml                                       ) 
 : PlotData()
 {
   setTunes( horTune, verTune );
+  setChromaticities( horChrom, verChrom );
 
   std::vector<double>      azimuth;
   std::vector<double>       beta_H;

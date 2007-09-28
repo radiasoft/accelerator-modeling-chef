@@ -57,6 +57,7 @@ using namespace std;
 TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
 : QVBox( parent, nnn, fff )
 , tunes_(2)
+, chrom_(2)
 , order_(5)
 , border_(60)
 , tuneLabelPtr_(0)
@@ -65,6 +66,8 @@ TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
 {
   tunes_(0) = 0.5; 
   tunes_(1) = 0.5; 
+  chrom_(0) = 0.0; 
+  chrom_(1) = 0.0; 
 
   finishConstructor();
 }
@@ -77,12 +80,17 @@ TuneDiagram::TuneDiagram(   Vector const& nu, int ord
                           , QWidget* parent, const char* nnn, WFlags fff )
 : QVBox( parent, nnn, fff )
 , tunes_(nu)
+, chrom_(2)   // ??? placeholder code
 , order_(ord)
 , border_(60)
 , tuneLabelPtr_(0)
 , chalkBoardPtr_(0)
 , imagoPtr_(0)
 {
+  chrom_(0) = 0.0; // ??? placeholder code
+  chrom_(1) = 0.0; // ??? placeholder code
+
+
   if( order_ < 0  ) { order_ = - order_; }
   if( 0 == order_ ) { order_ = 5;        }
 
@@ -123,18 +131,6 @@ void TuneDiagram::finishConstructor()
   nx_hi_    = nx_lo_ + 1;
   ny_hi_    = ny_lo_ + 1;
 
-  ostringstream uic;
-  uic << "    "
-      << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
-      << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
-      << "\n    ";
-  tuneLabelPtr_->setTextFormat( Qt::PlainText );
-  tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
-  tuneLabelPtr_->setFrameStyle( QFrame::Panel|QFrame::Raised );
-  tuneLabelPtr_->setText( QString(uic.str().c_str()) );
-
   setCaption( QString("CHEF: Tune Diagram") );
 }
 
@@ -149,12 +145,29 @@ void TuneDiagram::draw()
   chalkBoardPtr_->erase();
 
   ostringstream uic;
+  ostringstream ht,vt,hc,vc;
+  ht << (double(nearestInteger(1000.0*tunes_(0)))/1000.0);
+  vt << (double(nearestInteger(1000.0*tunes_(1)))/1000.0);
+  hc << (double(nearestInteger(1000.0*chrom_(0)))/1000.0);
+  vc << (double(nearestInteger(1000.0*chrom_(1)))/1000.0);
+
+  string firstLine, secondLine, thirdLine;
+  firstLine.append("              Horizontal  Vertical");
+  secondLine.append("        Tune       ");
+  secondLine.append(ht.str());
+  secondLine.append("     ");
+  secondLine.append(vt.str());
+  thirdLine.append("Chromaticity      ");
+  thirdLine.append(hc.str());
+  thirdLine.append("    ");
+  thirdLine.append(vc.str());
+
   uic << "    "
-      << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
-      << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
+      << '\n' << firstLine
+      << '\n' << secondLine
+      << '\n' << thirdLine
       << "\n    ";
+
   tuneLabelPtr_->setTextFormat( Qt::PlainText );
   tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
   tuneLabelPtr_->setFrameStyle( QFrame::Panel|QFrame::Raised );
@@ -475,4 +488,14 @@ void TuneDiagram::setTunes( double nu_x, double nu_y )
 {
   tunes_(0) = nu_x;
   tunes_(1) = nu_y;
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+
+void TuneDiagram::setChromaticities( double c_x, double c_y )
+{
+  chrom_(0) = c_x;
+  chrom_(1) = c_y;
 }

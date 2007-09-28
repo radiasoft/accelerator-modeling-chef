@@ -105,6 +105,7 @@ void CHEFPlotMain::addData(PlotData& pltdata)
  if (auto_clear_) chefplot_->clear(); 
 
  tunediagram_->setTunes( pltdata.getTunes().htune, pltdata.getTunes().vtune );
+ tunediagram_->setChromaticities( pltdata.getChromaticities().hc, pltdata.getChromaticities().vc );
  tunediagram_->draw();
 
  chefplot_->setData(pltdata);

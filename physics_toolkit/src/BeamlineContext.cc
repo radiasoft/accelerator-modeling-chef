@@ -583,7 +583,7 @@ int BeamlineContext::setLength( ElmPtr w, double l )
   int       ret   = 0;
 
   for ( beamline::deep_iterator it  =  p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
+        it != p_bml_->deep_end(); ++it ) {
 
     if ( (*it) !=  w ) continue;
  
@@ -606,7 +606,7 @@ int BeamlineContext::setStrength( ElmPtr w, double s )
 
 
   for ( beamline::deep_iterator it  = p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
+        it != p_bml_->deep_end(); ++it ) {
 
     if( (*it) != w )  continue;
 
@@ -678,7 +678,7 @@ int BeamlineContext::setAlignment( alignmentData const& u, boost::function<bool(
   int ret = 0;
 
   for ( beamline::deep_iterator it  = p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
+        it != p_bml_->deep_end(); ++it ) {
 
     if ( !criterion( **it )  ) continue;
 
@@ -704,7 +704,7 @@ int BeamlineContext::processElements( boost::function<bool(bmlnElmnt &)> action 
   int ret = 0;
 
   for ( beamline::deep_iterator it  = p_bml_->deep_begin();
-	it != p_bml_->deep_end(); ++it ) {
+        it != p_bml_->deep_end(); ++it ) {
 
     if ( !action( **it) )   continue;
     
@@ -1210,6 +1210,58 @@ double BeamlineContext::getVerticalEigenTune()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double BeamlineContext::getHorizontalChromaticity()
+{
+  if( !dispersionFuncsCalcd_ ) { 
+    try {
+      getDispersionArray(); // Ignore returned vector
+    }
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary, but paranoia is good.
+      throw ge;
+    }
+  }  
+
+  // The exception was not thrown, so dispersionFuncsCalcd_ must be true.
+  // Nonetheless, paranoia is good.
+  if(  dispersionFuncsCalcd_ ) { 
+    return ( p_dsps_->getGlobalInfo().chromaticity.hor );
+  }
+
+  // This line should never be executed.
+  return 0.0;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::getVerticalChromaticity()
+{
+  if( !dispersionFuncsCalcd_ ) { 
+    try {
+      getDispersionArray(); // Ignore returned vector
+    }
+    catch( GenericException const& ge ) {
+      deleteClosedOrbit(); // Almost certainly not necessary, but paranoia is good.
+      throw ge;
+    }
+  }  
+
+  // The exception was not thrown, so dispersionFuncsCalcd_ must be true.
+  // Nonetheless, paranoia is good.
+  if(  dispersionFuncsCalcd_ ) { 
+    return ( p_dsps_->getGlobalInfo().chromaticity.ver );
+  }
+
+  // This line should never be executed.
+  return 0.0;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 {
   if( !p_lfs_ ) createLFS();
@@ -1439,6 +1491,7 @@ std::vector<LBSage::Info> const& BeamlineContext::getLBArray()
 
 std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
 {
+  int errorFlag = 0;
 
   //---------------------------------------------------------------------------------------
   // Preserve the current Jet environment
@@ -1470,11 +1523,9 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
         }
       }
 
-    
       p_dsps_->flags.onClosedOrbit = true;
-      int errorFlag = p_dsps_->doCalc( jetparticle_ );
+      errorFlag = p_dsps_->doCalc( jetparticle_ );
       dispersionFuncsCalcd_ = ( 0 == errorFlag );
-
 
     } // ring
 
@@ -1487,11 +1538,39 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
        //*************************************************************************
 
         JetParticle jetparticle( *particle_ );
-        int errorFlag         =  p_dsps_->pushCalc( jetparticle, initialDispersion_ );
+        errorFlag             =  p_dsps_->pushCalc( jetparticle, initialDispersion_ );
         dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
     } 
   }
+
+
+  // ------------------
+  // In case of failure
+  // ------------------
+
+  if(!dispersionFuncsCalcd_) {
+    ostringstream uic;
+    uic << "\n*** ERROR *** "
+        << "\n*** ERROR *** File: " << "  " << __FILE__ 
+        <<                        ", line " << __LINE__
+        << "\n*** ERROR *** BeamlineContext::getDispersionArray()"
+           "\n*** ERROR *** -------------------------------------"
+           "\n*** ERROR *** Dispersion calculation failed; computed"
+           "\n*** ERROR *** values are meaningless."
+           "\n*** ERROR *** For whatever it's worth, the value of the"
+           "\n*** ERROR *** DispersionSage returned error code was " << errorFlag << "."
+           "\n*** ERROR *** To learn it's meaning, see the file"
+           "\n*** ERROR *** physics_toolkit/src/DispersionSage.cc ."
+           "\n*** ERROR *** ";
+
+    (*pcerr) << uic.str() << endl;
+
+    throw( GenericException( __FILE__, __LINE__, 
+           "BeamlineContext::getDispersionArray()", 
+           uic.str().c_str() ) );
+  }
+
 
  //--------------------------------------------------
  // Restore current environment
@@ -1500,6 +1579,7 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
   Jet__environment::setLastEnv( storedEnv );
   JetC__environment::setLastEnv( storedEnvC );
   
+
   return p_dsps_->getDispersionArray();  
 }
 

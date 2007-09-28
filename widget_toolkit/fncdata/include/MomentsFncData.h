@@ -49,6 +49,8 @@ class MomentsFncData : public PlotData {
     MomentsFncData(   std::vector<CovarianceSage::Info> const& covar_vec
                     , double const& horTune
                     , double const& verTune
+                    , double const& horChrom
+                    , double const& verChrom
                     , ConstBmlPtr bml = ConstBmlPtr()                    );
 
    ~MomentsFncData();

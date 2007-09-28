@@ -65,6 +65,8 @@ QWidget* CommandMoments::operator()( QWidget* parent, BmlContextPtr const& conte
     MomentsFncData data(   context->getCovarianceArray()
                          , context->getHorizontalEigenTune()
                          , context->getVerticalEigenTune()
+                         , context->getHorizontalChromaticity()
+                         , context->getVerticalChromaticity()
                          , context->cheatBmlPtr()            );
 
     plot->addData( data );

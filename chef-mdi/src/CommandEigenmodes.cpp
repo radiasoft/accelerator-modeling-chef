@@ -65,6 +65,8 @@ QWidget* CommandEigenmodes::operator()( QWidget* parent, BmlContextPtr const& co
     LBFncData data(   context->getLBArray()
                     , context->getHorizontalEigenTune()
                     , context->getVerticalEigenTune()
+                    , context->getHorizontalChromaticity()
+                    , context->getVerticalChromaticity()
                     , context->cheatBmlPtr()             );
     plot->addData( data );
 

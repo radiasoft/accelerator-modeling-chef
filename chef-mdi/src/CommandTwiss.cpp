@@ -63,11 +63,15 @@ QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context
      LattFncData data(   context->getTwissArray()
                        , context->getHorizontalFracTune()
                        , context->getVerticalFracTune()
+                       , context->getHorizontalChromaticity()
+                       , context->getVerticalChromaticity()
                        , context->cheatBmlPtr()           );
      plot->addData(data);
    }
    else {
      LattFncData data(   context->getTwissArray()
+                       , -1.0
+                       , -1.0
                        , -1.0
                        , -1.0
                        , context->cheatBmlPtr()           );

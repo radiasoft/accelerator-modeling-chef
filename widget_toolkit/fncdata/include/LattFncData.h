@@ -48,6 +48,8 @@ class LattFncData: public PlotData
     LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
                  , double const& horTune
                  , double const& verTune
+                 , double const& horChrom
+                 , double const& verChrom
                  , ConstBmlPtr bml = ConstBmlPtr() );
    ~LattFncData();
 };

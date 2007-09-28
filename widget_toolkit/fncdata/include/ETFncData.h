@@ -49,6 +49,8 @@ class ETFncData: public PlotData
     ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
                , double const& horTune
                , double const& verTune
+               , double const& horChrom
+               , double const& verChrom
                , ConstBmlPtr bml = ConstBmlPtr()                   );
    ~ETFncData();
 

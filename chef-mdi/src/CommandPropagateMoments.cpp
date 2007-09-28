@@ -77,11 +77,15 @@ QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& co
       MomentsFncData data(   context->getCovarianceArray()
                            , context->getHorizontalEigenTune()
                            , context->getVerticalEigenTune()
+                           , context->getHorizontalChromaticity()
+                           , context->getVerticalChromaticity()
                            , context->cheatBmlPtr()            );
       plotWidget->addData( data );
     }
     else {
       MomentsFncData data(   context->getCovarianceArray()
+                           , -1.0
+                           , -1.0
                            , -1.0
                            , -1.0
                            , context->cheatBmlPtr()            );

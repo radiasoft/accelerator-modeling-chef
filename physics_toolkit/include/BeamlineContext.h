@@ -196,6 +196,8 @@ class BeamlineContext
     double getVerticalFracTune();
     double getHorizontalEigenTune();
     double getVerticalEigenTune();
+    double getHorizontalChromaticity();
+    double getVerticalChromaticity();
 
     std::vector<LattFuncSage::lattFunc> const& getTwissArray();
     std::vector<EdwardsTengSage::Info>  const& getETArray();
@@ -313,8 +315,9 @@ class BeamlineContext
     static const double smallClosedOrbitNPYError;
 
 
-    LattFuncSage::tunes      tunes_;
-    EdwardsTengSage::Tunes   eigentunes_;
+    LattFuncSage::tunes                  tunes_;
+    EdwardsTengSage::Tunes               eigentunes_;
+    DispersionSage::GlobalInfo::Chrs     chromaticities_;
 
     // Status flags
 
@@ -335,7 +338,6 @@ class BeamlineContext
 
     // Operations
  
-    void createTunes();
     void createLFS();
     void deleteLFS();
     void createETS();
@@ -346,6 +348,8 @@ class BeamlineContext
     void deleteCOVS();
     void createDSPS();
     void deleteDSPS();
+    void createChromaticities();
+    void createTunes();
     void createEigentunes();
     void createClosedOrbit();
     void deleteClosedOrbit();

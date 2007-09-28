@@ -46,6 +46,14 @@ class PlotData {
       bool   set;
     };
 
+    struct Chromaticities {
+      Chromaticities():                                       hc(0.0), vc(0.0), set(false) {}
+      Chromaticities(double const& hor, double const& ver) :  hc(hor), vc(ver), set(true)  {}
+      double hc;
+      double vc;
+      bool   set;
+    };
+
     PlotData();
 
     virtual ~PlotData();
@@ -71,7 +79,9 @@ class PlotData {
     double           yMax(CurveData::Axis id = CurveData::yLeft  )    const;
 
     Tunes const&     getTunes() const;
+    Chromaticities const& getChromaticities() const;
     void             setTunes(double const& nu1, double const& nu2);
+    void             setChromaticities(double const&, double const&);
 
     CurveData const& operator[](int i) const;
     
@@ -89,7 +99,8 @@ class PlotData {
     double   scalemag_left_;
     double   scalemag_right_;
     
-    Tunes       tunes_;
+    Tunes          tunes_;
+    Chromaticities chrom_;
 
     ConstBmlPtr bml_;
 

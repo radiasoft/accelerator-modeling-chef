@@ -52,6 +52,7 @@ class TuneDiagram : public QVBox
 
   void setSize(int,int);
   void setTunes( double, double );
+  void setChromaticities( double, double );
 
   void draw();
 
@@ -64,6 +65,7 @@ class TuneDiagram : public QVBox
   void drawLine( const Pair&, const Pair&, QPen* );
 
   Vector  tunes_;
+  Vector  chrom_;
   double  nx_lo_;
   double  nx_hi_;
   double  ny_lo_;

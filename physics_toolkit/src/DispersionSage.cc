@@ -479,6 +479,17 @@ int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions
     outputStreamPtr_->flush();
   }
 
+
+  // A little useful paranoia:
+  // clean out global information if not a ring.
+  if( !isTreatedAsRing() ) {
+    lr_.tune.hor         = 0.0;
+    lr_.tune.ver         = 0.0;
+    lr_.chromaticity.hor = 0.0;
+    lr_.chromaticity.ver = 0.0;
+  }
+  
+
   return ret;
 }
 
@@ -540,6 +551,17 @@ int DispersionSage::pushCalc( JetParticle const& p, Info const& initialCondition
       calcs_.push_back(info);
 
   }
+
+
+  // A little useful paranoia:
+  // clean out global information if not a ring.
+  if( !isTreatedAsRing() ) {
+    lr_.tune.hor         = 0.0;
+    lr_.tune.ver         = 0.0;
+    lr_.chromaticity.hor = 0.0;
+    lr_.chromaticity.ver = 0.0;
+  }
+  
 
   return ret;
 }
