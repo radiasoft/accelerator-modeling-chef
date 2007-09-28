@@ -60,7 +60,7 @@ public:
                double const& rfreq_hz,           // RF frequency [Hz]
                double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
                double const& syncphase_rad,      // synchronous phase [radians]
-               bool   wake_on=true );                   
+               bool   wake_on=true  );                   
 
   LinacCavity( LinacCavity const& );
 
@@ -92,6 +92,9 @@ public:
 
   const char* Type() const;
   bool    isMagnet() const;
+
+ 
+  void Split( double const& pc, ElmPtr& a, ElmPtr& b ) const;
 
 private:
 

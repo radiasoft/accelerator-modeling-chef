@@ -28,6 +28,53 @@
 **************************************************************************
 *************************************************************************/
 
+//=====================================================================================
+//
+// PHASE SIGN CONVENTION IN CAVITIES 
+//
+// In CHEF, cdt > 0  implies that a particle is **late** w/r to the synchronous 
+// particle. In a synchrotron, the phase 0 is chosen to correspond to a stationary 
+// bucket. 
+// 
+// Volts = sin(  phase + cdt )
+//
+// Below transition, phase stability is achieved if particles arriving later (i.e. the 
+// slowest ones, with smaller momomenta) are given a larger kick. 
+// Above transition, the reverse applies i.e. phase stability requires phase = pi 
+// in that case.
+//  
+// By convention, in a Linac, the acceleration is chosen to be ****maximum**** when 
+// phase = 0.0 
+//
+// So, assuming the following form to compute the kick
+// 
+// Volts = cos (  phase + cdt )                   
+// 
+// one can observe that for phase > 0, the RF crest precedes a particle with cdt=0 
+// i.e phase > 0 causes the (unloaded) voltage to be greater for the head of a bunch 
+// than for its tail (the correct sign for BNS damping). 
+//
+//			  
+//          * *	                              			  	  
+//        *     * 	  		                * *		  
+//       OTail   *	  		              *     * 	  
+//      O         *	  		             *       O Head	  
+//     O           *	  		            *         O	  
+//    *Head         *	  		           *           O Tail	  
+//   *               *	  		          *             *	  
+//  *                 *	  		         *               *	  
+//			  		        *                 *	  
+//    Bunch Phase < 0     		      			  
+//					          Bunch Phase > 0     
+//  <<=== increasing phase 
+//        increasing cdt ====>  
+//
+// Conversely, phase < 0 causes the (unloaded) voltage to be greater for the tail 
+// of a bunch than for its head  (the correct sign for beam loading compensation).  
+//
+// 
+//=====================================================================================
+
 #include <iomanip>
 #include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
@@ -46,7 +93,7 @@ namespace
  //  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
  //        the boost function object. 
 
-  WakeKickPropagator wake_propagator(512 , 10.0e-6 ); 
+  WakeKickPropagator wake_propagator(256, 12 * 300.0e-6 );  
   boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
   
 } // anonymous namespace
@@ -252,14 +299,14 @@ void  LinacCavity::setWakeOn( bool set )
 
   if (set) { 
 
-     if  ( p_bml_->countHowMany() == 3 )  return; // wake is already enabled
+     if  ( p_bml_->howMany() == 3 )  return; // wake is already enabled
 
      beamline::iterator it = p_bml_->begin();
      p_bml_->putBelow( it, bml_e_ );  
   }
   else { 
    
-     if  ( p_bml_->countHowMany() == 2 )  return; // wake is already disabled
+     if  ( p_bml_->howMany() == 2 )  return; // wake is already disabled
 
      beamline::iterator it = p_bml_->begin(); ++it;
      p_bml_->erase( it );  
@@ -268,3 +315,33 @@ void  LinacCavity::setWakeOn( bool set )
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void LinacCavity::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  //----------------------------------------------------------------------
+  // For a LinacCavity, strength_ represents the integrated strength 
+  // Splitting the cavity results in different value of strength_ both 
+  // each part.
+  //----------------------------------------------------------------------
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "Requested percentage = " << pc << "; not within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
+
+  a = ElmPtr( Clone() );
+  b = ElmPtr( Clone() );
+
+  a->rename( Name() + string("_1") );
+  b->rename( Name() + string("_2") );
+  
+  a->setStrength( pc*Strength() );
+  b->setStrength( (1.0 - pc )*Strength() );
+
+  a->setLength(  pc* Length() );
+  b->setLength( ( 1.0 - pc )*Length() );
+
+}
