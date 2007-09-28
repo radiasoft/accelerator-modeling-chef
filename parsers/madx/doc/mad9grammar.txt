@@ -1,0 +1,327 @@
+#----------------------
+# MAD9 Language Grammar
+#----------------------
+
+
+# -----------
+# Statements:
+# -----------
+
+comment : 	// anything-except-newline
+  	| 	/* anything-except-*/ */
+
+identifier 	: 	[a-zA-Z][a-zA-Z0-9-]
+
+integer 	: 	[0-9]+
+
+string 	: 	'anything-except-single-quote'
+  	| 	"anything-except-double-quote"
+
+command 	: 	keyword attribute-list
+  	| 	label : keyword attribute-list
+
+keyword 	: 	identifier
+
+label 	: 	identifier
+
+# -----------------
+# Real Expressions:
+# -----------------
+
+attribute-list 	: empty
+  	| 	attribute-list , attribute
+
+attribute 	: 	attribute-name // only for logical attribute
+  	| 	attribute-name = attribute-value // expression evaluated
+  	| 	attribute-name := attribute-value // expression retained
+
+attribute-name 	: 	identifier
+
+attribute-value 	: 	string-expression
+  	| 	logical-expression
+  	| 	real-expression
+  	| 	array-expression
+  	| 	constraint
+  	| 	variable-reference
+  	| 	place
+  	| 	range
+  	| 	token-list
+  	| 	token-list-array
+  	| 	regular-expression
+
+
+real-expression 	: 	real-term
+  	| 	+ real-term
+  	| 	- real-term
+  	| 	real-expression + real-term
+  	| 	real-expression - real-term
+
+real-term 	: 	real-factor
+  	| 	real-term * real-factor
+  	| 	real-term / real-factor
+
+real-factor 	: 	real-primary
+  	| 	real-factor ^ real-primary
+
+real-primary 	: 	real-literal
+  	| 	symbolic-constant
+  	| 	#
+  	| 	real-name
+  	| 	array [ index ]
+  	| 	object-name -> real-attribute
+  	| 	object-name -> array-attribute [ index ]
+  	| 	table-reference
+  	| 	real-function ()
+  	| 	real-function ( real-expression )
+  	| 	real-function ( real-expression , real-expression )
+  	| 	function-of-array ( array-expression )
+  	| 	( real-expression )
+
+real-function 	: 	RANF
+  	| 	GAUSS
+  	| 	USER0
+  	| 	SI
+  	| 	SC
+  	| 	SO
+  	| 	ABS
+  	| 	TRUNC
+  	| 	ROUND
+  	| 	FLOOR
+  	| 	CEIL
+  	| 	SIGN
+  	| 	SQRT
+  	| 	LOG
+  	| 	EXP
+  	| 	SIN
+  	| 	COS
+  	| 	ABS
+  	| 	TAN
+  	| 	ASIN
+  	| 	ACOS
+  	| 	ATAN
+  	| 	TGAUSS
+  	| 	USER1
+  	| 	ATAN2
+  	| 	MAX
+  	| 	MIN
+  	| 	MOD
+  	| 	POW
+  	| 	USER2
+
+function-of-array 	: 	VMIN
+  	| 	VMAX
+  	| 	VRMS
+  	| 	VABSMAX
+
+
+# -----------------------------
+# Real variables and constants:
+# -----------------------------
+
+
+real-prefix 	: 	empty
+  	| 	REAL
+  	| 	REAL CONST
+  	| 	CONST
+
+real-definition 	: 	real-prefix real-name = real-expression // expression evaluated
+  	| 	real-prefix real-name := real-expression // expression ratained
+
+symbolic-constant 	: 	PI
+  	| 	TWOPI
+  	| 	DEGRAD
+  	| 	RADDEG
+  	| 	E
+  	| 	EMASS
+  	| 	PMASS
+  	| 	CLIGHT
+  	| 	real-name
+
+real-name 	: 	identifier
+
+object-name 	: 	identifier
+
+table-reference 	: 	table-name @ place -> column-name
+
+table-name 	: 	identifier
+
+column-name 	: 	identifier
+
+
+#---------------------
+# Logical expressions:
+#---------------------
+
+
+logical-expression 	: 	and-expression
+  	| 	logical-expression || and-expression
+
+and-expression 	: 	relation
+  	| 	and-expression && relation
+
+relation 	: 	logical-name
+  	| 	TRUE
+  	| 	FALSE
+  	| 	real-expression relation-operator real-expression
+
+logical-name 	: 	identifier
+
+relation-operator 	: 	==
+  	| 	!=
+  	| 	<
+  	| 	>
+  	| 	>=
+  	| 	<=
+
+
+
+# ------------------
+# Logical variables:
+# ------------------
+
+
+logical-prefix 	: 	BOOL
+  	| 	BOOL CONST
+
+logical-definition 	: 	logical-prefix logical-name = logical-expression // expression evaluated
+  	| 	logical-prefix logical-name := logical-expression // expression retained
+
+
+# -------------------
+# String expressions:
+# -------------------
+
+string-expression 	: 	string
+  	| 	identifier // taken as a string
+  	| 	string-expression & string
+
+# -----------------
+# String constants:
+# -----------------
+
+string-prefix 	: 	STRING
+
+string-definition 	: 	string-prefix string-name = string-expression // expression evaluated
+  	| 	string-prefix string-name := string-expression // expression retained
+
+
+# -----------------------
+# Real array expressions:
+# -----------------------
+
+
+array-expression 	: 	array-term
+  	| 	+ array-term
+  	| 	- array-term
+  	| 	array-expression + array-term
+  	| 	array-expression - array-term
+
+array-term 	: 	array-factor
+  	| 	array-term * array-factor
+  	| 	array-term / array-factor
+
+array-factor 	: 	array-primary
+  	| 	array-factor ^ array-primary
+
+array-primary 	: 	{ array-literal }
+  	| 	array-reference
+  	| 	table-generator
+  	| 	row-reference
+  	| 	column-reference
+  	| 	real-function ( array-expression )
+  	| 	( array-expression )
+
+table-generator 	| 	TABLE ( last , real-expression )
+  	: 	TABLE ( first : last , real-expression )
+  	: 	TABLE ( first : last : step , real-expression )
+
+first 	: 	integer
+
+last 	: 	integer
+
+step 	: 	integer
+
+table-row 	: 	table-name @ place
+
+row-reference 	: 	ROW ( table-name , place ) |
+  	| 	ROW ( table-name , place , { column-list })
+
+column-reference 	: 	COLUMN ( table-name , column-name )
+  	| 	COLUMN ( table-name , column-name , range )
+
+column-list 	: 	column-name
+  	| 	column-list , column-name
+
+array-literal 	: 	real-expression
+  	| 	array-literal , real expression
+
+array-reference 	: 	array-name
+  	| 	object-name -> array-attribute
+
+array-name 	: 	identifier
+
+
+# -----------------------
+# Real array definitions:
+# -----------------------
+
+
+array-prefix 	: 	REAL VECTOR
+
+array-definition 	: 	array-prefix array-name = array-expression
+  	| 	array-prefix array-name := array-expression
+
+#  -----------
+# Constraints:
+#  -----------
+
+constraint 	: 	array-expression constraint-operator  array-expression
+
+constraint-operator 	: 	==
+  	| 	<
+  	| 	>
+
+# ---------------------
+# Variable references:
+# ---------------------
+
+
+variable-reference 	: 	real-name
+  	| 	object-name -> attribute-name
+
+
+#--------
+# Places:
+#--------
+
+place 	: 	element-name
+  	| 	element-name [ integer ]
+  	| 	#S
+  	| 	#E
+  	| 	#integer
+  	| 	line-name :: place
+
+
+# ------
+# Ranges:
+# ------
+
+range 	: 	place
+  	| 	place / place
+
+
+# ------------
+# Token lists:
+# ------------
+
+token-list 	: 	anything-except-comma
+
+token-list-array 	: 	token-list
+  	| 	token-list-array , token-list
+
+
+#---------------------
+# Regular Expressions:
+#---------------------
+
+regular-expression 	: 	"UNIX-regular-expression"
