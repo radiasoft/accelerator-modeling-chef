@@ -364,17 +364,17 @@ void sbend::calcPropParams()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( sbend const& x )
-  : bmlnElmnt( x ),
-        angle_(x.angle_),
-  usEdgeAngle_(x.usEdgeAngle_),
-  dsEdgeAngle_(x.dsEdgeAngle_),
-      usAngle_(x.usAngle_),
-      dsAngle_(x.dsAngle_),
-        usTan_(x.usTan_),
-        dsTan_(x.dsTan_),
-         dphi_(x.dphi_),
-    propPhase_(x.propPhase_),
-     propTerm_(x.propTerm_)
+:   bmlnElmnt( x )
+  ,      angle_(x.angle_)
+  ,usEdgeAngle_(x.usEdgeAngle_)
+  ,dsEdgeAngle_(x.dsEdgeAngle_)
+  ,    usAngle_(x.usAngle_)
+  ,    dsAngle_(x.dsAngle_)
+  ,      usTan_(x.usTan_)
+  ,      dsTan_(x.dsTan_)
+  ,       dphi_(x.dphi_)
+  ,  propPhase_(x.propPhase_)
+  ,   propTerm_(x.propTerm_)
 {
   setupPropFunc();
 }
@@ -434,7 +434,8 @@ double sbend::setExitAngle( double const& phi /* radians */ )
 
 bool sbend::hasParallelFaces() const
 {
-  return ( std::abs( usEdgeAngle_ - dsEdgeAngle_ ) <  1.0e-9 );
+  return (    ( std::abs( 2.0*usEdgeAngle_ - angle_ ) < 1.0e-9 )
+           && ( std::abs( 2.0*dsEdgeAngle_ - angle_ ) < 1.0e-9 ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -442,12 +443,13 @@ bool sbend::hasParallelFaces() const
 
 bool sbend::hasStandardFaces() const
 {
-  return ( (std::abs( usEdgeAngle_) < 1.0e-9) && (std::abs( dsEdgeAngle_) < 0.5e-9) );
+  return (    (std::abs(usEdgeAngle_) < 1.0e-9) 
+           && (std::abs(dsEdgeAngle_) < 1.0e-9) );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::releasePropFunc()
 {
