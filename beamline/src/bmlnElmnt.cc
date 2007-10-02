@@ -1137,6 +1137,7 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 bool bmlnElmnt::setAlignment(alignmentData const& a) 
 {
   bool ret = true;
@@ -1149,20 +1150,21 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
     nuAlignPtr = 0;
   }
   else if( hasParallelFaces() ) {
-    if( 0.0 == a.tilt ) {
-      if( (a.xOffset != 0.0) || (a.yOffset != 0.0) ) {
+    align_ = nuAlignPtr;
+  }
+  else 
+  {
+    if(    ( std::abs(a.tilt)                      < 1.0e-12 )
+        || ( std::abs( M_PI   - std::abs(a.tilt) ) < 1.0e-9  )
+        || ( std::abs( M_PI_2 - std::abs(a.tilt) ) < 1.0e-9  ) )
+    {
+      if( (a.xOffset == 0.0) || (a.yOffset == 0.0) ) {
         align_ = nuAlignPtr;
       }
+      else {
+        ret = false;
+      }
     }
-    else if( hasStandardFaces() ) {
-      align_ = nuAlignPtr;
-    }
-    else { 
-      ret = false;
-    }
-  }
-  else {
-    ret = false;
   }
 
   if( !ret ) {
