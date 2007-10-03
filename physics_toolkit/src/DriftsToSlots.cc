@@ -34,6 +34,11 @@
 ******
 ****** REVISION HISTORY
 ******
+****** Oct 2007   michelotti@fnal.gov
+******  - a line that had been removed at some point in the murky
+******    past is being returned. 
+******  - a warning message is being removed.
+****** 
 ****** Mar 2007   ostiguy@fnal.gov
 ******
 ******  - reference counted elements/beamlines 
@@ -343,17 +348,6 @@ beamline* DriftsToSlots( beamline const& argbml )
   //   }
   // }
 
-  (*pcerr) << "\n*** WARNING ***                                        "
-       << "\n*** WARNING *** File: " << "  " << __FILE__ 
-       <<                          ", line " << __LINE__
-       << "\n*** WARNING *** DriftsToSlots                          "
-          "\n*** WARNING *** Second preliminary test not yet written."
-          "\n*** WARNING *** Procedure is proceeding notwithstanding."
-          "\n*** WARNING *** Keep your fingers crossed."
-          "\n*** WARNING ***                                        "
-       << endl;
-  
-  
   // Tests passed. Proceeding ...
 
   ElmPtr elPtr;
@@ -437,6 +431,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           }
           else if( isLastPtr ) {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
+            isUpStream    = false;
           }
           else {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
