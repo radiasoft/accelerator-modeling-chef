@@ -34,6 +34,10 @@
 ******
 ****** REVISION HISTORY
 ******
+****** Oct 2007   michelotti@fnal.gov
+******  - a line that had been removed at some point in the murky
+******  - past is being returned. 
+****** 
 ****** Mar 2007   ostiguy@fnal.gov
 ******
 ******  - reference counted elements/beamlines 
