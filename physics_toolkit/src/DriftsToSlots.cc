@@ -426,6 +426,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           }
           else if( isLastPtr ) {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
+            isUpStream    = false;
           }
           else {
             isDownStream  = d2S_LookUpStream   ( a, a_rb, a_CFrb, a_sb, a_CFsb, it );
