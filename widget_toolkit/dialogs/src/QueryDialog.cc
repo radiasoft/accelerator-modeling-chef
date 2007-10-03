@@ -108,9 +108,10 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
    typeTabPtr_->insertItem( "CF_rbend"             );
    typeTabPtr_->insertItem( "CF_sbend"             );
    typeTabPtr_->insertItem( "HPinger"              );
+   typeTabPtr_->insertItem( "VPinger"              );
    typeTabPtr_->insertItem( "Pinger"               );
    typeTabPtr_->insertItem( "Slot"                 );
-   typeTabPtr_->insertItem( "VPinger"              );
+   typeTabPtr_->insertItem( "Solenoid"             );
    typeTabPtr_->insertItem( "combinedFunction"     );
    typeTabPtr_->insertItem( "drift"                );
    typeTabPtr_->insertItem( "hkick"                );
