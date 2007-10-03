@@ -474,7 +474,7 @@ LengthLtNode* LengthLtNode::Clone() const
 
 void LengthLtNode::writeTo( ostream& os) const
 {
-   os << "( Length = " << length_ << ")";    
+   os << "( Length < " << length_ << ")";    
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -498,7 +498,7 @@ LengthGtNode* LengthGtNode::Clone() const
 
 void LengthGtNode::writeTo( ostream& os) const
 {
-   os << "( Length = " << length_ << ")";    
+   os << "( Length > " << length_ << ")";    
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -546,7 +546,7 @@ StrengthLtNode* StrengthLtNode::Clone() const
 
 void StrengthLtNode::writeTo( ostream& os ) const
 {
-   os << "( Strength = " << strength_ << ")";    
+   os << "( Strength < " << strength_ << ")";    
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -570,5 +570,5 @@ StrengthGtNode* StrengthGtNode::Clone() const
 
 void StrengthGtNode::writeTo( ostream& os ) const 
 { 
-  os << "( Strength = " << strength_ << ")";  
+  os << "( Strength > " << strength_ << ")";  
 }
