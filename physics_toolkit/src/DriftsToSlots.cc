@@ -36,8 +36,9 @@
 ******
 ****** Oct 2007   michelotti@fnal.gov
 ******  - a line that had been removed at some point in the murky
-******    past is being returned. 
+******    past is being returned
 ******  - a warning message is being removed.
+******  - extended functionality to dipoles that bend vertically
 ****** 
 ****** Mar 2007   ostiguy@fnal.gov
 ******
@@ -100,6 +101,7 @@
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/Slot.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -260,13 +262,15 @@ bool d2S_sbendLike( bmlnElmnt const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 beamline* DriftsToSlots( beamline const& argbml )
 {
-
   beamline original(argbml);  
 
-   // Preliminary tests for a valid argument.
+  double entryAngle = 0.0, exitAngle  = 0.0, rollAngle  = 0.0;
+  // Not necessary to initialize these, but what the hell.
 
+  // Preliminary tests for a valid, sane argument.
   const bool originalRing = ( beamline::ring == original.getLineMode() );
 
   // There should be more than one element
@@ -285,7 +289,6 @@ beamline* DriftsToSlots( beamline const& argbml )
 
   // Bends with parallel faces should not be adjacent.
   // 
-
 
   ElmPtr q;
   bool prev_is_rbend_like = false; // true if the previous element is rbend-like
@@ -336,17 +339,6 @@ beamline* DriftsToSlots( beamline const& argbml )
     }
   }
 
-
-  // rbend-like elements can only be sandwiched by thin, 
-  //   passive elements
-  // bool passedRbend = false;
-  // prev_is_rbend_like = false;
-  // while((  q = dbi++  )) {
-  //   if( d2S_rbendLike( q ) {
-  //     if( prev_is_rbend_like ) {
-  //    }
-  //   }
-  // }
 
   // Tests passed. Proceeding ...
 
@@ -496,29 +488,45 @@ beamline* DriftsToSlots( beamline const& argbml )
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
         else if( d2S_rbendLike(*c) ) {
-          arcFrame.reset();  
           if( c_sb ) {
-            arcFrame.rotate( - boost::static_pointer_cast<sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+            entryAngle = boost::static_pointer_cast<sbend>(c)->getEntryAngle();
           }
           else if( c_CFsb ) {
-            arcFrame.rotate( - boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+            entryAngle = boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle();
           }
           else if( c_rb ) {
-            arcFrame.rotate( -  boost::static_pointer_cast<rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+            entryAngle =  boost::static_pointer_cast<rbend>(c)->getEntryAngle();
           }
           else if( c_CFrb ) {
-            arcFrame.rotate( -  boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+            entryAngle =  boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle();
           }
           else {
             (*pcerr) << "\n*** WARNING: *** "
                  << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                  << "\n*** WARNING: *** Calculation discontinued."
-                 << "\n*** WARNING: *** Both c_rb and c_CF are false."
                  << "\n*** WARNING: *** Function will return original argument."
                  << "\n*** WARNING: *** "
                  << endl;
             delete ret; ret=0;;
             return original.Clone();
+          }
+          rollAngle = c->Alignment().tilt;
+          arcFrame.reset();
+          if( 1.0e-12 < std::abs(rollAngle) ) {
+            arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
+            arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
+            arcFrame.rotate( -  rollAngle, arcFrame.getzAxis() );
+            // This last step is REALLY STUPID!
+            // It is needed because
+            // : it is too dangerous to remove the alignment object
+            //   from the beamline element because
+            //   : the same object may appear multiple times
+            //     in the same beamline.
+            // This can be fixed in the future by eliminating
+            // the local alignment object.
+          }
+          else {
+            arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
           }
           fd(x) = 0.0;
           fd(y) = 0.0;
@@ -550,33 +558,49 @@ beamline* DriftsToSlots( beamline const& argbml )
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
         else if( d2S_rbendLike( *a ) ) {
-          arcFrame.reset(); 
-          fd(x) = 0.0;
-          fd(y) = 0.0;
-          fd(z) = elPtr->Length();
-          arcFrame.translate(fd);
           if( a_sb ) {
-            arcFrame.rotate( boost::static_pointer_cast<sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+            exitAngle = boost::static_pointer_cast<sbend>(a)->getExitAngle();
           }
           else if( a_CFsb ) {
-            arcFrame.rotate( boost::static_pointer_cast<CF_sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+            exitAngle = boost::static_pointer_cast<CF_sbend>(a)->getExitAngle();
           }
           else if( a_rb ) {
-            arcFrame.rotate( boost::static_pointer_cast<rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+            exitAngle = boost::static_pointer_cast<rbend>(a)->getExitAngle();
           }
           else if( a_CFrb ) {
-            arcFrame.rotate( boost::static_pointer_cast<CF_rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+            exitAngle = boost::static_pointer_cast<CF_rbend>(a)->getExitAngle();
           }
           else {
             (*pcerr) << "\n*** WARNING: *** "
                  << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                  << "\n*** WARNING: *** Calculation discontinued."
-                 << "\n*** WARNING: *** Both a_rb and a_CF are false."
                  << "\n*** WARNING: *** Function will return original argument."
                  << "\n*** WARNING: *** "
                  << endl;
             delete ret; ret=0;;
             return original.Clone();
+          }
+          rollAngle = a->Alignment().tilt;
+          arcFrame.reset(); 
+          fd(x) = 0.0;
+          fd(y) = 0.0;
+          fd(z) = elPtr->Length();
+          arcFrame.translate(fd);
+          if( 1.0e-12 < std::abs(rollAngle) ) {
+            arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
+            arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
+            arcFrame.rotate( -  rollAngle, arcFrame.getzAxis() );
+            // This last step is REALLY STUPID!
+            // It is needed because
+            // : it is too dangerous to remove the alignment object
+            //   from the beamline element because
+            //   : the same object may appear multiple times
+            //     in the same beamline.
+            // This can be fixed in the future by eliminating
+            // the local alignment object.
+          }
+          else {
+            arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
           }
           ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
         }
@@ -604,58 +628,95 @@ beamline* DriftsToSlots( beamline const& argbml )
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
         else {
-          arcFrame.reset();  
           if( d2S_rbendLike(*c) ) {
             if( c_sb ) {
-              arcFrame.rotate( - boost::static_pointer_cast<sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+              entryAngle = boost::static_pointer_cast<sbend>(c)->getEntryAngle();
             }
             else if( c_CFsb ) {
-              arcFrame.rotate( -  boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+              entryAngle = boost::static_pointer_cast<CF_sbend>(c)->getEntryAngle();
             }
             else if( c_rb ) {
-              arcFrame.rotate( -  boost::static_pointer_cast<rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+              entryAngle = boost::static_pointer_cast<rbend>(c)->getEntryAngle();
             }
             else if( c_CFrb ) {
-              arcFrame.rotate( - boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle(), arcFrame.getyAxis() );
+              entryAngle = boost::static_pointer_cast<CF_rbend>(c)->getEntryAngle();
             }
             else {
               (*pcerr) << "\n*** WARNING: *** "
                    << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                    << "\n*** WARNING: *** Calculation discontinued."
-                   << "\n*** WARNING: *** Both c_rb and c_CF are false."
+                   << "\n*** WARNING: *** Function will return original argument."
                    << "\n*** WARNING: *** "
                    << endl;
               delete ret; ret=0;;
               return original.Clone();
             }
           }
+          rollAngle = c->Alignment().tilt;
+          arcFrame.reset();  
+          if( 1.0e-12 < std::abs(rollAngle) ) {
+            arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
+            arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
+            arcFrame.rotate( -  rollAngle, arcFrame.getzAxis() );
+            // This last step is REALLY STUPID!
+            // It is needed because
+            // : it is too dangerous to remove the alignment object
+            //   from the beamline element because
+            //   : the same object may appear multiple times
+            //     in the same beamline.
+            // This can be fixed in the future by eliminating
+            // the local alignment object.
+          }
+          else {
+            arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
+          }
+
           fd(x) = 0.0;
           fd(y) = 0.0;
           fd(z) = elPtr->Length();
           arcFrame.translate(fd);
+
           if( d2S_rbendLike( *a) ) {
             if( a_sb ) {
-              arcFrame.rotate(  boost::static_pointer_cast<sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+              exitAngle = boost::static_pointer_cast<sbend>(a)->getExitAngle();
             }
             else if( a_CFsb ) {
-              arcFrame.rotate(  boost::static_pointer_cast<CF_sbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+              exitAngle = boost::static_pointer_cast<CF_sbend>(a)->getExitAngle();
             }
             else if( a_rb ) {
-              arcFrame.rotate( boost::static_pointer_cast<rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+              exitAngle = boost::static_pointer_cast<rbend>(a)->getExitAngle();
             }
             else if( a_CFrb ) {
-              arcFrame.rotate(  boost::static_pointer_cast<CF_rbend>(a)->getExitAngle(), arcFrame.getyAxis() );
+              exitAngle = boost::static_pointer_cast<CF_rbend>(a)->getExitAngle();
             }
             else {
               (*pcerr) << "\n*** WARNING: *** "
                    << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
                    << "\n*** WARNING: *** Calculation discontinued."
-                   << "\n*** WARNING: *** Both a_rb and a_CF are false."
+                   << "\n*** WARNING: *** Function will return original argument."
                    << "\n*** WARNING: *** "
                    << endl;
               delete ret; ret=0;
               return original.Clone();
             }
+          }
+
+          rollAngle = a->Alignment().tilt;
+          if( 1.0e-12 < std::abs(rollAngle) ) {
+            arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
+            arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
+            arcFrame.rotate( -  rollAngle, arcFrame.getzAxis() );
+            // This last step is REALLY STUPID!
+            // It is needed because
+            // : it is too dangerous to remove the alignment object
+            //   from the beamline element because
+            //   : the same object may appear multiple times
+            //     in the same beamline.
+            // This can be fixed in the future by eliminating
+            // the local alignment object.
+          }
+          else {
+            arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
           }
           ret->append( ElmPtr(new Slot(elPtr->Name().c_str(), arcFrame)) );
         }
@@ -671,6 +732,6 @@ beamline* DriftsToSlots( beamline const& argbml )
   ret->setEnergy( original.Energy() );
   ret->rename( original.Name() );
   ret->setLineMode( original.getLineMode() );
+
   return ret;
-  
-  }
+}
