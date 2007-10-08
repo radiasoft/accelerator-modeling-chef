@@ -174,11 +174,9 @@ blk             [ \t]
                                                                                                          /*                unit standard deviation,            */
                                                                                                          /*                truncated at x standard deviations  */ 
 
-   /***********************************************************************************************************
-   {blk}*(TYPE|type){blk}*=                                 { 
-                                                             unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
-                                                            }
-   **************************************************************************************************************/
+{blk}*(TYPE|type){blk}*=                                 { 
+                                                            unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
+                                                         }
 
 {blk}*(PARTICLE|particle){blk}*=                         { 
                                                             unput('='); return token::XSIF_PARTICLE_ATTRIBUTE;  
@@ -239,8 +237,6 @@ XsifParserDriver::scan_begin( yyscan_t yyscanner ) {
   yy_flex_debug = m_trace_scanning;
 
   FILE* input_file = 0;
-
-  // m_cwd = string( getcwd() ); // save current working directory
 
   if ( !(  input_file = fopen(m_file.c_str(), "r")))
     error( std::string("Cannot open ") + m_file );

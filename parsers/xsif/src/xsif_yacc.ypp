@@ -391,6 +391,22 @@ attribute:
                                                                                              }
        |
 
+       XSIF_TYPE_ATTRIBUTE '=' XSIF_IDENTIFIER                                              {  
+                                                                                                  driver.m_attributes[std::string("TYPE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
+                                                                                            }
+       |       
+       XSIF_TYPE_ATTRIBUTE '=' XSIF_STRING_VALUE                                            {  
+                                                                                                    
+                                                                                                  driver.m_attributes[std::string("TYPE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
+                                                                                            }
+       |
+       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                          {  
+                                                                                                  driver.m_attributes[std::string("PARTICLE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
+                                                                                            }
+       |
        XSIF_IDENTIFIER '=' XSIF_STRING_VALUE                                                 {  
                                                                                                 driver.m_attributes[*$<sval>1] = *$<sval>3; 
                                                                                                 delete $<sval>1; 
@@ -398,11 +414,7 @@ attribute:
                                                                                              }
        |
 
-       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
-                                                                                               driver.m_attributes[std::string("PARTICLE")] = *$<sval>3;
-                                                                                               delete $<sval>3;
-                                                                                             }
-       |
+
        XSIF_IDENTIFIER '='vexpr                                                              { 
                                                                                                driver.m_attributes[*$<sval>1] = *$<pexp>3;  
                                                                                                delete $<sval>1;
