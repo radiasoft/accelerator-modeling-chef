@@ -30,7 +30,12 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******                                                                
+******  REVISION HISTORY 
+******
+******  Oct 2007       Leo Michelotti (michelotti@fnal.gov)
+******  - Updated numbers using LBL Particle Data Group 
+******    2006 Summary Tables and most recent NIST values.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -45,39 +50,33 @@
 #ifndef PHYSC_H
 #define PHYSC_H
 
-#define PH_NORM_h          4.13566727e-24     /* Planck's constant [ GeV-sec ]       */
-#define PH_NORM_hbar       6.58211889e-25     /* Planck's constant [ twopi GeV-sec ] */
+#define PH_NORM_h          4.13566733e-24     /* Planck's constant [ GeV-sec ]       */
+#define PH_NORM_hbar       6.58211899e-25     /* Planck's constant [ twopi GeV-sec ] */
 
-#define PH_NORM_mp         0.93827231         /* Mass of proton  [GeV/c^2]           */
-#define PH_NORM_me         0.5110034e-3       /* Mass of electron [GeV/c^2]          */
-#define PH_NORM_mmu        0.105658387        /* mass of muon [GeV/c^2]              */
+#define PH_NORM_mp         0.93827203         /* Mass of proton    [GeV/c^2]         */
+#define PH_NORM_me         0.51099892e-3      /* Mass of electron  [GeV/c^2]         */
+#define PH_NORM_mmu        0.105658369        /* mass of muon      [GeV/c^2]         */
 
-/*  Old values
-#define PH_ESU_e           4.803242e-10          Proton charge   [esu]
-#define PH_MKS_e           1.6021892e-19         Proton charge   [Coulombs]
-#define PH_MKS_e           1.602176462e-19       Proton charge   [Coulombs]
-*/
+#define PH_MKS_e           1.602176487e-19    /* Proton charge     [Coulombs]        */
+#define PH_MKS_c           2.99792458e8       /* Speed of light    [m/sec]           */
+#define PH_MKS_h           6.62606896e-34     /* Planck's constant [Joule-sec]       */
 
-#define PH_MKS_e           1.60217653e-19     /* Proton charge   [Coulombs]          */
-#define PH_MKS_c           2.99792458e8       /* Speed of light  [m/sec]             */
-#define PH_MKS_h           6.62606876e-34     /* Planck's constant [Joule-sec]       */
-#define PH_MKS_omega_p     9.578756e7         /* Proton cyclotron frequence          */
+#define PH_MKS_omega_p     9.578833753e7      /* Proton cyclotron frequence          */
                                               /* = e / m_p [ rad/sec/Tesla ]         */
-#define PH_MKS_e_div_h     2.417989491e14     /* e/h [Amps/Joule]                    */
+#define PH_MKS_e_div_h     2.417989454e14     /* e/h [Amps/Joule]                    */
 #define PH_MKS_eps0        8.854187817e-12    /* Epsilon nought:                     */
                                               /* permittivity of free space          */
 					      /* Units:[F/m] or  [Amp-sec/V-m]       */
-#define PH_MKS_re          2.8179381e-15      /* Classical radius                    */
-                                              /* of electron     [m]                 */
-#define PH_MKS_rp          1.534698e-18       /* Classical radius                    */
-                                              /* of proton       [m]                 */
-#define PH_MKS_cwe         2.426310215e-12    /* Compton wavelength                  */
-                                              /* of electron     [m]                 */
+#define PH_MKS_re          2.8179402894e-15   /* Classical radius                    */
+                                              /* of electron       [m]               */
+#define PH_MKS_rp          1.5346982522e-18   /* Classical radius                    */
+                                              /* of proton         [m]               */
+#define PH_MKS_cwe         2.4263102175e-12   /* Compton wavelength                  */
+                                              /* of electron       [m]               */
+#define PH_MKS_r_bohr      0.52917720859e-10  /* Bohr radius       [m]               */
+
 #define PH_MKS_d_earth     1.27563e7          /* Diameter of earth [m]               */
-#define PH_MKS_r_earth     6.37815e6          /* Radius of earth [m]                 */
-
-
-#define PH_MKS_r_bohr      0.5291772083e-10   /* Bohr radius     [m] */
+#define PH_MKS_r_earth     6.37815e6          /* Radius of earth   [m]               */
 
 /* In each of the conversion factors below, the factor   */
 /* converts a quantity from one system to another        */
@@ -86,9 +85,9 @@
 /*                                                       */
 /*    Q [ y units ] = PH_CNV_x_to_y * Q [ x units ]      */
 
-#define PH_CNV_eV_to_cgs   1.6021892e-12  /* Energy [erg] = -- * Energy [eV]            */
-#define PH_CNV_eV_to_mks   1.6021892e-19  /* Energy [N-m] = -- * Energy [eV]            */
-#define PH_CNV_brho_to_p   0.299792458    /* p [Gev/c] = -- * B*rho [ Tesla meters ]    */
+#define PH_CNV_eV_to_cgs   1.602176487e-12 /* Energy [erg] = -- * Energy [eV]          */
+#define PH_CNV_eV_to_mks   1.602176487e-19 /* Energy [N-m] = -- * Energy [eV]          */
+#define PH_CNV_brho_to_p   0.299792458     /* p [Gev/c] = -- * B*rho [ Tesla meters ]  */
 
 /* Connections:                                                               */
 /*                                                                            */
