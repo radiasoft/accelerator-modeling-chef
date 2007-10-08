@@ -193,12 +193,12 @@ XsifParserDriver::XsifParserDriver()
   m_constants["TWOPI"]    = 2.0*M_PI;          
   m_constants["DEGRAD"]   = 180.0/M_PI;
   m_constants["RADDEG"]   = M_PI/180.0;
-  m_constants["E"]        = exp(1.0);
-  m_constants["EMASS"]    = 0.510998902e-3;     // electron mass in GeV
-  m_constants["PMASS"]    = 0.938271998;        // proton mass in GeV
-  m_constants["MUMASS"]   = 0.1056583568;       // muon mass in GeV
-  m_constants["CLIGHT"]   = 2.99792458e8;       // speed of light in m/s
-  m_constants["QELECT"]   = 1.602176462e-19;    // elementary charge  in A-s
+  m_constants["E"]        = M_E;
+  m_constants["EMASS"]    = PH_NORM_me;         // electron mass in GeV
+  m_constants["PMASS"]    = PH_NORM_mp;         // proton mass in GeV
+  m_constants["MUMASS"]   = PH_NORM_mmu;        // muon mass in GeV
+  m_constants["CLIGHT"]   = PH_MKS_c;           // speed of light in m/s
+  m_constants["QELECT"]   = PH_MKS_e;           // elementary charge  in A-s
    
   init();    // initialize jump table
 
