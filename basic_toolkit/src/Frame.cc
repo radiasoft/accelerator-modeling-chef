@@ -31,6 +31,18 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+******
+****** Revision History:
+******
+****** October, 2007   Leo Michelotti
+******                 michelotti@fnal.gov
+****** 
+****** - fixed application of orthonormal corrector from
+******   left-multiplication to right-multiplication.
+****** - added corrector to two more methods: .rotate
+******   and .relativeTo.
+******   ; it should not be needed there, but you never know.
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -263,7 +275,7 @@ Vector Frame::getAxis( int j ) const
 Vector Frame::getxAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; ++i) ret(i) = e_.getElement(i,0);
+  for( int i = 0; i < 3; ++i) { ret(i) = e_.getElement(i,0); }
   return ret;
 }
 
@@ -273,7 +285,7 @@ Vector Frame::getxAxis() const
 Vector Frame::getyAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i<3; ++i) ret(i) = e_.getElement(i,1);
+  for( int i = 0; i<3; ++i) { ret(i) = e_.getElement(i,1); }
   return ret;
 }
 
@@ -283,7 +295,7 @@ Vector Frame::getyAxis() const
 Vector Frame::getzAxis() const
 {
   Vector ret(3);
-  for( int i=0; i< 3; ++i) ret(i) = e_.getElement(i,2);
+  for( int i=0; i< 3; ++i) { ret(i) = e_.getElement(i,2); }
   return ret;
 }
 
@@ -315,8 +327,8 @@ Vector Frame::getDualAxis( int i ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int Frame::rotate( double theta, 
-                         const  Vector& u,
-                         bool   rotateOrigin )
+                   Vector const& u,
+                   bool   rotateOrigin )
 {
   int ret = 0;
 
@@ -346,6 +358,15 @@ int Frame::rotate( double theta,
 
     }
   }
+
+  // A correction to keep orthogonality
+  // errors from building up.
+  Matrix corrector(3,3);
+  corrector = (-0.5)*((e_.transpose())*(e_));
+  for( int i = 0; i < 3; ++i) {
+    corrector(i,i) = corrector(i,i) + 1.5;
+  }
+  e_ = e_*corrector;
 
   // Origin is rotated by default ...
   if( rotateOrigin ) {
@@ -409,6 +430,15 @@ Frame Frame::relativeTo( Frame const& f ) const
   ret.o_ = W * ( o_ - f.o_ );
   ret.e_ = W * ( e_ );
 
+  // A correction to keep orthogonality
+  // errors from building up.
+  Matrix corrector(3,3);
+  corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
+  for( int i = 0; i < 3; ++i) {
+    corrector(i,i) = corrector(i,i) + 1.5;
+  }
+  ret.e_ = (ret.e_)*corrector;
+
   return ret;
 }
 
@@ -432,7 +462,7 @@ Frame Frame::patchedOnto( Frame const& f ) const
   for( int i = 0; i < 3; ++i) {
     corrector(i,i) = corrector(i,i) + 1.5;
   }
-  ret.e_ = corrector*(ret.e_);
+  ret.e_ = (ret.e_)*corrector;
 
   return ret;
 }
