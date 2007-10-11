@@ -33,10 +33,14 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  REVISION HISTORY 
-******
+******  
 ******  Mar 2007 ostiguy@fnal.gov
-****** - function signatures based on references rather than ptrs
-****** - take advantage of use dynamic type resolution for visit() functions
+******  - function signatures based on references rather than ptrs
+******  - take advantage of use dynamic type resolution for visit() functions
+******
+******  Oct 2007 michelotti@fnal.gov
+******  - Extended behavior to account for bends with rolls in their
+******    alignment attribute.  This is a stopgap measure.
 ******
 **************************************************************************
 *************************************************************************/
@@ -59,6 +63,7 @@
  */
 
 
+#include <basic_toolkit/iosetup.h>
 #include <beamline/FramePusher.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/sbend.h>
@@ -66,6 +71,7 @@
 #include <beamline/rbend.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/Slot.h>
+#include <beamline/Alignment.h>
 
 // Static error codes
 
@@ -116,6 +122,13 @@ void FramePusher::visit( bmlnElmnt const& x )
 
 void FramePusher::visit( rbend const& x )
 {
+  // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+  double rollAngle = x.Alignment().tilt;
+  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  if( isRolled ) {
+    frame_.rotate( rollAngle, frame_.getzAxis(), false );
+  }
+
   // Note: the lower bound of 1/2 nanoradian was
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
@@ -130,6 +143,10 @@ void FramePusher::visit( rbend const& x )
   edgeAngle = x.getExitEdgeAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
+  }
+
+  if( isRolled ) {
+    frame_.rotate( -rollAngle, frame_.getzAxis(), false );
   }
 }
 
@@ -138,6 +155,13 @@ void FramePusher::visit( rbend const& x )
 
 void FramePusher::visit( CF_rbend const& x )
 {
+  // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+  double rollAngle = x.Alignment().tilt;
+  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  if( isRolled ) {
+    frame_.rotate( rollAngle, frame_.getzAxis(), false );
+  }
+
   // Note: the lower bound of 1/2 nanoradian was
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
@@ -153,6 +177,10 @@ void FramePusher::visit( CF_rbend const& x )
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
   }
+
+  if( isRolled ) {
+    frame_.rotate( -rollAngle, frame_.getzAxis(), false );
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -160,6 +188,12 @@ void FramePusher::visit( CF_rbend const& x )
 
 void FramePusher::visit( sbend const& x    )
 {
+  // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+  double rollAngle = x.Alignment().tilt;
+  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  if( isRolled ) {
+    frame_.rotate( rollAngle, frame_.getzAxis(), false );
+  }
 
   double angle = x.getAngle();
   double rho   = x.Length() / angle;
@@ -176,6 +210,10 @@ void FramePusher::visit( sbend const& x    )
   edgeAngle = x.getExitEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
+  }
+
+  if( isRolled ) {
+    frame_.rotate( -rollAngle, frame_.getzAxis(), false );
   }
 }
 
@@ -184,6 +222,13 @@ void FramePusher::visit( sbend const& x    )
 
 void FramePusher::visit( CF_sbend const& x )
 {
+  // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+  double rollAngle = x.Alignment().tilt;
+  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  if( isRolled ) {
+    frame_.rotate( rollAngle, frame_.getzAxis(), false );
+  }
+
   double angle = x.getAngle();
   double rho   = x.Length() / angle;
   angle /= 2.0;
@@ -200,6 +245,10 @@ void FramePusher::visit( CF_sbend const& x )
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
+
+  if( isRolled ) {
+    frame_.rotate( -rollAngle, frame_.getzAxis(), false );
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -207,15 +256,15 @@ void FramePusher::visit( CF_sbend const& x )
 
 void FramePusher::visit( sector const&)
 {
-  cerr << "*** WARNING ***                                \n"
-       << "*** WARNING *** FramePusher::visitSector       \n"
-       << "*** WARNING ***                                \n"
-       << "*** WARNING *** Sectors are not handled        \n"
-       << "*** WARNING *** properly. Errorcode is         \n"
-       << "*** WARNING *** being set. Results will be     \n"
-       << "*** WARNING *** unreliable.                    \n"
-       << "*** WARNING ***                                \n"
-       << endl;
+  (*FNAL::pcerr) << "*** WARNING ***                                \n"
+                 << "*** WARNING *** FramePusher::visitSector       \n"
+                 << "*** WARNING ***                                \n"
+                 << "*** WARNING *** Sectors are not handled        \n"
+                 << "*** WARNING *** properly. Errorcode is         \n"
+                 << "*** WARNING *** being set. Results will be     \n"
+                 << "*** WARNING *** unreliable.                    \n"
+                 << "*** WARNING ***                                \n"
+                 << endl;
   errorCode_ = SECTORVISITED;
 }
 
