@@ -31,7 +31,14 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+******
+******
+******  REVISION HISTORY 
+******  
+******  Oct 2007 michelotti@fnal.gov
+******  - Extended behavior to account for bends with rolls in their
+******    alignment attribute.  This is a stopgap measure.
+******
 **************************************************************************
 *************************************************************************/
 
