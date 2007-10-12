@@ -148,7 +148,19 @@ class_<LBSage::Info>("LBFunc",init<>())
   ;
 
 class_<CovarianceSage::Info >("CovFunc",init<>())
+    .def_readwrite("arcLength",&CovarianceSage::Info::arcLength)
+    .def_readwrite("covariance",&CovarianceSage::Info::covariance)
+    .def_readwrite("beta",&CovarianceSage::Info::beta)
+    .def_readwrite("alpha",&CovarianceSage::Info::alpha)
   ;
+
+class_<CovarianceSage::Info::beta_type>("beta")
+  .def_readwrite("hor", &CovarianceSage::Info::beta_type::hor )
+  .def_readwrite("ver", &CovarianceSage::Info::beta_type::ver );
+
+class_<CovarianceSage::Info::alpha_type>("alpha")
+  .def_readwrite("hor", &CovarianceSage::Info::alpha_type::hor)
+  .def_readwrite("ver", &CovarianceSage::Info::alpha_type::ver);
 
 class_<DispersionSage::Info >("DispFunc",init<>())
   ;

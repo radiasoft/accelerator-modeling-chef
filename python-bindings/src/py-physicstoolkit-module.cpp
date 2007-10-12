@@ -30,6 +30,7 @@ using namespace boost::python;
 
 extern void wrap_lattfuncsage();
 extern void wrap_beamlinecontext();
+extern void wrap_bmlutil();
 
 BOOST_PYTHON_MODULE( physics_toolkit )
 {
@@ -38,6 +39,7 @@ BOOST_PYTHON_MODULE( physics_toolkit )
       return_value_policy<reference_existing_object>());
 wrap_lattfuncsage();
 wrap_beamlinecontext();
+wrap_bmlutil();
 
 }
 

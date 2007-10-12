@@ -69,8 +69,13 @@ boost::python::list getLBArray_wrap( BeamlineContext& obj )
                                           
 boost::python::list getCovarianceArray_wrap( BeamlineContext& obj )              
 {
+  std::vector<CovarianceSage::Info> covariance_array = obj.getCovarianceArray();
   boost::python::list covariance_list;
-  return  covariance_list;
+  for ( std::vector<CovarianceSage::Info>::iterator it  = covariance_array.begin(); 
+	it != covariance_array.end(); ++it) {
+        covariance_list.append( *it );
+  }   
+return  covariance_list;
 }
                                            
 
@@ -88,13 +93,16 @@ boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
 //----------------------------------------------------------------
 
 #define BOOST_PYTHON_STATIC_MODULE
-
+ 
 void wrap_beamlinecontext() {
 
 using namespace boost::python;
 
  class_<BeamlineContext, boost::noncopyable> ( "BeamlineContext", init<Particle const&, boost::shared_ptr<beamline> >() )
  .def( "assign",                         &BeamlineContext::assign )                         
+ .def("setInitialDispersion", &BeamlineContext::setInitialDispersion)
+ .def("setInitialTwiss", &BeamlineContext::setInitialTwiss)
+ .def("setInitialCovariance", &BeamlineContext::setInitialCovariance)
  .def( "writeTree",                      &BeamlineContext::writeTree )
  .def( "name",                           &BeamlineContext::name)                             // const char* name() const;
  .def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, const Particle& ) const;

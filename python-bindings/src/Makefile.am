@@ -20,7 +20,7 @@ libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-
 
 libpybmlfactory_la_SOURCES        =   py-bmlfactory-module.cpp 
 
-libpyphysics_toolkit_la_SOURCES   =   py-physicstoolkit-module.cpp py-lattfuncsage.cpp py-beamlinecontext.cpp
+libpyphysics_toolkit_la_SOURCES   =   py-physicstoolkit-module.cpp py-lattfuncsage.cpp py-beamlinecontext.cpp py-bmlutil.cpp
 
 libpurepybasic_toolkit_la_SOURCES = $(libpybasic_toolkit_la_SOURCES)
 libpurepymxyzptlk_la_SOURCES = $(libpymxyzptlk_la_SOURCES)

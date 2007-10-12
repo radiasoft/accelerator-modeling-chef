@@ -59,11 +59,11 @@ public:
   {
     double arcLength;
     MatrixD covariance;
-    struct {
+    struct beta_type {
      double hor;
      double ver;
     } beta;
-    struct {
+    struct alpha_type {
      double hor;
      double ver;
     } alpha;
