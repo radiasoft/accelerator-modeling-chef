@@ -94,12 +94,17 @@ class alignmentData;
 class beamline;
 class BmlVisitor;
 class ConstBmlVisitor;
-class ParticleBunch;
 class Aperture;
 class Particle;
 class JetParticle;
 class sector;
 class alignment;
+
+template <typename Particle_t>
+class TBunch;
+
+typedef TBunch<Particle> ParticleBunch;
+
 
 typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
 typedef boost::shared_ptr<beamline>  BmlPtr;
