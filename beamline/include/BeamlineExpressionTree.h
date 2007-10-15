@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      BeamlineExpressionTree.h
-******  Version:   ???
 ******                                                                
 ******  Copyright (c) 2003 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -48,6 +47,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <boost/function.hpp>
+#include <ostream>
 
 
 class DLLEXPORT BoolNode {
@@ -244,6 +244,7 @@ class DLLEXPORT StrengthLtNode: public BoolEndNode
    double strength_;
 };
 
+
 class DLLEXPORT StrengthGtNode: public BoolEndNode
 {
  public:
@@ -255,6 +256,113 @@ class DLLEXPORT StrengthGtNode: public BoolEndNode
   void writeTo( std::ostream& os )    const;
  private:
    double strength_;
+
+};
+
+
+class TypeIs {
+
+public:
+
+ TypeIs( const char* x );
+
+ bool operator()( bmlnElmnt const * x ) const;
+ void writeTo( std::ostream& os )            const;
+
+private:
+
+  std::string type_;
+};
+
+
+class NameIs {
+
+ public:
+
+  NameIs( const char* x );
+
+  bool operator()( bmlnElmnt const* x ) const;
+  void writeTo( std::ostream& os )           const;
+
+ private:
+
+  std::string name_;
+};
+
+
+class LengthIs {
+
+ public:
+   LengthIs( double l );
+   bool operator()( bmlnElmnt const* x ) const;
+   void writeTo( std::ostream& os )           const;
+
+ private:
+  double length_;
+};
+
+
+
+class LengthLess {
+
+ public: 
+  LengthLess( double l );
+  bool operator()( const bmlnElmnt* x ) const;
+  void writeTo( std::ostream& os )           const;
+
+ private:
+  double length_;
+};
+
+
+
+class LengthMore {
+
+ public:
+   LengthMore( double l );
+   bool operator()( const bmlnElmnt* x )   const;
+   void writeTo( std::ostream& os )             const;
+
+ private:
+  double length_;
+};
+
+
+class StrengthIs {
+
+ public:
+   StrengthIs( double s );
+   bool operator()( const bmlnElmnt* x ) const;
+   void writeTo( std::ostream& os )           const;
+ 
+ private:
+
+  double strength_;
+
+};
+
+
+class StrengthLess {
+
+ public:
+   StrengthLess( double s );
+   bool operator()(bmlnElmnt const* x ) const;
+ 
+ private:
+
+  double strength_;
+
+};
+
+class StrengthMore {
+
+ public:
+   StrengthMore( double s );
+   bool operator()( const bmlnElmnt* x ) const;
+ 
+ private:
+
+  double strength_;
 
 };
 
