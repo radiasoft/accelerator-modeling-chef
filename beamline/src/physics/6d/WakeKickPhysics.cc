@@ -152,7 +152,7 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   //      - the mono/dipole distributions are normalized w/r the total no of pseudo-particles.
   //        so  integral monopoleLineDensity() = 1.0 
   //            integral dipoleLineDensity()   = integral [ w(z) x(z) dz  ] where w(z) is the particle
-  //                                             density at position z  
+  //                                             density at position z and x(z) is the transverse offset 
   //                                               
   // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -189,11 +189,11 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
       state[4]  +=  dpy_vec[ibin] ; 
 
       //------------------------------------------------------
-      // **** the longitudinal wake is disabled for the moment
+      // **** apply the longitudinal wake 
       //------------------------------------------------------
 
-      // double npz =  it->get_npz() + dpz_vec[ibin];   
-      // state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
+      double npz =  it->get_npz() + dpz_vec[ibin];   
+      state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] ) - 1.0 ;
   }   
 
 }
