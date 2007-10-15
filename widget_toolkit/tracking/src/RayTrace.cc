@@ -7,7 +7,6 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      RayTrace.cc
-******  Version:   3.3
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -17,7 +16,7 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
-                                                                
+******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -33,9 +32,14 @@
 ******  June, 2005 
 ******  - Axes, grids, and tic labels added with the assistance
 ******  of Summer student employee Oleg Mokhov.
+******
 ******  Mar 2007   ostiguy@fnal.gov
-******  -eliminated references to slist/dlist
+******  - eliminated references to slist/dlist
 ******                                                                
+******  Oct 2007   michelotti@fnal.gov
+******  - bug fix: segmentation fault caused by _history not being cleared.
+******             : in void RayTrace::_edit_clear()
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -400,7 +404,6 @@ void RayDrawSpace::_computeGridBounds( double& xGridMin, double& xGridMax,
 
 void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 {
-  
   glClearColor( x->_rClr, x->_gClr, x->_bClr, x->_aClr );
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
@@ -487,7 +490,6 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 
 void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 {
-
   glClearColor( x->_rClr, x->_gClr, x->_bClr, x->_aClr );
   glClear( GL_COLOR_BUFFER_BIT );
   glLoadIdentity();
@@ -829,10 +831,12 @@ RayTrace::~RayTrace()
   delete _p_startBtn;
   delete _p_trackBox;
 
-  for ( std::list<Ray*>::iterator it = _history.begin();  it != _history.end(); ++it ) {
-    delete (*it);
+  if( ! _history.empty() ) {
+    for ( std::list<Ray*>::iterator it = _history.begin();  it != _history.end(); ++it ) {
+      delete *it;
+    }
+   _history.clear();  // May not be necessary here.
   }
-
 }
 
 
@@ -853,8 +857,13 @@ void RayTrace::_edit_clear()
 {
   _isIterating = false;
 
-  for ( std::list<Ray*>::iterator it = _history.begin();  it != _history.end(); ++it ) {
-    delete (*it);
+  if( ! _history.empty() ) {
+    for ( std::list<Ray*>::iterator it  = _history.begin();  
+                                    it != _history.end(); 
+                                    ++it ) {
+      delete *it;
+    }
+    _history.clear();  // Is definitely needed here.
   }
 
   _p_leftWindow->updateGL();
