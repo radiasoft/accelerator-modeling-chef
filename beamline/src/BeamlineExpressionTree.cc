@@ -244,20 +244,12 @@ void NotNode::writeTo( ostream& os ) const
 
 // ... TypeIs
 
-class TypeIs {
 
-public:
-
- TypeIs( const char* x ): type_(x) {}
-
- bool operator()( bmlnElmnt const * x ) const   { return (  x->Type() ==  type_ ); }
-
- void writeTo( ostream& os )            const  { os << "( Type = " << type_ << " )"; }
+TypeIs::TypeIs( const char* x ): type_(x) {}
+bool TypeIs::operator()( bmlnElmnt const * x ) const   { return (  x->Type() ==  type_ ); }
+void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << type_ << " )"; }
  
-private:
 
-  std::string type_;
-};
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -265,19 +257,9 @@ private:
 
 // ... NameIs
 
-class NameIs { 
-
- public:
-
-  NameIs( const char* x ) : name_(x) {}
-
-  bool operator()( bmlnElmnt const* x ) const  { return x->Name() == name_ ;        }
-  void writeTo( ostream& os )           const  {os << "( Name = " << name_ << " )"; }
-
- private:
- 
-  std::string name_; 
-};
+ NameIs::NameIs( const char* x ) : name_(x) {}
+ bool  NameIs::operator()( bmlnElmnt const* x ) const  { return x->Name() == name_ ;        }
+ void  NameIs::writeTo( ostream& os )           const  {os << "( Name = " << name_ << " )"; }
 
 
 // ... LengthIs
@@ -286,97 +268,50 @@ class NameIs {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-class LengthIs {
+ LengthIs::LengthIs( double l ): length_(l) {}
+ bool LengthIs::operator()( bmlnElmnt const* x ) const { return std::abs( x->Length() - length_ ) <= 0.001*length_; }
+ void LengthIs::writeTo( ostream& os ) const { os << "( Length = " << length_ << os << " )";                        }
 
- public:
-   LengthIs( double l ): length_(l) {}
-   bool operator()( bmlnElmnt const* x ) const { return std::abs( x->Length() - length_ ) <= 0.001*length_; }
-   void writeTo( ostream& os ) const { os << "( Length = " << length_ << os << " )";                        }
-
- private:
-  double length_;
-};
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class LengthLess {
-
- public: 
-  LengthLess( double l ): length_(l) {}
-  bool operator()( const bmlnElmnt* x ) const { return ( x->Length() < length_ );        }
-  void writeTo( ostream& os )           const {  os << "( Length < " << length_ << " )"; }
-
- private:
-  double length_;
-};
-
+ LengthLess::LengthLess( double l ): length_(l) {}
+ bool LengthLess::operator()( const bmlnElmnt* x ) const { return ( x->Length() < length_ );        }
+ void LengthLess::writeTo( ostream& os )           const {  os << "( Length < " << length_ << " )"; }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // ... LengthMore
 
-class LengthMore {
+ LengthMore::LengthMore( double l ) : length_(l) {}
+ bool LengthMore::operator()( const bmlnElmnt* x )   const { return ( x->Length() > length_ );       }
+ void LengthMore::writeTo( ostream& os ) const { os << "( Length > " << length_ << " )";             }
 
- public:
-   LengthMore( double l ) : length_(l) {}
-   bool operator()( const bmlnElmnt* x )   const { return ( x->Length() > length_ );       }
-   void writeTo( ostream& os ) const { os << "( Length > " << length_ << " )";             }
-
- private:
-  double length_;
-};
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 // ... StrengthIs
 
-class StrengthIs {
+ StrengthIs::StrengthIs( double s ) : strength_(s) {}
+ bool  StrengthIs::operator()( const bmlnElmnt* x ) const { return ( std::abs( x->Strength() - strength_ ) <= 0.001*strength_ ); }
+ void  StrengthIs::writeTo( ostream& os )           const { os << "( Strength = " << strength_ << ")";                           }
 
- public:
-   StrengthIs( double s ) : strength_(s) {}
-   bool operator()( const bmlnElmnt* x ) const { return ( std::abs( x->Strength() - strength_ ) <= 0.001*strength_ ); }
-   void writeTo( ostream& os )           const { os << "( Strength = " << strength_ << ")";                           }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ StrengthLess::StrengthLess( double s ) : strength_(s) {}
+ bool StrengthLess::operator()(bmlnElmnt const* x ) const  { return (x->Strength() < strength_);           }
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
- private:
-
-  double strength_;
-
-};
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-class StrengthLess {
-
- public:
-   StrengthLess( double s ) : strength_(s) {}
-   bool operator()(bmlnElmnt const* x ) const  { return (x->Strength() < strength_);           }
- 
- private:
-
-  double strength_;
-
-};
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-class StrengthMore {
-
- public:
-   StrengthMore( double s ) : strength_(s) {}
-   bool operator()( const bmlnElmnt* x ) const { return ( x->Strength() > strength_ );       }
- 
- private:
-
-  double strength_;
-
-};
+ StrengthMore::StrengthMore( double s ) : strength_(s) {}
+ bool StrengthMore::operator()(bmlnElmnt const* x ) const  { return (x->Strength() > strength_);           }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
