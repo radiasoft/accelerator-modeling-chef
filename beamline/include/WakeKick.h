@@ -76,7 +76,7 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
  private:
 
-   void init();
+   //void init();
    boost::function< void( ParticleBunch& ) > propagator_;
    
 
