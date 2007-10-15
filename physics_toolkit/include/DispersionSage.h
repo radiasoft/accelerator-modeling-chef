@@ -74,14 +74,22 @@ public:
     Info();
 
     double arcLength;
+
     struct Clort {
       double hor;
       double ver;
     } closedOrbit;
+
+    struct ClortP {
+      double hor;
+      double ver;
+    } closedOrbitP;
+
     struct Dis {
       double hor;
       double ver;
     } dispersion;
+
     struct DDis {
       double hor;
       double ver;
