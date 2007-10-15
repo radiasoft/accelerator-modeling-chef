@@ -1,29 +1,34 @@
 Summary of changes since 20070808 release
 -----------------------------------------
 
-ParticleBunch  
+o ParticleBunch  
 
 - rms emittance calculation capability
 - reported intensity reflects lost particles
 
-monitor element 
+o monitor elements 
 
 - now detects bunch centroid when a bunch is propagated
 - support for systematic and random errors
 
-XSIF parser
+o XSIF parser
 
  - improved command/element valid argument checking
- - support for BETA0 (initital conditions)
- 
-beamline class
- 
- - streamlined iterator based interface 
- - misaligment and rotations speedup
+ - support for BETA0 blocks (initial conditions)
 
-GUI
+o MADX parser
+
+ - new madx parser, to parse LHC files
+
+o beamline class
+ 
+ - improved and streamlined iterator based public interface 
+ - misaligment and rotations speedup
+ - new templated class TBunch
+ - TBunch<JetParticle> to track phase space patches
+
+o GUI
  
  - new bunch generation dialog
  - bunch projection plots 
  - bunch scatter plots 
-
