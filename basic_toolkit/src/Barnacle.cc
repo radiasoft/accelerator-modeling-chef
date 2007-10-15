@@ -202,7 +202,8 @@ void BarnacleList::erase(  std::list<Barnacle>::iterator& it )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-BarnacleList::iterator BarnacleList::find( std::string ident, int n ) {
+BarnacleList::iterator BarnacleList::find( std::string ident, int n ) 
+{
 
   int count = 0;
 
