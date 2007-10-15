@@ -35,7 +35,11 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/ConvolutionFunctor.h>
 
-class ParticleBunch;
+template <typename Particle_t>
+class TBunch;
+
+typedef TBunch<Particle> ParticleBunch;
+
 
 class WakeKickPropagator {
 
