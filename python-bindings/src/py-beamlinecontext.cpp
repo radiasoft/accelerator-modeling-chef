@@ -81,7 +81,12 @@ return  covariance_list;
 
 boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
 {
+  std::vector<DispersionSage::Info> dispersion_array = obj.getDispersionArray();
   boost::python::list dispersion_list;
+  for ( std::vector<DispersionSage::Info>::iterator it  = dispersion_array.begin(); 
+  it != dispersion_array.end(); ++it) {
+    dispersion_list.append( *it );
+  }
   return  dispersion_list;
 }
 

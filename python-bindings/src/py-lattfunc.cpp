@@ -163,6 +163,22 @@ class_<CovarianceSage::Info::alpha_type>("alpha")
   .def_readwrite("ver", &CovarianceSage::Info::alpha_type::ver);
 
 class_<DispersionSage::Info >("DispFunc",init<>())
+    .def_readwrite("arcLength",&DispersionSage::Info::arcLength)
+    .def_readwrite("closedOrbit",&DispersionSage::Info::closedOrbit)
+    .def_readwrite("dispersion",&DispersionSage::Info::dispersion)
+    .def_readwrite("dPrime",&DispersionSage::Info::dPrime)
   ;
+
+class_<DispersionSage::Info::Clort>("Clort")
+  .def_readwrite("hor", &DispersionSage::Info::Clort::hor )
+  .def_readwrite("ver", &DispersionSage::Info::Clort::ver );
+
+class_<DispersionSage::Info::Dis>("Dis")
+  .def_readwrite("hor", &DispersionSage::Info::Dis::hor)
+  .def_readwrite("ver", &DispersionSage::Info::Dis::ver);
+
+class_<DispersionSage::Info::DDis>("DDis")
+  .def_readwrite("hor", &DispersionSage::Info::DDis::hor)
+  .def_readwrite("ver", &DispersionSage::Info::DDis::ver);
 
 }
