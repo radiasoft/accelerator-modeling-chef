@@ -19,8 +19,18 @@
 
 ! derived parameters
 
-  Aspin := (PI/2)/ae/(E0/EMASS) !spin rotator arc angle
-  BRHO  := E0 * CB              !magnetic rigidity in kG.m
+! -----------------------------------------------------------------
+! BEGIN CHANGED LINES
+! -----------------------------------------------------------------
+! ORIGINAL: -------------------------------------------------------
+! Aspin := (PI/2)/ae/(E0/EMASS) !spin rotator arc angle
+! BRHO  := E0 * CB              !magnetic rigidity in kG.m
+! NEW: ------------------------------------------------------------
+  Aspin  := (PI/2)/ae/(E0/EMASS) !spin rotator arc angle
+  MRKGM  := E0 * CB              !magnetic rigidity in kG.m
+! -----------------------------------------------------------------
+! END CHANGED LINES
+! -----------------------------------------------------------------
 
 ! magnet parameters
 
