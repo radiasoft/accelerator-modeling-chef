@@ -256,9 +256,25 @@ ParticleBunch::const_reverse_iterator     ParticleBunch::removed_rend()    const
 
 void ParticleBunch::clear()
 {
+
+  for ( iterator it = begin();          it != end();          ++it) { it->~Particle(); }
+  for ( iterator it = removed_.begin(); it != removed_.end(); ++it) { it->~Particle(); }
+
   bunch_.clear();
   removed_.clear();
+
   pool_.purge_memory();  
+
+  //-------------------------------------------------------
+  // The following is a work around for the bug described 
+  // at http://svn.boost.org/trac/boost/ticket/284
+  // Apparently, the initial pool size does not get reset 
+  // when the pool memory is released. The fix will be in
+  // boos release 1.35 
+  //-------------------------------------------------------
+
+   pool_.set_next_size(1024);
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
