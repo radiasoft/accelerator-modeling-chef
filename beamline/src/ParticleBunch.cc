@@ -124,6 +124,14 @@ ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& in
  // (placement) new when instantiating the cloned particle.
  // 
  // Note: space for a minimum of 128 particles is allways allocated.  
+ // 
+ // Note: (JFO 2007116) this design is not working as intended.
+ //       the state of a particle is stored in memory allocated by 
+ //       the state_ member in a Particle. state_ is a std::vector and as
+ //       such, it allocates its own memory. The result is that particle 
+ //       states are _not_ stored contiguously. 
+ //        
+ // 
  //---------------------------------------------------------------------------------
   
   for (int i =0; i< nparticles; ++i )
@@ -139,6 +147,8 @@ ParticleBunch::ParticleBunch(Particle const& p, int nparticles, double const& in
 ParticleBunch::~ParticleBunch() 
 {
   delete reference_;
+  for ( iterator it = begin();          it != end();          ++it) { it->~Particle(); }
+  for ( iterator it = removed_.begin(); it != removed_.end(); ++it) { it->~Particle(); }
 }
 
 
