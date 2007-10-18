@@ -62,7 +62,7 @@
 
 #include <physics_toolkit/DriftEliminator.h>
 #include <physics_toolkit/QuadEliminator.h>
-
+#include <physics_toolkit/BendEliminator.h>
 
 #include <BeamlineExpressionTree.h>
 #include <BeamlineBrowser.h>
@@ -275,6 +275,7 @@ private slots:
   void editFlatten();
   void editNewOrder();
   void editMergeQuads();
+  void editMergeBends();
   void editD2S();
   void editAddMarkers();
   void editAddQtMons();

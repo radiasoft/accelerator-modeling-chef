@@ -181,6 +181,12 @@ void CHEFGUIBase::_editMergeQuads()
 }
 
 
+void CHEFGUIBase::_editMergeBends()
+{
+
+}
+
+
 void CHEFGUIBase::_editD2S()
 {
 

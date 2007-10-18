@@ -66,6 +66,7 @@
         <action name="editInsertMonitorAction"/>
         <separator/>
         <action name="editMergeEquivalentQuadsAction"/>
+        <action name="editMergeEquivalentBendsAction"/>
         <action name="editConvertToSlotsAction"/>
         <action name="editPartitionElementsAction"/>
         <separator/>
@@ -960,6 +961,17 @@
     </action>
     <action>
         <property name="name">
+            <cstring>editMergeEquivalentBendsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Merge Equivalent Bends</string>
+        </property>
+        <property name="menuText">
+            <string>Merge Equivalent Bends</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
             <cstring>editConvertToSlotsAction</cstring>
         </property>
         <property name="text">
@@ -1521,6 +1533,12 @@
         <slot>editMergeQuads()</slot>
     </connection>
     <connection>
+        <sender>editMergeEquivalentBendsAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>editMergeBends()</slot>
+    </connection>
+    <connection>
         <sender>editPartitionAndSectorizeAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1717,6 +1735,7 @@
     <slot>editRemoveLine()</slot>
     <slot>editCondense()</slot>
     <slot>editMergeQuads()</slot>
+    <slot>editMergeBends()</slot>
     <slot>editD2S()</slot>
     <slot>openDeviceFile()</slot>
     <slot>editPartAndSect()</slot>
