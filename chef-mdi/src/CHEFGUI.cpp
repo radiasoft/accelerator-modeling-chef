@@ -1234,6 +1234,23 @@ void CHEFGUI::editMergeQuads()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void CHEFGUI::editMergeBends()
+{
+  BendEliminator qe;
+  p_currBmlCon_->accept(qe);
+
+  BmlPtr bmlPtr( qe.beamlinePtr()->Clone() );
+  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( p_currBmlCon_->getParticle(),
+                                       bmlPtr ) );
+  contextList_.push_front( p_currBmlCon_ );
+
+  emit new_beamline();
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void CHEFGUI::toolMisalign()
 {
   if( !p_currBmlCon_ ) {
@@ -3260,6 +3277,7 @@ void CHEFGUI::enableMenus( bool set )
     editSelectLineAction->setEnabled(set);
 
     editMergeEquivalentQuadsAction->setEnabled(set);
+    editMergeEquivalentBendsAction->setEnabled(set);
     editConvertToSlotsAction->setEnabled(set);
     editInsertMonitorAction->setEnabled(set);
     editPartitionAndSectorizeAction->setEnabled(set);
