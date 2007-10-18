@@ -58,7 +58,11 @@ class DLLEXPORT rbend : public bmlnElmnt
 {
 
 public:
-   class MAD_Prop : public bmlnElmnt::PropFunc
+
+  // --------------------------
+  // Propagator subclasses
+  // --------------------------
+  class MAD_Prop : public bmlnElmnt::PropFunc
   {
   public:
     int operator()( bmlnElmnt*, Particle&    );
@@ -197,60 +201,66 @@ public:
   friend class Null_Prop;
   friend class Real_Exact_Prop;
 
+
+  // ------------------------
   // Constructors 
-
-  // length  [ meters ]
-  // field   [ tesla ] (assumed along the y-axis)
-
+  // ------------------------
   rbend();
   rbend( double const& length, double const& field, PropFunc* = &rbend::RealExact );
-
   rbend( char const* name, double const& length, double const& field, PropFunc* = &rbend::RealExact );
-
-// Symmetric bend with parallel faces.
-
   rbend(                   double const& length, double const& field, double const& entry_angle, PropFunc* = &rbend::Exact );
-
   rbend( const char* name, double const& length, double const& field, double const& entry_angle, PropFunc* = &rbend::Exact );
-
   rbend(                   double const& length, double const& field, double const& upstream_edge_angle, double const& downstream_edge_angle, PropFunc* = &rbend::RealExact );
-
-  rbend( const char* name, double const&, // length  [ meters ]
-         double const&,     // field   [ tesla ]
+  rbend( const char* name, 
+         double const&,     // length  [ meters ]
+         double const&,     // field   [ tesla ] (assumed along the y-axis)
          double const&,     // upstream edge angle [radians]
          double const&,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for rbends by MAD
-         PropFunc*    = &rbend::RealExact );
-
+                            // signs of previous two parameters
+                            // are as defined for rbends by MAD
+         PropFunc* = &rbend::RealExact );
   rbend( double const&,     // length  [ meters ]
-         double const&,     // field   [ tesla ]
+         double const&,     // field   [ tesla ] (assumed along the y-axis)
          double const&,     // entry angle [radians] RELATIVE TO parallel faces
-                     //   (assumes symmetric pssage unless reset)
+                            //   (assumes symmetric pssage unless reset)
          double const&,     // upstream edge angle [radians]
          double const&,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for rbends by MAD
-         PropFunc*    = &rbend::RealExact );
-
+                            // signs of previous two parameters
+                            // are as defined for rbends by MAD
+         PropFunc* = &rbend::RealExact );
   rbend( const char*,// name
          double const&,     // length  [ meters ]
-         double const&,     // field   [ tesla ]
+         double const&,     // field   [ tesla ] (assumed along the y-axis)
          double const&,     // entry angle [radians] RELATIVE TO parallel faces
-                     //   (assumes symmetric pssage unless reset)
+                            //   (assumes symmetric pssage unless reset)
          double const&,     // upstream edge angle [radians]
          double const&,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for rbends by MAD
-         PropFunc*    = &rbend::RealExact );
+                            // signs of previous two parameters
+                            // are as defined for rbends by MAD
+         PropFunc* = &rbend::RealExact );
 
+  // ------------------------------------------------------
+  // The condensed collection of constructor argument types
+  // ------------------------------------------------------
+  // rbend(              double const&, double const&, PropFunc* );
+  // rbend( char const*, double const&, double const&, PropFunc* );
+  // rbend(              double const&, double const&, double const&, PropFunc* );
+  // rbend( const char*, double const&, double const&, double const&, PropFunc* );
+  // rbend(              double const&, double const&, double const&, double const&, PropFunc* );
+  // rbend( const char*, double const&, double const&, double const&, double const&, PropFunc* );
+  // rbend(              double const&, double const&, double const&, double const&, double const&, PropFunc* );
+  // rbend( const char*, double const&, double const&, double const&, double const&, double const&, PropFunc* );
+  // ---------------------------------------------------
 
   rbend( rbend const& );
-
   rbend* Clone() const { return new rbend( *this ); }
 
   virtual ~rbend();
 
+  
+  // -----------------------
+  // Public member functions
+  // -----------------------
   void releasePropFunc();
   void setupPropFunc();
 
@@ -299,6 +309,7 @@ public:
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
+
 
 private:
   // bmlnElmnt::strength -> magnetic field [T]

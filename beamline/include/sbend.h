@@ -144,9 +144,9 @@ public:
   sbend();
   sbend( double const&,     // (orbit) length [meters]
          double const&,     // magnetic field [tesla]
-                     // (assumed along the y-axis)
+                            // (assumed along the y-axis)
          double const&,     // geometric bend angle [radians]
-                     // sign( bend angle ) = sign( field )
+                            // sign( bend angle ) = sign( field )
          PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
@@ -160,8 +160,8 @@ public:
          double const&,     // geometric bend angle [radians]
          double const&,     // upstream edge angle [radians]
          double const&,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for sbends by MAD
+                            // signs of previous two parameters
+                            // are as defined for sbends by MAD
          PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
@@ -170,8 +170,8 @@ public:
          double const&,     // geometric bend angle [radians]
          double const&,     // upstream edge angle [radians]
          double const&,     // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for sbends by MAD
+                            // signs of previous two parameters
+                            // are as defined for sbends by MAD
          PropFunc*    = &sbend::Exact );
 
   sbend( const sbend& );
@@ -186,7 +186,7 @@ public:
   double getAngle() const   { return angle_; }
   // aliased
   double setBendAngle(double const& a) { return (angle_ = a); }
-  double getBendAngle() const   { return angle_; }
+  double getBendAngle() const          { return angle_;       }
   
 
   // Note: entry and exit angles are not arguments
@@ -194,7 +194,7 @@ public:
   // by default. Otherwise, use one of the following.
 
   double setEntryAngle( const Particle& ); 
-  double  setExitAngle( const Particle& ); 
+  double setExitAngle ( const Particle& ); 
   double getEntryAngle()              const { return usAngle_; }
   double getExitAngle()               const { return dsAngle_; }
   double setEntryAngle( double const& radians); 
