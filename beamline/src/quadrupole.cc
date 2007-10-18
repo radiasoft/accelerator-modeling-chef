@@ -52,6 +52,7 @@
 #include <beamline/drift.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -246,16 +247,18 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
+  a = QuadrupolePtr( new quadrupole(         pc  *length_, strength_, propfunc_ ) );
+  b = QuadrupolePtr( new quadrupole( ( 1.0 - pc )*length_, strength_, propfunc_ ) );
 
-  a = QuadrupolePtr( new quadrupole(         pc  *length_, strength_, propfunc_ ) ); // ??? Fix
-  b = QuadrupolePtr( new quadrupole( ( 1.0 - pc )*length_, strength_, propfunc_ ) ); // ??? this
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
   // Rename
-
-
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
