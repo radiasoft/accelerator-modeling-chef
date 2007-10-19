@@ -55,6 +55,7 @@
 #include <beamline/Solenoid.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -136,19 +137,23 @@ void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
  
   Solenoid*  q = 0;
 
-   a = SolenoidPtr( (q = new Solenoid(         pc  *length_, strength_ )) );
+  a = SolenoidPtr( (q = new Solenoid(         pc  *length_, strength_ )) );
 
-   q->inEdge_   = inEdge_;    
-   q->outEdge_  = false;      
-   q->rename( std::string ( q->Name()) + std::string( "_1" ) );
+  q->inEdge_   = inEdge_;    
+  q->outEdge_  = false;      
+  q->rename( std::string ( q->Name()) + std::string( "_1" ) );
   
-   b = SolenoidPtr(  (q = new Solenoid( ( 1.0 - pc )*length_, strength_ )) );
+  b = SolenoidPtr(  (q = new Solenoid( ( 1.0 - pc )*length_, strength_ )) );
 
-   q->inEdge_   = false;      
-   q->outEdge_  = outEdge_;   
-   q->rename( std::string ( q->Name()) + std::string( "_2" ) );
+  q->inEdge_   = false;      
+  q->outEdge_  = outEdge_;   
+  q->rename( std::string ( q->Name()) + std::string( "_2" ) );
 
-
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 }
 
 

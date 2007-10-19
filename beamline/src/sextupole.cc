@@ -51,6 +51,7 @@
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
@@ -149,14 +150,18 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-  a = ElmPtr( new sextupole(         pc  *length_, strength_ ) );
-  b = ElmPtr( new sextupole( ( 1.0 - pc )*length_, strength_ ) );
+  a = SextupolePtr( new sextupole(         pc  *length_, strength_ ) );
+  b = SextupolePtr( new sextupole( ( 1.0 - pc )*length_, strength_ ) );
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
   // Rename
-
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
-
 }
 
 

@@ -52,6 +52,7 @@
 #include <beamline/BmlVisitor.h>
 #include <beamline/octupole.h>
 #include <beamline/drift.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -190,15 +191,18 @@ void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-
   a = OctupolePtr( new octupole(         pc  *length_, strength_ ) );
   b = OctupolePtr( new octupole( ( 1.0 - pc )*length_, strength_ ) );
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
+  // Rename
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
