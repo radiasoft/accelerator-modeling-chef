@@ -30,6 +30,7 @@
 #ifdef BEAMLINE_EXPLICIT_TEMPLATES
 
 #include <basic_toolkit/Barnacle.h>
+#include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/TBunch.h>
 #include <beamline/TBunch.tcc>
@@ -54,6 +55,8 @@
 #include <map>
 
 template class TBunch<Particle>;
+template class TBunch<JetParticle>;
+
 template class list<ElmPtr>;
 
 template class boost::shared_ptr<CF_rbend>; 
@@ -61,15 +64,27 @@ template class boost::shared_ptr<CF_sbend>;
 template class boost::shared_ptr<sbend>; 
 template class boost::shared_ptr<Slot>; 
 
-template boost::shared_ptr<Slot>             boost::dynamic_pointer_cast<Slot,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<CF_rbend>         boost::dynamic_pointer_cast<CF_rbend,        bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<thinrfcavity>     boost::dynamic_pointer_cast<thinrfcavity,    bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<beamline>         boost::dynamic_pointer_cast<beamline,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<Slot>             boost::dynamic_pointer_cast<Slot,             bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<CF_rbend>         boost::dynamic_pointer_cast<CF_rbend,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinrfcavity>     boost::dynamic_pointer_cast<thinrfcavity,     bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<combinedFunction> boost::dynamic_pointer_cast<combinedFunction, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinOctupole>     boost::dynamic_pointer_cast<thinOctupole,     bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<rfcavity>         boost::dynamic_pointer_cast<rfcavity,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<sbend>            boost::dynamic_pointer_cast<sbend,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<CF_sbend>         boost::dynamic_pointer_cast<CF_sbend,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<rbend>            boost::dynamic_pointer_cast<rbend,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+
+template boost::shared_ptr<beamline>         boost::static_pointer_cast<beamline,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<Slot>             boost::static_pointer_cast<Slot,             bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<CF_rbend>         boost::static_pointer_cast<CF_rbend,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinrfcavity>     boost::static_pointer_cast<thinrfcavity,     bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<combinedFunction> boost::static_pointer_cast<combinedFunction, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<thinOctupole>     boost::dynamic_pointer_cast<thinOctupole,    bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<rfcavity>         boost::dynamic_pointer_cast<rfcavity,        bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<sbend>            boost::dynamic_pointer_cast<sbend,           bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<CF_sbend>         boost::dynamic_pointer_cast<CF_sbend,        bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
-template boost::shared_ptr<rbend>            boost::dynamic_pointer_cast<rbend,           bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinOctupole>     boost::static_pointer_cast<thinOctupole,     bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<rfcavity>         boost::static_pointer_cast<rfcavity,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<sbend>            boost::static_pointer_cast<sbend,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<CF_sbend>         boost::static_pointer_cast<CF_sbend,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<rbend>            boost::static_pointer_cast<rbend,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 
 template WakeKickPropagator* boost::addressof<WakeKickPropagator>(WakeKickPropagator&);
 template NameIs*             boost::addressof<NameIs>(NameIs&);
@@ -144,6 +159,7 @@ template WakeKick::WakeKick( char const* name, boost::function< void( ParticleBu
 template class boost::detail::sp_counted_impl_p<LCavityUpstream>;
 template class boost::detail::sp_counted_impl_p<LCavityDnstream>;
 template class boost::detail::sp_counted_impl_p<WakeKick>;
+template class boost::detail::sp_counted_impl_p<sector>;
 
 
 #endif //BEAMLINE_EXPLICIT_TEMPLATES
