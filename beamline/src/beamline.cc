@@ -336,6 +336,16 @@ void beamline::localPropagate( JetParticle& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void beamline::localPropagate( JetParticleBunch& x ) 
+{
+ for (beamline::iterator it = begin(); it != end();  ++it ) { 
+   (*it) -> propagate( x );
+ }
+} 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::setEnergy( double const& E ) 
 {
  nominalEnergy_ = E;
@@ -571,7 +581,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
   else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
 
-    p_be->p_bml_->InsertElementsFromList( particle, s, inList );
+    p_be->bml_->InsertElementsFromList( particle, s, inList );
     p_ile = inList.front();     // this may have changed
 
     ++bml_iter; 
@@ -634,8 +644,8 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
          << "else if ( " << setprecision(10) << s 
          << " == "       << setprecision(10) << p_ile.second 
          << " )\n";
-    (*pcerr) << "else if ( p_be->p_bml_ )\n"
-         << "else if ( " << p_be->p_bml_ << " )\n";
+    (*pcerr) << "else if ( p_be->bml_ )\n"
+         << "else if ( " << p_be->bml_ << " )\n";
     (*pcerr) << "else if ( ( s < p_ile->second ) && ( p_ile->second < s + p_be->OrbitLength( lparticle ) ) )\n"
          << "else if ( ( " << setprecision(10) << s 
          << " < "          << setprecision(10) << p_ile.second 
