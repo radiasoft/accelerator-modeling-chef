@@ -270,7 +270,7 @@ void ParticleBunch::clear()
   // at http://svn.boost.org/trac/boost/ticket/284
   // Apparently, the initial pool size does not get reset 
   // when the pool memory is released. The fix will be in
-  // boos release 1.35 
+  // boost release 1.35 
   //-------------------------------------------------------
 
    pool_.set_next_size(1024);
@@ -464,12 +464,14 @@ std::vector<double>  ParticleBunch::emittances() const
 
   
 
-  std::vector<double> u_2 (3, 0.0);
-  std::vector<double> up_2(3, 0.0);
-  std::vector<double> u_up(3, 0.0);
+  std::vector<double>  u_2 (3, 0.0);
+  std::vector<double>  up_2(3, 0.0);
+  std::vector<double>  u_up(3, 0.0);
+  std::vector<double>  ubar(3, 0.0);
+  std::vector<double> upbar(3, 0.0);
 
 
-  for (ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+  for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
 
     Vector const& state = it->State();
 
@@ -487,22 +489,31 @@ std::vector<double>  ParticleBunch::emittances() const
     up_2[2] +=  (state[5] * state[5]);
     u_up[2] +=  (state[2] * state[5]);
 
+    for (int i=0; i<3; ++i ) {
+      ubar[i] += state[i]; 
+     upbar[i] += state[3+i];
+    } 
   }
 
   int const n = size();
 
+  // substract centroid 
+ 
   for ( int i=0; i<3; ++i ) {
-     u_2[i] /= n; 
-    up_2[i] /= n; 
-    u_up[i] /= n;
+
+    u_2[i]  -= (  ubar[i]*ubar[i] ) / n; 
+    up_2[i] -= ( upbar[i]*upbar[i]) / n; 
+    u_up[i] -= (  ubar[i]*upbar[i]) / n; 
   }
+
 
   std::vector<double> eps(3);
 
   for (int i=0; i<3; ++i ) {
-    eps[i] = sqrt( u_2[i]*up_2[i] - u_up[i]*u_up[i] ); 
+    eps[i] = sqrt( u_2[i]*up_2[i] - u_up[i]*u_up[i] ) / n ;
   }
 
   return eps;
 
-}
+}  
+
