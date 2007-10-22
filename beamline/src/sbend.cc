@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      sbend.cc
-******  Version:   3.1
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -38,6 +37,13 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - eliminated unneeded dynamic casts in Split(...);
+****** 
+****** Oct 2007           michelotti@fnal.gov
+****** - extended sbend::Split so that local alignment information 
+******   (i.e. the alignment struct) is carried over to the new, 
+******   split elements.  The results should be interpreted carefully.
+******   This is a stopgap measure. In the longer term, I intend
+******   to remove the (vestigial) alignment data from these classes.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -52,11 +58,11 @@
 #include <beamline/sbend.h>
 #include <beamline/Particle.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
-
 
 
 // **************************************************
@@ -479,8 +485,51 @@ bool sbend::isMagnet() const
 
 void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if(    1.0e-10 < std::abs(usAngle_ + dsAngle_)
+      && usAngle_ != 0.
+      && dsAngle_ != 0.                          ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to split an unsymmetric sbend."
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
 
-  sbend* sbptr = 0;
+  alignmentData ald( Alignment() );
+  if( 0. != ald.xOffset || 0. != ald.yOffset ) {
+    if( !hasParallelFaces() ) {
+      ostringstream uic;
+      uic  <<   "Not allowed to displace an sbend with non-parallel faces"
+              "\nwith an Alignment struct.  That rolls are allowed in such"
+              "\ncases is only a matter of courtesy. This is NOT encouraged!";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             uic.str().c_str() ) );
+    }
+    if( 1.0e-10 < std::abs(pc - 0.5 ) ) {
+      ostringstream uic;
+      uic  <<   "Not allowed to split an sbend displaced"
+              "\nwith an Alignment struct other than in its middle."
+              "\nThat rolls are allowed in such cases is only a matter"
+              "\nof courtesy. This is NOT encouraged!";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             uic.str().c_str() ) );
+    }
+  }
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc (fractional point of split) = " << pc << ": this should be within (0,1).";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )",
+           uic.str().c_str() ) );
+  }
 
   static bool firstTime = true;
   if( firstTime ) {
@@ -488,25 +537,24 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** The new, split elements must be commissioned with"
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
          << endl;
   }
 
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )",
-           uic.str().c_str() ) );
-  }
+
+  // -----------------------------
+  // Testing finished.
+  // We may proceed with caution ...
+  // -----------------------------
+  sbend* sbPtr = 0;
 
   if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** Splitting sbend with MAD-like propagator."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** You'll get wrong results, "
@@ -525,24 +573,24 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
      b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    a =  SBendPtr ( sbptr = new sbend( pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::InEdge ) );
-    sbptr->setEntryAngle( this->getEntryAngle() );
-    sbptr->setExitAngle( 0.0 );    // Should not matter
-    b =  SBendPtr(  sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::OutEdge ) );
-    sbptr->setEntryAngle( 0.0 );   // Should not matter
-    sbptr->setExitAngle( this->getExitAngle() );
+    a =  SBendPtr ( sbPtr = new sbend( pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::InEdge ) );
+    sbPtr->setEntryAngle( this->getEntryAngle() );
+    sbPtr->setExitAngle( 0.0 );    // Should not matter
+    b =  SBendPtr(  sbPtr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::OutEdge ) );
+    sbPtr->setEntryAngle( 0.0 );   // Should not matter
+    sbPtr->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    a = SBendPtr( sbptr = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
-    sbptr->setEntryAngle( this->getEntryAngle() );
-    sbptr->setExitAngle( 0.0 );    // Should not matter
+    a = SBendPtr( sbPtr = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
+    sbPtr->setEntryAngle( this->getEntryAngle() );
+    sbPtr->setExitAngle( 0.0 );    // Should not matter
     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
     a = SBendPtr( new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::NoEdge ) );
-    b = SBendPtr( sbptr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
-    sbptr->setEntryAngle( 0.0 );   // Should not matter
-    sbptr->setExitAngle( this->getExitAngle() );
+    b = SBendPtr( sbPtr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
+    sbPtr->setEntryAngle( 0.0 );   // Should not matter
+    sbPtr->setExitAngle( this->getExitAngle() );
   }
   // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
   // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::RealInEdge );
@@ -559,7 +607,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   else {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** Propagator type unrecognized."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** It's all your fault."
@@ -569,11 +617,15 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_, 0.0, dsEdgeAngle_ ) );
   }
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( ald );
+  b->setAlignment( ald );
 
+  // Rename
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
-
 }
 
 
