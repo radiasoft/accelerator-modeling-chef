@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      rbend.cc
-******  Version:   3.2
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -40,6 +39,13 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - eliminated unneeded dynamic casts in Split(...);
+****** 
+****** Oct 2007           michelotti@fnal.gov
+****** - extended rbend::Split so that local alignment information 
+******   (i.e. the alignment struct) is carried over to the new, 
+******   split elements.  The results should be interpreted carefully.
+******   This is a stopgap measure. In the longer term, I intend
+******   to remove the (vestigial) alignment data from these classes.
 ******
 **************************************************************************
 *************************************************************************/
@@ -58,6 +64,7 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -519,8 +526,28 @@ bool rbend::isMagnet() const
 
 void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
 
-  rbend* p = 0;
+  alignmentData ald( Alignment() );
+  if(    ( 0. != ald.xOffset || 0. != ald.xOffset ) 
+      && ( !hasParallelFaces()                    ) ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
 
   static bool firstTime = true;
   if( firstTime ) {
@@ -528,20 +555,19 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** The new, split elements must be commissioned with"
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
          << endl;
   }
 
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
-           uic.str().c_str() ) );
-  }
+
+  // -----------------------------
+  // Testing finished.
+  // We may proceed with caution ...
+  // -----------------------------
+  rbend* rbPtr = 0;
 
   if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
     (*pcerr) << "\n*** WARNING *** "
@@ -562,24 +588,24 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     b = ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
   }
   else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    a =  ElmPtr( p = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::InEdge ));
-    p->setEntryAngle( this->getEntryAngle() );
-    p->setExitAngle( 0.0 );    // Should not matter
-    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::OutEdge ));
-    p->setEntryAngle( 0.0 );   // Should not matter
-    p->setExitAngle( this->getExitAngle() );
+    a =  ElmPtr( rbPtr = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::InEdge ));
+    rbPtr->setEntryAngle( this->getEntryAngle() );
+    rbPtr->setExitAngle( 0.0 );    // Should not matter
+    b =  ElmPtr( rbPtr = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::OutEdge ));
+    rbPtr->setEntryAngle( 0.0 );   // Should not matter
+    rbPtr->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    a = ElmPtr( p = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, propfunc_ ) );
-    p->setEntryAngle( getEntryAngle() );
-    p->setExitAngle( 0.0 );    // Should not matter
+    a = ElmPtr( rbPtr = new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, propfunc_ ) );
+    rbPtr->setEntryAngle( getEntryAngle() );
+    rbPtr->setExitAngle( 0.0 );    // Should not matter
     b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::NoEdge ) );
   }
   else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
     a =  ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::NoEdge ) );
-    b =  ElmPtr( p = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
-    p->setEntryAngle( 0.0 );   // Should not matter
-    p->setExitAngle( this->getExitAngle() );
+    b =  ElmPtr( rbPtr = new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, propfunc_ ) );
+    rbPtr->setEntryAngle( 0.0 );   // Should not matter
+    rbPtr->setExitAngle( this->getExitAngle() );
   }
   else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
     a = ElmPtr( new rbend(         pc*length_, strength_, usEdgeAngle_, 0.0, &rbend::RealInEdge )  );
@@ -596,7 +622,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   else {
     (*pcerr) << "\n*** WARNING *** "
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
             "\n*** WARNING *** Propagator type unrecognized."
             "\n*** WARNING *** I'm not responsible for what happens."
             "\n*** WARNING *** It's all your fault."
@@ -606,11 +632,15 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     b =  ElmPtr( new rbend( (1.0 - pc)*length_, strength_, 0.0, dsEdgeAngle_, &rbend::NoEdge ) );
   }
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( ald );
+  b->setAlignment( ald );
 
+  // Rename
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
-
 }
 
 
