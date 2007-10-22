@@ -47,9 +47,6 @@
 #ifndef TVECTOR_TCC
 #define TVECTOR_TCC
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <stdlib.h>
 
@@ -59,6 +56,8 @@
 
 #include <iomanip>
 #include <vector>
+#include <algorithm>
+#include <functional>
  
 using namespace std;
 
@@ -68,15 +67,15 @@ using namespace std;
 //
 
 template<typename T>
-OutputFormat* TVector<T>::m_defOFPtr = 0;
+OutputFormat* TVector<T>::defOFPtr_ = 0;
 
 template<typename T>
 void TVector<T>::setDefaultFormat( OutputFormat const& x )
 {
-  if( ( (OutputFormat*) 0 ) != TVector<T>::m_defOFPtr ) {
-    delete TVector<T>::m_defOFPtr;
+  if( ( (OutputFormat*) 0 ) != TVector<T>::defOFPtr_ ) {
+    delete TVector<T>::defOFPtr_;
   }
-  m_defOFPtr = new OutputFormat( x );
+  defOFPtr_ = new OutputFormat( x );
 }
 
 // ================================================================
@@ -103,14 +102,14 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 
 template<typename T>
 TVector<T>::TVector( int n, T const* x, OutputFormat* fmtPtr )
-: m_theVector(n,T()), m_ofPtr(fmtPtr)
+: theVector_(n,T()), ofPtr_(fmtPtr)
 {
 
   CHECKOUT(n <= 0, "TVector<T>::TVector", "Dimension must be positive.")
 
 
   if (!x) return; 
-  std::copy(x, x+n, m_theVector.begin());   
+  std::copy(x, x+n, theVector_.begin());   
 
 }
 
@@ -119,22 +118,23 @@ TVector<T>::TVector( int n, T const* x, OutputFormat* fmtPtr )
 
 template<typename T> 
 TVector<T>::TVector( TVector const& x )
- : m_theVector( x.m_theVector), m_ofPtr( x.m_ofPtr ) 
+ : theVector_( x.theVector_), ofPtr_( x.ofPtr_ ) 
 { }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TVector<T>::TVector( const_iterator first,  const_iterator last)
- : m_theVector(first, last), m_ofPtr(0) 
+template <typename T>
+template <typename Iterator_t> 
+TVector<T>::TVector( Iterator_t first,  Iterator_t last)
+ : theVector_(first, last), ofPtr_(0) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
+TVector<T>::TVector( TMatrix<T> const& x ): ofPtr_(0)
 {
 
 
@@ -146,13 +146,13 @@ TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
 
   if( x.rows() == 1 ) {
     for (int i=0; i < x.cols(); ++i) { 
-         m_theVector.push_back( x(0,i) );
+         theVector_.push_back( x(0,i) );
     }
     return;
   }
  
   for (int i=0; i < x.rows(); ++i) {
-         m_theVector.push_back( x(i,0) );
+         theVector_.push_back( x(i,0) );
   }
  
 }
@@ -163,7 +163,7 @@ TVector<T>::TVector( TMatrix<T> const& x ): m_ofPtr(0)
 template<typename T> 
 void TVector<T>::reset()
 {
-  m_theVector.clear();
+  theVector_.clear();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -179,9 +179,9 @@ TVector<T>::TVector::~TVector()
 template<typename T>
 void TVector<T>::Set( const T* x )
 {
-  int n = m_theVector.size();
+  int n = theVector_.size();
   
-  std::copy(x, x+n, m_theVector.begin() ); 
+  std::copy(x, x+n, theVector_.begin() ); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -191,7 +191,7 @@ void TVector<T>::Set( const T* x )
 template<typename T>
 T const& TVector<T>::operator() ( int i ) const
 {
-  if ( ( 0 <= i ) && ( i < Dim() ) ) { return m_theVector[i]; }
+  if ( ( 0 <= i ) && ( i < Dim() ) ) { return theVector_[i]; }
   else {
     throw( GenericException( __FILE__, __LINE__, "T TVector<T>::operator() ( int i ) const", "Index out of range.") );
   }
@@ -203,7 +203,7 @@ T const& TVector<T>::operator() ( int i ) const
 template<typename T>
 T& TVector<T>::operator() ( int i )
 {
-  if ( ( 0 <= i ) && ( i < Dim() ) ) { return m_theVector[i]; }
+  if ( ( 0 <= i ) && ( i < Dim() ) ) { return theVector_[i]; }
   else {
     throw( GenericException( __FILE__, __LINE__, "T& TVector<T>::operator() ( int i )", "Index out of range.") );
   }
@@ -218,8 +218,8 @@ TVector<T>& TVector<T>::operator= ( TVector const& x )
 {
    if( this == &x )  return *this;
   
-    m_theVector = x.m_theVector;
-    m_ofPtr     = x.m_ofPtr;
+    theVector_ = x.theVector_;
+    ofPtr_     = x.ofPtr_;
 
     return *this;
 }
@@ -230,19 +230,9 @@ TVector<T>& TVector<T>::operator= ( TVector const& x )
 template<typename T>
 TVector<T> TVector<T>::operator+ ( TVector<T> const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector<T>::operator+", "Incompatible dimensions.")
-#endif
 
-  TVector z( Dim() );
-
-  typename std::template vector<T>::const_iterator it  = m_theVector.begin(); 
-  typename std::template vector<T>::const_iterator itx = x.m_theVector.begin(); 
-  typename std::template vector<T>::iterator itz = z.m_theVector.begin(); 
-
-  for (  ; it !=  m_theVector.end(); ++it, ++itx, ++itz) {
-    (*itz) = (*it) + (*itx);     
-  }
+  TVector z(x);
+  std::transform( begin(), end(),  x.begin(),  z.begin(),  plus<T>() ); 
   return z;
 }
 
@@ -252,19 +242,8 @@ TVector<T> TVector<T>::operator+ ( TVector<T> const& x ) const
 template<typename T>
 TVector<T>& TVector<T>::operator+= ( TVector const& x )
 {
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector::operator+=", "Incompatible dimensions.")
-#endif
-
-  typename std::vector<T>::iterator it         =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
-
-  for (  ; it !=  m_theVector.end(); ++it, ++itx) {
-    (*it) += (*itx);     
-  }
-
+ std::transform( begin(), end(),  x.begin(),  begin(), plus<T>() ); 
  return (*this);
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -274,20 +253,11 @@ TVector<T>& TVector<T>::operator+= ( TVector const& x )
 template<typename T>
 TVector<T> TVector<T>::operator- ( TVector const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector::operator-", "Incompatible dimensions.")
-#endif
-  
-  TVector<T> z( Dim() );
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
-  typename std::vector<T>::iterator itz = z.m_theVector.begin(); 
+ TVector z( Dim() ); 
+ std::transform( begin(), end(),  x.begin(),  z.begin(), minus<T>() ); 
+ return z;
 
-  for (  ; it !=  m_theVector.end(); ++it, ++itx, ++itz) {
-    (*itz) = (*it) - (*itx);     
-  }
-  return z;
 }
 
 
@@ -297,17 +267,8 @@ TVector<T> TVector<T>::operator- ( TVector const& x ) const
 template<typename T>
 TVector<T>& TVector<T>::operator-= ( TVector<T> const& x )
 {
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector<T> TVector<T>::operator-=", "Incompatible dimensions.")
-#endif
-
-  typename std::vector<T>::iterator it        =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
-
-  for (  ; it !=  m_theVector.end(); ++it, ++itx) {
-    (*it) -= (*itx);     
-  }
  
+  std::transform( begin(), end(),  x.begin(),  begin(), minus<T>() ); 
   return (*this);
 }
 
@@ -318,15 +279,8 @@ TVector<T>& TVector<T>::operator-= ( TVector<T> const& x )
 template<typename T>
 TVector<T> operator- ( TVector<T> const& x ) // unary minus
 {
-  TVector<T> z( x.Dim() );
-
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
-  typename std::vector<T>::iterator itz = z.m_theVector.begin(); 
-
-  for ( itx = x.m_theVector.begin(); itx !=  x.m_theVector.end(); ++itx, ++itz ) {
-    (*itz) = - (*itx);
-  }
-
+  TVector<T> z( x );
+  std::transform( z.begin(), z.end(), z.begin(), std::negate<T>() ); 
   return z;
 
 }
@@ -338,15 +292,8 @@ TVector<T> operator- ( TVector<T> const& x ) // unary minus
 template<typename T>
 TVector<T>  operator* ( TVector<T> const& x,  T const& c ) 
 {
-  TVector<T> z( x.Dim() );
-
-  typename std::vector<T>::const_iterator itx  =   x.m_theVector.begin(); 
-  typename std::vector<T>::iterator itz  =   z.m_theVector.begin(); 
-
-  for (  ; itx !=  x.m_theVector.end(); ++itx, ++itz ) {
-    (*itz) = (*itx)*c;     
-  }
-
+  TVector<T> z( x );
+  std::transform( z.begin(), z.end(), z.begin(), std::bind2nd( std::multiplies<T>(), c ) ); 
   return z;
 }
 
@@ -363,14 +310,9 @@ TVector<T> operator* ( T const& c, TVector<T> const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator*=( T const& c ) {
-
- typename std::vector<T>::iterator it   =     m_theVector.begin();
- 
-  for (  ; it !=  m_theVector.end(); ++it) {
-    (*it) *= c;     
-  }
-
+TVector<T>&  TVector<T>::operator*=( T const& c ) 
+{
+ std::transform( begin(), end(), begin(), std::bind2nd( std::multiplies<T>(), c) ); 
  return *this;
 }
 
@@ -381,15 +323,8 @@ TVector<T> TVector<T>::operator*=( T const& c ) {
 template<typename T>
 TVector<T>  TVector<T>::operator/ ( T const& c ) const
 {
- TVector z( Dim() );
-
-  typename std::vector<T>::const_iterator it   =     m_theVector.begin(); 
-  typename std::vector<T>::iterator itz  =   z.m_theVector.begin(); 
-
-  for (  ; it !=  m_theVector.end(); ++it, ++itz) {
-    (*itz) = (*it)/c;     
-  }
-
+ TVector z( *this );
+ std::transform( z.begin(), z.end(), z.begin(), std::bind2nd( std::divides<T>(), c) ); 
  return z;
 }
 
@@ -397,15 +332,10 @@ TVector<T>  TVector<T>::operator/ ( T const& c ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::operator/=( T const& c ) {
-
- typename std::vector<T>::iterator it   =     m_theVector.begin();
- 
-  for (  ; it !=  m_theVector.end(); ++it) {
-    (*it) /= c;     
-  }
-
- return *this;
+TVector<T>& TVector<T>::operator/=( T const& c ) 
+{
+  std::transform( begin(), end(), begin(), std::bind2nd( std::divides<T>(), c) ); 
+  return *this;
 }
 
 
@@ -422,9 +352,9 @@ TVector<T> TVector<T>::operator^ ( TVector<T> const& x ) const
 #endif
 
   TVector<T> z( 3 );
-  z.m_theVector[ 0 ] = m_theVector[ 1 ] * x.m_theVector[ 2 ] - m_theVector[ 2 ] * x.m_theVector[ 1 ];
-  z.m_theVector[ 1 ] = m_theVector[ 2 ] * x.m_theVector[ 0 ] - m_theVector[ 0 ] * x.m_theVector[ 2 ];
-  z.m_theVector[ 2 ] = m_theVector[ 0 ] * x.m_theVector[ 1 ] - m_theVector[ 1 ] * x.m_theVector[ 0 ];
+  z.theVector_[ 0 ] = theVector_[ 1 ] * x.theVector_[ 2 ] - theVector_[ 2 ] * x.theVector_[ 1 ];
+  z.theVector_[ 1 ] = theVector_[ 2 ] * x.theVector_[ 0 ] - theVector_[ 0 ] * x.theVector_[ 2 ];
+  z.theVector_[ 2 ] = theVector_[ 0 ] * x.theVector_[ 1 ] - theVector_[ 1 ] * x.theVector_[ 0 ];
   return z;
 }
 
@@ -439,7 +369,7 @@ bool TVector<T>::operator== ( TVector<T> const& x ) const
 {
   if( Dim() != x.Dim() ) return 0;
 
-  return m_theVector == x.m_theVector;
+  return theVector_ == x.theVector_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -461,10 +391,10 @@ bool TVector<T>::operator< ( TVector<T> const& x ) const
   CHECKOUT(Dim() != x.Dim(), "TVector<T>::operator<", "Dimensions incompatible.")
 #endif
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
+  const_iterator it  =   begin(); 
+  const_iterator itx = x.begin(); 
 
-  for (; it != m_theVector.end() ; ++it, ++itx ) { 
+  for (; it != end() ; ++it, ++itx ) { 
     if ( !( (*it) < (*itx) ) ) return false;
   }
   return true;
@@ -481,10 +411,10 @@ bool TVector<T>::operator<= (  TVector<T> const& x ) const
   CHECKOUT( Dim() != x.Dim(), "TVector<T>::operator<=", "Dimensions incompatible.")
 #endif
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
+  const_iterator it  =   begin(); 
+  const_iterator itx = x.begin(); 
 
-  for (; it != m_theVector.end() ; ++it, ++itx ) { 
+  for (; it != end() ; ++it, ++itx ) { 
     if ( (*it) > (*itx) ) return false;
   }
   return true;
@@ -500,10 +430,10 @@ bool TVector<T>::operator>= ( TVector<T> const& x ) const
   CHECKOUT(Dim() != x.Dim(), "TVector<T>::operator>=", "Dimensions incompatible.")
 #endif
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::const_iterator itx = x.m_theVector.begin(); 
+  const_iterator it  =   begin(); 
+  const_iterator itx = x.begin(); 
 
-  for (; it != m_theVector.end() ; ++it, ++itx ) { 
+  for (; it != end() ; ++it, ++itx ) { 
     if ( (*it) < (*itx) ) return false;
   }
   return true;
@@ -518,7 +448,7 @@ template<typename T>
 bool TVector<T>::IsNull() const
 {
 
-  for (typename std::vector<T>::const_iterator it = m_theVector.begin(); it !=  m_theVector.end(); ++it ) {
+  for ( const_iterator it = begin(); it != end(); ++it ) {
     if ( (*it) != T()  ) return false; 
   }
 
@@ -536,10 +466,10 @@ TVector<T> TVector<T>::Abs() const
 {
   TVector<T> z( Dim() );
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::iterator itz = z.m_theVector.begin(); 
+  const_iterator it  =  begin(); 
+       iterator itz  = z.begin(); 
 
-  for ( ; it !=  m_theVector.end(); ++it, ++itz ) {
+  for ( ; it !=  end(); ++it, ++itz ) {
     (*itz) = std::abs(*it);
   }
 
@@ -555,10 +485,10 @@ TVector<T> TVector<T>::Unit () const
   double x = Norm();
   TVector<T> z( Dim() );
 
-  typename std::vector<T>::const_iterator it  =   m_theVector.begin(); 
-  typename std::vector<T>::iterator itz = z.m_theVector.begin(); 
+  const_iterator it  =   begin(); 
+        iterator itz = z.begin(); 
 
-  for ( ; it !=  m_theVector.end(); ++it, ++itz ) {
+  for ( ; it !=  end(); ++it, ++itz ) {
     (*itz) = (*it)/x;
   }
 
@@ -597,10 +527,10 @@ void TVector<T>::Rotate ( TVector& v, double const& theta ) const
                  + ( s*( e^v) )
                  + ( ( ( 1.0 - c )*(e*v) )*e );
  
-  typename std::vector<T>::iterator itu  = u.m_theVector.begin(); 
-  typename std::vector<T>::iterator itv =  v.m_theVector.begin(); 
+  iterator itu  = u.begin(); 
+  iterator itv =  v.begin(); 
 
-  for ( ; itu !=  u.m_theVector.end(); ++itu, ++itv ) {
+  for ( ; itu !=  u.end(); ++itu, ++itv ) {
     (*itv) = (*itu);
   }
 
@@ -614,17 +544,17 @@ template<typename T>
 ostream& operator<<( std::ostream & os, TVector<T> const& v ) 
 {
   OutputFormat* q;
-  q = v.m_ofPtr;
+  q = v.ofPtr_;
   if( ( (OutputFormat*) 0 ) == q  ) {
-    q = TVector<T>::m_defOFPtr;
+    q = TVector<T>::defOFPtr_;
   }
 
-  typename std::vector<T>::const_iterator it = v.m_theVector.begin();
+  typename TVector<T>::const_iterator it = v.begin();
 
   if( ( (OutputFormat*) 0 ) == q  ) {
     os << "( ";
  
-    for ( ; it !=  v.m_theVector.end()-1; ++it) {
+    for ( ; it !=  v.theVector_.end()-1; ++it) {
       os << (*it) << ", ";
     }
     os << (*it)<< " )";
@@ -633,7 +563,7 @@ ostream& operator<<( std::ostream & os, TVector<T> const& v )
 
   else {
     os << "( ";
-    for ( ; it !=  v.m_theVector.end()-1; ++it) {
+    for ( ; it !=  v.theVector_.end()-1; ++it) {
       os << setw(q->width) 
          << setprecision(q->precision) 
          << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
@@ -662,7 +592,7 @@ template <typename T>
 typename TVector<T>::iterator TVector<T>::begin()
 {
 
- return m_theVector.begin();
+ return theVector_.begin();
 
 }
 
@@ -672,7 +602,7 @@ typename TVector<T>::iterator TVector<T>::begin()
 template <typename T>
 typename TVector<T>::const_iterator TVector<T>::begin()  const
 {
-   return m_theVector.begin();
+   return theVector_.begin();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -682,7 +612,7 @@ template <typename T>
 typename TVector<T>::iterator  TVector<T>::end()
 {
 
-    return m_theVector.end();
+    return theVector_.end();
 
 }
 
@@ -693,7 +623,7 @@ template <typename T>
 typename TVector<T>::const_iterator TVector<T>::end() const
 {
 
-    return m_theVector.end();
+    return theVector_.end();
 
 }
 
@@ -704,7 +634,7 @@ template <typename T>
 typename TVector<T>::reverse_iterator TVector<T>::rbegin()
 {
 
-   return m_theVector.rbegin();  
+   return theVector_.rbegin();  
 
 }
 
@@ -716,7 +646,7 @@ template <typename T>
 typename TVector<T>::const_reverse_iterator TVector<T>::rbegin() const
 {
 
-   return m_theVector.rbegin(); 
+   return theVector_.rbegin(); 
 
 
 }
@@ -728,7 +658,7 @@ template <typename T>
 typename TVector<T>::reverse_iterator TVector<T>::rend() 
 {
 
-   return m_theVector.rend(); 
+   return theVector_.rend(); 
 
 
 }
@@ -739,12 +669,13 @@ typename TVector<T>::reverse_iterator TVector<T>::rend()
 template <typename T>
 typename TVector<T>::const_reverse_iterator TVector<T>::rend()  const
 {
-    return m_theVector.rend(); 
+    return theVector_.rend(); 
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 #undef CHECKOUT
 
 #endif // TVECTOR_TCC
