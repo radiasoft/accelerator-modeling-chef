@@ -474,16 +474,16 @@ std::vector<double>  ParticleBunch::emittances() const
   for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
 
     Vector const& state = it->State();
+     double const npz = it->get_npz();
 
-    double const npz = it->get_npz();
      
-     u_2[0] +=  (state[0] * state[0]);  
-    up_2[0] +=  (state[3] * state[3])/( npz*npz);
-    u_up[0] +=  (state[0] * state[3])/ npz;  
+     u_2[0] +=  (state[0] * state[0]);
+    up_2[0] +=  (state[3] * state[3])/(npz*npz);  
+    u_up[0] +=  (state[0] * state[3])/ npz;
 
      u_2[1] +=  (state[1] * state[1]);  
-    up_2[1] +=  (state[4] * state[4])/( npz*npz);
-    u_up[1] +=  (state[1] * state[4])/ npz;  
+    up_2[1] +=  (state[4] * state[4])/(npz*npz);
+    u_up[1] +=  (state[1] * state[4])/ npz;
 
      u_2[2] +=  (state[2] * state[2]);  
     up_2[2] +=  (state[5] * state[5]);
@@ -491,21 +491,20 @@ std::vector<double>  ParticleBunch::emittances() const
 
     for (int i=0; i<3; ++i ) {
       ubar[i] += state[i]; 
-     upbar[i] += state[3+i];
+     upbar[i] += state[3+i] / npz;
     } 
   }
 
   int const n = size();
 
-  // substract centroid 
+  // express moments with respect to centroid 
  
   for ( int i=0; i<3; ++i ) {
 
-    u_2[i]  -= (  ubar[i]*ubar[i] ) / n; 
-    up_2[i] -= ( upbar[i]*upbar[i]) / n; 
-    u_up[i] -= (  ubar[i]*upbar[i]) / n; 
+     u_2[i]  -= (  ubar[i]*ubar[i] ) / n; 
+    up_2[i]  -= ( upbar[i]*upbar[i]) / n; 
+    u_up[i]  -= (  ubar[i]*upbar[i]) / n; 
   }
-
 
   std::vector<double> eps(3);
 
