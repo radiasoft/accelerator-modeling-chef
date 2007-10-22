@@ -51,27 +51,28 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <basic_toolkit/OutputFormat.h>
-
+#include <boost/pool/pool_alloc.hpp>
 
 template<typename T> 
 class TVector;
 
-template<typename T> 
+template<typename T>
 class TMatrix;
 
 template<typename T> 
 std::ostream& operator<<( std::ostream& , TVector<T> const& );
 
-template<typename T>
+template <typename T>
 TVector<T> operator-( TVector<T> const& );
 
 template<typename T>
 TVector<T> operator*( T          const&, TVector<T> const& );
 
 template<typename T>
-TVector<T> operator*( TVector<T> const&,          T const&);
+TVector<T> operator*( TVector<T> const&,       T const&);
 
 
 template<typename T>
@@ -79,18 +80,18 @@ class DLLEXPORT TVector {
 
 private:
   
-  std::vector<T>       m_theVector;
-  OutputFormat*        m_ofPtr;
+  std::vector<T, boost::pool_allocator<T> >       theVector_;
+  OutputFormat*                                   ofPtr_;
 
-  static OutputFormat* m_defOFPtr;  // default OutputFormat
+  static OutputFormat*                            defOFPtr_;  // default OutputFormat
 
 public:
 
-  typedef typename std::vector<T>::iterator                 iterator;
-  typedef typename std::vector<T>::const_iterator     const_iterator;
+  typedef typename std::vector<T, boost::pool_allocator<T> >::iterator                 iterator;
+  typedef typename std::vector<T, boost::pool_allocator<T> >::const_iterator     const_iterator;
 
-  typedef typename std::vector<T>::reverse_iterator             reverse_iterator;
-  typedef typename std::vector<T>::const_reverse_iterator const_reverse_iterator;
+  typedef typename std::vector<T, boost::pool_allocator<T> >::reverse_iterator             reverse_iterator;
+  typedef typename std::vector<T, boost::pool_allocator<T> >::const_reverse_iterator const_reverse_iterator;
  
   iterator                begin();
   const_iterator          begin()  const;
@@ -107,7 +108,10 @@ public:
   // Constructors and the destructor __________________________
 
   TVector( int  dimension= 3,  T const* components=0, OutputFormat* ofmt=0 );
-  TVector( const_iterator first,  const_iterator last);
+
+  template <typename Iterator_t>
+  TVector( Iterator_t first,  Iterator_t last);
+
   TVector( TVector    const& );
   TVector( TMatrix<T> const& m); // implicit conversion
 
@@ -122,8 +126,8 @@ public:
   void        Set                   ( T const* );
   T const&    operator()            ( int )       const; // return component
   T&          operator()            ( int );              // set    component
-  T const&    operator[]            ( int idx)    const { return m_theVector[idx]; }
-  T&          operator[]            ( int idx)          { return m_theVector[idx]; }
+  T const&    operator[]            ( int idx)    const { return theVector_[idx]; }
+  T&          operator[]            ( int idx)          { return theVector_[idx]; }
 
   // Algebraic functions ___________________________
 
@@ -133,8 +137,8 @@ public:
 
 
   friend  TVector<T> operator-<T>( TVector const& );  // unary minus 
-  friend  TVector<T> operator*<T>( T const&,          TVector const&    );
-  friend  TVector<T> operator*<T>( TVector const&,          T const&    ); 
+  friend  TVector<T> operator*<T>( T       const&,    TVector const&    );
+  friend  TVector<T> operator*<T>( TVector const&,    T       const&    ); 
 
 
   TVector          operator+      ( TVector const& ) const;
@@ -143,11 +147,12 @@ public:
   TVector          operator-      ( TVector const& ) const; 
   TVector&         operator-=     ( TVector const& ); 
 
-  TVector          operator*=     (       T const&       );
+  TVector&         operator/=     (       T const&       );
   TVector          operator/      (       T const&       ) const;
-  TVector          operator/=     (       T const&       );
 
-  T         operator*       ( TVector<T> const&  ) const; // dot product
+  TVector&         operator*=     (       T const&       );
+
+  T          operator*       ( TVector<T> const&  ) const; // dot product
  
   TVector    operator^      ( TVector<T>  const& ) const; // cross product:
                                                           // only works if
@@ -167,14 +172,14 @@ public:
 
   //  ... Queries
 
-  int  Dim() const { return m_theVector.size(); }
+  int  Dim() const { return theVector_.size(); }
 
   // ... Utilities
 
 
   static void   setDefaultFormat ( OutputFormat const&  ); 
-  void          setOutputFormat  ( OutputFormat* x      ) { m_ofPtr = x; }
-  OutputFormat* getOutputFormat()                         { return m_ofPtr; }
+  void          setOutputFormat  ( OutputFormat* x      ) { ofPtr_ = x; }
+  OutputFormat* getOutputFormat()                         { return ofPtr_; }
 
   TVector      Abs              () const;
   double       Norm             () const;
@@ -184,7 +189,7 @@ public:
                                                    // an angle theta using
                                                    // *this as the axis
 
-  friend std::ostream& operator<< <T>(std::ostream& , const TVector<T>& );
+  friend std::ostream& operator<< <T>(std::ostream& , TVector<T> const& );
 
 
   class op_mult: public std::binary_function<std::complex<double>&, std::complex<double>&, std::complex<double> > {
@@ -201,7 +206,7 @@ public:
 
 
 template <>  
-double   TVector<double>::operator* ( TVector<double> const& x ) const; 
+double  TVector<double>::operator* ( TVector<double> const& x ) const; 
 
 template <>  
 std::complex<double> TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const; 
@@ -209,7 +214,11 @@ std::complex<double> TVector<std::complex<double> >::operator* ( TVector<std::co
 template<>
 bool TVector<double>::operator> ( TVector<double> const& x ) const;
 
-// This is *not* implemented (it does not make much sense)
+
+//--------------------------------------------------------------------------
+// These specializations are *not* implemented (it does not make much sense)
+//--------------------------------------------------------------------------
+
 template<>
 bool TVector<std::complex<double> >::operator> ( TVector<std::complex<double> > const& x ) const;
 
