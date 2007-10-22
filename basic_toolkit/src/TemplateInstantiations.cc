@@ -63,7 +63,6 @@
 #include <gms/FastPODAllocator.h>
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/IntArray.h>
-#include <basic_toolkit/Cascade.h>
 
 #include <basic_toolkit/TMatrix.tcc>
 #include <basic_toolkit/TML.tcc>
@@ -127,8 +126,6 @@ namespace {
 template
 void std::fill( IntArray::iterator, IntArray::iterator, int const&); 
 
-//template
-//void std::fill (IntArray::iterator, IntArray::iterator, exponent_t const&);
 
 template
 int std::accumulate( IntArray::iterator, IntArray::iterator,  int);
@@ -199,19 +196,6 @@ void std::fill<int*, int>(int*, int*, int const&);
 template
 double* std::fill_n<double*, int, int>(double*, int, int const&);
 
-// ----------------------------------------------------------------------------
-// Instantiations related to Cascade 
-// ----------------------------------------------------------------------------
-
-template
-class std::vector<Switch>;
-
-template
-class std::list<Switch*>;
-
-template  
-void std::list<Switch*>::sort(Switch::PartialLessThan);
-
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Vector Class
@@ -235,12 +219,24 @@ template TVector<std::complex<double> > operator*(TVector<std::complex<double> >
 template std::ostream& operator<<(std::ostream&, TVector<double> const&);
 template std::ostream& operator<<(std::ostream&, TVector<std::complex<double> > const&);
 
-template double std::inner_product(std::vector<double>::const_iterator, std::vector<double>::const_iterator, 
-                                   std::vector<double>::const_iterator, double);
-template complex<double> std::inner_product(std::vector<complex<double> >::const_iterator, std::vector<complex<double> >::const_iterator, 
-                                            std::vector<complex<double> >::const_iterator, 
+template double std::inner_product( TVector<double>::const_iterator, TVector<double>::const_iterator, 
+                                    TVector<double>::const_iterator, double);
+template complex<double> std::inner_product(TVector<complex<double> >::const_iterator,   TVector<complex<double> >::const_iterator, 
+                                            TVector<complex<double> >::const_iterator, 
                                             complex<double>, 
                                             std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
+
+template TVector<double>::TVector( std::vector<double>::iterator,                 
+                                   std::vector<double>::iterator);
+
+template TVector<std::complex<double> >::TVector( std::vector<std::complex<double> >::iterator,  
+                                                  std::vector<std::complex<double> >::iterator);
+
+template TVector<double>::TVector( TVector<double>::iterator,   
+                                   TVector<double>::iterator);
+
+template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
+                                         TVector<std::complex<double> >::iterator);
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
