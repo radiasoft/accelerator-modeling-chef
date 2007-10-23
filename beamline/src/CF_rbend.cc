@@ -3,42 +3,49 @@
 **************************************************************************
 ******                                                                
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
-******  File:      CF_rbend.cc
-******  Version:   3.1
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
+******             of beamlines, storage rings, and
+******             synchrotrons.
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  File:      CF_rbend.cc
+******
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Mail Stop 220
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
 ****** REVISION HISTORY
 ******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
+****** - reduced src file coupling due to visitor interface.
 ******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
+****** - use std::string for string operations.
+******
+****** Oct 2007           michelotti@fnal.gov
+****** - extended CF_rbend::Split so that local alignment information
+******   (i.e. the alignment struct) is carried over to the new,
+******   split elements.  The results should be interpreted carefully.
+******   This is a stopgap measure. In the longer term, I intend
+******   to remove the (vestigial) alignment data from these classes.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -761,13 +768,36 @@ double CF_rbend::getDipoleField() const
 
 void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
+
+  alignmentData ald( Alignment() );
+  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
+      && ( !hasParallelFaces()                    ) ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to displace a CF_rbend with non-parallel faces";
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
+
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
+         << "\n*** WARNING *** void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const"
             "\n*** WARNING *** The new, split elements must be commissioned with"
             "\n*** WARNING *** RefRegVisitor before being used."
             "\n*** WARNING *** "
@@ -781,14 +811,11 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
          << endl;
   }
 
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic << "Requested percentage = " << pc << "; should be in [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
-           uic.str().c_str() ) );
-  }
 
+  // -----------------------------
+  // Testing finished.
+  // We may proceed with caution ...
+  // -----------------------------
 
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "_angle" are private data members.
@@ -807,16 +834,22 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 
   // Assign quadrupole strength
-
   double quadStrength = getQuadrupole();  // quadStrength = B'l
 
   p_a->setQuadrupole( pc*quadStrength );
   p_b->setQuadrupole( (1.0 - pc)*quadStrength );
 
 
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  p_a->setAlignment( ald );
+  p_b->setAlignment( ald );
+
+
+  // Rename
   p_a->rename( ident_ + string("_1") );
   p_b->rename( ident_ + string("_2"));
-
 }
 
 

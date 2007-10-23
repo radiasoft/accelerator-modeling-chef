@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      CF_sbend.cc
-******  Version:   3.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -40,7 +39,14 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-*******                                                                
+****** 
+****** Oct 2007           michelotti@fnal.gov
+****** - extended CF_sbend::Split so that local alignment information 
+******   (i.e. the alignment struct) is carried over to the new, 
+******   split elements.  The results should be interpreted carefully.
+******   This is a stopgap measure. In the longer term, I intend
+******   to remove the (vestigial) alignment data from these classes.
+****** 
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -58,6 +64,7 @@
 #include <beamline/octupole.h>
 #include <beamline/Particle.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
@@ -577,6 +584,52 @@ double CF_sbend::getBendAngle() const
 
 void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if(    1.0e-10 < std::abs(usAngle_ + dsAngle_)
+      && usAngle_ != 0.
+      && dsAngle_ != 0.                          ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to split an unsymmetric sbend."
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
+
+  alignmentData ald( Alignment() );
+  if( 0. != ald.xOffset || 0. != ald.yOffset ) {
+    if( !hasParallelFaces() ) {
+      ostringstream uic;
+      uic  <<   "Not allowed to displace an sbend with non-parallel faces"
+              "\nwith an Alignment struct.  That rolls are allowed in such"
+              "\ncases is only a matter of courtesy. This is NOT encouraged!";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             uic.str().c_str() ) );
+    }
+    if( 1.0e-10 < std::abs(pc - 0.5 ) ) {
+      ostringstream uic;
+      uic  <<   "Not allowed to split an sbend displaced"
+              "\nwith an Alignment struct other than in its middle."
+              "\nThat rolls are allowed in such cases is only a matter"
+              "\nof courtesy. This is NOT encouraged!";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             uic.str().c_str() ) );
+    }
+  }
+
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic << "Requested percentage = " << pc << "; should be in (0,1).";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
+  }
+
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
@@ -597,14 +650,11 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
          << endl;
   }
 
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic << "Requested percentage = " << pc << "; should be in [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
-           uic.str().c_str() ) );
-  }
 
+  // -----------------------------
+  // Testing finished.
+  // We may proceed with caution ...
+  // -----------------------------
 
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "angle_" are private data members.
@@ -630,11 +680,15 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   p_b->setQuadrupole( (1.0 - pc)*quadStrength );
 
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  p_a->setAlignment( ald );
+  p_b->setAlignment( ald );
 
+  // Rename
   p_a->rename( ident_ + string("_1") );
   p_b->rename( ident_ + string("_2") );
-
 }
 
 
