@@ -533,12 +533,12 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
            uic.str().c_str() ) );
   }
 
   alignmentData ald( Alignment() );
-  if(    ( 0. != ald.xOffset || 0. != ald.xOffset ) 
+  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
       && ( !hasParallelFaces()                    ) ) {
     ostringstream uic;
     uic  <<   "Not allowed to displace an rbend with non-parallel faces";
