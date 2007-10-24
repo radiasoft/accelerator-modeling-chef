@@ -53,7 +53,7 @@ typedef TMapping<double>   Mapping;
 struct DLLEXPORT alignmentData {
   double       xOffset;
   double       yOffset;
-  double       tilt;
+  double       tilt;   // This name is misleading. It actually represents a roll.
   alignmentData();
   alignmentData(const alignmentData&);
   ~alignmentData();
