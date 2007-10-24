@@ -155,8 +155,8 @@ private:
   int              _maxHistory;
 
   QTimer*          _p_timer;
-  RayDrawSpace*       _p_leftWindow;
-  RayDrawSpace*       _p_rightWindow;
+  RayDrawSpace*    _p_leftWindow;
+  RayDrawSpace*    _p_rightWindow;
   QHBox*           _p_trackBox;
   QPushButton*     _p_startBtn;
   QLabel*          _p_blankLabel;
