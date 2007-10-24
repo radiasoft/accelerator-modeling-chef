@@ -83,6 +83,7 @@
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
