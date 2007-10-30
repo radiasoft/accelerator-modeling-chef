@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      LayoutVisitor.cc
-******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -36,6 +35,12 @@
 ****** - take advantage of dynamic type resolution for visit functions
 ****** - element predicate based on general function object   
 ******                                                               
+****** October 2007 michelotti@fnal.gov
+****** - Bug fix: in changing the signatures of the "visit"
+******   functions, an error was introduced that produced an infinite
+******   loop when processing a quadrupole or sextupole whose
+******   strength was zero. A static_cast is introduced into 
+******   two lines to fix this. (Other changes are aesthetic only.)
 ******                                                                
 **************************************************************************
 *************************************************************************/
