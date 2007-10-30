@@ -129,14 +129,14 @@ void LayoutVisitor::setDiscriminator( boost::function< bool( bmlnElmnt&) > dsc,
 void LayoutVisitor::visit ( sector& )
 {
   (*pcerr) << "*** WARNING ***                                \n"
-       << "*** WARNING *** LayoutVisitor::visitSector       \n"
-       << "*** WARNING ***                                \n"
-       << "*** WARNING *** Sectors are not handled        \n"
-       << "*** WARNING *** properly. Errorcode is         \n"
-       << "*** WARNING *** being set. Results will be     \n"
-       << "*** WARNING *** unreliable.                    \n"
-       << "*** WARNING ***                                \n"
-       << endl;
+              "*** WARNING *** LayoutVisitor::visitSector     \n"
+              "*** WARNING ***                                \n"
+              "*** WARNING *** Sectors are not handled        \n"
+              "*** WARNING *** properly. Errorcode is         \n"
+              "*** WARNING *** being set. Results will be     \n"
+              "*** WARNING *** unreliable.                    \n"
+              "*** WARNING ***                                \n"
+           << endl;
   errorCode_ = SECTORVISITED;
 }
 
@@ -155,51 +155,52 @@ void LayoutVisitor::visit( bmlnElmnt& x )
   if( !streamPtr_ ) return;
 
   if( discriminator_ ) {
-     if(  discriminator_(x) ) {
-        processSpecialElement( x );
-        return;
-     }
+    if(  discriminator_(x) ) {
+      processSpecialElement( x );
+      return;
+    }
   }
   
   if( x.Length() > 0.0 ) {
-      s_ += x.Length();
-      (*streamPtr_) << s_ << "  " << baseline_ << endl;
+    s_ += x.Length();
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
   }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+
 void LayoutVisitor::visit( quadrupole& x )
 {
   if( !streamPtr_ ) { 
-     errorCode_ = NOFILEOPENED;
-     return;
+    errorCode_ = NOFILEOPENED;
+    return;
   }
 
   if( !streamPtr_ ) return;
 
   if( discriminator_ ) {
-      if( discriminator_(x) ) {
-        processSpecialElement( x );
-        return;
-      }
+    if( discriminator_(x) ) {
+      processSpecialElement( x );
+      return;
+    }
   }
 
-   if( 0 == x.Strength() ) {
-      this->visit(x);
-   }
-   else if ( 0 < x.Strength() ) {
-      (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
-      s_ += x.Length();
-      (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
-      (*streamPtr_) << s_ << "  " << baseline_ << endl;
-   }
-   else {
-      (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
-      s_ += x.Length();
-      (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
-      (*streamPtr_) << s_ << "  " << baseline_ << endl;
-   }
+  if( 0 == x.Strength() ) {
+    this->visit(static_cast<bmlnElmnt&>(x));
+  }
+  else if ( 0 < x.Strength() ) {
+    (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
+    s_ += x.Length();
+    (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
+  }
+  else {
+    (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
+    s_ += x.Length();
+    (*streamPtr_) << s_ << "  " << baseline_ - quadHeight_ << endl;
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
+  }
 }
 
 
@@ -208,12 +209,10 @@ void LayoutVisitor::visit( quadrupole& x )
 
 void LayoutVisitor::visit_bend( bmlnElmnt& x )
 {
-
   if( !streamPtr_ ) { 
      errorCode_ = NOFILEOPENED;
      return;
   }
-
 
   if( discriminator_ ) {
       if( discriminator_(x) ) {
@@ -226,17 +225,17 @@ void LayoutVisitor::visit_bend( bmlnElmnt& x )
       this->visit(x);
   }
   else if ( 0 < x.Strength() ) {
-     (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
-     s_ += x.Length();
-     (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
-     (*streamPtr_) << s_ << "  " << baseline_ << endl;
-    }
-    else {
-      (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
-      s_ += x.Length();
-      (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
-      (*streamPtr_) << s_ << "  " << baseline_ << endl;
-    }
+    (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
+    s_ += x.Length();
+    (*streamPtr_) << s_ << "  " << baseline_ + bendHeight_ << endl;
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
+  }
+  else {
+    (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
+    s_ += x.Length();
+    (*streamPtr_) << s_ << "  " << baseline_ - bendHeight_ << endl;
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
+  }
 }
 
 
@@ -294,7 +293,7 @@ void LayoutVisitor::visit( sextupole& x )
   }
 
    if( x.Strength() == 0.0 ) {
-      this->visit(x);
+     this->visit(static_cast<bmlnElmnt&>(x));
    }
    else if ( 0 < x.Strength() ) {
      (*streamPtr_) << s_ << "  " << baseline_ + sextHeight_ << endl;
