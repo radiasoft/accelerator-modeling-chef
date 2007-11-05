@@ -915,7 +915,7 @@ template<typename T>
       // figure of merit for pivot:
       dum = scale_vector->mdata_[i][0] * norm(sum);
 
-      if ( norm (dum) > norm(maximum) ){
+      if ( norm (dum) >= norm(maximum) ){
         // is it better than the best so far ?
         col_max = i;
         maximum =norm(dum);
