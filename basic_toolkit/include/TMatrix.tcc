@@ -608,7 +608,32 @@ TMatrix<std::complex<double> > TMatrix<T>::eigenVectors() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+TMatrix<T> TMatrix<T>::scale() const
+{
+  // returns a col vector; Each row is the max of the corresponding matrix row elements. 
+  TMatrix<T> result;
+  result.ml_ = ml_->scale();
+  return result;
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+TMatrix<T> TMatrix<T>::lu_decompose( int* permutations, int& d) const
+{
+  TMatrix<T> result;
+  result.ml_ = ml_->lu_decompose( permutations, d);
+  return result;
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TMatrix<T>::lu_back_subst( int* permutations, TMatrix& rhs)
+{
+ ml_->lu_back_subst( permutations, rhs.ml_ );
+}
 
