@@ -42,7 +42,10 @@
 ******   - separated eigenvalue/eigenvector reordering function 
 ******   - eliminated code that attempted to discriminate between objects allocated
 ******     on the stack and objects allocated from the free store.
-******                                                                
+****** 
+******  Nov 2007   ostiguy@fnal.gov
+******   - added support for matrix[i][j] element access
+******                                                             
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -102,40 +105,31 @@ public:
   template<typename U>
   friend class TMatrix;
 
-#if 0
-  template<typename V>
   class Matrix1D {
 
   public:
     
-    Matrix1D( V*  matrix, int index ): matrix_(matrix), index_(index) {}
+    Matrix1D( TMatrix<T>& matrix, int const& index ): matrix_(matrix), index_(index) {}
 
-    T&         operator[] (int index)             { return  (*matrix_)(index_,index); } 
-    T const&   operator[] (int index) const       { return  (*matrix_)(index_,index); }
+    T&         operator[] (int const& index)             { return   matrix_(index_, index); } 
+    T const&   operator[] (int const& index) const       { return   matrix_(index_, index); }
 
   private:
-    V*          matrix_;
-    int         index_; 
+
+    TMatrix<T>&   matrix_;
+    int           index_; 
      
   };
 
-#endif
 
 protected:
 
   MLPtr<T>       ml_;
- 
-  // Matrix1D<T>    m1d_;
 
-  // Functions used by the eigenroutines.
 
  private:
 
-  void       copy_column(TMatrix&  x, int, int );
-  void       switch_rows( int, int );
-  TMatrix    scale() const;
-  TMatrix    lu_decompose( int*, int& ) const;
-  void       lu_back_subst( int*, TMatrix& );
+  void       copy_column(TMatrix&  x, int, int );   // used by the eigenroutines.
 
 
  public:
@@ -163,6 +157,10 @@ protected:
 
 
   void      switch_columns( int, int ); // used by SurveyMatcher
+  void      switch_rows( int, int );
+  TMatrix   scale() const;
+  TMatrix   lu_decompose(  int* permutations,     int&    ) const;
+  void      lu_back_subst( int* permutations, TMatrix& rhs);
 
   inline int rows() const { return ml_->rows();}
   inline int cols() const { return ml_->cols();}
@@ -194,8 +192,8 @@ protected:
   T      &  operator()(int const& row, int const& column);
   T const&  operator()(int const& row, int const& column) const;
 
-  //Matrix1D<T>&       operator[](int const& index)         { m1d_ = Matrix1D<T>( this, index); return m1d_; } 
-  //Matrix1D<T> const& operator[](int const& index) const   { m1d_ = Matrix1D<T>( this, index); return m1d_; } 
+  Matrix1D       operator[](int const& index)         { return Matrix1D( *this, index); } 
+  Matrix1D const operator[](int const& index) const   { return Matrix1D( const_cast<TMatrix<T>&>(*this), index); } 
 
   T&        operator()(int const& row);
   T const&  operator()(int const& row) const;
