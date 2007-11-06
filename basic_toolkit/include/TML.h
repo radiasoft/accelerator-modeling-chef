@@ -75,10 +75,10 @@ template<typename T> MLPtr<T> add(MLPtr<T> const& x, const T& y);
 template<typename T> MLPtr<T> subtract(MLPtr<T> const& x, MLPtr<T> const& y); 
 
 
-template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, const T& y); 
-template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, MLPtr<T> const& y);
-template<typename T> MLPtr<T> multiply(  MLPtr<T>   const& x, TVector<T>  const& y);
-template<typename T> MLPtr<T> multiply(  TVector<T> const& x, MLPtr<T>    const& y);
+template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x,                   const T& y); 
+template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x, MLPtr<T>          const& y);
+template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x, TVector<T>  const& y);
+template<typename T> MLPtr<T> multiply(  TVector<T>  const& x, MLPtr<T>          const& y);
 
 template<typename T> MLPtr<T> divide (MLPtr<T> const& x,   T        const& y); 
 template<typename T> MLPtr<T> divide (T        const& y,   MLPtr<T> const& x  ); 
@@ -177,11 +177,6 @@ public:
   int ncols_;      // number of columns
 
   void       copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
-  void       switch_rows(int row1, int row2); 
-
-  MLPtr<T>   scale() const; 
-  MLPtr<T>   lu_decompose( int* indx, int& d ) const;
-  void       lu_back_subst(int* indx, MLPtr<T>& b);  
 
   static double tiny_;     // pivot threshold
 
@@ -212,6 +207,12 @@ public:
   // Public member functions__________________________________________
 
   void       switch_columns(int col1, int col2); 
+  void          switch_rows(int row1, int row2); 
+
+  MLPtr<T>   scale() const; 
+  MLPtr<T>   lu_decompose( int* permutations, int&      d ) const;
+  void       lu_back_subst(int* permutations, MLPtr<T>& b);  
+
 
   inline int rows() const { return nrows_;}
   inline int cols() const { return ncols_;}
