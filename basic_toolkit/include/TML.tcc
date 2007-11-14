@@ -39,15 +39,30 @@
 ******   - eliminated code that attempted to discriminate between objects allocated
 ******     on the stack and objects allocated from the free store.
 ****** 
-******
+******  November 2007  Leo Michelotti
+******                 michelotti@fnal.gov
+******  
+******  - Calls to TML<T>::scale() are now embedded in try-catch
+******    blocks in order to handle matrices that are identically
+******    zero.  In conjunction with other repairs made this month,
+******    the  TML<T>::determinant()  should now handle correctly
+******    any matrix whose determinant is zero.  In addition,
+******    the  TML<T>::inverse()  catches these exceptions when
+******    the matrix is singular and will return a zero matrix
+******    rather than have the application program abort. A message
+******    that a singular matrix has been encountered is still
+******    written as a warning to the user.
+******  
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <algorithm>
 #include <vector>
+#include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
 
 using std::cout;
@@ -328,16 +343,30 @@ T TML<T>::determinant() const
   }
   else {
     int* indx = new int[ncols_];  // create the "index vector
-                              // see pp 38. in Numerical Recipes
-    int d;
-    // perform the decomposition once:
+                                  // see pp 38. in Numerical Recipes
 
-    MLPtr<T> decomp( lu_decompose(indx,d));
+    // Perform the decomposition once
+    int d;
+    MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
+    try {
+      decomp = lu_decompose(indx,d);
+    }
+    catch( GenericException const& ge ) {
+      // The matrix is almost certainly singular.
+      // This will set the returned value of the
+      // determinant to zero.
+      for(int i=0; i<ncols_ ; ++i) {
+        decomp->mdata_[i][i] = 0.0;
+      }      
+    }
+
+    // Finish calculating the determinant
     det = d;
     for(int i=0; i<ncols_ ; ++i)
       det *= decomp->mdata_[i][i];
     delete [] indx;
   }
+
   return det;
 }
 
@@ -348,26 +377,52 @@ T TML<T>::determinant() const
 template<typename T>
 MLPtr<T> TML<T>::inverse() const 
 {
-
   if( nrows_  != ncols_ ) {
     throw( NotSquare( nrows_, ncols_, "TML<T>::inverse()" )  );
   }
   else {
-  
-    MLPtr<T> Y( new TML<T>("I",nrows_) );   // create an identity TMatrix<T>
-    int* indx = new int[ncols_];                           // create the "index vector"
-    MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );       // see Press & Flannery
-    int d;
+    MLPtr<T> Y( new TML<T>("I",nrows_) );            // create an identity TMatrix<T>
+    int* indx = new int[ncols_];                     // create the "index vector"
+    MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );  // see Press & Flannery
 
     // perform the decomposition once:
+    int d;
+    MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
+    try {
+      decomp = lu_decompose(indx,d);
+    }
+    catch( GenericException const& ge ) {
+      // The matrix is almost certainly singular.
+      // This will set the returned value of the
+      // "inverse" to zero.
+      std::ostringstream uic;
+      uic << "\n*** WARNING *** "
+             "\n*** WARNING *** " << __FILE__ << ", line " << __LINE__ 
+          << ": MLPtr<T> TML<T>::inverse() const "
+             "\n*** WARNING *** -------------------------------------"
+             "\n*** WARNING *** Attempt made to invert singular matrix.\n"
+          << (*this)
+          << "\n*** WARNING *** Function is returning zero matrix."
+             "\n*** WARNING *** "
+          << endl;
+      (*FNAL::pcerr) << uic.str() << endl;
 
-    MLPtr<T> decomp (lu_decompose(indx,d));
+      for(int i=0; i<nrows_ ; ++i) {
+        for(int j=0; j<ncols_ ; ++i) {
+          Y->mdata_[i][j] = 0.0;
+        }
+      }      
+      delete []indx;
+      return Y;
+    }
 
+    // Finish calculating the inverse
     for(int col = 0; col < ncols_; ++col){
       B->copy_column(Y,col,0);
       decomp->lu_back_subst(indx,B);
       Y->copy_column(B,0,col);
     }
+
     delete []indx;
     return Y;
   }
@@ -876,7 +931,20 @@ template<typename T>
   MLPtr<T> lu_decomp( new TML<T>( *this) );
 
   // scale the matrix
-  MLPtr<T> scale_vector = lu_decomp->scale(); 
+  MLPtr<T> scale_vector;
+  try {
+    scale_vector = lu_decomp->scale(); 
+  }
+  catch( GenericMatrixException const& ge ) {
+    throw( GenericException( __FILE__, __LINE__, 
+           "TML<T>::lu_decompose( int*, int& )",
+           ge.what() ) );
+  }
+  catch( NotSquare const& ge ) {
+    throw( GenericException( __FILE__, __LINE__, 
+           "TML<T>::lu_decompose( int*, int& )",
+           ge.what() ) );
+  }
 
   // The loop over columns of Crout's method:
 
@@ -899,7 +967,7 @@ template<typename T>
       }
     }
 
-// Initialize the search for the largest pivot element:
+    // Initialize the search for the largest pivot element:
     maximum = T();
     // i=j of eq 2.3.12 & i=j+I..N of 2.3.13:
     for( i=j; i <= ncols_-1; ++i) {
@@ -1307,16 +1375,16 @@ void TML<T>::GaussJordan( TML<T>& a, TML<T>& rhs)
 
       if (ipiv[j] != 1)
 
-	for (int k=0; k<n; ++k) {
-	  if (ipiv[k] == 0) {
-	    if ( norm( a(j,k) ) >= big) {
-	      big = norm(a(j,k));
-	      irow = j;
-	      icol = k;
-	    }
-	  } else if (ipiv[k] > 1) 
-	    (*FNAL::pcerr) << "TML::GaussJordan: Singular Matrix-1 " << ipiv[k] << endl;
-	}
+        for (int k=0; k<n; ++k) {
+          if (ipiv[k] == 0) {
+            if ( norm( a(j,k) ) >= big) {
+              big = norm(a(j,k));
+              irow = j;
+              icol = k;
+            }
+          } else if (ipiv[k] > 1) 
+            (*FNAL::pcerr) << "TML::GaussJordan: Singular Matrix-1 " << ipiv[k] << endl;
+        }
 
     ++(ipiv[icol]);
 
@@ -1338,17 +1406,17 @@ void TML<T>::GaussJordan( TML<T>& a, TML<T>& rhs)
     for ( int l=0;  l<m;   ++l) rhs(icol,l) *= pivinv;
     for ( int ll=0; ll<n; ++ll)
       if (ll != icol) {
-	T dum = a(ll,icol);
-	a(ll,icol)= T();
-	for (int l=0; l<n; ++l)  a(ll,l)   -= a(icol,l)*dum;
-	for (int l=0; l<m; ++l)  rhs(ll,l) -= rhs(icol,l)*dum;
+        T dum = a(ll,icol);
+        a(ll,icol)= T();
+        for (int l=0; l<n; ++l)  a(ll,l)   -= a(icol,l)*dum;
+        for (int l=0; l<m; ++l)  rhs(ll,l) -= rhs(icol,l)*dum;
       }
   }
 
   for ( int l=n-1; l>=0 ; --l) {
     if (indxr[l] != indxc[l])
       for ( int k=0; k<n; ++k)
-	swap(a(k,indxr[l]),a(k,indxc[l]));
+        swap(a(k,indxr[l]),a(k,indxc[l]));
   }
 }
 
