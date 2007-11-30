@@ -667,7 +667,7 @@ void TJL<T>::writeToFile( std::ofstream& outStr ) const
           << "   Value: " << p->value_
           << " || ";
    outStr << "Addresse: " 
-          <<  ((int) p)
+          <<  ((void *) p)
           << std::endl;
    outStr << "Index:  ";
 
@@ -707,7 +707,7 @@ void TJL<T>::peekAt() const {
         << p -> value_
         << " || ";
    (*pcout) << "Address: "
-        << (int) p            << "  "
+        << (void *) p            << "  "
         << std::endl;
    (*pcout) << "Index:  " << ( myEnv_->exponents(p->offset_) ) << std::endl;
 
