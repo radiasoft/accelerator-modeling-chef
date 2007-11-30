@@ -158,7 +158,11 @@ else
                 AC_SUBST(GLIBCONFIG_INC)
                 AC_MSG_RESULT([Header file located in $GLIBCONFIG_INC])
         else
-		if test -r /usr/lib/glib-2.0/include/glibconfig.h; then
+		if test -r /usr/lib64/glib-2.0/include/glibconfig.h; then
+		    GLIBCONFIG_INC="/usr/lib64/glib-2.0/include"
+		    AC_SUBST(GLIBCONFIG_INC)
+		    AC_MSG_RESULT([Header file located in $GLIBCONFIG_INC])
+		elif test -r /usr/lib/glib-2.0/include/glibconfig.h; then
 		    GLIBCONFIG_INC="/usr/lib/glib-2.0/include"
 		    AC_SUBST(GLIBCONFIG_INC)
 		    AC_MSG_RESULT([Header file located in $GLIBCONFIG_INC])

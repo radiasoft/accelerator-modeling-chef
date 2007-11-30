@@ -135,7 +135,7 @@ AC_ARG_VAR([GLIB_INC],    [GLIB include directory])dnl
 AC_CHECK_HEADER(glib.h,,[
 if test ${GLIB_INC} && test -r ${GLIB_INC}; then
         AC_MSG_RESULT([Location specified: ${GLIB_INC}])
-        GLIB_INC = "-I"${GLIB_INC} 
+        GLIB_INC="-I"${GLIB_INC} 
         AC_SUBST(GLIB_INC)
 else
 # Try to guess the location based on the location of gcc 
@@ -161,7 +161,7 @@ else
 		AC_MSG_ERROR([GLIB includes not found, please define GLIB_INC.]);
 		fi
         AC_MSG_RESULT([Header file located in $GLIB_INC])
-        GLIB_INC = "-I"${glib_inc} 
+        GLIB_INC="-I"${glib_inc} 
         AC_SUBST(GLIB_INC)
 	fi
 fi
@@ -181,7 +181,9 @@ else
                 AC_MSG_RESULT([Header file located in ${glibconfig_inc} ])
                 AC_SUBST(GLIBCONFIG_INC)
         else
-		if test -r /usr/lib/glib-2.0/include/glibconfig.h; then
+		if test -r /usr/lib64/glib-2.0/include/glibconfig.h; then
+		    glibconfig_inc="/usr/lib64/glib-2.0/include"
+		elif test -r /usr/lib/glib-2.0/include/glibconfig.h; then
 		    glibconfig_inc="/usr/lib/glib-2.0/include"
 		elif test -r /usr/local/lib/glib-2.0/include/glibconfig.h; then
 		    glibconfig_inc="/usr/local/lib/glib-2.0/include"
