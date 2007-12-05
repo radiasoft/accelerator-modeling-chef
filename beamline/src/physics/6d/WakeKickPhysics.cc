@@ -135,10 +135,6 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   std::vector<double> dpx_vec =  twake_( projector.dipoleHorLineDensity() );   
   std::vector<double> dpy_vec =  twake_( projector.dipoleVerLineDensity() );   
 
-  //------------------------------------------------------------------
-  // For each particle in the bunch, apply appropriate wakefield kicks 
-  // -----------------------------------------------------------------  
-
   // -------------------------------------------------------------------------------------------------------------------------------
   // 
   // At this point, the bunch has been longitudinally sorted by the BunchProjector. 
@@ -152,7 +148,7 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   //      - the mono/dipole distributions are normalized w/r the total no of pseudo-particles.
   //        so  integral monopoleLineDensity() = 1.0 
   //            integral dipoleLineDensity()   = integral [ w(z) x(z) dz  ] where w(z) is the particle
-  //                                             density at position z  
+  //                                             density at position z  and x(z) is the transverse displacement
   //                                               
   // -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -168,6 +164,10 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
   std::transform( dpx_vec.begin(), dpx_vec.end(), dpx_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
   std::transform( dpy_vec.begin(), dpy_vec.end(), dpy_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
   std::transform( dpz_vec.begin(), dpz_vec.end(), dpz_vec.begin(), std::bind2nd( multiplies<double>(), coeff) );
+
+  //------------------------------------------------------------------
+  // For each particle in the bunch, apply appropriate wakefield kicks 
+  // -----------------------------------------------------------------  
 
   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
    {
@@ -185,15 +185,19 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
          break;  //  just a sanity check ... this should never happen !
       }
 
+      //------------------------------------------------------
+      // **** apply the vertical kicks
+      //------------------------------------------------------
+
       state[3]  +=  dpx_vec[ibin] ;
       state[4]  +=  dpy_vec[ibin] ; 
 
       //------------------------------------------------------
-      // **** the longitudinal wake is disabled for the moment
+      // **** apply the longitudinal kick
       //------------------------------------------------------
 
-      // double npz =  it->get_npz() + dpz_vec[ibin];   
-      // state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] );
+      double npz =  it->get_npz() + dpz_vec[ibin];   
+      state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] ) - 1.0;
   }   
 
 }
