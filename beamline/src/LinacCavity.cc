@@ -292,8 +292,12 @@ double const& LinacCavity::getRadialFrequency() const
 void  LinacCavity::setStrength( double const& eV)
 {
   strength_ = eV*1.0e-9; 
-  p_bml_->firstElement()->setStrength(strength_);
-  p_bml_->lastElement()->setStrength(strength_);
+
+  double length1 = p_bml_->firstElement()->Length();
+  double length2 =  p_bml_->lastElement()->Length();
+
+  p_bml_->firstElement()->setStrength(strength_*length1/length_ );
+  p_bml_->lastElement()->setStrength(strength_ *length2/length_ );
 
 }
 
