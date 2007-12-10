@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      CF_sbend.h
 ******                                                                
@@ -40,18 +39,21 @@
 ****** - support for reference counted elements
 ******                                                                
 ****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on regular beamline
+****** - composite structure based on nested, regular reference counted
+******   beamline object
+******
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators   
 ******
 **************************************************************************
 *************************************************************************/
-
 #ifndef CF_SBEND_H
 #define CF_SBEND_H
 
-
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-
+#include <list>
+#include <utility>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -64,46 +66,33 @@ class CF_sbend;
 typedef boost::shared_ptr<CF_sbend>            CFSbendPtr;
 typedef boost::shared_ptr<CF_sbend const> ConstCFSbendPtr;
 
-class DLLEXPORT CF_sbend : public bmlnElmnt
-{
+class DLLEXPORT CF_sbend : public bmlnElmnt  {
+
+  class Propagator;
+
  public:
-  // Constructors
+
+  typedef boost::shared_ptr<BasePropagator<CF_sbend> > PropagatorPtr;   
+
   CF_sbend();
-  CF_sbend( double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            double const&,     // bend angle   [ radians ]
-            int n = 1 );  
 
   CF_sbend( const char*,// name
             double const&,     // length       [ meters ]
             double const&,     // field        [ tesla ]
-            double const&,     // bend angle   [ radians ]
-            int n = 1 );  
+            double const&);    // bend angle   [ radians ]
+              
 
-  CF_sbend( double const&,     // length  [ meters ]
-            double const&,     // field   [ tesla ]
-                        // (assumed along the y-axis)
-            double const&,     // geometric bend angle   [ radians ]
-            double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for sbends by MAD
-            int n = 1 );  
-
-  CF_sbend( const char*,// name
+  CF_sbend( const char*,       // name
             double const&,     // length  [ meters ]
             double const&,     // field   [ tesla ]
             double const&,     // geometric bend angle   [ radians ]
             double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for sbends by MAD
-            int n = 1 );  
+            double const& );   // downstream edge angle [radians]
 
-  CF_sbend( const CF_sbend& );
+  CF_sbend( CF_sbend const& );
+
   CF_sbend* Clone() const 
     { return new CF_sbend( *this ); }
-
 
   ~CF_sbend();
 
@@ -112,18 +101,14 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   void localPropagate( ParticleBunch& x ) 
     { bmlnElmnt::localPropagate( x ); }
 
-  void accept( BmlVisitor& v ); 
+  void accept(      BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
-  void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v ) const;
   
   void peekAt( double& s, const Particle& );
 
   const char* Type() const;
   bool isMagnet() const;
   
-  double          getReferenceTime() const;  
-
   double OrbitLength( Particle const& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
@@ -143,8 +128,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   double setEntryAngle( double const& radians); 
   double setExitAngle(  double const& radians); 
 
-  double const& getEntryEdgeAngle() const { return usEdgeAngle_; }
-  double const& getExitEdgeAngle()  const { return dsEdgeAngle_; }
+  double const& getEntryFaceAngle() const { return usFaceAngle_; }
+  double const& getExitFaceAngle()  const { return dsFaceAngle_; }
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
@@ -152,6 +137,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   int setQuadrupole ( double const& );  
   int setSextupole  ( double const& );  
   int setOctupole   ( double const& );  
+
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -164,6 +150,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   int setDipoleField ( double const& );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
+
   void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
@@ -180,32 +167,23 @@ class DLLEXPORT CF_sbend : public bmlnElmnt
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
-  double getBendAngle() const;
-  double BendAngle()    const { return getBendAngle(); }
-  double getAngle()     const { return getBendAngle(); }
-  double Angle()        const { return getBendAngle(); }
+  double const& getBendAngle()   const { return angle_; }
 
  private:
 
-  double  angle_;            // total bend angle  [ radians ]
-  double  usEdgeAngle_, dsEdgeAngle_;
-                            // [radians] as defined in MAD for rbends.
-  double usAngle_, dsAngle_;// [radians] entry (upstream) and exit (downstream) 
-                            // angles of the fiducial orbit referenced
+  double  angle_;           // total bend angle  [ radians ]
+  double  usFaceAngle_;     // [radians] as defined in MAD for rbends.
+  double  dsFaceAngle_; 
+  double  usAngle_;         // [radians] entry (upstream) and exit (downstream) 
+  double  dsAngle_;         // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. If no
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  double usTan_, dsTan_;    // tangents of the entry and exit angles:
-                            // px/pz of a reference particle at the
-                            // upstream and downstream edges of the magnet.
-                            // For a (usual) symmetric bend,
-                            // sgn( usTan_ ) = - sgn( dsTan_ )
+  
+  std::list<std::pair<int, std::complex<double> > > multipoles_;
 
-  int  n_;                  // 4*(n_+1) segments 
-
-  void calcPropParams();
-  void finishConstructor();
+  PropagatorPtr   propagator_;  
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

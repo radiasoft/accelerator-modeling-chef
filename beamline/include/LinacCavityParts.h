@@ -24,6 +24,12 @@
 ******  Author:    Jean-Francois Ostiguy                       
 ******             ostiguy@fnal.gov
 ******
+****** REVISION HISTORY 
+******
+****** Dec 2007            ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+****** - sbend now implemented as a composite element  
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -52,9 +58,13 @@ typedef boost::shared_ptr<LCavityDnstream  const>    ConstLCavityDnstreamPtr;
 
 class LCavityUpstream: public bmlnElmnt {
 
+  class Propagator;
+
 public:
 
-  LCavityUpstream( const  char*  name,
+  typedef boost::shared_ptr<BasePropagator<LCavityUpstream> > PropagatorPtr;
+  
+ LCavityUpstream( const  char*  name,
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
@@ -74,7 +84,6 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   
@@ -89,13 +98,19 @@ public:
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
 
+  PropagatorPtr         propagator_;
+
 };
 
 //-------------------------------------------------------------------------------
 
 class LCavityDnstream: public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<LCavityDnstream> > PropagatorPtr;
 
   LCavityDnstream( const  char*  name,
 	       double const& length_m,
@@ -116,9 +131,8 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate( ParticleBunch& x );
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(   Particle&  p );
+  void localPropagate( JetParticle& p );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
@@ -131,6 +145,7 @@ public:
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
 
+  PropagatorPtr         propagator_;
 };
 
 #endif // LINACCAVITYPARTS_H
