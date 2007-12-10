@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      septum.h
 ******                                                                
@@ -39,6 +38,9 @@
 ****** - use covariant return types
 ****** - support for reference counted elements
 ******
+******  Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
 
@@ -57,11 +59,14 @@ typedef boost::shared_ptr<thinSeptum>             ThinSeptumPtr;
 typedef boost::shared_ptr<thinSeptum const>  ConstThinSeptumPtr;
 
 
-class DLLEXPORT thinSeptum : public bmlnElmnt
-{
+class DLLEXPORT thinSeptum : public bmlnElmnt{
+
+  class Propagator; 
 
 public:
-  
+
+  typedef boost::shared_ptr<BasePropagator<thinSeptum> > PropagatorPtr;   
+
   thinSeptum( char const*  name );
   
   thinSeptum( char const*  name,
@@ -79,12 +84,15 @@ public:
 
   thinSeptum& operator=( thinSeptum const& rhs);
 
-  virtual ~thinSeptum();
+ ~thinSeptum();
   
   void setStrengths( double const& sPos, double const& sNeg); 
   void setWire( double const& x); 
   
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  double const& getPosStrength() { return strengthPos_; }
+  double const& getNegStrength() { return strengthNeg_; }
+  double const& getWireX()       { return xWire_;       }
+  
   void localPropagate( Particle&    p );
   void localPropagate( JetParticle& p );
 
@@ -95,12 +103,15 @@ public:
   const char* Type() const;
 
 private:
-
+ 
   thinSeptum();           // default constructor forbidden
 
   double strengthPos_;    // kick in strength in radians for x > xWire
   double strengthNeg_;	  // kick in strength in radians for x < xWire
   double xWire_;	  // position of wire septum in meters
+
+  PropagatorPtr  propagator_; 
+  
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

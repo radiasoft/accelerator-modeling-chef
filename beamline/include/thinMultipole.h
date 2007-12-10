@@ -43,20 +43,23 @@ typedef boost::shared_ptr<thinMultipole const> ConstThinMultipolePtr;
 
 class DLLEXPORT thinMultipole : public bmlnElmnt {
 
+  class Propagator;
+
 public:
 
+  typedef boost::shared_ptr<BasePropagator<thinMultipole> > PropagatorPtr;   
+
   thinMultipole(); 
-  thinMultipole( double const& strength);
+  thinMultipole( char const* name ); 
   thinMultipole( char const* name, double const& strength);
   thinMultipole( thinMultipole const& );
 
   thinMultipole* Clone() const { return new thinMultipole( *this ); }
 
-  virtual ~thinMultipole();
+ ~thinMultipole();
 
   void setPole(int n, std::complex<double> const&  coeff);
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
@@ -66,8 +69,10 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  //private:
-
+  private:
+  
+    PropagatorPtr propagator_;
+ 
   //std::vector< std::pair<int, std::complex<double> > terms_;
 
 } ;

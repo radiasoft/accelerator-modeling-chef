@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      sector.h
 ******                                                                
@@ -34,9 +33,13 @@
 ******                                                                
 ******                                                                
 ******    REVISION HISTORY
+******
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Dec 2007            ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
 
@@ -58,34 +61,21 @@ typedef boost::shared_ptr<sector>       SectorPtr;
 typedef boost::shared_ptr<sector const> ConstSectorPtr;
 
 
-class DLLEXPORT sector : public bmlnElmnt
-{
+class DLLEXPORT sector : public bmlnElmnt {
 
+  class Propagator;
+ 
 public:
 
-  class JET_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sector::JET_Prop"; }
-  };
- 
-  friend class JET_Prop;
-  static JET_Prop defaultPropagate; 
+  typedef boost::shared_ptr<BasePropagator<sector> > PropagatorPtr;   
 
-  sector( const char* = 0, double const& = 0.0 );
-
-  sector( std::vector<double> const& betaH,  std::vector<double> const& alphaH,  std::vector<double> const& psiH,
-          std::vector<double> const& betaV,  std::vector<double> const& alphaV,  std::vector<double> const& psiV, double const& length );
+  sector( const char* = 0, double const& length = 0.0, char mapType= 1);
 
   sector( const char*, std::vector<double> const& betaH,  std::vector<double> const& alphaH,  std::vector<double> const& psiH,
                        std::vector<double> const& betaV,  std::vector<double> const& alphaV,  std::vector<double> const& psiV,  double const& length );
 
 
-  sector(              Mapping const&,  double const& length, char mapType=1, PropFunc* = &sector::defaultPropagate );
-
-  sector( const char*, Mapping const&,  double const& length, char mapType=1, PropFunc* = &sector::defaultPropagate );
+  sector( const char*, Mapping const&,  double const& length, char mapType=1 );
 
   sector( sector const& );
 
@@ -93,21 +83,24 @@ public:
 
  ~sector();
 
-  Mapping const& getMap() const;
+  Mapping const& getMap()    const;
+  Matrix         getMatrix() const;
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*propfunc_)( this, p ); }
+  void localPropagate( Particle&    p );   
+  void localPropagate( JetParticle& p );   
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   void setFrequency( double (*)( double const& ) );
   void setFrequency( Jet    (*)( Jet    const& ) );
-  void setLength( double const& );
+ 
+ void setLength( double const& );
 
   const char* Type()     const;
+ 
   bool        isMagnet() const;
+  bool        isMatrix() const; 
 
 private:
 
@@ -126,7 +119,9 @@ private:
   std::vector<double>  alphaV_;    
   double               deltaPsiV_;
   MatrixD              mapMatrix_;
-} ;
+ 
+  PropagatorPtr        propagator_;
+};
 
 
 #endif // SECTOR_H

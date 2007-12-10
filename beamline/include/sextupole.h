@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      sextupole.h
 ******                                                                
@@ -38,9 +37,12 @@
 ****** Mar 2007        ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+******
+****** Dec 2007        ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
-
 #ifndef SEXTUPOLE_H
 #define SEXTUPOLE_H
 
@@ -61,25 +63,29 @@ typedef boost::shared_ptr<sextupole const>     ConstSextupolePtr;
 typedef boost::shared_ptr<thinSextupole const> ConstThinSextupolePtr;
 
 
-class DLLEXPORT sextupole : public bmlnElmnt
-{
+class DLLEXPORT sextupole : public bmlnElmnt {
+
+  friend class elm_core_access;
+  class Propagator;
 
 public:
+
+  typedef boost::shared_ptr<BasePropagator<sextupole> > PropagatorPtr;   
+
   sextupole();
-  sextupole( double,       /* length   */
-             double        /* strength */ );
   sextupole( const char*,  /* name     */
              double,       /* length   */
              double        /* strength */ );
-  sextupole( const sextupole& );
-  sextupole* Clone() const { return new sextupole( *this ); }
-  virtual ~sextupole();
+
+  sextupole( sextupole const& );
+  sextupole* Clone() const;
+
+ ~sextupole();
 
   void setStrength( double );
 
   void setCurrent( double );
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
@@ -90,22 +96,32 @@ public:
   bool isMagnet() const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
+ private:
+ 
+  PropagatorPtr  propagator_;
 } ;
 
 
 
-class DLLEXPORT thinSextupole : public bmlnElmnt
-{
-public:
-  thinSextupole();
-  thinSextupole( double        /* strength */ );
-  thinSextupole( const char*   /* name */,
-                 double        /* strength */ );
-  thinSextupole( const thinSextupole& );
-  thinSextupole* Clone() const { return new thinSextupole( *this ); }
-  virtual ~thinSextupole();
+class DLLEXPORT thinSextupole : public bmlnElmnt {
+  
+  friend class elem_core_access;
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  class Propagator;
+
+public:
+
+  typedef boost::shared_ptr<BasePropagator<thinSextupole> > PropagatorPtr;   
+
+  thinSextupole();
+  thinSextupole( char const* name,  double strength );
+
+  thinSextupole( thinSextupole const& );
+
+  thinSextupole* Clone() const;
+ ~thinSextupole();
+
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
 
@@ -114,6 +130,10 @@ public:
 
   const char* Type() const;
   bool isMagnet() const;
+
+ private:
+
+  PropagatorPtr  propagator_;
 
 } ;
 
