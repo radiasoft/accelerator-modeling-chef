@@ -25,7 +25,7 @@ find . -name config\.sub      -exec \rm     {}  \; -print
 
 ## update the list of source files and header files. 
 
-for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms
+for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms beamline
 do
   cd   $dir
   if [ ! -L $dir ]
@@ -43,16 +43,6 @@ do
   ${rootdir}/updateheaders
   cd ..
 done
-
-cd   beamline
-${rootdir}/updateheaders
-cd ./src
-${rootdir}/updatesource
-cd physics/6d
-${rootdir}/updatesource
-cd ../mad
-${rootdir}/updatesource
-cd ../../../..
 
 
 ## use autotools to generate the build environment. 
