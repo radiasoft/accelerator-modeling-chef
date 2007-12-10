@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      Particle.h
-******  Version:   2.4
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
@@ -47,14 +46,15 @@
 ******  - take max advantage of constructor member initialization (useful 
 ******    for bunches, since a lot of particles may be instantiated)
 ******  - streamlined public interface. Eliminated members
-******    with raw ptr as argument(s) when possible.
-******  - use Vector and Mapping to store state info instead of raw
-*****     arrays.    
-******  - elements no longer declared friends. Doing so breaks encapsulation 
-******    with no real benefit. Propagators should use access function to 
-******    change state. There is no significant penalty, if any.       
+******    with raw ptr as argument(s) whenever possible.
+******  - use Vector and Mapping rather than raw arrays to store state info 
 ******  - use empty core_access class as access control mechanism 
+******  - elements no longer declared friends. Doing so breaks encapsulation 
+******    with no real benefit. 
 ******                                                                
+******  Oct 2007 ostiguy@fnal.gov
+******  - private allocator for state vector  
+******
 **************************************************************************
 *************************************************************************/
 #ifndef PARTICLE_H
@@ -68,9 +68,6 @@
 #include <basic_toolkit/Matrix.h>
 #include <boost/shared_ptr.hpp>
 #include <gms/FastAllocator.h>
-
-// Forward declaration
-
 
 class JetParticle;
 
@@ -117,11 +114,6 @@ typedef boost::shared_ptr<AntiMuon const>     ConstAntiMuonPtr;
 class particle_core_access; 
 
 
-const int BMLN_dynDim  = 6;   // ??? Doesn't this imply that BMLN_dynDim
-                              // ??? can be defined in several modules?
-
-// .............................. Particle classes
-
 class DLLEXPORT Particle {
 
   friend class JetParticle;
@@ -149,13 +141,7 @@ protected:
 
   double      wgt_;        // Statistical weight: i.e. macroparticle
                            // Default value: 1.0
-  Vector      state_;      // (BMLN_dynDim);
-                           // state_[0] = x
-                           // state_[1] = y
-                           // state_[2] = c dt
-                           // state_[3] = px/p
-                           // state_[4] = py/p
-                           // state_[5] = dp/p
+  Vector      state_;      
 
 
   Particle( double  const& massGeV_c2, double const& energyGeV );  
@@ -168,6 +154,7 @@ public:
   explicit Particle( JetParticle const& );
 
   virtual ~Particle();
+  void     dtor();
 
   virtual Particle* Clone( void* p=0) const;
 
@@ -361,31 +348,31 @@ class particle_core_access
 
   inline int  Particle::psd()          { return Particle::PSD; }
 
-  inline double  Particle::get_x()     const { return state_[0]; }
-  inline double  Particle::get_y()     const { return state_[1]; }
-  inline double  Particle::get_cdt()   const { return state_[2]; }
-  inline double  Particle::get_npx()   const { return state_[3]; }
-  inline double  Particle::get_npy()   const { return state_[4]; }
-  inline double  Particle::get_ndp()   const { return state_[5]; }
+  inline double  Particle::get_x()     const { return state_[xIndex  ]; }
+  inline double  Particle::get_y()     const { return state_[yIndex  ]; }
+  inline double  Particle::get_cdt()   const { return state_[cdtIndex]; }
+  inline double  Particle::get_npx()   const { return state_[npxIndex]; }
+  inline double  Particle::get_npy()   const { return state_[npyIndex]; }
+  inline double  Particle::get_ndp()   const { return state_[ndpIndex]; }
 
-  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
-                                               - state_[3]*state_[3] - state_[4]*state_[4] );      }   
+  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[ndpIndex] )*( 1.0 + state_[ndpIndex] ) 
+                                         - state_[npxIndex]*state_[npxIndex] - state_[npyIndex]*state_[npyIndex] );      }   
 
 
-  inline void  Particle::set_x   ( double u )  { state_[0] = u; }
-  inline void  Particle::set_y   ( double u )  { state_[1] = u; }
-  inline void  Particle::set_cdt ( double u )  { state_[2] = u; }
-  inline void  Particle::set_npx ( double u )  { state_[3] = u; }
-  inline void  Particle::set_npy ( double u )  { state_[4] = u; }
-  inline void  Particle::set_ndp ( double u )  { state_[5] = u; }
+  inline void  Particle::set_x   ( double u )  { state_[xIndex  ] = u; }
+  inline void  Particle::set_y   ( double u )  { state_[yIndex  ] = u; }
+  inline void  Particle::set_cdt ( double u )  { state_[cdtIndex] = u; }
+  inline void  Particle::set_npx ( double u )  { state_[npxIndex] = u; }
+  inline void  Particle::set_npy ( double u )  { state_[npyIndex] = u; }
+  inline void  Particle::set_ndp ( double u )  { state_[ndpIndex] = u; }
 
   inline Vector&       Particle::State()       { return state_; } 
   inline Vector const& Particle::State() const { return state_; } 
 
   inline double         Particle::Energy()                   const   { double p = Momentum(); 
                                                                        return sqrt( p*p + m_*m_ );       }
-  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[5] );  }
-  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[5] );       }
+  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[ndpIndex] );  }
+  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[ndpIndex] );       }
   inline double  const& Particle::Mass()                     const   { return m_;                        }
   inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
   inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
@@ -400,6 +387,6 @@ class particle_core_access
   inline double  const& Particle::ReferenceEnergy()          const   { return E_;                        }
   inline double  const& Particle::Weight()                   const   { return wgt_;                      } 
   inline double  const& Particle::Charge()                   const   { return q_;                        }
-  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[5] ); }
+  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[ndpIndex] ); }
 
 #endif // PARTICLE_H
