@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      combinedFunction.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -38,9 +37,11 @@
 ****** Mar 2007:          ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - added support for reference counted elements
+****** Dec 2007:          ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef COMBINED_FUNCTION_H
 #define COMBINED_FUNCTION_H
@@ -61,10 +62,14 @@ class BmlVisitor;
 class ConstBmlVisitor;
 
 
-class DLLEXPORT combinedFunction : public bmlnElmnt 
-{
+class DLLEXPORT combinedFunction : public bmlnElmnt {
+   
+  class Propagator;
 
 public:
+
+  typedef boost::shared_ptr<BasePropagator<combinedFunction> > PropagatorPtr;   
+
   combinedFunction();
   combinedFunction( char const* name);
   combinedFunction( char const* name, beamline const& );
@@ -72,7 +77,7 @@ public:
 
   combinedFunction( combinedFunction const& );
   
-  virtual ~combinedFunction();
+ ~combinedFunction();
 
   combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
@@ -81,10 +86,10 @@ public:
   double AdjustPosition( Particle    const& );
   double AdjustPosition( JetParticle const& );
 
-  virtual void enterLocalFrame( Particle&    p ) const   { bmlnElmnt::enterLocalFrame( p ); }
-  virtual void enterLocalFrame( JetParticle& p ) const   { bmlnElmnt::enterLocalFrame( p ); }
-  virtual void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
-  virtual void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
+  void enterLocalFrame( Particle&    p ) const   { bmlnElmnt::enterLocalFrame( p ); }
+  void enterLocalFrame( JetParticle& p ) const   { bmlnElmnt::enterLocalFrame( p ); }
+  void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
+  void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -116,6 +121,7 @@ private:
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
 
+  PropagatorPtr propagator_;
 
 };
 

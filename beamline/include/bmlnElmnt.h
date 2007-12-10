@@ -45,9 +45,10 @@
 ******
 ****** Dec 2006:   ostiguy@fnal.gov  
 ******
-****** - fixed (possibly long standing) memory corruption problems in bmlnElmnt destructor.  
-******   for many element types.   
-******   Introduced elm_core_access empty class to grant Propagators access privileges to element private data.
+****** - fixed (possibly long standing) memory corruption problems 
+******   in bmlnElmnt destructor for many element types.   
+******   Introduced elm_core_access empty class to grant Propagators 
+******   access privileges to element private data.
 ****** - cleanup of constructor code
 ****** - eliminated raw c-style strings 
 ****** - Eliminated obsolete tagging functions 
@@ -59,7 +60,9 @@
 ****** July 2007   ostiguy@fnal.gov
 *****  - new, less memory hungry implementation for PinnedFrameSet
 *****  - eliminated nested functor base classes (e.g. CRITFUNC) 
-*****                                                            
+****** Dec 2007   ostiguy@fnal.gov
+*****  - new typesafe propagators
+*****
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -88,7 +91,6 @@
 // Forward declarations
 //------------------------------
 
-
 class bmlnElmnt;
 class alignmentData;
 class beamline;
@@ -103,7 +105,8 @@ class alignment;
 template <typename Particle_t>
 class TBunch;
 
-typedef TBunch<Particle> ParticleBunch;
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
 
 
 typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
@@ -121,12 +124,11 @@ class TMapping;
 template <typename T>
 class TJet;
 
-typedef TVector<double> VectorD;
-typedef TJet<double>    Jet;
+typedef TVector<double>                VectorD;
+typedef TJet<double>                   Jet;
+typedef TJet<std::complex<double> >    JetC;
 
 typedef TMapping<double>  Mapping;
-
-class elm_core_access;
 
 bmlnElmnt* read_istream(std::istream&);
 
@@ -140,42 +142,58 @@ template<typename Particle_t>
 
 template<>
 struct PropagatorTraits<Particle> {
-  typedef Vector          State_t;
-  typedef double      Component_t;
+  typedef Vector                                   State_t;
+  typedef double                               Component_t;
+  typedef std::complex<double>                 ComplexComponent_t;
   static double  norm(  PropagatorTraits<Particle>::Component_t const& comp);  
 };  
 
 template<>
 struct PropagatorTraits<JetParticle> {
-  typedef Mapping         State_t;
-  typedef Jet          Component_t;
+  typedef Mapping                 State_t;
+  typedef Jet                 Component_t;
+  typedef JetC         ComplexComponent_t;
   static double  norm( PropagatorTraits<JetParticle>::Component_t const& comp);  
 };  
    
-//-----------------------------------------------------------
+ 
+template<typename Element_t>
+class BasePropagator {
 
-class DLLEXPORT bmlnElmnt
-{
+ public:
+  
+  virtual BasePropagator<Element_t>* Clone() const { return new BasePropagator(*this); } ;
+
+  virtual void  setup( Element_t&)                            {} 
+
+  virtual void  operator()(  Element_t&,         Particle& p) {std::cout << "Error: base class operator()(  Element_t&,         Particle& p) called !" << std::endl;                                                                          void* q = 0; 
+                                                               *( (int*) q ) = 0;
+                                                               }
+  virtual void  operator()(  Element_t&,      JetParticle& p) {std::cout << "Error: base class operator()(  Element_t&,      JetParticle& p) called !" << std::endl; 
+                                                                          void* q = 0; 
+                                                               *( (int*) q ) = 0;
+                                                               }
+
+  virtual void  operator()(  Element_t&,    ParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&,    ParticleBunch& p) called !" << std::endl; }
+  virtual void  operator()(  Element_t&, JetParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&, JetParticleBunch& p) called !" << std::endl; }
+
+};
+
+// --------------------------------------------------------------------------
+
+
+class DLLEXPORT bmlnElmnt {
 
   friend class beamline; 
-  friend class elm_core_access; 
 
  public:
 
-  class PropFunc
-  {
-    public:
-      virtual int operator()( bmlnElmnt*, Particle&    ) = 0;
-      virtual int operator()( bmlnElmnt*, JetParticle& ) = 0;
-      virtual const char* Type() const                   = 0;
-      virtual ~PropFunc() {};
-  };
-
+  class core_access;
 
    //--------------------------------------------------------------
    // PinnedFrameSet 
    //--------------------------------------------------------------
-   // If the element never moves, both upStream_ and downStream_ 
+   // If the element never moves, both upStream_ and downStream_  
    // should be the identity frames. 
    // If it moves, then upStream_ will be the element's original 
    // in-frame AS SEEN BY its current in-frame; 
@@ -186,6 +204,7 @@ class DLLEXPORT bmlnElmnt
 
   class PinnedFrameSet
   {
+
     public:
 
       PinnedFrameSet();
@@ -240,11 +259,7 @@ class DLLEXPORT bmlnElmnt
 
 public:
   
-  bmlnElmnt( char const*   name = "NONAME",                                                PropFunc* = 0);              
-  bmlnElmnt(                               double const&  length,                          PropFunc* = 0);              
-  bmlnElmnt(                               double const&  length, double const&  strength, PropFunc* = 0);              
-  bmlnElmnt( char const*   name,           double const&  length,                          PropFunc* = 0);
-  bmlnElmnt( char const*   name,           double const&  length, double const& strength,  PropFunc* = 0);
+  bmlnElmnt( char const*   name="",  double const&  length=0.0, double const& strength=0.0 );
 
   bmlnElmnt( bmlnElmnt const&  );
 
@@ -255,27 +270,26 @@ public:
  
   virtual bool     isBeamline() const;                   
 
-  boost::any& operator[](std::string const& s);   // a type-safe facility to attach attributes of any type
-  bool attributeExists(std::string const& s);     
+  boost::any& operator[](std::string const& s);    // a type-safe facility to attach attributes of any type
+  bool attributeExists(std::string const& s) const;     
   void attributeClear (std::string const& s);           
   void attributeClear ();                                
 
   virtual void accept( BmlVisitor& ) = 0;
   virtual void accept( ConstBmlVisitor& ) const = 0;
 
-  virtual PropFunc* setPropFunction ( const PropFunc* a );  // return previous
-  virtual PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
+  void acceptInner( BmlVisitor& );
+  void acceptInner( ConstBmlVisitor& ) const;
 
-  PropFunc* getPropFunction() { return propfunc_; }
+  void propagate( Particle&         );
+  void propagate( JetParticle&      );
+  void propagate( ParticleBunch&    );
+  void propagate( JetParticleBunch& );
 
-  void propagate( Particle&      );
-  void propagate( JetParticle&   );
-  void propagate( ParticleBunch& );
-
-  virtual void localPropagate( Particle&      );
-  virtual void localPropagate( JetParticle&   );
-  virtual void localPropagate( ParticleBunch& );
-
+  virtual void localPropagate( Particle&         ) = 0;
+  virtual void localPropagate( JetParticle&      ) = 0;
+  virtual void localPropagate( ParticleBunch&    );
+  virtual void localPropagate( JetParticleBunch& );
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)
@@ -312,7 +326,7 @@ public:
   Frame const& getUpstreamPinnedFrame() const 
     { return pinnedFrames_.upStream(); }
 
-  Frame const&getDownstreamPinnedFrame() const 
+  Frame const& getDownstreamPinnedFrame() const 
     { return pinnedFrames_.downStream(); }
 
 
@@ -350,7 +364,9 @@ public:
 
 
   virtual double getReferenceTime()                    const;     // returns ctRef_
-  virtual double setReferenceTime( double const& );               // returns previous ctRef_
+  virtual void setReferenceTime( double const& );               
+  virtual void setReferenceTime( Particle&     );               
+
 
 
   // ... Query functions 
@@ -388,42 +404,34 @@ public:
 
 protected:
 
-  std::string                    ident_;             // Name identifier of the element.
-  double                         length_;            // Length of object [ meters ]
-  double                         strength_;          // Interpretation depends on object.
+  std::string                       ident_;            // Name identifier of the element.
+  double                            length_;           // Length of object [ meters ]
+  double                            strength_;         // Interpretation depends on object.
   
-  alignment*                     align_;
-  double                         iToField_;          // Conversion factor for current through
-                                                     // magnet in amperes to field or gradient etc.
-  double                         shuntCurrent_;      // Does this element have a shunt?
+  alignment*                        align_;
+  double                            iToField_;         // Conversion factor for current through
+                                                      // magnet in amperes to field or gradient etc.
+  double                            shuntCurrent_;     // Does this element have a shunt?
 
-  PinnedFrameSet                 pinnedFrames_;
+  PinnedFrameSet                    pinnedFrames_;
 
-  mutable double                 ctRef_;             // (normalized) time required for
-                                                     // a reference particle to cross
-                                                     // the element. Established by a
-                                                     // RefRegVisitor.
+  mutable double                    ctRef_;            // (normalized) time required for
+                                                      // a reference particle to cross
+                                                      // the element. Established by a
+                                                      // RefRegVisitor.
 
-  std::map<char const*, boost::any> attributes_;
+  std::map<std::string, boost::any>  attributes_;
 
-  std::string                       tag_;
+  std::string                        tag_;
 
-  Aperture*                         pAperture_;     // O.K.
+  Aperture*                          pAperture_;       // O.K.
 
-  PropFunc*                         propfunc_;      
-
-  BmlPtr                            p_bml_;         // The element may be composite.
-  ElmPtr                            bml_e_;         // with one active part.
-
-
-  virtual void releasePropFunc();
-  virtual void setupPropFunc();
-
-
-  BmlPtr       getBmlPtr()   { return p_bml_; }   // used by core_access 
-  ElmPtr       getElmPtr()   { return bml_e_; }   // used by core_access
+  BmlPtr                             bml_;             // The element may be composite.
+  ElmPtr                             elm_;             // with one active part.
 
 private:
+
+  void init_internals(BmlPtr const& bml, ElmPtr const& elm); 
 
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
@@ -440,20 +448,18 @@ public:
   BarnacleList dataHook;   // Carries data as service to application program.
 
 
+
 };
 
-
-//---------------------------------------------------------------------------------
-//   bmlnElmnt_core_access class
-//---------------------------------------------------------------------------------
-
- class  elm_core_access { 
+class bmlnElmnt::core_access {
 
  public:
 
-   static BmlPtr      getBmlPtr(bmlnElmnt& elm )  { return elm.getBmlPtr(); } 
-   static ElmPtr      getElmPtr(bmlnElmnt& elm)   { return elm.getElmPtr(); } 
+  static ElmPtr&  get_ElmPtr( bmlnElmnt& o) { return o.elm_;   }
+  static BmlPtr&  get_BmlPtr( bmlnElmnt& o) { return o.bml_;   }
+  static double&  get_ctRef ( bmlnElmnt& o) { return o.ctRef_; }
 
-}; 
+};
+   
 
 #endif // BMLNELMNT_H

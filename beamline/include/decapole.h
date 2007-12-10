@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      decapole.h
-******  Version:   2.1
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
@@ -38,10 +37,11 @@
 ******  Mar 2007:         ostiguy@fnal.gov
 ******  - use covariant return types
 ******  - support for reference counted elements
+******  Dec 2007:         ostiguy@fnal.gov
+******  - new typesafe propagators
 ******
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef DECAPOLE_H
 #define DECAPOLE_H
@@ -60,29 +60,34 @@ typedef boost::shared_ptr<thinDecapole const> ConstThinDecapolePtr;
 
 class DLLEXPORT thinDecapole : public bmlnElmnt {
 
+  class Propagator;
+
 public:
 
+  typedef boost::shared_ptr<BasePropagator<thinDecapole> > PropagatorPtr;
+
   thinDecapole();
-  thinDecapole(                    double const& strength);
   thinDecapole( char const*  name, double const& strength);
   thinDecapole( thinDecapole const& );
 
-  thinDecapole* Clone() const { return new thinDecapole( *this ); }
+  thinDecapole* Clone() const;
 
   thinDecapole& operator=( thinDecapole const& rhs);  
   
  ~thinDecapole();
 
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p);
 
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;  
 
   const char* Type() const;
   bool isMagnet()    const;
+
+ private:
+
+  PropagatorPtr   propagator_;
 
 } ;
 

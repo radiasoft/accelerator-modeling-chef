@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      drift.h
 ******                                                                
@@ -38,59 +37,72 @@
 ****** Mar 2007:          ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Dec 2007:          ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
-
-
 #ifndef DRIFT_H
 #define DRIFT_H
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 
-class BmlVisitor;
-class ConstBmlVisitor;
-class Particle;
-class JetParticle;
+
+class   BmlVisitor;
+class   ConstBmlVisitor;
+class   Particle;
+class   JetParticle;
+
+template <typename Particle_t>
+class TBunch;
+
+typedef TBunch<Particle>    ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
 
 class drift;
 
 typedef boost::shared_ptr<drift>       DriftPtr;
 typedef boost::shared_ptr<drift const> ConstDriftPtr;
 
-class DLLEXPORT drift : public bmlnElmnt
-{
+
+
+class DLLEXPORT drift : public bmlnElmnt {
+
+  class Propagator;  
+
 public:
 
+  typedef boost::shared_ptr<BasePropagator<drift> > PropagatorPtr;   
+
   drift();
-  drift( double        length);             // length of drift in meters
-  drift( char   const* name);     
-  drift( char   const* name, double length); 
+  drift( char const* name, double length ); //  length of drift in meters
 
   drift( drift  const&);
 
-  drift* Clone() const { return new drift( *this ); }
+  drift* Clone() const;
 
  ~drift();
 
-  void localPropagate(Particle&    p) { bmlnElmnt::localPropagate(p); }
-  void localPropagate(JetParticle& p) { bmlnElmnt::localPropagate(p); }
+  void localPropagate(Particle&         p); 
+  void localPropagate(JetParticle&      p); 
+  void localPropagate(ParticleBunch&    b); 
+  void localPropagate(JetParticleBunch& b); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
-
 
   const char* Type() const;
   bool    isMagnet() const;
 
  private:
 
- 
+  drift& operator=(drift const&); // not implemented yet
+
   friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt*    read_istream(std::istream&);
 
-} ;
-
-
+  PropagatorPtr              propagator_; 
+};
 
 #endif // DRIFT_H
