@@ -53,7 +53,7 @@ class ConstBmlVisitor;
 class RefRegVisitor;
 
 class rfcavity;
-class thinrfcavity;
+class thinrfcavity;  
 
 typedef boost::shared_ptr<rfcavity>            RFCavityPtr;
 typedef boost::shared_ptr<rfcavity const> ConstRFCavityPtr;
@@ -64,18 +64,13 @@ typedef boost::shared_ptr<thinrfcavity const> ConstThinRFCavityPtr;
 
 class rfcavity : public bmlnElmnt {
 
-  friend class elm_core_access;
+ class Propagator;
      
 public:
+ 
+  typedef boost::shared_ptr<BasePropagator<rfcavity> > PropagatorPtr;   
 
   rfcavity( const char* = "NONAME" ); // Name
-  rfcavity( double const&,   // length [m]
-            double const&,   // RF frequency [Hz]
-            double const&,   // max energy gain per turn [eV] (strength*10**9)
-            double const&,   // synchronous phase [radians]
-            double const&,   // Q
-            double const&    // R shunt impedance
-          );
   rfcavity( const char*, // Name
             double const&,   // length [m]
             double const&,   // RF frequency [Hz]
@@ -84,7 +79,7 @@ public:
             double const&,   // Q
             double const&    // R shunt impedance
           );
-  rfcavity( const rfcavity& );
+  rfcavity( rfcavity const& );
 
   rfcavity* Clone() const { return new rfcavity( *this ); }
  ~rfcavity();
@@ -95,11 +90,6 @@ public:
 
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
-
-  void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v ) const;
-
-  void acceptInner( RefRegVisitor& v );
 
   const char* Type() const;
   bool    isMagnet() const;
@@ -142,9 +132,11 @@ private:
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
-  bmlnElmnt** u_;               // Address of first internal bmlElmnt pointer
-  bmlnElmnt** v_;               // Address of final internal bmlElmnt pointer
+  
+  bmlnElmnt** u_;
+  bmlnElmnt** v_;
 
+  PropagatorPtr  propagator_;
 };
 
 
@@ -153,18 +145,15 @@ private:
 // *** April 4, 1994
 //
 
-class thinrfcavity : public bmlnElmnt
-{
+class thinrfcavity : public bmlnElmnt {
+
+  class Propagator;
 
 public:
 
+  typedef boost::shared_ptr<BasePropagator<thinrfcavity> > PropagatorPtr;   
+
   thinrfcavity( const char* = "NONAME" ); // Name
-  thinrfcavity( double const&,   // RF frequency [Hz]
-                double const&,   // max energy gain per turn [eV] (strength*10**9)
-                double const&,   // synchronous phase [radians]
-                double const&,   // Q
-                double const&    // R shunt impedance
-                );
   thinrfcavity( const char *,   // Name
                 double const&,   // RF frequency [Hz]
                 double const&,   // max energy gain per turn [eV] (strength*10**9)
@@ -172,7 +161,7 @@ public:
                 double const&,   // Q
                 double const&    // R shunt impedance
                 );
-  thinrfcavity( const thinrfcavity& );
+  thinrfcavity( thinrfcavity const& );
   thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
 
   virtual ~thinrfcavity();
@@ -204,6 +193,9 @@ public:
 
 private:
 
+  std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
+
   double w_rf_;                  // RF frequency [Hz]
   double phi_s_;                 // synchronous phase
   double sin_phi_s_;             // sine of synchronous phase
@@ -215,8 +207,9 @@ private:
                                  //     revolution frequency of a ring
                                  //   Note: this is *NOT* a cavity attribute,
                                  //   but is included for convenience.
-  std::ostream& writeTo(std::ostream&);
-  std::istream& readFrom(std::istream&);
+  PropagatorPtr  propagator_;
+
+
 };
 
 

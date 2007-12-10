@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      pinger.h
 ******                                                                
@@ -39,13 +38,14 @@
 ****** - use covariant return types
 ****** - support for reference counted elements
 ******
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef PINGER_H
 #define PINGER_H
-
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
@@ -55,13 +55,19 @@ class ConstBmlVisitor;
 
 class DLLEXPORT Pinger : public bmlnElmnt {
 
-public:
+protected:
 
-  Pinger( );       	                                              // Assumes a zero, horizontal kick
+  class Propagator;
+
+public:
+   
+  typedef boost::shared_ptr<BasePropagator<Pinger> > PropagatorPtr;   
+
+  Pinger();       	                                              // Assumes a zero, horizontal kick
   Pinger( double const& kick_rad, double const& direction_rad =0, int ntrns = -1);
-            // directon_rad==0 (Hor) (def) ntrs =number of turns before firing
-  Pinger( char const*  name);                                       // Assumes zero, horizontal kick 
-  Pinger( char const*  name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
+            // direction_rad==0 (Hor) (def) ntrs =number of turns before firing
+  Pinger( const char*  name);                                       // Assumes zero, horizontal kick 
+  Pinger( const char*  name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
   Pinger( Pinger const& );
   Pinger* Clone() const { return new Pinger( *this ); }
 
@@ -73,31 +79,38 @@ public:
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
+  void localPropagate( JetParticleBunch& x );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void arm( int n ) { counter_ = n; }
-  void disarm()     { counter_ = -1; }
-  bool isArmed()    { return ( counter_ >= 0 ); };
+  void arm( int n )  { counter_ = n; }
+  bool countdown()   { counter_ = counter_ > -1 ? --counter_ : -1 ; return (counter_ == -1);}
+  void disarm()      { counter_ = -1; }
+  bool isArmed()     { return ( counter_ >= 0 ); };
   
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
   
-  double getKickDirection()        { return kick_direction_; }
-  void  setKickDirection(double const& k) { kick_direction_ = k; }
+  double const& getKickDirection()                { return kick_direction_; }
+  void          setKickDirection(double const& k) { kick_direction_ = k; }
 
 protected:
 
-  double kick_direction_;	/* In which direction is the kick? */
-  int    counter_;              /* Counts number of turns before firing. */};
+  double        kick_direction_;	/* In which direction is the kick? */
+  int           counter_;               /* Counts number of turns before firing. */
+  PropagatorPtr propagator_; 
+
+};
+
 
 class DLLEXPORT HPinger : public Pinger {
 
  public:
-  HPinger( double const& kick_rad,  int count= -1);
-  HPinger( char const* name);                  // Assumes zero kick 
-  HPinger( char const* name, double const& kick_rad = 0.0, int cont = -1);
+
+  HPinger();       	                        // Assumes a zero, horizontal kick
+  HPinger( const char* name);                  // Assumes zero kick 
+  HPinger( const char* name, double const& kick_rad = 0.0, int count = -1);
   HPinger( HPinger const& );
 
   HPinger* Clone() const { return new HPinger( *this ); }
@@ -109,14 +122,17 @@ class DLLEXPORT HPinger : public Pinger {
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
+
 };
 
 class DLLEXPORT VPinger : public Pinger {
 
  public:
-  VPinger( double const& kick_rad , int count = -1 );
+
+  VPinger();       	                                             
   VPinger( char const* name ); //Assumes zero kick 
   VPinger( char const* name,  double const& kick_rad = 0.0, int count   = -1);
+
   VPinger( VPinger const& );
 
   VPinger* Clone() const { return new VPinger( *this ); }
@@ -128,6 +144,7 @@ class DLLEXPORT VPinger : public Pinger {
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
+
 };
 
 #endif /* PINGER_H */
