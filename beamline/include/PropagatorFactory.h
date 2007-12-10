@@ -36,8 +36,13 @@
 #include <boost/function.hpp>
 
 class Particle;
-class ParticleBunch;
 class JetParticle;
+
+template <typename Particle_t>
+class TBunch;
+
+typedef TBunch<Particle> ParticleBunch;
+
 class bmlnElmnt;
 
 

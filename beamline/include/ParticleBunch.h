@@ -32,7 +32,9 @@
 
 #include <beamline/TBunch.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
-typedef TBunch<Particle> ParticleBunch;
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
 
 #endif // PARTICLEBUNCH_H
