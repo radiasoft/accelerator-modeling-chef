@@ -40,8 +40,9 @@
 ******
 ****** - support for reference counted elements
 ******  July 2007        ostiguy@fnal.gov
-****** - eliminated nested functor predicate and action classes 
-****** 
+****** - eliminated nested functor predicate and action classes  
+******  Dec 2007        ostiguy@fnal.gov
+****** - support for JetParticle bunch
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -143,8 +144,8 @@ public:
 
 
    double getReferenceTime()                    const;     
-   double setReferenceTime( double const& );               
-
+   void setReferenceTime( double   const& );               
+   void setReferenceTime( Particle& );             
 
   // EDITING LATTICE_____________________________________________________________________
 
@@ -217,6 +218,7 @@ public:
   void localPropagate( Particle& );          
   void localPropagate( ParticleBunch& );          
   void localPropagate( JetParticle& );          
+  void localPropagate( JetParticleBunch& );          
 
   void enterLocalFrame( Particle&    )    const;   
   void enterLocalFrame( JetParticle&    ) const;   
