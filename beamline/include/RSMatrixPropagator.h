@@ -44,7 +44,7 @@
 class Particle;
 class JetParticle;
 
-class RSMatrixPropagator: public elm_core_access { 
+class RSMatrixPropagator { 
 
 public:
 
