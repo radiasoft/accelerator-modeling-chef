@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      sbend.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -37,7 +36,13 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******                                                                
+******
+****** Dec 2007            ostiguy@fnal.gov
+******
+****** - eliminated obsolete support for "fast" arcsin 
+****** - new typesafe propagator scheme
+****** - sbend now implemented as a composite element  
+******                                                                 
 **************************************************************************
 *************************************************************************/
 #ifndef SBEND_H
@@ -57,161 +62,71 @@ typedef boost::shared_ptr<sbend const> ConstSBendPtr;
 
 class DLLEXPORT sbend : public bmlnElmnt {
 
-public:
-   class MAD_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::MAD_Prop"; }
-  };
-  static MAD_Prop LikeMAD;
+  class Propagator;
 
-   class NoEdge_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::NoEdge_Prop"; }
+ public:
+ 
+  class sbend_core_access;
 
-    NoEdge_Prop();
-    virtual ~NoEdge_Prop();
-  };
+  typedef boost::shared_ptr<BasePropagator<sbend> > PropagatorPtr;   
 
-  static NoEdge_Prop NoEdge;
-
-   class Exact_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::Exact_Prop"; }
-
-    Exact_Prop();
-    virtual ~Exact_Prop();
-    void setPropagator( NoEdge_Prop* );
-  private:
-    NoEdge_Prop* myPropagator_;
-  };
-  static Exact_Prop Exact;
-
-   class InEdge_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::InEdge_Prop"; }
-
-    InEdge_Prop();
-    virtual ~InEdge_Prop();
-    void setPropagator( NoEdge_Prop* );
-  private:
-    NoEdge_Prop* myPropagator_;
-  };
-  static InEdge_Prop InEdge;
-
-   class OutEdge_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "sbend::OutEdge_Prop"; }
-
-    OutEdge_Prop();
-    virtual ~OutEdge_Prop();
-    void setPropagator( NoEdge_Prop* );
-  private:
-    NoEdge_Prop* myPropagator_;
-  };
-  static OutEdge_Prop OutEdge;
-
-  friend class MAD_Prop;
-  friend class NoEdge_Prop;
-  friend class Exact_Prop;
-  friend class InEdge_Prop;
-  friend class OutEdge_Prop;
-
-
-  void P_Face ( Particle&,    double const& psi ) const;
-  void J_Face ( JetParticle&, double const& psi ) const;
-  
-
-  // Constructors 
   sbend();
-  sbend( double const&,     // (orbit) length [meters]
-         double const&,     // magnetic field [tesla]
-                            // (assumed along the y-axis)
-         double const&,     // geometric bend angle [radians]
-                            // sign( bend angle ) = sign( field )
-         PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
          double const&,     // (orbit) length  [meters]
          double const&,     // magnetic field [tesla]
-         double const&,     // geometric bend angle   [radians]
-         PropFunc*    = &sbend::Exact );
+         double const&      // geometric bend angle   [radians]
+        );
 
-  sbend( double const&,     // (orbit) length  [meters]
-         double const&,     // field   [tesla]
-         double const&,     // geometric bend angle [radians]
-         double const&,     // upstream edge angle [radians]
-         double const&,     // downstream edge angle [radians]
-                            // signs of previous two parameters
-                            // are as defined for sbends by MAD
-         PropFunc*    = &sbend::Exact );
 
   sbend( const char*,// name
          double const&,     // (orbit) length  [meters]
          double const&,     // field   [tesla]
          double const&,     // geometric bend angle [radians]
          double const&,     // upstream edge angle [radians]
-         double const&,     // downstream edge angle [radians]
-                            // signs of previous two parameters
-                            // are as defined for sbends by MAD
-         PropFunc*    = &sbend::Exact );
+         double const&      // downstream edge angle [radians]
+                     // signs of previous two parameters
+                     // are as defined for sbends by MAD
+        );
 
-  sbend( const sbend& );
+  sbend( sbend const& );
 
   sbend* Clone() const { return new sbend( *this ); }
 
-  virtual ~sbend();
+ ~sbend();
 
 
   // Public methods
-  double setAngle(double const& a) { return (angle_ = a); }
-  double getAngle() const   { return angle_; }
-  // aliased
-  double setBendAngle(double const& a) { return (angle_ = a); }
-  double getBendAngle() const          { return angle_;       }
+  double        setBendAngle(double const& a) { return (angle_ = a); }
+  double const& getBendAngle() const          { return angle_; }
   
-
   // Note: entry and exit angles are not arguments
   // in the sbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
 
-  double setEntryAngle( const Particle& ); 
-  double setExitAngle ( const Particle& ); 
-  double getEntryAngle()              const { return usAngle_; }
-  double getExitAngle()               const { return dsAngle_; }
+  double setEntryAngle( Particle const& ); 
+  double  setExitAngle( Particle const& ); 
+
+  double getEntryAngle()  const;
+  double getExitAngle()   const; 
+
   double setEntryAngle( double const& radians); 
-  double setExitAngle( double const&  radians); 
-  double getEntryEdgeAngle()          const { return usEdgeAngle_; }
-  double getExitEdgeAngle()           const { return dsEdgeAngle_; }
+  double  setExitAngle( double const& radians); 
+
+  double getEntryFaceAngle()   const; 
+  double  getExitFaceAngle()   const; 
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  void releasePropFunc();
-  void setupPropFunc();
-
-  void enterLocalFrame( Particle&    ) const;
+ 
+  void enterLocalFrame(    Particle& ) const;
   void enterLocalFrame( JetParticle& ) const;
-  void leaveLocalFrame( Particle&    ) const;
+  void leaveLocalFrame(    Particle& ) const;
   void leaveLocalFrame( JetParticle& ) const;
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p ) { (*propfunc_)( this, p ); }
-  void localPropagate( JetParticle& p ) { (*propfunc_)( this, p ); }
+  void localPropagate( Particle&    p ); 
+  void localPropagate( JetParticle& p ); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -223,29 +138,13 @@ public:
 
 private:
 
-  // bmlnElmnt::strength -> magnetic field [T]
+  double   angle_;
+  double   usFaceAngle_;
+  double   dsFaceAngle_;
+  double   usAngle_;
+  double   dsAngle_;
 
-  double angle_;            // [radians] bend angle
-  double usEdgeAngle_, dsEdgeAngle_;
-                            // [radians] as defined in MAD for sbends.
-  double usAngle_, dsAngle_;// [radians] entry (upstream) and exit (downstream) 
-                            // angles of the fiducial orbit referenced
-                            // to the physical edge of the magnet. If no
-                            // registration particle is used, default
-                            // values depend only on edge angles (see
-                            // below).
-  double usTan_, dsTan_;    // tangents of the entry and exit angles:
-                            // px/pz of a reference particle at the
-                            // upstream and downstream edges of the magnet.
-                            // For a (usual) symmetric bend,
-                            // sgn( _usTan ) = - sgn( _dsTan )
-  double dphi_;             // angle between in- and out-frames: a derived 
-                            // quantity
-  std::complex<double> propPhase_, propTerm_;
-                            // Used to propagate through constant magnetic
-                            // field using bend angle and edge angle data.
-
-  void calcPropParams();
+  PropagatorPtr propagator_;
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
@@ -253,4 +152,16 @@ private:
 
 };
 
+class sbend::sbend_core_access {
+
+ public:
+
+  static double&                    get_angle( sbend& o )       { return o.angle_;       }
+  static double&                    get_usAngle( sbend& o)      { return o.usAngle_;     } 
+  static double&                    get_dsAngle( sbend& o)      { return o.dsAngle_;     }
+  static double&                    get_usFaceAngle( sbend& o)  { return o.usFaceAngle_; }
+  static double&                    get_dsFaceAngle( sbend& o)  { return o.dsFaceAngle_; }
+
+};
+   
 #endif // SBEND_H
