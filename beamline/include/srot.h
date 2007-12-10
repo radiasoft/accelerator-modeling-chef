@@ -37,6 +37,9 @@
 ****** Mar 2007          ostiguy@fnal.gov
 ****** - use covariant return type
 ****** - added support for reference-counted elements
+****** Dec 2007          ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
 #ifndef SROT_H
@@ -56,13 +59,19 @@ typedef boost::shared_ptr<srot const>  ConstSRotPtr;
 
 class DLLEXPORT srot : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<srot> > PropagatorPtr;   
+
   srot();
-  srot( double const& strength ); // rotation angle in radians 
   srot( char const* name);
-  srot( char const* name, double const& strength);
+  srot( char const* name, double const& strength); // rotation angle in radians 
   srot( srot const& );
+
   srot* Clone() const { return new srot( *this ); }
+
  ~srot();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
@@ -74,6 +83,10 @@ public:
 
   bool        isMagnet() const;
   char const*     Type() const;
+
+ private:
+
+  PropagatorPtr propagator_;
 };
 
 #endif // SROT_H
