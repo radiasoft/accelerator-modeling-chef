@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      lambertson.h
 ******                                                                
@@ -39,6 +38,9 @@
 ****** Mar 2007    ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Dec 2007    ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
 #ifndef LAMBERTSON_H
@@ -58,7 +60,11 @@ typedef  boost::shared_ptr<thinLamb const> ConstThinLambPtr;
 
 class DLLEXPORT thinLamb : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<thinLamb> > PropagatorPtr;   
   
   // x position of the septum
   // extracted beamline pointer
@@ -102,6 +108,9 @@ private:
                             // will be on the reference orbit of the
                             // extraction line.  The specified coordinates are 
                             // SUBTRACTED from the particle coordinates.
+  
+  PropagatorPtr  propagator_;
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 

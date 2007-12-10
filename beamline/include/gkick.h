@@ -24,7 +24,10 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
-****** 
+****** REVISION HISTORY
+******
+****** Dec  2007:          ostiguy@fnal.gov
+****** - new typesafe propagators
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -47,7 +50,11 @@ typedef boost::shared_ptr<gkick const>  ConstGKickPtr;
 
 class DLLEXPORT gkick : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<gkick> > PropagatorPtr;  
 
   gkick();
 
@@ -59,7 +66,6 @@ public:
 
  ~gkick();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
@@ -93,8 +99,6 @@ public:
   double const&    v();
   double const&    t();
 
-
-
  private:
 
   double dx_ ;    // x  translation.
@@ -107,6 +111,9 @@ public:
   double dz_;     // is the longitudinal displacement.
   double v_;      // is the  extrance-exit parameter  of the  kick.  
   double t_;      // is the momentum dependence  parameter.
+
+  PropagatorPtr   propagator_;
+
 };
 
 #endif    // GKICK_H

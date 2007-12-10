@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      marker.h
 ******                                                                
@@ -38,6 +37,8 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Dec 2007            ostiguy@fnal.gov
+****** - new typesafe propagators
 ******
 **************************************************************************
 *************************************************************************/
@@ -56,9 +57,14 @@ typedef boost::shared_ptr<marker>        MarkerPtr;
 typedef boost::shared_ptr<marker const>  ConstMarkerPtr;
 
 
-class DLLEXPORT marker : public bmlnElmnt
-{
+class DLLEXPORT marker : public bmlnElmnt {
+
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<marker> > PropagatorPtr;   
+
   marker();                       // Data to be written to standard output
   marker( char const* name);      // Name identifier.
   marker( marker const& );
@@ -69,7 +75,6 @@ public:
 
   virtual ~marker();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
 
@@ -79,6 +84,9 @@ public:
   const char* Type()     const;
   bool        isMagnet() const;
 
+ private:
+
+  PropagatorPtr propagator_; 
 };
 
 #endif // MARKER_H

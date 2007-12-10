@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      monitor.h
-******  Version:   3.0
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -44,6 +43,9 @@
 ****** - added systematic and random errors 
 ****** - added bunch propagation
 ******   
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
 #ifndef MONITOR_H
@@ -69,7 +71,11 @@ typedef boost::shared_ptr<vmonitor const> ConstVMonitorPtr;
 
 class DLLEXPORT monitor : public bmlnElmnt {
 
+  class Propagator; 
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<monitor> > PropagatorPtr;   
 
   monitor();
   monitor( char const* name );
@@ -83,8 +89,14 @@ public:
   double hposition() const; 
   double vposition() const; 
 
+  void setHposition( double const& );
+  void setVposition( double const& );
+
   double const& npx() const; 
   double const& npy() const; 
+
+  void setNpx( double const& ); 
+  void setNpy( double const& );
 
   double        setDriftFraction( double f ); 
   double const& getDriftFraction()  const;
@@ -95,6 +107,7 @@ public:
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
+  void localPropagate( JetParticleBunch& x );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -122,7 +135,8 @@ protected:
 
  private:
 
-  double   driftFraction_;
+  double        driftFraction_;
+  PropagatorPtr propagator_;
 
 };
 
@@ -130,7 +144,11 @@ protected:
 
 class DLLEXPORT hmonitor : public monitor {
 
+  class Propagator;
+
  public:
+
+  typedef boost::shared_ptr<BasePropagator<hmonitor> > PropagatorPtr;   
 
   hmonitor();
   hmonitor( const char*  name );
@@ -144,17 +162,26 @@ class DLLEXPORT hmonitor : public monitor {
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
+  void localPropagate( JetParticleBunch& x );
 
   const char* Type()     const;
   bool        isMagnet() const;
 
- } ;
+ private:
+
+  PropagatorPtr propagator_;
+
+ };
 
 //======================================================================================
 
 class DLLEXPORT vmonitor : public monitor {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<vmonitor> > PropagatorPtr;   
 
   vmonitor();  
   vmonitor( const char* name );
@@ -168,9 +195,14 @@ public:
   void localPropagate( Particle&   );
   void localPropagate( JetParticle& );
   void localPropagate( ParticleBunch& x );
+  void localPropagate( JetParticleBunch& x );
 
   const char* Type()     const;
   bool        isMagnet() const;
+
+ private:
+
+  PropagatorPtr propagator_;
 
 };
 

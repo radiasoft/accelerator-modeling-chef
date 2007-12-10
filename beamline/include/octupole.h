@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      octupole.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -38,6 +37,9 @@
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
 #ifndef OCTUPOLE_H
@@ -66,11 +68,14 @@ typedef boost::shared_ptr<thinOctupole const>  ConstThinOctupolePtr;
 
 class DLLEXPORT octupole : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<octupole> > PropagatorPtr;   
 
   octupole();
   octupole( char const* name, double const& length,    double const& strength);
-  octupole(                   double const& length,    double const& strength);
 
   octupole( octupole const& );
   octupole* Clone() const { return new octupole( *this ); }
@@ -95,15 +100,22 @@ public:
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+ private:
+
+  PropagatorPtr propagator_; 
 };
 
 
 class DLLEXPORT thinOctupole : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<thinOctupole> > PropagatorPtr;   
+
   thinOctupole();
   thinOctupole( char const* name,  double const& strength );
-  thinOctupole(                    double const& strength );
   thinOctupole( thinOctupole const& );
 
   thinOctupole* Clone() const { return new thinOctupole( *this ); }
@@ -121,7 +133,11 @@ public:
 
   const char* Type() const;
   bool isMagnet() const;
+
+ private:
   
-} ;
+  PropagatorPtr propagator_; 
+
+};
 
 #endif // OCTUPOLE_H
