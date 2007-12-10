@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      thinpoles.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -41,9 +40,14 @@
 ******  - adapted to new beamline container based on shared_ptr
 ******  - member signatures based on reference types.
 ******
-******  Mar 2007 
+******  Mar 2007 ostiguy@fnal.gov 
 ******  - added support for reference counted elements
 ******                                           
+******  Dec 2007 ostiguy@fnal.gov
+******  - streamlined constructors      
+******  - common base class 
+******  - new type-safe propagator scheme    
+******
 **************************************************************************
 *************************************************************************/
 
@@ -78,133 +82,144 @@ typedef boost::shared_ptr<thin18pole>              Thin18polePtr;
 typedef boost::shared_ptr<thin18pole const>   ConstThin18polePtr;
 
 
-class DLLEXPORT thin2pole : public bmlnElmnt {
+class DLLEXPORT ThinPole : public bmlnElmnt {
+
+protected:
+
+  class Propagator;
+
+public:
+
+  typedef boost::shared_ptr<BasePropagator<ThinPole> > PropagatorPtr;   
+
+  ThinPole( int pole );
+  ThinPole( char const*  name, double const& integrated_strength, int pole);
+  ThinPole( ThinPole const& );
+
+  ThinPole* Clone() const = 0;
+
+ ~ThinPole();
+
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
+
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
+
+  const char* Type() const;
+  bool isMagnet() const;
+
+  int getPole() const; 
+
+ protected:
+ 
+  int           pole_; 
+  PropagatorPtr propagator_;
+
+};
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+class DLLEXPORT thin2pole : public ThinPole {
 
 public:
 
   thin2pole();
-  thin2pole( double const&      integrated_strength );
-  thin2pole( char const*  name, double const& integrated_strength);
+  thin2pole( char const* name, double const& integrated_strength);
   thin2pole( thin2pole const& );
 
   thin2pole* Clone() const { return new thin2pole( *this ); }
 
  ~thin2pole();
 
-
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
 
 };
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-class DLLEXPORT thin12pole : public bmlnElmnt
-{
+class DLLEXPORT thin12pole : public ThinPole {
+
 public:
+
   thin12pole();
-  thin12pole( double const& /* strength */ );
-  thin12pole( const char*  /* name */,
-              double const& /* strength */ );
+  thin12pole( char const* name, double const& strength);
   thin12pole( const thin12pole& );
   thin12pole* Clone() const { return new thin12pole( *this ); }
-  virtual ~thin12pole();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+ ~thin12pole();
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
 
 } ;
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class DLLEXPORT thin14pole : public bmlnElmnt {
+class DLLEXPORT thin14pole : public ThinPole {
 
 public:
-  thin14pole();
-  thin14pole( double const& /* strength */ );
-  thin14pole( const char*  /* name */,
-              double const& /* strength */ );
-  thin14pole( const thin14pole& );
-  thin14pole* Clone() const { return new thin14pole( *this ); }
-  virtual ~thin14pole();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  thin14pole();
+  thin14pole( char const* name, double const& strength);
+  thin14pole( thin14pole const& );
+  thin14pole* Clone() const { return new thin14pole( *this ); }
+ ~thin14pole();
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
 
 } ;
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-class DLLEXPORT thin16pole : public bmlnElmnt {
+class DLLEXPORT thin16pole : public ThinPole {
 
 public:
-  thin16pole();
-  thin16pole( double const& /* strength */ );
-  thin16pole( const char*  /* name */,
-              double const& /* strength */ );
-  thin16pole( const thin16pole& );
-  thin16pole* Clone() const { return new thin16pole( *this ); }
-  virtual ~thin16pole();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  thin16pole();
+
+  thin16pole( char const* name, double const& strength );
+  thin16pole( thin16pole const & );
+  thin16pole* Clone() const { return new thin16pole( *this ); }
+ ~thin16pole();
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
 
 } ;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-class DLLEXPORT thin18pole : public bmlnElmnt {
+class DLLEXPORT thin18pole : public ThinPole {
 
 public:
-  thin18pole();
-  thin18pole( double const& /* strength */ );
-  thin18pole( const char*  /* name */,
-              double const& /* strength */ );
-  thin18pole( const thin18pole& );
-  thin18pole* Clone() const { return new thin18pole( *this ); }
-  virtual ~thin18pole();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  thin18pole();
+  thin18pole( char const* name, double const&  strength );
+  thin18pole( thin18pole const& );
+  thin18pole* Clone() const { return new thin18pole( *this ); }
+ ~thin18pole();
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
 
 };
 
