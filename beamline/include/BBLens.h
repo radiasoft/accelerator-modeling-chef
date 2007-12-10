@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      BBLens.h
 ******                                                                
@@ -38,6 +37,8 @@
 ****** - use covariant return type
 ****** - added support for reference counted smart pointers
 ****** - added proper  assigment operator  
+****** Dec 2007         ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 #ifndef BBLENS_H
@@ -63,7 +64,12 @@ typedef boost::shared_ptr<BBLens const> ConstBBLensPtr;
 
 class DLLEXPORT BBLens : public bmlnElmnt {
 
+  class Propagator;
+
 public:
+
+  typedef boost::shared_ptr<BasePropagator<BBLens> > PropagatorPtr;   
+
   BBLens( const char* name=0, double const&  length = 1.0
              /* length [m]: the length of the bunch
                 in its rest frame */,
@@ -84,8 +90,6 @@ public:
 
   BBLens& operator=( BBLens const&);
 
-
-  void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
@@ -95,11 +99,14 @@ public:
                          // used when horizontal and vertical 
                          // sigmas approximately equal.
 
-  void Kludge( double const&  /* num    */, 
-               double const&  /* gamma  */, 
-         const double* /* sigma  */ );
-  void KludgeNum( double const& ); 
-  void KludgeSigma( const double* );
+  void setDistParameters( double const& num, double const& gamma, double const* sigma);
+
+  void          setDistCharge( double const& nparticles); 
+  double const& getDistCharge() const; 
+
+  void setSigmas( double const* sigmas);
+  void GetSigma( double* );
+
   void AdjustSigma();
 
   Vector NormalizedEField( double const& x, double const& y );
@@ -125,19 +132,21 @@ public:
   bool        isMagnet() const;
 
   Vector Beta();
-  void GetSigma( double* );
+  
 
 private:
 
-  double emittance[3];   // One sigma (noninvariant) emittance / pi
-  double gamma;          // Relativistic gamma
-  double beta;           // Relativistic beta
-  double num;            // Number of proton charges; if the bunch
-                         // is negatively charged, then this number
-                         // is negative.
-  double sigma[3];       // This will depend on position in the 
-                         // lattice.  The third component is zero
-                         // for now.
+  double emittance_[3];   // One sigma (noninvariant) emittance / pi
+  double gamma_;          // Relativistic gamma
+  double beta_;           // Relativistic beta
+  double num_;            // Number of proton charges; if the bunch
+                          // is negatively charged, then this number
+                          // is negative.
+  double sigma_[3];       // This will depend on position in the 
+                          // lattice.  The third component is zero
+                          // for now.
+
+  PropagatorPtr propagator_;
 
 };
 

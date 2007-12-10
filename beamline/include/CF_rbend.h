@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      CF_rbend.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright (c) 1991 Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -39,7 +38,9 @@
 ****** - support for reference counted elements
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
-******                                                                
+****** Dec 2007           ostiguy@fnal.gov
+****** - new type-safe propagators
+******
 **************************************************************************
 *************************************************************************/
 
@@ -49,6 +50,8 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
+#include <list>
+#include <utility>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -63,72 +66,31 @@ typedef boost::shared_ptr<CF_rbend const> ConstCFRbendPtr;
 
 class DLLEXPORT CF_rbend : public bmlnElmnt
 {
+
+  class Propagator;
+
  public:
-  // Constructors
+
+  typedef boost::shared_ptr<BasePropagator<CF_rbend> > PropagatorPtr; 
+ 
+  //---------------------------------------------------------------------------------------------
+  // length is expressed in [m]
+  // field  is in [T], field pointing to the -y direction is positive 
+  // All angles are espressed in radians
+  // usAngle, dsAngle  upstream and downstream pole face angles, RELATIVELY to the parallel faces.
+  // usFaceAngle, dsFaceAngle upstream and downstream "edge" angles MAD sign convention
+  // If usAngle, dsAngle are not specified, usAngle=dsAngle=0.0
+  // If only usAngle is specified, then usAngle = dsAngle is assumed
+  // ---------------------------------------------------------------------------------------------
+  
   CF_rbend();
-  CF_rbend( double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            int n = 1 );// number of blocks: 4n+1 bends + 2(4n) thin multipoles
- 
-  CF_rbend( const char*,// name
-            double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            int = 1 );
+  CF_rbend( char const* name, double const& length, double const& field);
+  CF_rbend( char const* name, double const& length, double const& field, double const& usAngle);
+  CF_rbend( char const* name, double const& length, double const& field, double const& usFaceAngle, double const& dsFaceAngle);
+  CF_rbend( char const* name, double const& length, double const& field, double const& usAngle,
+                                                                         double const& usFaceAngle, double const& dsFaceAngle);     
 
-  CF_rbend( double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            double const&,     // entry angle  [ radians ]
-            int n = 1 );// number of blocks: 4n+1 bends + 2(4n) thin multipoles
- 
-  CF_rbend( const char*,// name
-            double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            double const&,     // entry angle  [ radians ]
-            int = 1 );
-
-  CF_rbend( double const&,     // length  [ meters ]           // No entry angle assumed.
-            double const&,     // field   [ tesla ]            // Must be registered.
-                        // (assumed along the y-axis)   // See RefRegVisitor
-
-            double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for rbends by MAD
-            int = 1 );
-
-  CF_rbend( const char*,// name
-            double const&,     // length  [ meters ]
-            double const&,     // field   [ tesla ]
-
-            double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for rbends by MAD
-            int = 1 );
-
-  CF_rbend( double const&,     // length  [ meters ]
-            double const&,     // field   [ tesla ]
-                        // (assumed along the y-axis)
-            double const&,     // entry angle [radians] RELATIVE TO parallel faces
-                        //   (assumes symmetric pssage unless reset)
-            double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for rbends by MAD
-            int = 1 );
-
-  CF_rbend( const char*,// name
-            double const&,     // length  [ meters ]
-            double const&,     // field   [ tesla ]
-            double const&,     // entry angle [radians] RELATIVE TO parallel faces
-                        //   (assumes symmetric pssage unless reset)
-            double const&,     // upstream edge angle [radians]
-            double const&,     // downstream edge angle [radians]
-                        // signs of previous two parameters
-                        // are as defined for rbends by MAD
-            int = 1 );
-
-  CF_rbend( const CF_rbend& );
+  CF_rbend(CF_rbend const& );
 
   CF_rbend* Clone() const 
      { return new CF_rbend( *this ); }
@@ -145,52 +107,49 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
-
-  void acceptInner( BmlVisitor& v );
-  void acceptInner( ConstBmlVisitor& v );
   
   void peekAt( double& s, const Particle& );
 
   const char* Type() const;
   bool isMagnet() const;
   
-  double          getReferenceTime() const;  
-
-
   double OrbitLength( const Particle& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
-
   // Note: entry and exit angles are not arguments
   // in the rbend constructors. A symmetric bend is assumed
   // by default. Otherwise, use one of the following.
-  double setEntryAngle( const Particle& ); 
-  double setExitAngle( const Particle& ); 
-  double getEntryAngle() const { return usAngle_; }
-  double getExitAngle() const { return dsAngle_; }
-  double setEntryAngle( double const& /* radians */ ); 
-  double setExitAngle( double const& /* radians */ ); 
-  double getEntryEdgeAngle() const { return  usEdgeAngle_; }
-  double getExitEdgeAngle() const { return   dsEdgeAngle_; }
+
+  double setEntryAngle( Particle const& ); 
+  double  setExitAngle( Particle const& ); 
+  double setEntryAngle( double const& ); 
+  double  setExitAngle( double const& ); 
+
+  double getEntryAngle()    const;
+  double  getExitAngle()    const;
+
+  void setPoleFaceAngle( Particle const& p );
+
+  double setEntryFaceAngle( double const& radians ); 
+  double  setExitFaceAngle( double const& radians); 
+
+  double getEntryFaceAngle() const;
+  double  getExitFaceAngle() const; 
+
+  double const& getBendAngle() const; // bend angle
 
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  // Aliases, for the sake of backwards compatability
-  double PoleFaceAngle() const { return this->getEntryAngle(); }
-  double getPoleFaceAngle() const { return this->getEntryAngle(); }
-  double getTanPoleFaceAngle() const { return tan(this->getEntryAngle()); }
-
-
   double AdjustPosition( const Particle& );
   double AdjustPosition( const JetParticle& );
-
 
   int setQuadrupole ( double const& );  
   int setSextupole  ( double const& );  
   int setOctupole   ( double const& );  
+
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
   //       .setSextupole  ( B''l/2 )
@@ -203,6 +162,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   int setDipoleField ( double const& );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
+
   void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
@@ -210,6 +170,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   double getQuadrupole() const;
   double getSextupole()  const;
   double getOctupole()   const;
+
   // Returns integrated multipole strengths
   // i.e., .getQuadrupole() returns B'l
   //       .getSextupole()  returns B''l/2
@@ -221,26 +182,22 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
  private:
 
-  double usEdgeAngle_, dsEdgeAngle_;
-                            // [radians] as defined in MAD for rbends.
-  double usAngle_, dsAngle_;// [radians] entry (upstream) and exit (downstream) 
-                            // angles of the fiducial orbit referenced
+  double  angle_;           // total bend angle  [ radians ]
+  double  usFaceAngle_;     // [radians] as defined in MAD for rbends.
+  double  dsFaceAngle_; 
+  double  usAngle_;         // [radians] entry (upstream) and exit (downstream) 
+  double  dsAngle_;         // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. If no
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  double usTan_, dsTan_;    // tangents of the entry and exit angles:
-                            // px/pz of a reference particle at the
-                            // upstream and downstream edges of the magnet.
-                            // For a (usual) symmetric bend,
-                            // sgn( usTan_ ) = - sgn( dsTan_ )
 
-  void calcPropParams();
-  void finishConstructor( int /* number of element blocks*/ );
+  std::list<std::pair<int, std::complex<double> > > multipoles_;
+  
+  PropagatorPtr  propagator_;
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 };
-
 
 #endif // CF_RBEND
