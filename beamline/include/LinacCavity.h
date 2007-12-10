@@ -24,8 +24,12 @@
 ******  Author:    Jean-Francois Ostiguy                       
 ******             ostiguy@fnal.gov
 ******
-**************************************************************************
-**************************************************************************
+****** REVISION HISTORY 
+******
+****** Dec 2007            ostiguy@fnal.gov
+****** - new typesafe propagator scheme
+*************************************************************************
+*************************************************************************
 *************************************************************************/
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
@@ -51,9 +55,11 @@ typedef boost::shared_ptr<LinacCavity const> ConstLinacCavityPtr;
 
 class LinacCavity: public bmlnElmnt {
 
-  friend class elm_core_access;
+  class Propagator;
 
 public:
+
+  typedef boost::shared_ptr<BasePropagator<LinacCavity> > PropagatorPtr;
 
   LinacCavity( const  char*  name,
 	       double const& length_m,
@@ -68,6 +74,7 @@ public:
  ~LinacCavity();
 
   void   setWakeOn( bool );
+  bool   wakeOn() const;
 
   double const&          getPhi()                const;
   double                 getDesignEnergyGain()   const;
@@ -80,15 +87,11 @@ public:
 
   double          getReferenceTime() const;  
 
-  void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
-
-  void acceptInner( BmlVisitor&      v ); 
-  void acceptInner( ConstBmlVisitor& v ) const; 
 
   const char* Type() const;
   bool    isMagnet() const;
@@ -105,6 +108,8 @@ private:
 
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
+
+  PropagatorPtr         propagator_;
 
 };
 
