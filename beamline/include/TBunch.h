@@ -84,6 +84,8 @@ public:
 
   void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0);
 
+  std::vector<double> emittances();
+  std::vector<double> emittances(std::vector<double> const& dispersion );
 
   template <typename UnaryPredicate_t>
   inline void remove( UnaryPredicate_t );          
@@ -125,12 +127,13 @@ private:
   TBunch ( TBunch const&);
 
   Particle_t*                    reference_;       // use pointer to preserve dynamic type 
-  double                       intensity_;       // actual population (as opposed to no of pseudo-particles)
+  double                         intensity_;       // actual population (as opposed to no of pseudo-particles)
 
   boost::ptr_vector<Particle_t,  boost::view_clone_allocator>  bunch_;
   boost::ptr_vector<Particle_t,  boost::view_clone_allocator>  removed_;
 
-  boost::pool<>                                                pool_;
+  boost::pool<>                                                 pool_;
+
 
 };
 
@@ -172,6 +175,12 @@ void TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double sigm
 
 template<>
 void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12);
+
+template<>
+std::vector<double> TBunch<Particle>::emittances();
+
+template<>
+std::vector<double> TBunch<Particle>::emittances(std::vector<double> const& dispersion );
 
 
 #ifndef BEAMLINE_EXPLICIT_TEMPLATES
