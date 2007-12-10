@@ -31,6 +31,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
+#include <boost/bind.hpp>
 
 #include <cmath>
 #include <ostream>
@@ -38,11 +39,13 @@
 
 #include<boost/random.hpp>
 
+class Particle;
+class JetParticle;
+
 using namespace std;
 
 using FNAL::pcout;
 using FNAL::pcerr;
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -96,7 +99,7 @@ std::istream& operator >>( std::istream &is, TBunch<Particle_t>& bunch)
 template <typename Particle_t>
 TBunch<Particle_t>::TBunch(Particle_t const& p, int nparticles, double const& intensity)
 : reference_(  p.Clone() ), intensity_( intensity ), bunch_(),
-  pool_( sizeof(Particle_t) , max( 128, (nparticles*110/100) ))  
+  pool_( sizeof(Particle) , max( 128, (nparticles*110/100) ))  
 {
 
  //--------------------------------------------------------------------------------
@@ -113,7 +116,7 @@ TBunch<Particle_t>::TBunch(Particle_t const& p, int nparticles, double const& in
   
   for (int i =0; i< nparticles; ++i )
   {
-    bunch_.push_back(  p.Clone( pool_.malloc() ) ); 
+    bunch_.push_back(  p.Clone(pool_.malloc()) ); 
   }
 
 }
@@ -125,7 +128,12 @@ template <typename Particle_t>
 TBunch<Particle_t>::~TBunch<Particle_t>() 
 {
   delete reference_;
+
+  for ( iterator it = begin();          it != end();          ++it ) { it->dtor(); }
+  for ( iterator it = removed_.begin(); it != removed_.end(); ++it ) { it->dtor(); }
+
 }
+
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -245,9 +253,24 @@ typename TBunch<Particle_t>::const_reverse_iterator     TBunch<Particle_t>::remo
 template <typename Particle_t>
 void TBunch<Particle_t>::clear()
 {
+ 
+  for ( iterator it = begin();          it != end();          ++it ) { it->dtor(); }
+  for ( iterator it = removed_.begin(); it != removed_.end(); ++it ) { it->dtor(); }
+
   bunch_.clear();
   removed_.clear();
+
+  //-------------------------------------------------------
+  // The following is a workaround for the bug described 
+  // at http://svn.boost.org/trac/boost/ticket/284
+  // Apparently, the initial pool size does not get reset 
+  // as it should when the pool memory is released. 
+  // The fix will be in
+  // boost release 1.35 - JFO
+  //-------------------------------------------------------
+
   pool_.purge_memory();  
+  pool_.set_next_size(1024);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -256,7 +279,7 @@ void TBunch<Particle_t>::clear()
 template <typename Particle_t>
 void TBunch<Particle_t>::append( Particle_t const& x )
 {
-  bunch_.push_back(  x.Clone( pool_.malloc() ) ); 
+  bunch_.push_back(  x.Clone(pool_.malloc()) ); 
 }
 
 
@@ -312,7 +335,7 @@ template <typename Particle_t>
 void TBunch<Particle_t>::setReferenceParticle ( Particle_t const& p)
 {
   if (reference_) delete reference_;
-  reference_ = p.Clone();            // use Clone() to preserve dynamic type
+  reference_ = p.Clone(pool_.malloc());    // use Clone() to preserve dynamic type
 
 }
 
