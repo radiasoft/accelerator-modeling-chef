@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      quadrupole.h
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -36,11 +35,16 @@
 ****** REVISION HISTORY
 ******
 ****** Mar 2007           ostiguy@fnal.gov
+******
 ****** - covariant return types
 ****** - support for reference counted elements
+******
+****** December 2007       ostiguy@fnal.gov
+******
+****** - new typesafe propagator scheme
+******
 **************************************************************************
 *************************************************************************/
-
 #ifndef QUADRUPOLE_H
 #define QUADRUPOLE_H
 
@@ -60,65 +64,34 @@ typedef boost::shared_ptr<quadrupole const> ConstQuadrupolePtr;
 typedef boost::shared_ptr<thinQuad const>   ConstThinQuadPtr; 
 
 
-class DLLEXPORT quadrupole : public bmlnElmnt
-{
+class DLLEXPORT quadrupole : public bmlnElmnt {
 
+  class Propagator;  
 
 public:
 
-  class MAD_Prop : public bmlnElmnt::PropFunc
-  {
-  public:
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "quadrupole::MAD_Prop"; }
-  };
-  static MAD_Prop LikeMAD;
-
-  class TPOT_Prop : public bmlnElmnt::PropFunc
-  {
-  private:
-    int _n;  // number of thinquad kicks
-
-  public:
-    TPOT_Prop( int /* _n */ = 4 );
-    int operator()( bmlnElmnt*, Particle&    );
-    int operator()( bmlnElmnt*, JetParticle& );
-    const char* Type() const { return "quadrupole::TPOT_Prop"; }
-    int  get_n() const;
-    void set_n( int );
-    void setup( quadrupole* ) const;
-  };
-
-  friend class TPOT_Prop;
-  static TPOT_Prop LikeTPOT;
-
-
+  typedef boost::shared_ptr<BasePropagator<quadrupole> > PropagatorPtr; 
 
   // length    in meters^-1
   // strength (B') in Tesla-meters^-1
 
 
   quadrupole();
-  quadrupole( const char* name, double const& length, double const& strength, PropFunc* = &quadrupole::LikeTPOT );
-  quadrupole(                   double const& length, double const& strength, PropFunc* = &quadrupole::LikeTPOT );
+  quadrupole( char const* name, double const& length, double const& strength );
   quadrupole( quadrupole const& );
 
-  quadrupole* Clone() const { return new quadrupole( *this ); }
+  quadrupole* Clone() const;
 
  ~quadrupole();
 
   void setStrength( double const& );
  
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle&    p )   { (*propfunc_)( this, p );        }
-  void localPropagate( JetParticle& p )   { (*propfunc_)( this, p );        }
+  void localPropagate( ParticleBunch& x ); 
+  void localPropagate( Particle&    p );   
+  void localPropagate( JetParticle& p );   
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
-
-  void releasePropFunc();
-  void setupPropFunc();
 
   const char* Type() const;
   bool isMagnet() const;
@@ -127,41 +100,48 @@ public:
 
 private:
 
+  PropagatorPtr            propagator_;  
+
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
+
 } ;
 
 
+//-------------------------------------------------------------------------------
 
 class DLLEXPORT thinQuad : public bmlnElmnt
 {
 
+  class Propagator;  
 
 public:
 
   // integrated_strength (B'L) in Tesla; + = horizontally focussing
 
+  typedef boost::shared_ptr<BasePropagator<thinQuad> > PropagatorPtr; 
+
   thinQuad();
-  thinQuad(                   double const& integrated_strength );    
   thinQuad( char const* name, double const& integrated_strength );    // B'L in Tesla; + = horizontally focussing
   thinQuad( thinQuad const& );
 
-  thinQuad* Clone() const { return new thinQuad( *this ); }
+  thinQuad* Clone() const;
 
-  virtual ~thinQuad();
+ ~thinQuad();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& p );
   void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
 
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;
 
   bool        isMagnet()   const;
   char const* Type()       const;
-  
-} ;
 
+ private:
 
+  PropagatorPtr propagator_;  
+};
 
 #endif // QUADRUPOLE_H
