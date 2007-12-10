@@ -39,7 +39,8 @@
 ******  - eliminated unecessary casts
 ******  - use std::string for renaming
 ******  - changes to header file to reduce file coupling 
-******
+****** Dec 2007 ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 #ifndef SOLENOID_H
@@ -58,20 +59,22 @@ typedef boost::shared_ptr<Solenoid>        SolenoidPtr;
 typedef boost::shared_ptr<Solenoid const>  ConstSolenoidPtr; 
 
 
-class DLLEXPORT Solenoid : public bmlnElmnt
-{
+class DLLEXPORT Solenoid : public bmlnElmnt {
+
+  class Propagator; 
+
 public:
+
   // Constructors 
+
+  typedef boost::shared_ptr<BasePropagator<Solenoid> > PropagatorPtr;   
+
   Solenoid();
-  Solenoid( double const&,  // (orbit) length [meters]
-            double const&   // magnetic field [tesla]
-                            // (assumed along the z-axis)
-          );
   Solenoid( const  char*,   // name
             double const&,  // (orbit) length  [meters]
             double const&   // magnetic field [tesla]
           );
-  Solenoid( const Solenoid& );
+  Solenoid( Solenoid const& );
 
   Solenoid* Clone() const;
 
@@ -93,8 +96,9 @@ public:
 
 private:
 
-  bool inEdge_;
-  bool outEdge_;
+  bool          inEdge_;
+  bool          outEdge_;
+  PropagatorPtr propagator_;
 
 };
 

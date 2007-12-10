@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      Slot.h
 ******                                                                
@@ -34,13 +33,15 @@
 ******                                                                
 ******                                                                
 ******    REVISION HISTORY
+******
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******                                                                
+****** Dec 2007            ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
-
 
 #ifndef SLOT_H
 #define SLOT_H
@@ -56,21 +57,18 @@ class Slot;
 
 typedef boost::shared_ptr<Slot> SlotPtr;
  
+class DLLEXPORT Slot : public bmlnElmnt {
 
-class DLLEXPORT Slot : public bmlnElmnt
-{
+  class Propagator;
+
  public:
+
+   typedef boost::shared_ptr<BasePropagator<Slot> > PropagatorPtr;   
+
    Slot();
    Slot( char const*  name);
 
-   Slot(                    Frame const& out );
    Slot( char const*  name, Frame const& out );
-
-   Slot(                    Frame const& in, Frame const& out, beamline const& );
-   Slot( char const*  name, Frame const& in, Frame const& out, beamline const& );
-
-   Slot(                    Frame const&  in, Frame const& out, bmlnElmnt const&);
-   Slot( char const*  name, Frame const&  in, Frame const& out, bmlnElmnt const&);
 
    Slot( const Slot& );
 
@@ -88,12 +86,12 @@ class DLLEXPORT Slot : public bmlnElmnt
 
    void enterLocalFrame( Particle&     ) const;
    void enterLocalFrame( JetParticle&  ) const;
+
    void leaveLocalFrame( Particle&     ) const;
    void leaveLocalFrame( JetParticle&  ) const;
  
    void localPropagate( Particle& );
    void localPropagate( JetParticle& );
-   void localPropagate( ParticleBunch& );
  
    Slot* Clone() const
      { return new Slot( *this ); }
@@ -106,14 +104,10 @@ class DLLEXPORT Slot : public bmlnElmnt
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );
 
-   Frame getInFrame() const
+   Frame const& getInFrame() const
      { return in_; }
-   Frame getOutFrame() const
+   Frame const& getOutFrame() const
      { return out_; }
-
-   // Not overloaded: virtual double getReferenceTime() const {return _ctRef;}
-
-   double setReferenceTime(   double const& );
 
    // Functions passed on to tenant
 
@@ -123,13 +117,12 @@ class DLLEXPORT Slot : public bmlnElmnt
    double Current() const;
    double OrbitLength( Particle const& );
 
-   std::string  Name() const;
-
-
  private:
 
    Frame in_;
    Frame out_;
+
+   PropagatorPtr propagator_;
 
    void processFrame( Frame const&, Particle& )    const;
    void processFrame( Frame const&, JetParticle& ) const;
