@@ -5,13 +5,12 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
-******                                    
+******
 ******  File:      sector.cc
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -43,7 +42,8 @@
 ******
 ****** July 2007         ostiguy@fnal.gov
 ****** - restructured constructors   
-******
+****** Dec 2007         ostiguy@fnal.gov
+****** - new typesafe propagators
 ******
 **************************************************************************
 *************************************************************************/
@@ -54,74 +54,20 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/sector.h>
+#include <beamline/SectorPropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+namespace {
+  int const  BMLN_dynDim = 6;
+}
 
 // **************************************************
 //   class sector
 // **************************************************
-
-sector::sector(   std::vector<double> const& bH,  std::vector<double> const& aH,  std::vector<double> const& pH
-                , std::vector<double> const& bV,  std::vector<double> const& aV,  std::vector<double> const& pV
-                , double const& l  ) 
-  :  bmlnElmnt(l), 
-      mapType_(0),        
-        myMap_(),
-        betaH_(bH),     // 0 = entry;  1 = exit
-       alphaH_(aH),    
-    deltaPsiH_(0.0),
-        betaV_(bV),     
-       alphaV_(aV),    
-    deltaPsiV_(0.0),
-     mapMatrix_(BMLN_dynDim,BMLN_dynDim)
-{
-
- if( pH[1] <= pH[0] ) {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( ...)"
-          "Horizontal phases inverted." ) );
- }
- else deltaPsiH_ = pH[1] - pH[0];
-
- if( pV[1] <= pV[0] ) {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sector::sector( ...)", 
-          "Vertical phases inverted." ) );
- }
- else deltaPsiV_ = pV[1] - pV[0];
-
- for   ( int i=0; i< BMLN_dynDim; ++i) {
-     mapMatrix_(i,i) = 1.0;
- }
-
- double    dummy = sqrt( betaH_[1] / betaH_[0] );   // --- Horizontal sector
- double       cs = cos( deltaPsiH_ );
- double       sn = sin( deltaPsiH_ );
- mapMatrix_(0,0) = ( cs + alphaH_[0] * sn ) * dummy;
- mapMatrix_(3,3) = ( cs - alphaH_[1] * sn ) / dummy;
- dummy           = sqrt( betaH_[0] * betaH_[1] );
- mapMatrix_(0,3) = dummy * sn;
- mapMatrix_(3,0) = (   ( alphaH_[0] - alphaH_[1]     ) * cs
-                     - ( 1.0 + alphaH_[0]*alphaH_[1] ) * sn
-                   ) / dummy;
-
-           dummy = sqrt( betaV_[1] / betaV_[0] );   // --- Vertical sector
-              cs = cos( deltaPsiV_ );
-              sn = sin( deltaPsiV_ );
- mapMatrix_(1,1) = ( cs + alphaV_[0] * sn ) * dummy;
- mapMatrix_(4,4) = ( cs - alphaV_[1] * sn ) / dummy;
-           dummy = sqrt( betaV_[0] * betaV_[1] );
- mapMatrix_(1,4) = dummy * sn;
- mapMatrix_(4,1) = (   ( alphaV_[0] - alphaV_[1]     ) * cs
-                     - ( 1.0 + alphaV_[0]*alphaV_[1] ) * sn
-                   ) / dummy;
-
-
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -181,14 +127,17 @@ sector::sector( const char* n, std::vector<double> const& bH,  std::vector<doubl
                    ) / dummy;
 
 
+ propagator_ = PropagatorPtr( new Propagator() );
+ propagator_->setup(*this);
+
 } // end function sector::sector( std::vector<double>& bH, ... )
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( Mapping const& m, double const& l, char mpt, PropFunc* prop   ) 
-  : bmlnElmnt(l, prop), 
+sector::sector( const char* n, Mapping const& m, double const& l, char mpt ) 
+  : bmlnElmnt( n, l, 0.0), 
       mapType_(mpt),        
         myMap_(m),
         betaH_(),     
@@ -199,25 +148,8 @@ sector::sector( Mapping const& m, double const& l, char mpt, PropFunc* prop   )
     deltaPsiV_(0.0),
     mapMatrix_()
 {
- if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); }
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sector::sector( const char* n, Mapping const& m, double const& l, char mpt,PropFunc* prop ) 
-  : bmlnElmnt( n, l, prop ), 
-      mapType_(mpt),        
-        myMap_(m),
-        betaH_(),     
-       alphaH_(),    
-    deltaPsiH_(0.0),
-        betaV_(),     
-       alphaV_(),    
-    deltaPsiV_(0.0),
-    mapMatrix_()
-{
+ propagator_ = PropagatorPtr( new Propagator() );
+ propagator_->setup(*this);
  if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); } 
 }
 
@@ -225,29 +157,30 @@ sector::sector( const char* n, Mapping const& m, double const& l, char mpt,PropF
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( const char* n, double const& l ) 
-  :  bmlnElmnt( n, l ), 
-      mapType_(0),        
-        myMap_(0),
+sector::sector( const char* n, double const& l, char mpt ) 
+  :  bmlnElmnt( n, l, 0.0), 
+      mapType_(mpt),        
+        myMap_(),
         betaH_(),     
        alphaH_(),    
     deltaPsiH_(0.0),
         betaV_(),     
        alphaV_(),    
     deltaPsiV_(0.0),
-    mapMatrix_(BMLN_dynDim,BMLN_dynDim)
+    mapMatrix_( )
 
 {
-  for ( int i=0; i < BMLN_dynDim; ++i) {
-     mapMatrix_(i,i) = 1.0;
-  }
+ propagator_ = PropagatorPtr( new Propagator() );
+ propagator_->setup(*this);
+
+ if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); } 
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( const sector& x )
+sector::sector( sector const& x )
   :  bmlnElmnt(x),
       mapType_(x.mapType_),        
         myMap_(x.myMap_),
@@ -257,7 +190,8 @@ sector::sector( const sector& x )
         betaV_(x.betaV_),     
        alphaV_(x.alphaV_),    
     deltaPsiV_(x.deltaPsiV_),
-    mapMatrix_(x.mapMatrix_)
+     mapMatrix_(x.mapMatrix_),
+    propagator_(x.propagator_->Clone() )
 {}
 
 
@@ -273,6 +207,14 @@ sector::~sector()
 Mapping const& sector::getMap() const
 {
   return myMap_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Matrix sector::getMatrix() const
+{
+  return ( mapType_ == 0) ? mapMatrix_ : myMap_.Jacobian();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -349,6 +291,14 @@ istream& sector::readFrom( istream& is )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool  sector::isMatrix() const 
+{
+  return ( mapType_ == 0 );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool  sector::isMagnet() const 
 {
   return false;  
@@ -369,4 +319,22 @@ void  sector::accept( ConstBmlVisitor& v ) const
 {
   v.visit(*this);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  sector::localPropagate( Particle& p ) 
+{
+  (*propagator_)(*this, p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  sector::localPropagate( JetParticle& p ) 
+{
+  (*propagator_)(*this, p);
+}
+
+
 

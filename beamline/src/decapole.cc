@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      decapole.cc
 ******                                                                
@@ -39,7 +38,9 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-******                                                                
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
+******                                                               
 **************************************************************************
 *************************************************************************/
 
@@ -48,6 +49,7 @@
 #endif
 
 #include <beamline/decapole.h>
+#include <beamline/DecapolePropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
@@ -61,16 +63,10 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole () 
- : bmlnElmnt( 0.0, 0.0 ) 
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-thinDecapole::thinDecapole ( double const& s ) 
- : bmlnElmnt( 0.0, s ) {
- // The strength is to be interpreted as
- // (1/4!)*B''''l/Brho  in  meters^-2
+ : bmlnElmnt( "", 0.0, 0.0 ) 
+{
+    propagator_ = PropagatorPtr( new Propagator() );  
+    propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -81,14 +77,17 @@ thinDecapole::thinDecapole ( char const* n, double const& s )
 {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2
+    propagator_ = PropagatorPtr( new Propagator() );  
+    propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole( thinDecapole const& x ) 
-: bmlnElmnt( x )
+  : bmlnElmnt( x ), propagator_(PropagatorPtr( x.propagator_->Clone()))  
 {}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -98,8 +97,17 @@ thinDecapole& thinDecapole::operator=( thinDecapole const& rhs)
   if ( &rhs == this) return *this;
 
   bmlnElmnt::operator=( rhs); 
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );   
 
   return *this;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole* thinDecapole::Clone() const 
+{ 
+  return new thinDecapole( *this ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -142,3 +150,17 @@ void thinDecapole::accept( ConstBmlVisitor& v ) const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinDecapole::localPropagate( Particle&    p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  thinDecapole::localPropagate( JetParticle& p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+

@@ -42,6 +42,9 @@
 ******  - eliminated unecessary casts
 ******  - use std::string for renaming
 ******  - changes to header file to reduce file coupling 
+******
+******  Dec 2007 ostiguy@fnal.gov
+****** - new typesafe propagator architecture
 **************************************************************************
 *************************************************************************/
 
@@ -55,7 +58,6 @@
 #include <beamline/Solenoid.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
-#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -69,15 +71,6 @@ using FNAL::pcout;
 ///////////////////////////////////////////////////
 
 Solenoid::Solenoid()
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Solenoid::Solenoid( double const& l, double const& s )
-:   bmlnElmnt(l,s)
-  , inEdge_(true)
-  , outEdge_(true)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -135,25 +128,25 @@ void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // We assume "strength" means field, not field*length_.
   // --------------------------------------------------
  
-  Solenoid*  q = 0;
+   SolenoidPtr s_a( (Clone()) );
+   s_a->setLength( pc  *length_ );
 
-  a = SolenoidPtr( (q = new Solenoid(         pc  *length_, strength_ )) );
+   s_a->inEdge_   = inEdge_;    
+   s_a->outEdge_  = false;      
 
-  q->inEdge_   = inEdge_;    
-  q->outEdge_  = false;      
-  q->rename( std::string ( q->Name()) + std::string( "_1" ) );
+   s_a->rename(  Name() + std::string("_1") );
   
-  b = SolenoidPtr(  (q = new Solenoid( ( 1.0 - pc )*length_, strength_ )) );
+   SolenoidPtr s_b( (Clone()) ); 
 
-  q->inEdge_   = false;      
-  q->outEdge_  = outEdge_;   
-  q->rename( std::string ( q->Name()) + std::string( "_2" ) );
+   s_b->setLength( ( 1.0 - pc )*length_ );
 
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
+   s_b->inEdge_   = false;      
+   s_b->outEdge_  = outEdge_;   
+   s_b->rename( Name() + std::string( "_2" ) );
+
+   a = s_a;
+   b = s_b;
+
 }
 
 
@@ -207,4 +200,23 @@ void Solenoid::accept( ConstBmlVisitor& v ) const
 { 
   v.visit( *this ); 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Solenoid::localPropagate( Particle &p ) 
+{ 
+  (*propagator_)(*this,p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Solenoid::localPropagate( JetParticle &p ) 
+{ 
+  (*propagator_)(*this,p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

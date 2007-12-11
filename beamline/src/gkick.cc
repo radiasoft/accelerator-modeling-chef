@@ -25,6 +25,11 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
 ****** 
+****** REVISION HISTORY
+******
+****** Dec 2007    ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
 
@@ -66,6 +71,7 @@ This element is meant to emulate the GKICK type as specified in DIMAD.
 
 #include <iomanip>
 #include <beamline/gkick.h>
+#include <beamline/GkickPropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
@@ -88,7 +94,11 @@ gkick::gkick()
   t_    ( 0.0 )
 {
   setStrength(1.0); // the strength is used here only as a momentum dependent 
-                    // scaling factor for linacs.  
+                    // scaling factor for linacs.
+  
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
+ 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -104,8 +114,8 @@ gkick::gkick( gkick const& x )
     angle_( x.angle_ ),  
     dz_   ( x.dx_  ),    
     v_    ( x.v_   ),  
-    t_    ( x.t_   )
-
+    t_    ( x.t_   ),
+    propagator_( x.propagator_->Clone() )
 {}
 
 
@@ -127,6 +137,7 @@ gkick&  gkick::operator=( gkick const& rhs) {
   dz_   = rhs.dx_;    
   v_    = rhs.v_;  
   t_    = rhs.t_;
+  propagator_ = PropagatorPtr(rhs.propagator_->Clone() );
 
   return *this; 
 }
@@ -340,5 +351,21 @@ void gkick::accept( BmlVisitor& v )
 void gkick::accept( ConstBmlVisitor& v ) const
 {
    v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void gkick::localPropagate( Particle& p ) 
+{
+   (*propagator_)( *this, p); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void gkick::localPropagate( JetParticle& p ) 
+{
+   (*propagator_)( *this, p); 
 }
 

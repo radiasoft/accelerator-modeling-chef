@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      sextupole.cc
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -40,6 +39,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 
@@ -47,11 +48,12 @@
 #include <config.h>
 #endif
 
+
 #include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
-#include <beamline/Alignment.h>
+#include <beamline/SextupolePropagators.h>
 
 using namespace std;
 
@@ -63,59 +65,52 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sextupole::sextupole () : bmlnElmnt( 1.0, 0.0 ) {
- p_bml_ = BmlPtr( new beamline );
- p_bml_->append( DriftPtr( new drift( 1.0 / 2.0 ) ) );
- p_bml_->append( bml_e_ =  ThinSextupolePtr( new thinSextupole( 0.0 ) ) );
- p_bml_->append( DriftPtr( new drift( 1.0 / 2.0 ) ) );
-
+sextupole::sextupole ()
+: bmlnElmnt( "", 1.0, 0.0 ) 
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sextupole::sextupole ( double l, double s ) : bmlnElmnt( l, s ) {
- p_bml_ = BmlPtr( new beamline );
- p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ) );
- p_bml_->append( ThinSextupolePtr( new thinSextupole( strength_*length_ ) )); 
- p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
-
+sextupole::sextupole ( const char* n, double l, double s ) 
+: bmlnElmnt( n, l, s ) 
+{
+  propagator_ =  PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-sextupole::sextupole ( const char* n, double l, double s ) : bmlnElmnt( n, l, s ) {
- p_bml_ = BmlPtr( new beamline );
- p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
- p_bml_->append( bml_e_ = ThinSextupolePtr( new thinSextupole( strength_*length_ ) )); 
- p_bml_->append( DriftPtr( new drift( length_ / 2.0 ) ));
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 sextupole::sextupole( sextupole const& x ) 
-: bmlnElmnt( x ){
+  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sextupole* sextupole::Clone() const 
+{ 
+  return new sextupole( *this ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sextupole::~sextupole() {
-  // destruction completely taken care of by ~bmlnElmnt() 
-}
+sextupole::~sextupole() 
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::setStrength( double s ) {
+void sextupole::setStrength( double s ) 
+{
   strength_ = s - getShunt()*IToField();
-  bml_e_->setStrength( strength_*length_ );
+  elm_->setStrength( strength_*length_ );
 }
 
 
@@ -123,7 +118,7 @@ void sextupole::setStrength( double s ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sextupole::setCurrent( double s ) {
- bml_e_->setCurrent( s );
+ elm_->setCurrent( s );
 }
 
 
@@ -150,18 +145,21 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-  a = SextupolePtr( new sextupole(         pc  *length_, strength_ ) );
-  b = SextupolePtr( new sextupole( ( 1.0 - pc )*length_, strength_ ) );
 
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
+  SextupolePtr s_a( (Clone()) );
+  SextupolePtr s_b( (Clone()) );
+
+  s_a->setLength(       pc  *length_ );
+  s_b->setLength(  (1.0-pc )*length_ );
 
   // Rename
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
+
+  s_a->rename( ident_ + string("_1") );
+  s_b->rename( ident_ + string("_2") );
+
+  a = s_a;
+  b = s_b;
+
 }
 
 
@@ -192,24 +190,30 @@ void sextupole::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void sextupole::localPropagate( Particle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::localPropagate( JetParticle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}
+
 
 // **************************************************
 //   class thinSextupole
 // **************************************************
 
 thinSextupole::thinSextupole () 
-: bmlnElmnt( 0.0, 0.0 ) {
+: bmlnElmnt( "", 0.0, 0.0 ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-thinSextupole::thinSextupole ( double s ) 
-: bmlnElmnt( 0.0, s ) {
- // The strength is to be interpreted as
- // (1/2)*B''l in  Tesla / meter
+  propagator_ =  PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -219,23 +223,36 @@ thinSextupole::thinSextupole ( const char* n, double s )
 : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
+  propagator_ =  PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSextupole::thinSextupole( thinSextupole const& x ) 
-: bmlnElmnt( x ){}
+  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSextupole::~thinSextupole() {}
+thinSextupole* thinSextupole::Clone() const 
+{ 
+  return new thinSextupole( *this ); 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* thinSextupole::Type() const { 
+thinSextupole::~thinSextupole() 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const char* thinSextupole::Type() const 
+{ 
   return "thinSextupole"; 
 }
 
@@ -264,4 +281,18 @@ void thinSextupole::accept( ConstBmlVisitor& v ) const
   v.visit( *this ); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void thinSextupole::localPropagate( Particle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::localPropagate( JetParticle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}

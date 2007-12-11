@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      septum.cc
 ******                                                                
@@ -40,7 +39,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
-****** 
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 
@@ -49,6 +49,7 @@
 #endif
 
 #include <iomanip>
+#include <beamline/SeptumPropagators.h>
 #include <beamline/septum.h>
 #include <beamline/BmlVisitor.h>
 
@@ -65,28 +66,37 @@ using namespace std;
 
 thinSeptum::thinSeptum( char const* n )
 : bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, double const& xw)
   : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
   : bmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( thinSeptum const& x ) 
   : bmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
-    xWire_(x.xWire_)
+    xWire_(x.xWire_), propagator_(x.propagator_->Clone() )
 {}
 
 
@@ -102,6 +112,7 @@ thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
   strengthPos_ =  rhs.strengthPos_;
   strengthNeg_ =  rhs.strengthNeg_;
   xWire_       =  rhs.xWire_;
+  propagator_  =  PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this;
 }
@@ -178,6 +189,20 @@ void thinSeptum::accept( BmlVisitor& v )
 void thinSeptum::accept( ConstBmlVisitor& v ) const 
 { 
    v.visit(*this); 
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::localPropagate( Particle& p ) 
+{ 
+   (*propagator_)(*this, p); 
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::localPropagate( JetParticle& p ) 
+{ 
+   (*propagator_)(*this, p); 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -38,6 +38,9 @@
 ****** - support for reference counted elements 
 ****** - visitor interface takes advantage of compiler dynamic typing
 ******                                                                 
+****** Dec 2007    ostiguy@fnal.gov
+****** - new typesafe propagators
+******
 **************************************************************************
 *************************************************************************/
 
@@ -46,6 +49,7 @@
 #endif
 
 #include <iomanip>
+#include <beamline/RFCavityPropagators.h>
 #include <beamline/rfcavity.h>
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
@@ -68,31 +72,10 @@ rfcavity::rfcavity( const char* name_arg)
   , v_(0)
 {
   finishConstructor();
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
 }
   
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-rfcavity::rfcavity(double const& lng_arg,    // length [m]
-                   double const& f_arg,      // rf frequency [Hz]
-                   double const& eV_arg,     // rf voltage   [eV]
-                   double const& phi_s_arg,  // synchronous phase 
-                   double const& Q_arg,      // Quality factor 
-                   double const& R_arg       // shunt impedance 
-                   ) 
-:   bmlnElmnt( lng_arg, eV_arg*1.0e-9 )
-  , w_rf_(MATH_TWOPI*f_arg)
-  , phi_s_(phi_s_arg)
-  , sin_phi_s_(sin(phi_s_arg))
-  , Q_(Q_arg)
-  , R_(R_arg)
-  , h_(-1.0)
-  , u_(0)
-  , v_(0)
-{
-  finishConstructor();
-}
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -115,6 +98,8 @@ rfcavity::rfcavity( const char* name_arg, // name
   , v_(0)
 {
   finishConstructor();
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -129,8 +114,10 @@ rfcavity::rfcavity( rfcavity const& x )
   , R_(x.R_)
   , h_(x.h_)
   , u_(0)
-  , v_(0)
+  , v_(0), propagator_ (x.propagator_->Clone()) 
 {
+
+#if 0
   int m = 1 + ( ( int(x.v_) - int(x.u_) )/sizeof( bmlnElmnt* ) );
   u_ = new bmlnElmnt* [ m ];
   v_ = &( u_[m-1] );
@@ -138,6 +125,7 @@ rfcavity::rfcavity( rfcavity const& x )
   for( int k=0; k < m; ++k) {
     u_[k] = ( x.u_[k] )->Clone();
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -145,6 +133,8 @@ rfcavity::rfcavity( rfcavity const& x )
 
 void rfcavity::finishConstructor()
 {
+#if  0
+===================================================================================
   // NOTE: If this code is ever modified, you 
   // must also modify rfcavity::readFrom and rfcavity::writeTo
 
@@ -191,6 +181,8 @@ void rfcavity::finishConstructor()
  
     *(v_)   = new drift( this->Length()/2.0 );
   }
+====================================================================================
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -198,8 +190,10 @@ void rfcavity::finishConstructor()
 
 rfcavity::~rfcavity()
 {
+#if 0
   while( v_ >= u_ ) { delete (*(v_--)); }
   delete [] u_;
+#endif
 }
 
 
@@ -250,14 +244,11 @@ const char* rfcavity::Type() const
 
 bool    rfcavity::isMagnet() const 
 {
-
   return false;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void rfcavity::setStrength( double const& strength)
 {
@@ -267,9 +258,9 @@ void rfcavity::setStrength( double const& strength)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void rfcavity::setHarmonicNumber( double const& n )
 {
+#if 0
   thinrfcavity* q = 0;
 
   if( 0 < n ) {
@@ -278,6 +269,7 @@ void rfcavity::setHarmonicNumber( double const& n )
   for( bmlnElmnt** i = u_; i <= v_; ++i ) {
     if( (q =dynamic_cast<thinrfcavity*>(*i) )) q->setHarmonicNumber( n );
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -292,10 +284,10 @@ void rfcavity::setHarmonicNumber( int n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void rfcavity::setFrequency( double const& f )
 {
 
+#if 0
   thinrfcavity* q = 0;
 
   if( f > 0.0 ) {
@@ -304,6 +296,7 @@ void rfcavity::setFrequency( double const& f )
   for( bmlnElmnt** i = u_; i <= v_; ++i ) {
     if( (q=dynamic_cast<thinrfcavity*>(*i)) ) q->setFrequency( f );
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -311,6 +304,7 @@ void rfcavity::setFrequency( double const& f )
 
 void rfcavity::setFrequencyRelativeTo( double const& f )
 {
+#if 0
   thinrfcavity* q = 0;
 
   if( (0 < f) && (0 < h_) ) {
@@ -321,6 +315,7 @@ void rfcavity::setFrequencyRelativeTo( double const& f )
     if( (q=dynamic_cast<thinrfcavity*>(*i) ) ) 
              q->setFrequencyRelativeTo( f );
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -328,6 +323,7 @@ void rfcavity::setFrequencyRelativeTo( double const& f )
 
 void rfcavity::setRadialFrequency( double const& omega )
 {
+#if 0
   thinrfcavity* q = 0;
 
   if( omega > 0 ) {
@@ -336,6 +332,7 @@ void rfcavity::setRadialFrequency( double const& omega )
   for( bmlnElmnt** i = u_; i <= v_; ++i) {
     if( (q=dynamic_cast<thinrfcavity*>(*i))) q->setRadialFrequency( omega );
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -343,7 +340,7 @@ void rfcavity::setRadialFrequency( double const& omega )
 
 void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
-
+#if 0
   thinrfcavity* q = 0;
 
   if( (omega >0 ) && (h_ > 0) ) {
@@ -352,11 +349,11 @@ void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
   for( bmlnElmnt** i = u_; i <= v_; ++i) {
     if( (q=dynamic_cast<thinrfcavity*>(*i))) q->setRadialFrequencyRelativeTo( omega );
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void rfcavity::setPhi( double const& angle )
 {
@@ -364,7 +361,6 @@ void rfcavity::setPhi( double const& angle )
   sin_phi_s_ = sin(angle);
   finishConstructor();
 };
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -400,58 +396,6 @@ void rfcavity::accept( ConstBmlVisitor& v ) const
   v.visit( *this ); 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::acceptInner( BmlVisitor& v ) {
-
-  bmlnElmnt** x = u_;
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ++x;
-  }
-}  
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::acceptInner( ConstBmlVisitor& v ) const {
-
-  bmlnElmnt const* const* x = u_;
-
-  while( x <= v_ ) {
-    (*x)->accept( v );
-    ++x;
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::acceptInner( RefRegVisitor& v )
-{
-  double cdt = 0;
-  ctRef_ = 0.0;
-  thinrfcavity* q=0;
-  
-  bmlnElmnt** x = u_;
-
-  while( x <= v_ ) {
-    if( (q=dynamic_cast<thinrfcavity*>(*x) ))  
-    {
-      cdt = v.getCdt();
-      v.setCdt(0.0);
-      q->accept(v);
-      v.setCdt(cdt);
-    }
-    else {
-      (*x)->accept( v );
-      ctRef_ += (*x)->getReferenceTime();
-    }
-    ++x;
-  }
-}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -502,6 +446,22 @@ double const& rfcavity::getHarmonicNumber() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void rfcavity::localPropagate( Particle& p) 
+{
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::localPropagate( JetParticle& p) 
+{
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class thinrfcavity 
 // **************************************************
@@ -514,26 +474,11 @@ thinrfcavity::thinrfcavity(const char *name_arg)
   , Q_( 0.0 )
   , R_( 0.0 )
   , h_( -1.0 )
-{}
+{
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
+}
   
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-thinrfcavity::thinrfcavity(double const& f_arg,      // rf frequency [Hz]
-                   	   double const& eV_arg,     // rf voltage   [eV]
-                   	   double const& phi_s_arg,  // synchronous phase 
-                   	   double const& Q_arg,      // Quality factor 
-                   	   double const& R_arg       // shunt impedance 
-                   	   ) 
-:   bmlnElmnt( 0.0, eV_arg*1.0e-9 )
-  , w_rf_( MATH_TWOPI*f_arg )
-  , phi_s_( phi_s_arg )
-  , sin_phi_s_( sin(phi_s_) )
-  , Q_( Q_arg )
-  , R_( R_arg )
-  , h_( -1.0 )
-{}
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -551,7 +496,10 @@ thinrfcavity::thinrfcavity(const char * name_arg, // name
   , Q_( Q_arg )
   , R_( R_arg )
   , h_( -1.0 )
-{}
+{
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -563,7 +511,7 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
   , sin_phi_s_( x.sin_phi_s_ )
   , Q_( x.Q_ )
   , R_( x.R_ )
-  , h_( x.h_ )
+  , h_( x.h_ ), propagator_ (x.propagator_->Clone() )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -756,4 +704,23 @@ double const& thinrfcavity::getHarmonicNumber()   const
 { 
   return h_; 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::localPropagate( Particle& p) 
+{
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::localPropagate( JetParticle& p) 
+{
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

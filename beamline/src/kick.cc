@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      kick.cc
 ******                                                                
@@ -39,6 +38,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -48,6 +49,7 @@
 
 #include <iomanip>
 #include <beamline/kick.h>
+#include <beamline/KickPropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
@@ -57,24 +59,21 @@ using namespace std;
 // **************************************************
 
 vkick::vkick() 
-: bmlnElmnt() {}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// Unfortunately, this is a special case. Normally a single "double" argument
-// indicates length.
-
-vkick::vkick( double const& k ) 
-  : bmlnElmnt(0,0, k) 
-{ }
+: bmlnElmnt()
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vkick::vkick( const char* n ) 
   : bmlnElmnt(n, 0.0, 0.0) 
-{ }
+{   
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -84,13 +83,16 @@ vkick::vkick( const char* n )
 
 vkick::vkick( const char* n, double const& k ) 
   : bmlnElmnt(n, 0.0, k) 
-{ }
+{ 
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vkick::vkick( vkick const& x )
-: bmlnElmnt( x )
+  : bmlnElmnt( x ), propagator_(x.propagator_->Clone() )
 {}
 
 
@@ -99,7 +101,10 @@ vkick::vkick( vkick const& x )
 
 vkick::vkick( const char* n, double const& l, double const& s ) 
 : bmlnElmnt(n,l,s) 
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -109,6 +114,8 @@ vkick&  vkick::operator=( vkick const& rhs) {
 
   if ( &rhs == this ) return *this;  
   bmlnElmnt::operator=(rhs);
+
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this; 
 }
@@ -154,26 +161,42 @@ void vkick::accept( ConstBmlVisitor& v ) const
    v.visit( *this ); 
 }
 
-// **************************************************
-//   class hkick
-// **************************************************
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-hkick::hkick() : bmlnElmnt() {
+
+void vkick::localPropagate( Particle& p) 
+{ 
+  (*propagator_)(*this,p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-hkick::hkick( double const& k ) 
-  : bmlnElmnt( 0.0, k )
-{}
+void vkick::localPropagate( JetParticle& p) 
+{ 
+  (*propagator_)(*this,p);
+}
+
+// **************************************************
+//   class hkick
+// **************************************************
+
+hkick::hkick() : bmlnElmnt()
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hkick::hkick( const char* n ) 
  :bmlnElmnt(n, 0.0, 0.0) 
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -183,13 +206,16 @@ hkick::hkick( const char* n )
 
 hkick::hkick( const char* n, double const& k ) 
 : bmlnElmnt( n, 0.0, k)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hkick::hkick( hkick const& x ) 
-: bmlnElmnt( x )
+: bmlnElmnt( x ), propagator_(x.propagator_->Clone() )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -197,7 +223,10 @@ hkick::hkick( hkick const& x )
 
 hkick::hkick( const char* n, double const& l, double const& s ) 
 : bmlnElmnt(n,l,s) 
-{ }
+{ 
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -207,6 +236,7 @@ hkick&  hkick::operator=( hkick const& rhs)
 {
   if ( &rhs == this ) return *this;  
   bmlnElmnt::operator=(rhs);
+  propagator_ = PropagatorPtr(rhs.propagator_->Clone());
 
   return *this; 
 }
@@ -252,45 +282,56 @@ void hkick::accept( ConstBmlVisitor& v ) const
   v.visit( *this ); 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void hkick::localPropagate( Particle& p) 
+{ 
+  (*propagator_)(*this,p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void hkick::localPropagate( JetParticle& p) 
+{ 
+  (*propagator_)(*this,p);
+}
+
 // ************************************************
 //   class kick
 // ************************************************
 
 kick::kick() 
   : bmlnElmnt(), horizontalKick_(0.0), verticalKick_(0.0)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( const char* s ) 
  : bmlnElmnt(s) 
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-kick::kick(double const& hStrength, double const& vStrength ) 
-  : bmlnElmnt(), horizontalKick_(hStrength), verticalKick_(vStrength)
-{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick(const char* s, double const& hStrength, double const& vStrength) 
   : bmlnElmnt(s), horizontalKick_(hStrength), verticalKick_(vStrength)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-kick::kick( double const& lng, double const& hStrength, double const& vStrength ) 
-  : bmlnElmnt( "NONAME", lng , hStrength + vStrength ),   // strength is arbitrary
-    horizontalKick_( hStrength ), verticalKick_ ( vStrength )
-{ }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -298,13 +339,17 @@ kick::kick( double const& lng, double const& hStrength, double const& vStrength 
 kick::kick( const char* s, double const& lng, double const& hStrength, double const& vStrength ) 
 : bmlnElmnt( s, lng, hStrength + vStrength ),  // strength is arbitrary
   horizontalKick_( hStrength ), verticalKick_( vStrength )
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( kick const& x )
-  : bmlnElmnt (x),  horizontalKick_( x.horizontalKick_ ), verticalKick_(x.verticalKick_)
+  : bmlnElmnt (x),  horizontalKick_( x.horizontalKick_ ), verticalKick_(x.verticalKick_),
+    propagator_(x.propagator_->Clone() ) 
 { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -325,6 +370,8 @@ kick&  kick::operator=( kick const& rhs) {
   horizontalKick_ = rhs.horizontalKick_; 
   verticalKick_   = rhs.verticalKick_; 
 
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
+
   return *this; 
 }
 
@@ -343,8 +390,8 @@ ostream& kick::writeTo(ostream& os) {
 istream& kick::readFrom(istream& is) {
 	double a,b;
 	is >> a >> b;
-	horizontalStrength() = a;
-	verticalStrength() = b;
+	//horizontalStrength() = a;
+	//verticalStrength() = b;
 	return is;
 }
 
@@ -380,4 +427,20 @@ void kick::accept(BmlVisitor& v)
 void kick::accept(ConstBmlVisitor& v) const 
 { 
   v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void kick::localPropagate( Particle& p) 
+{ 
+  (*propagator_)(*this,p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void kick::localPropagate( JetParticle& p) 
+{ 
+  (*propagator_)(*this,p);
 }

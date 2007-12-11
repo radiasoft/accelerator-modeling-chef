@@ -44,7 +44,7 @@
 using namespace std;
 
 WakeKick::WakeKick( char const* name )
-  : bmlnElmnt(name, 0.0, 0.0, 0)
+  : bmlnElmnt(name, 0.0, 0.0)
 { 
   // propagator_ = PropagatorFactory::
 }
