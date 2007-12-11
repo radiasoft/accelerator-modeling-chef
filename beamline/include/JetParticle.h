@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      JetParticle.h
-******  Version:   2.4
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
@@ -157,8 +156,9 @@ public:
   JetParticle& operator=(JetParticle const&);
 
   virtual ~JetParticle();
+  void     dtor();
 
-  virtual JetParticle* Clone() const { return new JetParticle(*this); }
+  virtual JetParticle* Clone(void* p =0 ) const;
 
   // Phase space indices
 
@@ -210,7 +210,7 @@ public:
   static void createStandardEnvironments( int order = 1 );
 
   MatrixD SymplecticTest();  // Tests the state for the
-                             // symplectic condition, 1 = - M*J*M^T*J; 
+                             // symplectic condition, 1 = - MJM^t; 
                              // returns unit matrix if all is well.
                              // Note: this assumes a 6x6 state: 
                              // ( x, y, cdt; px/p, py/p, dp/p )
@@ -251,7 +251,7 @@ struct DLLEXPORT  JetProton : public JetParticle {
 
  ~JetProton();
 
-  JetProton* Clone()             const;
+  JetProton* Clone(void* p=0)             const;
 };
 
 struct DLLEXPORT  JetAntiProton : public JetParticle {
@@ -265,7 +265,7 @@ struct DLLEXPORT  JetAntiProton : public JetParticle {
 
  ~JetAntiProton();
 
-  JetAntiProton* Clone()             const;
+  JetAntiProton* Clone(void* p=0)             const;
 };
 
 struct DLLEXPORT  JetElectron : public JetParticle {
@@ -279,7 +279,7 @@ struct DLLEXPORT  JetElectron : public JetParticle {
 
   ~JetElectron();
 
-  JetElectron* Clone()             const;
+  JetElectron* Clone(void* p=0)             const;
 };
 
 struct DLLEXPORT  JetPositron : public JetParticle {
@@ -293,7 +293,7 @@ struct DLLEXPORT  JetPositron : public JetParticle {
 
  ~JetPositron();
 
-  JetPositron* Clone()             const;
+  JetPositron* Clone(void* p=0)             const;
 };
 
 struct DLLEXPORT  JetMuon : public JetParticle {
@@ -307,7 +307,7 @@ struct DLLEXPORT  JetMuon : public JetParticle {
 
   ~JetMuon();
 
-  JetMuon* Clone()             const;
+  JetMuon* Clone(void* p=0)             const;
 };
 
 struct DLLEXPORT  JetAntiMuon : public JetParticle {
@@ -324,7 +324,7 @@ struct DLLEXPORT  JetAntiMuon : public JetParticle {
 
  ~JetAntiMuon();
 
-  JetAntiMuon* Clone()             const;
+  JetAntiMuon* Clone(void* p=0)             const;
 };
 
 //-------------------------------------------------------------------------------------------
@@ -394,11 +394,15 @@ class jetparticle_core_access
   inline double const& JetParticle::Charge()             const { return q_;                                       }
   inline Jet           JetParticle::BRho()               const { return bRho_*( 1.0 + state_(5) );                }
 
-  inline JetProton*         JetProton::Clone()             const { return new     JetProton( *this ); }
-  inline JetAntiProton* JetAntiProton::Clone()             const { return new JetAntiProton( *this ); }
-  inline JetElectron*     JetElectron::Clone()             const { return new   JetElectron( *this ); }
-  inline JetPositron*     JetPositron::Clone()             const { return new   JetPositron( *this ); }
-  inline JetMuon*             JetMuon::Clone()             const { return new       JetMuon( *this ); }
-  inline JetAntiMuon*     JetAntiMuon::Clone()             const { return new   JetAntiMuon( *this ); }
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+  inline JetParticle*     JetParticle::Clone(void* p)    const { return p ?  new (p)     JetParticle(*this)  : new   JetParticle( *this ); }
+  inline JetProton*         JetProton::Clone(void* p)    const { return p ?  new  (p)     JetProton( *this ) : new     JetProton( *this );}
+  inline JetAntiProton* JetAntiProton::Clone(void* p)    const { return p ?  new  (p) JetAntiProton( *this ) : new JetAntiProton( *this );}
+  inline JetElectron*     JetElectron::Clone(void* p)    const { return p ?  new  (p)   JetElectron( *this ) : new   JetElectron( *this );}
+  inline JetPositron*     JetPositron::Clone(void* p)    const { return p ?  new  (p)   JetPositron( *this ) : new   JetPositron( *this );}
+  inline JetMuon*             JetMuon::Clone(void* p)    const { return p ?  new  (p)       JetMuon( *this ) : new       JetMuon( *this );}
+  inline JetAntiMuon*     JetAntiMuon::Clone(void* p)    const { return p ?  new  (p)   JetAntiMuon( *this ) : new   JetAntiMuon( *this );}
 
 #endif // JETPARTICLE_H
