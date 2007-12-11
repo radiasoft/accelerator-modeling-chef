@@ -133,14 +133,14 @@ void FramePusher::visit( rbend const& x )
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
   // 
-  double edgeAngle = x.getEntryEdgeAngle();
+  double edgeAngle = x.getEntryFaceAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
   }
 
   frame_.translate( (x.Length())*frame_.getzAxis() );
 
-  edgeAngle = x.getExitEdgeAngle();
+  edgeAngle = x.getExitFaceAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
   }
@@ -166,14 +166,14 @@ void FramePusher::visit( CF_rbend const& x )
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
   // 
-  double edgeAngle = x.getEntryEdgeAngle();
+  double edgeAngle = x.getEntryFaceAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
   }
 
   frame_.translate( (x.Length())*frame_.getzAxis() );
 
-  edgeAngle = x.getExitEdgeAngle();
+  edgeAngle = x.getExitFaceAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate(   edgeAngle, frame_.getyAxis(), false );
   }
@@ -195,19 +195,19 @@ void FramePusher::visit( sbend const& x    )
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
   }
 
-  double angle = x.getAngle();
+  double angle = x.getBendAngle();
   double rho   = x.Length() / angle;
   angle /= 2.0;
   double displacement = 2.0*rho*sin(angle);
 
-  double edgeAngle = x.getEntryEdgeAngle();
+  double edgeAngle = x.getEntryFaceAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 
   frame_.translate( displacement*frame_.getzAxis() );
 
-  edgeAngle = x.getExitEdgeAngle();
+  edgeAngle = x.getExitFaceAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
@@ -229,19 +229,19 @@ void FramePusher::visit( CF_sbend const& x )
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
   }
 
-  double angle = x.getAngle();
+  double angle = x.getBendAngle();
   double rho   = x.Length() / angle;
   angle /= 2.0;
   double displacement = 2.0*rho*sin(angle);
 
-  double edgeAngle = x.getEntryEdgeAngle();
+  double edgeAngle = x.getEntryFaceAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
 
   frame_.translate( displacement*frame_.getzAxis() );
 
-  edgeAngle = x.getExitEdgeAngle();
+  edgeAngle = x.getExitFaceAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
     frame_.rotate( - (angle - edgeAngle), frame_.getyAxis(), false );
   }
