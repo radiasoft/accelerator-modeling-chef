@@ -878,7 +878,7 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 
    Expression exp; exp.insert(ExprData(m_BRHO));
 
-   m_variables["BRHO"] = exp; 
+   m_variables["__BRHO"] = exp; 
 
 }
 
@@ -1036,7 +1036,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
  map<string, ElmData>::iterator elm_it = m_elements.find(type);
  
  if ( elm_it !=  m_elements.end() ) {
-   double BRHO   = m_variables["BRHO"].evaluate();
+   double BRHO   = m_variables["__BRHO"].evaluate();
    string basic_type(elm_it->second.elm->getTag()); // use label instead of intrinsic CHEF element type
                                                     // tags can go away once attributes can be uniformly set 
                                                     // element clones  
@@ -1080,7 +1080,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
                  throw GenericException( __FILE__, __LINE__, "XsifParserDriver::instantiateElement", ss.str().c_str() );
     }
 
-    double BRHO   = m_variables["BRHO"].evaluate();
+    double BRHO   = m_variables["__BRHO"].evaluate();
     elm = (this->*m_makefncs[result.first->first])(user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
  }
  else {
@@ -1518,7 +1518,7 @@ if ( eval( string("T3"),    attributes, value) )    {  tilt[3] = (value.empty() 
 
 if( kl[0] != 0.0 ) {
   
-  q    = ElmPtr( new thin2pole( BRHO*kl[0]) );
+  q    = ElmPtr( new thin2pole("", BRHO*kl[0]) );
   
   if( tilt[0] != 0.0 ) {
     aligner.xOffset = 0.0;
@@ -1531,7 +1531,7 @@ if( kl[0] != 0.0 ) {
 }
 
 if( kl[1] != 0.0 ) {
-  q = ElmPtr( new thinQuad( BRHO*kl[1] ) );
+  q = ElmPtr( new thinQuad( "", BRHO*kl[1] ) );
   if( 0.0 != tilt[1] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1542,7 +1542,7 @@ if( kl[1] != 0.0 ) {
 }
 
 if( kl[2] != 0.0 ) {
-  q = ElmPtr( new thinSextupole( BRHO*kl[2]/2.0 ) );
+  q = ElmPtr( new thinSextupole( "", BRHO*kl[2]/2.0 ) );
   if( tilt[2] != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1553,7 +1553,7 @@ if( kl[2] != 0.0 ) {
 }
 
 if( kl[3] != 0.0 ) {
-  q = ElmPtr( new thinOctupole( BRHO*kl[3]/6.0 ) );
+  q = ElmPtr( new thinOctupole( "", BRHO*kl[3]/6.0 ) );
   if( 0.0 != tilt[3] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
@@ -1742,8 +1742,8 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length )   elm->setLength(length);
-  if ( attribute_hkck   )   elm->horizontalStrength()  =  hkck;
-  if ( attribute_vkck   )   elm->verticalStrength()    =  vkck;
+  if ( attribute_hkck   )   elm->setHorizontalStrength(hkck);
+  if ( attribute_vkck   )   elm->setVerticalStrength(vkck);
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;

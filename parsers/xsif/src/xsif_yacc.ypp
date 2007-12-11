@@ -62,6 +62,7 @@
 class XsifParserDriver;
 class Expression;
 using FNAL::pcerr; 
+using boost::iequals; 
 %}
 
 %union
@@ -397,6 +398,24 @@ attribute:
        XSIF_IDENTIFIER                                                                      {  /* empty attribute value e.g. TILT */
                                                                                                 driver.m_attributes[*$<sval>1] = boost::any(); 
                                                                                                 delete $<sval>1; 
+                                                                                            }
+       |
+
+       XSIF_TYPE_ATTRIBUTE '=' XSIF_IDENTIFIER                                              {  
+                                                                                                    
+                                                                                                  driver.m_attributes[std::string("TYPE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
+                                                                                            }
+       |       
+       XSIF_TYPE_ATTRIBUTE '=' XSIF_STRING_VALUE                                            {  
+                                                                                                    
+                                                                                                  driver.m_attributes[std::string("TYPE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
+                                                                                            }
+       |
+       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                          {  
+                                                                                                  driver.m_attributes[std::string("PARTICLE" )] = *$<sval>3;
+                                                                                                  delete $<sval>3;
                                                                                              }
        |
 
@@ -407,11 +426,6 @@ attribute:
                                                                                              }
        |
 
-       XSIF_PARTICLE_ATTRIBUTE '=' XSIF_IDENTIFIER                                           { 
-                                                                                               driver.m_attributes[std::string("PARTICLE")] = *$<sval>3;
-                                                                                               delete $<sval>3;
-                                                                                             }
-       |
        XSIF_IDENTIFIER '='vexpr                                                              { 
                                                                                                driver.m_attributes[*$<sval>1] = *$<pexp>3;  
                                                                                                delete $<sval>1;
