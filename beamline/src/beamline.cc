@@ -43,7 +43,8 @@
 ****** - beamline: decoupled list container from public interface
 ******             now using std::list<> instead of dlist                                                   
 ****** - introduced new iterators with stl-compatible interface                                                                
-****** - eliminated all references to old-style BeamlineIterator, DeepBeamlineIterator etc ..
+****** - eliminated all references to old-style BeamlineIterator, 
+******   DeepBeamlineIterator etc ..
 ******
 ****** Jan-Mar 2007  ostiguy@fnal.gov
 ******
@@ -865,7 +866,7 @@ sector* beamline::makeSector ( beamline::iterator pos1, beamline::iterator pos2,
  //s->align_        = align_;
  //s->pAperture_    = pAperture_;
 
- return new sector( jp.State().filter( 0, deg ), s );
+ return new sector( "", jp.State().filter( 0, deg ), s );
 
 }
 
@@ -1553,14 +1554,11 @@ double beamline::getReferenceTime()                    const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double beamline::setReferenceTime( double const& ct)
+void beamline::setReferenceTime( double const& ct)
 { 
-  (*pcerr) << "*** WARNING ****: attempt to explicitly set reference time of a beamline. " << std::endl;
-  (*pcerr) << "*** WARNING ****: most likely, this is an error, Continuing, nontheless   " << std::endl;
-
-  double old = ctRef_;
-  ctRef_ = ct;
-  return   old; 
+  (*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
+  (*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
+  (*pcerr) << "*** WARNING ****: Continuing, nontheless... " << std::endl;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1593,3 +1591,61 @@ int beamline::howMany() const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void beamline::setReferenceTime( Particle& particle) 
+{
+
+#if 0
+
+ std::vector<RFCavityPtr>     rfcavities;  
+ std::vector<ThinRFCavityPtr> thinrfcavities;  
+ RFCavityPtr                  rfcavity_elm; 
+ ThinRFCavityPtr              thinrfcavity_elm; 
+
+ double cumulativeCdt   = 0.0;
+ double initialMomentum = particle.ReferenceMomentum();
+
+ for ( iterator it  = begin(); it != end(); ++it) {
+    
+     double momentum = particle.ReferenceMomentum();
+       
+        if(   ( initialMomentum != momentum ) && ( (*it)->isMagnet() ) ) { 
+             (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
+        }
+
+        (*it)->setReferenceTime(particle);
+ 
+        cumulativeCdt +=(*it)->getReferenceTime();          
+
+        if (  boost::dynamic_pointer_cast<LinacCavity>(*it) ) { std::cout << (*it)->getReferenceTime() << std::endl; }
+
+        if ( rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it) )      rfcavities.push_back(rfcavity_elm);
+        if ( thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it) )  thinrfcavities.push_back(thinrfcavity_elm);
+       
+     }
+
+    //-------------------------------------------------------------
+    // Store the total time of traversal as a frequency. 
+    // Not used if the beamline is not a ring. 
+    // NOTE: revolutionFrequency_ is meaningless if rfcavity 
+    // elements with an accelerating phase are present.
+    //---------------------------------------------------------------
+
+    revolutionFrequency_ = PH_MKS_c/cumulativeCdt ;
+
+    // -------------------------------------------------------------------
+    // set the frequency in rfcavity elements when a   
+    // revolution harmonic has been specified. 
+    //--------------------------------------------------------------------
+  
+    for ( std::vector<RFCavityPtr>::iterator it = rfcavities.begin();  it != rfcavities.end(); ++it ) {
+      (*it)->setFrequencyRelativeTo( revolutionFrequency_ );
+    }
+
+    for ( std::vector<ThinRFCavityPtr>::iterator it = thinrfcavities.begin();  it != thinrfcavities.end(); ++it ) {
+      (*it)->setFrequencyRelativeTo( revolutionFrequency_ );
+    }
+
+#endif
+
+}
