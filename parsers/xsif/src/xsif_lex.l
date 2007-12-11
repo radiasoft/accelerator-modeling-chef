@@ -175,11 +175,9 @@ blk             [ \t]
                                                                                                          /*                unit standard deviation,            */
                                                                                                          /*                truncated at x standard deviations  */ 
 
-   /***********************************************************************************************************
-   {blk}*(TYPE|type){blk}*=                                 { 
-                                                             unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
-                                                            }
-   **************************************************************************************************************/
+{blk}*(TYPE|type){blk}*=                                 { 
+                                                            unput('='); return token::XSIF_TYPE_ATTRIBUTE;  
+                                                         }
 
 {blk}*(PARTICLE|particle){blk}*=                         { 
                                                             unput('='); return token::XSIF_PARTICLE_ATTRIBUTE;  
