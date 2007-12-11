@@ -40,6 +40,7 @@ PropagatorFactory* PropagatorFactory::pInstance_ = 0;
 PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::CreateParticlePropagator(int id)
 {
 
+#if 0
   std::map<int, particle_propagator_t>::const_iterator it =  particle_propagators_map_.find(id);
 
   if( it ==  particle_propagators_map_.end() ) {
@@ -47,15 +48,19 @@ PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::Cre
   }
 
   return (it->second);
+#endif
+
+  return PropagatorFactoryImpl::particle_propagator_t();
+
 } 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
- PropagatorFactoryImpl::jetparticle_propagator_t const& PropagatorFactoryImpl::CreateJetParticlePropagator( int id)
+PropagatorFactoryImpl::jetparticle_propagator_t const& PropagatorFactoryImpl::CreateJetParticlePropagator( int id)
 {
-
+#if 0
   std::map<int, jetparticle_propagator_t>::const_iterator it =  jetparticle_propagators_map_.find(id);
 
   if( it ==  jetparticle_propagators_map_.end() ) {
@@ -63,6 +68,8 @@ PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::Cre
   }
 
   return (it->second);
+#endif
+  return PropagatorFactoryImpl::jetparticle_propagator_t();
 
 }
 
@@ -71,9 +78,8 @@ PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::Cre
 
 bool PropagatorFactoryImpl::UnRegisterParticlePropagator( int id )
 {
-
-  return particle_propagators_map_.erase(id);
-
+  return true;
+  // return particle_propagators_map_.erase(id);
 }
 
 
@@ -82,9 +88,8 @@ bool PropagatorFactoryImpl::UnRegisterParticlePropagator( int id )
 
 bool PropagatorFactoryImpl::UnRegisterJetParticlePropagator( int id )
 {
-
-  return jetparticle_propagators_map_.erase(id);
- 
+  return true;
+  //return jetparticle_propagators_map_.erase(id);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
