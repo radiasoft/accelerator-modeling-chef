@@ -65,15 +65,16 @@ Particle::PhaseSpaceIndex const&   i_ndp   = Particle::ndpIndex;
 
 template<>
 std::vector<double>  TBunch<Particle>::emittances() const 
- 
-  Vector dispersion(4); // null dispersion 
+{ 
+  std::vector<double> dispersion(4, 0.0); // null dispersion 
   return emittances(dispersion);
 }  
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::vector<double>  ParticleBunch::emittances( Vector const&  dispersion) const 
+template<>
+std::vector<double>  TBunch<Particle>::emittances( std::vector<double> const&  dispersion) const 
 {
 
   //-----------------------------------------------------------------------------------
@@ -98,7 +99,7 @@ std::vector<double>  ParticleBunch::emittances( Vector const&  dispersion) const
 
  int const n   = size();
 
-  for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+  for ( TBunch<Particle>::const_iterator it = begin(); it != end(); ++it ) { 
 
     Vector state = it->State();
     double const npz = it->get_npz();
@@ -117,7 +118,7 @@ std::vector<double>  ParticleBunch::emittances( Vector const&  dispersion) const
     } 
   }
 
-  for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+  for ( TBunch<Particle>::const_iterator it = begin(); it != end(); ++it ) { 
 
      Vector state = it->State();
      double const npz = it->get_npz();
