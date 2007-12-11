@@ -84,8 +84,8 @@ public:
 
   void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0);
 
-  std::vector<double> emittances();
-  std::vector<double> emittances(std::vector<double> const& dispersion );
+  std::vector<double> emittances() const;
+  std::vector<double> emittances(std::vector<double> const& dispersion ) const;
 
   template <typename UnaryPredicate_t>
   inline void remove( UnaryPredicate_t );          
@@ -98,9 +98,6 @@ public:
   int  removed_size()   const;
   bool empty()          const;
 
-  std::vector<double>   emittances() const; 
-
- 
   // iterators 
  
   iterator                   begin();
@@ -177,10 +174,10 @@ template<>
 void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12);
 
 template<>
-std::vector<double> TBunch<Particle>::emittances();
+std::vector<double> TBunch<Particle>::emittances() const;
 
 template<>
-std::vector<double> TBunch<Particle>::emittances(std::vector<double> const& dispersion );
+std::vector<double> TBunch<Particle>::emittances(std::vector<double> const& dispersion ) const;
 
 
 #ifndef BEAMLINE_EXPLICIT_TEMPLATES
