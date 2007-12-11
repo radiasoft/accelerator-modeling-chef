@@ -473,7 +473,7 @@ vector<string>* XsifParserDriver::instantiateAnonymousLine( xsif_yy::location co
  
  vector<string>* anonymous  = new  vector<string>;
 
- enum ElementOrder { FORWARD, REVERSE };
+  enum ElementOrder { FORWARD, REVERSE };
  
   ElementOrder     order = FORWARD;
   if (ntimes < 0 ) order = REVERSE; 
@@ -509,7 +509,7 @@ vector<string>* XsifParserDriver::instantiateAnonymousLine( xsif_yy::location co
 BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string const& name, vector<string> const & elements ) 
 { 
 
-#if USE_SQLITE
+ #if USE_SQLITE
   db_insert_beamline( name,elements );
  #endif
 
@@ -529,6 +529,12 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
      else if ( (elm_it = m_elements.find(*it) ) !=  m_elements.end() ){ 
           bl->append( ElmPtr( elm_it->second.elm->Clone() ));  
      }
+     else if( ( (*it)[0] == '-' ) && (( bml_it = m_lines.find( (*it).substr(1)) ) !=  m_lines.end() )) {   // a reversed line 
+       for (beamline::const_reverse_iterator rit  = bml_it->second->rbegin();  
+                                             rit != bml_it->second->rend(); ++rit) {
+		bl->append( ElmPtr( (*rit)->Clone() ) );
+       }
+     } 
      else if( contains((*it), "(") ) {
           bl->append( expandLineMacro(yyloc, *it) );
      } 
@@ -813,7 +819,7 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
   double eyn      = eval( string("EYN"),        attributes, value) ? any_cast<double> (value): 0.0;
   double sigt     = eval( string("SIGT"),       attributes, value) ? any_cast<double> (value): 0.0;
   double sige     = eval( string("SIGE"),       attributes, value) ? any_cast<double> (value): 0.0;
-  int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<int>    (value): 0;
+  int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<double> (value): 0;
   double npart    = eval( string("NPART"),      attributes, value) ? any_cast<double> (value): 0.0;
   double bcurrent = eval( string("BCURRENR"),   attributes, value) ? any_cast<double> (value): 0;
   bool   bunched  = eval( string("BUNCHED"),    attributes, value) ? any_cast<bool>   (value): false;
@@ -1787,13 +1793,13 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("VOLT"),     attributes, value) )    volt     = any_cast<double>(value); 
   if ( eval( string("LAG"),      attributes, value) )    lag      = any_cast<double>(value); 
   if ( eval( string("FREQ"),     attributes, value) )    freq     = any_cast<double>(value); 
-  if ( eval( string("HARMON"),   attributes, value) )    harmon   = any_cast<int>(value); 
+  if ( eval( string("HARMON"),   attributes, value) )    harmon   = any_cast<double>(value); 
   if ( eval( string("ENERGY"),   attributes, value) )    energy   = any_cast<double>(value); 
   if ( eval( string("ELOSS"),    attributes, value) )    eloss    = any_cast<double>(value); 
   if ( eval( string("LFILE"),    attributes, value) )    lfile    = any_cast<string>(value); 
   if ( eval( string("TFILE"),    attributes, value) )    tfile    = any_cast<string>(value); 
-  if ( eval( string("NBIN"),     attributes, value) )    nbin     = any_cast<int>(value); 
-  if ( eval( string("BINMAX"),   attributes, value) )    binmax   = any_cast<int>(value); 
+  if ( eval( string("NBIN"),     attributes, value) )    nbin     = any_cast<double>(value); 
+  if ( eval( string("BINMAX"),   attributes, value) )    binmax   = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
   if ( eval( string("SHUNT"),    attributes, value) )    shunt    = any_cast<double>(value); 
 
