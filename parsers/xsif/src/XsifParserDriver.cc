@@ -530,10 +530,16 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
           bl->append( ElmPtr( elm_it->second.elm->Clone() ));  
      }
      else if( ( (*it)[0] == '-' ) && (( bml_it = m_lines.find( (*it).substr(1)) ) !=  m_lines.end() )) {   // a reversed line 
+
+       BmlPtr bml(new beamline() );
+       bml->rename( "[" + (*it) + "]" );  
        for (beamline::const_reverse_iterator rit  = bml_it->second->rbegin();  
                                              rit != bml_it->second->rend(); ++rit) {
-		bl->append( ElmPtr( (*rit)->Clone() ) );
+		bml->append( ElmPtr( (*rit)->Clone() ) );
        }
+
+       bl->append(bml);
+
      } 
      else if( contains((*it), "(") ) {
           bl->append( expandLineMacro(yyloc, *it) );
