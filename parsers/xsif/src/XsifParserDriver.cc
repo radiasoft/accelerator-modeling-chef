@@ -531,13 +531,8 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
      }
      else if( ( (*it)[0] == '-' ) && (( bml_it = m_lines.find( (*it).substr(1)) ) !=  m_lines.end() )) {   // a reversed line 
 
-       BmlPtr bml(new beamline() );
+       BmlPtr bml( bml_it->second->reverse() );
        bml->rename( "[" + (*it) + "]" );  
-       for (beamline::const_reverse_iterator rit  = bml_it->second->rbegin();  
-                                             rit != bml_it->second->rend(); ++rit) {
-		bml->append( ElmPtr( (*rit)->Clone() ) );
-       }
-
        bl->append(bml);
 
      } 
