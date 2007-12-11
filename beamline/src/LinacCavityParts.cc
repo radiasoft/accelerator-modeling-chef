@@ -24,10 +24,16 @@
 ******  Author:    Jean-Francois Ostiguy                       
 ******             ostiguy@fnal.gov
 ******
+****** REVISION HISTORY
+******
+****** Dec 2007   ostiguy@fnal.gov
+****** - new typesafe propagator architecture
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
 
+#include <beamline/LinacCavityPartsPropagators.h>
 #include <beamline/LinacCavityParts.h>
 #include <beamline/BmlVisitor.h>
 
@@ -38,13 +44,17 @@
 LCavityUpstream::LCavityUpstream( const  char*  name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
   : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityUpstream::LCavityUpstream( LCavityUpstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
+  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_),
+    propagator_(o.propagator_->Clone() )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -125,6 +135,22 @@ void    LCavityUpstream::setFrequency( double const& f)
   w_rf_ = 2*M_PI*f; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::localPropagate( Particle& p)
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::localPropagate( JetParticle& p)
+{ 
+  (*propagator_)(*this, p);
+}
+
 //----------------------------------------------------------------------------------
 //  DOWSTREAM LCAVITY SECTION
 //----------------------------------------------------------------------------------
@@ -133,13 +159,17 @@ void    LCavityUpstream::setFrequency( double const& f)
 LCavityDnstream::LCavityDnstream( const  char*  name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
   : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityDnstream::LCavityDnstream( LCavityDnstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
+  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_),
+    propagator_(o.propagator_->Clone() )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -218,4 +248,20 @@ bool    LCavityDnstream::isMagnet() const
 void    LCavityDnstream::setFrequency( double const& f)
 {
   w_rf_ = 2*M_PI*f; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::localPropagate( Particle& p)
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::localPropagate( JetParticle& p)
+{ 
+  (*propagator_)(*this, p);
 }

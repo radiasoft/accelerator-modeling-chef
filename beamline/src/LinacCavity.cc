@@ -24,11 +24,16 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                                                   
 ******
+****** REVISION HISTORY
+******
+****** Dec 2007   ostiguy@fnal.gov
+****** - new typesafe propagator architecture
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
 
-//=====================================================================================
+//=======================================================================
 //
 // PHASE SIGN CONVENTION IN CAVITIES 
 //
@@ -78,26 +83,14 @@
 #include <iomanip>
 #include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
+#include <beamline/LinacCavityPropagators.h>
 #include <beamline/LinacCavityParts.h>
 #include <beamline/WakeKick.h>
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
-#include <beamline/Alignment.h>
 
 using namespace std;
-
-
-namespace 
-{ 
-
- //  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
- //        the boost function object. 
-
-  WakeKickPropagator wake_propagator(256, 12 * 300.0e-6 );  
-  boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
-  
-} // anonymous namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -112,24 +105,16 @@ LinacCavity::LinacCavity( const char* name,         // name
  : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
 
 {
-
-  p_bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
-  
-  p_bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   length/2.0, f, eV/2.0, phi_s)   )  );
-
-  bml_e_ = WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref )  );  
- 
-  if (wake_on) p_bml_->append(bml_e_); 
-
-  p_bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", length/2.0, f, eV/2.0, phi_s)   )  );
-
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
- : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
+ : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_),
+   propagator_( x.propagator_->Clone() )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -197,37 +182,13 @@ void LinacCavity::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LinacCavity::acceptInner( BmlVisitor&      v )
-{
-// visit the inner beamline elements 
-
-  v.setInnerFlag(true);
-  v.visit(*p_bml_);
-  v.setInnerFlag(false);
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LinacCavity::acceptInner( ConstBmlVisitor& v ) const 
-{
-// visit the inner beamline elements 
-
-  v.setInnerFlag(true);
-  v.visit(*p_bml_);
-  v.setInnerFlag(false);
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 double LinacCavity::getReferenceTime() const 
 {
 
   ctRef_ = 0.0;
 
-  for ( beamline::const_iterator it  = p_bml_->begin(); 
-                                 it != p_bml_->end(); ++it ) {
+  for ( beamline::const_iterator it  = bml_->begin(); 
+                                 it != bml_->end(); ++it ) {
         
    ctRef_  += (*it)->getReferenceTime();
   }
@@ -300,17 +261,17 @@ void  LinacCavity::setWakeOn( bool set )
 
   if (set) { 
 
-     if  ( p_bml_->howMany() == 3 )  return; // wake is already enabled
+     if  ( bml_->howMany() == 3 )  return; // wake is already enabled
 
-     beamline::iterator it = p_bml_->begin();
-     p_bml_->putBelow( it, bml_e_ );  
+     beamline::iterator it = bml_->begin();
+     bml_->putBelow( it, elm_ );  
   }
   else { 
    
-     if  ( p_bml_->howMany() == 2 )  return; // wake is already disabled
+     if  ( bml_->howMany() == 2 )  return; // wake is already disabled
 
-     beamline::iterator it = p_bml_->begin(); ++it;
-     p_bml_->erase( it );  
+     beamline::iterator it = bml_->begin(); ++it;
+     bml_->erase( it );  
   }
 }
 
@@ -333,21 +294,40 @@ void LinacCavity::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
            uic.str().c_str() ) );
   }
 
-  a = ElmPtr( Clone() );
-  b = ElmPtr( Clone() );
+  a = LinacCavityPtr( Clone() );
+  b = LinacCavityPtr( Clone() );
 
   a->rename( Name() + string("_1") );
   b->rename( Name() + string("_2") );
   
   a->setStrength( pc*Strength() );
-  b->setStrength( (1.0 - pc )*Strength() );
+  a->setLength(   pc*Length()   );
 
-  a->setLength(  pc* Length() );
-  b->setLength( ( 1.0 - pc )*Length() );
+  b->setStrength( (1.0 - pc)*Strength() );
+  b->setLength(   (1.0 - pc)*Length()   );
 
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void LinacCavity::localPropagate( Particle& p)
+{
+  (*propagator_)(*this,p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void LinacCavity::localPropagate( JetParticle& p)
+{
+  (*propagator_)(*this,p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+bool LinacCavity::wakeOn() const
+{
+  return true;
 }
