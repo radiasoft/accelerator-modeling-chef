@@ -550,7 +550,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 
       double k0l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
-        q = ElmPtr( new thin2pole(BRHO_*k0l) );
+        q = ElmPtr( new thin2pole("", BRHO_*k0l) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T0], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -563,7 +563,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 
       double k1l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K1L], var_table_, bel_table_ );
       if( k1l != 0.0 ) {
-        q = ElmPtr( new thinQuad( BRHO_*k1l ) );
+        q = ElmPtr( new thinQuad( "", BRHO_*k1l ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T1], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -576,7 +576,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       
       double k2l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K2L], var_table_, bel_table_ );
       if( k2l != 0.0 ) {
-        q = ElmPtr( new thinSextupole( BRHO_*k2l/2.0 ) );
+        q = ElmPtr( new thinSextupole( "", BRHO_*k2l/2.0 ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T2], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
@@ -589,7 +589,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       
       double k3l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K3L], var_table_, bel_table_ );
       if( k3l != 0.0 ) {
-        q = ElmPtr( new thinOctupole( BRHO_*k3l/6.0 ) );
+        q = ElmPtr( new thinOctupole( "", BRHO_*k3l/6.0 ) );
         roll = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_T3], var_table_, bel_table_ );
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
