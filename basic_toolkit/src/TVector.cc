@@ -69,7 +69,7 @@ double TVector<double>::operator* ( TVector <double> const& x ) const
   CHECKOUT(double, Dim() != x.Dim(), "TVector<double>::operator*", "dimensions incompatible.")
 #endif
 
-  return std::inner_product(m_theVector.begin(), m_theVector.end(), x.m_theVector.begin(), 0.0);
+  return std::inner_product(theVector_.begin(), theVector_.end(), x.theVector_.begin(), 0.0);
 
 }
 
@@ -87,8 +87,8 @@ TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const
 
    
 
-  return std::real( std::inner_product( m_theVector.begin(),  m_theVector.end(), 
-                                      x.m_theVector.begin(),  std::complex<double>(), 
+  return std::real( std::inner_product( theVector_.begin(),  theVector_.end(), 
+                                      x.theVector_.begin(),  std::complex<double>(), 
                                       std::plus<std::complex<double> >(),
 				      op_mult() )); 
 
@@ -104,7 +104,7 @@ TVector<double>::operator > ( TVector<double> const& x ) const
   CHECKOUT(double, Dim() != x.Dim(), "TVector<T>::operator>", "Dimensions incompatible.")
 #endif
 
-  for( int i=0; i < Dim(); ++i) if( m_theVector[i] <=  x.m_theVector[i] ) return false;
+  for( int i=0; i < Dim(); ++i) if( theVector_[i] <=  x.theVector_[i] ) return false;
   return true;
 }
 
