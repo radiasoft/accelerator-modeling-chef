@@ -272,6 +272,11 @@ element_list:                                                                   
                                                                                                $<pstrvec>$->push_back(*$<sval>3 ); 
                                                                                              delete $<sval>3; }
        |
+       element_list ',' '-' XSIF_IDENTIFIER                                                { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             $<pstrvec>$->push_back('-'+ *$<sval>4 ); 
+                                                                                             delete $<sval>4; 
+                                                                                           }
+       |
        XSIF_INT_VALUE '*' macro_identifier                                                 { $<pstrvec>$ = new std::vector<std::string>;
                                                                                              for (int i = 0; i< $<ival>1; ++i) 
                                                                                                  $<pstrvec>$->push_back( *$<sval>3 ); 
@@ -351,10 +356,15 @@ anonymous_line_declaration:
                                                                                            }  
        |
        '(' element_list ')' '*' 'XSIF_INT_VALUE'                                           { $<pstrvec>$ =
-                                                                                             driver.instantiateAnonymousLine( yylloc, *$<pstrvec>2, $<ival>5 );
+                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>2, $<ival>5 );
                                                                                              delete $<pstrvec>2;
-                                                                                           } 
-
+                                                                                           }
+       |
+         element_list ',' '-' '(' element_list ')'                                        {  $<pstrvec>$ = 
+                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>3, -1 );
+                                                                                              delete $<pstrvec>3;
+                                                                                           }
+       |
        ;
 
 
