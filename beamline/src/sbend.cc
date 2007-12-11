@@ -44,7 +44,10 @@
 ******   split elements.  The results should be interpreted carefully.
 ******   This is a stopgap measure. In the longer term, I intend
 ******   to remove the (vestigial) alignment data from these classes.
-******                                                                
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
+****** - new implementation: sbend is now a composite element
+******                                                                  
 **************************************************************************
 *************************************************************************/
 
@@ -55,7 +58,9 @@
 #include <iomanip>
 
 #include <basic_toolkit/iosetup.h>
+#include <beamline/beamline.h>
 #include <beamline/sbend.h>
+#include <beamline/SBendPropagators.h>
 #include <beamline/Particle.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
@@ -73,16 +78,15 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend() 
-: bmlnElmnt( 0.0, 0.0, &sbend::Exact )
-  , angle_(0.000)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  , usAngle_(0.0)
-  , dsAngle_(0.0)
-  , usTan_(0.0)
-  , dsTan_(0.0)
+  : bmlnElmnt( "", 0.0, 0.0),
+        angle_(0.000),
+  usFaceAngle_(0.0),
+  dsFaceAngle_(0.0),
+      usAngle_(0.0),
+      dsAngle_(0.0)
 {
-  calcPropParams();
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 
@@ -90,137 +94,14 @@ sbend::sbend()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf ) 
-: bmlnElmnt( l, s, pf )
-  , angle_(alpha)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  ,     usAngle_(0.0)
-  ,     dsAngle_(0.0)
-  ,       usTan_(0.0)
-  ,       dsTan_(0.0)
-{
- if ( std::abs( alpha ) < 1.0e-9 ) {
-   ostringstream uic;
-   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( double const& l, double const& s, double const& alpha, PropFunc* pf )",
-          uic.str().c_str() ) );
- }
- if( (0.0 > s ) != (0.0 > alpha ) ) {
-   (*pcerr) << "\n*** WARNING *** "
-           "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-        << "\n*** WARNING *** sbend::sbend( ... )"
-           "\n*** WARNING *** Magnetic field and bend angle arguments"
-           "\n*** WARNING *** sent to constructor have opposite signs."
-           "\n*** WARNING *** Field = " << s << " Tesla"
-           "\n*** WARNING *** Bend angle = " << alpha << " radians"
-           "\n*** WARNING *** Sign of the bend angle will be changed."
-           "\n*** WARNING *** "
-        << endl;
-   angle_ = - angle_;
- }
+sbend::sbend( const char* n, double const& l, double const& s, double const& alpha ) 
+  : bmlnElmnt( n, l, s ),
+          angle_(alpha),
+    usFaceAngle_(0.0),
+    dsFaceAngle_(0.0),
+        usAngle_(0.0),
+        dsAngle_(0.0)
 
- // This should never happen, but in case it does.
- if( !pf ) {
-   propfunc_ = &sbend::Exact;
- }
-
- calcPropParams();
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::sbend( double const& l, double const& s, double const& alpha, 
-              double const& us, double const& ds, PropFunc* pf )
-:   bmlnElmnt( l, s, pf )
-  ,       angle_(alpha)
-  , usEdgeAngle_(us)
-  , dsEdgeAngle_(ds)
-  ,     usAngle_(us)
-  ,     dsAngle_(-ds)
-  ,       usTan_(tan(us))
-  ,       dsTan_(-tan(ds))
-{
- static bool firstTime = true;
- if ( std::abs( alpha ) < 1.0e-9 ) {
-   ostringstream uic;
-   uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-          "sbend::sbend( double const& l, double const& s, ... )",
-          uic.str().c_str() ) );
- }
- if( (0.0 > s ) != (0.0 > alpha ) ) {
-   (*pcerr) << "\n*** WARNING *** "
-           "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-        << "\n*** WARNING *** sbend::sbend( ... )"
-           "\n*** WARNING *** Magnetic field and bend angle arguments"
-           "\n*** WARNING *** sent to constructor have opposite signs."
-           "\n*** WARNING *** Field = " << s << " Tesla"
-           "\n*** WARNING *** Bend angle = " << alpha << " radians"
-           "\n*** WARNING *** Sign of the bend angle will be changed."
-           "\n*** WARNING *** "
-        << endl;
-   angle_ = - angle_;
- }
- if ( (0.0 < std::abs(us)) && (std::abs( us ) < 1.0e-6) ) {
-   usEdgeAngle_ = 0.0;
-   usAngle_     = 0.0;
-   usTan_       = 0.0;
-   if( firstTime) {
-     (*pcerr) <<   "*** WARNING *** "
-             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
-             "\n*** WARNING *** | upstream edge angle | = " 
-          << std::abs(us) 
-          << " < 1 microradian."
-             "\n*** WARNING *** It will be reset to zero."
-             "\n*** WARNING *** This message is written once only."
-          << endl;
-     firstTime = false;
-   }
- }
- if ( (0.0 < std::abs(ds)) && ( std::abs( ds ) < 1.0e-6) ) {
-   dsEdgeAngle_ = 0.0;
-       dsAngle_ = 0.0;
-         dsTan_ = 0.0;
-
-   if( firstTime) {
-     (*pcerr) <<   "*** WARNING *** "
-             "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
-          << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
-             "\n*** WARNING *** | downstream edge angle | = " 
-          << std::abs(ds) 
-          << " < 1 microradian."
-             "\n*** WARNING *** It will be reset to zero."
-             "\n*** WARNING *** This message is written once only."
-          << endl;
-     firstTime = false;
-   }
- }
-
- // This should never happen, but in case it does.
- if( !pf ) {
-   propfunc_ = &sbend::Exact;
- }
-
-  calcPropParams();
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, PropFunc* pf ) 
-: bmlnElmnt( n, l, s, pf )
-  ,       angle_(alpha)
-  , usEdgeAngle_(0.0)
-  , dsEdgeAngle_(0.0)
-  ,     usAngle_(0.0)
-  ,     dsAngle_(0.0)
-  ,       usTan_(0.0)
-  ,       dsTan_(0.0)
 {
  if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
@@ -243,12 +124,8 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
    angle_ = - angle_;
  }
 
- // This should never happen, but in case it does.
- if( !pf) {
-   propfunc_ = &sbend::Exact;
- }
-
-  calcPropParams();
+  propagator_ =  PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 
@@ -257,15 +134,13 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
 
 
 sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, 
-              double const& us_arg, double const& ds_arg, PropFunc* pf )
-:   bmlnElmnt( n, l, s, pf )
-  ,       angle_(alpha)
-  , usEdgeAngle_(us_arg)
-  , dsEdgeAngle_(ds_arg)
-  ,     usAngle_(us_arg)
-  ,     dsAngle_(-ds_arg)
-  ,       usTan_(tan(us_arg))
-  ,       dsTan_(-tan(ds_arg))
+              double const& us_arg, double const& ds_arg )
+  :    bmlnElmnt( n, l, s),
+             angle_(alpha),
+       usFaceAngle_(us_arg),
+       dsFaceAngle_(ds_arg),
+           usAngle_(us_arg),
+           dsAngle_(-ds_arg)
 {
 
   // Note: us and ds are modified below ...  
@@ -295,9 +170,8 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
  }
  if ( (0.0 < std::abs(us)) && (std::abs( us ) < 1.0e-6) ) {
    us = 0.0;
-   usEdgeAngle_ = 0.0;
+   usFaceAngle_ = 0.0;
        usAngle_ = 0.0;
-         usTan_ = 0.0;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -314,9 +188,8 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
  if ( (0.0 < std::abs(ds)) && ( std::abs( ds ) < 1.0e-6) ) {
 
    ds = 0.0;
-   dsEdgeAngle_ = 0.0;
+   dsFaceAngle_ = 0.0;
        dsAngle_ = 0.0;
-         dsTan_ = 0.0;
 
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
@@ -332,71 +205,34 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
    }
  }
 
- // This should never happen, but in case it does.
- if( !pf) {
-   propfunc_ = &sbend::Exact;
- }
+  propagator_ =  PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 
-  calcPropParams();
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::calcPropParams()
-{
-  // For edge focussing kludge
-   usTan_ = tan(  usAngle_ );
-   dsTan_ = tan(  dsAngle_ );
-
-  // Geometric parameters
-  double psi = angle_ - ( usEdgeAngle_ + dsEdgeAngle_ );
-       dphi_ = - psi;
-  propPhase_ = std::complex<double> ( cos(psi), sin(psi) );
-
-  double rho = Length()/angle_;
-
-  // Note: angle_ and rho have the same sign.
-
-   propTerm_ =      std::complex<double> ( 0.0, rho )
-                  * std::complex<double> ( 1.0 - cos(angle_), -sin(angle_) )
-                  * std::complex<double> ( cos( dsEdgeAngle_),-sin(dsEdgeAngle_) );
-
-   setupPropFunc();
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( sbend const& x )
-:   bmlnElmnt( x )
-  ,      angle_(x.angle_)
-  ,usEdgeAngle_(x.usEdgeAngle_)
-  ,dsEdgeAngle_(x.dsEdgeAngle_)
-  ,    usAngle_(x.usAngle_)
-  ,    dsAngle_(x.dsAngle_)
-  ,      usTan_(x.usTan_)
-  ,      dsTan_(x.dsTan_)
-  ,       dphi_(x.dphi_)
-  ,  propPhase_(x.propPhase_)
-  ,   propTerm_(x.propTerm_)
-{
-  setupPropFunc();
-}
+  :  bmlnElmnt( x ),
+        angle_(x.angle_),
+  usFaceAngle_(x.usFaceAngle_),
+  dsFaceAngle_(x.dsFaceAngle_),
+      usAngle_(x.usAngle_),
+      dsAngle_(x.dsAngle_),
+   propagator_(PropagatorPtr(x.propagator_->Clone()))
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::~sbend() 
-{
-  releasePropFunc();
-}
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double sbend::setEntryAngle( const Particle& p )
+double sbend::setEntryAngle( Particle const& p )
 {
   return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
@@ -405,7 +241,7 @@ double sbend::setEntryAngle( const Particle& p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double sbend::setExitAngle( const Particle& p )
+double sbend::setExitAngle( Particle const& p )
 {
   return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
@@ -417,9 +253,8 @@ double sbend::setExitAngle( const Particle& p )
 double sbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = usAngle_;
-
-  usAngle_ = phi;
-  calcPropParams();
+  usAngle_  = phi;
+  propagator_->setup(*this);
   return ret;
 }
 
@@ -430,7 +265,7 @@ double sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
   dsAngle_ = phi;  
-  calcPropParams();
+  propagator_->setup(*this);
   return ret;
 }
 
@@ -440,8 +275,8 @@ double sbend::setExitAngle( double const& phi /* radians */ )
 
 bool sbend::hasParallelFaces() const
 {
-  return (    ( std::abs( 2.0*usEdgeAngle_ - angle_ ) < 1.0e-9 )
-           && ( std::abs( 2.0*dsEdgeAngle_ - angle_ ) < 1.0e-9 ) );
+  return (    ( std::abs( 2.0*usFaceAngle_ - angle_ ) < 1.0e-9 )
+           && ( std::abs( 2.0*dsFaceAngle_ - angle_ ) < 1.0e-9 ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -449,28 +284,9 @@ bool sbend::hasParallelFaces() const
 
 bool sbend::hasStandardFaces() const
 {
-  return (    (std::abs(usEdgeAngle_) < 1.0e-9) 
-           && (std::abs(dsEdgeAngle_) < 1.0e-9) );
+  return (    (std::abs(usFaceAngle_) < 1.0e-9) 
+           && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void sbend::releasePropFunc()
-{
-  // Nothing needs to be done.
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::setupPropFunc()
-{
-  // Nothing need to be done.
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -485,22 +301,9 @@ bool sbend::isMagnet() const
 
 void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
-  // -----------------------------
-  // Preliminary tests ...
-  // -----------------------------
-  if(    1.0e-10 < std::abs(usAngle_ + dsAngle_)
-      && usAngle_ != 0.
-      && dsAngle_ != 0.                          ) {
-    ostringstream uic;
-    uic  <<   "Not allowed to split an unsymmetric sbend."
-            "\nwith an Alignment struct.  That rolls are allowed in such"
-            "\ncases is only a matter of courtesy. This is NOT encouraged!";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
-           uic.str().c_str() ) );
-  }
 
   alignmentData ald( Alignment() );
+
   if( 0. != ald.xOffset || 0. != ald.yOffset ) {
     if( !hasParallelFaces() ) {
       ostringstream uic;
@@ -523,109 +326,32 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     }
   }
 
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc (fractional point of split) = " << pc << ": this should be within (0,1).";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )",
-           uic.str().c_str() ) );
+ // -------------------------------------------------------------------
+ // WARNING: The following code assumes that an sbend element
+ //          is modeled with a nested beamline, whith edge effects 
+ //          incorporated in upstream and downstream edge elements. 
+ //          Il will *fail* when the propagator that assumes otherwise. 
+ //--------------------------------------------------------------------
+
+ // .. Check for the presence of a nested beamline with 3 elements ... 
+
+  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
+  
+  if ( !valid_nested_beamline) { 
+       throw GenericException( __FILE__, __LINE__, 
+	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+          "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
-  static bool firstTime = true;
-  if( firstTime ) {
-    firstTime = false;
-    (*pcerr) << "\n"
-            "\n*** WARNING ***"
-            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
-            "\n*** WARNING *** "
-         << endl;
-  }
+  a = SBendPtr( new sbend( "", length_*pc,       strength_, angle_*pc,       usAngle_,     0.0       ));  
+  b = SBendPtr( new sbend( "", length_*(1.0-pc), strength_, angle_*(1.0-pc), 0.0,          dsAngle_  ));  
 
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 
-  // -----------------------------
-  // Testing finished.
-  // We may proceed with caution ...
-  // -----------------------------
-  sbend* sbPtr = 0;
-
-  if( typeid(*propfunc_) == typeid(MAD_Prop) ) {
-    (*pcerr) << "\n*** WARNING *** "
-            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
-            "\n*** WARNING *** Splitting sbend with MAD-like propagator."
-            "\n*** WARNING *** I'm not responsible for what happens."
-            "\n*** WARNING *** You'll get wrong results, "
-                              "but it's your fault for using this propagator."
-            "\n*** WARNING *** "
-         << endl;
-     a = SBendPtr( new sbend( pc*length_, strength_,
-                    pc* usAngle_,  // this is surely the wrong thing to do
-                    propfunc_ ) ); // but THERE IS NO RIGHT THING
-     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_,
-                    (1.0 - pc)*usAngle_,
-                     propfunc_ ) );
-  }
-  else if( typeid(*propfunc_) == typeid(NoEdge_Prop) ) {
-     a = SBendPtr( new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
-     b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
-  }
-  else if( typeid(*propfunc_) == typeid(Exact_Prop) ) {
-    a =  SBendPtr ( sbPtr = new sbend( pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::InEdge ) );
-    sbPtr->setEntryAngle( this->getEntryAngle() );
-    sbPtr->setExitAngle( 0.0 );    // Should not matter
-    b =  SBendPtr(  sbPtr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::OutEdge ) );
-    sbPtr->setEntryAngle( 0.0 );   // Should not matter
-    sbPtr->setExitAngle( this->getExitAngle() );
-  }
-  else if( typeid(*propfunc_) == typeid(InEdge_Prop) ) {
-    a = SBendPtr( sbPtr = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ ) );
-    sbPtr->setEntryAngle( this->getEntryAngle() );
-    sbPtr->setExitAngle( 0.0 );    // Should not matter
-    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::NoEdge ) );
-  }
-  else if( typeid(*propfunc_) == typeid(OutEdge_Prop) ) {
-    a = SBendPtr( new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::NoEdge ) );
-    b = SBendPtr( sbPtr = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ ) );
-    sbPtr->setEntryAngle( 0.0 );   // Should not matter
-    sbPtr->setExitAngle( this->getExitAngle() );
-  }
-  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_Exact_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::RealInEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::RealOutEdge );
-  // TO BE DONE: }
-  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_InEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, propfunc_ );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, &sbend::NoEdge );
-  // TO BE DONE: }
-  // TO BE DONE: else if( typeid(*propfunc_) == typeid(Real_OutEdge_Prop) ) {
-  // TO BE DONE:   *a = new sbend(         pc*length_, strength_,         pc*angle_,  usEdgeAngle_, 0.0, &sbend::NoEdge );
-  // TO BE DONE:   *b = new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_,  0.0, dsEdgeAngle_, propfunc_ );
-  // TO BE DONE: }
-  else {
-    (*pcerr) << "\n*** WARNING *** "
-            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
-            "\n*** WARNING *** Propagator type unrecognized."
-            "\n*** WARNING *** I'm not responsible for what happens."
-            "\n*** WARNING *** It's all your fault."
-            "\n*** WARNING *** "
-         << endl;
-    a = SBendPtr( new sbend( pc*length_,         strength_,         pc*angle_, usEdgeAngle_, 0.0 ) );
-    b = SBendPtr( new sbend( (1.0 - pc)*length_, strength_, (1.0 - pc)*angle_, 0.0, dsEdgeAngle_ ) );
-  }
-
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
   a->setAlignment( ald );
   b->setAlignment( ald );
 
-  // Rename
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
 }
 
 
@@ -635,25 +361,11 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 ostream& sbend::writeTo(ostream& os)
 {
   os << OSTREAM_DOUBLE_PREC << angle_ << " "
-     << OSTREAM_DOUBLE_PREC << usEdgeAngle_ << " "
-     << OSTREAM_DOUBLE_PREC << dsEdgeAngle_ << endl;
+     << OSTREAM_DOUBLE_PREC << usFaceAngle_ << " "
+     << OSTREAM_DOUBLE_PREC << dsFaceAngle_ << endl;
   os << OSTREAM_DOUBLE_PREC << usAngle_ << " "
      << OSTREAM_DOUBLE_PREC << dsAngle_ << endl;
 
-  // Determine which propogators are being used, and make a note of it.
-  if ( propfunc_ ==            &sbend::Exact )
-    os << "sbend::P_Exact    sbend::J_Exact";
-  else if ( propfunc_ ==       &sbend::LikeMAD )
-    os << "sbend::P_LikeMAD  sbend::J_LikeMAD";
-  else if ( propfunc_ ==       &sbend::NoEdge )
-    os << "sbend::P_NoEdge   sbend::J_NoEdge";
-  else if ( propfunc_ ==       &sbend::InEdge )
-    os << "sbend::P_InEdge   sbend::J_InEdge";
-  else if ( propfunc_ ==       &sbend::OutEdge )
-    os << "sbend::P_OutEdge  sbend::J_OutEdge";
-  else
-    os << "UNKNOWN  UNKNOWN";
-  
   os << "\n";
   return os;
 }
@@ -664,33 +376,8 @@ ostream& sbend::writeTo(ostream& os)
 
 istream& sbend::readFrom(istream& is)
 {
-  is >> angle_ >> usEdgeAngle_ >> dsEdgeAngle_;
+  is >> angle_ >> usFaceAngle_ >> dsFaceAngle_;
   is >> usAngle_ >> dsAngle_;
-
-  char prop_fun[100], jet_prop_fun[100];
-  is >> prop_fun >> jet_prop_fun;
-
-  if ( strcasecmp(prop_fun,             "sbend::P_Exact" ) == 0 )
-    setPropFunction(&sbend::Exact );
-  else if ( strcasecmp(prop_fun,        "sbend::P_LikeMAD" ) == 0 )
-    setPropFunction(&sbend::LikeMAD );
-  else if ( strcasecmp(prop_fun,        "sbend::P_NoEdge" ) == 0 )
-    setPropFunction(&sbend::NoEdge );
-  else if ( strcasecmp(prop_fun,        "sbend::P_InEdge" ) == 0 )
-    setPropFunction(&sbend::InEdge );
-  else if ( strcasecmp(prop_fun,        "sbend::P_OutEdge" ) == 0 )
-    setPropFunction(&sbend::OutEdge );
-  else
-    {
-      (*pcerr) << " **** WARNING **** sbend::readFrom(istream)\n";
-      (*pcerr) << " **** WARNING **** unknown propagator function specified:\n";
-      (*pcerr) << " **** WARNING **** " << prop_fun << "\n";
-      (*pcerr) << " **** WARNING **** Substituting sbend::P_Exact\n";
-      setPropFunction(&sbend::Exact);
-    }
-  
-  calcPropParams();
-
   return is;
 }
 
@@ -703,17 +390,7 @@ istream& sbend::readFrom(istream& is)
 
 void sbend::enterLocalFrame( Particle& p ) const
 {
-
   bmlnElmnt::enterLocalFrame(p);
-
-//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-//        "void sbend::enterLocalFrame( Particle& p ) const",
-//        "Function is obsolete. (?)" ) );
-// TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->angle_ / 2.0;
-// TO BE DONE   P_Face( p,   halfAngle );
-// TO BE DONE   bmlnElmnt::enterLocalFrame( p );
-// TO BE DONE   P_Face( p, - halfAngle );
 }
 
 
@@ -722,17 +399,7 @@ void sbend::enterLocalFrame( Particle& p ) const
 
 void sbend::enterLocalFrame( JetParticle& p ) const
 {
-
  bmlnElmnt::enterLocalFrame(p);
-
-// throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-//      "void sbend::enterLocalFrame( JetParticle& p ) const",
-//     "Function is obsolete. (?)" ) );
-// TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->angle_ / 2.0;
-// TO BE DONE   J_Face( p,   halfAngle );
-// TO BE DONE   bmlnElmnt::enterLocalFrame( p );
-// TO BE DONE   J_Face( p, - halfAngle );
 }
 
 
@@ -741,17 +408,7 @@ void sbend::enterLocalFrame( JetParticle& p ) const
 
 void sbend::leaveLocalFrame( Particle& p ) const
 {
-
   bmlnElmnt::leaveLocalFrame(p);
-
-//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-//        "void sbend::leaveLocalFrame( Particle& p ) const",
-//        "Function is obsolete. (?)" ) );
-// TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = this->angle_ / 2.0;
-// TO BE DONE   P_Face( p, - halfAngle );
-// TO BE DONE   bmlnElmnt::leaveLocalFrame( p );
-// TO BE DONE   P_Face( p,   halfAngle );
 }
 
 
@@ -761,119 +418,7 @@ void sbend::leaveLocalFrame( Particle& p ) const
 void sbend::leaveLocalFrame( JetParticle& p ) const
 {
   bmlnElmnt::leaveLocalFrame(p);
-
-
-//   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-//        "void sbend::leaveLocalFrame( JetParticle& p ) const",
-//        "Function is obsolete. (?)" ) );
-// TO BE DONE   static double halfAngle;
-// TO BE DONE   halfAngle = angle_ / 2.0;
-// TO BE DONE   J_Face( p, - halfAngle );
-// TO BE DONE   bmlnElmnt::leaveLocalFrame( p );
-// TO BE DONE   J_Face( p,   halfAngle );
 }
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// TO BE DONE void sbend::P_Face( Particle& p, const double& psi ) const
-// TO BE DONE {
-// TO BE DONE   static int x;
-// TO BE DONE   static int y;
-// TO BE DONE   static int cdt;
-// TO BE DONE   static int xp;
-// TO BE DONE   static int yp;
-// TO BE DONE   static int dpop;
-// TO BE DONE 
-// TO BE DONE   x    = p.xIndex();
-// TO BE DONE   y    = p.yIndex();
-// TO BE DONE   cdt  = p.cdtIndex();
-// TO BE DONE   xp   = p.npxIndex();
-// TO BE DONE   yp   = p.npyIndex();
-// TO BE DONE   dpop = p.ndpIndex();
-// TO BE DONE 
-// TO BE DONE 
-// TO BE DONE   double cs( cos(psi) ); 
-// TO BE DONE   double sn( sin(psi) ); 
-// TO BE DONE 
-// TO BE DONE   // Drift frame represented in the sbend frame.
-// TO BE DONE   Vector e_1(3), e_2(3), e_3(3);
-// TO BE DONE   e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
-// TO BE DONE   e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
-// TO BE DONE   e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
-// TO BE DONE 
-// TO BE DONE   // Coordinate transformation.
-// TO BE DONE   Vector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
-// TO BE DONE   Vector dummy    ( p.VectorBeta() );
-// TO BE DONE   Vector beta     ( dummy(0)*e_1 +
-// TO BE DONE                     dummy(1)*e_2 +
-// TO BE DONE                     dummy(2)*e_3 );
-// TO BE DONE 
-// TO BE DONE   double tau      ( - r(2) / beta(2) );
-// TO BE DONE 
-// TO BE DONE   p.state[x]    = r(0) + tau*beta(0);
-// TO BE DONE   p.state[y]    = r(1) + tau*beta(1);
-// TO BE DONE   p.state[cdt] += tau;
-// TO BE DONE 
-// TO BE DONE   // Momentum transformation
-// TO BE DONE   double p1( p.State( xp ) );
-// TO BE DONE   double p2( p.State( yp ) );
-// TO BE DONE   double p3divpbar = sqrt( ( 1.0 + p.state[dpop] ) * ( 1.0 + p.state[dpop] )
-// TO BE DONE                             - p1*p1 - p2*p2 );
-// TO BE DONE 
-// TO BE DONE   p.state[xp] = cs*p.State( xp ) + sn*p3divpbar;
-// TO BE DONE }
-
-
-// TO BE DONE void sbend::J_Face( JetParticle& p, const double& psi ) const
-// TO BE DONE {
-// TO BE DONE   static int x;
-// TO BE DONE   static int y;
-// TO BE DONE   static int cdt;
-// TO BE DONE   static int xp;
-// TO BE DONE   static int yp;
-// TO BE DONE   static int dpop;
-// TO BE DONE 
-// TO BE DONE   x    = p.xIndex();
-// TO BE DONE   y    = p.yIndex();
-// TO BE DONE   cdt  = p.cdtIndex();
-// TO BE DONE   xp   = p.npxIndex();
-// TO BE DONE   yp   = p.npyIndex();
-// TO BE DONE   dpop = p.ndpIndex();
-// TO BE DONE 
-// TO BE DONE 
-// TO BE DONE   double cs( cos(psi) ); 
-// TO BE DONE   double sn( sin(psi) ); 
-// TO BE DONE 
-// TO BE DONE   // Drift frame represented in the sbend frame.
-// TO BE DONE   Vector e_1(3), e_2(3), e_3(3);
-// TO BE DONE   e_1(0) = cs;  e_1(1) = 0.0;  e_1(2) = -sn; 
-// TO BE DONE   e_2(0) = 0.0; e_2(1) = 1.0;  e_2(2) = 0.0; 
-// TO BE DONE   e_3(0) = sn;  e_3(1) = 0.0;  e_3(2) = cs; 
-// TO BE DONE 
-// TO BE DONE   // Coordinate transformation.
-// TO BE DONE   JetVector r        ( p.State(x)*e_1 + p.State(y)*e_2 );
-// TO BE DONE   JetVector dummy    ( p.VectorBeta() );
-// TO BE DONE   JetVector beta     ( dummy(0)*e_1 +
-// TO BE DONE                        dummy(1)*e_2 +
-// TO BE DONE                        dummy(2)*e_3 );
-// TO BE DONE 
-// TO BE DONE   Jet tau            ( - r(2) / beta(2) );
-// TO BE DONE 
-// TO BE DONE  ( p.state ).SetComponent( x,   r(0) + tau*beta(0) );
-// TO BE DONE  ( p.state ).SetComponent( y,   r(1) + tau*beta(1) );
-// TO BE DONE  ( p.state ).SetComponent( cdt, p.state(cdt) + tau );
-// TO BE DONE 
-// TO BE DONE   // Momentum transformation
-// TO BE DONE   Jet p1( p.State( xp ) );
-// TO BE DONE   Jet p2( p.State( yp ) );
-// TO BE DONE   Jet p3divpbar = sqrt( ( 1.0 + p.state(dpop) ) * ( 1.0 + p.state(dpop) )
-// TO BE DONE                             - p1*p1 - p2*p2 );
-// TO BE DONE 
-// TO BE DONE   ( p.state ).SetComponent( xp, cs*p.State( xp ) + sn*p3divpbar );
-// TO BE DONE }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -902,90 +447,46 @@ void sbend::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// **************************************************
-//   classes sbend::XXXEdge_Prop
-// **************************************************
-
-// --- rbend::NoEdge_Prop -----------------------
-
-sbend::NoEdge_Prop::NoEdge_Prop()
-{}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::NoEdge_Prop::~NoEdge_Prop()
-{}
- 
-// --- sbend::Exact_Prop -----------------------
-
-sbend::Exact_Prop::Exact_Prop()
-{
-  myPropagator_ = &sbend::NoEdge;
-}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::Exact_Prop::~Exact_Prop()
-{}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::Exact_Prop::setPropagator( NoEdge_Prop* x )
-{
-  myPropagator_ = x;
+void sbend::localPropagate( Particle& p ) 
+{ 
+  (*propagator_)(*this, p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// --- sbend::InEdge_Prop -----------------------
-
-sbend::InEdge_Prop::InEdge_Prop()
-{
-  myPropagator_ = &sbend::NoEdge;
-}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::InEdge_Prop::~InEdge_Prop()
-{}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::InEdge_Prop::setPropagator( NoEdge_Prop* x )
-{
-  myPropagator_ = x;
+void sbend::localPropagate( JetParticle& p ) 
+{ 
+  (*propagator_)(*this, p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// --- sbend::OutEdge_Prop -----------------------
-
-sbend::OutEdge_Prop::OutEdge_Prop()
+double sbend::getEntryAngle() const
 {
-  myPropagator_ = &sbend::NoEdge;
-}
- 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sbend::OutEdge_Prop::~OutEdge_Prop()
-{}
- 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::OutEdge_Prop::setPropagator( NoEdge_Prop* x )
-{
-  myPropagator_ = x;
+  return usAngle_;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double sbend::getExitAngle() const
+{
+  return dsAngle_;
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double sbend::getEntryFaceAngle() const
+{
+  return usFaceAngle_;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double sbend::getExitFaceAngle() const
+{
+  return dsFaceAngle_;
+}
