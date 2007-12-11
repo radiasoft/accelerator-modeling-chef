@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
 ******                                    
 ******  File:      BBLens.cc
 ******                                                                
@@ -41,6 +40,8 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - implemented missing operator=()
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator architecture
 ******
 **************************************************************************
 **************************************************************************
@@ -51,6 +52,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/utils.h>
+#include <beamline/BBLensPropagators.h>
 #include <beamline/BBLens.h>
 #include <beamline/BmlVisitor.h>
 #include <mxyzptlk/Jet.h>
@@ -78,14 +80,10 @@ BBLens::BBLens( const char*   nm,
                 double const&        s,
                 double const&        gmm, 
                 const double* emt )
-: bmlnElmnt( nm, l, s )
+  : bmlnElmnt( nm, l, s ),num_(s), gamma_(gmm)
 {
-  int i;
-  num = s;
-
-  gamma = gmm;
-  if( ( fabs( gamma - 1.0 ) < 0.001 ) || 
-      ( gamma < 1.0  ) 
+  if( ( fabs( gamma_ - 1.0 ) < 0.001 ) || 
+      ( gamma_ < 1.0  ) 
     ) {
     cerr << "*** ERROR ***                               \n"
             "*** ERROR *** BBLens::BBLens                \n"
@@ -94,34 +92,36 @@ BBLens::BBLens( const char*   nm,
          << endl;
   }
 
-  if( emt ) for( i = 0; i < 3; i++ ) 
-    emittance[i] = (emt[i]/6.0)/sqrt( gmm*gmm - 1.0 );
-  else      for( i = 0; i < 3; i++ ) 
-    emittance[i] = 1.0e-6;
-  for( i = 0; i < 3; i++ ) sigma[i] = 0.0;
+  if( emt ) for( int i=0; i<3; ++i) 
+    emittance_[i] = (emt[i]/6.0)/sqrt( gmm*gmm - 1.0 );
+  else      for( int i=0; i<3; ++i) 
+    emittance_[i] = 1.0e-6;
+  for( int i=0; i<3; ++i) sigma_[i] = 0.0;
 
   useRound = 1;
+
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 BBLens::BBLens( BBLens const& x )
-: bmlnElmnt( x ), gamma(x.gamma), num(x.num),  useRound( x.useRound)
+: bmlnElmnt( x ), gamma_(x.gamma_), num_(x.num_),  useRound( x.useRound),
+  propagator_(x.propagator_->Clone() )
 {
-  for( int i = 0; i < 3; ++i ) emittance[i] = x.emittance[i];
-  for( int i = 0; i < 3; ++i )     sigma[i] = x.sigma[i];
+  for( int i=0; i < 3; ++i ) emittance_[i] = x.emittance_[i];
+  for( int i=0; i < 3; ++i )     sigma_[i] = x.sigma_[i];
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 BBLens::~BBLens()
 {}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -132,40 +132,55 @@ BBLens& BBLens::operator=( BBLens const& rhs)
 
   bmlnElmnt::operator=(rhs);
 
-  std::copy( &rhs.emittance[0], &rhs.emittance[2],  &emittance[0]);   // One sigma (noninvariant) emittance / pi
+  std::copy( &rhs.emittance_[0], &rhs.emittance_[2],  &emittance_[0]);   // One sigma (noninvariant) emittance_ / pi
 
-  gamma = rhs.gamma;          
-  beta  = rhs.beta;           
-  num   = rhs.num;            
-  std::copy( &rhs.sigma[0], &rhs.sigma[2],  &sigma[0]);
- 
+  gamma_ = rhs.gamma_;          
+  beta_  = rhs.beta_;           
+  num_   = rhs.num_;            
+  std::copy( &rhs.sigma_[0], &rhs.sigma_[2],  &sigma_[0]);
+
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
+  
   return *this;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void BBLens::KludgeNum( double const& N )
+double const&  BBLens::getDistCharge() const
 {
-  num  = N;
+  return num_;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::KludgeSigma( const double* S )
+void BBLens::setDistCharge( double const& N )
 {
-  for( int i = 0; i < 3; i++ ) sigma[i] = S[i]; 
+  num_  = N;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Kludge( double const& N, double const& G, const double* S )
+void BBLens::setSigmas( double const* S )
 {
-  num  = N;
-  gamma = G;
-  beta = sqrt( 1.0 - 1.0 / ( gamma*gamma ) );
-  for( int i = 0; i < 3; i++ ) sigma[i] = S[i]; 
+  for( int i=0; i<3; ++i) sigma_[i] = S[i]; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BBLens::setDistParameters( double const& npart, double const& Gamma, double const* sigmas )
+{
+  num_  =  npart;
+  gamma_ = Gamma;
+  beta_ = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
+  for( int i=0; i<3; ++i) sigma_[i] = sigmas[i]; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void BBLens::AdjustSigma() 
 {
@@ -180,27 +195,30 @@ void BBLens::AdjustSigma()
    exit (1); 
 
   // These statement BREAK the library hierarchy !!!
-  // FIXME !!!! sigma[0] = sqrt( any_cast<ETinfo>(it->info).beta.hor*emittance[0] );
-  // FIXME !!!! sigma[1] = sqrt( any_cast<ETinfo>(it->info).beta.ver*emittance[1] );
+  // FIXME !!!! sigma_[0] = sqrt( any_cast<ETinfo>(it->info).beta.hor*emittance_[0] );
+  // FIXME !!!! sigma_[1] = sqrt( any_cast<ETinfo>(it->info).beta.ver*emittance_[1] );
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
 {
   Vector  retvec(3);
   char    normal;
   std::complex<double>  z;
-  double  x, y;
-  double  sigmaX, sigmaY, ds, meanSigma;
+
+  double  ds, meanSigma;
   std::complex<double>  arg1, arg2;
   double  tmp1,r;
   std::complex<double>  retarg1, retarg2;
   enum    { ur, ul, lr, ll } quadrant;
 
-  x = arg_x;  
-  y = arg_y;
-  sigmaX = sigma[0];
-  sigmaY = sigma[1];
+  double      x = arg_x;  
+  double      y = arg_y;
+  double sigmaX = sigma_[0];
+  double sigmaY = sigma_[1];
 
   // Asymptotic limit ...
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
@@ -366,8 +384,8 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
 
   x = arg_x;  
   y = arg_y;
-  sigmaX = sigma[0];
-  sigmaY = sigma[1];
+  sigmaX = sigma_[0];
+  sigmaY = sigma_[1];
 
   // Asymptotic limit ...
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
@@ -514,20 +532,24 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
   return retvec;  // This line should never be reached.
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* BBLens::Type() const 
 { 
   return "BBLens"; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool  BBLens::isMagnet() const
 {
-
   return false;
-
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Vector BBLens::Beta() 
 {
@@ -545,10 +567,13 @@ Vector BBLens::Beta()
   return Vector( 3, answer );
 }
 
-void BBLens::GetSigma( double* sgm ) {
-  for( int i = 0; i < 3; i++ ) sgm[i] = sigma[i];
-}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void BBLens::GetSigma( double* sgm ) 
+{
+  for( int i=0; i< 3; ++i) sgm[i] = sigma_[i];
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -556,23 +581,27 @@ void BBLens::GetSigma( double* sgm ) {
 void BBLens::accept( BmlVisitor& v ) 
 { 
   v.visit( *this ); 
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void BBLens::accept( ConstBmlVisitor& v ) const  
 { 
   v.visit( *this ); 
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::localPropagate(ParticleBunch& b)
+void BBLens::localPropagate(Particle& p)
 {  
-  bmlnElmnt::localPropagate(b);
+  (*propagator_)(*this,p);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BBLens::localPropagate(JetParticle& p)
+{  
+  (*propagator_)(*this,p);
 }
