@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      srot.cc
 ******                                                                
@@ -40,13 +39,15 @@
 ****** - support for reference counted elements
 ****** - reduced srd file coupling due to visit() member. 
 ******   visit() takes advantage of (reference) dynamic type
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-
+#include <beamline/SRotPropagators.h>
 #include <beamline/srot.h>
 #include <beamline/BmlVisitor.h>
 
@@ -56,46 +57,90 @@ using namespace std;
 //   class srot
 // **************************************************
 
-srot::srot() : bmlnElmnt() {
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-srot::srot( double const& s) : bmlnElmnt(0.0,s) {
-}
-
-srot::srot( const char* n ) : bmlnElmnt(n) {
-}
-
-srot::srot( const char* n, double const& s) : bmlnElmnt( n, 0.0,s) {
-}
-
-srot::srot( const srot& x )
-: bmlnElmnt( (bmlnElmnt&) x )
+srot::srot() 
+: bmlnElmnt() 
 {
+  propagator_ = PropagatorPtr(new Propagator());
+  propagator_->setup(*this); 
 }
 
-srot::~srot() {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+srot::srot( const char* n ) 
+: bmlnElmnt(n) 
+{
+  propagator_ = PropagatorPtr(new Propagator());
+  propagator_->setup(*this); 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+srot::srot( const char* n, double const& s) 
+ : bmlnElmnt( n, 0.0,s) 
+{
+  propagator_ = PropagatorPtr(new Propagator());
+  propagator_->setup(*this); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+srot::srot( srot const& x )
+  : bmlnElmnt(x ), propagator_( x.propagator_->Clone() ) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+srot::~srot() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* srot::Type() const 
 { 
   return "srot"; 
 }
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool   srot::isMagnet() const
 {
   return false; 
 }
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void srot::accept( BmlVisitor& v ) 
 {
   v.visit(*this);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void srot::accept( ConstBmlVisitor& v ) const
 {
   v.visit(*this);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void srot::localPropagate( Particle& p ) 
+{
+  (*propagator_)(*this,p);
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void srot::localPropagate( JetParticle& p ) 
+{
+  (*propagator_)(*this,p);
 }
