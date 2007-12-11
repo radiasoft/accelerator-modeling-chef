@@ -5,8 +5,7 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.1
-******                                    
+******
 ******  File:      Slot.cc
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
@@ -40,6 +39,9 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator architecture
+****** - eliminated (unused) code for slots with embedded elements
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -51,6 +53,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/marker.h>
 #include <beamline/Slot.h>
+#include <beamline/SlotPropagators.h>
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
@@ -64,17 +67,15 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 namespace {
-  Particle::PhaseSpaceIndex const&  i_x     = Particle::xIndex;
-  Particle::PhaseSpaceIndex const&  i_y     = Particle::yIndex;
-  Particle::PhaseSpaceIndex const&  i_cdt   = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const&  i_npx   = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const&  i_npy   = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const&  i_ndp   = Particle::ndpIndex;
-} // anonymous namespace
 
-// --------------------------------------------------
-// --- Constructors ---------------------------------
-// --------------------------------------------------
+  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -83,6 +84,10 @@ Slot::Slot()
  : bmlnElmnt()
 {
   align_ = new alignment;  // ??? why???
+
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -92,34 +97,16 @@ Slot::Slot( const char* nm )
 : bmlnElmnt(nm)
 {
   align_ = new alignment;
+
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-Slot::Slot( Frame const& y )
-: bmlnElmnt(), in_(), out_(y)
-{
-  if( !out_.isOrthonormal() )
-  {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "Slot::Slot( const Frame& y )", 
-           "Current implementation requires that frames be orthonormal." ) );
-  }
-
-  align_   = 0;
-
-  length_ = out_.getOrigin() .Norm();
-  ctRef_  = length_;
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( const char* nm, const Frame& y )
-: bmlnElmnt(nm), in_(), out_(y)
+  : bmlnElmnt(nm), in_(), out_(y) 
 {
   if( !out_.isOrthonormal() )
   {
@@ -128,85 +115,13 @@ Slot::Slot( const char* nm, const Frame& y )
            "Current implementation requires that frames be orthonormal." ) );
   }
 
-  align_   = 0;
-
+  align_  = 0;
   length_ = out_.getOrigin() .Norm();
   ctRef_  = length_;
-}
 
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Slot::Slot( const Frame&     x, 
-            const Frame&     y, 
-            const beamline&  bl
-          )
-: bmlnElmnt(), in_(x), out_(y)
-{
-  if( ( 0 == checkFrame(in_)  ) && 
-      ( 0 == checkFrame(out_) ) ) 
-  {
-    p_bml_   = BmlPtr( bl.Clone() );
-  }
-  align_ = new alignment;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Slot::Slot( const char*      nm,
-            const Frame&     x, 
-            const Frame&     y, 
-            const beamline&  bl
-          )
-: bmlnElmnt(nm), in_(x), out_(y)
-{
-  if( ( 0 == this->checkFrame(in_)  ) && 
-      ( 0 == this->checkFrame(out_) ) ) 
-  {
-    p_bml_   = BmlPtr( bl.Clone() );
-  }
-  align_ = new alignment;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Slot::Slot( const Frame&     x, 
-            const Frame&     y, 
-            const bmlnElmnt& be
-          )
-: bmlnElmnt(), in_(x), out_(y)
-{
-  if( ( 0 == this->checkFrame(in_)  ) && 
-      ( 0 == this->checkFrame(out_) ) &&
-      ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
-  {
-    bml_e_ = ElmPtr( be.Clone() );
-  }
-  align_ = new alignment;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Slot::Slot( const char*     nm,
-            const Frame&     x, 
-            const Frame&     y, 
-            const bmlnElmnt& be
-          )
-: bmlnElmnt(nm), in_(x), out_(y)
-{
-  if( ( 0 == this->checkFrame(in_)  ) && 
-      ( 0 == this->checkFrame(out_) ) &&
-      ( 0 != strcasecmp( be.Type(), "Slot" ) ) ) 
-  {
-     bml_e_ = ElmPtr( be.Clone() );
-  }
-  align_ = new alignment;
 }
 
 
@@ -214,25 +129,19 @@ Slot::Slot( const char*     nm,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( Slot const& x )
-: bmlnElmnt( x), in_( x.in_ ), out_( x.out_ )
+  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ), 
+    propagator_(x.propagator_->Clone() )
 {
-  if ( x.align_ != 0 )
-    align_ = new alignment( *(x.align_) );
-  else 
-    align_ = NULL;
-
-  if     ( x.p_bml_   ) p_bml_   = BmlPtr( x.p_bml_->Clone()   );
-  else if( x.bml_e_   ) bml_e_   = ElmPtr( x.bml_e_->Clone() );
+  align_ =  x.align_ ? new alignment(*x.align_) : 0; 
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Slot::~Slot()
 {
-
-  if( align_) {
-    delete align_;
-    align_ = 0;
-  }
+  if( align_) { delete align_; align_ = 0; }
 }
 
 
@@ -296,7 +205,7 @@ void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  static Vector driftOffset(3); 
+  Vector driftOffset(3); 
   driftOffset(2) = lng;
   
   out_.translate( driftOffset );
@@ -391,17 +300,18 @@ bool Slot::isMagnet()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double Slot::setReferenceTime( double const& x )
+void  Slot::localPropagate( Particle& p)
 {
-  double oldValue = ctRef_;
-  ctRef_          = x;
-  return oldValue;
+  (*propagator_)(*this, p);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// --------------------------------------------------
-// --- Istream and Ostream support ------------------
-// --------------------------------------------------
+void  Slot::localPropagate( JetParticle& p)
+{
+  (*propagator_)(*this, p);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -410,14 +320,14 @@ ostream& Slot::writeTo ( ostream& os )
 {
   // Write out private attributes, which are the "in" and "out" Frame's.
   os << in_ ;
-  if ( p_bml_ != NULL ) {
+  if ( bml_ != NULL ) {
     // print out the beamline contained in this slot
     os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
-    os << (*p_bml_);
+    os << (*bml_);
     os << "slot_END " << Name() << " 0 0 0 0 0\n";
-  } else if ( bml_e_ != NULL ) {
+  } else if ( elm_ != NULL ) {
     os << "slot_BEGIN " << Name() << " 0 0 0 0 0\n";
-    os << (*bml_e_);
+    os << (*elm_);
     os << "slot_END " << Name() << " 0 0 0 0 0\n";
   } else {
     os << "no_slot_contents " << Name() << " 0 0 0 0 0\n";
@@ -445,11 +355,11 @@ istream& Slot::readFrom( istream& is )
 
   is >> type >> name >> Length >> Strength >> x >> y >> t;
   if ( strcasecmp(type, "slot_BEGIN") == 0 ) {
-    bml_e_ = ElmPtr( read_istream(is) );  // Recursively read the bmlnElmnt.
+    elm_ = ElmPtr( read_istream(is) );  // Recursively read the bmlnElmnt.
 
-    if ( bml_e_  && strcasecmp(bml_e_->Type(), "beamline") == 0 ) 
+    if ( elm_  && strcasecmp(elm_->Type(), "beamline") == 0 ) 
 
-      p_bml_ = BmlPtr( (beamline*) bml_e_.get() );
+      bml_ = BmlPtr( (beamline*) elm_.get() );
 
     // The only element in this Slot is a single bmlnElmnt.  There is a 
     // "slot_END" line to read in.
@@ -516,8 +426,8 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
   aOutFrame.setOrigin( in_.getOrigin() + pct*d );
   Frame bOutFrame( out_.relativeTo( aOutFrame ) );
 
-  a = SlotPtr( new Slot( aOutFrame ) );
-  b = SlotPtr( new Slot( bOutFrame ) );
+  a = SlotPtr( new Slot( "", aOutFrame ) );
+  b = SlotPtr( new Slot( "", bOutFrame ) );
 
   // Rename
 
@@ -725,155 +635,17 @@ void Slot::leaveLocalFrame( JetParticle& p ) const
   processFrame( out_, p );
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// --------------------------------------------------
-// --- Local propagate functions --------------------
-// --------------------------------------------------
-
-
-void Slot::localPropagate( Particle& p )
-{
-  // If this is modified, one should
-  // simultaneously modify Slot::setReferenceTime( const Particle& )
-
-  if      ( bml_e_   ) { bml_e_->propagate( p ); return; }
-  else if ( p_bml_   ) { p_bml_->propagate( p ); return; }
-
- //-----------------------------------------
- // Propagate as drift to the out-plane
- //-----------------------------------------
-
-  Vector& state = p.State();
-
-  Vector r(3);
-
-  r(0) = p.get_x();
-  r(1) = p.get_y();
-
-  Vector beta ( p.VectorBeta() );
-
-  Vector q    ( out_.getOrigin() );
-  Vector u_1  ( out_.getAxis(0) );
-  Vector u_2  ( out_.getAxis(1) );
-  Vector u_3  ( out_.getAxis(2) );
-
-  double tau;
-  double betaParallel = beta * u_3;
-
-  if( betaParallel > 0.0 ) {
-      tau = ( q - r )*u_3 / betaParallel;
-    }
-  else {
-      ostringstream uic;
-      uic << this->Type() << "  " << this->Name()
-          << ": Velocity is not forward: it may be NAN.";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-             "void Slot::localPropagate( Particle& p )", 
-             uic.str().c_str() ) );
-  }
-
-  r += tau*beta;
-  r -= q;
-
-  state[ i_x   ]  = r*u_1;
-  state[ i_y   ]  = r*u_2;
-  state[ i_cdt ] += ( tau - ctRef_ );
-
-    // Momentum transformation
-
-  Vector momntm = ( p.NormalizedVectorMomentum() );
-
-  state[ i_npx ] = momntm*u_1;
-  state[ i_npy ] = momntm*u_2;
-  
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::localPropagate( JetParticle& p )
-{
- 
-  Mapping& state = p.State();
-
-  if     (  p_bml_   ) p_bml_->propagate( p );
-  else if(  bml_e_   ) bml_e_->propagate( p );
-
-  else {
-    // Propagate as drift to the out-plane
-
-    JetVector r(3);
-    r(0) = p.get_x();
-    r(1) = p.get_y();
-
-    JetVector beta ( p.VectorBeta() );
-
-    Vector q    ( out_.getOrigin() );
-    Vector u_1  ( out_.getAxis(0) );
-    Vector u_2  ( out_.getAxis(1) );
-    Vector u_3  ( out_.getAxis(2) );
-
-    // REMOVE: double tauZero = length_ / p.ReferenceBeta();
-    Jet    tau;
-
-    Jet    betaParallel = beta * u_3;
-
-    if( betaParallel.standardPart() > 0.0 ) {
-      tau = ( q - r )*u_3 / betaParallel;
-    }
-    else {
-
-      ostringstream uic;
-      uic << this->Type() << "  " << this->Name()
-          << ": Velocity is not forward: it may be NAN.";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-             "void Slot::localPropagate( JetParticle& p )", 
-             uic.str().c_str() ) );
-    }
-
-    r += tau*beta;
-    r -= q;
-
-    state[i_x  ]   = r*u_1;
-    state[i_y  ]   = r*u_2;
-    state[i_cdt]  += ( tau - ctRef_ );
-
-    // Momentum transformation
-
-    JetVector mom( p.NormalizedVectorMomentum() );
-    state[i_npx] = mom*u_1;
-    state[i_npy] = mom*u_2;
-  }
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::localPropagate( ParticleBunch& x )
-{
-  if     ( p_bml_   ) { p_bml_->propagate( x ); }
-  else if( bml_e_ )   { bml_e_->propagate( x ); }
-  else {
-    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it )  
-    { localPropagate( *it ); }
-  }
-}
-
-
- 
 // --------------------------------------------------
 // --- Functions passed on to tenant ----------------
 // --------------------------------------------------
 
 void Slot::setStrength   ( double const& x )
 {
-  if     ( p_bml_   ) p_bml_->setStrength( x );
-  else if( bml_e_   ) bml_e_->setStrength( x );
+  if     ( bml_   ) bml_->setStrength( x );
+  else if( elm_   ) elm_->setStrength( x );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -881,8 +653,8 @@ void Slot::setStrength   ( double const& x )
 
 void Slot::setCurrent    ( double const& x )
 {
-  if     ( p_bml_   ) p_bml_->setStrength( x );
-  else if( bml_e_   ) bml_e_->setStrength( x );
+  if     ( bml_   ) bml_->setStrength( x );
+  else if( elm_   ) elm_->setStrength( x );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -891,11 +663,11 @@ void Slot::setCurrent    ( double const& x )
 bool Slot::setAlignment  ( const alignmentData& x )
 {
   bool ret = true;
-  if     ( p_bml_   ) {
-    ret = p_bml_->setAlignment( x );
+  if     ( bml_   ) {
+    ret = bml_->setAlignment( x );
   }
-  else if( bml_e_ ) {
-    ret = bml_e_->setAlignment( x );
+  else if( elm_ ) {
+    ret = elm_->setAlignment( x );
   }
   if( !ret ) {
     (*pcerr) << "\n*** ERROR *** "
@@ -915,8 +687,8 @@ bool Slot::setAlignment  ( const alignmentData& x )
 
 double Slot::Current() const
 {
-  if     ( p_bml_   ) return p_bml_->Current();
-  else if( bml_e_   ) return bml_e_->Current();
+  if     ( bml_   ) return bml_->Current();
+  else if( elm_   ) return elm_->Current();
   else                    return 0.0;
 }
 
@@ -928,8 +700,8 @@ double Slot::OrbitLength( const Particle& x )
 {
   static bool firstTime = true;
 
-  if     ( p_bml_   ) return p_bml_->OrbitLength( x );
-  else if( bml_e_   ) return bml_e_->OrbitLength( x );
+  if     ( bml_   ) return bml_->OrbitLength( x );
+  else if( elm_   ) return elm_->OrbitLength( x );
   else {
     if( firstTime ) {
       firstTime = false;
@@ -945,18 +717,6 @@ double Slot::OrbitLength( const Particle& x )
   }
 }
  
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-std::string Slot::Name() const
-{
-  if     ( p_bml_   )     return p_bml_->Name();
-  else if( bml_e_ )       return bml_e_->Name();
-  else                    return bmlnElmnt::Name();
-}
-
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
