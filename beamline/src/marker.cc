@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      marker.cc
 ******                                                                
@@ -40,7 +39,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-******
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 
@@ -50,6 +50,7 @@
 #endif
 
 #include <beamline/marker.h>
+#include <beamline/MarkerPropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
@@ -59,22 +60,27 @@ using namespace std;
 // **************************************************
 
 marker::marker() : bmlnElmnt() 
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 marker::marker( const char* n ) 
-: bmlnElmnt(n) 
-{}
-
+  : bmlnElmnt(n) 
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 marker::marker( marker const& x ) 
-: bmlnElmnt( x ) 
+  : bmlnElmnt( x ), propagator_(x.propagator_->Clone()) 
 {}
 
 
@@ -86,6 +92,8 @@ marker&  marker::operator=( marker const& rhs)
   if ( &rhs == this ) return *this;
   
   bmlnElmnt::operator=(rhs);
+
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this;
 }
@@ -130,3 +138,23 @@ void marker::accept( ConstBmlVisitor& v ) const
 { 
   v.visit( *this ); 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void marker::localPropagate( Particle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void marker::localPropagate( JetParticle& p ) 
+{ 
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+

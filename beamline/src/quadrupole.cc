@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      quadrupole.cc
-******  Version:   2.1
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -39,7 +38,8 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-******
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
 
@@ -52,7 +52,7 @@
 #include <beamline/drift.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
-#include <beamline/Alignment.h>
+#include <beamline/QuadrupolePropagators.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -65,46 +65,20 @@ using FNAL::pcout;
 // **************************************************
 
 quadrupole::quadrupole()
-: bmlnElmnt( 1.0, 0.0, &quadrupole::LikeTPOT )
+  : bmlnElmnt( "", 1.0, 0.0 )
 {
-  setupPropFunc();
+     propagator_ = PropagatorPtr( new Propagator( 4 ) );     
+     propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-quadrupole::quadrupole( const char* n, double const& l, double const& s, bmlnElmnt::PropFunc* pf )
-: bmlnElmnt( n, l, s, pf )
+quadrupole::quadrupole( const char* n, double const& l, double const& s )
+  : bmlnElmnt( n, l, s)
 {
- if( l<= 0.0 ) {
-  ostringstream uic;
-  uic  << "Quadrupole length l = " << l << " is negative.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "quadrupole::quadrupole( const char* n, double const& l, double const& s, bmlnElmnt::PropFunc* pf )", 
-         uic.str().c_str() ) );
- }
-
- setupPropFunc();
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* pf )
-: bmlnElmnt( l, s, pf )
-{
- if( l<= 0.0 ) {
-  ostringstream uic;
-  uic  << "Quadrupole length l = " << l << " is negative.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-         "quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* pf )", 
-         uic.str().c_str() ) );
- }
-
-  setupPropFunc();
-
+     propagator_ = PropagatorPtr( new Propagator(4) );     
+     propagator_->setup(*this);
 }
 
 
@@ -112,20 +86,22 @@ quadrupole::quadrupole( double const& l, double const& s, bmlnElmnt::PropFunc* p
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::quadrupole( quadrupole const& x ) 
-: bmlnElmnt( x )
-{
-  setupPropFunc();
+  : bmlnElmnt(x), propagator_(PropagatorPtr(x.propagator_->Clone()))
+{}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole* quadrupole::Clone() const 
+{ 
+  return new quadrupole( *this ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::~quadrupole() 
-{
-  releasePropFunc();
-}
-
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -137,12 +113,12 @@ void quadrupole::setStrength( double const& s ) {
 
   double integratedStrength = strength_*length_;
 
-  if( p_bml_) 
+  if( bml_) 
   {
    int counter = 0;
 
-   for ( beamline::iterator it  = p_bml_->begin();
-	                    it != p_bml_->end(); ++it ) {
+   for ( beamline::iterator it  = bml_->begin();
+	                    it != bml_->end(); ++it ) {
      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
    }
 
@@ -153,20 +129,20 @@ void quadrupole::setStrength( double const& s ) {
             "No thin quads in the internal beamline." ) );
    }
    else if( counter == 1) {
-     if(bml_e_) 
+     if(elm_) 
      {
-       bml_e_->setStrength( integratedStrength );
+       elm_->setStrength( integratedStrength );
      }
      else 
      {
      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void quadrupole::setStrength( double const& s ) {", 
-            "bml_e_ not set." ) );
+            "elm_ not set." ) );
      }
    }
    else {
 
-       for ( beamline::iterator it  = p_bml_->begin(); it != p_bml_->end(); ++it ) {
+       for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
        if( typeid(**it) == typeid(thinQuad) ) {
            (*it)->setStrength( integratedStrength/counter );
        }
@@ -178,45 +154,6 @@ void quadrupole::setStrength( double const& s ) {
 
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::releasePropFunc()
-{
-  if( !propfunc_ ) return;
-
-  { bml_e_ = ElmPtr(); p_bml_ = BmlPtr();  propfunc_ = 0; }
-
-}
-
-///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void quadrupole::setupPropFunc()
-{
-  if( !propfunc_ ) {
-    (*pcerr) << "\n**** WARNING **** "
-            "\n**** WARNING **** void quadrupole::setupPropFunc()"
-            "\n**** WARNING **** Invoked with a null propagator functor."
-            "\n**** WARNING **** No action taken, but your program will"
-            "\n**** WARNING **** probably crash soon."
-            "\n**** WARNING **** "
-         << endl;
-
- }
-
-   if( 0 == strcmp( propfunc_->Type(), "quadrupole::TPOT_Prop" ) ) {
-
-      ((quadrupole::TPOT_Prop*) propfunc_)->setup( this );
-   
-      // This method will create p_bml_
-   };
-
-}
-
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* quadrupole::Type() const 
 { 
@@ -242,23 +179,23 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           "void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length_.
-  a = QuadrupolePtr( new quadrupole(         pc  *length_, strength_, propfunc_ ) );
-  b = QuadrupolePtr( new quadrupole( ( 1.0 - pc )*length_, strength_, propfunc_ ) );
 
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
+  a = QuadrupolePtr( Clone() );
+  b = QuadrupolePtr( Clone()  );
+
+  a->setLength( pc        * length_ );
+  b->setLength( (1.0- pc) * length_ );
 
   // Rename
+
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -266,22 +203,6 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 istream& quadrupole::readFrom(istream& is)
 {
-  char prop_fun[100], jet_prop_fun[100];
-
-  is >> prop_fun >> jet_prop_fun;
-  if ( strcasecmp(prop_fun,             "quadrupole::P_LikeMAD" ) == 0 )
-    setPropFunction(&quadrupole::LikeMAD );
-  else if ( strcasecmp(prop_fun,        "quadrupole::P_LikeTPOT" ) == 0 )
-    setPropFunction(&quadrupole::LikeTPOT );
-  else
-    {
-      (*pcerr) << " **** WARNING **** quadrupole::readFrom(istream)\n";
-      (*pcerr) << " **** WARNING **** unknown propagator function specified:\n";
-      (*pcerr) << " **** WARNING **** " << prop_fun << "\n";
-      (*pcerr) << " **** WARNING **** Substituting quadrupole::P_LikeMAD\n";
-      setPropFunction(&quadrupole::LikeMAD);
-    }
-
   return is;
 }
 
@@ -290,14 +211,6 @@ istream& quadrupole::readFrom(istream& is)
 
 ostream& quadrupole::writeTo(ostream& os)
 {
-  if ( propfunc_ == 		&quadrupole::LikeMAD )
-    os << "quadrupole::P_LikeMAD   quadrupole::J_LikeMAD";
-  else if ( propfunc_ == 	&quadrupole::LikeTPOT )
-    os << "quadrupole::P_LikeTPOT  quadrupole::J_LikeTPOT";
-  else 
-    os << "UNKNOWN  UNKNOWN";
-
-  os << "\n";
   return os;
 }
 
@@ -319,34 +232,66 @@ void quadrupole::accept( ConstBmlVisitor& v ) const {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void quadrupole::localPropagate( ParticleBunch& x ) 
+{ 
+  bmlnElmnt::localPropagate( x ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::localPropagate( Particle&    p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  quadrupole::localPropagate( JetParticle& p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class thinQuad
 // **************************************************
 
 thinQuad::thinQuad() 
- : bmlnElmnt( 0.0, 0.0, 0) // length, strength, propofunc 
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-thinQuad::thinQuad( double const& s ) 
- : bmlnElmnt(0.0, s, 0)      // B'L in Tesla
-{}
+ : bmlnElmnt( "", 0.0, 0.0 ) // length, strength
+{
+  propagator_ = PropagatorPtr( new Propagator() ); 
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( const char* n, double const& s ) 
-: bmlnElmnt(n, 0.0, s) 
+  : bmlnElmnt(n, 0.0, s) 
+{
+  propagator_ = PropagatorPtr( new Propagator() ); 
+  propagator_->setup(*this);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::thinQuad( thinQuad const& x ) 
+  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinQuad::thinQuad( const thinQuad& x ) 
-: bmlnElmnt( x ){}
+thinQuad* thinQuad::Clone() const 
+{  
+  return new thinQuad( *this ); 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -388,3 +333,18 @@ void thinQuad::accept( ConstBmlVisitor& v ) const {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void thinQuad::localPropagate( Particle&    p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  thinQuad::localPropagate( JetParticle& p )   
+{ 
+  (*propagator_)(*this, p);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
