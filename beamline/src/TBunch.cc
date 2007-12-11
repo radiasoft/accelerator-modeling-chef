@@ -60,75 +60,115 @@ Particle::PhaseSpaceIndex const&   i_ndp   = Particle::ndpIndex;
 
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
 std::vector<double>  TBunch<Particle>::emittances() const 
+ 
+  Vector dispersion(4); // null dispersion 
+  return emittances(dispersion);
+}  
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double>  ParticleBunch::emittances( Vector const&  dispersion) const 
 {
+
   //-----------------------------------------------------------------------------------
-  // compute the *geometric* transverse rms emittance or the longitudinal rms emittance  
-  //
+  // Computes the *geometric* dispersion CORRECTED transverse rms emittance and the 
+  // longitudinal rms emittance  
   // 
-  //  emittance is defined as using Sacharer's convention.
+  //  Emittance is defined as using Sacharer's convention.
   //
   //  sqrt( <x^2><x'^2> - <x x'>^2 )
   //
   //  Multiply by 4 for Lapostolle's definition  
   //  
+  // 
   //-----------------------------------------------------------------------------------
 
-  std::vector<double>  u_2 (6, 0.0);
+  std::vector<double>  u_2 (3, 0.0);
+  std::vector<double>  up_2(3, 0.0);
   std::vector<double>  u_up(3, 0.0);
-  std::vector<double>  ubar(6, 0.0);
+  std::vector<double>  ubar(3, 0.0);
+  std::vector<double> upbar(3, 0.0);
 
-  for (TBunch<Particle >::const_iterator it = begin(); it != end(); ++it ) { 
 
-    Vector const& state = it->State();
+ int const n   = size();
 
+  for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+
+    Vector state = it->State();
     double const npz = it->get_npz();
-     
-    for (int i=0; i<6; ++i) { 
-         u_2[i]  +=  (state[i] * state[i]);  
-         ubar[i] +=   state[i]; 
-    }
 
-    u_2[i_npx] /= ( npz*npz);
-    u_2[i_npy] /= ( npz*npz);
+    // correct for correlation due to dispersive effect 
 
-    ubar[i_npx] /=  npz; 
-    ubar[i_npy] /=  npz; 
-
-    u_up[0] +=  (state[i_x]   * state[i_npx])/ npz;  
-    u_up[1] +=  (state[i_y]   * state[i_npy])/ npz;  
-    u_up[2] +=  (state[i_cdt] * state[i_ndp]);
-
-  }
-
-  int const n = size();
-
-  // subtract centroid 
+    state[0] -= dispersion[0]* state[5]; 
+    state[3] -= dispersion[1]* state[5] * npz; 
  
-  for ( int i=0; i<6; ++i ) {
-    u_2[i]  -= (  ubar[i]*ubar[i] ) / n; 
-    
+    state[1] -= dispersion[2]* state[5]; 
+    state[4] -= dispersion[3]* state[5] * npz; 
+
+    for (int i=0; i<3; ++i ) {
+      ubar[i] += state[i]; 
+     upbar[i] += (i+3 != 5) ? state[3+i] / npz : state[3+i];
+    } 
   }
 
-  for ( int i=0; i<3; ++i ) {
-    u_up[i] -= (  ubar[i]*ubar[i]) / n; 
+  for ( ParticleBunch::const_iterator it = begin(); it != end(); ++it ) { 
+
+     Vector state = it->State();
+     double const npz = it->get_npz();
+
+    // correct for correlation due to dispersive effect 
+
+    state[0] -= dispersion[0] * state[5]; 
+    state[3] -= dispersion[1] * state[5] *npz; 
+ 
+    state[1] -= dispersion[2] * state[5];  
+    state[4] -= dispersion[3] * state[5] * npz; 
+
+     
+     u_2[0] +=  (state[0]*state[0]);
+    up_2[0] +=  (state[3]*state[3])/(npz*npz);
+    u_up[0] +=  (state[0]*state[3])/npz;
+
+     u_2[1] +=  (state[1]*state[1]);
+    up_2[1] +=  (state[4]*state[4])/(npz*npz);
+    u_up[1] +=  (state[1]*state[4])/npz;
+
+     u_2[2] +=  (state[2]*state[2]);
+    up_2[2] +=  (state[5]*state[5]);
+    u_up[2] +=  (state[2]*state[5]);
+
+ }
+
+   
+   u_2[0] -= (  ubar[0] *  ubar[0]  ) / n ;
+  up_2[0] -= ( upbar[0] * upbar[0]  ) / n ;  
+  u_up[0] -= (  ubar[0] * upbar[0]  ) / n ;
+
+   u_2[1] -= (  ubar[1] *  ubar[1]  ) / n;
+  up_2[1] -= ( upbar[1] * upbar[1]  ) / n; 
+  u_up[1] -= (  ubar[1] * upbar[1]  ) / n;
+
+   u_2[2] -= (  ubar[2] *  ubar[2]  ) / n ;
+  up_2[2] -= ( upbar[2] * upbar[2]  ) / n ;
+  u_up[2] -= (  ubar[2] * upbar[2]  ) / n ;
+
+
+ std::vector<double> eps(3);
+
+ for (int i=0; i<3; ++i ) {
+       eps[i] = sqrt( u_2[i]*up_2[i] - u_up[i]*u_up[i] )/ n;
   }
-
-  std::vector<double> eps(3);
-
-  eps[0] = sqrt( u_2[i_x]  *u_2[i_npx] - u_up[0]*u_up[0] ) / n ;
-  eps[1] = sqrt( u_2[i_y]  *u_2[i_npy] - u_up[1]*u_up[1] ) / n ;
-  eps[2] = sqrt( u_2[i_cdt]*u_2[i_ndp] - u_up[2]*u_up[2] ) / n ;
-  
 
   return eps;
 
-}
+}  
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -137,7 +177,7 @@ template <>
 void  TBunch<Particle>::populateGaussian( PhaseSpaceProjection psid, double sigma_x, double sigma_px, double r_12 )
 {
 
-  int M = 10; //  Strictly speaking, the limit M --> infty is the Gaussian, but 30 is more than good enough
+  int M = 10; //  Strictly speaking, the limit M --> infty is the Gaussian, but 10 is more than good enough
               //  Cutoff will be at sqrt(10.5) = 3.2 sigma
     
   double x_lim  = sqrt(M + 0.5) *  sigma_x;
