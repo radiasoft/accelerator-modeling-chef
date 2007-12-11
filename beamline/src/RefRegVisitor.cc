@@ -46,6 +46,7 @@
 ****** - registration process now done in a single loop.
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 /*
@@ -180,12 +181,12 @@ void RefRegVisitor::visit( beamline& x )
              (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
         }
 
-        (*it)->accept( *this ); 
+        (*it)->accept(*this);
 
-
-	if ( getInnerFlag() )  continue;
+	if ( getInnerFlag() )  continue; // do not update cumulativeCdt when visiting inner beamlines 
  
         cumulativeCdt +=(*it)->getReferenceTime();          
+
         if ( rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it) )      rfcavities.push_back(rfcavity_elm);
         if ( thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it) )  thinrfcavities.push_back(thinrfcavity_elm);
        
@@ -226,18 +227,13 @@ void RefRegVisitor::visit( bmlnElmnt& x )
   x.setReferenceTime( particle_.get_cdt() );
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void RefRegVisitor::visit( CF_rbend& x ) 
 {
-  // This does not nullify the edge focussing from 
-  // the inner propagators before setting the entry
-  // and exit angles. It may be that these attributes
-  // are not even used.
   x.setEntryAngle( particle_ );
-  x.acceptInner( *this );
+  visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
 }
 
@@ -247,12 +243,8 @@ void RefRegVisitor::visit( CF_rbend& x )
 
 void RefRegVisitor::visit( CF_sbend& x ) 
 {
-  // This does not nullify the edge focussing from 
-  // the inner propagators before setting the entry
-  // and exit angles. It may be that these attributes
-  // are not even used.
   x.setEntryAngle( particle_ );
-  x.acceptInner( *this );
+  visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
 }
 
@@ -262,13 +254,9 @@ void RefRegVisitor::visit( CF_sbend& x )
 
 void RefRegVisitor::visit( sbend& x )
 {
-  const bmlnElmnt::PropFunc* propPtr = x.getPropFunction();
-
-   x.setPropFunction( &sbend::NoEdge );
    x.setEntryAngle( particle_ );
    visit( static_cast<bmlnElmnt&>(x) );
    x.setExitAngle( particle_ );
-   x.setPropFunction( propPtr );
 }
 
 
@@ -277,13 +265,9 @@ void RefRegVisitor::visit( sbend& x )
 
 void RefRegVisitor::visit( rbend& x )
 {
-  bmlnElmnt::PropFunc const* propPtr = x.getPropFunction();
-
-  x.setPropFunction( &rbend::NoEdge );
   x.setEntryAngle( particle_ );
   visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
-  x.setPropFunction( propPtr );
 }
 
 
@@ -293,8 +277,7 @@ void RefRegVisitor::visit( rbend& x )
 void RefRegVisitor::visit( rfcavity& x ) 
 {
   // x.acceptInner( *this ); // inner structure is ignored for the moment
-  
-  visit( static_cast<bmlnElmnt&>(x) );
+    visit( static_cast<bmlnElmnt&>(x) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -302,7 +285,12 @@ void RefRegVisitor::visit( rfcavity& x )
 
 void RefRegVisitor::visit( LinacCavity& x ) 
 {
-  x.acceptInner( *this); 
+  // NOTE: calling acceptInner() implies that cdt is ajusted at the  
+  //       nested beamline _element_ level. 
+ 
+  visit(static_cast<bmlnElmnt&>(x) );
+
+  // x.acceptInner( *this); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
