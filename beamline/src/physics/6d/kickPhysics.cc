@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      kickPhysics.cc
 ******                                                                
@@ -31,7 +30,13 @@
 ******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov      
-******                                                                
+******                                              
+****** REVISION HISTORY
+******
+******  Dec 2007   ostiguy@fnal.gov - new implementation 
+******  - angular kick is now dependent on total momentum
+******  - templated propagation functions                  
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -44,99 +49,136 @@
 #include <beamline/kick.h>
 
 using namespace std;
+
 using FNAL::pcerr;
 using FNAL::pcout;
 
-// =================================================
-// vkick propagators
-// =================================================
+namespace {
+
+  int const i_x   = Particle::xIndex();     
+  int const i_y   = Particle::yIndex();  
+  int const i_cdt = Particle::cdtIndex();
+  int const i_npx = Particle::npxIndex();
+  int const i_npy = Particle::npyIndex();
+  int const i_ndp = Particle::ndpIndex();
+
+
+template<typename Particle_t>
+void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
+{
+     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+ 
+     State_t& state = p.State();
+
+     Component_t npz = p.get_npz();
+
+     Component_t xpr = state[i_npx] / npz;
+     Component_t ypr = state[i_npy] / npz;
+
+     state[i_x] += length* xpr;
+     state[i_y] += length* ypr;
+
+     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+}
+
+template<typename Particle_t>
+void applyKick( kick& elm, Particle_t& p)
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  if (elm.Strength() == 0.0 ) return;
+
+  double const hk =  elm.HorStrength() /  p.ReferenceBRho();
+  double const vk =  elm.VerStrength() / p.ReferenceBRho();    
+  
+  State_t& state = p.State();
+
+  state[i_npx] += hk;
+  state[i_npy] += vk;
+}
+
+template<typename Particle_t>
+void applyKick( hkick& elm, Particle_t& p )
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  if (elm.Strength() == 0.0 ) return;
+
+  double const hk =  elm.Strength()/p.ReferenceBRho();
+  
+  State_t& state = p.State();
+
+  state[i_npx] += hk;
+}
+
+template<typename Particle_t>
+void applyKick( vkick& elm, Particle_t& p)
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  if (elm.Strength() == 0.0 ) return;
+
+  double const vk =  elm.Strength()/p.ReferenceBRho();
+  
+  State_t& state = p.State();
+
+  state[i_npy] += vk;
+}
+
+template<typename Element_t, typename Particle_t>
+void propagate( Element_t& elm, Particle_t& p )
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+ 
+  State_t& state = p.State();
+
+  if (elm.Length() > 0.0 ) {
+
+    Component_t const cdt_in = state[i_cdt];
+
+    ::driftpropagate( elm.Length()/2, elm, p );   // Drift through first  half of the length
+    applyKick(elm,p); 
+    ::driftpropagate( elm.Length()/2, elm, p );   // Drift through second half of the length.
+
+    state[i_cdt] += (state[i_cdt] - cdt_in) - elm.getReferenceTime();  
+ }
+  else {
+    applyKick(elm,p); 
+  }
+ 
+ }
+
+
+} // anonymous namespace
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void vkick::localPropagate( Particle& p )
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void vkick::localPropagate( Particle& p )"
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
-
-  Vector& state = p.State();
-
-  double realLength, realCt;
-
-  if( length_ > 0.0 ) {
-    realLength  = length_;
-    realCt      = ctRef_;
-    length_    /= 2.0;
-    ctRef_     /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[4] += strength_;
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_  = realCt;
-  }
-  else {
-    state[4] += strength_;
-  }
+  ::propagate(*this,p);
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// =================================================
+// hkick propagators
+// =================================================
 
 void vkick::localPropagate( JetParticle& p )
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void vkick::localPropagate( JetParticle& p )"
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
-
-  Mapping& state = p.State();
-
-  double realLength, realCt;
-  if( length_ > 0.0 ) {
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ /= 2.0;
-    ctRef_ /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    ( state ).SetComponent( 4, state(4) + strength_ );
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_ = realCt;
-  }
-  else {
-    ( state ).SetComponent( 4, state(4) + strength_ );
-  }
+  ::propagate(*this,p);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // =================================================
 // hkick propagators
@@ -144,89 +186,16 @@ void vkick::localPropagate( JetParticle& p )
 
 void hkick::localPropagate( Particle& p )
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void hkick::localPropagate( Particle& p )"
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
 
-  Vector& state = p.State();
-
-  double realLength, realCt;
-  if( length_ > 0.0 ) {
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ /= 2.0;
-    ctRef_ /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[3] += strength_;
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_ = realCt;
-  }
-  else {
-    state[3] += strength_;
-  }
+  ::propagate(*this,p);
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void hkick::localPropagate( JetParticle& p )
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void hkick::localPropagate( JetParticle& p )"
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
-
-  Mapping& state = p.State();
-
-  double realLength, realCt;
-
-  if( length_ > 0.0 ) {
-    realLength = length_;
-    realCt     = ctRef_;
-    length_   /= 2.0;
-    ctRef_    /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state.SetComponent( 3, state(3) + strength_ );
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_ = realCt;
-  }
-  else {
-    state.SetComponent( 3, state(3) + strength_ );
-  }
+  ::propagate(*this,p);
 }
 
 // =================================================
@@ -235,45 +204,7 @@ void hkick::localPropagate( JetParticle& p )
 
 void kick::localPropagate( Particle& p ) 
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void kick::localPropagate( Particle& p )"
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
-
-  Vector& state = p.State();
-
-  double realLength, realCt;
-  if( length_ > 0.0 ) {
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ /= 2.0;
-    ctRef_ /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state[3] += horizontalKick_;
-    state[4] += verticalKick_;
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_ = realCt;
-  }
-  else {
-    state[3] += horizontalKick_;
-    state[4] += verticalKick_;
-  }
+  ::propagate(*this,p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -281,43 +212,5 @@ void kick::localPropagate( Particle& p )
 
 void kick::localPropagate( JetParticle& p ) 
 {
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** File: "
-             << __FILE__ << ", Line:" << __LINE__
-             << "\n*** WARNING *** void kick::localPropagate( JetParticle& p ) "
-                "\n*** WARNING *** -----------------------------------------"
-                "\n*** WARNING *** An approximation has been introduced"
-                "\n*** WARNING *** as a TEMPORARY bug workaround. It makes"
-                "\n*** WARNING *** an extremely small error in the computed"
-                "\n*** WARNING *** time coordinate; it \"fixes\" an extremely"
-                "\n*** WARNING *** large error in the computed time coordinate."
-                "\n*** WARNING ***                                   - lpjm"
-                "\n*** WARNING *** "
-             << endl;
-    firstTime = false;
-  }
-
-  Mapping& state = p.State();
-
-  double realLength, realCt;
-  if( length_ > 0.0 ) {
-    realLength = length_;
-    realCt     = ctRef_;
-    length_ /= 2.0;
-    ctRef_ /= 2.0;
-
-    bmlnElmnt::localPropagate( p );   // Drift through half the length.
-    state.SetComponent( 3, state(3) + horizontalKick_ );
-    state.SetComponent( 4, state(4) + verticalKick_   );
-    bmlnElmnt::localPropagate( p );
-
-    length_ = realLength;
-    ctRef_ = realCt;
-  }
-  else {
-    state.SetComponent( 3, state(3) + horizontalKick_ );
-    state.SetComponent( 4, state(4) + verticalKick_   );
-  }
+  ::propagate(*this,p);
 }
