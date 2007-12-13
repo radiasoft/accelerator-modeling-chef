@@ -2,7 +2,7 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
+******  Beamline:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
 ******  Version:   2.0                    
@@ -39,6 +39,9 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** Dec 2007           ostiguy@fnal
+****** - modified implementation to make momentum dependence
+******   consistent with other magnetic elements 
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -134,7 +137,7 @@ const char* vkick::Type() const
 
 bool vkick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
@@ -232,7 +235,7 @@ const char* hkick::Type() const
 
 bool hkick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
@@ -257,14 +260,14 @@ void hkick::accept( ConstBmlVisitor& v ) const
 // ************************************************
 
 kick::kick() 
-  : bmlnElmnt(), horizontalKick_(0.0), verticalKick_(0.0)
+  : bmlnElmnt(),vh_ratio_(0.0) 
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( const char* s ) 
- : bmlnElmnt(s) 
+  : bmlnElmnt(s), vh_ratio_(0.0) 
 {}
 
 
@@ -272,14 +275,14 @@ kick::kick( const char* s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick(double const& hStrength, double const& vStrength ) 
-  : bmlnElmnt(), horizontalKick_(hStrength), verticalKick_(vStrength)
+  : bmlnElmnt(0.0, hStrength), vh_ratio_( vStrength / hStrength )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick(const char* s, double const& hStrength, double const& vStrength) 
-  : bmlnElmnt(s), horizontalKick_(hStrength), verticalKick_(vStrength)
+  : bmlnElmnt(s, 0.0, hStrength), vh_ratio_( vStrength / hStrength )
 {}
 
 
@@ -288,23 +291,21 @@ kick::kick(const char* s, double const& hStrength, double const& vStrength)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( double const& lng, double const& hStrength, double const& vStrength ) 
-  : bmlnElmnt( "NONAME", lng , hStrength + vStrength ),   // strength is arbitrary
-    horizontalKick_( hStrength ), verticalKick_ ( vStrength )
+  : bmlnElmnt( "NONAME", lng , hStrength), vh_ratio_( vStrength / hStrength )
 { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( const char* s, double const& lng, double const& hStrength, double const& vStrength ) 
-: bmlnElmnt( s, lng, hStrength + vStrength ),  // strength is arbitrary
-  horizontalKick_( hStrength ), verticalKick_( vStrength )
+: bmlnElmnt( s, lng, hStrength ), vh_ratio_( vStrength / hStrength )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( kick const& x )
-  : bmlnElmnt (x),  horizontalKick_( x.horizontalKick_ ), verticalKick_(x.verticalKick_)
+  : bmlnElmnt (x),  vh_ratio_( x.vh_ratio_ )
 { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -322,8 +323,7 @@ kick&  kick::operator=( kick const& rhs) {
 
   bmlnElmnt::operator=(rhs);
 
-  horizontalKick_ = rhs.horizontalKick_; 
-  verticalKick_   = rhs.verticalKick_; 
+  vh_ratio_   = rhs.vh_ratio_; 
 
   return *this; 
 }
@@ -331,8 +331,42 @@ kick&  kick::operator=( kick const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void  kick::setHorStrength(double const& value)
+{
+  double vstrength = strength_* vh_ratio_; 
+  strength_  = value;
+  vh_ratio_  = (strength_ != 0.0) ? vstrength/strength_ : vstrength;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void   kick::setVerStrength(double const& value)
+{
+  vh_ratio_ = (strength_ != 0.0) ? value/strength_ : value;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const&  kick::HorStrength() const
+{
+  return   strength_; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double kick::VerStrength() const
+{
+  return   vh_ratio_*strength_; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& kick::writeTo(ostream& os) {
-	os << OSTREAM_DOUBLE_PREC << horizontalKick_ << "  " << verticalKick_;
+	os << OSTREAM_DOUBLE_PREC << strength_ << "  " << strength_*vh_ratio_;
 	os << "\n";
 	return os;
 }
@@ -343,8 +377,8 @@ ostream& kick::writeTo(ostream& os) {
 istream& kick::readFrom(istream& is) {
 	double a,b;
 	is >> a >> b;
-	horizontalStrength() = a;
-	verticalStrength() = b;
+	strength_ = a;
+	vh_ratio_  = b/a;
 	return is;
 }
 
@@ -362,7 +396,7 @@ const char* kick::Type() const
 
 bool kick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
