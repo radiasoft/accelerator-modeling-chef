@@ -1571,7 +1571,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length)    elm->setLength(length);
-  if ( attribute_kck   )    elm->setStrength(kck);
+  if ( attribute_kck   )    elm->setStrength(kck*BRHO);
   if ( attribute_tilt  ) 
   {  
     aligner.xOffset = 0.0;
@@ -1615,7 +1615,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length )    { elm->setLength(length); }
-  if ( attribute_kck    )    { elm->setStrength(kck);  }
+  if ( attribute_kck    )    { elm->setStrength(kck*BRHO);  }
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;
@@ -1658,14 +1658,14 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   if ( eval( string("VKICK"),       attributes, value) )    { attribute_vkck   = true; vkck    = any_cast<double>(value); }
   if ( eval( string("TILT"),        attributes, value) )    { attribute_length = true; tilt    = any_cast<double>(value); }
 
-
-
   elm = (udelm) ? dynamic_cast<kick*>( udelm->Clone() ) : new kick();
+
+  double const brho = BRHO;
 
   elm->rename(label);
   if ( attribute_length )   elm->setLength(length);
-  // if ( attribute_hkck   )   elm->setHStrength(kck);
-  // if ( attribute_vkck   )   elm->setVStrength(kck);
+  if ( attribute_hkck   )   elm->setHorStrength(hkck*brho);
+  if ( attribute_vkck   )   elm->setVerStrength(vkck*brho);
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;
