@@ -81,7 +81,7 @@ public:
 
   hkick& operator=( hkick const& rhs);
 
-  virtual ~hkick();
+ ~hkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -112,7 +112,7 @@ public:
 
   vkick& operator=( vkick const& rhs);
 
-  virtual ~vkick();
+ ~vkick();
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
   void localPropagate( Particle& );
@@ -130,40 +130,43 @@ public:
 class DLLEXPORT kick : public bmlnElmnt {
 
 public:
-        kick();
-        kick( char const* name );
-        kick(                                           double const& horizontal_kick, double const& vertical_kick);
-        kick( char const* name,                         double const& horizontal_kick, double const& vertical_kick);
-        kick(                     double const& length, double const& horizontal_kick, double const& vertical_kick);
-        kick( char const* name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
-        kick( kick const& );
+        
+  kick();
+  kick( char const* name );
+  kick(                                           double const& horizontal_kick, double const& vertical_kick);
+  kick( char const* name,                         double const& horizontal_kick, double const& vertical_kick);
+  kick(                     double const& length, double const& horizontal_kick, double const& vertical_kick);
+  kick( char const* name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
+  kick( kick const& );
 
-        kick* Clone() const { return new kick( *this ); }
+  kick* Clone() const { return new kick( *this ); }
 
-        kick& operator=( kick const& rhs);
+ ~kick();
 
-        virtual ~kick();
+  kick& operator=( kick const& rhs);
 
-        void localPropagate( ParticleBunch& x) {bmlnElmnt::localPropagate( x ); }
-        void localPropagate( Particle& );
-        void localPropagate( JetParticle& );
+  void localPropagate( ParticleBunch& x) {bmlnElmnt::localPropagate( x ); }
+  void localPropagate( Particle& );
+  void localPropagate( JetParticle& );
 
-        void accept(BmlVisitor& v);
-        void accept(ConstBmlVisitor& v) const;
+  void accept(BmlVisitor& v);
+  void accept(ConstBmlVisitor& v) const;
 
-        double& horizontalStrength() { return horizontalKick_; }
-        double& verticalStrength()   { return verticalKick_; }
+  void   setHorStrength( double const& );
+  void   setVerStrength( double const&);
 
-        const char* Type()       const;
-        bool        isMagnet()   const;
+  double const& HorStrength() const;  
+  double        VerStrength() const;
+
+  const char* Type()       const;
+  bool        isMagnet()   const;
 
 private:
 
-        double horizontalKick_;
-        double verticalKick_;
+  double vh_ratio_;
 
-        std::istream& readFrom(std::istream&);
-        std::ostream& writeTo(std::ostream&);
+  std::istream& readFrom(std::istream&);
+  std::ostream& writeTo(std::ostream&);
 
  };
 
