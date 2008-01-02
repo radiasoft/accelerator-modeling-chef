@@ -61,8 +61,8 @@ typedef boost::shared_ptr<sbend>     SbendPtr;
 typedef boost::shared_ptr<rbend>     RbendPtr;
 typedef boost::shared_ptr<beamline>  BmlPtr;
 
-class BendEliminator : public ConstBmlVisitor 
-{
+class BendEliminator : public ConstBmlVisitor {
+
  public:
    BendEliminator();
   ~BendEliminator();
@@ -93,8 +93,8 @@ class BendEliminator : public ConstBmlVisitor
   double        length_;
   double        field_;
   double        bendAngle_;
-  double        upstreamEdgeAngle_;
-  double        downstreamEdgeAngle_;
+  double        usFaceAngle_;
+  double        dsFaceAngle_;
   std::string   new_bend_name_;
   alignmentData new_alignmentData_;
 };
