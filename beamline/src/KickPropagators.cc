@@ -8,28 +8,22 @@
 ******                                    
 ******  File:      KickPropagators.cc
 ******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
+******  Copyright Fermi Research Alliance / Fermilab    
 ******            All Rights Reserved                             
 *****
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov      
+******  Authors:    Jean-Francois Ostiguy ostiguy@fnal.gov
+******              Leo Michelotti        michelotti@fnal.gov                             
+******              
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -69,11 +63,12 @@ void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
 
      Component_t xpr = state[i_npx] / npz;
      Component_t ypr = state[i_npy] / npz;
+    
 
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/ p.Beta(); 
 }
 
 template<typename Particle_t>
@@ -82,10 +77,13 @@ void applyKick( kick& elm, Particle_t& p)
     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
+    double const hk =  elm.getHorStrength() / p.ReferenceBRho();
+    double const vk =  elm.getVerStrength() / p.ReferenceBRho();    
+
     State_t& state = p.State();
 
-    state[i_npx] += elm.horizontalStrength();
-    state[i_npy] += elm.verticalStrength();
+    state[i_npx] += hk;
+    state[i_npy] += vk;
 }
 
 template<typename Particle_t>
@@ -94,9 +92,11 @@ void applyKick( hkick& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
+  double const hk =  elm.Strength() /  p.ReferenceBRho();
+
   State_t& state = p.State();
 
-  state[i_npx] += elm.Strength();
+  state[i_npx] += hk;
 }
 
 template<typename Particle_t>
@@ -105,9 +105,11 @@ void applyKick( vkick& elm, Particle_t& p)
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
+  double const vk =  elm.Strength() /  p.ReferenceBRho();
+
   State_t& state = p.State();
 
-  state[i_npy] += elm.Strength();
+  state[i_npy] += vk;
 }
 
 template<typename Element_t, typename Particle_t>
