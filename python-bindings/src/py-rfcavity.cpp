@@ -35,7 +35,6 @@ void wrap_rfcavity () {
   
 class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def( init<const char*>() )
-  .def( init<double,double,double,double,double,double>() )    
   .def( init<char*, double,double,double,double,double,double>() )    
   .def("getPhi",             &rfcavity::getPhi,             return_value_policy<copy_const_reference>())
   .def("setPhi",             &rfcavity::setPhi)
@@ -46,7 +45,6 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
 
 
 class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<char *>() )
-  .def(init< double,   double, double, double, double> () )    
   .def(init< char*,    double,   double, double, double, double> () )    
   .def("getPhi",             &thinrfcavity::getPhi,             return_value_policy<copy_const_reference>())
   .def("setPhi",             &thinrfcavity::setPhi)
