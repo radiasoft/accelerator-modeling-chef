@@ -239,10 +239,12 @@ double const& LinacCavity::getRadialFrequency() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
  void  LinacCavity::setPhi( double const& radians)
 {
   phi_s_ = radians;
+
+  boost::dynamic_pointer_cast<LCavityUpstream>(bml_->firstElement())->setPhi(phi_s_);
+  boost::dynamic_pointer_cast<LCavityDnstream>(bml_->lastElement())->setPhi(phi_s_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
@@ -251,6 +253,13 @@ double const& LinacCavity::getRadialFrequency() const
 void  LinacCavity::setStrength( double const& eV)
 {
   strength_ = eV*1.0e-9; 
+
+  double length1 = bml_->firstElement()->Length();
+  double length2 = bml_->lastElement()->Length();
+
+  bml_->firstElement()->setStrength(strength_*length1/length_ );
+  bml_->lastElement()->setStrength(strength_ *length2/length_ );
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
