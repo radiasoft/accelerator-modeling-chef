@@ -71,7 +71,6 @@ rfcavity::rfcavity( const char* name_arg)
   , u_(0)
   , v_(0)
 {
-  finishConstructor();
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
 }
@@ -97,7 +96,6 @@ rfcavity::rfcavity( const char* name_arg, // name
   , u_(0)
   , v_(0)
 {
-  finishConstructor();
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
 }
@@ -115,86 +113,14 @@ rfcavity::rfcavity( rfcavity const& x )
   , h_(x.h_)
   , u_(0)
   , v_(0), propagator_ (x.propagator_->Clone()) 
-{
+{}
 
-#if 0
-  int m = 1 + ( ( int(x.v_) - int(x.u_) )/sizeof( bmlnElmnt* ) );
-  u_ = new bmlnElmnt* [ m ];
-  v_ = &( u_[m-1] );
-  
-  for( int k=0; k < m; ++k) {
-    u_[k] = ( x.u_[k] )->Clone();
-  }
-#endif
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::finishConstructor()
-{
-#if  0
-===================================================================================
-  // NOTE: If this code is ever modified, you 
-  // must also modify rfcavity::readFrom and rfcavity::writeTo
-
-  thinrfcavity* q = 0; 
-
-  if( u_ ) { 
-
-    // rfcavity has been constructed before;
-    // it is now being modified
-    // ------------------------------------
-    bmlnElmnt* holder[3];
-    v_ = u_;
-    for( int i=0; i<3; ++i) { holder[i] = *(v_++); }
-
-    v_ = u_;
-    *(v_++) = holder[0]->Clone();    // Could be: "*(v_++) = holder[0];"
-    *(v_)   = holder[1]->Clone();
-
-    q = dynamic_cast<thinrfcavity*>(*v_);
-    q->setHarmonicNumber(h_);
-    q->setRadialFrequency(w_rf_);
-    q->setPhi(phi_s_);
-    q->setStrength( Strength() );  // bmlnElmnt version invoked
-    v_++;
-    *(v_)   = holder[2]->Clone();
-
-    for( int i=0; i<3; ++i) { delete holder[i]; }
-  }
-  else { 
-
-    // initial construction of rfcavity
-    // -----------------------------------
-    u_ = new bmlnElmnt* [3];
-
-    v_ = u_;
-
-    *(v_++) = new drift( this->Length()/2.0 );
-
-    q = new thinrfcavity( 0.0, 1.0e9*strength_, phi_s_, Q_, R_ );
-    q->setHarmonicNumber(h_);
-    q->setRadialFrequency(w_rf_);
-
-    *(v_++)   = q;
- 
-    *(v_)   = new drift( this->Length()/2.0 );
-  }
-====================================================================================
-#endif
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rfcavity::~rfcavity()
-{
-#if 0
-  while( v_ >= u_ ) { delete (*(v_--)); }
-  delete [] u_;
-#endif
-}
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -225,7 +151,7 @@ istream& rfcavity::readFrom(istream& is)
      >> h_;
   w_rf_ = w*MATH_TWOPI;
   sin_phi_s_ = sin(phi_s_);
-  finishConstructor();
+  propagator_->setup(*this);
   return is;
 }
 
@@ -260,16 +186,11 @@ void rfcavity::setStrength( double const& strength)
 
 void rfcavity::setHarmonicNumber( double const& n )
 {
-#if 0
   thinrfcavity* q = 0;
 
-  if( 0 < n ) {
-    h_ = n;
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setHarmonicNumber( n );
   }
-  for( bmlnElmnt** i = u_; i <= v_; ++i ) {
-    if( (q =dynamic_cast<thinrfcavity*>(*i) )) q->setHarmonicNumber( n );
-  }
-#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -286,17 +207,9 @@ void rfcavity::setHarmonicNumber( int n )
 
 void rfcavity::setFrequency( double const& f )
 {
-
-#if 0
-  thinrfcavity* q = 0;
-
-  if( f > 0.0 ) {
-    w_rf_ = MATH_TWOPI*f;
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setHarmonicNumber( n );
   }
-  for( bmlnElmnt** i = u_; i <= v_; ++i ) {
-    if( (q=dynamic_cast<thinrfcavity*>(*i)) ) q->setFrequency( f );
-  }
-#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -304,18 +217,15 @@ void rfcavity::setFrequency( double const& f )
 
 void rfcavity::setFrequencyRelativeTo( double const& f )
 {
-#if 0
   thinrfcavity* q = 0;
 
   if( (0 < f) && (0 < h_) ) {
     w_rf_ = MATH_TWOPI*h_*f;
   }
 
-  for( bmlnElmnt** i = u_; i <= v_; ++i ) {
-    if( (q=dynamic_cast<thinrfcavity*>(*i) ) ) 
-             q->setFrequencyRelativeTo( f );
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setFrequencyRelativeTo( f );  
   }
-#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -323,16 +233,14 @@ void rfcavity::setFrequencyRelativeTo( double const& f )
 
 void rfcavity::setRadialFrequency( double const& omega )
 {
-#if 0
   thinrfcavity* q = 0;
 
   if( omega > 0 ) {
     w_rf_ = omega;
   }
-  for( bmlnElmnt** i = u_; i <= v_; ++i) {
-    if( (q=dynamic_cast<thinrfcavity*>(*i))) q->setRadialFrequency( omega );
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setFrequencyRelativeTo( f );  
   }
-#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -340,16 +248,16 @@ void rfcavity::setRadialFrequency( double const& omega )
 
 void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
-#if 0
   thinrfcavity* q = 0;
 
   if( (omega >0 ) && (h_ > 0) ) {
     w_rf_ = h_*omega;
   }
-  for( bmlnElmnt** i = u_; i <= v_; ++i) {
+
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
     if( (q=dynamic_cast<thinrfcavity*>(*i))) q->setRadialFrequencyRelativeTo( omega );
   }
-#endif
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -359,7 +267,7 @@ void rfcavity::setPhi( double const& angle )
 {
   phi_s_     = angle;
   sin_phi_s_ = sin(angle);
-  finishConstructor();
+  propagator_->setup(*this);
 };
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -367,7 +275,7 @@ void rfcavity::setPhi( double const& angle )
 void rfcavity::setQ( double const& Q )
 {
   Q_     = Q;
-  finishConstructor();
+  propagator_->setup(*this);
 };
 
 
