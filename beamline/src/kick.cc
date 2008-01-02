@@ -38,8 +38,12 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** - strength_ is now B*L (used to be kick angle) 
+******   so that behavior is consistent with other magnets 
+******  
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -141,7 +145,7 @@ const char* vkick::Type() const
 
 bool vkick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
@@ -262,7 +266,7 @@ const char* hkick::Type() const
 
 bool hkick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
@@ -304,7 +308,7 @@ void hkick::localPropagate( JetParticle& p)
 // ************************************************
 
 kick::kick() 
-  : bmlnElmnt(), horizontalKick_(0.0), verticalKick_(0.0)
+  : bmlnElmnt("",0.0, 0.0), vh_ratio_(0.0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -314,7 +318,7 @@ kick::kick()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( const char* s ) 
- : bmlnElmnt(s) 
+  : bmlnElmnt(s), vh_ratio_(0.0) 
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -325,7 +329,7 @@ kick::kick( const char* s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick(const char* s, double const& hStrength, double const& vStrength) 
-  : bmlnElmnt(s), horizontalKick_(hStrength), verticalKick_(vStrength)
+  : bmlnElmnt(s, 0.0, hStrength ),  vh_ratio_( (hStrength != 0.0) ? vStrength/hStrength: vStrength )
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -337,8 +341,7 @@ kick::kick(const char* s, double const& hStrength, double const& vStrength)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( const char* s, double const& lng, double const& hStrength, double const& vStrength ) 
-: bmlnElmnt( s, lng, hStrength + vStrength ),  // strength is arbitrary
-  horizontalKick_( hStrength ), verticalKick_( vStrength )
+: bmlnElmnt( s, lng, hStrength ), vh_ratio_( ( hStrength != 0.0) ? vStrength/ hStrength : vStrength )
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -348,7 +351,7 @@ kick::kick( const char* s, double const& lng, double const& hStrength, double co
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( kick const& x )
-  : bmlnElmnt (x),  horizontalKick_( x.horizontalKick_ ), verticalKick_(x.verticalKick_),
+  : bmlnElmnt (x), vh_ratio_(x.vh_ratio_),
     propagator_(x.propagator_->Clone() ) 
 { }
 
@@ -367,8 +370,7 @@ kick&  kick::operator=( kick const& rhs) {
 
   bmlnElmnt::operator=(rhs);
 
-  horizontalKick_ = rhs.horizontalKick_; 
-  verticalKick_   = rhs.verticalKick_; 
+  vh_ratio_ = rhs.vh_ratio_;
 
   propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
 
@@ -379,7 +381,7 @@ kick&  kick::operator=( kick const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& kick::writeTo(ostream& os) {
-	os << OSTREAM_DOUBLE_PREC << horizontalKick_ << "  " << verticalKick_;
+	os << OSTREAM_DOUBLE_PREC << strength_ << "  " << vh_ratio_*strength_;
 	os << "\n";
 	return os;
 }
@@ -390,11 +392,45 @@ ostream& kick::writeTo(ostream& os) {
 istream& kick::readFrom(istream& is) {
 	double a,b;
 	is >> a >> b;
-	//horizontalStrength() = a;
-	//verticalStrength() = b;
+	strength_  = a;
+	vh_ratio_  = (a !=0) ? b/a : b;
 	return is;
 }
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  kick::setHorStrength(double const& value)
+{
+  double vstrength = strength_* vh_ratio_; 
+  strength_  = value;
+  vh_ratio_  = (strength_ != 0.0) ? vstrength/strength_ : vstrength;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void   kick::setVerStrength(double const& value)
+{
+  vh_ratio_ = (strength_ != 0.0) ? value/strength_ : value;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double const&  kick::getHorStrength() const
+{
+  return   strength_; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double kick::getVerStrength() const
+{
+  return   vh_ratio_*strength_; 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -409,7 +445,7 @@ const char* kick::Type() const
 
 bool kick::isMagnet() const 
 { 
-  return false; 
+  return true; 
 }
 
 
