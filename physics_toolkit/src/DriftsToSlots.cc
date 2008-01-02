@@ -219,23 +219,23 @@ bool d2S_rbendLike( bmlnElmnt& x)
 {
   if(0 == strcmp("rbend", x.Type())) {
     rbend const* bp = static_cast<rbend *>( &x );
-    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+    return ( (0.0 == bp->getEntryFaceAngle()) && (0.0 == bp->getExitFaceAngle()) );
   }
   if(0 == strcmp("CF_rbend", x.Type())) {
     CF_rbend const* bp = static_cast<CF_rbend *>( &x );
-    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+    return ( (0.0 == bp->getEntryFaceAngle()) && (0.0 == bp->getExitFaceAngle()) );
   }
   if(0 == strcmp("sbend", x.Type())) {
     sbend const* bp = static_cast<sbend *>( &x );
     double halfBendAngle = bp->getBendAngle() / 2.0;
-    return ( (std::abs(bp->getEntryEdgeAngle() - halfBendAngle) < 1.0e-8) &&
-             (std::abs(bp->getExitEdgeAngle()  - halfBendAngle) < 1.0e-8)    );
+    return ( (std::abs(bp->getEntryFaceAngle() - halfBendAngle) < 1.0e-8) &&
+             (std::abs(bp->getExitFaceAngle()  - halfBendAngle) < 1.0e-8)    );
   }
   if(0 == strcmp("CF_sbend", x.Type())) {
     const CF_sbend* bp = dynamic_cast<const CF_sbend*>(&x);
     double halfBendAngle = bp->getBendAngle() / 2.0;
-    return ( (std::abs(bp->getEntryEdgeAngle() - halfBendAngle) < 1.0e-8) &&
-             (std::abs(bp->getExitEdgeAngle()  - halfBendAngle) < 1.0e-8)      );
+    return ( (std::abs(bp->getEntryFaceAngle() - halfBendAngle) < 1.0e-8) &&
+             (std::abs(bp->getExitFaceAngle()  - halfBendAngle) < 1.0e-8)      );
   }
   return false;
 }
@@ -248,11 +248,11 @@ bool d2S_sbendLike( bmlnElmnt const& x )
 {
   if(0 == strcmp("sbend", x.Type())) {
     const sbend* bp = dynamic_cast<const sbend*>(&x);
-    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+    return ( (0.0 == bp->getEntryFaceAngle()) && (0.0 == bp->getExitFaceAngle()) );
   }
   if(0 == strcmp("CF_sbend", x.Type())) {
     const CF_sbend* bp = dynamic_cast<const CF_sbend*>( &x);
-    return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
+    return ( (0.0 == bp->getEntryFaceAngle()) && (0.0 == bp->getExitFaceAngle()) );
   }
 
   return false;

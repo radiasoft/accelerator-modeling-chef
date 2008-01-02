@@ -73,8 +73,8 @@ BendEliminator::BendEliminator()
   , length_(0.0)
   , field_(0.0)
   , bendAngle_(0.0)
-  , upstreamEdgeAngle_(0.0)
-  , downstreamEdgeAngle_(0.0)
+  , usFaceAngle_(0.0)
+  , dsFaceAngle_(0.0)
   , new_bend_name_()
   , new_alignmentData_()
 {}
@@ -142,16 +142,16 @@ void BendEliminator::visit( beamline const& x )
                                           , length_
                                           , field_
                                           , bendAngle_
-                                          , upstreamEdgeAngle_
-                                          , downstreamEdgeAngle_    ) ) );
+                                          , usFaceAngle_
+                                          , dsFaceAngle_    ) ) );
     build_sbend_ = false;
   }
   else if( build_rbend_ ) {
     bmlPtr_->append( RbendPtr( new rbend(   new_bend_name_.c_str() 
                                           , length_
                                           , field_
-                                          , upstreamEdgeAngle_
-                                          , downstreamEdgeAngle_    ) ) );
+                                          , usFaceAngle_
+                                          , dsFaceAngle_    ) ) );
     build_rbend_ = false;
   }
 }
@@ -169,16 +169,16 @@ void BendEliminator::visit( bmlnElmnt const& x )
                                             , length_
                                             , field_
                                             , bendAngle_
-                                            , upstreamEdgeAngle_
-                                            , downstreamEdgeAngle_    ) ) );
+                                            , usFaceAngle_
+                                            , dsFaceAngle_    ) ) );
       build_sbend_ = false;
     }
     else if( build_rbend_ ) {
       bmlPtr_->append( RbendPtr( new rbend(   new_bend_name_.c_str() 
                                             , length_
                                             , field_
-                                            , upstreamEdgeAngle_
-                                            , downstreamEdgeAngle_    ) ) );
+                                            , usFaceAngle_
+                                            , dsFaceAngle_    ) ) );
       build_rbend_ = false;
     }
 
@@ -197,7 +197,7 @@ void BendEliminator::visit( sbend const& x )
 {
   // ----------------------------------------------------------
   // It is possible, in principle, for someone to have
-  //   split a bend in such a way that its downstream piece
+  //   split a bend in such a way that its ds piece
   //   begins a beamline, and its upstream piece ends it
   //   - OR -
   //   the upstream piece could be in a totally different line.
@@ -242,8 +242,8 @@ void BendEliminator::visit( sbend const& x )
     length_              = x.Length();
     field_               = x.Strength();
     bendAngle_           = x.getBendAngle();
-    upstreamEdgeAngle_   = x.getEntryEdgeAngle();
-    downstreamEdgeAngle_ = x.getExitEdgeAngle();
+    usFaceAngle_   = x.getEntryFaceAngle();
+    dsFaceAngle_ = x.getExitFaceAngle();
     new_bend_name_       = x.Name();
     new_alignmentData_   = x.Alignment();
     build_sbend_         = true;
@@ -256,16 +256,16 @@ void BendEliminator::visit( sbend const& x )
 
     bool accepted = false;
     if( relaxed_ ) {
-      accepted = std::abs( downstreamEdgeAngle_ + x.getEntryEdgeAngle() ) < 1.0e-9;
+      accepted = std::abs( dsFaceAngle_ + x.getEntryFaceAngle() ) < 1.0e-9;
     }
     else {
-      accepted =    ( 0. == downstreamEdgeAngle_  )
-                 && ( 0. == x.getEntryEdgeAngle() );
+      accepted =    ( 0. == dsFaceAngle_  )
+                 && ( 0. == x.getEntryFaceAngle() );
     }
     if(accepted) {
       length_             += x.Length();
       bendAngle_          += x.getBendAngle();
-      downstreamEdgeAngle_ = x.getExitEdgeAngle();
+      dsFaceAngle_ = x.getExitFaceAngle();
       // NOTE: if a personal propagator (ProfFunc*) has been
       //   written, it is NOT handled.  There is no way
       //   of assuring that these would be merged correctly.
@@ -275,7 +275,7 @@ void BendEliminator::visit( sbend const& x )
     else {
       ostringstream uic;
       uic  << "Sbend exit and entry angles not matched."
-           << "\nDownstream: entry angle = " << x.getEntryEdgeAngle()
+           << "\n downstream: entry angle = " << x.getEntryFaceAngle()
            << " for " << x.Type() << "  " << x.Name();
       throw( GenericException( __FILE__, __LINE__, 
              "void BendEliminator::visit( sbend const& x )", 
