@@ -157,8 +157,7 @@ void Bend::Propagator::setup(Bend& elm)
     psi         =  - ( usFaceAngle_ + dsFaceAngle_ );
     dphi_       =  - psi;
     propPhase_  = std::exp(std::complex<double>(0.0, psi ));
-
-    propTerm_   =   elm.Length() * std::complex<double> ( cos( dsFaceAngle_), -sin(dsFaceAngle_) );
+    propTerm_   = elm.Length() * std::complex<double> ( cos( dsFaceAngle_), -sin(dsFaceAngle_) );
 
     break;
   }
