@@ -27,6 +27,7 @@
 ******
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #include <beamline/SlotPropagators.h>
@@ -45,11 +46,21 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 
-void propagate( Slot& elm, Particle& p )
+bool betaParallelTest( double const&  betaParallel ) {
+    return (betaParallel <= 0.0); 
+}
+
+bool betaParallelTest( Jet const&   betaParallel ) {
+    return (betaParallel.standardPart() )<= 0.0; 
+}
+
+template <typename Particle_t>
+void propagate( Slot& elm, Particle_t& p )
 {
   
-  typedef PropagatorTraits<Particle>::State_t       State_t;
-  typedef PropagatorTraits<Particle>::Component_t   Component_t;
+  typedef typename PropagatorTraits<Particle_t>::State_t           State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+  typedef typename PropagatorTraits<Particle_t>::Vector_t         Vector_t;
  
   State_t& state = p.State();
 
@@ -59,32 +70,30 @@ void propagate( Slot& elm, Particle& p )
  // Propagate as drift to the out-plane
  //-----------------------------------------
 
-  Vector r(3);
+  Vector_t r(3);
 
   r[0] = state[i_x];
   r[1] = state[i_y];
 
-  Vector beta ( p.VectorBeta() );
+  Vector_t beta ( p.VectorBeta() );
 
   Vector q    ( outframe.getOrigin() );
   Vector u_1  ( outframe.getAxis(0) );
   Vector u_2  ( outframe.getAxis(1) );
   Vector u_3  ( outframe.getAxis(2) );
 
-  double betaParallel = beta * u_3;
-  double tau;
-
-  if( betaParallel > 0.0 ) {
-      tau = ( q - r )*u_3 / betaParallel;
-    }
-  else {
-      std::ostringstream uic;
+  Component_t betaParallel = beta * u_3;
+  
+  if ( betaParallelTest  (betaParallel) ) {
+   std::ostringstream uic;
       uic << elm.Type() << "  " << elm.Name()
           << ": Velocity is not forward: it may be NAN.";
       throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
              "void Slot::localPropagate( Particle& p )", 
              uic.str().c_str() ) );
-  }
+  };
+
+  Component_t tau = (q-r) * u_3 / betaParallel;
 
   r += tau*beta;
   r -= q;
@@ -93,67 +102,18 @@ void propagate( Slot& elm, Particle& p )
   state[ i_y   ]  = r*u_2;
   state[ i_cdt ] += ( tau - elm.getReferenceTime() );
 
-    // Momentum transformation
+  // Momentum transformation
 
-  Vector momntm = ( p.NormalizedVectorMomentum() );
+  Vector_t momntm = ( p.NormalizedVectorMomentum() );
 
   state[ i_npx ] = momntm*u_1;
   state[ i_npy ] = momntm*u_2;
-}
-
-void propagate( Slot& elm, JetParticle& p )
-{
- 
-  Mapping&        state = p.State();
-  Frame const& outframe = elm.getOutFrame();
-
-  JetVector r(3, state.Env());
-
-  r[0] = state[i_x];
-  r[1] = state[i_y];
-
-  JetVector beta ( p.VectorBeta() );
-
-  Vector q    ( outframe.getOrigin() );
-  Vector u_1  ( outframe.getAxis(0) );
-  Vector u_2  ( outframe.getAxis(1) );
-  Vector u_3  ( outframe.getAxis(2) );
-
-  Jet    tau;
-  Jet    betaParallel = beta * u_3;
-
-  if( betaParallel.standardPart() > 0.0 ) {
-      tau = ( q - r )*u_3 / betaParallel;
-   }
-   else {
-
-      std::ostringstream uic;
-      uic << elm.Type() << "  " << elm.Name()
-          << ": Velocity is not forward: it may be NAN.";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-             "void Slot::localPropagate( JetParticle& p )", 
-             uic.str().c_str() ) );
-  }
-
-  r += tau*beta;
-  r -= q;
-
-  state[i_x  ]   = r*u_1;
-  state[i_y  ]   = r*u_2;
-  state[i_cdt]  += ( tau - elm.getReferenceTime() );
-
-  // Momentum transformation
-
-  JetVector mom( p.NormalizedVectorMomentum() );
-  state[i_npx] = mom*u_1;
-  state[i_npy] = mom*u_2;
 }
 
 } // anonymous namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void Slot::Propagator::setup(Slot& elm)
 {}
