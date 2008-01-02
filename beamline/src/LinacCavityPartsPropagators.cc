@@ -66,8 +66,11 @@ void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-     return; // NOTE : cdt is NOT modified here. The reference time is adjusted
-             //        by LinacCavityPropagator . 
+    // NOTE : The reference time is adjusted by LinacCavityPropagator . 
+
+     state[i_cdt ] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/p.Beta(); 
+
+     return;     
 }
 
 
@@ -100,8 +103,8 @@ void propagate( Element_t& elm, Particle_t& p )
    return;
   }
 
-  double         const referenceEnergyGain = strength*cos ( -phi_s);
-  Component_t    const onaxisEnergyGain    = strength*cos ( -phi_s + state[i_cdt] * w_rf / PH_MKS_c );
+  double         const referenceEnergyGain = strength*cos ( phi_s);
+  Component_t    const onaxisEnergyGain    = strength*cos ( phi_s + state[i_cdt] * w_rf / PH_MKS_c );
   Component_t    const eE_z                = onaxisEnergyGain / length;
 
   if ( position == upstream ) {
