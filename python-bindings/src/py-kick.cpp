@@ -40,7 +40,6 @@ void wrap_kick () {
 
 
 class_<hkick, bases<bmlnElmnt>, HKickPtr >("hkick")
-  .def(init<double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&>())
   .def(init<char const*,double const&, double const&>())
@@ -48,7 +47,6 @@ class_<hkick, bases<bmlnElmnt>, HKickPtr >("hkick")
 
 
 class_<vkick, bases<bmlnElmnt>, VKickPtr >("vkick")
-  .def(init<double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&>())
   .def(init<char const*,double const&, double const&>())
@@ -56,7 +54,6 @@ class_<vkick, bases<bmlnElmnt>, VKickPtr >("vkick")
 
 
 class_<kick,bases<bmlnElmnt>, KickPtr >("kick")
-  .def(init<double const&,double const&>())
   .def(init<char const*>())
   .def(init<char const*,double const&, double const&, double const&>())
   .def(init<char const*,double const&, double const&, double const&>())

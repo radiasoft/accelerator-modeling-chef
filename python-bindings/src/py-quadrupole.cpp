@@ -32,19 +32,9 @@ using namespace boost::python;
 
 void wrap_quadrupole () {
 
-class_<quadrupole, bases<bmlnElmnt>, QuadrupolePtr >("quadrupole")
-  .def(init<char*  ,  double, double, bmlnElmnt::PropFunc*>() )
-  .def(init<double ,  double, bmlnElmnt::PropFunc* >() )
-  .def(init<char*  ,  double, double>())
-  .def(init<double ,  double>())
-  .def("setStrength", &quadrupole::setStrength) 
-  .def("Type",        &quadrupole::Type);
+  class_<quadrupole, bases<bmlnElmnt>, QuadrupolePtr >("quadrupole", init<char*  ,  double, double>() );
+
+  class_<thinQuad, bases<bmlnElmnt>, ThinQuadPtr >("thinQuad", init<char*, double>() );     // B'L in Tesla; + = horizontally focussing
  
-
-
-class_<thinQuad, bases<bmlnElmnt>, ThinQuadPtr >("thinQuad", init<double>())
-  .def(init<char*, double>() )     // B'L in Tesla; + = horizontally focussing
-  .def("Type",                      &thinQuad::Type);
-
 }
 

@@ -57,12 +57,9 @@ double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rb
 
 void wrap_cf_rbend () {
 
-  class_<CF_rbend, bases<bmlnElmnt>, CFRbendPtr >("CF_rbend", init<double const&, double const&, double const&>() )
-  .def(init<const char*,  double const&,  double const&, double const&>() )
-  .def(init<              double const&,  double const&, double const&, double const&,  int>() )
-  .def(init<const char*,  double const&,  double const&, double const&, double const& , int>() )
-  .def(init<              double const&,  double const&, double const&, double const&,  double const&, int>() )
-  .def(init<const char*,  double const&,  double const&, double const&, double const& , double const&, int>() )
+  class_<CF_rbend, bases<bmlnElmnt>, CFRbendPtr >("CF_rbend", init<const char*,  double const&,  double const&, double const&>() )
+  .def(init<const char*,  double const&,  double const&, double const&, double const& >() )
+  .def(init<const char*,  double const&,  double const&, double const&, double const& , double const& >() )
   .def("setQuadrupole",           &CF_rbend::setQuadrupole)
   .def("setSextupole",            &CF_rbend::setSextupole)
   .def("setOctupole",             &CF_rbend::setOctupole) 
@@ -77,8 +74,8 @@ void wrap_cf_rbend () {
   .def("setExitAngleParticle",    setExitAngleParticle_Ptr)
   .def("getEntryAngle",           &CF_rbend::getEntryAngle)
   .def("getExitAngle",            &CF_rbend::getExitAngle)
-  .def("getEntryEdgeAngle",       &CF_rbend::getEntryEdgeAngle)
-  .def("getExitEdgeAngle",        &CF_rbend::getExitEdgeAngle)
+  .def("getEntryFaceAngle",       &CF_rbend::getEntryFaceAngle)
+  .def("getExitFaceAngle",        &CF_rbend::getExitFaceAngle)
   .def("hasParallelFaces",        &CF_rbend::hasParallelFaces)
   .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
     //  .def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)

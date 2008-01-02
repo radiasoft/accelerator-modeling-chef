@@ -35,8 +35,6 @@ using namespace boost::python;
 void wrap_drift () {
 
 class_<drift, bases<bmlnElmnt>, DriftPtr >("drift", init<>())
-  .def(init<double const&>() )
-  .def(init<char const*>() )
   .def(init<char const*, double>() );
  
 }
