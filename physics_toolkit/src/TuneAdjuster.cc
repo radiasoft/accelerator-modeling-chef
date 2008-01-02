@@ -252,16 +252,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 
   myBeamlinePtr_->propagate( jpr );
 
-
-  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
-
-  if( slotFound() ) {
-    lfs.Slow_CS_Calc( jpr );
-  }
-  else {
-    lfs.Fast_CS_Calc( jpr);
-  }  
-  
+  lfs.NewSlow_CS_Calc( jpr );
 
   int N = numberOfCorrectors();
 
@@ -339,15 +330,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
   myBeamlinePtr_->propagate( jpr );
 
 
-  if( slotFound() ) {
-    lfs.Slow_CS_Calc( jpr );
-  }
-  else {
-    lfs.Fast_CS_Calc( jpr );
-  }  
-  
-  // lfs.Fast_CS_Calc( jpr );
-  // This Fast_CS_Calc does not work if there are Slot's!!!  Take action!
+  lfs.NewSlow_CS_Calc( jpr );
 
   int N = correctors_.size();
 
@@ -430,17 +413,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
  
   myBeamlinePtr_->propagate( jpr );
 
-  // Check for Slots
-
-
-  // Fast_CS_Calc does not work if there are Slot's!!!  Take action!
-
-  if( slotFound() ) {
-    lfs.Slow_CS_Calc( jpr );
-  }
-  else {
-    lfs.Fast_CS_Calc( jpr );
-  }  
+  lfs.NewSlow_CS_Calc( jpr );
   
   int N = correctors_.size();
 
