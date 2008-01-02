@@ -75,8 +75,6 @@ void propagate( bmlnElmnt& elm, Particle_t&  p)
      (*it)->localPropagate( p );
   }
 
-  state[i_cdt] += elm.Length() - elm.getReferenceTime();
-
   // reference time adjustment is done at the element level in the nested beamline. 
 }
 
@@ -120,3 +118,6 @@ void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticle& p )
 {
   ::propagate(elm,p);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
