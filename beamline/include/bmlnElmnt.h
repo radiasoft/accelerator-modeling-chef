@@ -124,11 +124,14 @@ class TMapping;
 template <typename T>
 class TJet;
 
+template <typename T>
+class TJetVector;
+
 typedef TVector<double>                VectorD;
 typedef TJet<double>                   Jet;
 typedef TJet<std::complex<double> >    JetC;
-
-typedef TMapping<double>  Mapping;
+typedef TJetVector<double>             JetVector;
+typedef TMapping<double>               Mapping;
 
 bmlnElmnt* read_istream(std::istream&);
 
@@ -145,6 +148,7 @@ struct PropagatorTraits<Particle> {
   typedef Vector                                   State_t;
   typedef double                               Component_t;
   typedef std::complex<double>                 ComplexComponent_t;
+  typedef Vector                                  Vector_t;
   static double  norm(  PropagatorTraits<Particle>::Component_t const& comp);  
 };  
 
@@ -153,6 +157,7 @@ struct PropagatorTraits<JetParticle> {
   typedef Mapping                 State_t;
   typedef Jet                 Component_t;
   typedef JetC         ComplexComponent_t;
+  typedef JetVector              Vector_t;
   static double  norm( PropagatorTraits<JetParticle>::Component_t const& comp);  
 };  
    
