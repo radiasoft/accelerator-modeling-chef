@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      EdwardsTengSage.cc
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -88,6 +87,9 @@ namespace {
   Particle::PhaseSpaceIndex const& y  = Particle::yIndex;
   Particle::PhaseSpaceIndex const& xp = Particle::npxIndex;
   Particle::PhaseSpaceIndex const& yp = Particle::npyIndex;
+  
+  int const BMLN_dynDim = 6;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
