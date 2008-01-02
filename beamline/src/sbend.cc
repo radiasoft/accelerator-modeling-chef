@@ -79,7 +79,7 @@ using FNAL::pcout;
 
 sbend::sbend() 
   : bmlnElmnt( "", 0.0, 0.0),
-        angle_(0.000),
+        angle_(0.0),
   usFaceAngle_(0.0),
   dsFaceAngle_(0.0),
       usAngle_(0.0),
@@ -134,20 +134,18 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
 
 
 sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, 
-              double const& us_arg, double const& ds_arg )
+              double const& usfaceangle, double const& dsfaceangle )
   :    bmlnElmnt( n, l, s),
              angle_(alpha),
-       usFaceAngle_(us_arg),
-       dsFaceAngle_(ds_arg),
-           usAngle_(us_arg),
-           dsAngle_(-ds_arg)
+       usFaceAngle_( usfaceangle ),
+       dsFaceAngle_( dsfaceangle ),
+           usAngle_( usfaceangle ),
+           dsAngle_(-dsfaceangle )
 {
 
-  // Note: us and ds are modified below ...  
-  double us = us_arg;
-  double ds = ds_arg;
  
  static bool firstTime = true;
+
  if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
    uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
@@ -168,39 +166,41 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
         << endl;
    angle_ = - angle_;
  }
- if ( (0.0 < std::abs(us)) && (std::abs( us ) < 1.0e-6) ) {
-   us = 0.0;
-   usFaceAngle_ = 0.0;
-       usAngle_ = 0.0;
+
+ if (  ( 0.0 < std::abs(usfaceangle)) 
+    && ( std::abs( usfaceangle ) < 1.0e-6) ) {
+
+   usFaceAngle_ = usAngle_ = 0.0;
+
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream edge angle | = " 
-          << std::abs(us) 
+          << std::abs(usfaceangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
+
      firstTime = false;
    }
  }
- if ( (0.0 < std::abs(ds)) && ( std::abs( ds ) < 1.0e-6) ) {
+ if ( (0.0 < std::abs(dsfaceangle)) && ( std::abs( dsfaceangle ) < 1.0e-6) ) {
 
-   ds = 0.0;
-   dsFaceAngle_ = 0.0;
-       dsAngle_ = 0.0;
+    dsFaceAngle_ = dsAngle_ = 0.0;
 
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** sbend::sbend( double const& l, ... PropFunc* pf )"
              "\n*** WARNING *** | downstream edge angle | = " 
-          << std::abs(ds) 
+          << std::abs(dsfaceangle) 
           << " < 1 microradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
           << endl;
+
      firstTime = false;
    }
  }
@@ -330,12 +330,12 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
  // WARNING: The following code assumes that an sbend element
  //          is modeled with a nested beamline, whith edge effects 
  //          incorporated in upstream and downstream edge elements. 
- //          Il will *fail* when the propagator that assumes otherwise. 
+ //          Il will *fail* if propagator assumes otherwise. 
  //--------------------------------------------------------------------
 
  // .. Check for the presence of a nested beamline with 3 elements ... 
 
-  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
+  bool valid_nested_beamline = bml_ ? ( bml_->howMany() == 3 ) : false;
   
   if ( !valid_nested_beamline) { 
        throw GenericException( __FILE__, __LINE__, 
