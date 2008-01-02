@@ -84,12 +84,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
 
-   void enterLocalFrame( Particle&     ) const;
-   void enterLocalFrame( JetParticle&  ) const;
-
-   void leaveLocalFrame( Particle&     ) const;
-   void leaveLocalFrame( JetParticle&  ) const;
- 
    void localPropagate( Particle& );
    void localPropagate( JetParticle& );
  
@@ -109,12 +103,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
    Frame const& getOutFrame() const
      { return out_; }
 
-   // Functions passed on to tenant
-
-   void setStrength   ( double const& );
-   void setCurrent    ( double const& );
-   bool setAlignment  ( const alignmentData& );
-   double Current() const;
    double OrbitLength( Particle const& );
 
  private:
@@ -123,9 +111,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
    Frame out_;
 
    PropagatorPtr propagator_;
-
-   void processFrame( Frame const&, Particle& )    const;
-   void processFrame( Frame const&, JetParticle& ) const;
 
    std::ostream& writeTo ( std::ostream& );
    std::istream& readFrom( std::istream& );
