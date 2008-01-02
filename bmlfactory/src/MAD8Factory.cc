@@ -691,9 +691,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), length, kck ) );
+        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), length, kck*BRHO_ ) );
       } else {
-        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), kck ) );
+        lbel = ElmPtr( new hkick( strip_final_colon( bel->name_ ).c_str(), kck*BRHO_ ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -710,9 +710,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || kck != 0.0 ) {
-        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, kck ) );
+        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, kck*BRHO_ ) );
       } else {
-        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), kck ) );
+        lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), kck*BRHO_ ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -730,9 +730,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       char   name[BEL_NAME_LENGTH];
       
       if ( length != 0.0 || hkck != 0.0 || vkck != 0.0 ) {
-        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), length, hkck, vkck ) );
+        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), length, hkck*BRHO_, vkck*BRHO_ ) );
       } else {
-        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), hkck, vkck ) );
+        lbel = ElmPtr( new kick( strip_final_colon( bel->name_ ).c_str(), hkck*BRHO_, vkck*BRHO_ ) );
       }
       
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
@@ -789,7 +789,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double energy   = this->getEnergy();
       double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
 
-      lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle ) );
+      lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle*BRHO_ ) );
 
       // Original code:. 
 
