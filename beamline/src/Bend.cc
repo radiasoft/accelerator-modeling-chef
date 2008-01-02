@@ -93,13 +93,11 @@ bool Bend::isMagnet() const
 
 void Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // this should never be called. 
 
-  //a->setAlignment( ald );
-  //b->setAlignment( ald );
-
-  // Rename
-  //a->rename( ident_ + string("_1") );
-  //b->rename( ident_ + string("_2") );
+ std::cerr << 
+     "WARNING:  Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const has been called." 
+	   << std::endl;
 }
 
 
