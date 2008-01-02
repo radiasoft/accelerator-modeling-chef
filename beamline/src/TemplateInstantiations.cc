@@ -125,6 +125,8 @@ template boost::shared_ptr<sbend>            boost::dynamic_pointer_cast<sbend, 
 template boost::shared_ptr<CF_sbend>         boost::dynamic_pointer_cast<CF_sbend,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<rbend>            boost::dynamic_pointer_cast<rbend,            bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<LinacCavity>      boost::dynamic_pointer_cast<LinacCavity,      bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<LCavityUpstream>  boost::dynamic_pointer_cast<LCavityUpstream,  bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<LCavityDnstream>  boost::dynamic_pointer_cast<LCavityDnstream,  bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<beamline>         boost::static_pointer_cast<beamline,          bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<Slot>             boost::static_pointer_cast<Slot,              bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<CF_rbend>         boost::static_pointer_cast<CF_rbend,          bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
@@ -136,6 +138,9 @@ template boost::shared_ptr<sbend>            boost::static_pointer_cast<sbend,  
 template boost::shared_ptr<CF_sbend>         boost::static_pointer_cast<CF_sbend,          bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<rbend>            boost::static_pointer_cast<rbend,             bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<Bend>             boost::static_pointer_cast<Bend,              bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+
+
+
 
 template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> > >;
 template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
