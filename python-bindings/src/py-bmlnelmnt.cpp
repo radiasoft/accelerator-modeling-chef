@@ -38,39 +38,44 @@ using namespace boost::python;
 
 namespace {
 
-void   (bmlnElmnt::*propagateParticle)     (Particle&      ) = &bmlnElmnt::propagate;
-void   (bmlnElmnt::*propagateJetParticle)  (JetParticle&   ) = &bmlnElmnt::propagate;
-void   (bmlnElmnt::*propagateParticleBunch)(ParticleBunch& ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_particle     )  (      Particle&   ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_jetparticle  )  (   JetParticle&   ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_bunch        )  ( ParticleBunch&   ) = &bmlnElmnt::propagate;
 
-void   (bmlnElmnt::*setStrength1)          (double const&  ) = &bmlnElmnt::setStrength;
-  //double (bmlnElmnt::*setReferenceTime1)     (Particle const&) = &bmlnElmnt::setReferenceTime;
-double (bmlnElmnt::*setReferenceTime2)     (double   const&) = &bmlnElmnt::setReferenceTime;
+void   (bmlnElmnt::* setStrength1)               (double const&  )        =  &bmlnElmnt::setStrength;
+void   (bmlnElmnt::* enterLocalFrame_particle)   (     Particle& )  const =  &bmlnElmnt::enterLocalFrame; 
+void   (bmlnElmnt::* enterLocalFrame_jetparticle)(  JetParticle& )  const =  &bmlnElmnt::enterLocalFrame; 
+void   (bmlnElmnt::* leaveLocalFrame_particle)   (     Particle& )  const =  &bmlnElmnt::leaveLocalFrame; 
+void   (bmlnElmnt::* leaveLocalFrame_jetparticle)(  JetParticle& )  const =  &bmlnElmnt::leaveLocalFrame; 
+void   (bmlnElmnt::* localPropagate_particle)    (     Particle& )        =  &bmlnElmnt::localPropagate; 
+void   (bmlnElmnt::* localPropagate_jetparticle) (  JetParticle& )        =  &bmlnElmnt::localPropagate; 
+void   (bmlnElmnt::* setReferenceTime_double   ) ( double const& )        =  &bmlnElmnt::setReferenceTime;
 
 }
 
 void wrap_bmlnelmnt() {
   
   class_<bmlnElmnt, boost::shared_ptr<bmlnElmnt>, boost::noncopyable>("bmlnElmnt", no_init)
-    .def("propagateParticle",             propagateParticle)
-    .def("propagateJetParticle",          propagateJetParticle )
-    .def("propagateParticleBunch",        propagateParticleBunch )
-    .def("getTag",                        &bmlnElmnt::getTag)
-    .def("setTag",                        &bmlnElmnt::setTag)
-    .def("setShunt",                      &bmlnElmnt::setShunt )
+    .def("propagate",                     propagate_particle      )
+    .def("propagate",                     propagate_jetparticle   )
+    .def("propagate",                     propagate_bunch         )
+    .def("getTag",                        &bmlnElmnt::getTag      )
+    .def("setTag",                        &bmlnElmnt::setTag      )
+    .def("setShunt",                      &bmlnElmnt::setShunt    )
     .def("getShunt",                      &bmlnElmnt::getShunt, return_value_policy<copy_const_reference>() )        
      /****  virtual functions ***/ 
-    .def("setLength",                     &bmlnElmnt::setLength)
-    .def("Strength",                      &bmlnElmnt::Strength)
-    .def("setStrength",                   setStrength1)
-    .def("setCurrent",                    &bmlnElmnt::setCurrent)
-    .def("Name",                          &bmlnElmnt::Name)
-    .def("rename",                        &bmlnElmnt::rename)
+    .def("setLength",                     &bmlnElmnt::setLength   )
+    .def("Strength",                      &bmlnElmnt::Strength    )
+    .def("setStrength",                   &bmlnElmnt::setStrength )
+    .def("setCurrent",                    &bmlnElmnt::setCurrent  )
+    .def("Name",                          &bmlnElmnt::Name        )
+    .def("rename",                        &bmlnElmnt::rename      )
     .def("getReferenceTime",              &bmlnElmnt::getReferenceTime)
-//    .def("setReferenceTime",              setReferenceTime1)
-    .def("setReferenceTime",              setReferenceTime2)
-    .def("Current",                       &bmlnElmnt::Current)
-    .def("Type",                          &bmlnElmnt::Type)
-    .def("OrbitLength",                   &bmlnElmnt::OrbitLength)
+    .def("setReferenceTime",              setReferenceTime_double )
+    .def("Current",                       &bmlnElmnt::Current     )
+    .def("Type",                          &bmlnElmnt::Type        )
+    .def("OrbitLength",                   &bmlnElmnt::OrbitLength )
+    .def("Split",                         &bmlnElmnt::Split       )
     .def_readwrite("dataHook",            &bmlnElmnt::dataHook);
 }  
 
