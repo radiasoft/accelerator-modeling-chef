@@ -67,12 +67,12 @@ static std::ostream& operator<<(std::ostream &os,  const LattFuncSage::lattRing&
 }
  
 
-int (LattFuncSage::* Twiss_Calc1)(JetParticle&)    = & LattFuncSage::Twiss_Calc;
+// int (LattFuncSage::* Twiss_Calc1)(JetParticle&)    = & LattFuncSage::Twiss_Calc;
 
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Disp_Calc_overloads,    Disp_Calc,    1, 1) 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Fast_CS_Calc_overloads, Fast_CS_Calc, 1, 1) 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Slow_CS_Calc_overloads, Slow_CS_Calc, 1, 1) 
+  //BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Fast_CS_Calc_overloads, Fast_CS_Calc, 1, 1) 
+  //BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(LattFuncSage_Slow_CS_Calc_overloads, Slow_CS_Calc, 1, 1) 
 
 
 void wrap_lattfuncsage() {
@@ -100,9 +100,9 @@ class_<LattFuncSage::lattRing::chromaticity_type>("chromaticity")
  class_<LattFuncSage,  boost::noncopyable>("LattFuncSage", init< BmlPtr >())
    .def(init<beamline const&>())
    .def("TuneCalc",        &LattFuncSage::TuneCalc)
-   .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() )     // ( JetParticle*, Sage::CRITFUNC = 0 )
-   .def("Fast_CS_Calc",    &LattFuncSage::Fast_CS_Calc, LattFuncSage_Fast_CS_Calc_overloads() ) //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
-   .def("Slow_CS_Calc",    &LattFuncSage::Slow_CS_Calc, LattFuncSage_Slow_CS_Calc_overloads())  //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+   //   .def("Disp_Calc",       &LattFuncSage::Disp_Calc,   LattFuncSage_Disp_Calc_overloads() )     // ( JetParticle*, Sage::CRITFUNC = 0 )
+   // .def("Fast_CS_Calc",    &LattFuncSage::Fast_CS_Calc, LattFuncSage_Fast_CS_Calc_overloads() ) //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
+   // .def("Slow_CS_Calc",    &LattFuncSage::Slow_CS_Calc, LattFuncSage_Slow_CS_Calc_overloads())  //  ( /* const */ JetParticle*, Sage::CRITFUNC = 0 )
    .def("eraseAll",  &LattFuncSage::eraseAll)
    .def("set_dpp",   &LattFuncSage::set_dpp)
    .def("get_dpp",   &LattFuncSage::get_dpp);
