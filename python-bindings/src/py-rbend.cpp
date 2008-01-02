@@ -33,36 +33,41 @@
 
 using namespace boost::python;
 
+
 namespace {
 
-  double   (rbend::* setEntryAngle_overload_1)( Particle const&)    = &rbend::setEntryAngle;
-//double   (rbend::* setEntryAngle_overload_2)( JetParticle const&) = &rbend::setEntryAngle;
-  double   (rbend::* setEntryAngle_overload_3)( double const&)             = &rbend::setEntryAngle;
-
-  double   (rbend::* setPoleFaceAngle_overload_1)( const Particle&)     = &rbend::setPoleFaceAngle;
-  double   (rbend::* setPoleFaceAngle_overload_2)( const JetParticle&)  = &rbend::setPoleFaceAngle;
+double (rbend::* setEntryAngle_double)          (     double   const&  ) =  &rbend::setEntryAngle; 
+double (rbend::* setEntryAngle_particle)        (     Particle const&  ) =  &rbend::setEntryAngle; 
+double (rbend::*  setExitAngle_double)          (     double   const&  ) =  &rbend::setExitAngle; 
+double (rbend::*  setExitAngle_particle)        (     Particle const&  ) =  &rbend::setExitAngle; 
+  //double (rbend::* setPoleFaceAngle_double)       (     double   const&  ) =  &rbend::setPoleFaceAngle;
+  //double (rbend::* setPoleFaceAngle_particle)     (     Particle const&  ) =  &rbend::setPoleFaceAngle;
+  //double (rbend::* setPoleFaceAngle_jetparticle)  (  JetParticle const&  ) =  &rbend::setPoleFaceAngle;
 
 } // anonymous namespace
 
-
 void wrap_rbend () {
+  
+using namespace boost::python;
 
-class_<rbend, bases<bmlnElmnt>, RBendPtr >("rbend", init<double,double>() )
-  .def( init<double, double, double>() )
-  .def( init<char*, double, double>() )
-  .def( init<char*, double, double, double>() )
-  .def( "getReferenceTime",        &rbend::getReferenceTime)
-  .def( "PoleFaceAngle",           &rbend::PoleFaceAngle)
-  .def( "getPoleFaceAngle" ,       &rbend::getPoleFaceAngle)   
-  .def( "getTanPoleFaceAngle",     &rbend::getTanPoleFaceAngle)
-  .def( "getEntryAngle",           &rbend::getEntryAngle)
-  .def( "setPoleFaceAngle",        setPoleFaceAngle_overload_1)
-  .def( "setPoleFaceAngle",        setPoleFaceAngle_overload_2)
-  .def( "setEntryAngle",           setEntryAngle_overload_1)
-  //.def( "setEntryAngle",           setEntryAngle_overload_2)
-  .def( "setEntryAngle",           setEntryAngle_overload_3)
-  .def( "Type",                    &rbend::Type);
+class_<rbend, bases<bmlnElmnt>, RBendPtr >("rbend", init<char const*,    double const&,  double const&,  double const&>() )
+  .def(init<char const*,    double const&,  double const&,  double const&,  double const&,  double const&>() )
+  .def("getEntryAngle",     &rbend::getEntryAngle        )
+  .def("getExitAngle",      &rbend::getExitAngle         )
+  .def("setEntryAngle",     setEntryAngle_double         )
+  .def("setEntryAngle",     setEntryAngle_particle       )
+  .def("setExitAngle",      setExitAngle_double          )
+  .def("setExitAngle",      setExitAngle_particle        )
+  .def("getEntryFaceAngle", &rbend::getEntryFaceAngle    ) 
+  .def("getExitFaceAngle",  &rbend::getExitFaceAngle     ) 
+  //.def("setPoleFaceAngle",  setPoleFaceAngle_double      )
+  //.def("setPoleFaceAngle",  setPoleFaceAngle_particle    )
+  //.def("setPoleFaceAngle",  setPoleFaceAngle_jetparticle )
+  .def("hasParallelFaces",  &rbend::hasParallelFaces     )
+  .def("hasStandardFaces",  &rbend::hasStandardFaces     );
+
+
+  //  void accept( BmlVisitor& v );
+  //  void accept( ConstBmlVisitor& v ) const;
 
 }
-
-
