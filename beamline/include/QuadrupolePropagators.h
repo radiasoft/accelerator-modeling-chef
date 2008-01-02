@@ -38,8 +38,10 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
  public:
 
   Propagator ( int n): n_(n) {}
+  Propagator ( Propagator const& o ): BasePropagator<quadrupole>(), n_(o.n_) {}
 
   Propagator* Clone() const { return new Propagator(*this); }
+
   void  setup(quadrupole& elm); 
 
   void  operator()( quadrupole& elm,        Particle& p);
