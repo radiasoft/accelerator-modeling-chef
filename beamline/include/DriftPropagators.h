@@ -22,7 +22,8 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Author: Jean-Francois Ostiguy  
+******          ostiguy@fnal.gov
 ******
 ******
 **************************************************************************
