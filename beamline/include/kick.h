@@ -43,7 +43,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef KICK_H
 #define KICK_H
 
@@ -77,10 +76,10 @@ public:
   typedef boost::shared_ptr<BasePropagator<hkick> > PropagatorPtr;   
 
   hkick();
-  hkick( const char* name);                                         // name; assumes zero kick
-  hkick( const char* name,                 double const& kick);     // kick size in radians
-  hkick( const char* name,  double const& length, double const& kick);     // kick size in radians
-  hkick( const hkick& );
+  hkick( char const* name);                                         // name; assumes zero kick
+  hkick( char const* name,                 double const& kick);     // kick size in radians
+  hkick( char const* name,  double const& length, double const& kick);     // kick size in radians
+  hkick( hkick const& );
 
   hkick* Clone() const { return new hkick( *this ); }
 
@@ -114,10 +113,10 @@ public:
   typedef boost::shared_ptr<BasePropagator<vkick> > PropagatorPtr;   
 
   vkick();                                                             // Assumes zero kick
-  vkick( const char* );                                                // name; assumes zero kick
-  vkick( const char*  name, double const& kick);                       // kick size in radians
-  vkick( const char*,double const& length, double const& kick );       // kick size in radians
-  vkick( const vkick& );
+  vkick( char const* );                                                // name; assumes zero kick
+  vkick( char const*  name, double const& kick);                       // kick size in radians
+  vkick( char const*,double const& length, double const& kick );       // kick size in radians
+  vkick( vkick const& );
 
   vkick* Clone() const { return new vkick( *this ); }
 
@@ -168,19 +167,18 @@ public:
   void accept(BmlVisitor& v);
   void accept(ConstBmlVisitor& v) const;
 
-  double const& horizontalStrength() { return horizontalKick_; }
-  double const& verticalStrength()   { return verticalKick_; }
+  double const& getHorStrength() const;
+  double        getVerStrength() const;
 
-  void setHorizontalStrength(double const& value)  { horizontalKick_ = value; }
-  void setVerticalStrength( double const& value)   {   verticalKick_ = value; }
+  void setHorStrength( double const& value);  
+  void setVerStrength( double const& value);   
 
   const char* Type()       const;
   bool        isMagnet()   const;
 
 private:
 
-  double        horizontalKick_;
-  double        verticalKick_;
+  double vh_ratio_;
 
   PropagatorPtr propagator_;
 
