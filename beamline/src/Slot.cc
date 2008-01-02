@@ -93,7 +93,7 @@ Slot::Slot()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Slot::Slot( const char* nm )
+Slot::Slot( char const* nm )
 : bmlnElmnt(nm)
 {
   align_ = new alignment;
@@ -105,19 +105,18 @@ Slot::Slot( const char* nm )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Slot::Slot( const char* nm, const Frame& y )
+Slot::Slot( char const* nm, Frame const& y )
   : bmlnElmnt(nm), in_(), out_(y) 
 {
   if( !out_.isOrthonormal() )
   {
     throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
-           "Slot::Slot( const char* nm, const Frame& y )", 
+           "Slot::Slot( char const * nm, Frame const& y )", 
            "Current implementation requires that frames be orthonormal." ) );
   }
 
   align_  = 0;
-  length_ = out_.getOrigin() .Norm();
-  ctRef_  = length_;
+  length_ = out_.getOrigin().Norm();
 
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -155,7 +154,7 @@ void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  static Vector driftOffset(3); 
+  Vector driftOffset(3); 
   driftOffset(2) = lng;
   
   out_.rotate( - ang, out_.getyAxis() );
@@ -172,7 +171,7 @@ void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  static Vector driftOffset(3); 
+  Vector driftOffset(3); 
   driftOffset(2) = lng;
   
   out_.translate( driftOffset );
@@ -188,7 +187,7 @@ void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  static Vector driftOffset(3); 
+  Vector driftOffset(3); 
   driftOffset(2) = lng;
   
   out_.rotate( - ang, out_.getxAxis() );
@@ -236,31 +235,26 @@ bool Slot::isMagnet()  const
  int Slot::setInFrame( Frame const& frm )
 {
 
-  int ret = checkFrame( frm );
-
-  if( 0 == ret ) {
-    in_ = frm;
-  }
-
+  int ret = 0;
+  if ( ret = checkFrame( frm ) ) { in_ = frm; }
   return ret;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- int Slot::setOutFrame( Frame const& frm )
+int Slot::setOutFrame( Frame const& frm )
 {
 
-  if( frm.isOrthonormal() ) { 
-    out_ = frm;   
-    return 0;
-  }
 
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+  int ret = 0;
+  if( ret = frm.isOrthonormal() ) { out_ = frm; }   
+  else {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
          " int Slot::setOutFrame( const Frame& frm )", 
          "Current implementation requires that frames be orthonormal." ) );
+  }
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -296,6 +290,27 @@ bool Slot::isMagnet()  const
 
   return ret;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double Slot::OrbitLength( const Particle& x )
+{
+  static bool firstTime = true;
+
+  if( firstTime ) {
+      firstTime = false;
+      (*pcerr) << "*** WARNING ***                                 \n"
+              "*** WARNING *** Slot::OrbitLength               \n"
+              "*** WARNING *** Returning the design length of  \n"
+              "*** WARNING *** empty slots rather then the     \n"
+              "*** WARNING *** orbit length.                   \n"
+              "*** WARNING ***                                 \n"
+           << endl;
+  }    
+  return length_;
+}
+ 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -436,287 +451,6 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 
 }
 
-
-// --------------------------------------------------
-// --- Frame functions ------------------------------
-// --------------------------------------------------
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::processFrame( const Frame& frm, Particle& p ) const
-{
-
-  static bool firstTime = true;
-  static Vector u_z(3);
-  static Vector u_y(3);
-
-  Vector& state = p.State();
-
-
-  if( firstTime ) {
-    firstTime = false;
-    u_y[0] = 0.0; u_y[1] = 1.0; u_y[2] = 0.0;
-    u_z[0] = 0.0; u_z[1] = 0.0; u_z[2] = 1.0;
-
-    // This is never deleted.
-  }
-
-
-  // Yaw -------------------------------------
-  if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
-  {
-    // "Old" frame represented in "new" frame coordinates.
-    Vector e_1(3), e_2(3), e_3(3);
-
-    e_1 = frm.getAxis(0);
-    e_2 = frm.getAxis(1);
-    e_3 = frm.getAxis(2);
-    
-    double cs = e_1(0);
-    double sn = e_3(0);
-    
-    // Coordinate transformation.
-    Vector r        ( state[i_x]*e_1 + state[i_y]*e_2 );
-    Vector dummy    ( p.VectorBeta() );
-    Vector beta     ( dummy[0]*e_1 +
-                      dummy[1]*e_2 +
-                      dummy[2]*e_3 );
-  
-    double tau      ( - r(2) / beta(2) );
-  
-    state[i_x]    = r[0] + tau*beta[0];
-    state[i_y]    = r[1] + tau*beta[1];
-    state[i_cdt] += tau;
-  
-    // Momentum transformation
-
-    double p1( state[ i_npx ] );
-    double p2( state[ i_npy ] );
-    double p3divpbar = sqrt( ( 1.0 + state[i_ndp] ) * ( 1.0 + state[i_ndp] )
-                              - p1*p1 - p2*p2 );
-  
-    state[i_npx] = cs* state[ i_npx ] + sn*p3divpbar;
-  }
-
-
-  // Roll ------------------------------------
-  else if( ( frm.getAxis(2) == u_z ) && ( frm.getAxis(1) != u_y ) ) 
-  {
-    double cs = ( frm.getAxis(0) )(0);
-    double sn = ( frm.getAxis(1) )(0); // ??? right?
-    // sin of angle by which magnet is rolled
-
-  
-    double temp     = state[i_x] * cs + state[i_y] * sn;
-    state[1]        = state[i_y] * cs - state[i_x] * sn;
-    state[0]        = temp;
-  
-    temp       = state[i_npx] * cs + state[i_npy] * sn;
-    state[4]   = state[i_npy] * cs - state[i_npx] * sn;
-    state[3]   = temp;
-   
-
-  }
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::processFrame( const Frame& frm, JetParticle& p ) const
-{
-
-  static bool firstTime = true;
-  static Vector u_z(3);
-  static Vector u_y(3);
- 
-
-  if( firstTime ) {
-    firstTime = false;
-    u_y[0] = 0.0; u_y[1] = 1.0; u_y[2] = 0.0;
-    u_z[0] = 0.0; u_z[1] = 0.0; u_z[2] = 1.0;
-  }
-
-   
-  Mapping&  state = p.State();
-
-
-  // Yaw -------------------------------------
-  if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
-  {
-    // "Old" frame represented in "new" frame coordinates.
-    Vector e_1(3), e_2(3), e_3(3);
-    e_1 = frm.getAxis(0);
-    e_2 = frm.getAxis(1);
-    e_3 = frm.getAxis(2);
-    
-    double cs = e_1[0];
-    double sn = e_3[0];
-
-    // Coordinate transformation.
-
-    JetVector r        ( state[i_x]*e_1 + state[i_y]*e_2 );
-    JetVector dummy    ( p.VectorBeta() );
-    JetVector beta     ( dummy[0]*e_1 +
-                         dummy[1]*e_2 +
-                         dummy[2]*e_3 );
-  
-    Jet tau            ( - r[2] / beta[2] );
-  
-    state[i_x]    =   r[0] + tau*beta[0];
-    state[i_y]    =   r[1] + tau*beta[1];
-    state[i_cdt] +=   tau ;
-  
-    // Momentum transformation
-    Jet p1( state[i_npx] );
-    Jet p2( state[i_npy] );
-    Jet p3divpbar = sqrt( ( 1.0 + state[i_ndp] ) * ( 1.0 + state[i_ndp] )
-                              - p1*p1 - p2*p2 );
-  
-     state[i_npx] =  cs*state[i_npx] + sn*p3divpbar ;
-  }
-
-  // Roll ------------------------------------
-  else if( ( frm.getAxis(2) == u_z ) && ( frm.getAxis(1) != u_y ) ) 
-  {
-    double cs = ( frm.getAxis(0) )(0);
-    double sn = ( frm.getAxis(1) )(0); // ??? right?
-
-    // sin of angle by which magnet is rolled
-
-  
-    Jet temp   = state[i_x] * cs + state[i_y] * sn;
-    state[1]   = state[i_y] * cs - state[i_x] * sn;
-    state[0]   = temp;
-
-    temp      = state[i_npx] * cs + state[i_npy] * sn;
-    state[4]  = state[i_npy] * cs - state[i_npx] * sn;
-    state[3]  = temp;
-
-  }
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::enterLocalFrame( Particle& p ) const
-{
-  processFrame( in_, p );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::enterLocalFrame( JetParticle& p ) const
-{
-  processFrame( in_, p );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::leaveLocalFrame( Particle& p ) const
-{
-  processFrame( out_, p );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::leaveLocalFrame( JetParticle& p ) const
-{
-  processFrame( out_, p );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// --------------------------------------------------
-// --- Functions passed on to tenant ----------------
-// --------------------------------------------------
-
-void Slot::setStrength   ( double const& x )
-{
-  if     ( bml_   ) bml_->setStrength( x );
-  else if( elm_   ) elm_->setStrength( x );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::setCurrent    ( double const& x )
-{
-  if     ( bml_   ) bml_->setStrength( x );
-  else if( elm_   ) elm_->setStrength( x );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool Slot::setAlignment  ( const alignmentData& x )
-{
-  bool ret = true;
-  if     ( bml_   ) {
-    ret = bml_->setAlignment( x );
-  }
-  else if( elm_ ) {
-    ret = elm_->setAlignment( x );
-  }
-  if( !ret ) {
-    (*pcerr) << "\n*** ERROR *** "
-         << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** ERROR *** bool Slot::setAlignment  ( const alignmentData& x )"
-            "\n*** ERROR *** Unable to perform operation on internal elements."
-            "\n*** ERROR *** Subsequent calculations prone to error."
-            "\n*** ERROR *** "
-         << endl;
-  }
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double Slot::Current() const
-{
-  if     ( bml_   ) return bml_->Current();
-  else if( elm_   ) return elm_->Current();
-  else                    return 0.0;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double Slot::OrbitLength( const Particle& x )
-{
-  static bool firstTime = true;
-
-  if     ( bml_   ) return bml_->OrbitLength( x );
-  else if( elm_   ) return elm_->OrbitLength( x );
-  else {
-    if( firstTime ) {
-      firstTime = false;
-      (*pcerr) << "*** WARNING ***                                 \n"
-              "*** WARNING *** Slot::OrbitLength               \n"
-              "*** WARNING *** Returning the design length of  \n"
-              "*** WARNING *** empty slots rather then the     \n"
-              "*** WARNING *** orbit length.                   \n"
-              "*** WARNING ***                                 \n"
-           << endl;
-    }    
-    return length_;
-  }
-}
- 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
