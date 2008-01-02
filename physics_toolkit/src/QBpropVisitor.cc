@@ -78,11 +78,9 @@ QBpropVisitor::~QBpropVisitor()
 
 void QBpropVisitor::visit( bmlnElmnt& x )
 {
-  static drift OO( 1. );
-  static double lng;
-  if( 0.0 != ( lng = x.Length() ) )  {
-    OO.setLength( lng );
-    OO.propagate( particle_ );
+  double lng; 
+  if( lng = x.Length() != 0.0 )  {
+     ( drift( "", lng ) ).propagate( particle_ );
   }
 }
 
@@ -91,9 +89,7 @@ void QBpropVisitor::visit( bmlnElmnt& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void QBpropVisitor::visit( marker& x )
-{
-  // Do nothing.
-}
+{}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
