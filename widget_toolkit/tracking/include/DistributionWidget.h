@@ -19,7 +19,13 @@
 
 class beamline;
 class BeamlineContext;
-class ParticleBunch;
+
+template <typename Particle_t>
+class TBunch;
+
+class Particle;
+
+typedef TBunch<Particle> ParticleBunch;
 
 class QButtonGroup;
 class QGridLayout;
