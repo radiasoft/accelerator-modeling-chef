@@ -36,7 +36,6 @@ void wrap_sector () {
  class_<sector, bases<bmlnElmnt>, SectorPtr >("sector") 
    .def( init<char const*>() )
    .def( init<char const*,     double const&>() )
-   .def( init<             Mapping const&,  double const&>() )
    .def( init<char const*, Mapping const&,  double const&>() ) 
    .def("Type",         &sector::Type);
    //.def("getMap",    sector::getMap)

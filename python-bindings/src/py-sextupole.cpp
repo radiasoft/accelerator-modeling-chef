@@ -41,13 +41,11 @@ void wrap_sextupole () {
 using namespace boost::python;
 
 
-class_<sextupole, bases<bmlnElmnt>, SextupolePtr >("sextupole", init<double,double const&>() )
-  .def(init<char*, double const&, double const&>() )
+class_<sextupole, bases<bmlnElmnt>, SextupolePtr >("sextupole", init<char*, double const&, double const&>() )
   .def("setCurrent",         &sextupole::setCurrent)
   .def("Type",               &sextupole::Type);
 
-class_<thinSextupole, bases<bmlnElmnt>, ThinSextupolePtr >("thinSextupole", init<double const&>() )
-  .def( init<char const*, double const&>() )
+class_<thinSextupole, bases<bmlnElmnt>, ThinSextupolePtr >("thinSextupole", init<char const*, double const&>() )
   .def("Type",  &thinSextupole::Type);
  
 }
