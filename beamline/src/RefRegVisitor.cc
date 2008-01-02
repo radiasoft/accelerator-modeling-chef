@@ -288,9 +288,7 @@ void RefRegVisitor::visit( LinacCavity& x )
   // NOTE: calling acceptInner() implies that cdt is ajusted at the  
   //       nested beamline _element_ level. 
  
-  visit(static_cast<bmlnElmnt&>(x) );
-
-  // x.acceptInner( *this); 
+  x.acceptInner( *this); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
