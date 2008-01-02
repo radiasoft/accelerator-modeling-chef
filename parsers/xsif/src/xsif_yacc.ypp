@@ -275,22 +275,31 @@ element_list:                                                                   
        element_list ',' XSIF_INT_VALUE  '*' XSIF_IDENTIFIER                                { $<pstrvec>$ = $<pstrvec>1;
                                                                                              for (int i = 0; i< $<ival>3; ++i) 
                                                                                                $<pstrvec>$->push_back(*$<sval>5 ); 
-                                                                                             delete $<sval>5; }
+                                                                                             delete $<sval>5; 
+                                                                                           }
        |
        element_list ',' XSIF_IDENTIFIER '*' XSIF_INT_VALUE                                 { $<pstrvec>$ = $<pstrvec>1;
-                                                                                             for (int i = 0; i< $<ival>5; ++i) 
+                                                                                             for (int i=0; i< $<ival>5; ++i) 
                                                                                                $<pstrvec>$->push_back(*$<sval>3 ); 
-                                                                                             delete $<sval>3; }
+                                                                                             delete $<sval>3; 
+                                                                                           }
+       |
+       element_list ',' '-' XSIF_IDENTIFIER                                                { $<pstrvec>$ = $<pstrvec>1;
+                                                                                             $<pstrvec>$->push_back('-'+ *$<sval>4 ); 
+                                                                                             delete $<sval>4; 
+                                                                                           }
        |
        XSIF_INT_VALUE '*' macro_identifier                                                 { $<pstrvec>$ = new std::vector<std::string>;
                                                                                              for (int i = 0; i< $<ival>1; ++i) 
                                                                                                  $<pstrvec>$->push_back( *$<sval>3 ); 
-                                                                                             delete $<sval>3; } 
+                                                                                             delete $<sval>3; 
+                                                                                           } 
        |
        XSIF_INT_VALUE '*' XSIF_IDENTIFIER                                                  { $<pstrvec>$ = new std::vector<std::string>;
                                                                                              for (int i = 0; i< $<ival>1; ++i) 
                                                                                                  $<pstrvec>$->push_back(*$<sval>3 ); 
-                                                                                             delete $<sval>3; }
+                                                                                             delete $<sval>3; 
+                                                                                           }
        |
        element_list ',' anonymous_line_declaration                                         {  $<pstrvec>$ = $<pstrvec>1;
                                                                                               for ( std::vector<std::string>::iterator it  = $<pstrvec>3->begin();
@@ -300,6 +309,11 @@ element_list:                                                                   
                                                                                               delete $<pstrvec>3;
                                                                                            }
 
+       |
+       '-' XSIF_IDENTIFIER                                                                 { $<pstrvec>$ = new std::vector<std::string>;
+                                                                                             $<pstrvec>$->push_back('-'+ *$<sval>2 ); 
+                                                                                             delete $<sval>2; 
+                                                                                           }
        |
        macro_identifier                                                                    { $<pstrvec>$ = new std::vector<std::string>;
                                                                                              $<pstrvec>$->push_back( *$<sval>1 ); 
@@ -364,7 +378,11 @@ anonymous_line_declaration:
                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>2, $<ival>5 );
                                                                                              delete $<pstrvec>2;
                                                                                            } 
-
+       |
+       '-' '(' element_list ')'                                                            {  $<pstrvec>$ = 
+                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>3, -1 );
+                                                                                              delete $<pstrvec>3;
+                                                                                           }
        ;
 
 

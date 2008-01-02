@@ -545,6 +545,13 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
      else if ( (elm_it = m_elements.find(*it) ) !=  m_elements.end() ){ 
           bl->append( ElmPtr( elm_it->second.elm->Clone() ));  
      }
+     else if( ( (*it)[0] == '-' ) && (( bml_it = m_lines.find( (*it).substr(1)) ) !=  m_lines.end() )) {   // a reversed line 
+
+       BmlPtr bml( bml_it->second->reverse() );
+       bml->rename( "[" + (*it) + "]" );  
+       bl->append(bml);
+
+     } 
      else if( contains((*it), "(") ) {
           bl->append( expandLineMacro(yyloc, *it) );
      } 
@@ -825,9 +832,9 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
   double eyn      = eval( string("EYN"),        attributes, value) ? any_cast<double> (value): 0.0;
   double sigt     = eval( string("SIGT"),       attributes, value) ? any_cast<double> (value): 0.0;
   double sige     = eval( string("SIGE"),       attributes, value) ? any_cast<double> (value): 0.0;
-  int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<int>    (value): 0;
+  int    kbunch   = eval( string("KBUNCH"),     attributes, value) ? any_cast<double> (value): 0.0;
   double npart    = eval( string("NPART"),      attributes, value) ? any_cast<double> (value): 0.0;
-  double bcurrent = eval( string("BCURRENR"),   attributes, value) ? any_cast<double> (value): 0;
+  double bcurrent = eval( string("BCURRENR"),   attributes, value) ? any_cast<double> (value): 0.0;
   bool   bunched  = eval( string("BUNCHED"),    attributes, value) ? any_cast<bool>   (value): false;
   bool   radiate  = eval( string("RADIATE"),    attributes, value) ? any_cast<bool>   (value): false;
  
@@ -1650,7 +1657,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length)    elm->setLength(length);
-  if ( attribute_kck   )    elm->setStrength(kck);
+  if ( attribute_kck   )    elm->setStrength(kck*BRHO);
   if ( attribute_tilt  ) 
   {  
     aligner.xOffset = 0.0;
@@ -1694,7 +1701,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length )    { elm->setLength(length); }
-  if ( attribute_kck    )    { elm->setStrength(kck);  }
+  if ( attribute_kck    )    { elm->setStrength(kck*BRHO);  }
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;
@@ -1742,8 +1749,8 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
 
   elm->rename(label);
   if ( attribute_length )   elm->setLength(length);
-  if ( attribute_hkck   )   elm->setHorizontalStrength(hkck);
-  if ( attribute_vkck   )   elm->setVerticalStrength(vkck);
+  if ( attribute_hkck   )   elm->setHorStrength(hkck*BRHO);
+  if ( attribute_vkck   )   elm->setVerStrength(vkck*BRHO);
   if ( attribute_tilt   ) 
   {  
     aligner.xOffset = 0.0;
@@ -1806,8 +1813,8 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   if ( eval( string("ELOSS"),     attributes, value) ) {  attribute_eloss   = true; eloss    = any_cast<double>(value); }
   if ( eval( string("LFILE"),     attributes, value) ) {  attribute_lfile   = true; lfile    = any_cast<string>(value); }
   if ( eval( string("TLFILE"),    attributes, value) ) {  attribute_tfile   = true; tfile    = any_cast<string>(value); }
-  if ( eval( string("NBIN")  ,    attributes, value) ) {  attribute_nbin    = true; nbin     = any_cast<int>(value);    }
-  if ( eval( string("BINMAX"),    attributes, value) ) {  attribute_binmax  = true; binmax   = any_cast<int>(value);    }
+  if ( eval( string("NBIN")  ,    attributes, value) ) {  attribute_nbin    = true; nbin     = any_cast<double>(value); }
+  if ( eval( string("BINMAX"),    attributes, value) ) {  attribute_binmax  = true; binmax   = any_cast<double>(value); }
   if ( eval( string("APERTURE"),  attributes, value) ) {  attribute_aperture= true; aperture = any_cast<double>(value); }
   if ( eval( string("WAKEON"),    attributes, value) ) {  attribute_wakeon  = true; wakeon   = any_cast<bool>(value);   }
 
@@ -1874,13 +1881,13 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("VOLT"),     attributes, value) )    volt     = any_cast<double>(value); 
   if ( eval( string("LAG"),      attributes, value) )    lag      = any_cast<double>(value); 
   if ( eval( string("FREQ"),     attributes, value) )    freq     = any_cast<double>(value); 
-  if ( eval( string("HARMON"),   attributes, value) )    harmon   = any_cast<int>(value); 
+  if ( eval( string("HARMON"),   attributes, value) )    harmon   = any_cast<double>(value); 
   if ( eval( string("ENERGY"),   attributes, value) )    energy   = any_cast<double>(value); 
   if ( eval( string("ELOSS"),    attributes, value) )    eloss    = any_cast<double>(value); 
   if ( eval( string("LFILE"),    attributes, value) )    lfile    = any_cast<string>(value); 
   if ( eval( string("TFILE"),    attributes, value) )    tfile    = any_cast<string>(value); 
-  if ( eval( string("NBIN"),     attributes, value) )    nbin     = any_cast<int>(value); 
-  if ( eval( string("BINMAX"),   attributes, value) )    binmax   = any_cast<int>(value); 
+  if ( eval( string("NBIN"),     attributes, value) )    nbin     = any_cast<double>(value); 
+  if ( eval( string("BINMAX"),   attributes, value) )    binmax   = any_cast<double>(value); 
   if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
   if ( eval( string("SHUNT"),    attributes, value) )    shunt    = any_cast<double>(value); 
 
