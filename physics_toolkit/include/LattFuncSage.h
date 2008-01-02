@@ -124,29 +124,11 @@ public:
                //                labelled "Tunes" containing a
                //                LattFuncSage::tunes data struct.
 
- int Disp_Calc      ( JetParticle const&, Sage::CRITFUNC = 0 );
- int NewDisp_Calc   ( JetParticle const&, bool onClosedOrbit = false );
- int Fast_CS_Calc   ( JetParticle const&, Sage::CRITFUNC = 0 );
- int Slow_CS_Calc   ( JetParticle const&, Sage::CRITFUNC = 0 );
+
  int NewSlow_CS_Calc( JetParticle const&,       Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
- int FAD_Disp_Calc  ( JetParticle const&, Sage::CRITFUNC = 0 );
-               // Assumes no vertical dispersion.
-               // Uses the 5x5 matrix formalism that 
-               // everyone knows and loves, ignoring the
-               // closed orbit. 
-               // Attaches the lattRing "Ring" to the beamline
-               // but no information to the beamline elements.
-               // The purpose is to provide a quick, first order
-               // calculation of dispersion at the beginning of the
-               // beamline.
-               // By the way, "FAD" stands for "Fast and Dirty."
-
- int Twiss_Calc     ( LattFuncSage::lattFunc const&, JetParticle&, Sage::CRITFUNC = 0 ); 
- int Twiss_Calc     ( JetParticle& );
-               // These reproduce the old beamline::twiss
-               // and therefore are both obsolete and wrong.
+ int NewDisp_Calc   ( JetParticle const&, bool onClosedOrbit = false );
 
  int pushCalc       ( Particle const &, LattFuncSage::lattFunc const& );
 
