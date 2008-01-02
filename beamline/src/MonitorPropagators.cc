@@ -60,7 +60,7 @@ void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
+     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/ p.Beta(); 
 }
 
 
