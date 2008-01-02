@@ -77,6 +77,9 @@ namespace {
   Particle::PhaseSpaceIndex const& i_px  = Particle::npxIndex;
   Particle::PhaseSpaceIndex const& i_py  = Particle::npyIndex;
   Particle::PhaseSpaceIndex const& i_dpp = Particle::ndpIndex;
+  
+  int const BMLN_dynDim = 6;
+
  }
 
   int ClosedOrbitSage::ERR_NOTRING = -17;
