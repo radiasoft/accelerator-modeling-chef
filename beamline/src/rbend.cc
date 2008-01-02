@@ -209,12 +209,11 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-rbend::rbend( const char* n, double const& l, double const& s,          double const& bendangle, 
+rbend::rbend( char const* n, double const& l, double const& s,          double const& bendangle, 
                                               double const& entryangle, double const& us, double const& ds )
   :   bmlnElmnt( n, l, s),
-    usFaceAngle_(us),
-    dsFaceAngle_(ds),
-    usAngle_(entryangle + us),
+    usFaceAngle_(us), dsFaceAngle_(ds),
+    usAngle_(  entryangle + us ),
     dsAngle_(-(entryangle + ds))
 {
  static bool firstTime = true;
@@ -277,10 +276,8 @@ rbend::rbend( const char* n, double const& l, double const& s,          double c
 rbend::rbend( rbend const& x )
   : bmlnElmnt(x ),
   angle_(x.angle_),
-  usFaceAngle_(x.usFaceAngle_),
-  dsFaceAngle_(x.dsFaceAngle_),
-  usAngle_(x.usAngle_),
-  dsAngle_(x.dsAngle_),
+  usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
+      usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
     propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
