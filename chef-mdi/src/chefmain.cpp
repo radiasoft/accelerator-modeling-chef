@@ -63,9 +63,7 @@ int main( int argc, char** argv )
 
   a.setStyle( new QWindowsStyle );
 
-  QDate expiration(2008,1,1);
- 
- 
+  QDate expiration(2008,7,1);
   if (QDate::currentDate() > expiration ) {
     QMessageBox::information(0, "Expired", "This preview version executable has expired.",
                              QMessageBox::Ok);  
