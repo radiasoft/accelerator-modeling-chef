@@ -195,17 +195,8 @@ void editDialog::visit( rbend& x )
       bool ok;
       double newStrength = (qle2->text()).toDouble( &ok );
       if( ok ) {
-        #if 0 
-        *****************************FIX ME ! ****************************************
-        if( 0 != _contextPtr->setStrength( x, newStrength ) ) { 
-          (*pcerr) << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": rbend not found in context."
-               << std::endl;
-        }
-        #endif
+        x.setStrength(newStrength);
+        _contextPtr->reset();
       }
     }
   }
@@ -273,46 +264,18 @@ void editDialog::visit( quadrupole& x )
       bool ok;
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
-#if 0 
-***********************FIX ME ! *************************************
-        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          ostringstream uic;
-          uic  << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": "
-               << x.Type()
-               << " not found in context."
-               << std::endl;
-          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-        }
-#endif 
+        x.setStrength(newStrength);
+        _contextPtr->reset();
      }
     }
-
     if( st2 != qle2->text() ) {
       bool ok;
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
-#if 0
-	//*****************************FIX ME !!! *****************
-        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          ostringstream uic;
-          uic  << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": "
-               << x.Type()
-               << " not found in context."
-               << std::endl;
-          QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-        }
-#endif
+        x.setAlignment( ad );
+        _contextPtr->reset();
       }
     }
-
   }
 
   delete wpu;
@@ -405,7 +368,7 @@ void editDialog::visit( drift& x )
       outFrame.setOrigin( origin );
       SlotPtr slotPtr = SlotPtr( new Slot( x.Name().c_str(), outFrame ) );
  
-      //// ******** FIXME ! _contextPtr->replaceElement( x, slotPtr );
+      //// ******** FIX ME ! _contextPtr->replaceElement( x, slotPtr );
 
       // START HERE. The Browser should not be in the business of editing
       // lines. This should be done within CHEF itself. How???
@@ -421,21 +384,8 @@ void editDialog::visit( drift& x )
         bool ok;
         double newLength = (qle2->text()).toDouble( &ok );
         if( ok ) {
-#if 0
-********************************FIX ME !!!! ************************
-          if( 0 != _contextPtr->setLength( x, newLength ) ) {
-            ostringstream uic;
-            uic  << "*** WARNING *** File "
-                 << __FILE__ 
-                 << ", Line "
-                 << __LINE__
-                 << ": "
-                 << x.Type()
-                 << " not found in context."
-                 << std::endl;
-            QMessageBox::warning( 0, "BeamlineBrowser: ERROR", uic.str().c_str() );
-	  }
-#endif
+          x.setLength(newLength);
+          _contextPtr->reset();
         }
       }
     }
@@ -511,7 +461,7 @@ void editDialog::visit( Slot& x )
                          , 4, 2 );
 
          QRadioButton* qrb = new QRadioButton(qwa);
-	 qgl->addWidget( qrb, 5, 0 );
+         qgl->addWidget( qrb, 5, 0 );
          qgl->addMultiCellWidget( new QLabel( QString("Zero out-state"), qwa )
                                               , 5, 5, 1, 2 );
       qwa->adjustSize();
@@ -544,14 +494,14 @@ void editDialog::visit( Slot& x )
     if( qrb->isOn() ) {
       if( !(_contextPtr->hasReferenceParticle()) ) {
         delete wpu;
-  	QMessageBox::critical( 
-  	        0, 
-  	        "CHEF ERROR",
-  	        "Reference particle must be established first."
-  	        );
-  	throw( GenericException( __FILE__, __LINE__, 
-  	       "void editDialog::visit( Slot& x )", 
-  	       "Reference particle not established." ) );
+        QMessageBox::critical( 
+                0, 
+                "CHEF ERROR",
+                "Reference particle must be established first."
+                );
+        throw( GenericException( __FILE__, __LINE__, 
+               "void editDialog::visit( Slot& x )", 
+               "Reference particle not established." ) );
       }
 
 
@@ -639,17 +589,8 @@ void editDialog::visit( thinQuad& x )
       bool ok;
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
-#if 0
-****************FIX ME !!!!*************************
-        if( 0 != _contextPtr->setStrength( x, newStrength ) ) {
-          (*pcerr) << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << std::endl;
-        }
-#endif
+        x.setStrength(newStrength);
+        _contextPtr->reset();
       }
     }
 
@@ -657,20 +598,10 @@ void editDialog::visit( thinQuad& x )
       bool ok;
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
-#if 0
-******************FIX ME !!!!!! *********************************
-        if( 0 != _contextPtr->setAlignment( x, ad ) ) {
-          (*pcerr) << "*** WARNING *** File "
-               << __FILE__ 
-               << ", Line "
-               << __LINE__
-               << ": thinQuad not found in context."
-               << std::endl;
-        }
-#endif
+        x.setAlignment( ad );
+        _contextPtr->reset();
       }
     }
-
   }
 
   delete wpu;
