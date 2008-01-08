@@ -1112,7 +1112,6 @@ void CHEFGUI::editCondense()
 
 void CHEFGUI::editNewOrder()
 {
-
   // One quick test ...
   if( !p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
@@ -1125,27 +1124,23 @@ void CHEFGUI::editNewOrder()
 
   // This test should be made more flexible after
   //   allowing non-flat beamlines to be processed.
-
   if( !qbmlElPtr ) {
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::_editNewOrder():"
+           "\nIn function void CHEF::editNewOrder():"
            "\nFailure: beamline element not chosen correctly."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
-
-  ConstBmlPtr elmntPtr = boost::static_pointer_cast<beamline const>(qbmlElPtr->cheatElementPtr());
-
+  ConstElmPtr elmntPtr = qbmlElPtr->cheatElementPtr();
   QBmlRoot* theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
 
   // Invoke this slot to reset the current settings.
-
   ConstBmlContextPtr contextPtr = theRoot->cheatContextPtr();
-
   set_p_clickedContext( boost::const_pointer_cast<BeamlineContext>(contextPtr), theRoot );
   ConstBmlPtr bmlPtr = boost::static_pointer_cast<beamline const>(p_currBmlCon_->cheatBmlPtr());
+
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1156,22 +1151,17 @@ void CHEFGUI::editNewOrder()
     return;
   }
 
+
   // Do the operation.
-
   if( 0 == (browser_->removeBeamline( boost::const_pointer_cast<BeamlineContext>(contextPtr) )) ) {
-
-    BmlPtr bmlPtr(bmlPtr->Clone());
-    bmlPtr->startAt(elmntPtr);
-
-    contextPtr = ConstBmlContextPtr(); // this should reset/delete current context
-
-
+    boost::const_pointer_cast<beamline>(bmlPtr)->startAt(elmntPtr);
+    boost::const_pointer_cast<BeamlineContext>(contextPtr)->reset();
     emit new_beamline();
   }
   else { 
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::_editNewOrder():"
+           "\nIn function void CHEF::editNewOrder():"
            "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
@@ -1462,7 +1452,7 @@ void CHEFGUI::editEditElement()
     else {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-             "\nIn function void CHEF::_editNewOrder():"
+             "\nIn function void CHEF::editEditElement():"
              "\nFailure: beamline element not chosen correctly."
              "\nOperation will abort.";
       QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
@@ -1475,7 +1465,7 @@ void CHEFGUI::editEditElement()
   // Invoke this slot to reset the current settings.
   BmlContextPtr contextPtr = boost::const_pointer_cast<BeamlineContext>(theRoot->cheatContextPtr());
   set_p_clickedContext( contextPtr, theRoot );
-  ConstBmlPtr  bmlPtr = p_currBmlCon_->cheatBmlPtr();
+  ConstBmlPtr bmlPtr = p_currBmlCon_->cheatBmlPtr();
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1498,7 +1488,7 @@ void CHEFGUI::editEditElement()
   else { 
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::_editNewOrder():"
+           "\nIn function void CHEF::editEditElemnt():"
            "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
