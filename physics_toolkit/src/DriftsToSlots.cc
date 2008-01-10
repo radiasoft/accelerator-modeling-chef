@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      DriftsToSlots.cc
-******  Version:   3.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -32,7 +31,23 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
+******
 ****** REVISION HISTORY
+****** ----------------
+****** Jan 2008   michelotti@fnal.gov
+******  - For the purpose of this note, a "regular bend"
+******    is one whose faces are either normal entry or parallel;
+******    otherwise, I'll call it "irregular."
+******  - Until now, DriftsToSlots worked only with regular bends.
+******    I'm generalizing it to work with irregular bends as well.
+******  - WARNING: ONLY PARTLY DONE!!  This version still fails
+******    : (a) for non-symmetric irregular bends: i.e. those that
+******      have DIFFERENT entry and exit edge angles.
+******      : (the closed orbit gets distorted for some reason)
+******    : (b) possibly, if an irregular bend is rolled.
+******    : (c) when a drift is both upstream and downstream of
+******      an irregular bend.
+******      : (a ring does not close)
 ******
 ****** Oct 2007   michelotti@fnal.gov
 ******  - a line that had been removed at some point in the murky
@@ -40,12 +55,10 @@
 ******  - extended functionality to dipoles that bend vertically
 ****** 
 ****** Mar 2007   ostiguy@fnal.gov
-******
 ******  - reference counted elements/beamlines 
 ******  - eliminated references to slist/dlist
 ******  - use new-style STL compatible beamline iterators
 ******
-******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -253,7 +266,6 @@ bool d2S_sbendLike( bmlnElmnt const& x )
     const CF_sbend* bp = dynamic_cast<const CF_sbend*>( &x);
     return ( (0.0 == bp->getEntryEdgeAngle()) && (0.0 == bp->getExitEdgeAngle()) );
   }
-
   return false;
 }
 
@@ -486,7 +498,8 @@ beamline* DriftsToSlots( beamline const& argbml )
         if( d2S_sbendLike( *c ) ) {
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
-        else if( d2S_rbendLike(*c) ) {
+        else {
+          // *** FIX ME *** DOES NOT WORK FOR ASYMMETRIC EDGE ANGLES ***
           if( c_sb ) {
             entryAngle = boost::static_pointer_cast<sbend>(c)->getEntryAngle();
           }
@@ -533,22 +546,6 @@ beamline* DriftsToSlots( beamline const& argbml )
           arcFrame.translate(fd);
           ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
         }
-        else {
-          (*pcerr) 
-               << "\n*** WARNING: *** "
-               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__
-               << "\n*** WARNING: *** Calculation cannot be continued for "
-               << elPtr->Type() << " " << elPtr->Name() << ": " << ((int) elPtr.get())
-               << "\n*** WARNING: *** Upstream: "
-               << a->Type() << " " << a->Name() << ": " << ((int) a.get())
-               << "\n*** WARNING: *** Downstream: "
-               << c->Type() << " " << c->Name() << ": " << ((int) c.get())
-               << "\n*** WARNING: *** Function will return original argument."
-               << "\n*** WARNING: *** "
-               << endl;
-          delete ret; ret=0;;
-          return original.Clone();
-        }
       }
   
       else if( !isUpStream && isDownStream )
@@ -556,7 +553,8 @@ beamline* DriftsToSlots( beamline const& argbml )
         if( d2S_sbendLike( *a ) ) {
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
-        else if( d2S_rbendLike( *a ) ) {
+        else {
+          // *** FIX ME *** DOES NOT WORK FOR ASYMMETRIC EDGE ANGLES ***
           if( a_sb ) {
             exitAngle = boost::static_pointer_cast<sbend>(a)->getExitAngle();
           }
@@ -603,22 +601,6 @@ beamline* DriftsToSlots( beamline const& argbml )
           }
           ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
         }
-        else {
-          (*pcerr) 
-               << "\n*** WARNING: *** "
-               << "\n*** WARNING: *** File: " << " " << __FILE__ << ", line " << __LINE__
-               << "\n*** WARNING: *** Calculation cannot be continued for "
-               << elPtr->Type() << " " << elPtr->Name() << ": " << ((int) elPtr.get())
-               << "\n*** WARNING: *** Upstream: "
-               << a->Type() << " " << a->Name() << ": " << ((int) a.get())
-               << "\n*** WARNING: *** Downstream: "
-               << c->Type() << " " << c->Name() << ": " << ((int) c.get())
-               << "\n*** WARNING: *** Function will return original argument."
-               << "\n*** WARNING: *** "
-               << endl;
-          delete ret; ret=0;;
-          return original.Clone();
-        }
       }
   
       else // isUpstream and isDownStream
@@ -627,6 +609,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           ret->append( ElmPtr( elPtr->Clone() ) );
         }
         else {
+          // *** FIX ME *** THIS SECTION LOOKS WRONG!!! ***
           if( d2S_rbendLike(*c) ) {
             if( c_sb ) {
               entryAngle = boost::static_pointer_cast<sbend>(c)->getEntryAngle();
