@@ -51,6 +51,7 @@
 #include <iomanip>
 #include <beamline/RFCavityPropagators.h>
 #include <beamline/rfcavity.h>
+#include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
@@ -186,10 +187,10 @@ void rfcavity::setStrength( double const& strength)
 
 void rfcavity::setHarmonicNumber( double const& n )
 {
-  thinrfcavity* q = 0;
+  ThinRFCavityPtr q;
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setHarmonicNumber( n );
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setHarmonicNumber( n );
   }
 }
 
@@ -207,8 +208,10 @@ void rfcavity::setHarmonicNumber( int n )
 
 void rfcavity::setFrequency( double const& f )
 {
+  ThinRFCavityPtr q;
+
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setHarmonicNumber( n );
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setHarmonicNumber( h_ );
   }
 }
 
@@ -217,14 +220,14 @@ void rfcavity::setFrequency( double const& f )
 
 void rfcavity::setFrequencyRelativeTo( double const& f )
 {
-  thinrfcavity* q = 0;
+  ThinRFCavityPtr q;
 
   if( (0 < f) && (0 < h_) ) {
     w_rf_ = MATH_TWOPI*h_*f;
   }
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setFrequencyRelativeTo( f );  
+    if( (q =boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setFrequencyRelativeTo( f );  
   }
 }
 
@@ -233,13 +236,13 @@ void rfcavity::setFrequencyRelativeTo( double const& f )
 
 void rfcavity::setRadialFrequency( double const& omega )
 {
-  thinrfcavity* q = 0;
+  ThinRFCavityPtr q;
 
   if( omega > 0 ) {
     w_rf_ = omega;
   }
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q =dynamic_cast<thinrfcavity*>(*it) )) q->setFrequencyRelativeTo( f );  
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setRadialFrequency( w_rf_ );  
   }
 }
 
@@ -248,14 +251,14 @@ void rfcavity::setRadialFrequency( double const& omega )
 
 void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
 {
-  thinrfcavity* q = 0;
+  ThinRFCavityPtr q;
 
   if( (omega >0 ) && (h_ > 0) ) {
     w_rf_ = h_*omega;
   }
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q=dynamic_cast<thinrfcavity*>(*i))) q->setRadialFrequencyRelativeTo( omega );
+    if( (q=boost::dynamic_pointer_cast<thinrfcavity>(*it))) q->setRadialFrequency( w_rf_);
   }
 
 }
@@ -285,7 +288,6 @@ void rfcavity::setQ( double const& Q )
 void rfcavity::setR( double const& R )
 {
   R_ = R;
-  finishConstructor();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
