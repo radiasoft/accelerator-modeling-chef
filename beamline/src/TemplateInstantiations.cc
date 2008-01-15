@@ -147,15 +147,17 @@ template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::
 template class boost::detail::sp_counted_impl_p<Slot>;
 template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
 
-template WakeKickPropagator* boost::addressof<WakeKickPropagator>(WakeKickPropagator&);
-template NameIs*             boost::addressof<NameIs>(NameIs&);
-template TypeIs*             boost::addressof<TypeIs>(TypeIs&);
-template LengthIs*           boost::addressof<LengthIs>(LengthIs&);
-template LengthLess*         boost::addressof<LengthLess>(LengthLess&);
-template StrengthIs*         boost::addressof<StrengthIs>(StrengthIs&);
-template LengthMore*         boost::addressof<LengthMore>(LengthMore&);
-template StrengthMore*       boost::addressof<StrengthMore>(StrengthMore&);
-template StrengthLess*       boost::addressof<StrengthLess>(StrengthLess&);
+template WakeKickPropagator * boost::addressof(WakeKickPropagator&);
+template WakeKickPropagator const * boost::addressof(WakeKickPropagator const&);
+template       NameIs const *       boost::addressof(            NameIs const& );
+template       TypeIs const *       boost::addressof(            TypeIs const& );
+template     LengthIs const *       boost::addressof(          LengthIs const& );
+template   LengthLess const *       boost::addressof(        LengthLess const& );
+template   StrengthIs const *       boost::addressof(        StrengthIs const& );
+template   LengthMore const *       boost::addressof(        LengthMore const& );
+template StrengthMore const *       boost::addressof(      StrengthMore const& );
+template StrengthLess const *       boost::addressof(      StrengthLess const& );
+
 
 //template class boost::function< void( ParticleBunch& ) >;
 

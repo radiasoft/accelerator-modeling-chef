@@ -442,7 +442,16 @@ template
 FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>&);
 
 template
-FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>&);
+FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>& );
+
+template
+FFTFunctor<std::complex<double>, std::complex<double>, fft_forward> const* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>,  fft_forward> const& );
+
+template 
+FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const& );
+
+
+
 
 
 template class ConvolutionFunctor<double>;
