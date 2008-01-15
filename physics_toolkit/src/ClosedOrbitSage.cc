@@ -132,9 +132,9 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
 
   // Helper particle ...
 
-  Particle prt(jp);
+  Particle p(jp);
 
-  Vector inState( prt.State() );
+  Vector inState( p.State() );
 
   int i_x   = Particle::xIndex();
   int i_y   = Particle::yIndex();
@@ -176,14 +176,14 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
   // If not, check to see if the Particle is on a transverse closed orbit.
   else
   {
-    myBeamlinePtr_->propagate( prt );
+    myBeamlinePtr_->propagate( p );
     // *** CHANGE ***
     // *** CHANGE *** See above re tolerances
     // *** CHANGE ***
-    if( ( std::abs( inState(i_x)  - prt.State()[i_x]  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_y)  - prt.State()[i_y]  ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_px) - prt.State()[i_px] ) > 1.0e-6 ) ||
-        ( std::abs( inState(i_py) - prt.State()[i_py] ) > 1.0e-6 )
+    if( ( std::abs( inState(i_x)  - p.State()[i_x]  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_y)  - p.State()[i_y]  ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_px) - p.State()[i_px] ) > 1.0e-6 ) ||
+        ( std::abs( inState(i_py) - p.State()[i_py] ) > 1.0e-6 )
     ){
       if( 0 != ( ret = invokeFPSolver( jp ) ) ) {
         if( !ignoreErrors_ ) { return ret; }
@@ -204,19 +204,19 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
          << endl;
   }
 
-  prt = Particle(jp);
+  p = Particle(jp);
 
-  RefRegVisitor registrar( prt );
+  RefRegVisitor registrar( p );
   myBeamlinePtr_->accept( registrar );
 
 
   // Useful Particle and Vector
   // containing the closed orbit.
 
-  prt = Particle(jp);
-  prt.set_cdt(0.0);
+  p = Particle(jp);
+  p.set_cdt(0.0);
 
-  Jet__environment::setLastEnv( Jet__environment::getApproxJetEnvironment(Jet__environment::getLastEnv()->maxWeight(), prt.State() ));
+  Jet__environment::setLastEnv( Jet__environment::getApproxJetEnvironment(Jet__environment::getLastEnv()->maxWeight(), p.State() ));
 
   bool newcoords = false;
   coord*  tmpcoord[BMLN_dynDim];
@@ -225,7 +225,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
  
     Jet__environment::BeginEnvironment( jp.State().Env()->maxWeight() );
     for( i = 0; i < BMLN_dynDim; ++i) { 
-      tmpcoord[i] = new coord(prt.State()[i]); 
+      tmpcoord[i] = new coord(p.State()[i]); 
     }
     Jet__environment::EndEnvironment();
     //    Jet::_lastEnv  = Jet__environment::EndEnvironment();
@@ -242,13 +242,13 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
          << endl;
   }
 
-  JetParticle jpr2Ptr(prt, Jet__environment::getLastEnv() );
+  JetParticle jp2(p, Jet__environment::getLastEnv() );
 
-  myBeamlinePtr_->propagate( jpr2Ptr );
+  myBeamlinePtr_->propagate( jp2 );
 
   // Reset the argument to this second JetParticle
 
-  jp = jpr2Ptr;
+  jp = jp2;
 
   // Final operations ....................................
 
@@ -340,20 +340,20 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
 
   // Test the new closed orbit ...
 
-  Particle prt(jp);
-  Vector co = prt.State();
+  Particle p(jp);
+  Vector co = p.State();
 
-  myBeamlinePtr_->propagate( prt );
+  myBeamlinePtr_->propagate( p );
 
   // *** CHANGE ***
   // *** CHANGE *** Why one micron?
   // *** CHANGE *** Shouldn't the stopping criterion be the same
   // *** CHANGE *** as was used by the FPSolver fp?
 
-  if( ( std::abs( co(i_x)  - prt.State()[i_x]  ) > 2.0e-6 ) ||
-      ( std::abs( co(i_y)  - prt.State()[i_y]  ) > 2.0e-6 ) ||
-      ( std::abs( co(i_px) - prt.State()[i_px] ) > 2.0e-6 ) ||
-      ( std::abs( co(i_py) - prt.State()[i_py] ) > 2.0e-6 )
+  if( ( std::abs( co(i_x)  - p.State()[i_x]  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_y)  - p.State()[i_y]  ) > 2.0e-6 ) ||
+      ( std::abs( co(i_px) - p.State()[i_px] ) > 2.0e-6 ) ||
+      ( std::abs( co(i_py) - p.State()[i_py] ) > 2.0e-6 )
   ){
     *errorStreamPtr_
          << "\n*** WARNING ***"
@@ -361,13 +361,13 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
          << "\n*** WARNING *** ClosedOrbitSage::invokeFPSolver"
             "\n*** WARNING *** Closed orbit not correct."
             "\n*** WARNING *** delta x = "
-         << (std::abs(co(i_x)  - prt.State()[i_x]))
+         << (std::abs(co(i_x)  - p.State()[i_x]))
          << "\n*** WARNING *** delta y = "
-         << (std::abs(co(i_y)  - prt.State()[i_y]))
+         << (std::abs(co(i_y)  - p.State()[i_y]))
          << "\n*** WARNING *** delta p_x/p = "
-         << (std::abs(co(i_px)  - prt.State()[i_px]))
+         << (std::abs(co(i_px)  - p.State()[i_px]))
          << "\n*** WARNING *** delta p_y/p = "
-         << (std::abs(co(i_py)  - prt.State()[i_py]))
+         << (std::abs(co(i_py)  - p.State()[i_py]))
          << "\n*** WARNING ***"
          << endl;
 
