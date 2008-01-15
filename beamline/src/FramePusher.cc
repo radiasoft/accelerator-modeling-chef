@@ -80,27 +80,31 @@ using namespace std;
 // Constructors
 
 FramePusher::FramePusher()
-: frame_()
-  , errorCode_(OKAY)
-{
-}
+:  ConstBmlVisitor(), frame_(), errorCode_(OKAY)
+{}
 
-FramePusher::FramePusher( const Frame& f )
-: frame_(f)
-  , errorCode_(OKAY)
-{
-}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FramePusher::FramePusher( const FramePusher& x )
-: frame_( x.frame_ )
-  , errorCode_(x.errorCode_)
-{
-}
+FramePusher::FramePusher( Frame const& f )
+:  ConstBmlVisitor(), frame_(f), errorCode_(OKAY)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+FramePusher::FramePusher( FramePusher const& x )
+:  ConstBmlVisitor(x), frame_( x.frame_ ), errorCode_(x.errorCode_)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 FramePusher::~FramePusher()
-{
-}
+{}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Visiting functions
 
@@ -111,10 +115,17 @@ void FramePusher::visit( bmlnElmnt const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( rbend const& x )
 {
+  if( typeid(*x.getPropFunction()) == typeid(rbend::MAD_Prop) ) { 
+    visit( static_cast<bmlnElmnt const&>(x) );
+  }
+
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+
   double rollAngle = x.Alignment().tilt;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
@@ -125,6 +136,7 @@ void FramePusher::visit( rbend const& x )
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
   // 
+
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
@@ -142,9 +154,18 @@ void FramePusher::visit( rbend const& x )
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( CF_rbend const& x )
 {
+
+  //  if( typeid(*x.getPropFunction()) == typeid(CF_rbend::MAD_Prop) ) { 
+  //  visit( static_cast<bmlnElmnt const&>(x) );
+  //  return;
+  // }
+
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
   double rollAngle = x.Alignment().tilt;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
@@ -156,6 +177,7 @@ void FramePusher::visit( CF_rbend const& x )
   // taken from file: rbend.cc
   //        function: bool rbend::hasStandardFaces
   // 
+
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(edgeAngle) ) {
     frame_.rotate( - edgeAngle, frame_.getyAxis(), false );
@@ -173,24 +195,39 @@ void FramePusher::visit( CF_rbend const& x )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( sbend const& x    )
 {
+
+  double angle = x.getAngle();
+  double rho   = x.Length() / angle;
+
+  angle /= 2.0;
+  double displacement = 2.0*rho*sin(angle);
+
+  if( typeid(*x.getPropFunction()) == typeid(sbend::MAD_Prop) ) { 
+    
+    visit( static_cast<bmlnElmnt const&>(x) );
+    double edgeAngle = x.getEntryEdgeAngle();
+
+    frame_.rotate( -angle, frame_.getyAxis(), false  );
+    frame_.translate( displacement*frame_.getzAxis() );
+    frame_.rotate( -angle, frame_.getyAxis(), false  );
+
+    return;
+  }
+
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
+  //----------------------------------------------------
+
   double rollAngle = x.Alignment().tilt;
-  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  bool    isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
   }
 
-  double angle;
-  double displacement;
-  double rho;
-
-  angle = x.getAngle();
-  rho = x.Length() / angle;
-  angle /= 2.0;
-  displacement = 2.0*rho*sin(angle);
 
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
@@ -209,9 +246,18 @@ void FramePusher::visit( sbend const& x    )
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( CF_sbend const& x )
 {
+
+  //if( typeid(*x.getPropFunction()) == typeid(CF_sbend::MAD_Prop) ) { 
+  //  visit( static_cast<bmlnElmnt const&>(x) );
+  //  return;
+  // }
+
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
   double rollAngle = x.Alignment().tilt;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
@@ -219,14 +265,10 @@ void FramePusher::visit( CF_sbend const& x )
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
   }
 
-  double angle;
-  double displacement;
-  double rho;
-
-  angle = x.getAngle();
-  rho = x.Length() / angle;
-  angle /= 2.0;
-  displacement = 2.0*rho*sin(angle);
+  double angle = x.getAngle();
+  double rho   = x.Length() / angle;
+  angle       /= 2.0;
+  double displacement = 2.0*rho*sin(angle);
 
   double edgeAngle = x.getEntryEdgeAngle();
   if( 0.5e-9 < std::abs(angle - edgeAngle) ) {
@@ -245,6 +287,9 @@ void FramePusher::visit( CF_sbend const& x )
   }
 }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( sector const&)
 {
@@ -260,9 +305,14 @@ void FramePusher::visit( sector const&)
   errorCode_ = SECTORVISITED;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void FramePusher::visit( Slot const& x     )
 {
   frame_ = ( ( x.getOutFrame() ).relativeTo( x.getInFrame() ) ) 
            .patchedOnto( frame_ );
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -234,14 +234,19 @@ void RefRegVisitor::visit( CF_sbend& x )
 
 void RefRegVisitor::visit( sbend& x )
 {
-  const bmlnElmnt::PropFunc* propPtr = x.getPropFunction();
+
+  bmlnElmnt::PropFunc const* pf = x.getPropFunction();
+ 
+  if ( pf == &sbend::LikeMAD ) {     
+    visit( static_cast<bmlnElmnt&>(x) );
+    return;
+  }
 
   x.setPropFunction( &sbend::NoEdge );
   x.setEntryAngle( particle_ );
   visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
-  x.setPropFunction( propPtr );
-
+  x.setPropFunction( pf );
 }
 
 
@@ -250,13 +255,13 @@ void RefRegVisitor::visit( sbend& x )
 
 void RefRegVisitor::visit( rbend& x )
 {
-  bmlnElmnt::PropFunc const* propPtr = x.getPropFunction();
+  bmlnElmnt::PropFunc const* pf = x.getPropFunction();
 
   x.setPropFunction( &rbend::NoEdge );
   x.setEntryAngle( particle_ );
   visit( static_cast<bmlnElmnt&>(x) );
   x.setExitAngle( particle_ );
-  x.setPropFunction( propPtr );
+  x.setPropFunction( pf );
 }
 
 
