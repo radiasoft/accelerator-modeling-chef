@@ -54,7 +54,7 @@
 ******
 ******  Jan 2008   ostiguy@fnal.gov
 ******  
-****** - compute dispersion by setting state[i_ndp] = dpp 
+****** - compute dispersion by setting state[i_ndp] = dpp
 ******   for particle 2 than changing reference momentum. 
 ******
 **************************************************************************
@@ -126,7 +126,7 @@ DispersionSage::Options::Options()
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
-  dpp_( 0.00001), 
+  dpp_( 1.0e-6), 
   ignoreErrors_( false ),
   calcs_()
   {}
@@ -136,7 +136,7 @@ DispersionSage::DispersionSage( BmlPtr x )
 
 DispersionSage::DispersionSage( beamline const& x )
 : Sage( x ), 
-  dpp_( 0.00001 ), 
+  dpp_( 1.0e-6 ), 
   ignoreErrors_( false ),
   calcs_()
 {}
@@ -295,9 +295,10 @@ int DispersionSage::doCalc( JetParticle& jp )
   Particle firstParticle(jp);
   MatrixD firstJacobian  = jp.State().Jacobian();
 
-  local_jp = jp;
-  jp.State()[i_ndp].setStandardPart( jp.State()[i_ndp].standardPart() + dpp_);
-
+  Particle tmp_p(jp);
+  tmp_p.State()[i_ndp] = dpp_;
+  local_jp = JetParticle(tmp_p); 
+  
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( local_jp );
   clsg.unsetForcedCalc();
