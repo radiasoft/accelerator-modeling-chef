@@ -263,7 +263,7 @@ public:
   virtual PropFunc* setPropFunction ( const PropFunc* a );  // return previous
   virtual PropFunc* setPropFunction ( const PropFunc& a );  // Propagator
 
-  PropFunc* getPropFunction() { return propfunc_; }
+  PropFunc* getPropFunction() const { return propfunc_; }
 
   void propagate( Particle&      );
   void propagate( JetParticle&   );
