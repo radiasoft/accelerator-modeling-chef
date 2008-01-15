@@ -48,9 +48,14 @@
 ******
 ******  - eliminated references to slist/dlist
 ******
-******   June 2007 ostiguy@fnal.gov
+******  June 2007  ostiguy@fnal.gov
 ******   
 ******  - added new method to compute dispersion using AD
+******
+******  Jan 2008   ostiguy@fnal.gov
+******  
+****** - compute dispersion by setting state[i_ndp] = dpp 
+******   for particle 2 than changing reference momentum. 
 ******
 **************************************************************************
 *************************************************************************/
@@ -75,6 +80,15 @@ const int DispersionSage::IMPOSSIBILITY    = 111;
 
 const DispersionSage::Options DispersionSage::defaultFlags;
 
+namespace { 
+
+  int const i_x   = Particle::xIndex(); 
+  int const i_npx = Particle::npxIndex(); 
+  int const i_y   = Particle::yIndex(); 
+  int const i_npy = Particle::npyIndex(); 
+  int const i_cdt = Particle::cdtIndex(); 
+  int const i_ndp = Particle::ndpIndex(); 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -181,7 +195,7 @@ DispersionSage::Options DispersionSage::get_options()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void DispersionSage::set_options( const DispersionSage::Options& x )
+void DispersionSage::set_options( DispersionSage::Options const& x )
 { 
  flags = x;
 }
@@ -278,19 +292,11 @@ int DispersionSage::doCalc( JetParticle& jp )
     outputStreamPtr_->flush();
   }
 
-
-  local_jp = Particle(jp);
-
   Particle firstParticle(jp);
   MatrixD firstJacobian  = jp.State().Jacobian();
 
-  double energy = firstParticle.ReferenceEnergy();
-  double mass   = firstParticle.Mass();
-
-  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp_ );
-  energy          = sqrt( momentum*momentum + mass*mass );
-
-  local_jp.SetReferenceEnergy( energy );
+  local_jp = jp;
+  jp.State()[i_ndp].setStandardPart( jp.State()[i_ndp].standardPart() + dpp_);
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( local_jp );
@@ -416,7 +422,7 @@ int DispersionSage::doCalc( JetParticle& jp )
 
 int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions )
 {
-
+  
   //------------------------------------------------------------------------------
   // This method computes the dispersion by subtracting two particle trajectories 
   // The momentum offset is dpp_ 
