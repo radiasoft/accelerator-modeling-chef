@@ -35,9 +35,17 @@
 ******
 ******  REVISION HISTORY 
 ******  
+******  Mar 2007        ostiguy@fnal.gov
+******
+****** - visitor public interface based on references and
+******   taking advantage of dynamic type
+******  
 ******  Oct 2007 michelotti@fnal.gov
 ******  - Extended behavior to account for bends with rolls in their
 ******    alignment attribute.  This is a stopgap measure.
+******  
+******  Jan 2008 ostiguy@fnal.gov
+****** - modified to support MAD-style propagators
 ******
 **************************************************************************
 *************************************************************************/
@@ -127,6 +135,7 @@ void FramePusher::visit( rbend const& x )
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
 
   double rollAngle = x.Alignment().tilt;
+
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -207,11 +216,19 @@ void FramePusher::visit( sbend const& x    )
   angle /= 2.0;
   double displacement = 2.0*rho*sin(angle);
 
+  double rollAngle = x.Alignment().tilt;
+  bool    isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+  if( isRolled ) {
+    frame_.rotate( rollAngle, frame_.getzAxis(), false );
+  }
+
+  //----------------------------------------------------------
+  // With a MAD-style propagator, the edge angles are ignored 
+  // when pushing the Frame 
+  //----------------------------------------------------------- 
+
   if( typeid(*x.getPropFunction()) == typeid(sbend::MAD_Prop) ) { 
     
-    visit( static_cast<bmlnElmnt const&>(x) );
-    double edgeAngle = x.getEntryEdgeAngle();
-
     frame_.rotate( -angle, frame_.getyAxis(), false  );
     frame_.translate( displacement*frame_.getzAxis() );
     frame_.rotate( -angle, frame_.getyAxis(), false  );
@@ -221,12 +238,6 @@ void FramePusher::visit( sbend const& x    )
 
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
   //----------------------------------------------------
-
-  double rollAngle = x.Alignment().tilt;
-  bool    isRolled = ( 1.0e-12 < std::abs(rollAngle) );
-  if( isRolled ) {
-    frame_.rotate( rollAngle, frame_.getzAxis(), false );
-  }
 
 
   double edgeAngle = x.getEntryEdgeAngle();
