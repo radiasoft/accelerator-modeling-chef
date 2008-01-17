@@ -38,12 +38,18 @@
 ******             ostiguy@fnal
 ******    
 ******  - interface based on Particle& rather than ptrs. 
-******    Stack allocated local Particle objects.
+******  - stack allocated local Particle objects
 ******  - changes to accomodate new boost::any based Barnacle objects.
 ******  - use new style STL-compatible beamline iterators
 ******  - calcs_ array is now an STL vector. LF are now returned 
 ******    by returning a const reference to the entire vector.
-******  - misc cleanup.  
+******  - misc cleanups
+******
+******  Jan 2008   ostiguy@fnal.gov
+******
+****** - compute dispersion by setting state[i_ndp] = dpp
+******   for particle 2 than changing reference momentum. 
+******  
 ******
 **************************************************************************
 *************************************************************************/
@@ -83,6 +89,16 @@ using FNAL::pcerr;
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
+namespace { 
+
+  int const i_x    =  Particle::xIndex();
+  int const i_y    =  Particle::yIndex();
+  int const i_cdt  =  Particle::cdtIndex();
+  int const i_npx  =  Particle::npxIndex();
+  int const i_npy  =  Particle::npyIndex();
+  int const i_ndp  =  Particle::ndpIndex();
+}
+
 
 // ... Globals:
 const int LattFuncSage::DONE             = 0;
@@ -98,6 +114,7 @@ double LattFuncSage::csH_ = 0.0;
 double LattFuncSage::csV_ = 0.0;
 double LattFuncSage::snH_ = 0.0;
 double LattFuncSage::snV_ = 0.0;
+
 Mapping* LattFuncSage::theMapPtr_ = 0;
 
 
@@ -137,8 +154,6 @@ LattFuncSage::LattFuncSage( BmlPtr x )
 LattFuncSage::LattFuncSage( beamline const& x) 
   : Sage( x ), dpp_( 0.00005 )
 {}
-
-
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -394,12 +409,6 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   Particle  p_1(jp);
   Particle  p_2(jp);
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
 
   int ret   = 0;
 
@@ -407,14 +416,14 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
   MatrixD mtrx =  jp.State().Jacobian();
   
-  if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_py ) != 0.0 )  ||
-      ( mtrx( i_y,  i_px ) != 0.0 )  ||
-      ( mtrx( i_py, i_x  ) != 0.0 )  ||
-      ( mtrx( i_px, i_y  ) != 0.0 )  ||
-      ( mtrx( i_py, i_px ) != 0.0 )  ||
-      ( mtrx( i_px, i_py ) != 0.0 )     )
+  if( ( mtrx( i_y,  i_x  )  != 0.0 )  ||
+      ( mtrx( i_x,  i_y  )  != 0.0 )  ||
+      ( mtrx( i_x,  i_npy ) != 0.0 )  ||
+      ( mtrx( i_y,  i_npx ) != 0.0 )  ||
+      ( mtrx( i_npy, i_x  ) != 0.0 )  ||
+      ( mtrx( i_npx, i_y  ) != 0.0 )  ||
+      ( mtrx( i_npy, i_npx )!= 0.0 )  ||
+      ( mtrx( i_npx, i_npy )!= 0.0 )     )
   {
     (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Fast_CS_Calc          \n"
@@ -431,7 +440,7 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   // Calculate initial lattice functions ...
   // ... first horizontal
 
-  double cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
+  double cs = ( mtrx( i_x, i_x ) + mtrx( i_npx, i_npx ) )/2.0;
 
   if (fabs( cs ) > 1.0)  
  {
@@ -448,7 +457,7 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   }
 
   
-  double  sn = ( mtrx( i_x, i_px ) > 0.0 ) ? sqrt( 1.0 - cs*cs ): - sqrt( 1.0 - cs*cs );
+  double  sn = ( mtrx( i_x, i_npx ) > 0.0 ) ? sqrt( 1.0 - cs*cs ): - sqrt( 1.0 - cs*cs );
 
 
   if( sn == 0.0 ) {
@@ -461,15 +470,15 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_x  = mtrx( i_x, i_px ) / sn;
-  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
+  double beta_x  = mtrx( i_x, i_npx ) / sn;
+  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_npx, i_npx ) ) / ( 2.0*sn );
 
 
   // ... then vertical.
 
-  cs = ( mtrx( i_y, i_y ) + mtrx( i_py, i_py ) )/2.0;
+  cs = ( mtrx( i_y, i_y ) + mtrx( i_npy, i_npy ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( mtrx( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( mtrx( i_y, i_npy ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -495,8 +504,8 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_y  = mtrx( i_y, i_py ) / sn;
-  double alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
+  double beta_y  = mtrx( i_y, i_npy ) / sn;
+  double alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_npy, i_npy ) ) / ( 2.0*sn );
 
 
   Vector inState(6);
@@ -557,25 +566,25 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
     outState[i_x ] = std::complex<double> ( realState[i_x],  imagState[i_x] );
     outState[i_y ] = std::complex<double> ( realState[i_y],  imagState[i_y] );
-    outState[i_px] = std::complex<double> ( realState[i_px], imagState[i_px] );
-    outState[i_py] = std::complex<double> ( realState[i_py], imagState[i_py] );
+    outState[i_npx] = std::complex<double> ( realState[i_npx], imagState[i_npx] );
+    outState[i_npy] = std::complex<double> ( realState[i_npy], imagState[i_npy] );
   
     phase = outState[i_x] / abs( outState[i_x] );
     outState[i_x]  /= phase;
-    outState[i_px] /= phase;
+    outState[i_npx] /= phase;
 
-    if(   fabs( imag( outState[i_px] )*real( outState[i_x] ) - 
+    if(   fabs( imag( outState[i_npx] )*real( outState[i_x] ) - 
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
   	(*pcout) << "*** ERROR *** Phase error in horizontal plane at " 
              << (*it)->Type() << "  " << (*it)->Name()
              << endl;
-  	(*pcout) << "*** ERROR *** imag( outState[i_px] ) = " 
-             << imag( outState[i_px] ) 
+  	(*pcout) << "*** ERROR *** imag( outState[i_npx] ) = " 
+             << imag( outState[i_npx] ) 
              << endl;
   	(*pcout) << "*** ERROR *** " 
-             << outState[i_px]/resizeFactor 
+             << outState[i_npx]/resizeFactor 
              << endl;
 
   	return LattFuncSage::PHASE_ERROR;
@@ -585,19 +594,19 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   
     phase = outState[i_y] / abs( outState[i_y] );
     outState[i_y] /= phase;
-    outState[i_py] /= phase;
-    if(   fabs( imag( outState[i_py] )*real( outState[i_y] ) - 
+    outState[i_npy] /= phase;
+    if(   fabs( imag( outState[i_npy] )*real( outState[i_y] ) - 
                 resizeFactor*resizeFactor )
         > resizeFactor*resizeFactor*0.01 )
     {
   	(*pcout) << "*** ERROR *** Phase error in vertical plane at " 
              << (*it)->Type() << "  " << (*it)->Name()
              << endl;
-  	(*pcout) << "*** ERROR *** imag( outState[i_py] ) = " 
-             << imag( outState[i_py] ) 
+  	(*pcout) << "*** ERROR *** imag( outState[i_npy] ) = " 
+             << imag( outState[i_npy] ) 
              << endl;
   	(*pcout) << "*** ERROR *** " 
-             << outState[i_py]/resizeFactor 
+             << outState[i_npy]/resizeFactor 
              << endl;
 
  	return LattFuncSage::PHASE_ERROR;
@@ -608,12 +617,12 @@ int LattFuncSage::Fast_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
 
     // Calculate lattice functions ...
     beta_x  =   real( outState[i_x] ) /resizeFactor;
-    alpha_x = - real( outState[i_px] )/resizeFactor;
+    alpha_x = - real( outState[i_npx] )/resizeFactor;
     alpha_x *= beta_x;
     beta_x  *= beta_x;
   
     beta_y  =   real( outState[i_y] ) /resizeFactor;
-    alpha_y = - real( outState[i_py] )/resizeFactor;
+    alpha_y = - real( outState[i_npy] )/resizeFactor;
     alpha_y *= beta_y;
     beta_y  *= beta_y;
 
@@ -690,13 +699,6 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   JetParticle jprt(jp);
   Particle    prt(jp);
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   int ret = 0;
 
   // .......... Check coupling ............................
@@ -705,12 +707,12 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   
   if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       ( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_py ) != 0.0 )  ||
-      ( mtrx( i_y,  i_px ) != 0.0 )  ||
-      ( mtrx( i_py, i_x  ) != 0.0 )  ||
-      ( mtrx( i_px, i_y  ) != 0.0 )  ||
-      ( mtrx( i_py, i_px ) != 0.0 )  ||
-      ( mtrx( i_px, i_py ) != 0.0 )     )
+      ( mtrx( i_x,  i_npy ) != 0.0 )  ||
+      ( mtrx( i_y,  i_npx ) != 0.0 )  ||
+      ( mtrx( i_npy, i_x  ) != 0.0 )  ||
+      ( mtrx( i_npx, i_y  ) != 0.0 )  ||
+      ( mtrx( i_npy, i_npx ) != 0.0 )  ||
+      ( mtrx( i_npx, i_npy ) != 0.0 )     )
   {
     (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
@@ -727,7 +729,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
   // Calculate initial lattice functions ...
   // ... first horizontal
 
-  double cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
+  double cs = ( mtrx( i_x, i_x ) + mtrx( i_npx, i_npx ) )/2.0;
 
   if( std::abs( cs ) > 1.0 ) 
   {
@@ -744,7 +746,7 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::UNSTABLE;
   };
 
-  double sn = ( mtrx( i_x, i_px ) > 0.0 ) ? sqrt( 1.0 - cs*cs ) : - sqrt( 1.0 - cs*cs );
+  double sn = ( mtrx( i_x, i_npx ) > 0.0 ) ? sqrt( 1.0 - cs*cs ) : - sqrt( 1.0 - cs*cs );
  
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
@@ -756,15 +758,15 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_x  =   mtrx( i_x, i_px ) / sn;
-  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
+  double beta_x  =   mtrx( i_x, i_npx ) / sn;
+  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_npx, i_npx ) ) / ( 2.0*sn );
 
 
   // ... then vertical.
 
-  cs = ( mtrx( i_y, i_y ) + mtrx( i_py, i_py ) )/2.0;
+  cs = ( mtrx( i_y, i_y ) + mtrx( i_npy, i_npy ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( mtrx( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( mtrx( i_y, i_npy ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -791,8 +793,8 @@ int LattFuncSage::Slow_CS_Calc( JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_y  = mtrx( i_y, i_py ) / sn;
-  double alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
+  double beta_y  = mtrx( i_y, i_npy ) / sn;
+  double alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_npy, i_npy ) ) / ( 2.0*sn );
 
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -943,13 +945,6 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
   JetParticle  jprt(jp);
   Particle     prt(jp);
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   int ret = 0;
   int i   = 0;
   double cs = 0.0;
@@ -960,12 +955,12 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
   
   if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       ( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_py ) != 0.0 )  ||
-      ( mtrx( i_y,  i_px ) != 0.0 )  ||
-      ( mtrx( i_py, i_x  ) != 0.0 )  ||
-      ( mtrx( i_px, i_y  ) != 0.0 )  ||
-      ( mtrx( i_py, i_px ) != 0.0 )  ||
-      ( mtrx( i_px, i_py ) != 0.0 )     )
+      ( mtrx( i_x,  i_npy ) != 0.0 )  ||
+      ( mtrx( i_y,  i_npx ) != 0.0 )  ||
+      ( mtrx( i_npy, i_x  ) != 0.0 )  ||
+      ( mtrx( i_npx, i_y  ) != 0.0 )  ||
+      ( mtrx( i_npy, i_npx ) != 0.0 )  ||
+      ( mtrx( i_npx, i_npy ) != 0.0 )     )
   {
     (*pcerr) << "*** WARNING ***                                     \n"
             "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
@@ -982,9 +977,9 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
   // Calculate initial lattice functions ...
   // ... first horizontal
   double alpha_x, beta_x;
-  cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
+  cs = ( mtrx( i_x, i_x ) + mtrx( i_npx, i_npx ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( mtrx( i_x, i_px ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( mtrx( i_x, i_npx ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -1015,15 +1010,15 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  beta_x  = mtrx( i_x, i_px ) / sn;
-  alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
+  beta_x  = mtrx( i_x, i_npx ) / sn;
+  alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_npx, i_npx ) ) / ( 2.0*sn );
 
 
   // ... then vertical.
   double alpha_y, beta_y;
-  cs = ( mtrx( i_y, i_y ) + mtrx( i_py, i_py ) )/2.0;
+  cs = ( mtrx( i_y, i_y ) + mtrx( i_npy, i_npy ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( mtrx( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( mtrx( i_y, i_npy ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -1055,8 +1050,8 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  beta_y  = mtrx( i_y, i_py ) / sn;
-  alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
+  beta_y  = mtrx( i_y, i_npy ) / sn;
+  alpha_y = ( mtrx( i_y, i_y ) - mtrx( i_npy, i_npy ) ) / ( 2.0*sn );
 
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1203,14 +1198,6 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     (*pcout).flush();
   }
 
-
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   int ret = 0;
 
 
@@ -1250,12 +1237,12 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
     if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
       	( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      	( mtrx( i_x,  i_py ) != 0.0 )  ||
-      	( mtrx( i_y,  i_px ) != 0.0 )  ||
-      	( mtrx( i_py, i_x  ) != 0.0 )  ||
-      	( mtrx( i_px, i_y  ) != 0.0 )  ||
-      	( mtrx( i_py, i_px ) != 0.0 )  ||
-      	( mtrx( i_px, i_py ) != 0.0 )     )
+      	( mtrx( i_x,  i_npy ) != 0.0 )  ||
+      	( mtrx( i_y,  i_npx ) != 0.0 )  ||
+      	( mtrx( i_npy, i_x  ) != 0.0 )  ||
+      	( mtrx( i_npx, i_y  ) != 0.0 )  ||
+      	( mtrx( i_npy, i_npx ) != 0.0 )  ||
+      	( mtrx( i_npx, i_npy ) != 0.0 )     )
     {
       (*pcerr) << "*** WARNING ***                                     \n"
               "*** WARNING *** LattFuncSage::tuneCalc              \n"
@@ -1273,9 +1260,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
    
    MatrixD M(2,2);
    M( 0, 0 ) = mtrx( i_x,  i_x  );
-   M( 0, 1 ) = mtrx( i_x,  i_px );
-   M( 1, 0 ) = mtrx( i_px, i_x  );
-   M( 1, 1 ) = mtrx( i_px, i_px );
+   M( 0, 1 ) = mtrx( i_x,  i_npx );
+   M( 1, 0 ) = mtrx( i_npx, i_x  );
+   M( 1, 1 ) = mtrx( i_npx, i_npx );
 
    MatrixC lambda = M.eigenValues();
 
@@ -1320,9 +1307,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     // Calculation in vertical plane
 
    M( 0, 0 ) = mtrx( i_y,  i_y  );
-   M( 0, 1 ) = mtrx( i_y,  i_py );
-   M( 1, 0 ) = mtrx( i_py, i_y  );
-   M( 1, 1 ) = mtrx( i_py, i_py );
+   M( 0, 1 ) = mtrx( i_y,  i_npy );
+   M( 1, 0 ) = mtrx( i_npy, i_y  );
+   M( 1, 1 ) = mtrx( i_npy, i_npy );
 
    lambda = M.eigenValues();
    if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
@@ -1403,13 +1390,6 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
   int ret = 0;
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   double lng = 0.0;
 
 
@@ -1452,13 +1432,9 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
   }
 
 
-  double dpp      = get_dpp();
-  double energy   = firstParticle.ReferenceEnergy();
-  double mass     = firstParticle.Mass();
-  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp );
-         energy   = sqrt( momentum*momentum + mass*mass );
-
-  jp.SetReferenceEnergy( energy );
+  Particle tmp_p(jp);
+  tmp_p.State()[i_ndp] = get_dpp();
+  jp = JetParticle(tmp_p); 
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( jp );
@@ -1485,14 +1461,14 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
   // Attach initial dispersion data to the beamline ...
 
-  Vector d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
+  Vector d = ( secondParticle.State()  -  firstParticle.State() ) /  get_dpp();
 
   LattFuncSage::lattFunc lf;
  
   lf.dispersion.hor = d( i_x  );
-  lf.dPrime.hor     = d( i_px );
+  lf.dPrime.hor     = d( i_npx );
   lf.dispersion.ver = d( i_y  );
-  lf.dPrime.ver     = d( i_py );
+  lf.dPrime.ver     = d( i_npy );
   lf.arcLength      = lng;
   
   myBeamlinePtr_->dataHook.eraseAll( "Dispersion" );
@@ -1517,12 +1493,12 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
 
     if( Crit ) { if ( !Crit(*it) )  continue; } 
     
-    d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
+    d = ( secondParticle.State()  -  firstParticle.State() ) /   get_dpp();
   
     lf.dispersion.hor = d( i_x  );
-    lf.dPrime.hor     = d( i_px );
+    lf.dPrime.hor     = d( i_npx );
     lf.dispersion.ver = d( i_y  );
-    lf.dPrime.ver     = d( i_py );
+    lf.dPrime.ver     = d( i_npy );
     lf.arcLength      = lng;
 
     BarnacleList::iterator itb = (*it)->dataHook.find("Twiss");
@@ -1550,8 +1526,8 @@ int LattFuncSage::Disp_Calc( JetParticle const& jparg, Sage::CRITFUNC  Crit )
   {
     latticeRing.tune.hor = firstNu(0);
     latticeRing.tune.ver = firstNu(1);
-    latticeRing.chromaticity.hor = ( secondNu(0) - firstNu(0) ) / dpp;
-    latticeRing.chromaticity.ver = ( secondNu(1) - firstNu(1) ) / dpp;
+    latticeRing.chromaticity.hor = ( secondNu(0) - firstNu(0) ) /  get_dpp();
+    latticeRing.chromaticity.ver = ( secondNu(1) - firstNu(1) ) /  get_dpp();
 
     myBeamlinePtr_->dataHook.eraseAll( "Ring" );
     myBeamlinePtr_->dataHook.insert( Barnacle( "Ring", latticeRing ) );
@@ -1596,13 +1572,6 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   MatrixD   firstJacobian;
   MatrixD   secondJacobian;
-
-  int i_x   =  arg_jp.xIndex();
-  int i_y   =  arg_jp.yIndex();
-  int i_z   =  arg_jp.cdtIndex();
-  int i_px  =  arg_jp.npxIndex();
-  int i_py  =  arg_jp.npyIndex();
-  int i_dpp =  arg_jp.ndpIndex();
 
   double dpp;
   double energy;
@@ -1650,13 +1619,11 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     (*pcout).flush();
   }
 
-  dpp = this->get_dpp();
-  energy = firstParticle.ReferenceEnergy();
-  mass = firstParticle.Mass();
-  momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp );
-  energy = sqrt( momentum*momentum + mass*mass );
+  dpp = get_dpp();
 
-  jpart.SetReferenceEnergy( energy );
+  Particle tmp_p(jpart);
+  tmp_p.State()[i_ndp] = dpp;
+  jpart = JetParticle(tmp_p); 
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( jpart );
@@ -1707,17 +1674,17 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     if ( stand_alone_disp_calc ) { 
        LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
-       lf.dPrime.hor     = d( i_px );
+       lf.dPrime.hor     = d( i_npx );
        lf.dispersion.ver = d( i_y  );
-       lf.dPrime.ver     = d( i_py );
+       lf.dPrime.ver     = d( i_npy );
        lf.arcLength        = lng;
        lfvec_.push_back(lf);
     } 
     else {
        lf_it->dispersion.hor = d( i_x  );
-       lf_it->dPrime.hor     = d( i_px );
+       lf_it->dPrime.hor     = d( i_npx );
        lf_it->dispersion.ver = d( i_y  );
-       lf_it->dPrime.ver     = d( i_py );
+       lf_it->dPrime.ver     = d( i_npy );
        ++lf_it;
     }
 
@@ -1774,18 +1741,11 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
 
   int ret = 0;
 
-  int i_x   =  arg_jp.xIndex();
-  int i_y   =  arg_jp.yIndex();
-  int i_z   =  arg_jp.cdtIndex();
-  int i_px  =  arg_jp.npxIndex();
-  int i_py  =  arg_jp.npyIndex();
-  int i_dpp =  arg_jp.ndpIndex();
-
-  int j_x   =  0;
-  int j_px  =  1;
-  int j_y   =  2;
-  int j_py  =  3;
-  int j_dpp =  4;
+  int const j_x    =  0;
+  int const j_npx  =  1;
+  int const j_y    =  2;
+  int const j_npy  =  3;
+  int const j_ndp  =  4;
 
   MatrixD FADmap( 5, 5 );
   MatrixD firstJacobian;
@@ -1794,35 +1754,35 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
   JetParticle jp(arg_jp);
   firstJacobian  = jp.State().Jacobian();
 
-  FADmap( j_x,   j_x   ) = firstJacobian( i_x,   i_x   );
-  FADmap( j_x,   j_px  ) = firstJacobian( i_x,   i_px  );
-  FADmap( j_x,   j_y   ) = firstJacobian( i_x,   i_y   );
-  FADmap( j_x,   j_py  ) = firstJacobian( i_x,   i_py  );
-  FADmap( j_x,   j_dpp ) = firstJacobian( i_x,   i_dpp );
+  FADmap( j_x,   j_x    ) = firstJacobian( i_x,   i_x   );
+  FADmap( j_x,   j_npx  ) = firstJacobian( i_x,   i_npx  );
+  FADmap( j_x,   j_y    ) = firstJacobian( i_x,   i_y   );
+  FADmap( j_x,   j_npy  ) = firstJacobian( i_x,   i_npy  );
+  FADmap( j_x,   j_ndp  ) = firstJacobian( i_x,   i_ndp );
 
-  FADmap( j_px,  j_x   ) = firstJacobian( i_px,  i_x   );
-  FADmap( j_px,  j_px  ) = firstJacobian( i_px,  i_px  );
-  FADmap( j_px,  j_y   ) = firstJacobian( i_px,  i_y   );
-  FADmap( j_px,  j_py  ) = firstJacobian( i_px,  i_py  );
-  FADmap( j_px,  j_dpp ) = firstJacobian( i_px,  i_dpp );
+  FADmap( j_npx,  j_x    ) = firstJacobian( i_npx,  i_x   );
+  FADmap( j_npx,  j_npx  ) = firstJacobian( i_npx,  i_npx  );
+  FADmap( j_npx,  j_y    ) = firstJacobian( i_npx,  i_y   );
+  FADmap( j_npx,  j_npy  ) = firstJacobian( i_npx,  i_npy  );
+  FADmap( j_npx,  j_ndp  ) = firstJacobian( i_npx,  i_ndp );
 
-  FADmap( j_y,   j_x   ) = firstJacobian( i_y,   i_x   );
-  FADmap( j_y,   j_px  ) = firstJacobian( i_y,   i_px  );
-  FADmap( j_y,   j_y   ) = firstJacobian( i_y,   i_y   );
-  FADmap( j_y,   j_py  ) = firstJacobian( i_y,   i_py  );
-  FADmap( j_y,   j_dpp ) = firstJacobian( i_y,   i_dpp );
+  FADmap( j_y,   j_x    ) = firstJacobian( i_y,   i_x   );
+  FADmap( j_y,   j_npx  ) = firstJacobian( i_y,   i_npx  );
+  FADmap( j_y,   j_y    ) = firstJacobian( i_y,   i_y   );
+  FADmap( j_y,   j_npy  ) = firstJacobian( i_y,   i_npy  );
+  FADmap( j_y,   j_ndp  ) = firstJacobian( i_y,   i_ndp );
 
-  FADmap( j_py,  j_x   ) = firstJacobian( i_py,  i_x   );
-  FADmap( j_py,  j_px  ) = firstJacobian( i_py,  i_px  );
-  FADmap( j_py,  j_y   ) = firstJacobian( i_py,  i_y   );
-  FADmap( j_py,  j_py  ) = firstJacobian( i_py,  i_py  );
-  FADmap( j_py,  j_dpp ) = firstJacobian( i_py,  i_dpp );
+  FADmap( j_npy,  j_x    ) = firstJacobian( i_npy,  i_x   );
+  FADmap( j_npy,  j_npx  ) = firstJacobian( i_npy,  i_npx  );
+  FADmap( j_npy,  j_y    ) = firstJacobian( i_npy,  i_y   );
+  FADmap( j_npy,  j_npy  ) = firstJacobian( i_npy,  i_npy  );
+  FADmap( j_npy,  j_ndp  ) = firstJacobian( i_npy,  i_ndp );
 
-  FADmap( j_dpp, j_x   ) = 0.0;
-  FADmap( j_dpp, j_px  ) = 0.0;
-  FADmap( j_dpp, j_y   ) = 0.0;
-  FADmap( j_dpp, j_py  ) = 0.0;
-  FADmap( j_dpp, j_dpp ) = 1.0;
+  FADmap( j_ndp, j_x    ) = 0.0;
+  FADmap( j_ndp, j_npx  ) = 0.0;
+  FADmap( j_ndp, j_y    ) = 0.0;
+  FADmap( j_ndp, j_npy  ) = 0.0;
+  FADmap( j_ndp, j_ndp  ) = 1.0;
 
   // Finds its eigenvectors....
   int i, j;
@@ -1838,12 +1798,12 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
   int theColumn;
 
   for( i = 0; i < 5; i++ ) {
-    if( abs( EV(j_dpp,i) ) > 1.0e-6 ) {
+    if( abs( EV(j_ndp,i) ) > 1.0e-6 ) {
       numberFound++;
       theColumn = i;
-      if( abs( EV(j_dpp,i) - c_one ) > 1.0e-6 ) {
+      if( abs( EV(j_ndp,i) - c_one ) > 1.0e-6 ) {
         for( j = 0; j < 5; j++ ) {
-          EV(j,i) = EV(j,i) / EV(j_dpp,i);
+          EV(j,i) = EV(j,i) / EV(j_ndp,i);
         }
       }
     }
@@ -1868,10 +1828,10 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
      // Attach initial dispersion data to the beamline ...
      LattFuncSage::lattFunc lf;
 
-     lf.dispersion.hor = real( EV( j_x,  theColumn ) );
-     lf.dPrime.hor     = real( EV( j_px, theColumn ) );
-     lf.dispersion.ver = real( EV( j_y,  theColumn ) );
-     lf.dPrime.ver     = real( EV( j_py, theColumn ) );
+     lf.dispersion.hor = real( EV( j_x,   theColumn ) );
+     lf.dPrime.hor     = real( EV( j_npx, theColumn ) );
+     lf.dispersion.ver = real( EV( j_y,   theColumn ) );
+     lf.dPrime.ver     = real( EV( j_npy, theColumn ) );
      lf.arcLength      = lng;
      
      myBeamlinePtr_->dataHook.eraseAll( "Dispersion" );
@@ -1891,11 +1851,11 @@ int LattFuncSage::FAD_Disp_Calc( JetParticle const& arg_jp, Sage::CRITFUNC Crit 
      firstParticle.set_x  ( dpp*real( EV( j_x,  theColumn ) ) );
      firstParticle.set_y  ( dpp*real( EV( j_y,  theColumn ) ) );
      firstParticle.set_cdt( 0.0 );
-     firstParticle.set_npx( dpp*real( EV( j_px, theColumn ) ) );
-     firstParticle.set_npy( dpp*real( EV( j_py, theColumn ) ) );
+     firstParticle.set_npx( dpp*real( EV( j_npx, theColumn ) ) );
+     firstParticle.set_npy( dpp*real( EV( j_npy, theColumn ) ) );
      firstParticle.set_ndp( 0.0 );
 
-     firstParticle.SetReferenceMomentum( ( 1.0 + dpp )*(firstParticle.ReferenceMomentum()) );
+     firstParticle.SetReferenceMomentum( ( 1.0 + get_dpp() )*(firstParticle.ReferenceMomentum()) );
 
     for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
     {
