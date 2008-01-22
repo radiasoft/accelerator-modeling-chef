@@ -89,7 +89,7 @@ class Apron:
                                 ile = accuracy_marker, insertion_point
                                 ile_list.append(ile)
                 master_insertion_point += element.OrbitLength(particle)
-                element.propagateParticle(particle)
+                element.propagate(particle)
         s_0 = 0.0
         self.beamline.InsertElementsFromList(particle, s_0, ile_list)
         self.beamline.append(accuracy_marker)
@@ -157,8 +157,8 @@ class Apron:
                 if has_propagated:
                     maps.append(jet_particle.State().toPython())
                     s = element.OrbitLength(particle)
-                    element.propagateParticle(particle)
-                    element.propagateJetParticle(jet_particle)
+                    element.propagate(particle)
+                    element.propagate(jet_particle)
                 energy         = jet_particle.ReferenceEnergy()
                 jet_particle   = self.get_new_jet_particle(energy)
                 has_propagated = 0
@@ -166,8 +166,8 @@ class Apron:
             else:
                 if not element.Type() == "marker":
                     s += element.OrbitLength(particle)
-                    element.propagateParticle(particle)
-                    element.propagateJetParticle(jet_particle)
+                    element.propagate(particle)
+                    element.propagate(jet_particle)
                     has_propagated = 1
         return maps
 
@@ -197,7 +197,7 @@ class Apron:
             kxs.append(kx)
             kys.append(ky)
             ss.append(s)
-            element.propagateParticle(particle)
+            element.propagate(particle)
         return (numarray.array(ss),numarray.array(kxs),numarray.array(kys))
     
     def _convert_linear_maps(self, chef_linear_maps):
@@ -212,23 +212,23 @@ class Apron:
 
     def get_single_linear_map(self):
         jet_particle = self.get_new_jet_particle()
-        self.beamline.propagateJetParticle(jet_particle)
+        self.beamline.propagate(jet_particle)
         return self._convert_linear_maps([jet_particle.State().jacobian()])[0]
 
     def get_single_full_map(self):
         jet_particle = self.get_new_jet_particle()
-        self.beamline.propagateJetParticle(jet_particle)
+        self.beamline.propagate(jet_particle)
         mapping = jet_particle.State()
         return jet_particle.State().toPython()
     
     def propagate_reference_particle(self,print_coeffs=0):
         jet_particle = self.get_new_jet_particle()
-        self.beamline.propagateJetParticle(jet_particle)
+        self.beamline.propagate(jet_particle)
         mapping = jet_particle.State()
         if print_coeffs:
             mapping.printCoeffs()
         testpart = self.get_new_particle()
-        self.beamline.propagateParticle(testpart)
+        self.beamline.propagate(testpart)
         return (self.get_new_particle(),testpart)
 
 class Lattice_function_array:
