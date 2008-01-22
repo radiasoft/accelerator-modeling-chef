@@ -94,7 +94,8 @@ FPinfo::FPinfo( double const& s, Vector const& u )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FPSolver::FPSolver( BmlPtr bml, int n ) : dimension_(n) {
+FPSolver::FPSolver( BmlPtr bml, int n ) 
+ : dimension_(n) {
 
   if( n <= 0 ||  !bml ) {
     ostringstream uic;
@@ -112,7 +113,10 @@ FPSolver::FPSolver( BmlPtr bml, int n ) : dimension_(n) {
   for( int i = 0; i < 4; i++ ) zeroScale_[i] = 1.0e-9;
 
   l_ = new int [4];
-  l_[i_x] = 0; l_[i_npx] = 1; l_[i_y] = 3; l_[i_npy] = 4;
+  l_[0]  = i_x; 
+  l_[1]  = i_npx; 
+  l_[2]  = i_y; 
+  l_[3]  = i_npy;
  
   bmLine_ = bml;
 }
@@ -141,9 +145,6 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
            "int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )",
            uic.str().c_str() ) );
   }
-
-  bool jumpTest = false;
-  bool zeroTest = true;
 
   JetParticle jpr(p);
   bmLine_->propagate( jpr);
@@ -174,28 +175,25 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
     }
       
     Vector eps(4);
-    for( int i=0; i<4; ++i) eps(i) = (zs - p.State())[ l_[i] ];
+    for( int i=0; i<4; ++i) eps(i) = (zs[l_[i]] - p.State()[ l_[i] ] );
 
     // --- Set up the tests --------------------------
 
-    jumpTest = zeroTest = false;
-    for( int i=0; i<4; ++i) {
-      if((  std::abs( eps[i]  ) > zeroScale_[i]  )) {
-        zeroTest = true;
-        jumpTest = jumpTest || 
-          ( 
-            ( std::abs( eps(i) ) >
-            jumpScale_[i]*std::max(std::abs( zs(l_[i]) ),std::abs( p.State()[l_[i]] )) )  
-          );
-      }
-    }    
+    double epsnorm = 0.0;
+    double zsnorm  = 0.0;
 
-    if( (!jumpTest) || (!zeroTest) ) break;
+    for( int i=0; i<4; ++i) {
+       epsnorm = max( epsnorm, std::abs(eps[i])    );
+       zsnorm  = max( zsnorm,  std::abs(zs[l_[i]])        );
+       zsnorm  = max( zsnorm,  std::abs(p.State()[l_[i]]) );
+    } 
+   
+    bool converged  = ( epsnorm < 1.0e-7 );
+    if (converged) { p.State() = zs; break;}
 
     // --- Correct orbit and repeat ------------------
 
     Vector dz = M*eps;
-
     for( int i=0; i<4; ++i ) { p.State()[l_[i]] = ( zs[l_[i]] - dz[i] ); }
 
 
@@ -203,22 +201,22 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
   
 
   // --- Cleaning up -------------------------------------------------
+
   if( iterCount >= 200 ) {
       (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
-    (*pcerr) << 
+    (  *pcerr) << 
       "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
       (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
 
     return 1;
   }
 
-  if( !jumpTest || !zeroTest ) {
-      (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
-    (*pcerr) << 
+  (*pcerr) << 
       "FixedPoint:: Convergence achieved after " << iterCount 
                                                  << " iterations." << endl;
-  } 
+  
   // --- Store closed orbit if desired -------------------------------
+
   double startLength( 0.0 );
   if( Crit ) {
     Vector zs = p.State();
@@ -245,7 +243,7 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 
 int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
 {
-   int  ret = 0;
+   int  ret=0;
 
   // :::::::::::::::::::::::::::::::::::::::::::
 
@@ -261,9 +259,6 @@ int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
 
   // :::::::::::::::::::::::::::::::::::::::::::
 
-
-   bool jumpTest = false;
-   bool zeroTest = false;
 
    Particle p(jp);
    p.State()[i_cdt] = 0.0; 
@@ -292,80 +287,76 @@ int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
       bmLine_->propagate( p );
 
       Vector eps(4);
+      for( int i=0; i<4; ++i ) eps[i] = ( p.State()[l_[i]] - zs[l_[i]] );
 
-      for( int i=0; i<4; ++i ) eps[i] = ( p.State() - zs )[ l_[i] ];
-
-      jumpTest = zeroTest = false;
+      double epsnorm = 0.0;
+      double zsnorm  = 0.0;
 
       for( int i=0; i<4; ++i) {
-
-	    if((  std::abs( eps(i) ) > zeroScale_[i]  )) {
-            zeroTest = true;
-            jumpTest = jumpTest || 
-             ( std::abs( eps[i] ) > jumpScale_[i] * std::max( std::abs(zs[l_[i]]), std::abs(p.State()[l_[i]]) ));
-	    }
-      }    
-  
-      if( (!jumpTest) || (!zeroTest) ) break;
+       epsnorm = max( epsnorm, std::abs(eps[i])           );
+       zsnorm  = max( zsnorm,  std::abs(zs[l_[i]])        );
+       zsnorm  = max( zsnorm,  std::abs(p.State()[l_[i]]) );
+      } 
+   
+      bool converged  = ( epsnorm < 1.0e-7 );
+      if (converged) { p.State() = zs; break; }
 
       // --- Correct orbit and repeat ------------------
 
       Vector dz = M*eps;
+      for( int i=0; i<4; ++i ) { p.State()[l_[i]] = ( zs[l_[i]] - dz[i] ); }
+
+
+  } while ( ++iterCount < 200 );
   
-      for( int i=0; i<4; ++i ) { 
-        p.State()[ l_[i] ] = ( zs[l_[i]] - dz[i] );
-      }
-      p.State()[i_cdt] = 0.0; 
 
-    } while ( ++iterCount < 200 );
-    
+  // --- Cleaning up -------------------------------------------------
 
-    if( iterCount >= 200 ) {
+  if( iterCount >= 200 ) {
       (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
-      (*pcerr) << "FPSolver: More than 200 Newton's iterations attempted." << endl;
-      (*pcerr) << "FPSolver: Result may not be reliable!! " << endl;
-    }
+    (*pcerr) << 
+      "FixedPoint:: More than 200 Newton's iterations attempted." << endl;
+      (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
+
+    return 1;
+  }
+
+  (*pcerr) << 
+      "FixedPoint:: Convergence achieved after " << iterCount 
+                                                 << " iterations." << endl;
+   
+  // --- Store closed orbit if desired -------------------------------
   
-    if( !jumpTest || !zeroTest ) { 
-      (*pcerr) << 
-         "FPSolver:: Convergence achieved after " << iterCount 
-                                                  << " iterations." << endl;
+  double startLength( 0.0 );
+
+  if( Crit ) {
+    Vector zs = p.State();
+
+    for (beamline::iterator it = bmLine_->begin();  it != bmLine_->end(); ++it ) {
+       (*it)->propagate( p );
+       startLength += (*it)->OrbitLength( p );
+       if( (*Crit)( *it ) ) {
+         (*it)->dataHook.append( Barnacle("FPS_orbit", FPinfo(startLength, p.State()) ) );
+       }
     }
-    
-    // --- Store closed orbit if desired -------------------------------
 
-    double startLength( 0.0 );
-    if( Crit ) {
-      Vector zs = p.State();
-    
-      for (beamline::iterator it = bmLine_->begin();  it != bmLine_->end(); ++it ) {
- 
-        (*it)->propagate( p );
-         startLength += (*it)->OrbitLength( p );
-         if( (*Crit)( *it ) ) {
-           (*it)->dataHook.append( Barnacle("FPS_orbit", FPinfo(startLength, p.State() ) ) );
-         }
-      }
-    
-      p.State() = zs;
-    }
-  
-    // --- Reset JetParticle& argument to contain the map ----------------
-    // --- on the closed orbit.                           ----------------
+    p.State() = zs;
+  }
 
-    p.State() [ p.cdtIndex() ] = 0.0;
-    jp.setState( p.State() );
-    
-    Vector state_i = p.State();
- 
-    bmLine_->propagate( jp );
+  // --- Reset JetParticle& argument to contain the map ----------------
+  // --- on the closed orbit.                           ----------------
 
-    jp.State()[ i_cdt ].setStandardPart(0.0); 
+  p.State() [ i_cdt ] = 0.0;
+  jp.setState( p.State() );
+    
+  bmLine_->propagate( jp );
+  jp.State()[ i_cdt ].setStandardPart(0.0); 
+
 
   // --- Exit --------------------------------------------------------
- 
 
   return ret;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
