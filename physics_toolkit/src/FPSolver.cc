@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      FPSolver.cc
-******  Version:   1.5
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -39,6 +38,11 @@
 ******  - interface based on Particle& ./JetParticle& rather than ptrs.
 ******  - use stack variables for local Particle/JetParticles   
 ******  - object initialization optimizations
+******
+******  Jan 2007 ostiguy@fnal
+******  - modified to allow fixed point iterations when state[i_ndp] = dp/p != 0   
+******  - modified Newton iteration convergence criterion
+******
 **************************************************************************
 *************************************************************************/
 
@@ -62,6 +66,18 @@ using FNAL::pcerr;
 
 using namespace std;
 
+namespace { 
+
+ Particle::PhaseSpaceIndex const& i_x    =  Particle::xIndex; 
+ Particle::PhaseSpaceIndex const& i_npx  =  Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y    =  Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy  =  Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt  =  Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp  =  Particle::ndpIndex;
+
+}
+
+
 void mygaussj( MatrixD&, int, MatrixD&, int );
 void mygaussj( MatrixD&, int, VectorD&);
 
@@ -78,44 +94,39 @@ FPinfo::FPinfo( double const& s, Vector const& u )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FPSolver::FPSolver( BmlPtr bml, int n ) : dimension_(n) {
+FPSolver::FPSolver( BmlPtr bml, int n ) 
+  : dimension_(n), bmLine_ (bml), l_(4), 
+    jumpScale_ (n, 1.0e-9), zeroScale_(n, 1.0e-9)
+{ 
 
-  if( n <= 0 ||  !bml ) {
+  if( n <= 0 ||  (!bmLine_) ) {
     ostringstream uic;
     uic << "Incorrect parameters: bml = " << (int) bml.get() 
         << " n = " << n;
     throw( GenericException( __FILE__, __LINE__, 
-           "FPSolver::FPSolver( beamline* bml, int n )",
+           "FPSolver::FPSolver( BmlPtr bml, int n )",
            uic.str().c_str() ) );
   }
 
-  jumpScale_ = new double [ n ];
-  for( int i = 0; i < n; i++ ) jumpScale_[i] = 1.0e-9;
-
-  zeroScale_ = new double [ n ];
-  for( int i = 0; i < 4; i++ ) zeroScale_[i] = 1.0e-9;
-
-  l_ = new int [4];
-  l_[0] = 0; l_[1] = 1; l_[2] = 3; l_[3] = 4;
+  l_[0] = i_x;   
+  l_[1] = i_npx; 
+  l_[2] = i_y;   
+  l_[3] = i_npy;
  
-  bmLine_ = bml;
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-FPSolver::~FPSolver() {
-  delete [] jumpScale_;  jumpScale_ = 0;
-  delete [] zeroScale_;  zeroScale_ = 0;
-  delete [] l_;          l_         = 0;
-}
+FPSolver::~FPSolver() {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 {
+
   if( dimension_ != p.State().Dim() ) {
     ostringstream uic;
     uic << "Dimension_s are not correct. " << dimension_ 
@@ -125,37 +136,29 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
            uic.str().c_str() ) );
   }
 
-  bool jumpTest, zeroTest;
-
-
-  // -----------------------------------------------  
-
-
-  Vector zs( dimension_ );
-  Vector z(4);
-  for( int i = 0; i < 4; i++ ) z(i) = p.State()[ l_[i] ];
 
   JetParticle jpr(p);
   bmLine_->propagate( jpr);
 
-  MatrixD MM;
-  MM = jpr.State().Jacobian();
+  MatrixD MM = jpr.State().Jacobian();
 
   MatrixD M( 4, 4 );
-  for( int i = 0; i < 4; i++ ) 
-    for( int j = 0; j < 4; j++ ) 
+  for( int i=0; i<4; ++i) 
+    for( int j=0; j<4; ++j ) 
       M( i, j ) = MM( l_[i], l_[j] );
 
-  for( int i = 0; i < 4; i++ ) M( i, i ) -= 1.0;
+  for( int i=0; i<4; ++i) M( i, i ) -= 1.0;
   M = M.inverse();
   
   int iterCount = 0;
-  Vector eps(4);
   do {
+
+    Vector zs = p.State();
     bmLine_->propagate( p );
 
     // --- Has the state gone out of bounds? ---------
-    for( int i = 0; i < Particle::PSD; i++ ) {
+
+    for( int i=0; i< Particle::PSD; ++i) {
       if( isnan(p.State()[i]) ) { 
         (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
         (*pcerr) << "FPSolver: *** ERROR *** p.State(" << i << ") is NaN." << endl;
@@ -163,34 +166,34 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
       }
     }
       
-    for( int i = 0; i < 4; i++ ) eps(i) = z(i) - p.State()[ l_[i] ];
+    Vector eps(4);
+    for( int i=0; i<4; ++i) eps(i) = (zs[l_[i]] - p.State()[ l_[i] ]);
 
-    // --- Set up the tests --------------------------
-    jumpTest = zeroTest = false;
-    for( int i = 0; i < 4; i++ ) {
-      if((  std::max(std::abs( z(i) ),std::abs( p.State()[l_[i] ] )) > zeroScale_[i]  )) {
-        zeroTest = true;
-        jumpTest = jumpTest || 
-          ( 
-            ( std::abs( eps(i) ) >
-            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[l_[i]] )) )  
-          );
-      }
-    }    
+    double epsnorm = 0.0;
+    double zsnorm  = 0.0;
 
-    if( (!jumpTest) || (!zeroTest) ) break;
+    for( int i=0; i<4; ++i) {
+     epsnorm = max( epsnorm, std::abs(eps[i])           );
+     zsnorm  = max( zsnorm,  std::abs(zs[l_[i]])        );
+     zsnorm  = max( zsnorm,  std::abs(p.State()[l_[i]]) );
+    } 
+   
+    bool converged  = ( epsnorm < 1.0e-6 ); 
+    if( converged ) { p.State() = zs;  break; }
+
 
     // --- Correct orbit and repeat ------------------
-    z = z + M*eps;
 
-    zs = p.State();
-    for( int i = 0; i < 4; i++ ) zs( l_[i] ) = z(i);
-    p.State() = zs;
+    Vector dz = M*eps;
+
+    for( int i=0; i<4; ++i ) { p.State()[l_[i]] = ( zs[l_[i]] - dz[i] ); }
+
 
   } while ( ++iterCount < 200 );
   
 
   // --- Cleaning up -------------------------------------------------
+
   if( iterCount >= 200 ) {
       (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
     (*pcerr) << 
@@ -200,16 +203,16 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
     return 1;
   }
 
-  if( !jumpTest || !zeroTest ) {
-      (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
-    (*pcerr) << 
-      "FixedPoint:: Convergence achieved after " << iterCount 
-                                                 << " iterations." << endl;
-  } 
+  (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
+  (*pcerr) << "FixedPoint:: Convergence achieved after " << iterCount 
+           << " iterations." << endl;
+
   // --- Store closed orbit if desired -------------------------------
+
   double startLength( 0.0 );
+
   if( Crit ) {
-    zs = p.State();
+    Vector zs = p.State();
 
     for (beamline::iterator it = bmLine_->begin();  it != bmLine_->end(); ++it ) {
        (*it)->propagate( p );
@@ -231,110 +234,96 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
+int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
 {
-   int ret = 0;
-
-   jpr.State() = Mapping("Identity", jpr.State().Env() );  // Resets to identity.
-
-   Particle p(jpr);
+   int  ret = 0;
 
   // :::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) 
-  {
-    if( dimension_ != jpr.State().Dim() ) {
+   if( dimension_ != jp.State().Dim() ) {
       (*pcerr) << "*** ERROR ***                                         \n"
               "*** ERROR *** FPSolver::operator()(JetParticle&, char*) \n"
               "*** ERROR *** Dimensions are not correct.             \n"
-              "*** ERROR ***  " << dimension_ << " != " << jpr.State().Dim() << "\n"
+              "*** ERROR ***  " << dimension_ << " != " << jp.State().Dim() << "\n"
               "*** ERROR ***                                         \n"
            << endl;
       ret = 2;
-    }
-  }
+   }
 
   // :::::::::::::::::::::::::::::::::::::::::::
 
-  if( ret == 0 ) 
-  {
-    int i, j;
-    char jumpTest, zeroTest;
+
+   Particle p(jp);
+   p.State()[i_cdt] = 0.0; 
+
+   bmLine_->propagate( jp );
   
-    Vector zs( dimension_ );
-    Vector z(4);
-    for( int i=0; i< 4; i++ ) z(i) = p.State()[ l_[i] ];
+   MatrixD MM = jp.State().Jacobian();
   
-    bmLine_->propagate( jpr );
-  
-    MatrixD MM = jpr.State().Jacobian();
-  
-    MatrixD M( 4, 4 );
-    for( i = 0; i < 4; i++ ) 
-      for( j = 0; j < 4; j++ ) 
+   MatrixD M( 4, 4 );
+
+   for( int i=0; i<4; ++i ) {
+     for( int j=0; j<4; ++j) { 
         M( i, j ) = MM( l_[i], l_[j] );
-  
-    for( i = 0; i < 4; i++ ) M( i, i ) -= 1.0;
-    M = M.inverse();
-    
-    int iterCount = 0;
-    Vector eps(4);
-    do {
+     }
+   }
+
+   for( int i=0; i<4; ++i) { M( i, i ) -= 1.0; }
+   M = M.inverse();
+
+   int iterCount = 0;
+   do {
+
+      Vector zs =  p.State();  // save previous state
 
       bmLine_->propagate( p );
 
-      // --- Has the state gone out of bounds? ---------
-      for( i = 0; i < Particle::PSD; i++ ) {
-        if( isnan(p.State()[i]) ) { 
-          (*pcerr) << "FPSolver (lineno: " << __LINE__ << " )  : *** ERROR *** p.State(" << i << ") is NaN." << endl;
-          return -1; 
-        }
-      }
-      
-      for( i = 0; i < 4; i++ ) eps(i) = z(i) - p.State()[ l_[i] ];
-  
-      // --- Set up the tests --------------------------
-      jumpTest = zeroTest = 0;
-      for( i = 0; i < 4; i++ ) {
-        if((  std::max(std::abs( z(i) ),std::abs( p.State()[ l_[i] ] )) > zeroScale_[i]  )) {
-          zeroTest = 1;
-          jumpTest = jumpTest || 
-            ( 
-              ( std::abs( eps(i) ) >
-              jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[ l_[i] ] )) )  
-            );
-        }
-      }    
-  
-      if( (!jumpTest) || (!zeroTest) ) break;
-  
+      Vector eps(4);
+      Vector z(4);
+
+      for( int i=0; i<4; ++i ) eps[i] = ( p.State()[ l_[i] ] - zs[l_[i]] );
+
+      double epsnorm = 0.0;
+      double zsnorm  = 0.0;
+
+      for( int i=0; i<4; ++i) {
+       epsnorm = max( epsnorm, std::abs(eps[i])    );
+       zsnorm  = max( zsnorm,  std::abs(zs[l_[i]])        );
+       zsnorm  = max( zsnorm,  std::abs(p.State()[l_[i]]) );
+      } 
+   
+      bool converged  = ( epsnorm < 1.0e-6 ); 
+      if( converged ) { p.State() = zs;  break; }
+ 
       // --- Correct orbit and repeat ------------------
-      z = z + M*eps;
+
+      Vector dz = M*eps;
   
-      zs = p.State();
-      for( i = 0; i < 4; i++ ) zs( l_[i] ) = z(i);
-      p.State() = zs;
-  
-      iterCount++;
-    } while ( iterCount < 200 );
+      for( int i=0; i<4; ++i ) { 
+        p.State()[ l_[i] ] = ( zs[l_[i]] - dz[i] );
+      }
+      p.State()[i_cdt] = 0.0; 
+
+    } while ( ++iterCount < 200 );
     
-  
+
     if( iterCount >= 200 ) {
       (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
       (*pcerr) << "FPSolver: More than 200 Newton's iterations attempted." << endl;
       (*pcerr) << "FPSolver: Result may not be reliable!! " << endl;
     }
   
-  
-    if( !jumpTest || !zeroTest ) 
-      (*pcerr) << 
-        "FPSolver:: Convergence achieved after " << iterCount 
-                                                 << " iterations." << endl;
+    (*pcerr) << 
+         "FPSolver:: Convergence achieved after " << iterCount 
+                                                  << " iterations." << endl;
+
     
     // --- Store closed orbit if desired -------------------------------
+
     double startLength( 0.0 );
+
     if( Crit ) {
-      zs = p.State();
+      Vector zs = p.State();
     
       for (beamline::iterator it = bmLine_->begin();  it != bmLine_->end(); ++it ) {
  
@@ -348,23 +337,15 @@ int FPSolver::operator()( JetParticle& jpr, const char*, FP_CRITFUNC Crit )
       p.State() = zs;
     }
   
+    // --- Reset JetParticle& argument to contain the map ----------------
+    // --- on the closed orbit.                           ----------------
 
-    // --- Reset JetParticle* argument to contain the map ----------------
-    // --- on the closed orbit.                         ----------------
+    p.State() [ i_cdt ] = 0.0;
+    jp.setState( p.State() );
+    
+    bmLine_->propagate( jp );
 
-    zs( Particle::cdtIndex ) = 0.0;
-    jpr.setState( zs );
-    bmLine_->propagate( (jpr) );
-    Mapping oneTurn( jpr.State() );
-    for( int i = 0; i < dimension_; i++ ) {
-      oneTurn(i) += ( zs(i) - oneTurn(i).standardPart() );
-    }
-    jpr.State() =  oneTurn;
-
-  } // End block: if( ret == 0 )
-
-
-  // --- Exit --------------------------------------------------------
+    jp.State()[ i_cdt ].setStandardPart(0.0); 
 
   return ret;
 }
@@ -393,11 +374,10 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
   // -----------------------------------------------  
 
 
-  JetParticle jpr(p);
-  bmLine_->propagate( jpr );
+  JetParticle jp(p);
+  bmLine_->propagate( jp );
 
-  MatrixD M;
-  M = jpr.State().Jacobian();
+  MatrixD M = jp.State().Jacobian();
   for( int i = 0; i < dimension_; i++ ) M( i, i ) -= 1.0;
   M = M.inverse();
   
@@ -570,6 +550,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 
 
   // --- Cleaning up -------------------------------------------------
+
   if( iterCount >= 200 ) {
       (*pcerr) << __FILE__ << " line no " << __LINE__ << std::endl;  
       (*pcerr) << 
@@ -600,8 +581,6 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
        (*it)->dataHook.append( Barnacle( "FPS_orbit", new FPinfo( startLength, xp.State() ) ) );
   }
 
-
-  // --- Exit --------------------------------------------------------
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -618,6 +597,7 @@ void FPSolver::eraseAll() {
  //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double& FPSolver::JumpScale( int i ) { 
+
   if( i >= 0 && i < dimension_ ) return jumpScale_[i];
   else {
     ostringstream uic;
@@ -650,3 +630,4 @@ double& FPSolver::ZeroScale( int i ) {
   return zeroScale_[i];  // This line will never be reached.
                         // It is here to keep a compiler happy.
 }
+
