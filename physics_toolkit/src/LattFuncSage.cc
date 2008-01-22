@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      LattFuncSage.cc
-******  Version:   1.0                    
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -84,23 +83,8 @@ using FNAL::pcerr;
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
 
-// ... Globals:
-const int LattFuncSage::DONE             = 0;
-const int LattFuncSage::SLOTS_DETECTED   = 1;
-const int LattFuncSage::UNSTABLE         = 2;
-const int LattFuncSage::INTEGER_TUNE     = 3;
-const int LattFuncSage::PHASE_ERROR      = 4;
-const int LattFuncSage::WRONG_COUNT      = 5;
-const int LattFuncSage::NOT_WRITTEN      = 6;
-const int LattFuncSage::TOO_MANY_VECTORS = 7;
-
-double LattFuncSage::csH_ = 0.0;
-double LattFuncSage::csV_ = 0.0;
-double LattFuncSage::snH_ = 0.0;
-double LattFuncSage::snV_ = 0.0;
-Mapping* LattFuncSage::theMapPtr_ = 0;
-
 namespace {
+
  Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
  Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
  Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
@@ -109,7 +93,39 @@ namespace {
  Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
 
   int const BMLN_dynDim =6;
-}
+
+
+ bool checkForCoupling ( Matrix const& mtrx)
+ { 
+  
+  bool ret = false;
+ 
+  if( ( mtrx( i_y,   i_x   ) != 0.0 )  ||
+      ( mtrx( i_x,   i_y   ) != 0.0 )  ||
+      ( mtrx( i_x,   i_npy ) != 0.0 )  ||
+      ( mtrx( i_y,   i_npx ) != 0.0 )  ||
+      ( mtrx( i_npy, i_x   ) != 0.0 )  ||
+      ( mtrx( i_npx, i_y   ) != 0.0 )  ||
+      ( mtrx( i_npy, i_npx ) != 0.0 )  ||
+      ( mtrx( i_npx, i_npy ) != 0.0 )     )
+  {
+    (*pcerr) << "*** WARNING ***                                 \n"
+            "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** WARNING *** Coupling detected. Calculation is   \n"
+            "*** WARNING *** proceeding but results are suspect. \n"
+            "*** WARNING ***                                     \n"
+            "*** WARNING *** Suggest you use EdwardsTeng         \n"
+            "*** WARNING *** instead.                            \n"
+            "*** WARNING ***                                     \n"
+         << endl;
+     ret = true;
+   }
+
+  return ret;
+ }
+
+
+} // namespace
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -257,7 +273,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
   MatrixD mtrx(N,N,0.0);
 
-  const double momentum = jp.ReferenceMomentum();
+  double const momentum = jp.ReferenceMomentum();
 
   lfvec_.clear();
 
@@ -356,7 +372,7 @@ void LattFuncSage::eraseAll()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
+int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::CRITFUNC Crit )
 {
   // PRECONDITIONS: 
   //    jp  is already on the closed orbit and its
@@ -385,46 +401,20 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
   JetParticle  jparticle(jp);
   Particle      particle(jp);
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   int ret = 0;
   int i   = 0;
 
   // .......... Check coupling ............................
 
+
   MatrixD mtrx = jp.State().Jacobian();
+  ::checkForCoupling(mtrx);
   
-  if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      ( mtrx( i_x,  i_py ) != 0.0 )  ||
-      ( mtrx( i_y,  i_px ) != 0.0 )  ||
-      ( mtrx( i_py, i_x  ) != 0.0 )  ||
-      ( mtrx( i_px, i_y  ) != 0.0 )  ||
-      ( mtrx( i_py, i_px ) != 0.0 )  ||
-      ( mtrx( i_px, i_py ) != 0.0 )     )
-  {
-    (*pcerr) << "*** WARNING ***                                     \n"
-            "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
-            "*** WARNING *** Coupling detected. Calculation is   \n"
-            "*** WARNING *** proceeding but results are suspect. \n"
-            "*** WARNING ***                                     \n"
-            "*** WARNING *** Suggest you use EdwardsTeng         \n"
-            "*** WARNING *** instead.                            \n"
-            "*** WARNING ***                                     \n"
-         << endl;
-  }
-
-
   // Calculate initial lattice functions ...
 
   // ... first horizontal
 
-  double cs = ( mtrx( i_x, i_x ) + mtrx( i_px, i_px ) )/2.0;
+  double cs = ( mtrx( i_x, i_x ) + mtrx( i_npx, i_npx ) )/2.0;
 
   if( fabs( cs ) > 1.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
@@ -442,7 +432,7 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::UNSTABLE;
   }
 
-  double sn = ( mtrx( i_x, i_px ) > 0.0 ) ? sqrt( 1.0 - cs*cs ): - sqrt( 1.0 - cs*cs );
+  double sn = ( mtrx( i_x, i_npx ) > 0.0 ) ? sqrt( 1.0 - cs*cs ): - sqrt( 1.0 - cs*cs );
 
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
@@ -456,16 +446,16 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double beta_x  = mtrx( i_x, i_px ) / sn;
-  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_px, i_px ) ) / ( 2.0*sn );
+  double beta_x  = mtrx( i_x, i_npx ) / sn;
+  double alpha_x = ( mtrx( i_x, i_x ) - mtrx( i_npx, i_npx ) ) / ( 2.0*sn );
 
 
   // ... then vertical.
 
-  cs = ( mtrx( i_y, i_y ) + mtrx( i_py, i_py ) )/2.0;
+  cs = ( mtrx( i_y, i_y ) + mtrx( i_npy, i_npy ) )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( mtrx( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
-    else                           sn = - sqrt( 1.0 - cs*cs );
+    if( mtrx( i_y, i_npy ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    else                            sn = - sqrt( 1.0 - cs*cs );
   }
   else {
     (*pcerr) << "*** ERROR ***                                     \n"
@@ -496,8 +486,8 @@ int LattFuncSage::NewSlow_CS_Calc(  JetParticle const& jp, Sage::CRITFUNC Crit )
     return LattFuncSage::INTEGER_TUNE;
   }
 
-  double  beta_y  = mtrx( i_y, i_py ) / sn;
-  double alpha_y  = ( mtrx( i_y, i_y ) - mtrx( i_py, i_py ) ) / ( 2.0*sn );
+  double  beta_y  = mtrx( i_y, i_npy ) / sn;
+  double alpha_y  = ( mtrx( i_y, i_y ) - mtrx( i_npy, i_npy ) ) / ( 2.0*sn );
 
 
   double beta0H  = beta_x;
@@ -632,13 +622,6 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   }
 
 
-  int i_x   =  jp.xIndex();
-  int i_y   =  jp.yIndex();
-  int i_z   =  jp.cdtIndex();
-  int i_px  =  jp.npxIndex();
-  int i_py  =  jp.npyIndex();
-  int i_dpp =  jp.ndpIndex();
-
   int ret = 0;
 
 
@@ -676,34 +659,13 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   
   MatrixD mtrx = jp.State().Jacobian();
 
-    if( ( mtrx( i_y,  i_x  ) != 0.0 )  ||
-      	( mtrx( i_x,  i_y  ) != 0.0 )  ||
-      	( mtrx( i_x,  i_py ) != 0.0 )  ||
-      	( mtrx( i_y,  i_px ) != 0.0 )  ||
-      	( mtrx( i_py, i_x  ) != 0.0 )  ||
-      	( mtrx( i_px, i_y  ) != 0.0 )  ||
-      	( mtrx( i_py, i_px ) != 0.0 )  ||
-      	( mtrx( i_px, i_py ) != 0.0 )     )
-    {
-      (*pcerr) << "*** WARNING ***                                     \n"
-              "*** WARNING *** LattFuncSage::tuneCalc              \n"
-              "*** WARNING *** Coupling detected. Calculation is   \n"
-              "*** WARNING *** proceeding but results are suspect. \n"
-              "*** WARNING ***                                     \n"
-              "*** WARNING *** Suggest you use EdwardsTeng         \n"
-              "*** WARNING *** instead.                            \n"
-              "*** WARNING ***                                     \n"
-           << endl;
-    }
+  ::checkForCoupling(mtrx);
 
-
-    // Calculation in horizontal plane
-   
    MatrixD M(2,2);
-   M( 0, 0 ) = mtrx( i_x,  i_x  );
-   M( 0, 1 ) = mtrx( i_x,  i_px );
-   M( 1, 0 ) = mtrx( i_px, i_x  );
-   M( 1, 1 ) = mtrx( i_px, i_px );
+   M( 0, 0 ) = mtrx( i_x,   i_x  );
+   M( 0, 1 ) = mtrx( i_x,   i_npx );
+   M( 1, 0 ) = mtrx( i_npx, i_x  );
+   M( 1, 1 ) = mtrx( i_npx, i_npx );
 
    MatrixC lambda = M.eigenValues();
 
@@ -747,10 +709,10 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
     // Calculation in vertical plane
 
-   M( 0, 0 ) = mtrx( i_y,  i_y  );
-   M( 0, 1 ) = mtrx( i_y,  i_py );
-   M( 1, 0 ) = mtrx( i_py, i_y  );
-   M( 1, 1 ) = mtrx( i_py, i_py );
+   M( 0, 0 ) = mtrx( i_y,   i_y   );
+   M( 0, 1 ) = mtrx( i_y,   i_npy );
+   M( 1, 0 ) = mtrx( i_npy, i_y   );
+   M( 1, 1 ) = mtrx( i_npy, i_npy );
 
    lambda = M.eigenValues();
    if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
@@ -826,16 +788,10 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     (*pcout).flush();
   }
 
-  JetParticle jpart(arg_jp);
+  JetParticle jp(arg_jp);
 
   int ret = 0;
 
-  int i_x   =  arg_jp.xIndex();
-  int i_y   =  arg_jp.yIndex();
-  int i_z   =  arg_jp.cdtIndex();
-  int i_px  =  arg_jp.npxIndex();
-  int i_py  =  arg_jp.npyIndex();
-  int i_dpp =  arg_jp.ndpIndex();
 
    double lng = 0.0;
 
@@ -848,7 +804,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   if( !onClosedOrbit ) { 
     clsg.setForcedCalc(); 
-    ret = clsg.findClosedOrbit( jpart );
+    ret = clsg.findClosedOrbit( jp );
     clsg.unsetForcedCalc();
   }
 
@@ -868,8 +824,8 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     return ret;
   }
 
-  Particle firstParticle(jpart);
-  MatrixD firstJacobian  = jpart.State().Jacobian();
+  Particle firstParticle(jp);
+  MatrixD firstJacobian  = jp.State().Jacobian();
 
 
   // Calculate the closed orbit for an off-momentum particle ...
@@ -880,15 +836,12 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   double dpp = get_dpp();
 
-  double energy   = firstParticle.ReferenceEnergy();
-  double mass     = firstParticle.Mass();
-  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp );
-         energy   = sqrt( momentum*momentum + mass*mass );
-
-  jpart.SetReferenceEnergy( energy );
+  Particle tmp_p(jp);
+  tmp_p.State()[i_ndp] = dpp;
+  jp = JetParticle(tmp_p); 
 
   clsg.setForcedCalc();
-  ret = clsg.findClosedOrbit( jpart );
+  ret = clsg.findClosedOrbit( jp );
   clsg.unsetForcedCalc();
 
   if( ret == 0 ) {
@@ -906,8 +859,8 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     return ret;
   }
 
-  Particle secondParticle(jpart);
-  MatrixD secondJacobian  = jpart.State().Jacobian();
+  Particle secondParticle(jp);
+  MatrixD secondJacobian  = jp.State().Jacobian();
 
 
   // Attach dispersion data wherever desired ...
@@ -936,17 +889,17 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     if ( stand_alone_disp_calc ) { 
        lattFunc lf;
        lf.dispersion.hor = d( i_x  );
-       lf.dPrime.hor     = d( i_px );
+       lf.dPrime.hor     = d( i_npx );
        lf.dispersion.ver = d( i_y  );
-       lf.dPrime.ver     = d( i_py );
+       lf.dPrime.ver     = d( i_npy );
        lf.arcLength        = lng;
        lfvec_.push_back(lf);
     } 
     else {
        lf_it->dispersion.hor = d( i_x  );
-       lf_it->dPrime.hor     = d( i_px );
+       lf_it->dPrime.hor     = d( i_npx );
        lf_it->dispersion.ver = d( i_y  );
-       lf_it->dPrime.ver     = d( i_py );
+       lf_it->dPrime.ver     = d( i_npy );
        ++lf_it;
     }
 
