@@ -61,16 +61,16 @@ using namespace std;
 // **************************************************
 //   class rfcavity 
 // **************************************************
+
 rfcavity::rfcavity( const char* name_arg)
-:   bmlnElmnt(name_arg, 1.0, 0.0)
-  , w_rf_(0.0)
-  , phi_s_(0.0)
-  , sin_phi_s_(0.0)
-  , Q_(0.0)
-  , R_(0.0)
-  , h_(-1.0)
-  , u_(0)
-  , v_(0)
+  :   bmlnElmnt(name_arg, 1.0, 0.0),
+  w_rf_(0.0),
+  phi_s_(0.0),
+  sin_phi_s_(0.0),
+  Q_(0.0),
+  R_(0.0),
+  h_(-1.0)
+
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
@@ -87,15 +87,13 @@ rfcavity::rfcavity( const char* name_arg, // name
                     double const& Q_arg,      // Quality factor 
                     double const& R_arg       // shunt impedance 
                   ) 
-:   bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ) 
-  , w_rf_(MATH_TWOPI*f_arg)
-  , phi_s_(phi_s_arg)
-  , sin_phi_s_(sin(phi_s_arg))
-  , Q_(Q_arg)
-  , R_(R_arg)
-  , h_(-1.0)
-  , u_(0)
-  , v_(0)
+:   bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ) ,
+    w_rf_(MATH_TWOPI*f_arg),
+    phi_s_(phi_s_arg),
+    sin_phi_s_(sin(phi_s_arg)),
+    Q_(Q_arg), 
+    R_(R_arg),
+    h_(-1.0)
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
@@ -105,15 +103,14 @@ rfcavity::rfcavity( const char* name_arg, // name
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rfcavity::rfcavity( rfcavity const& x ) 
-:   bmlnElmnt( x ) 
-  , w_rf_(x.w_rf_)
-  , phi_s_(x.phi_s_)
-  , sin_phi_s_(x.sin_phi_s_)
-  , Q_(x.Q_)
-  , R_(x.R_)
-  , h_(x.h_)
-  , u_(0)
-  , v_(0), propagator_ (x.propagator_->Clone()) 
+:   bmlnElmnt( x ),
+    w_rf_(x.w_rf_),
+    phi_s_(x.phi_s_),
+    sin_phi_s_(x.sin_phi_s_),
+    Q_(x.Q_),
+    R_(x.R_),
+    h_(x.h_),
+    propagator_ (x.propagator_->Clone()) 
 {}
 
 
@@ -172,6 +169,20 @@ const char* rfcavity::Type() const
 bool    rfcavity::isMagnet() const 
 {
   return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double rfcavity::getReferenceTime()    const 
+{
+  double value = 0;
+
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    value += (*it)->getReferenceTime();
+  }
+
+  return value;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -368,6 +379,15 @@ void rfcavity::localPropagate( JetParticle& p)
 {
   (*propagator_)(*this, p);
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::localPropagate( ParticleBunch& b) 
+{
+  (*propagator_)(*this, b);
+}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
