@@ -77,10 +77,10 @@ void propagate( Slot& elm, Particle_t& p )
 
   Vector_t beta ( p.VectorBeta() );
 
-  Vector q    ( outframe.getOrigin() );
-  Vector u_1  ( outframe.getAxis(0) );
-  Vector u_2  ( outframe.getAxis(1) );
-  Vector u_3  ( outframe.getAxis(2) );
+  Vector q    = outframe.getOrigin();
+  Vector u_1  = outframe.getAxis(0);
+  Vector u_2  = outframe.getAxis(1);
+  Vector u_3  = outframe.getAxis(2);
 
   Component_t betaParallel = beta * u_3;
   
