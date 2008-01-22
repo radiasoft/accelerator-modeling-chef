@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      FPSolver.h
-******  Version:   1.5
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -49,14 +48,37 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlPtr.h>
 
-typedef bool (*FP_CRITFUNC)( ConstElmPtr );
-
 struct FPinfo {
   FPinfo( double const&, Vector const& );
   double arclength;
   Vector state;
 };
 
+//----------------------------------------------------------------
+//  PRECONDITIONS:  1st argument: address of Particle whose
+//   closed orbit is to be found. Phase space dimensions
+//   of Particle must match that of the FPSolver object.
+//   In fact, it had better be 6.
+//                 2nd argument: value is ignored, but
+//   its presence means that the transverse (four-dimensional)
+//   closed orbit is to be calculated. 
+//                 3rd argument: closed orbit Barnacles will
+//   be attached to all elements that match the criterion.
+//   Default: attach to no elements.
+//
+//  POSTCONDITIONS: 1st argument: [Jet}Particle's state is on
+//   the closed orbit.
+//                 Return value 0: normal exit
+//                              1: Newton iterates stopped
+//                                 after 200 iterations
+// 
+//                 NOTE: the Jet::Environment is not reset
+//   to the closed orbit. Thus all derivatives are assumed
+//   evaluated at the initial reference point, even though
+//   the JetParticle is "on" the closed orbit.
+//-----------------------------------------------------------------
+
+typedef bool (*FP_CRITFUNC)( ConstElmPtr );
 
 class FPSolver {
 
@@ -68,44 +90,21 @@ class FPSolver {
   double& JumpScale( int ); 
   double& ZeroScale( int );
 
-  int  operator()( Particle&,    const char*, FP_CRITFUNC = 0 );
-  int  operator()( JetParticle&, const char*, FP_CRITFUNC = 0 );   
-      // PRECONDITIONS:  1st argument: address of Particle whose
-      //   closed orbit is to be found. Phase space dimensions
-      //   of Particle must match that of the FPSolver object.
-      //   In fact, it had better be 6.
-      //                 2nd argument: value is ignored, but
-      //   its presence means that the transverse (four-dimensional)
-      //   closed orbit is to be calculated. 
-      //                 3rd argument: closed orbit Barnacles will
-      //   be attached to all elements that match the criterion.
-      //   Default: attach to no elements.
-      // POSTCONDITIONS: 1st argument: [Jet}Particle's state is on
-      //   the closed orbit.
-      //                 Return value 0: normal exit
-      //                              1: Newton iterates stopped
-      //                                 after 200 iterations
-      // 
-      //                 NOTE: the Jet::Environment is not reset
-      //   to the closed orbit. Thus all derivatives are assumed
-      //   evaluated at the initial reference point, even though
-      //   the JetParticle is "on" the closed orbit.
-  int  operator()( Particle&, FP_CRITFUNC = 0 );     // FixedPoint
-  void operator()( JetParticle&, FP_CRITFUNC = 0 );  // FixedPoint
-  // REMOVE: void operator()( double* );                      // fixedPoint
-  // If default value is used for FP_CRITFUNC argument, then no 
-  // fixed point information is attached to the elements.
+  int  operator()( Particle&,    char const*, FP_CRITFUNC = 0 );
+  int  operator()( Particle&,                 FP_CRITFUNC = 0 );  // FixedPoint
+
+  int  operator()( JetParticle&, char const*, FP_CRITFUNC = 0 );   
+  void operator()( JetParticle&,              FP_CRITFUNC = 0 );  // FixedPoint
 
  void eraseAll();
 
  private:
-  int       dimension_;
-  double*   jumpScale_;
-  double*   zeroScale_;
-  int*      l_;
-  BmlPtr    bmLine_;   // Not owned; not deleted.
 
-
+  int                   dimension_;
+  BmlPtr                bmLine_;   
+  std::vector<int>      l_;
+  std::vector<double>   jumpScale_;
+  std::vector<double>   zeroScale_;
 
 };
 
