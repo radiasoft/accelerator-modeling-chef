@@ -75,7 +75,6 @@ class DLLEXPORT RefRegVisitor : public BmlVisitor
   void visit( CF_sbend&     );
   void visit( sbend&        );
   void visit( rbend&        );
-  void visit( thinrfcavity& );
   void visit( rfcavity&     );
   void visit( LinacCavity&  );
 
