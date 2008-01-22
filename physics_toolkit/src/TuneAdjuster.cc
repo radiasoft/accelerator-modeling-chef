@@ -252,7 +252,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 
   myBeamlinePtr_->propagate( jpr );
 
-  lfs.NewSlow_CS_Calc( jpr );
+  lfs.CourantSnyderLatticeFunctions( jpr );
 
   int N = numberOfCorrectors();
 
@@ -330,7 +330,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
   myBeamlinePtr_->propagate( jpr );
 
 
-  lfs.NewSlow_CS_Calc( jpr );
+  lfs.CourantSnyderLatticeFunctions( jpr );
 
   int N = correctors_.size();
 
@@ -413,7 +413,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
  
   myBeamlinePtr_->propagate( jpr );
 
-  lfs.NewSlow_CS_Calc( jpr );
+  lfs.CourantSnyderLatticeFunctions( jpr );
   
   int N = correctors_.size();
 
