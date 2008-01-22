@@ -106,7 +106,8 @@ template class list<ElmPtr>;
 template class boost::shared_ptr<CF_rbend>; 
 template class boost::shared_ptr<CF_sbend>; 
 template class boost::shared_ptr<sbend>; 
-template class boost::shared_ptr<Slot>; 
+template class boost::shared_ptr<thinrfcavity>; 
+
 template class BasePropagator<ThinPole>;
 template class BasePropagator<Pinger>;
 template class BasePropagator<thinMultipole>;
@@ -146,6 +147,7 @@ template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::
 template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
 template class boost::detail::sp_counted_impl_p<Slot>;
 template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
+template class boost::detail::sp_counted_impl_p<thinrfcavity>;
 
 template WakeKickPropagator * boost::addressof(WakeKickPropagator&);
 template WakeKickPropagator const * boost::addressof(WakeKickPropagator const&);
