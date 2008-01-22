@@ -60,7 +60,9 @@ Q_OBJECT
 
 class InitCondDialogCovariance: public InitCondDialogCovarianceBase {
 
-Q_OBJECT
+ Q_OBJECT
+
+ public:
 
    InitCondDialogCovariance(QWidget* parent, const char* name, WFlags f=0);
 

@@ -60,8 +60,6 @@
 
 #include <physics_toolkit/DriftEliminator.h>
 #include <physics_toolkit/QuadEliminator.h>
-#include <physics_toolkit/BendEliminator.h>
-
 #include <physics_toolkit/DispersionSage.h>
 
 
@@ -206,7 +204,7 @@ private:
  
   InitCondDialogLF*                initCondDialogLF_;       
   InitCondDialogLF*                initCondDialogDisp_;     
-  InitCondDialogLF*                initCondDialogMoments_;  
+  InitCondDialogCovariance*        initCondDialogMoments_;  
 
 
   DeviceTable*                     devices_;
@@ -269,7 +267,6 @@ private slots:
   void editFlatten();
   void editNewOrder();
   void editMergeQuads();
-  void editMergeBends();
   void editD2S();
   void editAddMarkers();
   void editAddQtMons();
@@ -371,10 +368,11 @@ signals:
  private:
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeTwiss_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&, LattFuncSage::lattFunc const&) > command_propagateTwiss_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)> command_propagateTwiss_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeMoments_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr& , LattFuncSage::lattFunc const&)> command_propagateMoments_; 
+  //boost::function<QWidget*( QWidget*, BmlContextPtr& , CovarianceSage::Info const&)>   command_propagateMoments_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)> command_propagateMoments_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEdwardsTeng_; 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEigenmodes_; 
