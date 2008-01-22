@@ -39,6 +39,10 @@
 ****** - use covariant return types
 ****** - support for reference counted elements
 ******
+****** Dec 2007            ostiguy@fnal.gov
+****** - support for new style propagators
+****** - inner structure now based on hidden beamline object
+******
 **************************************************************************
 *************************************************************************/
 
@@ -70,8 +74,8 @@ public:
  
   typedef boost::shared_ptr<BasePropagator<rfcavity> > PropagatorPtr;   
 
-  rfcavity( const char* = "NONAME" ); // Name
-  rfcavity( const char*, // Name
+  rfcavity( const char* = "" ); 
+  rfcavity( const char*,     // Name
             double const&,   // length [m]
             double const&,   // RF frequency [Hz]
             double const&,   // max energy gain per turn [eV] (strength*10**9)
@@ -84,7 +88,7 @@ public:
   rfcavity* Clone() const { return new rfcavity( *this ); }
  ~rfcavity();
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate( ParticleBunch& x );
   void localPropagate( Particle& );
   void localPropagate( JetParticle& );
 
@@ -93,6 +97,8 @@ public:
 
   const char* Type() const;
   bool    isMagnet() const;
+ 
+  double getReferenceTime()              const;
 
   double const&  getPhi()                const;
   double const&  getRadialFrequency()    const;
@@ -114,8 +120,6 @@ public:
 
 private:
 
-  void finishConstructor();
-
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
@@ -132,18 +136,9 @@ private:
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
-  
-  bmlnElmnt** u_;
-  bmlnElmnt** v_;
-
   PropagatorPtr  propagator_;
 };
 
-
-//
-// *** class thinRFCavity written by Jian Ping Shan
-// *** April 4, 1994
-//
 
 class thinrfcavity : public bmlnElmnt {
 
@@ -164,7 +159,7 @@ public:
   thinrfcavity( thinrfcavity const& );
   thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
 
-  virtual ~thinrfcavity();
+ ~thinrfcavity();
 
   double const& getPhi()              const; 
   double const& getRadialFrequency()  const; 
@@ -180,7 +175,7 @@ public:
   void setRadialFrequencyRelativeTo( double const& );
   void                       setPhi( double const& );  // radians
 
-  const char* Type() const;
+  char const* Type() const;
   bool    isMagnet() const;
 
   void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
