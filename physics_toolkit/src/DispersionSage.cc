@@ -48,9 +48,13 @@
 ******
 ******  - eliminated references to slist/dlist
 ******
-******   June 2007 ostiguy@fnal.gov
+******  Jun 2007 ostiguy@fnal.gov
 ******   
 ******  - added new method to compute dispersion using AD
+******
+******  Jan 2007 ostiguy@fnal.gov
+****** - modified to compute ring dispersion using 2nd particle with 
+******   non-zero dp/p state component  
 ******
 **************************************************************************
 *************************************************************************/
@@ -69,12 +73,12 @@
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
 
 namespace {
-  Particle::PhaseSpaceIndex const& i_x   =  Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   =  Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_z   =  Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_px  =  Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_py  =  Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_dpp =  Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x    =  Particle::xIndex;
+  Particle::PhaseSpaceIndex const& i_y    =  Particle::yIndex;
+  Particle::PhaseSpaceIndex const& i_z    =  Particle::cdtIndex;
+  Particle::PhaseSpaceIndex const& i_npx  =  Particle::npxIndex;
+  Particle::PhaseSpaceIndex const& i_npy  =  Particle::npyIndex;
+  Particle::PhaseSpaceIndex const& i_ndp  =  Particle::ndpIndex;
 }
 
 
@@ -123,7 +127,7 @@ DispersionSage::Options::Options()
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
-  dpp_( 0.00001), 
+  dpp_( 1.0e-4), 
   ignoreErrors_( false ),
   calcs_()
   {}
@@ -133,7 +137,7 @@ DispersionSage::DispersionSage( BmlPtr x )
 
 DispersionSage::DispersionSage( beamline const& x )
 : Sage( x ), 
-  dpp_( 0.00001 ), 
+  dpp_( 1.0e-4), 
   ignoreErrors_( false ),
   calcs_()
 {}
@@ -202,12 +206,10 @@ void DispersionSage::set_options( const DispersionSage::Options& x )
 
 int DispersionSage::doCalc( JetParticle& jp )
 {
-
   if( verbose_ ) {
     *outputStreamPtr_ << "DispersionSage -- Entering DispersionSage::doCalc" << std::endl;
     outputStreamPtr_->flush();
   }
-
 
   // Preserve the current Jet environment
   Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
@@ -227,12 +229,13 @@ int DispersionSage::doCalc( JetParticle& jp )
   JetParticle local_jp(jp);
 
   if( !flags.onClosedOrbit ) { 
+
     clsg.setForcedCalc(); 
     ret = clsg.findClosedOrbit( local_jp );
     clsg.unsetForcedCalc();
 
     // Review the solution
-    if( 0 == ret ) {
+    if( ret == 0 ) {
       if( verbose_ ) {
         *outputStreamPtr_ << "DispersionSage -- Closed orbit successfully calculated." << std::endl;
         outputStreamPtr_->flush();
@@ -250,8 +253,6 @@ int DispersionSage::doCalc( JetParticle& jp )
                             << ret
                             << " is being ignored." 
                             << std::endl;
-          outputStreamPtr_->flush();
-          errorStreamPtr_->flush();
         }
         jp = local_jp;
         ret = 0;
@@ -268,33 +269,28 @@ int DispersionSage::doCalc( JetParticle& jp )
     }
   }
 
-
+  // ---------------------------------------------------------
   // At this point,  jp is on a closed orbit, with
   //   appropriate Jet__environment. 
   //   For purposes of paranoia, I reset Jet::_lastEnv here.
+  //----------------------------------------------------------
 
   Jet__environment::setLastEnv( jp.State().Env() );
 
-
   // Calculate the closed orbit for an off-momentum particle ...
+
   if( verbose_ ) {
     *outputStreamPtr_ << "DispersionSage --- Starting calculation of offset closed orbit." << std::endl;
     outputStreamPtr_->flush();
   }
 
-
-  local_jp = Particle(jp);
-
   Particle firstParticle(jp);
-  MatrixD firstJacobian  = jp.State().Jacobian();
+  MatrixD  firstJacobian  = jp.State().Jacobian();
 
-  double energy = firstParticle.ReferenceEnergy();
-  double mass   = firstParticle.Mass();
-
-  double momentum = sqrt( energy*energy - mass*mass )*( 1.0 + dpp_ );
-  energy          = sqrt( momentum*momentum + mass*mass );
-
-  local_jp.SetReferenceEnergy( energy );
+  double dpp = get_dpp();
+  Particle tmp_p(jp);
+  tmp_p.State()[i_ndp] = dpp;
+  local_jp = JetParticle(tmp_p); 
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( local_jp );
@@ -339,8 +335,6 @@ int DispersionSage::doCalc( JetParticle& jp )
 
 
   // Attach initial dispersion data to the beamline ...
-  Vector d( firstParticle.State().Dim() );
-
 
   // Attach dispersion data wherever desired ...
   if( verbose_ ) {
@@ -348,14 +342,9 @@ int DispersionSage::doCalc( JetParticle& jp )
     outputStreamPtr_->flush();
   }
 
-
-
-  double lng = 0.0;
- 
-  DispersionSage::Info info;
- 
   calcs_.clear();
 
+  double lng = 0.0;
   for (beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it ) 
   {
 
@@ -364,20 +353,20 @@ int DispersionSage::doCalc( JetParticle& jp )
 
     lng += (*it)->OrbitLength( firstParticle );
 
-    d = ( secondParticle.State()  -  firstParticle.State() ) / dpp_;
+    Vector d = ( secondParticle.State()  -  firstParticle.State() ) / dpp_;
   
+    DispersionSage::Info info;
     info.closedOrbit.hor  = firstParticle.get_x();
     info.closedOrbit.ver = firstParticle.get_y();
     info.dispersion.hor  = d( i_x  );
-    info.dPrime.hor      = d( i_px );
+    info.dPrime.hor      = d( i_npx );
     info.dispersion.ver  = d( i_y  );
-    info.dPrime.ver      = d( i_py );
+    info.dPrime.ver      = d( i_npy );
     info.arcLength       = lng;
    
     calcs_.push_back(info);
 
   }  
-
 
   // Attach tune and chromaticity to the beamline ........
   Vector firstNu(2), secondNu(2);
@@ -411,6 +400,7 @@ int DispersionSage::doCalc( JetParticle& jp )
   }
 
   Jet__environment::setLastEnv( storedEnv );
+
   return ret;
 }
 
@@ -463,9 +453,9 @@ int DispersionSage::pushCalc( Particle const& prt, Info const& initialConditions
       d = ( secondParticle.State() - firstParticle.State() ) /  (secondParticle.get_ndp()- firstParticle.get_ndp() ) ;
   
       info.dispersion.hor  = d( i_x  );
-      info.dPrime.hor      = d( i_px ) / firstParticle.get_npz();
+      info.dPrime.hor      = d( i_npx ) / firstParticle.get_npz();
       info.dispersion.ver  = d( i_y  );
-      info.dPrime.ver      = d( i_py ) / firstParticle.get_npz();
+      info.dPrime.ver      = d( i_npy ) / firstParticle.get_npz();
       info.arcLength       = lng;
       calcs_.push_back(info);
 
@@ -502,10 +492,10 @@ int DispersionSage::pushCalc( JetParticle const& p, Info const& initialCondition
   exp_d[5]  = 1;
 
   state[i_x ].setTermCoefficient(initialConditions.dispersion.hor, exp_d );
-  state[i_px].setTermCoefficient(initialConditions.dPrime.hor,     exp_d );
+  state[i_npx].setTermCoefficient(initialConditions.dPrime.hor,     exp_d );
 
   state[i_y ].setTermCoefficient(initialConditions.dispersion.ver, exp_d );
-  state[i_py].setTermCoefficient(initialConditions.dPrime.ver,     exp_d );
+  state[i_npy].setTermCoefficient(initialConditions.dPrime.ver,     exp_d );
  
   eraseAll();
 
@@ -522,9 +512,9 @@ int DispersionSage::pushCalc( JetParticle const& p, Info const& initialCondition
       double scale  =  jparticle.ReferenceMomentum()/start_momentum;
  
       info.dispersion.hor = jparticle.State()[i_x ].getTermCoefficient(exp_d ) * scale;
-      info.dPrime.hor     = jparticle.State()[i_px].getTermCoefficient(exp_d ) * scale; 
+      info.dPrime.hor     = jparticle.State()[i_npx].getTermCoefficient(exp_d ) * scale; 
       info.dispersion.ver = jparticle.State()[i_y ].getTermCoefficient(exp_d ) * scale;
-      info.dPrime.ver     = jparticle.State()[i_py].getTermCoefficient(exp_d ) * scale; 
+      info.dPrime.ver     = jparticle.State()[i_npy].getTermCoefficient(exp_d ) * scale; 
       info.arcLength      = lng;
 
       calcs_.push_back(info);
