@@ -186,7 +186,7 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
      firstTime = false;
    }
  }
- if ( (0.0 < std::abs(dsfaceangle)) && ( std::abs( dsfaceangle ) < 1.0e-6) ) {
+ if ( (std::abs(dsfaceangle) > 0.0) && (std::abs( dsfaceangle ) < 1.0e-6) ) {
 
     dsFaceAngle_ = dsAngle_ = 0.0;
 
@@ -343,8 +343,8 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
           "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
-  a = SBendPtr( new sbend( "", length_*pc,       strength_, angle_*pc,       usAngle_,     0.0       ));  
-  b = SBendPtr( new sbend( "", length_*(1.0-pc), strength_, angle_*(1.0-pc), 0.0,          dsAngle_  ));  
+  a = SBendPtr( new sbend( "", length_*pc,       strength_, angle_*pc,       usFaceAngle_,     0.0           ));  
+  b = SBendPtr( new sbend( "", length_*(1.0-pc), strength_, angle_*(1.0-pc), 0.0,              dsFaceAngle_  ));  
 
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
