@@ -434,9 +434,7 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
   }
 
   Vector d( out_.getOrigin() - in_.getOrigin() );
-  Vector av( pct*d );
-  Vector bv( ( 1. - pct )*d );  
-  
+
   Frame aOutFrame( in_ );
   aOutFrame.setOrigin( in_.getOrigin() + pct*d );
   Frame bOutFrame( out_.relativeTo( aOutFrame ) );
