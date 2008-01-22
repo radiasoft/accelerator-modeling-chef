@@ -33,6 +33,7 @@
 ******                                                                
 ******                                                                
 ******    REVISION HISTORY
+******
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
@@ -72,22 +73,14 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
   sbend();
 
-  sbend( const char*,// name
-         double const&,     // (orbit) length  [meters]
-         double const&,     // magnetic field [tesla]
-         double const&      // geometric bend angle   [radians]
-        );
+  sbend( const char* name, double const& length, 
+	                   double const& strength,
+                           double const& bendangle );
 
-
-  sbend( const char*,// name
-         double const&,     // (orbit) length  [meters]
-         double const&,     // field   [tesla]
-         double const&,     // geometric bend angle [radians]
-         double const&,     // upstream edge angle [radians]
-         double const&      // downstream edge angle [radians]
-                     // signs of previous two parameters
-                     // are as defined for sbends by MAD
-        );
+  sbend( const char* name,
+         double const& length,
+         double const& strength,    double const& bendangle,
+         double const& usfaceangle, double const& dsfaceangle );
 
   sbend( sbend const& );
 
@@ -95,31 +88,9 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
  ~sbend();
 
-
-  // Public methods
-  double        setBendAngle(double const& a) { return (angle_ = a); }
-  double const& getBendAngle() const          { return angle_; }
-  
-  // Note: entry and exit angles are not arguments
-  // in the sbend constructors. A symmetric bend is assumed
-  // by default. Otherwise, use one of the following.
-
-  double setEntryAngle( Particle const& ); 
-  double  setExitAngle( Particle const& ); 
-
-  double getEntryAngle()  const;
-  double getExitAngle()   const; 
-
-  double setEntryAngle( double const& radians); 
-  double  setExitAngle( double const& radians); 
-
-  double getEntryFaceAngle()   const; 
-  double  getExitFaceAngle()   const; 
-
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
- 
   void enterLocalFrame(    Particle& ) const;
   void enterLocalFrame( JetParticle& ) const;
   void leaveLocalFrame(    Particle& ) const;
@@ -136,6 +107,29 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+  double        setBendAngle(double const& a) { return (angle_ = a); }
+  double const& getBendAngle() const          { return angle_; }
+  
+  //------------------------------------------------------------------
+  // Note: A symmetric bend is assumed by default. 
+  //       Fiducial trajectory entry and exit angles are assumed to 
+  //       be zero. If desired, they can be set to using one of the 
+  //       member functions below. 
+  //------------------------------------------------------------------
+
+  double setEntryAngle( Particle const& ); 
+  double  setExitAngle( Particle const& ); 
+
+  double setEntryAngle( double const& radians); 
+  double  setExitAngle( double const& radians); 
+
+  double getEntryAngle()  const;
+  double getExitAngle()   const; 
+
+  double getEntryFaceAngle()   const; 
+  double  getExitFaceAngle()   const; 
+
+
 private:
 
   double   angle_;
@@ -148,7 +142,6 @@ private:
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
-
 
 };
 
