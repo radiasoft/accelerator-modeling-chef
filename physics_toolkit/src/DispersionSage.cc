@@ -126,7 +126,7 @@ DispersionSage::Options::Options()
 
 DispersionSage::DispersionSage( BmlPtr x )
 : Sage( x ), 
-  dpp_( 1.0e-6), 
+  dpp_( 1.0e-5), 
   ignoreErrors_( false ),
   calcs_()
   {}
@@ -136,7 +136,7 @@ DispersionSage::DispersionSage( BmlPtr x )
 
 DispersionSage::DispersionSage( beamline const& x )
 : Sage( x ), 
-  dpp_( 1.0e-6 ), 
+  dpp_( 1.0e-5), 
   ignoreErrors_( false ),
   calcs_()
 {}
