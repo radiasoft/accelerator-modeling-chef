@@ -33,6 +33,7 @@
 
 #include <physics_toolkit/BeamlineContext.h>
 #include <physics_toolkit/LattFuncSage.h>
+#include <physics_toolkit/CovarianceSage.h>
 
 class QWidget;
 
@@ -40,6 +41,7 @@ class CommandPropagateMoments {
 
  public:
     
+  //QWidget*  operator()( QWidget* parent, BmlContextPtr& context, CovarianceSage::Info const& initialConditions ); 
   QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initialConditions ); 
 
 };
