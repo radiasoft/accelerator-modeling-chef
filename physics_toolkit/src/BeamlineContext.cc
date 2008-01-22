@@ -1225,7 +1225,7 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
       
 
       if( !normalLattFuncsCalcd_ ) {
-        p_lfs_->NewSlow_CS_Calc( jetparticle_ );
+        p_lfs_->CourantSnyderLatticeFunctions( jetparticle_ );
         normalLattFuncsCalcd_ = true;
       }
 
