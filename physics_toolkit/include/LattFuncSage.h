@@ -38,6 +38,11 @@
 ******
 ****** - support for reference counted elements
 ****** - Pass particles by reference
+******
+****** Jan 2007           ostiguy@fnal.gov
+****** - eliminated obsolete, unused methodsto compute LF
+****** - eliminated unused data members
+****** 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -125,9 +130,10 @@ public:
                //                LattFuncSage::tunes data struct.
 
 
- int NewSlow_CS_Calc( JetParticle const&,       Sage::CRITFUNC = 0 );
+ int CourantSnyderLatticeFunctions( JetParticle const&,       Sage::CRITFUNC = 0 );
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
+
  int NewDisp_Calc   ( JetParticle const&, bool onClosedOrbit = false );
 
  int pushCalc       ( Particle const &, LattFuncSage::lattFunc const& );
@@ -141,27 +147,15 @@ public:
  void   set_dpp( double );
  double get_dpp();
 
- // Error identifiers
- static const int DONE;
- static const int SLOTS_DETECTED;
- static const int UNSTABLE;
- static const int INTEGER_TUNE;
- static const int PHASE_ERROR;
- static const int WRONG_COUNT;
- static const int NOT_WRITTEN;
- static const int TOO_MANY_VECTORS;
+ // status codes
+
+ enum status { OK=0, SLOTS_DETECTED, UNSTABLE, INTEGER_TUNE, PHASE_ERROR, WRONG_COUNT, NOT_WRITTEN, TOO_MANY_VECTORS };
 
 private:
 
  LattFuncSage( LattFuncSage const&); 
 
- static double           csH_; 
- static double           csV_; 
- static double           snH_; 
- static double           snV_;
- static Mapping*         theMapPtr_;
-
-        double           dpp_;    
+ double                  dpp_;    
  std::vector<lattFunc>   lfvec_;
  lattRing                lr_;
 
