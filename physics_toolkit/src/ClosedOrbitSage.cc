@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.
 ******
 ******  File:      ClosedOrbitSage.cc
-******  Version:   2.0
 ******
 ******  Copyright (c) 2001  Universities Research Association, Inc.
 ******                All Rights Reserved
@@ -39,6 +38,9 @@
 ******  -use new-style beamline iterators
 ******  -eliminated references to slist/dlist
 ******
+******  Jan 2008        ostiguy@fnal.gov
+****** - modified to compute closed orbit using non-zero dp/p state component
+******
 **************************************************************************
 *************************************************************************/
 
@@ -57,7 +59,6 @@
  *  April 29, 2004
  *  Leo Michelotti
  */
-
 
 #include <physics_toolkit/ClosedOrbitSage.h>
 #include <physics_toolkit/FPSolver.h>
@@ -300,28 +301,21 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
   }
 
 
-  // Set up an FPSolver ...
   FPSolver fp( myBeamlinePtr_ );
 
-  // *** CHANGE ***
-  // *** CHANGE *** jumpScale and zeroScale should be
-  // *** CHANGE *** member data, set by the invoking program
-  // *** CHANGE ***
+#if 0
 
-  double jumpScale [] = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-4, 1.0e-4, 1.0e-4 };
+  double jumpScale [] = { 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6 };
   double zeroScale [] = { 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-9 };
 
   for( int i = 0; i < BMLN_dynDim; i++ ) fp.ZeroScale(i) = zeroScale[i];
   for( int i = 0; i < BMLN_dynDim; i++ ) fp.JumpScale(i) = jumpScale[i];
 
-  // *** CHANGE ***
-  // *** CHANGE *** fp should know nothing about beamlines
-  // *** CHANGE ***
-
+#endif
 
   int fpError = fp( jp, "transverse", Sage::no );
 
-  if( fpError != 0 )
+  if(fpError)
   {
     *errorStreamPtr_
          << "\n*** ERROR ***"
@@ -333,6 +327,7 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
          << endl;
     return 2;
   }
+
 
   // Test the new closed orbit ...
 
@@ -368,7 +363,7 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
          << endl;
 
     if( verbose_ ) {
-      *outputStreamPtr_ << "ClosedOrbitSage -- Leaving ClosedOrbitSage::_invokeFPSolver with error"
+      *outputStreamPtr_ << "ClosedOrbitSage -- Leaving ClosedOrbitSage::invokeFPSolver with error"
                         << endl;
     }
 
