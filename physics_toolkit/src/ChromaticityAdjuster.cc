@@ -203,7 +203,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   myBeamlinePtr_->propagate(jpr);
 
 
-  lfs.NewSlow_CS_Calc( jpr);
+  lfs.CourantSnyderLatticeFunctions( jpr);
   lfs.NewDisp_Calc   ( jpr2);
  
   int N = correctors_.size();
