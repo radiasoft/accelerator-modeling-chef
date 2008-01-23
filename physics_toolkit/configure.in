@@ -117,6 +117,9 @@ else
 fi
 
 
+#----------------------------------------------------------------
+# BOOST
+#----------------------------------------------------------------
 
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
