@@ -110,6 +110,10 @@ fi
 AC_HEADER_STDC
 AC_CHECK_HEADERS([stdlib.h string.h])
 
+#---------------------------------------------------------
+# BOOST
+#---------------------------------------------------------
+
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
@@ -128,14 +132,12 @@ else
 		    boost_inc="/usr/include"
 		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include"
+		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/include/boost-1_34"
+		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/ap/include/boost-1_34"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_33"
-		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_33"
-		elif test -r /usr/local/include/boost-1_32/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include/boost-1_32"
-		elif test -r /usr/local/ap/include/boost-1_32/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_32"
                 else
 		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
 		fi
@@ -145,6 +147,8 @@ else
         AC_MSG_RESULT([Header file located in $boost_inc])
 fi
 ])
+
+#---------------------------------------------------------
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
