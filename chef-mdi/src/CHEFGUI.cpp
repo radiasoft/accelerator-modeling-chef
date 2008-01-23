@@ -70,6 +70,7 @@
 #include <bmlfactory/ParserException.h>
 #include <parsers/xsif/XSIFFactory.h>
 #include <physics_toolkit/BeamlineContext.h>
+#include <physics_toolkit/BendEliminator.h>
 
 #include <CHEFGUI.h>
 #include <filters.h>
@@ -334,8 +335,7 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
     initCondDialogDisp_->dispersionMode();
     initCondDialogDisp_->setCaption("Dispersion: Initial Conditions");
 
-    initCondDialogMoments_  = new InitCondDialogLF(this, "InitCondDialogLF", 0);
-    initCondDialogMoments_->momentsMode();
+    initCondDialogMoments_  = new InitCondDialogCovariance(this, "InitCondDialogCovariance", 0);
     initCondDialogMoments_->setCaption("Moments (Including Transverse Coupling) : Initial Conditions");
 
 
@@ -351,8 +351,12 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
 
     command_computeMoments_ = 
           boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                        ( CommandMoments() );  
+
+    //    command_propagateMoments_ = 
+    //      boost::function<QWidget* ( QWidget*, BmlContextPtr&,  CovarianceSage::Info  const&)    >    ( CommandPropagateMoments());  
+
     command_propagateMoments_ = 
-          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)    >     ( CommandPropagateMoments());  
+           boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc  const&)    >   ( CommandPropagateMoments());  
 
     command_computeEdwardsTeng_ = 
       boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandEdwardsTeng());           
@@ -1146,6 +1150,7 @@ void CHEFGUI::editCondense()
 
 void CHEFGUI::editNewOrder()
 {
+
   // One quick test ...
   if( !p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
@@ -1158,6 +1163,7 @@ void CHEFGUI::editNewOrder()
 
   // This test should be made more flexible after
   //   allowing non-flat beamlines to be processed.
+
   if( !qbmlElPtr ) {
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
@@ -1167,14 +1173,18 @@ void CHEFGUI::editNewOrder()
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
+
+
   ConstElmPtr elmntPtr = qbmlElPtr->cheatElementPtr();
+
   QBmlRoot* theRoot = const_cast<QBmlRoot*>(p_clickedQBml_->topBmlParent());
 
   // Invoke this slot to reset the current settings.
+
   ConstBmlContextPtr contextPtr = theRoot->cheatContextPtr();
+
   set_p_clickedContext( boost::const_pointer_cast<BeamlineContext>(contextPtr), theRoot );
   ConstBmlPtr bmlPtr = boost::static_pointer_cast<beamline const>(p_currBmlCon_->cheatBmlPtr());
-
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1186,9 +1196,12 @@ void CHEFGUI::editNewOrder()
   }
 
   // Do the operation.
+
   if( 0 == (browser_->removeBeamline( boost::const_pointer_cast<BeamlineContext>(contextPtr) )) ) {
+
     boost::const_pointer_cast<beamline>(bmlPtr)->startAt(elmntPtr);
     boost::const_pointer_cast<BeamlineContext>(contextPtr)->reset();
+
     emit new_beamline();
   }
   else { 
@@ -1218,7 +1231,6 @@ void CHEFGUI::editMergeQuads()
 
   emit new_beamline();
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1356,8 +1368,10 @@ void CHEFGUI::editAlignBends()
 
         // This line is almost certainly unnecessary.
       particle.setStateToZero();
-      particle.set_npx( ( particle.Momentum()/particle.ReferenceMomentum() )
-                     * sin( prototype->getPoleFaceAngle() ) );
+
+      // ************ FIXME ! --- gettPoleFaceAngle() ??? *****/
+      //particle.set_npx( ( particle.Momentum()/particle.ReferenceMomentum() )
+      //               * sin( prototype->getPoleFaceAngle() ) );
 
       double delta = ( prototype->AdjustPosition( particle) );
 
@@ -1479,7 +1493,7 @@ void CHEFGUI::toolsDisplayBunch()
 void CHEFGUI::editEditElement()
 {
   // The code in this method was patterned after that
-  // in CHEF::_editNewOrder()
+  // in CHEF::editNewOrder()
 
   // One quick test ...
   if( 0 == p_clickedQBml_ ) {
@@ -1510,7 +1524,7 @@ void CHEFGUI::editEditElement()
     else {
       std::ostringstream uic;
       uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-             "\nIn function void CHEF::editEditElement():"
+             "\nIn function void CHEF::editElement():"
              "\nFailure: beamline element not chosen correctly."
              "\nOperation will abort.";
       QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
@@ -1523,7 +1537,7 @@ void CHEFGUI::editEditElement()
   // Invoke this slot to reset the current settings.
   BmlContextPtr contextPtr = boost::const_pointer_cast<BeamlineContext>(theRoot->cheatContextPtr());
   set_p_clickedContext( contextPtr, theRoot );
-  ConstBmlPtr bmlPtr = p_currBmlCon_->cheatBmlPtr();
+  ConstBmlPtr  bmlPtr = p_currBmlCon_->cheatBmlPtr();
 
   // This restriction should be removed ... but it isn't:
   //   a test for a flat beamline.
@@ -1546,7 +1560,7 @@ void CHEFGUI::editEditElement()
   else { 
     std::ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
-           "\nIn function void CHEF::editEditElemnt():"
+           "\nIn function void CHEF::editNewOrder():"
            "\nFailure: Unable to remove old beamline."
            "\nOperation will abort.";
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
@@ -2548,8 +2562,12 @@ void CHEFGUI::propagateMoments()
   }
 
   if( QDialog::Accepted == initCondDialogMoments_->exec() ){
-    LattFuncSage::lattFunc initialConditions = initCondDialogMoments_->getInitCond();
-    QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
+    CovarianceSage::Info initialConditions = initCondDialogMoments_->getInitCond();
+
+    // ***** FIX ME !
+    // QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
+    QWidget* plot = 0;
+
     plot->show();
 
   }
