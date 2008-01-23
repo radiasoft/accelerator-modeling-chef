@@ -267,6 +267,7 @@ private slots:
   void editFlatten();
   void editNewOrder();
   void editMergeQuads();
+  void editMergeBends();
   void editD2S();
   void editAddMarkers();
   void editAddQtMons();
