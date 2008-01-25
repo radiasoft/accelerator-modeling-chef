@@ -195,7 +195,7 @@ void rfcavity::localPropagate( Particle& p )
 
   // Fix the time calculation
   double rfct =  length_ * (  (p.get_npz() * p.ReferenceMomentum() - p_i)
-                         / (p.Energy()                          - E_i) );
+                            / (p.Energy()                          - E_i) );
 
   state[2] = cdt_i + ( rfct - ctRef_ );
 }
