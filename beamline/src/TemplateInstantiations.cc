@@ -151,6 +151,7 @@ template class boost::detail::sp_counted_impl_p<thinrfcavity>;
 
 template WakeKickPropagator * boost::addressof(WakeKickPropagator&);
 template WakeKickPropagator const * boost::addressof(WakeKickPropagator const&);
+
 template       NameIs const *       boost::addressof(            NameIs const& );
 template       TypeIs const *       boost::addressof(            TypeIs const& );
 template     LengthIs const *       boost::addressof(          LengthIs const& );
@@ -159,6 +160,15 @@ template   StrengthIs const *       boost::addressof(        StrengthIs const& )
 template   LengthMore const *       boost::addressof(        LengthMore const& );
 template StrengthMore const *       boost::addressof(      StrengthMore const& );
 template StrengthLess const *       boost::addressof(      StrengthLess const& );
+
+template       NameIs *       boost::addressof(            NameIs& );
+template       TypeIs *       boost::addressof(            TypeIs& );
+template     LengthIs *       boost::addressof(          LengthIs& );
+template   LengthLess *       boost::addressof(        LengthLess& );
+template   StrengthIs *       boost::addressof(        StrengthIs& );
+template   LengthMore *       boost::addressof(        LengthMore& );
+template StrengthMore *       boost::addressof(      StrengthMore& );
+template StrengthLess *       boost::addressof(      StrengthLess& );
 
 
 //template class boost::function< void( ParticleBunch& ) >;
