@@ -43,6 +43,12 @@
 ******  - automatic allocation of matrix factors parameters (with the right dimensions).
 ******  - added backsubstitution for SVD 
 ******
+******  February 7, 2008  michelotti@fnal.gov
+******
+******  - Fixed copy operation in void TML<double>::SVD (...) const.
+******    : this may be revisited again in the future.
+******    : for details, please read comment: "PROGRAMMING NOTE ON THE DOUBLE LOOP"
+******
 ******************************************************************************************
 ******************************************************************************************/
 
@@ -128,7 +134,45 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
 
  
   if ((UPtr->nrows_ == nrows_) || (UPtr->ncols_ == ncols_) ) { 
-    std::copy(  UPtr->mdata_[0],  UPtr->mdata_[nrows_*ncols_], mdata_[0] );
+    for( int i = 0; i < nrows_; i++ ) {
+      for( int j = 0; j < ncols_; j++ ) { 
+        UPtr->mdata_[i][j] = mdata_[i][j];
+      }
+    }
+    // PROGRAMMING NOTE ON THE DOUBLE LOOP: 
+    //
+    // In versions of this file in the cvs branch StRel20070808-patches,
+    // this operation was done using memcpy: viz.,
+    // 
+    // memcpy ( UPtr->mdata_[0], mdata_[0], nrows_*ncols_*sizeof(double) );
+    // 
+    // It worked because mdata_ was (then) defined as a single block
+    // in the TML constructor.  In order to extend the TMatrix functionality
+    // to permit such classes as TMatrix<Jet> (for example), memcpy
+    // was replaced by std::copy
+    // 
+    // std::copy(  UPtr->mdata_[0],  UPtr->mdata_[nrows_*ncols_], mdata_[0] );
+    // 
+    // which, as it turns out is not quite correct for a few reasons.  The line
+    // 
+    // std::copy(  &(mdata_[0][0]),  &(mdata_[nrows_ - 1][ncols_ - 1]), &(UPtr->mdata_[0][0]) );
+    // 
+    // appears to work under "clean" circumstances but may fail in some cases.
+    // For example, the way that mdata_ is now constructed does not guarantee
+    // that all the numbers appear in a continuous block.  In addition, 
+    // this copies only the matrix elements, not the pointers mdata_[0..nrows_-1].
+    // 
+    // To avoid all these issues, this block is rewritten as a double
+    // loop over all indices - presumably less efficient, but
+    // more likely to work under all circumstances.  In the future, 
+    // it may be worth worth revisiting these lines of code: allocate 
+    // mdata_ in a (guaranteed) single block, and copy the row pointers too.
+    // In the meantime, this now seems to work.
+    // 
+    // My thanks to Jean-Francois Ostiguy for helping me unravel 
+    // core dumps and isolate this quickly.
+    // 
+    // - Leo Michelotti
   }     
   else {
     UPtr = MLPtr<double>( new TML<double>( *this) );      // reallocates U and copy current matrix into it 
