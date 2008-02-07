@@ -100,13 +100,14 @@ double TML<std::complex<double> >::norm( std::complex<double> const& arg)
 
 template<>
 template<>
-TML<std::complex<double> >::TML( TML<double> const& ml): nrows_(ml.nrows_), ncols_(ml.ncols_)  { 
+TML<std::complex<double> >::TML( TML<double> const& ml)
+: nrows_(ml.nrows_), ncols_(ml.ncols_)  { 
   
   mdata_ = new std::complex<double>* [nrows_];
 
   int sz = nrows_*ncols_;
 
-  std::complex<double>* dataPtr = new std::complex<double> [ sz ];
+  std::complex<double>* dataPtr = data_ = new std::complex<double> [ sz ];
 
   for( int i=0; i<nrows_; ++i) { 
      mdata_[i] = dataPtr;
