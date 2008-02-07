@@ -57,7 +57,7 @@
 ****** 
 ****** - eliminated unsafe calls to memcpy
 ****** - fixed memory leak in destructor
-****** - fixed bug in copy constructor  
+****** - fixed bug in copy constructor and operator=  
 ******  
 **************************************************************************
 *************************************************************************/
@@ -1087,30 +1087,32 @@ void TML<T>::lu_back_subst(int* indx, MLPtr<T>& b)
 
 
 template<typename T>
-TML<T>& TML<T>::operator=(const TML& x) 
+TML<T>& TML<T>::operator=(TML<T> const& x) 
 {
   if( this == &x )  return *this;
  
-  this->~TML(); // call the destructor. 
+  //-----------------------------------------------------
+  // if the LHS and RHS do not have the same dimensions, 
+  // wipe LHS out and allocate a copy of RHS instead 
+  // ---------------------------------------------------- 
 
-  nrows_ = x.nrows_;
-  ncols_ = x.ncols_;
-  mdata_ = new T* [nrows_];
+  if ( ( nrows_ != x.nrows_) || ( ncols_ != x.ncols_ ) ) {
 
-  int sz = nrows_*ncols_;
-  T* dataPtr = new T [ sz ];
-  for( int i = 0; i< nrows_; ++i) { 
-      mdata_[i] = dataPtr;
-      dataPtr += ncols_;
+     this->~TML(); 
+     new (this) TML(x);
+     return *this;
   }
 
-  for (int i=0; i< nrows_; ++i) {
-      for (int j=0; j< ncols_; ++j) {
+  //-----------------------------------------------------
+  // Otherwise, just copy the data and the (adjusted) 
+  // row pointers. 
+  // ---------------------------------------------------- 
 
-      mdata_[i][j] = x.mdata_[i][j];
-
-      }
+  for( int i=0; i<nrows_; ++i) { 
+     mdata_[i] = data_ + ( x.mdata_[i] - x.data_);
   }
+
+  std:copy ( x.data_, x.data_+ (x.nrows_*x.ncols_),  data_); 
 
   return *this;
 }
