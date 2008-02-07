@@ -172,7 +172,8 @@ public:
 
  private:
 
-  T** mdata_;      // matrix data
+  T** mdata_;      // row ptr array to access matrix data
+  T*  data_;       // matrix raw data
   int nrows_;      // number of rows
   int ncols_;      // number of columns
 

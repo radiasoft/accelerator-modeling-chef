@@ -52,6 +52,12 @@
 ******    rather than have the application program abort. A message
 ******    that a singular matrix has been encountered is still
 ******    written as a warning to the user.
+******
+****** Feb 2008 ostiguy@fnal.gov
+****** 
+****** - eliminated unsafe calls to memcpy
+****** - fixed memory leak in destructor
+****** - fixed bug in copy constructor  
 ******  
 **************************************************************************
 *************************************************************************/
@@ -75,7 +81,6 @@ template<typename T> double TML<T>::tiny_                = 1.0e-20; // pivot thr
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 TML<T>::TML()
  : mdata_(0), nrows_(0), ncols_(0)  
@@ -86,7 +91,8 @@ TML<T>::TML()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TML<T>::TML(const char* flag, int dimension ): nrows_(dimension), ncols_(dimension)
+TML<T>::TML(const char* flag, int dimension )
+ : nrows_(dimension), ncols_(dimension)
 {
 
   if( ( (dimension%2) != 0) &&
@@ -98,32 +104,31 @@ TML<T>::TML(const char* flag, int dimension ): nrows_(dimension), ncols_(dimensi
 
   mdata_ = new T* [nrows_];
 
-  int i=0;
-
   int sz = nrows_*ncols_;
-  T* dataPtr = new T [ sz ];
 
-  for( i=0; i<nrows_; ++i ) { 
+  T* dataPtr = data_ = new T [ sz ];
+
+  for( int i=0; i<nrows_; ++i ) { 
     mdata_[i] = dataPtr;
-    dataPtr += ncols_;
+    dataPtr  += ncols_;
   }
 
    // reset dataPtr
 
-   dataPtr = mdata_[0];
+   dataPtr = data_;
  
-   for( i=0;  i<sz;  ++i) {
+   for( int i=0;  i<sz;  ++i) {
       (*dataPtr) = T(); 
       ++dataPtr; 
    }
 
 
   if (flag[0]  == 'I') {
-    for ( i=0; i<dimension; ++i) {
+    for ( int i=0; i<dimension; ++i) {
        mdata_[i][i] = T(1.0); 
     }
   } else if (flag[0] == 'J') {
-    for (i = dimension/2; i< dimension; i++) {
+    for (int i= dimension/2; i< dimension; ++i) {
       mdata_[i-dimension/2][i] = T(1.0); 
       mdata_[i][i-dimension/2] = T(-1.0);
     }
@@ -138,24 +143,25 @@ TML<T>::TML(const char* flag, int dimension ): nrows_(dimension), ncols_(dimensi
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TML<T>::TML(int rows, int columns, T initval): nrows_(rows), ncols_(columns)
+TML<T>::TML(int rows, int columns, T initval)
+ : nrows_(rows), ncols_(columns)
 {
 
   mdata_ = new T* [nrows_];
  
   int sz = nrows_*ncols_;
-  T* dataPtr = new T [ sz ];
-
+  T* dataPtr = data_ = new T [ sz ];
+  
   for( int i=0; i<nrows_; ++i ) { 
     mdata_[i] = dataPtr;
     dataPtr += ncols_;
   }
 
-   T* colptr = mdata_[0];
+   dataPtr = data_;
  
    for( int i=0;  i<sz;  ++i) {
-      (*colptr) = initval; 
-       ++colptr; 
+      (*dataPtr) = initval; 
+       ++dataPtr; 
    }
 }
 
@@ -164,18 +170,22 @@ TML<T>::TML(int rows, int columns, T initval): nrows_(rows), ncols_(columns)
 
 
 template<typename T>
-TML<T>::TML(int rows, int columns, const T* values): nrows_(rows), ncols_(columns)
+TML<T>::TML(int rows, int columns, const T* values)
+ : nrows_(rows), ncols_(columns)
 {
   mdata_ = new T* [nrows_];
 
   int sz = nrows_*ncols_;
   T* dataPtr = new T [ sz ];
+       data_ = dataPtr;
+
   for( int i=0; i < nrows_; ++i) { 
     mdata_[i] = dataPtr;
     dataPtr += ncols_;
   }
 
-  memcpy( (void*) (mdata_[0]), (void*) values, sz*sizeof(T) );
+  std:copy ( values, values+sz, data_ ); 
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -183,20 +193,22 @@ TML<T>::TML(int rows, int columns, const T* values): nrows_(rows), ncols_(column
 
 
 template<typename T>
-TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), nrows_(X.nrows_), ncols_(X.ncols_)
+TML<T>::TML( TML<T> const& X )
+ : ReferenceCounter<TML<T> >(), nrows_(X.nrows_), ncols_(X.ncols_)
 {
 
   mdata_ = new T* [nrows_];
 
   int sz = nrows_*ncols_;
-  T* dataPtr = new T [ sz ];
+
+  T* dataPtr = data_ = new T [ sz ];
 
   for( int i=0; i<nrows_; ++i) { 
-     mdata_[i] = dataPtr;
-     dataPtr += ncols_;
+     mdata_[i] = data_ + ( X.mdata_[i] - X.data_);
   }
 
-  memcpy( (void*) (mdata_[0]), (void*) ((X.mdata_)[0]), sz*sizeof(T) );
+  std:copy ( X.data_, X.data_+ sz,  data_); 
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -211,9 +223,8 @@ TML<T>::~TML() {
 
   if (!mdata_) return; // valid to delete a 0x0 matrix ... 
    
-  if (mdata_[0]) delete [] mdata_[0];
-  
-  delete [] mdata_;
+  if (  data_ ) delete [] data_;
+  if ( mdata_ ) delete [] mdata_;
   
 }
 
@@ -226,7 +237,7 @@ void TML<T>::clear() {
 
   int sz = nrows_*ncols_;
 
-  T* dataptr = mdata_[0];
+  T* dataptr = data_;
 
   for( int i=0;  i<sz;  ++i) {
     *dataptr = T(); 
@@ -244,12 +255,7 @@ template<typename T>
 MLPtr<T> TML<T>::Square() const 
 {
 
-  int d = 0;
-  if( nrows_ < ncols_ ) {
-     d = nrows_;
-  } else {                  
-     d = ncols_;
-  }
+  int d = std::min(nrows_,ncols_ );
 
   MLPtr<T> z(  new TML<T>(d, d, T()) ); 
 
@@ -262,8 +268,6 @@ MLPtr<T> TML<T>::Square() const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 template<typename T>
 MLPtr<T> TML<T>::transpose() const 
@@ -281,8 +285,6 @@ MLPtr<T> TML<T>::transpose() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-
 template<typename T>
 T TML<T>::trace() const {
   
@@ -299,8 +301,6 @@ T TML<T>::trace() const {
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 template<typename T>
 bool TML<T>::isOrthogonal() const
@@ -433,7 +433,6 @@ MLPtr<T> TML<T>::inverse() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 T& TML<T>::operator()(int const& i, int const& j) 
 {
@@ -469,7 +468,6 @@ T  TML<T>::operator()(int const& i, int const&  j) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 T& TML<T>::operator()(int const& i) 
 {
@@ -503,7 +501,6 @@ T& TML<T>::operator()(int const& i)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 T TML<T>::operator()(int const& i) const 
 {
@@ -536,7 +533,6 @@ T TML<T>::operator()(int const& i) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 std::ostream& operator<<( std::ostream& os, const TML<T>& x)
 {
@@ -551,10 +547,8 @@ std::ostream& operator<<( std::ostream& os, const TML<T>& x)
   return os << endl;
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 MLPtr<T> add( MLPtr<T> const& x, MLPtr<T> const& y) 
@@ -600,10 +594,8 @@ MLPtr<T> add(MLPtr<T> const& x, const T& y)
   return z;
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 MLPtr<T> Negate( MLPtr<T> const& x) // unary minus 
