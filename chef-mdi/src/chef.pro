@@ -20,7 +20,7 @@ win32:RC_FILE = chefres.rc
 #DEFINES	+= QT_DEBUG
 
 
-INCLUDEPATH	+= /usr/local/include/boost-1_32
+INCLUDEPATH	+= /usr/local/ap/include/boost-1_34_1
 INCLUDEPATH	+= /usr/local/qt/include
 INCLUDEPATH	+= /usr/local/qt/include/qutexr
 
