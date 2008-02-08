@@ -112,7 +112,7 @@ template BarnacleList::iterator
 // ----------------------------------------------------------------------------
 
 template 
-class std::vector<exponent_t>;
+class std::vector<IntArray::exponent_t>;
 
 namespace {
  
@@ -134,61 +134,68 @@ template
 int std::accumulate( IntArray::const_iterator, IntArray::const_iterator,  int);
 
 template 
-class std::plus<exponent_t>;
+class std::plus<IntArray::exponent_t>;
 
 template 
-class std::less_equal<exponent_t>;
+class std::less_equal<IntArray::exponent_t>;
 
 template
-class std::greater<exponent_t>;
+class std::greater<IntArray::exponent_t>;
 
 template
-class std::greater_equal<exponent_t>;
+class std::greater_equal<IntArray::exponent_t>;
 
 template
-IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::plus<exponent_t> );
+IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::plus<IntArray::exponent_t> );
+
+template
+IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::plus<IntArray::exponent_t> );
+
+template
+IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::multiplies<IntArray::exponent_t> );
+
+template
+IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::multiplies<IntArray::exponent_t> );
+
 
 template
 bool std::equal( IntArray::iterator, IntArray::iterator, IntArray::iterator);
 
 template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less<exponent_t> );
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less<IntArray::exponent_t> );
 
 template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less_equal<exponent_t>);
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less_equal<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater<exponent_t>);
-
-template
-IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::plus<exponent_t> );
+bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater<IntArray::exponent_t>);
 
 template
 bool std::equal( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator);
 
 template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less_equal<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less_equal<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater_equal<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater_equal<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less<exponent_t> );
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less<IntArray::exponent_t> );
 
 template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less_equal<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less_equal<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater<IntArray::exponent_t>);
 
 template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater_equal<exponent_t>);
+bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater_equal<IntArray::exponent_t>);
 
 template
 void std::fill<int*, int>(int*, int*, int const&);
@@ -226,8 +233,8 @@ template complex<double> std::inner_product(TVector<complex<double> >::const_ite
                                             complex<double>, 
                                             std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
 
-template TVector<double>::TVector( std::vector<double>::iterator,                 
-                                   std::vector<double>::iterator);
+//template TVector<double>::TVector( std::vector<double>::iterator,                 
+//                                   std::vector<double>::iterator);
 
 template TVector<std::complex<double> >::TVector( std::vector<std::complex<double> >::iterator,  
                                                   std::vector<std::complex<double> >::iterator);
@@ -235,8 +242,8 @@ template TVector<std::complex<double> >::TVector( std::vector<std::complex<doubl
 template TVector<double>::TVector( TVector<double>::iterator,   
                                    TVector<double>::iterator);
 
-template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
-                                         TVector<std::complex<double> >::iterator);
+//template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
+//                                         TVector<std::complex<double> >::iterator);
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
