@@ -40,9 +40,9 @@ LDFLAGS    = -Wl,--export-dynamic -mthreads -shared
 # private setup (heaviside linux)
 CHEF_INSTALL_TOP_DIR   =  $(INSTALLDIR)
 FNALROOT               =  $(INSTALLDIR)
-BOOST_INC              =  /usr/local/include/boost-1_32
+BOOST_INC              =  /usr/local/include/boost-1_34_1
 BOOST_LIB              =  /usr/local/lib
-BOOST_VER              =  1_32
+BOOST_VER              =  1_34_1
 QTDIR                  =  /usr/local/qt
 QT_INC                 =  /usr/local/qt/include
 PYTHON_DIR             =  /usr/local
