@@ -5,7 +5,7 @@ set echo
 ## CHANGE THESE LINES IF NECESSARY
 ## 
 set INSTALLDIR=../../RUNTIME
-set BOOST_INC=/usr/local/ap/include/boost-1_33
+set BOOST_INC=/usr/local/ap/include/boost-1_34_1
 set LIBDIR=/usr/local/ap/lib
 
 g++ -c -o $1.o \
