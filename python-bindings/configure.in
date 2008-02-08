@@ -268,8 +268,12 @@ else
 		    boost_inc="/usr/local/include"
 		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_34"
+		elif test -r /usr/local/include/boost-1_34_1/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/include/boost-1_34_1"
 		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/ap/include/boost-1_34"
+		elif test -r /usr/local/ap/include/boost-1_34_1/boost/shared_ptr.hpp; then
+		    boost_inc="/usr/local/ap/include/boost-1_34_1"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
