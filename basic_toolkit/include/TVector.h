@@ -79,20 +79,27 @@ template<typename T>
 class DLLEXPORT TVector {
 
 private:
-  
-  std::vector<T, boost::pool_allocator<T> >       theVector_;
-  OutputFormat*                                   ofPtr_;
 
+ //  pooled allocator disabled until poor performance is understood.  
+ // typedef typename std::vector<T, boost::pool_allocator<T> > vector_t;  
+
+  typedef typename std::vector<T> vector_t;  
+
+  vector_t                                        theVector_;
+  OutputFormat*                                   ofPtr_;
   static OutputFormat*                            defOFPtr_;  // default OutputFormat
 
+ 
 public:
 
-  typedef typename std::vector<T, boost::pool_allocator<T> >::iterator                 iterator;
-  typedef typename std::vector<T, boost::pool_allocator<T> >::const_iterator     const_iterator;
+  
+  typedef typename vector_t::iterator                             iterator;
+  typedef typename vector_t::const_iterator                 const_iterator;
 
-  typedef typename std::vector<T, boost::pool_allocator<T> >::reverse_iterator             reverse_iterator;
-  typedef typename std::vector<T, boost::pool_allocator<T> >::const_reverse_iterator const_reverse_iterator;
+  typedef typename vector_t::reverse_iterator             reverse_iterator;
+  typedef typename vector_t::const_reverse_iterator const_reverse_iterator;
  
+
   iterator                begin();
   const_iterator          begin()  const;
 
