@@ -226,8 +226,8 @@ template complex<double> std::inner_product(TVector<complex<double> >::const_ite
                                             complex<double>, 
                                             std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
 
-template TVector<double>::TVector( std::vector<double>::iterator,                 
-                                   std::vector<double>::iterator);
+//template TVector<double>::TVector( std::vector<double>::iterator,                 
+//                                   std::vector<double>::iterator);
 
 template TVector<std::complex<double> >::TVector( std::vector<std::complex<double> >::iterator,  
                                                   std::vector<std::complex<double> >::iterator);
@@ -235,8 +235,8 @@ template TVector<std::complex<double> >::TVector( std::vector<std::complex<doubl
 template TVector<double>::TVector( TVector<double>::iterator,   
                                    TVector<double>::iterator);
 
-template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
-                                         TVector<std::complex<double> >::iterator);
+//template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
+//                                         TVector<std::complex<double> >::iterator);
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
