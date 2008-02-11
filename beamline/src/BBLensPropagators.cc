@@ -21,13 +21,12 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Authors:    Leo   Michelotti  michelotti@fnal.gov                                       
-******              J.-F. Ostiguy     ostiguy@fnal.gov                                 
+******  Authors:  Leo   Michelotti  michelotti@fnal.gov                                       
+******            J.-F. Ostiguy     ostiguy@fnal.gov                                 
 ******                                                                
 ******              Fermilab  
 ******              Batavia, IL   60510                                
 ******                                                                
-******  Note: based on code originally authored by L.M.  
 ******                                              
 **************************************************************************
 *************************************************************************/
@@ -85,6 +84,17 @@ void propagate( BBLens& elm, Particle_t& p )
   state[i_npy] += K[1];
 
 }
+
+//-----------------------------------------------------------------
+// Workaround for gcc < 4.2 bug 
+//-----------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( BBLens& elm,    Particle& p );
+template void propagate( BBLens& elm, JetParticle& p );
+
+#endif
+//-----------------------------------------------------------------
 
 } // namespace
 

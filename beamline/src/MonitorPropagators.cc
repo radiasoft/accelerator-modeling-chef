@@ -178,6 +178,23 @@ void propagate( Element_t& elm, JetParticleBunch& b )
 
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( monitor& elm,    Particle& p );
+template void propagate( monitor& elm, JetParticle& p );
+template void propagate( hmonitor& elm,    Particle& p );
+template void propagate( hmonitor& elm, JetParticle& p );
+template void propagate( vmonitor& elm,    Particle& p );
+template void propagate( vmonitor& elm, JetParticle& p );
+
+#endif
+
+//-----------------------------------------------------------------------------------
+
 } // anonymous namespace
 
 

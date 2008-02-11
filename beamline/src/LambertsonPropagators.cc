@@ -44,6 +44,8 @@
 #include <beamline/LambertsonPropagators.h>
 
 
+namespace {
+
 template<typename Particle_t>
 void propagate( thinLamb& elm, Particle_t& p);
  
@@ -110,6 +112,19 @@ void propagate( thinLamb& elm, ParticleBunch& p)
 
   *******************/
 }
+
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( thinLamb& elm,    Particle& p );
+template void propagate( thinLamb& elm, JetParticle& p );
+
+#endif
+//-----------------------------------------------------------------------------------
+
+} // anonymous namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

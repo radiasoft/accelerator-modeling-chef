@@ -61,6 +61,17 @@ namespace {
     state[i_cdt] -=   bmlnElmnt::core_access::get_ctRef(elm);
  }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( CombineFunctionPropagators& elm,    Particle& p );
+template void propagate( CombineFunctionPropagators& elm, JetParticle& p );
+
+#endif
+//-----------------------------------------------------------------------------------
+
 } // namespace
 
 
