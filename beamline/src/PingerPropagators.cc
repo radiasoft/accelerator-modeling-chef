@@ -76,8 +76,20 @@ void propagate_bunch( Pinger& elm, TBunch<Particle_t>& b )
 
       }
   }
-
 }
+
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate(     Pinger& elm,    Particle& p );
+template void propagate(     Pinger& elm, JetParticle& p );
+
+#endif
+
+
 
 } // namespace
 
