@@ -104,6 +104,18 @@ void propagate( int n, Element_t& elm, Particle_t& p )
   state[i_npy] += k * imag(z);
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate(          ThinPole& elm,    Particle& p );
+template void propagate(          ThinPole& elm, JetParticle& p );
+
+#endif
+
+
 } // anonymous namespace
 
 
