@@ -155,6 +155,17 @@ void propagate( Solenoid& elm, Particle_t & p )
    cdt += ( duration - elm.getReferenceTime() );
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate(          Solenoid& elm,    Particle& p );
+template void propagate(          Solenoid& elm, JetParticle& p );
+
+#endif
+
 } // anonymous namespace
 
 

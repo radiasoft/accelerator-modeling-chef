@@ -90,6 +90,19 @@ void propagate( thinOctupole& elm, Particle_t & p )
  
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate(     octupole& elm,    Particle& p );
+template void propagate(     octupole& elm, JetParticle& p );
+template void propagate( thinOctupole& elm,    Particle& p );
+template void propagate( thinOctupole& elm, JetParticle& p );
+
+#endif
+
 } // namespace
 
 

@@ -78,6 +78,19 @@ void propagate( bmlnElmnt& elm, Particle_t&  p)
   // reference time adjustment is done at the element level in the nested beamline. 
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( LinacCavity& elm,    Particle& p );
+template void propagate( LinacCavity& elm, JetParticle& p );
+
+#endif
+
+//-----------------------------------------------------------------------------------
+
 } // namespace
 
 

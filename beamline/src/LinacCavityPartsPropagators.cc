@@ -191,6 +191,21 @@ void propagate( Element_t& elm, Particle_t& p )
 
 }
 
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void propagate( LCavityUpstream& elm,    Particle& p );
+template void propagate( LCavityUpstream& elm, JetParticle& p );
+template void propagate( LCavityDnstream& elm,    Particle& p );
+template void propagate( LCavityDnstream& elm, JetParticle& p );
+
+#endif
+//-----------------------------------------------------------------------------------
+
+
+
 } // anonymous namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

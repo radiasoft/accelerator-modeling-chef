@@ -21,15 +21,8 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
+******  Author:    Jean-Francois Ostiguy                                     
+******             ostiguy@fnal.gov                                                   
 ******                                           
 **************************************************************************
 *************************************************************************/
