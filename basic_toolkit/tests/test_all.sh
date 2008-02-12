@@ -37,7 +37,7 @@ foreach w ( `ls *.cc | sed -e "s/.cc//"` )
     set return_status = $status
     if( $return_status ) then
       echo "*** ERROR ***"
-      echo "*** ERROR *** File $w.sh test failed.
+      echo "*** ERROR *** File $w.sh test failed."
       echo "*** ERROR *** Returned status: $return_status"
       echo "*** ERROR ***"
       exit $return_status
