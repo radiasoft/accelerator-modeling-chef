@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      Sage.h
-******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -97,6 +96,7 @@ public:
  void setOutputStream( std::ostream* );
 
  void     treatAsRing( bool );
+ void     attachLocalData( bool );
  void     setGapTolerance( double );
  double   getGapTolerance()            const;
  void     setAngleTolerance( double );
@@ -109,6 +109,7 @@ protected:
  int                 nelms_;   
  bool                verbose_;
  bool                isRing_;
+ bool                localData_;
  std::ostream*       errorStreamPtr_;
  std::ostream*       outputStreamPtr_;
  double              ringGapTolerance_;

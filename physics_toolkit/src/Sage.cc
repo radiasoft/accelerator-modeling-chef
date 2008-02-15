@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      Sage.cc
-******  Version:   1.1
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -76,6 +75,7 @@ Sage::Sage( BmlPtr x)
      nelms_(0), 
      verbose_(false),
      isRing_(Sage::isRing(*x)),
+     localData_(false),
      errorStreamPtr_( &std::cerr ),
      outputStreamPtr_( &std::cout ),
      ringGapTolerance_(  defGapTol_ ),
@@ -111,6 +111,7 @@ Sage::Sage(beamline const& bml)
      nelms_(0), 
      verbose_(false),
      isRing_(Sage::isRing( bml ) ),
+     localData_(false),
      errorStreamPtr_( &std::cerr ),
      outputStreamPtr_( &std::cout ),
      ringGapTolerance_(  defGapTol_ ),
@@ -183,6 +184,14 @@ void Sage::treatAsRing( bool x )
   else {
     myBeamlinePtr_->setLineMode( beamline::line );
   }
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Sage::attachLocalData( bool x )
+{
+  localData_ = x;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
