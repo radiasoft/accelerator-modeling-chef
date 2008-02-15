@@ -249,6 +249,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 
   // Calculate current lattice functions
   LattFuncSage lfs( myBeamlinePtr_ );
+  lfs.attachLocalData( true );
 
   myBeamlinePtr_->propagate( jpr );
 
@@ -326,9 +327,9 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
 
   // Calculate current lattice functions
   LattFuncSage lfs( myBeamlinePtr_ );
+  lfs.attachLocalData( true );
  
   myBeamlinePtr_->propagate( jpr );
-
 
   lfs.CourantSnyderLatticeFunctions( jpr );
 
@@ -405,11 +406,11 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
   myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
   myBeamlinePtr_->eraseBarnacles( "Twiss" );
 
-  
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
   LattFuncSage lfs( myBeamlinePtr_ );
+  lfs.attachLocalData( true );
  
   myBeamlinePtr_->propagate( jpr );
 
