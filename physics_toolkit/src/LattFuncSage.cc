@@ -385,7 +385,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   // Barnacle.
 
   if( verbose_ ) {
-    (*pcout) << "LattFuncSage -- Entering LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::CourantSnyderLatticeFunctions" << endl;
     (*pcout).flush();
   }
 
@@ -418,7 +418,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 
   if( fabs( cs ) > 1.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
-                "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+                "*** ERROR *** LattFuncSage::CourantSnyderLatticeFunctions \n"
                 "*** ERROR *** cos( psi_H ) = "
          << cs
          << "\n"
@@ -436,7 +436,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** LattFuncSage::CourantSnyderLatticeFunctions \n"
             "*** ERROR *** Integer horizontal tune.            \n"
             "*** ERROR ***                                     \n"
          << endl;
@@ -459,7 +459,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   }
   else {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** LattFuncSage::CourantSnyderLatticeFunctions \n"
             "*** ERROR *** cos( psi_V ) = "
          << cs
          << "\n"
@@ -475,7 +475,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 
   if( sn == 0.0 ) {
     (*pcerr) << "*** ERROR ***                                     \n"
-            "*** ERROR *** LattFuncSage::Slow_CS_Calc          \n"
+            "*** ERROR *** LattFuncSage::CourantSnyderLatticeFunctions \n"
             "*** ERROR *** Integer vertical tune.              \n"
             "*** ERROR ***                                     \n"
          << endl;
@@ -559,7 +559,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
     // Store the calculation if appropriate ...
     if( ( !Crit ) || ( Crit( lbe ) ) ) 
     {
-      lattFunc lf;
+      LattFuncSage::lattFunc lf;
 
       lf.arcLength = lng;
       lf.beta.hor  = beta_x;
@@ -570,13 +570,24 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
       lf.psi.ver   = psi_y;
 
       lfvec_.push_back(lf);
+
+      if( localData_ ) {
+        BarnacleList::iterator it;
+        if( (it = lbe->dataHook.find("Twiss") )==  lbe->dataHook.end() ) {
+          lbe->dataHook.insert( Barnacle( "Twiss", lf) );
+        }
+        else {
+          it->info = lf;
+        }
+      }
     }
+
   }  // End loop on lbe ...
 
 
   // Finished....
   if( verbose_ ) {
-    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::Slow_CS_Calc" << endl;
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::CourantSnyderLatticeFunctions" << endl;
     (*pcout).flush();
   }
 
@@ -887,7 +898,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
     if ( stand_alone_disp_calc ) { 
-       lattFunc lf;
+       LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_npx );
        lf.dispersion.ver = d( i_y  );
