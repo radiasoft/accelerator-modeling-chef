@@ -1,6 +1,0 @@
-chef
-core
-./src/moc/*
-./src/obj/*
-./src/ui/*
-Makefile
