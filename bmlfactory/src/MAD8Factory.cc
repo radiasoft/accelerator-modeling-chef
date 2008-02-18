@@ -239,13 +239,15 @@ MAD8Factory::create_beamline( std::string bmlname) {   // DEPRECATED
 
  if ( !bml )
  { 
-   throw GenericException(__FILE__, __LINE__, 
-                                "MAD8Factory::create_beamline( const char* bmlname)",
-                                "Beamline not found");
+   ostringstream uic;
+   uic << "Unable to create beamline " << bmlname << ".";
+   throw GenericException( __FILE__, __LINE__, 
+                           "MAD8Factory::create_beamline( const char* bmlname)",
+                           uic.str().c_str() );
  }  
  else
  {
-    return BmlPtr( bml->Clone() );
+   return BmlPtr( bml->Clone() );   // ??? Why cloned ??? 
  }
 }
 
@@ -259,12 +261,13 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 
  BmlPtr bml = create_beamline_private(bmlname.c_str(), brho);
  
- if ( bml) return BmlPtr( bml->Clone() );  
+ if ( bml) { return BmlPtr( bml->Clone() ); }   // ??? Why cloned ??? 
  
- throw GenericException(__FILE__, __LINE__, 
-                                "MAD8Factory::create_beamline( const char* bmlname, brho)",
-                                "Beamline not found");
-   
+ ostringstream uic;
+ uic << "Unable to create beamline " << bmlname << " with brho = " << brho << '.';
+ throw GenericException( __FILE__, __LINE__, 
+                         "MAD8Factory::create_beamline( std::string bmlname, double brho )",
+                         uic.str().c_str() );
 }
 
 
