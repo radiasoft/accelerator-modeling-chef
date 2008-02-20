@@ -371,7 +371,7 @@ void gkick::localPropagate( JetParticle& p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::localPropagate( ParticleBunch& p ) 
+void gkick::localPropagate( ParticleBunch& b ) 
 {
    (*propagator_)( *this, b); 
 }

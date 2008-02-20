@@ -481,7 +481,7 @@ void combinedFunction::localPropagate( JetParticle& p )
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-void combinedFunction::localPropagate( ParticleBunch& p ) 
+void combinedFunction::localPropagate( ParticleBunch& b ) 
 { 
   (*propagator_)( *this,b ); 
 }
