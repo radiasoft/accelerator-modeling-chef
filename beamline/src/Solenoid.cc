@@ -44,7 +44,12 @@
 ******  - changes to header file to reduce file coupling 
 ******
 ******  Dec 2007 ostiguy@fnal.gov
-****** - new typesafe propagator architecture
+******  - new typesafe propagator architecture
+****** 
+******  February 20, 2008  michelotti@fnal.gov
+******  - bug fix: instantiated attribute propagator_
+******    in the Solenoid constructors
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -56,6 +61,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Solenoid.h>
+#include <beamline/SolenoidPropagators.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Particle.h>
 
@@ -71,7 +77,10 @@ using FNAL::pcout;
 ///////////////////////////////////////////////////
 
 Solenoid::Solenoid()
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -80,7 +89,10 @@ Solenoid::Solenoid( const char* n, double const& l, double const& s )
 :   bmlnElmnt(n,l,s)
   , inEdge_(true)
   , outEdge_(true)
-{}
+{
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -89,6 +101,7 @@ Solenoid::Solenoid( Solenoid const& x )
 :   bmlnElmnt(x)
   , inEdge_(x.inEdge_)
   , outEdge_(x.outEdge_)
+  , propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
