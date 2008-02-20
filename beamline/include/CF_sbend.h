@@ -96,10 +96,10 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   ~CF_sbend();
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x ) 
-    { bmlnElmnt::localPropagate( x ); }
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& ); 
+  void localPropagate( JetParticleBunch& ); 
 
   void accept(      BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 

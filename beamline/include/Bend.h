@@ -53,8 +53,10 @@ public:
 
  ~Bend();
 
-  void localPropagate( Particle&      p );
-  void localPropagate( JetParticle&   p ); 
+  void localPropagate(         Particle&   p );
+  void localPropagate(      JetParticle&   p ); 
+  void localPropagate(    ParticleBunch&   b );
+  void localPropagate( JetParticleBunch&   b ); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

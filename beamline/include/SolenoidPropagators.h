@@ -34,6 +34,15 @@
 
 #include <beamline/Solenoid.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class Solenoid::Propagator: public BasePropagator<Solenoid> {
 
  public:
@@ -42,8 +51,10 @@ class Solenoid::Propagator: public BasePropagator<Solenoid> {
  
   void  setup( Solenoid& elm ); 
 
-  void  operator()(  Solenoid& elm,        Particle& p);
-  void  operator()(  Solenoid& elm,     JetParticle& p);
+  void  operator()(  Solenoid& elm,             Particle& p);
+  void  operator()(  Solenoid& elm,          JetParticle& p);
+  void  operator()(  Solenoid& elm,        ParticleBunch& b);
+  void  operator()(  Solenoid& elm,     JetParticleBunch& b);
 
 };
 

@@ -32,6 +32,15 @@
 
 #include <beamline/LinacCavityParts.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
 
  public:
@@ -39,8 +48,10 @@ class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityUpstream& elm);
-  void  operator()( LCavityUpstream& elm,         Particle& p);
-  void  operator()( LCavityUpstream& elm,      JetParticle& p);
+  void  operator()( LCavityUpstream& elm,              Particle& p);
+  void  operator()( LCavityUpstream& elm,           JetParticle& p);
+  void  operator()( LCavityUpstream& elm,         ParticleBunch& p);
+  void  operator()( LCavityUpstream& elm,      JetParticleBunch& p);
 
 };
 
@@ -51,8 +62,10 @@ class LCavityDnstream::Propagator : public BasePropagator<LCavityDnstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityDnstream& elm);
-  void  operator()( LCavityDnstream& elm,         Particle& p);
-  void  operator()( LCavityDnstream& elm,      JetParticle& p);
+  void  operator()( LCavityDnstream& elm,              Particle& p);
+  void  operator()( LCavityDnstream& elm,           JetParticle& p);
+  void  operator()( LCavityDnstream& elm,         ParticleBunch& p);
+  void  operator()( LCavityDnstream& elm,      JetParticleBunch& p);
 
 
 };

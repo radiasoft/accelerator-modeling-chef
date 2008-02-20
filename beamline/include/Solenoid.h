@@ -88,8 +88,10 @@ public:
 
   void Split( double const&, ElmPtr& , ElmPtr& ) const;
 
-  void localPropagate( Particle&      );
-  void localPropagate( JetParticle&   );
+  void localPropagate(         Particle&  );
+  void localPropagate(      JetParticle&  );
+  void localPropagate(    ParticleBunch&  );
+  void localPropagate( JetParticleBunch&  );
 
   bool hasInEdge()   const;
   bool hasOutEdge()  const;

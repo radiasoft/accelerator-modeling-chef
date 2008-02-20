@@ -33,14 +33,25 @@
 
 #include <beamline/Edge.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class Edge::Propagator: public BasePropagator<Edge> {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()(  Edge& elm,       Particle& p);
-  void  operator()(  Edge& elm,    JetParticle& p);
+  void  operator()(  Edge& elm,            Particle& p);
+  void  operator()(  Edge& elm,         JetParticle& p);
+  void  operator()(  Edge& elm,       ParticleBunch& p);
+  void  operator()(  Edge& elm,    JetParticleBunch& p);
 
 };
 

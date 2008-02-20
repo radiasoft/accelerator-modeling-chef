@@ -90,8 +90,10 @@ public:
 
   BBLens& operator=( BBLens const&);
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
 
 
   char useRound;         // By default = 1

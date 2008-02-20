@@ -32,6 +32,16 @@
 
 #include <beamline/BBLens.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
+
 class BBLens::Propagator : public BasePropagator<BBLens> {
 
  public:
@@ -39,8 +49,10 @@ class BBLens::Propagator : public BasePropagator<BBLens> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( BBLens& elm);
-  void  operator()( BBLens& elm,    Particle& p);
-  void  operator()( BBLens& elm, JetParticle& p);
+  void  operator()( BBLens& elm,       Particle&   p);
+  void  operator()( BBLens& elm,    JetParticle&   p);
+  void  operator()( BBLens& elm,    ParticleBunch& p); 
+  void  operator()( BBLens& elm, JetParticleBunch& p); 
 };
 
 #endif //  BBLENSPROPAGATORS_H

@@ -167,20 +167,14 @@ class BasePropagator {
 
  public:
   
-  virtual BasePropagator<Element_t>* Clone() const { return new BasePropagator(*this); } ;
+  virtual BasePropagator<Element_t>* Clone() const                = 0;
 
-  virtual void  setup( Element_t&)                            {} 
+  virtual void  setup( Element_t&)                                 {} // default does nothing 
 
-  virtual void  operator()(  Element_t&,         Particle& p) {std::cout << "Error: base class operator()(  Element_t&,         Particle& p) called !" << std::endl;                                                                          void* q = 0; 
-                                                               *( (int*) q ) = 0;
-                                                               }
-  virtual void  operator()(  Element_t&,      JetParticle& p) {std::cout << "Error: base class operator()(  Element_t&,      JetParticle& p) called !" << std::endl; 
-                                                                          void* q = 0; 
-                                                               *( (int*) q ) = 0;
-                                                               }
-
-  virtual void  operator()(  Element_t&,    ParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&,    ParticleBunch& p) called !" << std::endl; }
-  virtual void  operator()(  Element_t&, JetParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&, JetParticleBunch& p) called !" << std::endl; }
+  virtual void  operator()(  Element_t& elm,         Particle& p) = 0; 
+  virtual void  operator()(  Element_t& elm,      JetParticle& p) = 0; 
+  virtual void  operator()(  Element_t& elm,    ParticleBunch& b);  // default defined below 
+  virtual void  operator()(  Element_t& elm, JetParticleBunch& b);  // default defined below 
 
 };
 
@@ -466,5 +460,17 @@ class bmlnElmnt::core_access {
 
 };
    
+//----------------------------------------
+// default propagation method for bunches
+//----------------------------------------
+
+template<typename Element_t>
+void  BasePropagator<Element_t>::operator()(  Element_t& elm,  ParticleBunch& b)    { elm.localPropagate(b); } 
+
+template<typename Element_t>
+void  BasePropagator<Element_t>::operator()(  Element_t& elm, JetParticleBunch& b)  { elm.localPropagate(b); }
+
+
+
 
 #endif // BMLNELMNT_H

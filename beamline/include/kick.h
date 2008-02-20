@@ -87,8 +87,10 @@ public:
 
  ~hkick();
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
 
   const char* Type()       const;
   bool        isMagnet()   const;
@@ -124,8 +126,10 @@ public:
 
  ~vkick();
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -161,8 +165,11 @@ public:
 
  ~kick();
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
+
 
   void accept(BmlVisitor& v);
   void accept(ConstBmlVisitor& v) const;

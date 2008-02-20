@@ -32,6 +32,15 @@
 #ifndef MARKERPROPAGATORS_H
 #define MARKERPROPAGATORS_H
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class marker::Propagator: public BasePropagator<marker> {
 
  public:
@@ -40,8 +49,10 @@ class marker::Propagator: public BasePropagator<marker> {
  
   void  setup( marker& elm ); 
 
-  void  operator()(  marker& elm,        Particle& p);
-  void  operator()(  marker& elm,    JetParticle& p);
+  void  operator()(  marker& elm,             Particle& p);
+  void  operator()(  marker& elm,          JetParticle& p);
+  void  operator()(  marker& elm,        ParticleBunch& p);
+  void  operator()(  marker& elm,     JetParticleBunch& p);
 
 };
 
