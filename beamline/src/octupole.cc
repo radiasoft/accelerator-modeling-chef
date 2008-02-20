@@ -215,7 +215,7 @@ void  octupole::localPropagate( JetParticle& p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::localPropagate( ParticleBunch&    p )   
+void octupole::localPropagate( ParticleBunch&    b )   
 { 
   (*propagator_)(*this, b);        
 }
@@ -223,7 +223,7 @@ void octupole::localPropagate( ParticleBunch&    p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  octupole::localPropagate( JetParticleBunch& p )   
+void  octupole::localPropagate( JetParticleBunch& b )   
 { 
   (*propagator_)(*this, b);        
 }
