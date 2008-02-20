@@ -86,9 +86,10 @@ public:
 
   void setStrength( double const& );
  
-  void localPropagate( ParticleBunch& x ); 
-  void localPropagate( Particle&    p );   
-  void localPropagate( JetParticle& p );   
+  void localPropagate(         Particle& b );   
+  void localPropagate(      JetParticle& b );   
+  void localPropagate(    ParticleBunch& b ); 
+  void localPropagate( JetParticleBunch& b ); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -129,9 +130,10 @@ public:
 
  ~thinQuad();
 
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
+  void localPropagate(         Particle& b );   
+  void localPropagate(      JetParticle& b );   
+  void localPropagate(    ParticleBunch& b ); 
+  void localPropagate( JetParticleBunch& b ); 
 
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;

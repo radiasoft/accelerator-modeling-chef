@@ -32,6 +32,16 @@
 #ifndef KICKPROPAGATORS_H
 #define KICKPROPAGATORS_H
 
+
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class kick::Propagator: public BasePropagator<kick> {
 
  public:
@@ -40,8 +50,10 @@ class kick::Propagator: public BasePropagator<kick> {
  
   void  setup( kick& elm ); 
 
-  void  operator()(  kick& elm,        Particle& p);
-  void  operator()(  kick& elm,    JetParticle& p);
+  void  operator()(  kick& elm,             Particle& p);
+  void  operator()(  kick& elm,          JetParticle& p);
+  void  operator()(  kick& elm,        ParticleBunch& p);
+  void  operator()(  kick& elm,     JetParticleBunch& p);
 
 };
 
@@ -53,8 +65,10 @@ class hkick::Propagator: public BasePropagator<hkick> {
  
   void  setup( hkick& elm ); 
 
-  void  operator()(  hkick& elm,        Particle& p);
-  void  operator()(  hkick& elm,    JetParticle& p);
+  void  operator()(  hkick& elm,             Particle& p);
+  void  operator()(  hkick& elm,          JetParticle& p);
+  void  operator()(  hkick& elm,        ParticleBunch& p);
+  void  operator()(  hkick& elm,     JetParticleBunch& p);
 
 };
 
@@ -64,8 +78,10 @@ class vkick::Propagator: public BasePropagator<vkick> {
  
   void  setup( vkick& elm ); 
 
-  void  operator()(  vkick& elm,        Particle& p);
-  void  operator()(  vkick& elm,    JetParticle& p);
+  void  operator()(  vkick& elm,             Particle& p);
+  void  operator()(  vkick& elm,          JetParticle& p);
+  void  operator()(  vkick& elm,        ParticleBunch& p);
+  void  operator()(  vkick& elm,     JetParticleBunch& p);
 
 };
 

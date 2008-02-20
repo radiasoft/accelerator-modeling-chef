@@ -34,6 +34,15 @@
 
 #include <beamline/rfcavity.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class rfcavity::Propagator: public BasePropagator<rfcavity> {
 
  public:
@@ -42,9 +51,10 @@ class rfcavity::Propagator: public BasePropagator<rfcavity> {
  
   void  setup( rfcavity& elm ); 
 
-  void  operator()(  rfcavity& elm,         Particle& p);
-  void  operator()(  rfcavity& elm,      JetParticle& p);
-  void  operator()(  rfcavity& elm,    ParticleBunch& b);
+  void  operator()(  rfcavity& elm,           Particle& p);
+  void  operator()(  rfcavity& elm,        JetParticle& p);
+  void  operator()(  rfcavity& elm,      ParticleBunch& b);
+  void  operator()(  rfcavity& elm,   JetParticleBunch& b);
 
 };
 
@@ -57,9 +67,10 @@ class thinrfcavity::Propagator: public BasePropagator<thinrfcavity> {
  
   void  setup( thinrfcavity& elm ); 
 
-  void  operator()(  thinrfcavity& elm,        Particle& p);
-  void  operator()(  thinrfcavity& elm,     JetParticle& p);
-  void  operator()(  thinrfcavity& elm,   ParticleBunch& b);
+  void  operator()(  thinrfcavity& elm,           Particle& p);
+  void  operator()(  thinrfcavity& elm,        JetParticle& p);
+  void  operator()(  thinrfcavity& elm,      ParticleBunch& b);
+  void  operator()(  thinrfcavity& elm,   JetParticleBunch& b);
 
 };
 

@@ -32,6 +32,15 @@
 
 #include <beamline/srot.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class srot::Propagator : public BasePropagator<srot> {
 
  public:
@@ -39,8 +48,10 @@ class srot::Propagator : public BasePropagator<srot> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( srot& elm);
-  void  operator()( srot& elm,    Particle& p);
-  void  operator()( srot& elm, JetParticle& p);
+  void  operator()( srot& elm,         Particle& p);
+  void  operator()( srot& elm,      JetParticle& p);
+  void  operator()( srot& elm,    ParticleBunch& b);
+  void  operator()( srot& elm, JetParticleBunch& b);
 
 };
 

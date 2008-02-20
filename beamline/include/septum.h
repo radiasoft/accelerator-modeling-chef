@@ -93,8 +93,10 @@ public:
   double const& getNegStrength() { return strengthNeg_; }
   double const& getWireX()       { return xWire_;       }
   
-  void localPropagate( Particle&    p );
-  void localPropagate( JetParticle& p );
+  void localPropagate(         Particle&  p );
+  void localPropagate(      JetParticle&  p );
+  void localPropagate(    ParticleBunch&  p );
+  void localPropagate( JetParticleBunch&  p );
 
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 

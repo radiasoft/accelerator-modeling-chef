@@ -34,6 +34,15 @@
 
 #include <beamline/octupole.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 class octupole::Propagator: public BasePropagator<octupole> {
 
 public:
@@ -43,8 +52,10 @@ public:
 
   void  setup( octupole& elm); 
 
-  void  operator()( octupole& elm,        Particle& p);
-  void  operator()( octupole& elm,     JetParticle& p);
+  void  operator()( octupole& elm,             Particle& p);
+  void  operator()( octupole& elm,          JetParticle& p);
+  void  operator()( octupole& elm,        ParticleBunch& p);
+  void  operator()( octupole& elm,     JetParticleBunch& p);
 
  private:
 
@@ -60,8 +71,10 @@ public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()( thinOctupole& elm,        Particle& p);
-  void  operator()( thinOctupole& elm,     JetParticle& p);
+  void  operator()( thinOctupole& elm,             Particle& p);
+  void  operator()( thinOctupole& elm,          JetParticle& p);
+  void  operator()( thinOctupole& elm,        ParticleBunch& p);
+  void  operator()( thinOctupole& elm,     JetParticleBunch& p);
 
 };
 

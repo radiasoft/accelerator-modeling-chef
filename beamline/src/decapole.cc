@@ -164,3 +164,19 @@ void  thinDecapole::localPropagate( JetParticle& p )
   (*propagator_)(*this, p);        
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinDecapole::localPropagate( ParticleBunch&  b)   
+{ 
+  (*propagator_)(*this, b);        
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  thinDecapole::localPropagate( JetParticleBunch& b )   
+{ 
+  (*propagator_)(*this, b);        
+}
+

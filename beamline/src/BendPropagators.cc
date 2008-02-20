@@ -189,7 +189,6 @@ void Bend::Propagator::operator()( Bend& elm, Particle& p )
 void Bend::Propagator::operator()( Bend& elm, JetParticle& p ) 
 {
   ::propagate( propPhase_, propTerm_, dphi_, elm, p);
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
