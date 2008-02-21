@@ -47,8 +47,6 @@ class rfcavity::Propagator: public BasePropagator<rfcavity> {
 
   void  operator()(  rfcavity& elm,           Particle& p);
   void  operator()(  rfcavity& elm,        JetParticle& p);
-  void  operator()(  rfcavity& elm,      ParticleBunch& b);
-  void  operator()(  rfcavity& elm,   JetParticleBunch& b);
 
 };
 

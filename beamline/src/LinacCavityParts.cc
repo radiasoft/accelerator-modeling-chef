@@ -159,6 +159,22 @@ void  LCavityUpstream::localPropagate( JetParticle& p)
   (*propagator_)(*this, p);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::localPropagate( ParticleBunch& b)
+{ 
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::localPropagate( JetParticleBunch& b)
+{ 
+  (*propagator_)(*this, b);
+}
+
 //----------------------------------------------------------------------------------
 //  DOWSTREAM LCAVITY SECTION
 //----------------------------------------------------------------------------------
@@ -280,4 +296,20 @@ void  LCavityDnstream::localPropagate( Particle& p)
 void  LCavityDnstream::localPropagate( JetParticle& p)
 { 
   (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::localPropagate( ParticleBunch& b)
+{ 
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::localPropagate( JetParticleBunch& b)
+{ 
+  (*propagator_)(*this, b);
 }
