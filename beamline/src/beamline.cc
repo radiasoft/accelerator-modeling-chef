@@ -63,6 +63,7 @@
 *************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
+#include <beamline/LatticeFunctions.h>
 #include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/combinedFunction.h>
@@ -90,25 +91,31 @@ using FNAL::pcout;
 
 #define PREC setprecision(4)
 
-ostream& operator<<(ostream& os, LattFunc const& x) {
-  os << PREC << x.alpha.hor << " " << x.beta.hor << " " << x.psi.hor;
-  os << " " << x.alpha.ver << " " << x.beta.ver << " " << x.psi.ver;
-  os << " " << x.dispersion.hor << " " << x.dPrime.hor;
-  os << " " << x.dispersion.ver << " " << x.dPrime.ver;
+ostream& operator<<(ostream& os, LattFuncs const& x) {
+  
+  CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(x);
+
+  os << PREC << lf.alpha.hor << " " << lf.beta.hor << " " << lf.psi.hor;
+  os << " " << lf.alpha.ver << " " << lf.beta.ver << " " << lf.psi.ver;
+  os << " " << lf.dispersion.hor << " " << lf.dPrime.hor;
+  os << " " << lf.dispersion.ver << " " << lf.dPrime.ver;
   return (os << endl);
 }
 
-istream& operator>>(istream& is, LattFunc& x) {
-  is >> x.alpha.hor;
-  is >> x.beta.hor; 
-  is >> x.psi.hor ;
-  is >> x.alpha.ver; 
-  is >> x.beta.ver; 
-  is >> x.psi.ver; 
-  is >> x.dispersion.hor;
-  is >> x.dPrime.hor;
-  is >> x.dispersion.ver;
-  is >> x.dPrime.ver;
+istream& operator>>(istream& is, LattFuncs& x) {
+
+  CSLattFuncs& lf = boost::get<CSLattFuncs&>(x);
+
+  is >> lf.alpha.hor;
+  is >> lf.beta.hor; 
+  is >> lf.psi.hor ;
+  is >> lf.alpha.ver; 
+  is >> lf.beta.ver; 
+  is >> lf.psi.ver; 
+  is >> lf.dispersion.hor;
+  is >> lf.dPrime.hor;
+  is >> lf.dispersion.ver;
+  is >> lf.dPrime.ver;
   return is;
 }
 
@@ -410,59 +417,8 @@ LattRing beamline::whatIsRing()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFunc beamline::whatIsLattice( int n ) 
-{
-
- LattFunc errRet;
-
- int numElem = howMany();
- 
- if ( ( n < 0 ) || ( numElem <= n ) ){
-    ostringstream uic;
-    uic  << "Argument n = " << n 
-         << " lies outside [0," 
-         << (numElem-1) << "].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "LattFunc beamline::whatIsLattice( int n ) {", 
-           uic.str().c_str() ) );
- }
-
-int count = 0;
-for (beamline::iterator it = begin(); it != end(); ++it ) { 
-  if( n == count++ ) 
-  return any_cast<LattFunc>( (*it)->dataHook.find( "Twiss")->info ) ;
-}
-
- (*pcout) << endl;
- (*pcout) << "*** WARNING ***                               \n"
-      << "*** WARNING *** beamline::whatIsLattice       \n"
-      << "*** WARNING *** Entry was not found.          \n"
-      << "*** WARNING *** Meaningless value being       \n"
-      << "*** WARNING *** returned.                     \n"
-      << "*** WARNING ***                               \n" << endl;
- return errRet;
-}
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-LattFunc beamline::whatIsLattice( std::string n ) {
-
-  LattFunc errRet;
-  
-  for (beamline::iterator it = begin(); it != end(); ++it ) { 
-
-    if( (*it)->Name() == n  ) 
-      return any_cast<LattFunc>( (*it)->dataHook.find( "Twiss" )->info );
-  } 
-
-    return errRet;  
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void beamline::insert( ElmPtr const& q ) {
 

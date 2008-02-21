@@ -154,3 +154,19 @@ void thinMultipole::localPropagate( JetParticle& p )
   (*propagator_)(*this, p);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinMultipole::localPropagate( ParticleBunch& b )
+{
+  (*propagator_)(*this, b);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinMultipole::localPropagate( JetParticleBunch& b )
+{
+  (*propagator_)(*this, b);
+}
+

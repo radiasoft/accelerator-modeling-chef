@@ -33,7 +33,6 @@
 #include <beamline/LinacCavityPropagators.h>
 #include <beamline/LinacCavityParts.h>
 #include <beamline/WakeKick.h>
-#include <beamline/WakeKickPropagator.h>
 
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
@@ -50,15 +49,6 @@ namespace {
   Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
   Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
-
-// ---------------------------------------------------------------------------------------------
-//  NOTE: cloning semantics is not appropriate for this propagator; we store a reference in 
-//        the boost function object. 
-
-  WakeKickPropagator wake_propagator(256, 12 * 300.0e-6 );  
-  boost::function< void( ParticleBunch& ) > wake_propagator_ref = boost::ref( wake_propagator);  
-  //--------------------------------------------------------------------------------------------
-
 
 template<typename Particle_t>
 void propagate( bmlnElmnt& elm, Particle_t&  p)
@@ -108,7 +98,7 @@ void LinacCavity::Propagator::setup( LinacCavity& arg )
   bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   arg.Length()/2.0,  arg.getFrequency(), 
                                                                          arg.Strength()/2.0, arg.getPhi() )   )  );
 
-  elm= WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref )  );  
+  elm= WakeKickPtr( new WakeKick ( "WAKE" ) ); 
  
   if (arg.wakeOn()) bml->append(elm); 
 
@@ -134,3 +124,4 @@ void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticle& p )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+

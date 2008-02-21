@@ -121,12 +121,12 @@ void propagate( std::complex<double> const& propPhase,
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( BendPropagators& elm,    Particle& p );
-template void propagate( BendPropagators& elm, JetParticle& p );
-
+template void propagate( std::complex<double> const& propPhase, 
+                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, Particle_t& p ); 
+template void propagate( std::complex<double> const& propPhase, 
+                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, JetParticle_t& p ); 
 #endif
 //-----------------------------------------------------------------------------------
-
 
 } // namespace
 
@@ -189,9 +189,5 @@ void Bend::Propagator::operator()( Bend& elm, Particle& p )
 void Bend::Propagator::operator()( Bend& elm, JetParticle& p ) 
 {
   ::propagate( propPhase_, propTerm_, dphi_, elm, p);
-
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

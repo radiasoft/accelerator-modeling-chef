@@ -21,8 +21,8 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Authors:  Leo   Michelotti  michelotti@fnal.gov                                       
-******            J.-F. Ostiguy     ostiguy@fnal.gov                                 
+******  Authors:  Leo   Michelotti  michelotti@fnal.gov
+******            J.-F. Ostiguy     ostiguy@fnal.gov
 ******                                                                
 ******              Fermilab  
 ******              Batavia, IL   60510                                
@@ -122,3 +122,4 @@ void BBLens::Propagator::operator()( BBLens& elm, JetParticle&     p )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+

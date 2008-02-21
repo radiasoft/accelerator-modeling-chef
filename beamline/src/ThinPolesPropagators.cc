@@ -21,6 +21,9 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
+******  Authors: Jean-Francois Ostiguy ostiguy@fnal.gov
+******           Leo Michelotti        michelotti@fnal.gov
+******
 ***************************************************************************
 ***************************************************************************
 **************************************************************************/
