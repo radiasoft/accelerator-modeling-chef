@@ -34,6 +34,7 @@
 #endif
 
 #include <beamline/WakeKick.h>
+#include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/WakeFunctions.h>
 #include <beamline/BunchProjector.h>
@@ -43,17 +44,20 @@
 
 using namespace std;
 
+
 WakeKick::WakeKick( char const* name )
   : bmlnElmnt(name, 0.0, 0.0)
 { 
-  // propagator_ = PropagatorFactory::
+   propagator_ = PropagatorPtr( new Propagator( 256, 12 * 300.0e-6 ) );    
+   propagator_->setup(*this);  
 }
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 WakeKick::WakeKick( WakeKick const& x )
-  : bmlnElmnt(x), propagator_(x.propagator_) 
-{ }
+  : bmlnElmnt(x), propagator_(PropagatorPtr(x.propagator_->Clone()))
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -93,20 +97,12 @@ void WakeKick::accept( ConstBmlVisitor& v ) const
    v.visit(*this ); 
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void WakeKick::localPropagate( ParticleBunch& bunch )
-{
-  propagator_(bunch);
-}
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void  WakeKick::localPropagate( Particle&      p )
 {
-  // this does nothing at the moment
+  (*propagator_)(*this,p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -114,8 +110,25 @@ void  WakeKick::localPropagate( Particle&      p )
 
 void  WakeKick::localPropagate( JetParticle&   p )
 {
-  // this does nothing at the moment
+  (*propagator_)(*this,p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void WakeKick::localPropagate( ParticleBunch& b )
+{
+  (*propagator_)(*this,b);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::localPropagate( JetParticleBunch& b)
+{
+  (*propagator_)(*this,b);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

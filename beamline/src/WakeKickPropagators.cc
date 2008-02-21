@@ -45,6 +45,21 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::Propagator::setup( WakeKick& elm) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+WakeKick::Propagator* WakeKick::Propagator::Clone() const
+{ 
+  return new WakeKick::Propagator(*this);
+}
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -53,7 +68,7 @@ using FNAL::pcout;
 //       The wakefunction is *truncated* at 0.5*interval, i.e. for z > 0.5*interval the samples are 0. 
 //----------------------------------------------------------------------------------------------------
  
-WakeKickPropagator::WakeKickPropagator( int nsamples, double const& interval)
+WakeKick::Propagator::Propagator( int nsamples, double const& interval)
   :  nsamples_(nsamples), 
      interval_(interval),
      lwake_( nsamples_,  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true), 
@@ -64,7 +79,7 @@ WakeKickPropagator::WakeKickPropagator( int nsamples, double const& interval)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other ) 
+WakeKick::Propagator::Propagator( WakeKick::Propagator const& other ) 
  : nsamples_(other.nsamples_), 
    interval_(other.interval_),
    lwake_(other.lwake_), 
@@ -82,7 +97,7 @@ WakeKickPropagator::WakeKickPropagator( WakeKickPropagator const& other )
 //       length was set a-priori in such a way that this condition is met.  
 //----------------------------------------------------------------------------------------------
 
-void WakeKickPropagator::operator()(  ParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  WakeKick& elm, ParticleBunch& bunch )
 {
 
   BunchProjector projector(bunch, interval_, nsamples_);
@@ -202,18 +217,31 @@ void WakeKickPropagator::operator()(  ParticleBunch& bunch )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void WakeKickPropagator::operator()(  JetParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  WakeKick& elm, JetParticleBunch& bunch )
 {
-
-  // empty for the moment
-
+  // does nothing for the moment
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::Propagator::operator()(  WakeKick&  elm,     Particle& p  )
+{
+  // does nothing for the moment
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKickPropagator::debug(  ParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  WakeKick&  elm,  JetParticle& p)
+{
+  // does nothing for the moment
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::Propagator::debug(  WakeKick&  elm, ParticleBunch& bunch )
 {
   const BunchProjector projector(bunch);
   
