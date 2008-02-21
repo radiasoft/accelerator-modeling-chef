@@ -86,8 +86,10 @@ public:
 
   void setCurrent( double );
 
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p );
+  void localPropagate(    ParticleBunch& b );
+  void localPropagate( JetParticleBunch& b );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -122,8 +124,10 @@ public:
   thinSextupole* Clone() const;
  ~thinSextupole();
 
-  void localPropagate( Particle& p );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p );
+  void localPropagate(    ParticleBunch& b );
+  void localPropagate( JetParticleBunch& b );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

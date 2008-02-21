@@ -33,6 +33,9 @@
 
 #include <beamline/CF_sbend.h>
 
+class Particle;
+class JetParticle;
+
 class CF_sbend::Propagator: public BasePropagator<CF_sbend> {
 
 public:
@@ -43,8 +46,8 @@ public:
 
   void  setup( CF_sbend& elm ); 
 
-  void  operator()(  CF_sbend& elm,       Particle& p);
-  void  operator()(  CF_sbend& elm,    JetParticle& p);
+  void  operator()(  CF_sbend& elm,            Particle& p);
+  void  operator()(  CF_sbend& elm,         JetParticle& p);
 
  private:
 

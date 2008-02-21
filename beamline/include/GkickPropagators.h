@@ -34,6 +34,10 @@
 
 #include <beamline/gkick.h>
 
+class Particle;
+class JetParticle;
+
+
 class gkick::Propagator: public BasePropagator<gkick> {
 
  public:
@@ -42,9 +46,8 @@ class gkick::Propagator: public BasePropagator<gkick> {
  
   void  setup( gkick& elm ); 
 
-  void  operator()(  gkick& elm,        Particle& p);
-  void  operator()(  gkick& elm,    JetParticle& p);
-
+  void  operator()(  gkick& elm,             Particle& p);
+  void  operator()(  gkick& elm,          JetParticle& p);
 };
 
 #endif    // GKICK_H

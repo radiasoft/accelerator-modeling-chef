@@ -34,6 +34,9 @@
 
 #include <beamline/sector.h>
 
+class Particle;
+class JetParticle;
+
 class sector::Propagator: public BasePropagator<sector> {
 
  public:
@@ -42,8 +45,8 @@ class sector::Propagator: public BasePropagator<sector> {
  
   void  setup( sector& elm ); 
 
-  void  operator()(  sector& elm,        Particle& p);
-  void  operator()(  sector& elm,    JetParticle& p);
+  void  operator()(  sector& elm,             Particle& p);
+  void  operator()(  sector& elm,          JetParticle& p);
 
 };
 

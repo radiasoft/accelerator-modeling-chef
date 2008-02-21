@@ -34,6 +34,9 @@
 
 #include <beamline/sbend.h>
 
+class Particle;
+class JetParticle;
+
 class sbend::Propagator: public BasePropagator<sbend> {
 
  public:
@@ -42,8 +45,8 @@ class sbend::Propagator: public BasePropagator<sbend> {
 
   void  setup( sbend& elm); 
 
-  void  operator()(  sbend& elm,        Particle& p);
-  void  operator()(  sbend& elm,     JetParticle& p);
+  void  operator()(  sbend& elm,             Particle& p);
+  void  operator()(  sbend& elm,          JetParticle& p);
 
 };
 

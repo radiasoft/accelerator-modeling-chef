@@ -84,8 +84,10 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
@@ -131,8 +133,10 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate(   Particle&  p );
-  void localPropagate( JetParticle& p );
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p );
+  void localPropagate(    ParticleBunch& b );
+  void localPropagate( JetParticleBunch& b );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 

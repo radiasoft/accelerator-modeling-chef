@@ -82,10 +82,10 @@
 #include <basic_toolkit/Frame.h>
 #include <basic_toolkit/Barnacle.h>
 
+#include <beamline/BasePropagator.h>
+
 #define NOTKNOWN   -123456.789
 #define OSTREAM_DOUBLE_PREC setprecision(20)
-
-
 
 //------------------------------
 // Forward declarations
@@ -134,57 +134,6 @@ typedef TJetVector<double>             JetVector;
 typedef TMapping<double>               Mapping;
 
 bmlnElmnt* read_istream(std::istream&);
-
-
-//----------------------------------------------------------
-
-template<typename Particle_t>
-  struct PropagatorTraits { 
-  static double  norm( double const& comp);  
-}; 
-
-template<>
-struct PropagatorTraits<Particle> {
-  typedef Vector                                   State_t;
-  typedef double                               Component_t;
-  typedef std::complex<double>                 ComplexComponent_t;
-  typedef Vector                                  Vector_t;
-  static double  norm(  PropagatorTraits<Particle>::Component_t const& comp);  
-};  
-
-template<>
-struct PropagatorTraits<JetParticle> {
-  typedef Mapping                 State_t;
-  typedef Jet                 Component_t;
-  typedef JetC         ComplexComponent_t;
-  typedef JetVector              Vector_t;
-  static double  norm( PropagatorTraits<JetParticle>::Component_t const& comp);  
-};  
-   
- 
-template<typename Element_t>
-class BasePropagator {
-
- public:
-  
-  virtual BasePropagator<Element_t>* Clone() const { return new BasePropagator(*this); } ;
-
-  virtual void  setup( Element_t&)                            {} 
-
-  virtual void  operator()(  Element_t&,         Particle& p) {std::cout << "Error: base class operator()(  Element_t&,         Particle& p) called !" << std::endl;                                                                          void* q = 0; 
-                                                               *( (int*) q ) = 0;
-                                                               }
-  virtual void  operator()(  Element_t&,      JetParticle& p) {std::cout << "Error: base class operator()(  Element_t&,      JetParticle& p) called !" << std::endl; 
-                                                                          void* q = 0; 
-                                                               *( (int*) q ) = 0;
-                                                               }
-
-  virtual void  operator()(  Element_t&,    ParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&,    ParticleBunch& p) called !" << std::endl; }
-  virtual void  operator()(  Element_t&, JetParticleBunch& b) {std::cout << "Error: base class operator()(  Element_t&, JetParticleBunch& p) called !" << std::endl; }
-
-};
-
-// --------------------------------------------------------------------------
 
 
 class DLLEXPORT bmlnElmnt {
@@ -286,15 +235,15 @@ public:
   void acceptInner( BmlVisitor& );
   void acceptInner( ConstBmlVisitor& ) const;
 
-  void propagate( Particle&         );
-  void propagate( JetParticle&      );
-  void propagate( ParticleBunch&    );
+  void propagate(         Particle& );
+  void propagate(      JetParticle& );
+  void propagate(    ParticleBunch& );
   void propagate( JetParticleBunch& );
 
-  virtual void localPropagate( Particle&         ) = 0;
-  virtual void localPropagate( JetParticle&      ) = 0;
-  virtual void localPropagate( ParticleBunch&    );
-  virtual void localPropagate( JetParticleBunch& );
+  virtual void localPropagate(         Particle& ) = 0;
+  virtual void localPropagate(      JetParticle& ) = 0;
+  virtual void localPropagate(    ParticleBunch& ) = 0;
+  virtual void localPropagate( JetParticleBunch& ) = 0;
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)

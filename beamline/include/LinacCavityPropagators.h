@@ -32,6 +32,9 @@
 
 #include <beamline/LinacCavity.h>
 
+class Particle;
+class JetParticle;
+
 class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
 
  public:
@@ -39,9 +42,8 @@ class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LinacCavity& elm);
-  void  operator()( LinacCavity& elm,    Particle& p);
-  void  operator()( LinacCavity& elm, JetParticle& p);
-
+  void  operator()( LinacCavity& elm,         Particle& p);
+  void  operator()( LinacCavity& elm,      JetParticle& p);
 };
 
 #endif //  LINACCAVITYPROPAGATORS_H

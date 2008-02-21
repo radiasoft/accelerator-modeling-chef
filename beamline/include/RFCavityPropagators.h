@@ -34,6 +34,9 @@
 
 #include <beamline/rfcavity.h>
 
+class Particle;
+class JetParticle;
+
 class rfcavity::Propagator: public BasePropagator<rfcavity> {
 
  public:
@@ -42,9 +45,8 @@ class rfcavity::Propagator: public BasePropagator<rfcavity> {
  
   void  setup( rfcavity& elm ); 
 
-  void  operator()(  rfcavity& elm,         Particle& p);
-  void  operator()(  rfcavity& elm,      JetParticle& p);
-  void  operator()(  rfcavity& elm,    ParticleBunch& b);
+  void  operator()(  rfcavity& elm,           Particle& p);
+  void  operator()(  rfcavity& elm,        JetParticle& p);
 
 };
 
@@ -57,9 +59,8 @@ class thinrfcavity::Propagator: public BasePropagator<thinrfcavity> {
  
   void  setup( thinrfcavity& elm ); 
 
-  void  operator()(  thinrfcavity& elm,        Particle& p);
-  void  operator()(  thinrfcavity& elm,     JetParticle& p);
-  void  operator()(  thinrfcavity& elm,   ParticleBunch& b);
+  void  operator()(  thinrfcavity& elm,           Particle& p);
+  void  operator()(  thinrfcavity& elm,        JetParticle& p);
 
 };
 

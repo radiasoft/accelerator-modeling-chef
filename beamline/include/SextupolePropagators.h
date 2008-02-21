@@ -33,6 +33,9 @@
 
 #include <beamline/sextupole.h>
 
+class Particle;
+class JetParticle;
+
 class sextupole::Propagator: public BasePropagator<sextupole> {
 
 public:
@@ -43,8 +46,8 @@ public:
 
   void  setup( sextupole& elm ); 
 
-  void  operator()(  sextupole& elm,       Particle& p);
-  void  operator()(  sextupole& elm,    JetParticle& p);
+  void  operator()(  sextupole& elm,            Particle& p);
+  void  operator()(  sextupole& elm,         JetParticle& p);
 
  private:
 
@@ -61,8 +64,8 @@ public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()( thinSextupole& elm,       Particle& p);
-  void  operator()( thinSextupole& elm,    JetParticle& p);
+  void  operator()( thinSextupole& elm,            Particle& p);
+  void  operator()( thinSextupole& elm,         JetParticle& p);
 
 };
 

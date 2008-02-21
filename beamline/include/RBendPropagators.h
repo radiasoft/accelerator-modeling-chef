@@ -34,6 +34,9 @@
 
 #include <beamline/rbend.h>
 
+class Particle;
+class JetParticle;
+
 class rbend::Propagator: public BasePropagator<rbend> {
 
  public:
@@ -42,9 +45,8 @@ class rbend::Propagator: public BasePropagator<rbend> {
 
   void  setup(rbend& elm); 
 
-  void  operator()( rbend& elm,        Particle& p);
-  void  operator()( rbend& elm,     JetParticle& p);
-
+  void  operator()( rbend& elm,             Particle& p);
+  void  operator()( rbend& elm,          JetParticle& p);
 };
 
 

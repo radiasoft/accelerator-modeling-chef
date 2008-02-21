@@ -99,11 +99,11 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   CF_rbend& operator=( CF_rbend const& rhs);
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
 
-  void localPropagate( ParticleBunch& x ) 
-    { bmlnElmnt::localPropagate( x ); }
 
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 

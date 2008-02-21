@@ -34,14 +34,17 @@
 
 #include <beamline/decapole.h>
 
+class Particle;
+class JetParticle;
+
 class thinDecapole::Propagator: public BasePropagator<thinDecapole> {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()(  thinDecapole& elm,       Particle& p);
-  void  operator()(  thinDecapole& elm,    JetParticle& p);
+  void  operator()(  thinDecapole& elm,            Particle& p);
+  void  operator()(  thinDecapole& elm,         JetParticle& p);
 
 };
 

@@ -33,6 +33,13 @@
 
 #include <beamline/CF_rbend.h>
 
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+
 class CF_rbend::Propagator: public BasePropagator<CF_rbend> {
 
 public:
@@ -43,8 +50,8 @@ public:
 
   void  setup( CF_rbend& elm ); 
 
-  void  operator()(  CF_rbend& elm,       Particle& p);
-  void  operator()(  CF_rbend& elm,    JetParticle& p);
+  void  operator()(  CF_rbend& elm,            Particle& p);
+  void  operator()(  CF_rbend& elm,         JetParticle& p);
 
  private:
 

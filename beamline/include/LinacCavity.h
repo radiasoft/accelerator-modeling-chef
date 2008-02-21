@@ -87,8 +87,10 @@ public:
 
   double          getReferenceTime() const;  
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& );
+  void localPropagate(      JetParticle& );
+  void localPropagate(    ParticleBunch& );
+  void localPropagate( JetParticleBunch& );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 

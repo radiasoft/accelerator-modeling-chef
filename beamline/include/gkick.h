@@ -66,8 +66,10 @@ public:
 
  ~gkick();
 
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(       Particle&   );
+  void localPropagate(     JetParticle&  );
+  void localPropagate(   ParticleBunch&  );
+  void localPropagate( JetParticleBunch& );
 
   const char* Type()       const;
   bool        isMagnet()   const;
