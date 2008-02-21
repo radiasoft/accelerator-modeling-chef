@@ -34,25 +34,35 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/ConvolutionFunctor.h>
+#include <beamline/WakeKick.h>
+
+class    Particle;
+class JetParticle;
 
 template <typename Particle_t>
 class TBunch;
 
-typedef TBunch<Particle> ParticleBunch;
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
 
-
-class WakeKickPropagator {
+class WakeKick::Propagator: public BasePropagator<WakeKick>   {
 
 public:
 
-  WakeKickPropagator( int nsamples, double const& interval);
+  Propagator( int nsamples, double const& interval);
 
-  WakeKickPropagator( WakeKickPropagator const& other);
+  Propagator( WakeKick::Propagator const& other);
 
-  void operator()(    ParticleBunch& bunch  );
-  void operator()( JetParticleBunch& bunch  );
+  Propagator* Clone() const; 
 
-  void debug(ParticleBunch&);
+  void setup( WakeKick& elm);
+
+  void operator()(  WakeKick&  elm,          Particle& p );
+  void operator()(  WakeKick&  elm,       JetParticle& p );
+  void operator()(  WakeKick&  elm,     ParticleBunch& b );
+  void operator()(  WakeKick&  elm,  JetParticleBunch& b );
+
+  void debug( WakeKick&  elm, ParticleBunch&);
 
 private:
 

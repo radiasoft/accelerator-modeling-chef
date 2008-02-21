@@ -37,6 +37,7 @@
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <boost/bind.hpp>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/BasePropagator.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -49,24 +50,30 @@ typedef boost::shared_ptr<WakeKick const>  ConstWakeKickPtr;
 
 class DLLEXPORT WakeKick : public bmlnElmnt {
 
-  public:
+private:
+
+   class Propagator;  
+
+public:
+
+   typedef boost::shared_ptr<BasePropagator<WakeKick> > PropagatorPtr;   
 
    WakeKick( char const* name );      
 
-   template <typename Propagator>  
-   WakeKick( char const* name, Propagator propagator);      
-
-   WakeKick( WakeKick const&         );
+   WakeKick( WakeKick const& );
 
    WakeKick* Clone() const { return new WakeKick( *this ); }
 
    WakeKick& operator=( WakeKick const& rhs);
 
+   void setup();
+
   ~WakeKick();
 
-   void localPropagate( Particle&      p );
-   void localPropagate( JetParticle&   p );
-   void localPropagate( ParticleBunch& b );
+   void localPropagate(         Particle& p );
+   void localPropagate(      JetParticle& p );
+   void localPropagate(    ParticleBunch& b );
+   void localPropagate( JetParticleBunch& b );
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
@@ -75,23 +82,9 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
    bool        isMagnet() const;
 
  private:
-
-   //void init();
-   boost::function< void( ParticleBunch& ) > propagator_;
-   
+  
+   PropagatorPtr  propagator_;
 
 } ;
-
-//----------------------------------------------------------------------
-
-template <typename Propagator>  
-WakeKick::WakeKick( char const* name,  Propagator propagator )      
- : bmlnElmnt(name, 0.0, 0.0),
-   propagator_(propagator)
-{}
-
-
-
-
 
 #endif // WAKEKICK_H
