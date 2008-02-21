@@ -33,7 +33,6 @@
 #include <beamline/septum.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/ParticleBunch.h>
 
 namespace {
 

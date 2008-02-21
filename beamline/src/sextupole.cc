@@ -203,6 +203,22 @@ void sextupole::localPropagate( JetParticle& p )
   (*propagator_)(*this, p);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::localPropagate( ParticleBunch& b ) 
+{ 
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::localPropagate( JetParticleBunch& b ) 
+{ 
+  (*propagator_)(*this, b);
+}
+
 
 // **************************************************
 //   class thinSextupole
@@ -295,4 +311,20 @@ void thinSextupole::localPropagate( Particle& p )
 void thinSextupole::localPropagate( JetParticle& p ) 
 { 
   (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::localPropagate( ParticleBunch& b ) 
+{ 
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::localPropagate( JetParticleBunch& b ) 
+{ 
+  (*propagator_)(*this, b);
 }

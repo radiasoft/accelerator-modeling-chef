@@ -119,17 +119,19 @@ void Pinger::Propagator::operator()( Pinger& elm, JetParticle&     p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, ParticleBunch&  b) 
+void Pinger::Propagator::operator()( Pinger& elm, ParticleBunch& b ) 
 {
-  ::propagate_bunch(elm, b);
+  ::propagate_bunch(elm,b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, JetParticleBunch&  b) 
+void Pinger::Propagator::operator()( Pinger& elm, JetParticleBunch&     b ) 
 {
-  ::propagate_bunch(elm, b);
+  ::propagate_bunch(elm,b);
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

@@ -21,15 +21,8 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
+******  Authors:    Leo Michelotti         michelotti@fnal.gov
+******              Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
 **************************************************************************
 *************************************************************************/
@@ -56,9 +49,16 @@ template<>
 void propagate( thinLamb& elm, JetParticle& p) { } // empty specialization 
 
 template<>
+void propagate( thinLamb& elm, JetParticleBunch& b)
+{  
+// NOT DEFINED -- FIX ME ! 
+}  
+
+template<>
 void propagate( thinLamb& elm, ParticleBunch& p)
 {
 
+  // FIXME !
   /********************************************* 
 
   if ( !ExtBeamline) return; 
@@ -145,9 +145,17 @@ void thinLamb::Propagator::operator()( thinLamb& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( thinLamb& elm,  ParticleBunch& p ) 
+void thinLamb::Propagator::operator()( thinLamb& elm,  ParticleBunch& b ) 
 { 
-  ::propagate(elm,p);
+  ::propagate(elm,b);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinLamb::Propagator::operator()( thinLamb& elm,  JetParticleBunch& b ) 
+{ 
+  ::propagate(elm,b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
