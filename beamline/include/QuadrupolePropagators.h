@@ -33,14 +33,8 @@
 
 #include <beamline/quadrupole.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
@@ -55,8 +49,6 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
   void  operator()( quadrupole& elm,             Particle& p);
   void  operator()( quadrupole& elm,          JetParticle& p);
-  void  operator()( quadrupole& elm,        ParticleBunch& p);
-  void  operator()( quadrupole& elm,     JetParticleBunch& p);
 
  private:
 
@@ -74,9 +66,6 @@ public:
 
   void  operator()( thinQuad& elm,              Particle& p);
   void  operator()( thinQuad& elm,           JetParticle& p);
-  void  operator()( thinQuad& elm,         ParticleBunch& p);
-  void  operator()( thinQuad& elm,      JetParticleBunch& p);
-
 
 };
 

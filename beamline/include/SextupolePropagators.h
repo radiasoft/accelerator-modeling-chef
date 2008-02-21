@@ -33,14 +33,8 @@
 
 #include <beamline/sextupole.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class sextupole::Propagator: public BasePropagator<sextupole> {
 
@@ -54,8 +48,6 @@ public:
 
   void  operator()(  sextupole& elm,            Particle& p);
   void  operator()(  sextupole& elm,         JetParticle& p);
-  void  operator()(  sextupole& elm,       ParticleBunch& b);
-  void  operator()(  sextupole& elm,    JetParticleBunch& b);
 
  private:
 
@@ -74,8 +66,6 @@ public:
 
   void  operator()( thinSextupole& elm,            Particle& p);
   void  operator()( thinSextupole& elm,         JetParticle& p);
-  void  operator()( thinSextupole& elm,       ParticleBunch& b);
-  void  operator()( thinSextupole& elm,    JetParticleBunch& b);
 
 };
 

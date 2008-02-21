@@ -34,14 +34,8 @@
 
 #include <beamline/Slot.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class Slot::Propagator: public BasePropagator<Slot> {
 
@@ -53,8 +47,6 @@ class Slot::Propagator: public BasePropagator<Slot> {
 
   void  operator()(  Slot& elm,             Particle& p);
   void  operator()(  Slot& elm,          JetParticle& p);
-  void  operator()(  Slot& elm,        ParticleBunch& b);
-  void  operator()(  Slot& elm,     JetParticleBunch& b);
 
 };
 

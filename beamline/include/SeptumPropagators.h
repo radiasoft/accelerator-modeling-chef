@@ -34,14 +34,8 @@
 
 #include <beamline/septum.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class thinSeptum::Propagator: public BasePropagator<thinSeptum> {
 
@@ -53,8 +47,6 @@ class thinSeptum::Propagator: public BasePropagator<thinSeptum> {
 
   void  operator()(  thinSeptum& elm,             Particle& p);
   void  operator()(  thinSeptum& elm,          JetParticle& p);
-  void  operator()(  thinSeptum& elm,        ParticleBunch& p);
-  void  operator()(  thinSeptum& elm,     JetParticleBunch& p);
 
 };
 

@@ -34,14 +34,8 @@
 
 #include <beamline/sector.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class sector::Propagator: public BasePropagator<sector> {
 
@@ -53,8 +47,6 @@ class sector::Propagator: public BasePropagator<sector> {
 
   void  operator()(  sector& elm,             Particle& p);
   void  operator()(  sector& elm,          JetParticle& p);
-  void  operator()(  sector& elm,        ParticleBunch& b);
-  void  operator()(  sector& elm,     JetParticleBunch& b);
 
 };
 

@@ -31,8 +31,16 @@
 
 #ifndef MONITORPROPAGATORS_H
 #define MONITORPROPAGATORS_H
-
 #include <beamline/monitor.h>
+
+template<typename Particle_t>
+class TBunch;
+
+class Particle;
+class JetParticle;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
 
 class monitor::Propagator: public BasePropagator<monitor> {
 

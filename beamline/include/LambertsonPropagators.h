@@ -41,16 +41,17 @@ class JetParticle;
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
+
 class thinLamb::Propagator : public BasePropagator<thinLamb> {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()( thinLamb& elm,         Particle&  p);
-  void  operator()( thinLamb& elm,      JetParticle&  p);
-  void  operator()( thinLamb& elm,    ParticleBunch&  p);
-  void  operator()( thinLamb& elm, JetParticleBunch&  p);
+  void  operator()( thinLamb& elm,              Particle&  p);
+  void  operator()( thinLamb& elm,           JetParticle&  p);
+  void  operator()( thinLamb& elm,         ParticleBunch&  b);
+  void  operator()( thinLamb& elm,      JetParticleBunch&  b);
 
 };
 

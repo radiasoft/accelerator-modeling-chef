@@ -34,14 +34,8 @@
 
 #include <beamline/decapole.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class thinDecapole::Propagator: public BasePropagator<thinDecapole> {
 
@@ -51,8 +45,6 @@ public:
 
   void  operator()(  thinDecapole& elm,            Particle& p);
   void  operator()(  thinDecapole& elm,         JetParticle& p);
-  void  operator()(  thinDecapole& elm,       ParticleBunch& p);
-  void  operator()(  thinDecapole& elm,    JetParticleBunch& p);
 
 };
 
