@@ -31,6 +31,6 @@ install-exec-local:
         if [ -f ._temp ]; then rm ._temp; fi
 
 install-data-hook:
-	sed 's/[a-zA-Z0-9_]*\.hh/parsers\/xsif\/&/'  ${prefix}/include/parsers/xsif/Expression.h > ._temp;\
+	sed 's+[a-zA-Z0-9_]*\.hh+parsers/xsif/&+;s+sequential_tree\.h+parsers/xsif/tree-container/sequential_tree\.h+' ${prefix}/include/parsers/xsif/Expression.h > ._temp;\
 	${INSTALL} ._temp  ${prefix}/include/parsers/xsif/Expression.h; \
 	if [ -f ._temp ]; then rm ._temp; fi
