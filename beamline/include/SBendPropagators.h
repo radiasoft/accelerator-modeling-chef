@@ -34,14 +34,8 @@
 
 #include <beamline/sbend.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class sbend::Propagator: public BasePropagator<sbend> {
 
@@ -53,8 +47,6 @@ class sbend::Propagator: public BasePropagator<sbend> {
 
   void  operator()(  sbend& elm,             Particle& p);
   void  operator()(  sbend& elm,          JetParticle& p);
-  void  operator()(  sbend& elm,        ParticleBunch& b);
-  void  operator()(  sbend& elm,     JetParticleBunch& b);
 
 };
 

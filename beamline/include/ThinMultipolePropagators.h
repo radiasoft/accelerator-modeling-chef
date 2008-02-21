@@ -34,6 +34,8 @@
 
 #include <beamline/thinMultipole.h>
 
+class    Particle;
+class JetParticle;
 
 class thinMultipole::Propagator: public BasePropagator<thinMultipole> {
 

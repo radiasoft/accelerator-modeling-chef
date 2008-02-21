@@ -54,8 +54,8 @@ public:
 
   void  operator()(  CF_sbend& elm,            Particle& p);
   void  operator()(  CF_sbend& elm,         JetParticle& p);
-  void  operator()(  CF_sbend& elm,       ParticleBunch& p);
-  void  operator()(  CF_sbend& elm,    JetParticleBunch& p);
+  void  operator()(  CF_sbend& elm,       ParticleBunch& b);
+  void  operator()(  CF_sbend& elm,    JetParticleBunch& b);
 
  private:
 

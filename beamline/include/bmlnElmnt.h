@@ -465,10 +465,10 @@ class bmlnElmnt::core_access {
 //----------------------------------------
 
 template<typename Element_t>
-void  BasePropagator<Element_t>::operator()(  Element_t& elm,  ParticleBunch& b)    { elm.localPropagate(b); } 
+void  BasePropagator<Element_t>::operator()(  Element_t& elm,  ParticleBunch& b)    { elm.bmlnElmnt::localPropagate(b); } 
 
 template<typename Element_t>
-void  BasePropagator<Element_t>::operator()(  Element_t& elm, JetParticleBunch& b)  { elm.localPropagate(b); }
+void  BasePropagator<Element_t>::operator()(  Element_t& elm, JetParticleBunch& b)  { elm.bmlnElmnt::localPropagate(b); }
 
 
 

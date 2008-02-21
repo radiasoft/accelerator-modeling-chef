@@ -34,15 +34,6 @@
 
 #include <beamline/Bend.h>
 
-template<typename Particle_t>
-class TBunch;
-
-class Particle;
-class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
-
 class Bend::Propagator: public BasePropagator<Bend> {
 
  public:
@@ -53,8 +44,6 @@ class Bend::Propagator: public BasePropagator<Bend> {
 
   void  operator()(  Bend& elm,            Particle& p);
   void  operator()(  Bend& elm,         JetParticle& p);
-  void  operator()(  Bend& elm,       ParticleBunch& p);
-  void  operator()(  Bend& elm,    JetParticleBunch& p);
 
  private:
   

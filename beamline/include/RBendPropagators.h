@@ -34,14 +34,8 @@
 
 #include <beamline/rbend.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class rbend::Propagator: public BasePropagator<rbend> {
 
@@ -53,9 +47,6 @@ class rbend::Propagator: public BasePropagator<rbend> {
 
   void  operator()( rbend& elm,             Particle& p);
   void  operator()( rbend& elm,          JetParticle& p);
-  void  operator()( rbend& elm,        ParticleBunch& p);
-  void  operator()( rbend& elm,     JetParticleBunch& p);
-
 };
 
 

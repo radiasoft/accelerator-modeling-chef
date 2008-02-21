@@ -34,14 +34,8 @@
 
 #include <beamline/rfcavity.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class rfcavity::Propagator: public BasePropagator<rfcavity> {
 
@@ -69,8 +63,6 @@ class thinrfcavity::Propagator: public BasePropagator<thinrfcavity> {
 
   void  operator()(  thinrfcavity& elm,           Particle& p);
   void  operator()(  thinrfcavity& elm,        JetParticle& p);
-  void  operator()(  thinrfcavity& elm,      ParticleBunch& b);
-  void  operator()(  thinrfcavity& elm,   JetParticleBunch& b);
 
 };
 

@@ -250,7 +250,7 @@ void  quadrupole::localPropagate( JetParticle& p )
 
 void quadrupole::localPropagate( ParticleBunch& b ) 
 { 
-  bmlnElmnt::localPropagate( b); 
+  (*propagator_)(*this, b);        
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -258,7 +258,7 @@ void quadrupole::localPropagate( ParticleBunch& b )
 
 void quadrupole::localPropagate( JetParticleBunch& b ) 
 { 
-  bmlnElmnt::localPropagate( b); 
+  (*propagator_)(*this, b);        
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -360,7 +360,7 @@ void  thinQuad::localPropagate( JetParticle& p )
 
 void thinQuad::localPropagate( ParticleBunch& b ) 
 { 
-  bmlnElmnt::localPropagate( b); 
+  (*propagator_)(*this, b);        
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -368,5 +368,5 @@ void thinQuad::localPropagate( ParticleBunch& b )
 
 void thinQuad::localPropagate( JetParticleBunch& b ) 
 { 
-  bmlnElmnt::localPropagate( b); 
+  (*propagator_)(*this, b);        
 }

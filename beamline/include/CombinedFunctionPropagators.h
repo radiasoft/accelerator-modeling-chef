@@ -42,8 +42,8 @@ class combinedFunction::Propagator: public BasePropagator<combinedFunction> {
 
   void  setup( combinedFunction& elm ); 
 
-  void  operator()( combinedFunction& elm,        Particle& p);
-  void  operator()( combinedFunction& elm,    JetParticle& p);
+  void  operator()( combinedFunction& elm,             Particle& p);
+  void  operator()( combinedFunction& elm,          JetParticle& p);
 
 };
 

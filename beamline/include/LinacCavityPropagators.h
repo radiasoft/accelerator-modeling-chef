@@ -32,14 +32,8 @@
 
 #include <beamline/LinacCavity.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
 
@@ -50,9 +44,6 @@ class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
   void       setup( LinacCavity& elm);
   void  operator()( LinacCavity& elm,         Particle& p);
   void  operator()( LinacCavity& elm,      JetParticle& p);
-  void  operator()( LinacCavity& elm,    ParticleBunch& p);
-  void  operator()( LinacCavity& elm, JetParticleBunch& p);
-
 };
 
 #endif //  LINACCAVITYPROPAGATORS_H
