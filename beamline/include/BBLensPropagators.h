@@ -39,8 +39,8 @@ class BBLens::Propagator : public BasePropagator<BBLens> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( BBLens& elm);
-  void  operator()( BBLens& elm,    Particle& p);
-  void  operator()( BBLens& elm, JetParticle& p);
+  void  operator()( BBLens& elm,       Particle&   p);
+  void  operator()( BBLens& elm,    JetParticle&   p);
 };
 
 #endif //  BBLENSPROPAGATORS_H

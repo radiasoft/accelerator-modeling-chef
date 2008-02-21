@@ -33,6 +33,9 @@
 
 #include <beamline/quadrupole.h>
 
+class Particle;
+class JetParticle;
+
 class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
  public:
@@ -44,8 +47,8 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
   void  setup(quadrupole& elm); 
 
-  void  operator()( quadrupole& elm,        Particle& p);
-  void  operator()( quadrupole& elm,     JetParticle& p);
+  void  operator()( quadrupole& elm,             Particle& p);
+  void  operator()( quadrupole& elm,          JetParticle& p);
 
  private:
 
@@ -61,9 +64,8 @@ public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()( thinQuad& elm,         Particle& p);
-  void  operator()( thinQuad& elm,     JetParticle& p);
-
+  void  operator()( thinQuad& elm,              Particle& p);
+  void  operator()( thinQuad& elm,           JetParticle& p);
 
 };
 

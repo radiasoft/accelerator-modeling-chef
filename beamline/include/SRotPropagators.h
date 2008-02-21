@@ -32,6 +32,9 @@
 
 #include <beamline/srot.h>
 
+class Particle;
+class JetParticle;
+
 class srot::Propagator : public BasePropagator<srot> {
 
  public:
@@ -39,8 +42,8 @@ class srot::Propagator : public BasePropagator<srot> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( srot& elm);
-  void  operator()( srot& elm,    Particle& p);
-  void  operator()( srot& elm, JetParticle& p);
+  void  operator()( srot& elm,         Particle& p);
+  void  operator()( srot& elm,      JetParticle& p);
 
 };
 

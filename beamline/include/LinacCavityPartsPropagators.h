@@ -32,6 +32,9 @@
 
 #include <beamline/LinacCavityParts.h>
 
+class Particle;
+class JetParticle;
+
 class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
 
  public:
@@ -39,8 +42,8 @@ class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityUpstream& elm);
-  void  operator()( LCavityUpstream& elm,         Particle& p);
-  void  operator()( LCavityUpstream& elm,      JetParticle& p);
+  void  operator()( LCavityUpstream& elm,              Particle& p);
+  void  operator()( LCavityUpstream& elm,           JetParticle& p);
 
 };
 
@@ -51,9 +54,8 @@ class LCavityDnstream::Propagator : public BasePropagator<LCavityDnstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityDnstream& elm);
-  void  operator()( LCavityDnstream& elm,         Particle& p);
-  void  operator()( LCavityDnstream& elm,      JetParticle& p);
-
+  void  operator()( LCavityDnstream& elm,              Particle& p);
+  void  operator()( LCavityDnstream& elm,           JetParticle& p);
 
 };
 

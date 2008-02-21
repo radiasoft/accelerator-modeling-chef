@@ -91,9 +91,10 @@ public:
   void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
   void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
 
-  void localPropagate( ParticleBunch& x ) { bmlnElmnt::localPropagate( x ); }
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p );
+  void localPropagate(    ParticleBunch& b );
+  void localPropagate( JetParticleBunch& b );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

@@ -29,10 +29,13 @@
 **************************************************************************
 *************************************************************************/
 
-#ifndef BENDPROPAGATORS_H
-#define BENDPROPAGATORS_H
+#ifndef SOLENOIDPROPAGATORS_H
+#define SOLENOIDPROPAGATORS_H
 
 #include <beamline/Solenoid.h>
+
+class Particle;
+class JetParticle;
 
 class Solenoid::Propagator: public BasePropagator<Solenoid> {
 
@@ -42,8 +45,8 @@ class Solenoid::Propagator: public BasePropagator<Solenoid> {
  
   void  setup( Solenoid& elm ); 
 
-  void  operator()(  Solenoid& elm,        Particle& p);
-  void  operator()(  Solenoid& elm,     JetParticle& p);
+  void  operator()(  Solenoid& elm,             Particle& p);
+  void  operator()(  Solenoid& elm,          JetParticle& p);
 
 };
 

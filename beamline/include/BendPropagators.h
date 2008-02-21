@@ -42,8 +42,8 @@ class Bend::Propagator: public BasePropagator<Bend> {
  
   void  setup( Bend& elm ); 
 
-  void  operator()(  Bend& elm,        Particle& p);
-  void  operator()(  Bend& elm,    JetParticle& p);
+  void  operator()(  Bend& elm,            Particle& p);
+  void  operator()(  Bend& elm,         JetParticle& p);
 
  private:
   

@@ -53,7 +53,7 @@
 #include <list>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-#include <beamline/lattFunc.h>
+#include <beamline/LatticeFunctions.h>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -230,11 +230,6 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const ;
 
-
-  void propLattFunc( );
-  void propLattFunc( FILE* );
-  void propLattFunc( char* );
-
   void realignAllElements();  // WRITE
   void markAllPins();         // WRITE
 
@@ -254,30 +249,6 @@ public:
 
   void eraseBarnacles( const char* = 0 );
 
-  // ANALYSIS_________________________________________________________________________
-
-
-  int twiss( JetParticle&, double const& dpp = 0.00001, int  attachFlag = 1 );
-                           // Computes lattice functions all the
-                           // way around the ring.
-                           // Attaches a lattRing Barnacle labelled 
-                           // "Ring" to the beamline, and a lattFunc
-                           // Barnacle labelled "Twiss" to every element
-                           // in the line.
-
-  int twiss( char,         JetParticle& );
-                           // Only computes lattice functions at
-                           // the beginning of the ring.
-                           // Uses the same method as MAD.
-
-  int twiss( LattFunc&,    JetParticle&,  int attachFlag = 1);
-                           // Computes lattice functions for a
-                           // non-periodic beamline.
-                           // Uses the same method as MAD.
-
-
-  // QUERIES _________________________________________________________________________________
-
 
   ElmPtr&        firstElement();
   ElmPtr const&  firstElement() const;
@@ -295,8 +266,6 @@ public:
   bool           isBeamline() const;
   bool                empty() const;
   void                peekAt( double& s, Particle const& ) const;
-  LattFunc     whatIsLattice( int );                                                // After element n, 0 <= n.
-  LattFunc     whatIsLattice( std::string name );                                    
   int                howMany() const; 
   int           countHowMany() const;
   int     countHowManyDeeply() const;
@@ -317,18 +286,13 @@ public:
   LattRing     whatIsRing();
 
 
-  // STORING_______________________________________________________________________
 
-   beamline flatten() const;     //   Produces a flattened version of itself.
-
-   void   writeLattFunc( );
-   void   writeLattFunc( FILE* );
-   void   writeLattFunc( char* );
+  beamline flatten() const;     //   Produces a flattened version of itself.
 
 
-   // ITERATORS______________________________
-   // 
-   // new-style STL-compatible iterators 
+  // ITERATORS______________________________
+  // 
+  // STL-compatible iterators 
    
 
   public:

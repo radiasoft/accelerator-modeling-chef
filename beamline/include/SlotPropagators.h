@@ -34,6 +34,9 @@
 
 #include <beamline/Slot.h>
 
+class Particle;
+class JetParticle;
+
 class Slot::Propagator: public BasePropagator<Slot> {
 
  public:
@@ -42,8 +45,8 @@ class Slot::Propagator: public BasePropagator<Slot> {
  
   void  setup( Slot& elm ); 
 
-  void  operator()(  Slot& elm,        Particle& p);
-  void  operator()(  Slot& elm,    JetParticle& p);
+  void  operator()(  Slot& elm,             Particle& p);
+  void  operator()(  Slot& elm,          JetParticle& p);
 
 };
 

@@ -33,14 +33,17 @@
 
 #include <beamline/Edge.h>
 
+class Particle;
+class JetParticle;
+
 class Edge::Propagator: public BasePropagator<Edge> {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()(  Edge& elm,       Particle& p);
-  void  operator()(  Edge& elm,    JetParticle& p);
+  void  operator()(  Edge& elm,            Particle& p);
+  void  operator()(  Edge& elm,         JetParticle& p);
 
 };
 
