@@ -317,6 +317,7 @@ template class boost::detail::sp_counted_impl_p<thinOctupole::Propagator>;
 template class boost::detail::sp_counted_impl_p<Bend::Propagator>;
 template class boost::detail::sp_counted_impl_p<CF_sbend::Propagator>;
 template class boost::detail::sp_counted_impl_p<CF_rbend::Propagator>;
+template class boost::detail::sp_counted_impl_p<Solenoid::Propagator>;
 
 template class boost::detail::sp_counted_impl_p<BasePropagator<Edge> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinOctupole> >;

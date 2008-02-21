@@ -29,8 +29,8 @@
 **************************************************************************
 *************************************************************************/
 
-#ifndef BENDPROPAGATORS_H
-#define BENDPROPAGATORS_H
+#ifndef SOLENOIDPROPAGATORS_H
+#define SOLENOIDPROPAGATORS_H
 
 #include <beamline/Solenoid.h>
 

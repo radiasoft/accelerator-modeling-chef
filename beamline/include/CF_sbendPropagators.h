@@ -33,14 +33,8 @@
 
 #include <beamline/CF_sbend.h>
 
-template<typename Particle_t>
-class TBunch;
-
 class Particle;
 class JetParticle;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 class CF_sbend::Propagator: public BasePropagator<CF_sbend> {
 
@@ -54,8 +48,6 @@ public:
 
   void  operator()(  CF_sbend& elm,            Particle& p);
   void  operator()(  CF_sbend& elm,         JetParticle& p);
-  void  operator()(  CF_sbend& elm,       ParticleBunch& b);
-  void  operator()(  CF_sbend& elm,    JetParticleBunch& b);
 
  private:
 

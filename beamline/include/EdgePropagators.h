@@ -44,8 +44,6 @@ class Edge::Propagator: public BasePropagator<Edge> {
 
   void  operator()(  Edge& elm,            Particle& p);
   void  operator()(  Edge& elm,         JetParticle& p);
-  void  operator()(  Edge& elm,       ParticleBunch& p);
-  void  operator()(  Edge& elm,    JetParticleBunch& p);
 
 };
 
