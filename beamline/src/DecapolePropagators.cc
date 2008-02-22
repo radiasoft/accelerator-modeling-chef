@@ -79,8 +79,8 @@ void propagate( thinDecapole& elm, Particle_t & p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( DecapolePropagators& elm,    Particle& p );
-template void propagate( DeacpolePropagators& elm, JetParticle& p );
+template void propagate( thinDecapole& elm,    Particle& p );
+template void propagate( thinDecapole& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
