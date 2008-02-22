@@ -204,7 +204,7 @@ bool BmlUtil::isSpace( bmlnElmnt const&  x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void BmlUtil::normalize( MatrixC& B )
+void BmlUtil::normalize( MatrixC& B, Vector& normalizedPhase )
 {
   // This code is lifted from emittanceDilution.cc,
   // which lifted it from normalForm.cc
@@ -229,7 +229,7 @@ void BmlUtil::normalize( MatrixC& B )
                                   << i << ", " << j << " ) ) = "
                                   << std::abs(Nx(i,j));
        /* CAUTION */          throw( GenericException( __FILE__, __LINE__,
-       /* CAUTION */                 "void BmlUtil::normalize( MatrixC& B )",
+       /* CAUTION */                 "void BmlUtil::normalize( MatrixC&, Vector& )",
        /* CAUTION */                 uic.str().c_str() ) );
        /* CAUTION */    }
        /* CAUTION */    else Nx(i,j) = complex_0;
@@ -244,6 +244,8 @@ void BmlUtil::normalize( MatrixC& B )
   cm0 = conj(m0);
   m1  = B(1,1)/abs(B(1,1));
   cm1 = conj(m1);
+  normalizedPhase(0) = - atan2( m0.imag(), m0.real() )/M_TWOPI;
+  normalizedPhase(1) = - atan2( m1.imag(), m1.real() )/M_TWOPI;
 
   for( int i = 0; i < 6; i++ ) {
     B(i,0) *= cm0;
@@ -346,7 +348,8 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
   //   at least, as I normalize on Oct.29, 2004.
   //   But that may change. Who knows? So I'll retain the line.
 
-  BmlUtil::normalize( E );
+  Vector dummy(3);
+  BmlUtil::normalize( E, dummy );
 
   // Finally, the actual calculation: one line ...
   w.covariance = real(E*aa*E.dagger());
