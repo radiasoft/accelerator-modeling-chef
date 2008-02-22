@@ -51,7 +51,7 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 template<typename Particle_t>
-void propagate( bmlnElmnt& elm, Particle_t&  p)
+void propagate( LinacCavity& elm, Particle_t&  p)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;

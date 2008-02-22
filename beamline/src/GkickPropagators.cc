@@ -77,8 +77,8 @@ void propagate( gkick& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( GkickPropagators& elm,    Particle& p );
-template void propagate( GkickPropagators& elm, JetParticle& p );
+template void propagate( gkick& elm,    Particle& p );
+template void propagate( gkick& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
