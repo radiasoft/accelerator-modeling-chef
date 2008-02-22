@@ -122,9 +122,9 @@ void propagate( std::complex<double> const& propPhase,
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
 template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, Particle_t& p ); 
+                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, Particle&    p ); 
 template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, JetParticle_t& p ); 
+                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, JetParticle& p ); 
 #endif
 //-----------------------------------------------------------------------------------
 
