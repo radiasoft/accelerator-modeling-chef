@@ -144,6 +144,9 @@ int LBSage::doCalc( JetParticle const& jp)
   // PRECONDITIONS:  The JetParticle must be on the closed
   //   orbit with the one-turn  mapping for its state.
 
+  Vector normalizedPhase(3);   // The dimension is 3 in anticipation
+                               // of extension to 6D phase space.
+
   JetParticle jpart( jp);
   Particle    part(  jp);
 
@@ -162,7 +165,7 @@ int LBSage::doCalc( JetParticle const& jp)
   //*********************************************************
  
   MatrixC E = ( jpart.State() ).Jacobian().Matrix::eigenVectors();
-  BmlUtil::normalize( E );
+  BmlUtil::normalize( E, normalizedPhase );
 
   jpart.State() = Mapping( "identity", jpart.State().Env() );
 
@@ -173,7 +176,7 @@ int LBSage::doCalc( JetParticle const& jp)
 
   for (beamline::deep_iterator it  =  myBeamlinePtr_->deep_begin(); 
                                it !=  myBeamlinePtr_->deep_end();  ++it) {
-   ElmPtr be = (*it);
+    ElmPtr be = (*it);
 
     calcs_.push_back( LBSage::Info() );
 
@@ -182,8 +185,13 @@ int LBSage::doCalc( JetParticle const& jp)
     
     be->propagate( jpart );
     MatrixC  E2 = jpart.State().Jacobian() * E;
-    BmlUtil::normalize( E2 );
+    BmlUtil::normalize( E2, normalizedPhase );
     
+    // normalized phase advance
+
+    calcs_.back().nu_1 = normalizedPhase(0);   // (near) horizontal
+    calcs_.back().nu_2 = normalizedPhase(1);   // (near) vertical
+
     // beta_1x and beta_2y
 
     std::complex<double> temp = E2(i_x,i_x);

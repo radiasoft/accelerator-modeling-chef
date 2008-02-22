@@ -67,7 +67,7 @@
 class BmlUtil
 {
  public: 
-  static void normalize( MatrixC& E );
+  static void normalize( MatrixC&, Vector& );
   // On input: the columns of E contain eigenvectors of
   //   a one-turn matrix. 
   // On output: each column has been normalized
