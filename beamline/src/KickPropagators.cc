@@ -141,8 +141,12 @@ void propagate( Element_t& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( KickPropagators& elm,    Particle& p );
-template void propagate( KickPropagators& elm, JetParticle& p );
+template void propagate( kick& elm,    Particle& p );
+template void propagate( kick& elm, JetParticle& p );
+template void propagate( hkick& elm,    Particle& p );
+template void propagate( hkick& elm, JetParticle& p );
+template void propagate( vkick& elm,    Particle& p );
+template void propagate( vkick& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
