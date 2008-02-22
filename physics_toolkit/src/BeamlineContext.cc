@@ -1554,7 +1554,8 @@ MatrixD BeamlineContext::equilibriumCovariance( double eps1, double eps2 )
   aa(Particle::npyIndex, Particle::npyIndex)   = I2;
 
   MatrixC E = jetparticle_.State().Jacobian().eigenVectors();
-  BmlUtil::normalize( E );
+  Vector dummy(3);
+  BmlUtil::normalize( E, dummy );
 
   MatrixD cov = real( E*aa*E.dagger());
 
