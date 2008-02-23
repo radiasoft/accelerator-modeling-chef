@@ -171,7 +171,9 @@ int LBSage::doCalc( JetParticle const& jp)
 
 
   double lng = 0.0;
-
+  Vector intPhase(3);        // Dimension 3 in anticipation of future upgrade
+  Vector fracPhase(3);       // to six-dimensional phase space.
+                             // Automatically initialized to zero by constructor.
   calcs_.clear();
 
   for (beamline::deep_iterator it  =  myBeamlinePtr_->deep_begin(); 
@@ -189,8 +191,17 @@ int LBSage::doCalc( JetParticle const& jp)
     
     // normalized phase advance
 
-    calcs_.back().nu_1 = normalizedPhase(0);   // (near) horizontal
-    calcs_.back().nu_2 = normalizedPhase(1);   // (near) vertical
+    for( int i = 0; i < 2; i++ ) {
+      if( normalizedPhase[i] < ( fracPhase[i] + 0.00001 ) ) {
+        // The additional 0.00001 is there to offset possible
+        // roundoff error in the computation of normalizedPhase.
+        intPhase[i] += 1.0;
+      }
+      fracPhase[i] = normalizedPhase[i];
+    }
+
+    calcs_.back().nu_1 = intPhase[0] + fracPhase[0];   // (near) horizontal
+    calcs_.back().nu_2 = intPhase[1] + fracPhase[1];   // (near) vertical
 
     // beta_1x and beta_2y
 
