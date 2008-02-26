@@ -317,8 +317,6 @@ friend class TJL;
 
   JLPtr<T> compose( std::vector<JLPtr<T> > const& y ) const; 
 
-  // Arithmetic operators // some of these may no longer be needed ... FIXME !
-
   TJL& operator=( TJL const& );
   TJL& operator=( T   const& );
 
