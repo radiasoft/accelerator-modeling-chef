@@ -311,14 +311,14 @@ TJet<T> TLieOperator<T>::operator^( TJet<T> const& x ) const
  IntArray ndx( pje->numVar() );
 
 
- ndx(0) = 1; 
+ ndx[0] = 1; 
  answer = TLieOperator<T>::comp_[0]*x.D( ndx );
- ndx(0) = 0;
+ ndx[0]= 0;
 
  if( s > 1 ) for( int i=1; i< s; ++i) {
-  ndx(i) = 1;
+  ndx[i] = 1;
   answer += TLieOperator<T>::comp_[i]*x.D( ndx );
-  ndx(i) = 0;
+  ndx[i] = 0;
  }
 
  return answer;
@@ -339,7 +339,7 @@ TLieOperator<T> operator^( TLieOperator<T> const& x, TLieOperator<T> const& y )
 
  TLieOperator<T> z( x.myEnv_ );
 
- for( int i = 0; i < x.Dim(); ++i) 
+ for( int i=0; i<x.Dim(); ++i) 
   z.SetComponent( i, ( x^(y(i)) ) - ( y^(x(i)) ) );
 
  return z;
