@@ -58,7 +58,7 @@
 ****** Mar 2007 ostiguy@fnal.gov  
 ******
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   to replace previous scheme based explicitly on monomial exponents tuple.
+******   to replace previous scheme based explicitly on monomial exponents tuples.
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
 ****** 
@@ -84,11 +84,19 @@ class TJetVector;
 template<typename T> 
 class TLieOperator;
 
+
+
 TJet<double> fabs( TJet<double>                const& );
 
 TJet<double> real( TJet<std::complex<double> > const& );
 
 TJet<double> imag( TJet<std::complex<double> > const& );
+
+template<typename T> 
+double sobolev_norm( TJet<T> const& );
+
+template<typename T> 
+double sobolev_norm( TJet<T> const&, IntArray const& mask );
 
 template<typename T> 
 std::ostream& operator<<(std::ostream&, TJet<T>const&);
@@ -362,8 +370,12 @@ public:
   // Public member functions__________________________________________
 
   void      addTerm( TJLterm<T> const& ); 
+
   T         getTermCoefficient(IntArray const& exp) const; 
   void      setTermCoefficient(T const& value, IntArray const& exp); 
+
+  // T const& operator[]( IntArray const& );   
+  // T &      operator[]( IntArray const& );   
 
   bool isNilpotent() const;
 
@@ -408,7 +420,6 @@ public:
 
   TJet     operator() (  TJetVector<T>        const&   )  const;       // Self explanatory ...
   TJet     operator() ( std::vector<TJet<T> > const& y )  const;       // Self explanatory .    FIXME !     
-
 
   TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
 
@@ -478,10 +489,11 @@ public:
   friend TJet tanh<> ( TJet<T> const& );
   friend TJet erfc<> ( TJet<T> const& );
 
-  friend TJet<std::complex<double> > erf    ( const TJet<std::complex<double> >& );
-  friend TJet<double > erf    ( const TJet<double >& );
-  friend TJet<std::complex<double> > w ( const TJet<std::complex<double> >& );
+  friend TJet<std::complex<double> > erf ( TJet<std::complex<double> > const& );
+  friend TJet<double >               erf ( TJet<double >               const& );
+  friend TJet<std::complex<double> >   w ( TJet<std::complex<double> > const& );
 
+  friend double sobolev_norm<> ( TJet<T> const& );
 
   // Utility arithmetic functions ...
 
