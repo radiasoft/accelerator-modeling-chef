@@ -672,7 +672,7 @@ void TJL<T>::writeToFile( std::ofstream& outStr ) const
    outStr << "Index:  ";
 
    for( int i=0; i < myEnv_->numVar(); ++i ) {
-     outStr <<  myEnv_->exponents(p->offset_)(i)  << "  ";
+     outStr <<  myEnv_->exponents(p->offset_)[i]  << "  ";
    }
    outStr << std::endl;
    }
@@ -974,9 +974,9 @@ T TJL<T>::operator()( Vector const& x ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
-double TJL<T>::maxAbs( ) const {
+double TJL<T>::maxAbs( ) const 
+{
 
  double maxabs = 0;
 
@@ -987,6 +987,7 @@ double TJL<T>::maxAbs( ) const {
  return maxabs;
 
 }
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1242,16 +1243,17 @@ bool operator!=(  T const& x, TJL<T> const& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJL<T>& TJL<T>::operator=( const T& x ) 
+TJL<T>& TJL<T>::operator=( T const& x ) 
 {
  
  if( !myEnv_ ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "TJL<T>& TJL<T>::operator=( const T& x ) {", 
-     "Private data myEnv_ is null: object has no environment assigned.") );
+     "TJL<T>& TJL<T>::operator=( T const& x ) {", 
+     "RHS has no environment assigned.") );
  }
 
  clear();
+
  appendLinearTerms( myEnv_->numVar() ); 
  setStandardPart(x);
 
@@ -1270,34 +1272,85 @@ TJL<T>& TJL<T>::operator=( const TJL<T>& x )  {
  if( this == &x ) return *this;
 
  TJLterm<T>* old_jltermStore = 0;
-
  clear(); 
 
- // fast copy 
 
- if ( jltermStoreCapacity_ < x.jltermStoreCapacity_ )  {
-   old_jltermStore = jltermStore_;
-      jltermStore_ = jltermStoreCurrentPtr_ =  TJLterm<T>::array_allocate(x.jltermStoreCapacity_);
-      jltermStoreCapacity_ = x.jltermStoreCapacity_;
- };
+ if ( myEnv_ == x.myEnv_ )  // LHS and RHS env are identical. Perform a fast copy and return.
+ { 
+  
+     if ( jltermStoreCapacity_ < x.jltermStoreCapacity_ )  {
+          old_jltermStore = jltermStore_;
+          jltermStore_ = jltermStoreCurrentPtr_ =  TJLterm<T>::array_allocate(x.jltermStoreCapacity_);
+          jltermStoreCapacity_ = x.jltermStoreCapacity_;
+     };
+      memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
+     jltermStoreCurrentPtr_ = jltermStore_ + (x.jltermStoreCurrentPtr_-x.jltermStore_);
 
- 
- memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
- jltermStoreCurrentPtr_ = jltermStore_ + (x.jltermStoreCurrentPtr_-x.jltermStore_);
+     if (old_jltermStore) { TJLterm<T>::array_deallocate( old_jltermStore ); }
 
- 
- if (old_jltermStore) {
-    TJLterm<T>::array_deallocate( old_jltermStore );
+     count_   = x.count_;    
+     weight_  = x.weight_;
+     accuWgt_ = x.accuWgt_;
+     return *this;
  }
 
+ if ( myEnv_->numVar() !=  x.myEnv_->numVar() ) {  // **** No of variables is not the same ! No conversion possible. 
+     throw( GenericException( __FILE__, __LINE__, 
+     "TJL<T>& TJL<T>::operator=( TJL<T> const& rhs)", 
+     "Environments do not have the same no of variables. Conversion is impossible.)" ));
+ } 
 
- count_   = x.count_;    
- weight_  = x.weight_;
- accuWgt_ = x.accuWgt_;
- myEnv_   = x.myEnv_;
+ bool shifting_required = false;
 
- return *this;
+ std::vector<T> refshift;
+
+   for ( int i=0; i< myEnv_->numVar() ; ++i) {
+     refshift.push_back(  myEnv_->refPoint()[i] - x.myEnv_->refPoint()[i] );
+     if ( refshift.back() != T() ) shifting_required = true;
+   }  
+
+  if ( shifting_required ) {
+     throw( GenericException( __FILE__, __LINE__, 
+     "TJL<T>& TJL<T>::operator=( TJL<T> const& rhs)", 
+     "Environments do not have the same reference point. Shifting is not supported at this time.)" ));
+  } 
+
+
+  //------------------------------------------------------------------
+  // If we get here, the two env are different but compatible.
+  // Copy rhs terms, but drop orders higher than the maxweight in lhs.
+  //------------------------------------------------------------------
+
+
+  TJLterm<T>* p = jltermStore_;
+
+  int const lhsmaxweight = myEnv_->maxWeight();
+
+  if ( jltermStoreCapacity_ < x.jltermStoreCapacity_ )  {
+          old_jltermStore = jltermStore_;
+          jltermStore_ = jltermStoreCurrentPtr_ =  TJLterm<T>::array_allocate(x.jltermStoreCapacity_);
+          jltermStoreCapacity_ = x.jltermStoreCapacity_;
+  };
+
+  count_ = 0; 
+  for ( TJLterm<T> const* px = x.jltermStore_; 
+                          px < x.jltermStoreCurrentPtr_; ++px, ++p) {
+      
+        if  ( ( x.myEnv_->weight(px->offset_) ) >  lhsmaxweight ) continue; 
+        if  ( ( x.myEnv_->weight(px->offset_) ) <  2            ) ++count_; 
+        
+        *p = *px; 
+
+  }
+
+  if (old_jltermStore) { TJLterm<T>::array_deallocate( old_jltermStore ); }
+
+  weight_  = lhsmaxweight;
+  accuWgt_ = std::min( x.accuWgt_, lhsmaxweight);
+  return   *this;
+
 }
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2138,13 +2191,13 @@ JLPtr<T> TJL<T>::D( IntArray const& n ) const
    // -- Reset the _index.
 
    for( int i=0; i< myEnv_->numVar(); ++i) 
-     doit = doit && ( ( exponents(i) -= n[i] ) >= 0 );
+     doit = doit && ( ( exponents[i] -= n[i] ) >= 0 );
  
    if( doit ) {
      // -- Build factorial multiplier.
      f = 1;
      for( int k = 0; k < myEnv_->numVar(); ++k ) {
-       j = exponents(k);
+       j = exponents[k];
        for( int i = 0; i < n[k]; i++ ) f *= ++j;
      }
      if( f <= 0 ) {

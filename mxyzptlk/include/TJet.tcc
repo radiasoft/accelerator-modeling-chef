@@ -132,60 +132,17 @@ TJet<T>::TJet( TJet<T> const& arg,  EnvPtr<T> const&  env)
 {
    //-------------------------------------------------------------
    // Conversion between two jets with different environments
-   // i.e. different number of variables, orders and/or reference
-   // points. 
+   // Number of variables must be the same, but maximum order and/or 
+   // reference points may be different.
    //--------------------------------------------------------------
 
    if ( arg.Env() == env ) { jl_ = arg.jl_; return; } 
 
    jl_ = tjl_t::makeTJL( env );
-
-   const int numvar = std::min( env->numVar(), arg.Env()->numVar() );
-
-   std::vector<T> refshift( arg.Env()->numVar(), T() ); 
-
+ 
+   jl_ = arg.jl_; // performs conversion if needed
    
-   bool shift_required = false;
-
-   for ( int i=0; i< numvar; ++i) {
-
-     refshift[i] = (  env->refPoint()[i] - arg.Env()->refPoint()[i] );
-
-     if ( refshift[i] != T() ) shift_required = true;
-
-   }  
-
-
-   for ( typename TJet<T>::const_iterator it  = arg.begin();  
-                                          it != arg.end();  ++it ) 
-   {
-
-     IntArray argexp( it->exponents( arg.Env() ) ); 
-     IntArray exp(jl_->getEnv()->numVar() );    
-
-     if ( argexp.Dim() == exp.Dim() ) { exp = argexp; }
-
-     std::copy( argexp.begin(), argexp.begin() + std::min(exp.Dim(),argexp.Dim()), exp.begin() );
-     
-     jl_->addTerm( TJLterm<T>( exp, it->value_, jl_->getEnv() ) );
-
-   }
-
-
-   if (!shift_required) return;
-
-
-   // -----------------------
-   // shift reference point 
-   //------------------------
-   
-   // ... this is not implemented yet !!!!  
-   if (shift_required) 
-
-    std::cout << "****WARNING****  TJet<T>::TJet( TJet<T> const& arg,  EnvPtr<T> const&  env) "                      << std::endl;    
-    std::cout << "****WARNING****  Attempt to initialize a Jet from another one with a different reference point ! " << std::endl;  
-    std::cout << "****WARNING****  This feature is not implemented yet. Proceeding, nontheless. "                    << std::endl;  
-
+   return;
 }
 
 
@@ -311,7 +268,6 @@ TJet<T>& TJet<T>::operator=( TJet const& x )
   if (&x == this) return *this;
   
   jl_ = x.jl_;
-
   return *this;
 
 }
@@ -319,7 +275,6 @@ TJet<T>& TJet<T>::operator=( TJet const& x )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 TJet<T>& TJet<T>::operator=( T const& x ) 
@@ -333,14 +288,12 @@ TJet<T>& TJet<T>::operator=( T const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 void TJet<T>::addTerm( TJLterm<T> const& a) 
 {
   if (jl_.count() > 1 ) jl_ = jl_->clone();
   jl_->addTerm( TJLterm<T>(a) );
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -356,7 +309,6 @@ T TJet<T>::getTermCoefficient(IntArray const& exp) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 void TJet<T>::setTermCoefficient(T const& value, IntArray const& exp) 
 {
@@ -366,6 +318,28 @@ void TJet<T>::setTermCoefficient(T const& value, IntArray const& exp)
 
 } 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0 
+template<typename T>
+T operator[ IntArray const& ] const
+{  
+  return jl_->getTermCoefficient(exp);
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+T&      operator[]( IntArray const& exp)
+{
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  return jl_->setTermCoefficient( exp );
+
+}   
+
+#endif
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1342,3 +1316,13 @@ TJet<T> TJet<T>::D( IntArray const& n ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+double sobolev_norm ( TJet<T> const& arg) 
+{
+  return arg.jl_->maxAbs();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
