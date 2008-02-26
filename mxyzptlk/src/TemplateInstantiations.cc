@@ -334,6 +334,13 @@ TJetVector<double > operator^<double >(Vector const&, TJetVector<double > const&
 template 
 TJet<double> operator^( TJet<double> const&, TJet<double> const& );
 
+template
+double sobolev_norm<double>(TJet<double> const&);
+
+template
+double sobolev_norm<std::complex<double> >(TJet<std::complex<double> > const&);
+
+
 // ** stream operators
 // ----------------------
 template 
@@ -399,6 +406,7 @@ class std::deque<Tparam<double>* >;
 
 template
 class std::deque<Tparam<std::complex<double> >* >;
+
 
 #endif // MXYZPTLK_EXPLICIT_TEMPLATES 
 
