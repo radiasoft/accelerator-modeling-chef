@@ -66,6 +66,7 @@
 #include <basic_toolkit/IntArray.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/TMatrix.h>
+#include <stack>
 #include <deque>
 #include <list>
 #include <ostream>
@@ -257,6 +258,10 @@ struct ScratchArea {
    static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
    static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
 
+   static void       pushEnv( EnvPtr<T> const& );
+   static EnvPtr<T>  topEnv ();
+   static void       popEnv();
+
   
    // debugging 
 
@@ -297,6 +302,8 @@ struct ScratchArea {
   static std::deque<Tparam<T>*>&        parameters_;     // used only during new environment creation
   static std::list<ScratchArea<T>* >&   scratch_areas_;  // list of existing scratch areas 
   static std::list<EnvPtr<T> >&         environments_;   // list of existing environments
+  static std::stack<EnvPtr<T> >         envstack_;       // env stack 
+
                                                                // Note: there is a list for every typename parameter T
   static int   tmp_maxWeight_; // used by Begin/EndEnvironment() 
 

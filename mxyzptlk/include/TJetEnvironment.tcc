@@ -119,6 +119,9 @@ template<typename T>
 EnvPtr<T>                                     TJetEnvironment<T>::lastEnv_; // defaults to a null pointer
 
 template<typename T> 
+std::stack<EnvPtr<T> > TJetEnvironment<T>::envstack_;
+
+template<typename T> 
 std::list<EnvPtr<T> >&                        TJetEnvironment<T>::environments_ 
                = *( new std::list<EnvPtr<T> >() );
 
@@ -396,6 +399,33 @@ TJetEnvironment<T>::TJetEnvironment(int maxweight, int numvar, int spacedim, T* 
 }
  
 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void   TJetEnvironment<T>::pushEnv( EnvPtr<T> const& env)
+{
+  envstack_.push(env);
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJetEnvironment<T>::popEnv()
+{
+  envstack_.pop();
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+EnvPtr<T> TJetEnvironment<T>::topEnv()
+{
+  return envstack_.top();
+}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
