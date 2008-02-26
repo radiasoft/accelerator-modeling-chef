@@ -58,30 +58,10 @@ class DLLEXPORT JLPtr: public boost::intrusive_ptr<TJL<T> >
   explicit JLPtr(TJL<T>* p, bool add_ref=true):     boost::intrusive_ptr<TJL<T> >(p,add_ref) {}
 
   template<class OtherType> 
-  JLPtr (  OtherType const & r):                    boost::intrusive_ptr<OtherType>(r) {} 
+  JLPtr (  JLPtr<OtherType> const & r):                    boost::intrusive_ptr<TJL<T> >(r) {} 
 
   int count()  const                                { return this->get()->count(); }
 };
-
-//------------------------------------------------
-// class ConstJLPtr  
-//------------------------------------------------
-
-template<typename T>
-class DLLEXPORT ConstJLPtr: public boost::intrusive_ptr<TJL<T> const>
-{
-
- public:
-
-  ConstJLPtr():                                             boost::intrusive_ptr<TJL<T> const>() {}
-  explicit ConstJLPtr(TJL<T> const* p, bool add_ref=true):  boost::intrusive_ptr<TJL<T> const>(p,add_ref) {}
-
-  template<class OtherType> 
-  ConstJLPtr (  OtherType const & r):                       boost::intrusive_ptr<OtherType>(r) {} 
-
-  int count() const                                         { return this->get()->count(); }
-};
-
 
 
 //------------------------------------------------
@@ -98,30 +78,9 @@ class DLLEXPORT JL1Ptr: public boost::intrusive_ptr<TJL1<T> >
   explicit JL1Ptr(TJL1<T>* p, bool add_ref=true):    boost::intrusive_ptr<TJL1<T> >(p,add_ref) {}
 
   template<class OtherType> 
-  JL1Ptr ( OtherType const & r):                     boost::intrusive_ptr<OtherType>(r) {} 
+  JL1Ptr ( JL1Ptr<OtherType> const & r):             boost::intrusive_ptr<TJL1<T> >(r) {} 
 
   int count() const                                 { return this->get()->count(); }
-
-};
-
-//------------------------------------------------
-// class JL1Ptr  
-//------------------------------------------------
-
-template<typename T>
-class DLLEXPORT ConstJL1Ptr: public boost::intrusive_ptr<TJL1<T> const>
-{
-
- public:
-
-  ConstJL1Ptr():                                              boost::intrusive_ptr<TJL1<T> const>() {}
-  explicit ConstJL1Ptr(TJL1<T> const* p, bool add_ref=true):  boost::intrusive_ptr<TJL1<T> const>(p,add_ref) {}
-
-  template<class OtherType> 
-  ConstJL1Ptr ( OtherType const & r):                         boost::intrusive_ptr<OtherType>(r) {} 
-
-  int count() const                                           { return this->get()->count(); }
-
 
 };
 
