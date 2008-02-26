@@ -160,7 +160,7 @@ TJL1<T>::TJL1( IntArray const& e, const T& x, EnvPtr<T> const& pje ) :
   }
 
   for (int i=0; i<count_-1; ++i) {
-     if ( e(i) == 1){ 
+     if ( e[i] == 1){ 
        jcb_[i] = x;  
        break;
      }
@@ -218,7 +218,7 @@ JL1Ptr<T> TJL1<T>::makeTJL( const IntArray& e, const T& x, EnvPtr<T> const& pje 
   }
  
   for (int i=0; i < p->count_-1; ++i) {
-     if ( e(i) == 1){ 
+     if ( e[i] == 1){ 
        p->jcb_[i] = x;  
        break;
      }
@@ -576,7 +576,7 @@ TJLterm<T> TJL1<T>::lowTerm() const
  for (int i=0; i< count_-1; ++i ) {
   
   if ( jcb_[i] != T() ) { 
-     index(i) = 1; 
+     index[i] = 1; 
      return TJLterm<T>( index, jcb_[i], this->myEnv_ ); // all terms are zero 
    }
  }
@@ -819,11 +819,11 @@ JL1Ptr<T> TJL1<T>::filter( bool (*f) ( IntArray const&, const T& ) ) const
  if( f( index, terms_[0] ) ) { z->terms_[0] = terms_[0]; }
 
  for( int i=0; i<count_-1; ++i) {
-  index(i) = 1;
+  index[i] = 1;
   if( f( index, terms_[0] ) ) { 
     z->jcb_[i] = jcb_[i];
   }
-  index(i) = 0;
+  index[i] = 0;
  }
 
  return z;
@@ -1172,13 +1172,13 @@ void TJL1<T>::printCoeffs() const {
   
   if( weight_ > accuWgt_ ) break;
  
-  index(i) = 1; 
+  index[i] = 1; 
   (*pcout) << "Index:  " 
         << index
         << "   Value: "
         << jcb_[i]
         << std::endl;
-  index(i) = 0; 
+  index[i] = 0; 
   }
   (*pcout) << "\n" << std::endl;
 }
@@ -1197,7 +1197,7 @@ TJLterm<U>  TJL1<T>::iter_<U>::dereference() const
    if ( m_node == terms_ ) return TJLterm<T>(exponents, terms_[0] );    
 
    int idx = (m_node - terms_) - 1 ;
-   exponents(idx) = 1;  
+   exponents[idx] = 1;  
 
    return TJLterm<T>(exponents, jcb_[idx] );
 
@@ -1378,9 +1378,9 @@ std::ostream& operator<<( std::ostream& os, const TJL1<T>& x )
  os << "Index: " << index << "   Value: " << x.terms_[0] << std::endl;  
 
  for (int i=0; i < x.count_-1;  ++i) {
-   index(i) = 1;
+   index[i] = 1;
    os << "Index: " << index <<"   Value: " << x.jcb_[i] << std::endl;  
-   index(i) = 0;
+   index[i] = 0;
  }
 
  return os << "\n" << std::endl;
@@ -1422,7 +1422,7 @@ std::istream& operator>>( std::istream& is,  TJL1<T>& x )
   for( j = 0; j < count; ++j) {
     is >> buf;
     for( i = 0; i < x.getEnv()->numVar(); ++i )  {
-     is >> ndx(i);
+     is >> ndx[i];
     }
     is >> buf;
     is >> value;
