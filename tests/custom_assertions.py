@@ -43,18 +43,24 @@ def assertMapAlmostEqual(testcase,expected,found,accuracy):
 def assertPropagatedParticleAlmostEqual(testcase,initial,final,cdt_offset,
                                         accuracy):
         testcase.assertAlmostEqual(initial.get_x(),final.get_x(),accuracy,
-                               "different inital and final x")
+                               "different initial (%g) and final (%g) x" %\
+                               (initial.get_x(),final.get_x()))
         testcase.assertAlmostEqual(initial.get_npx(),final.get_npx(),accuracy,
-                               "different inital and final npx")
+                               "different initial (%g) and final (%g) npx" %\
+                                (initial.get_npx(),final.get_npx()))
         testcase.assertAlmostEqual(initial.get_y(),final.get_y(),accuracy,
-                               "different inital and final y")
+                               "different initial (%g) and final (%g) y" %\
+                               (initial.get_y(),final.get_y()))
         testcase.assertAlmostEqual(initial.get_npy(),final.get_npy(),accuracy,
-                               "different inital and final npy")
+                               "different initial (%g) and final (%g) npy" %\
+                                (initial.get_npy(),final.get_npy()))
         testcase.assertAlmostEqual(initial.get_cdt() + cdt_offset,
                                final.get_cdt(),accuracy,
-                               "different expected and final cdt")
+                               "different expected (%g) and final (%g) cdt" %\
+                               (initial.get_cdt() + cdt_offset, final.get_cdt()))
         testcase.assertAlmostEqual(initial.get_ndp(),final.get_ndp(),accuracy,
-                               "different inital and final ndp")
+                               "different initial (%g) and final (%g) ndp" %\
+                               (initial.get_ndp(),final.get_ndp()))
 
 verbose_array = 1
 def assertArrayAlmostEqual(testcase,expected,found,accuracy):
