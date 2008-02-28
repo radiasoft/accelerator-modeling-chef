@@ -54,9 +54,7 @@ public:
 
   void  operator()( octupole& elm,             Particle& p);
   void  operator()( octupole& elm,          JetParticle& p);
-  void  operator()( octupole& elm,        ParticleBunch& p);
-  void  operator()( octupole& elm,     JetParticleBunch& p);
-
+ 
  private:
 
   int n_; // number of thin kicks 
@@ -73,8 +71,6 @@ public:
 
   void  operator()( thinOctupole& elm,             Particle& p);
   void  operator()( thinOctupole& elm,          JetParticle& p);
-  void  operator()( thinOctupole& elm,        ParticleBunch& p);
-  void  operator()( thinOctupole& elm,     JetParticleBunch& p);
 
 };
 
