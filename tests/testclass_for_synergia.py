@@ -3,6 +3,7 @@
 import os
 import unittest
 import shelve
+import dumbdbm
 import apron
 from custom_assertions import *
 
@@ -18,7 +19,7 @@ class Testclass_for_synergia(unittest.TestCase):
         self.apron = apron.Apron(mad_file_name,self.line_name,
                                  self.kinetic_energy,self.order,self.particle)
         data_file_name = os.path.join(tests_dir,self.data_file_name)
-        self.answers = shelve.open(data_file_name)
+        self.answers = shelve.Shelf(dumbdbm.open(data_file_name))
 
     def tearDown(self):
         self.answers.close()
@@ -79,6 +80,7 @@ class Testclass_for_synergia(unittest.TestCase):
         self.apron.insert_space_charge_markers(self.space_charge_markers)
         maps = []
         maps = self.apron.get_maps()
+        
         if write_answers:
             self.answers['sc maps'] = maps
         expected = self.answers['sc maps']

@@ -15,7 +15,7 @@ class Test_channel(Testclass_for_synergia):
         self.kinetic_energy = 0.067
         self.order = 7
         self.particle = 'proton'
-        self.data_file_name = 'channel_answers.dat'
+        self.data_file_name = 'expected_results/channel_answers'
         self.accuracy_markers = 10
         self.space_charge_markers = 20
         Testclass_for_synergia.__init__(self,arg)
@@ -30,7 +30,7 @@ class Test_booster(Testclass_for_synergia):
         self.kinetic_energy = 0.4
         self.order = 2
         self.particle = 'proton'
-        self.data_file_name = 'booster_answers.dat'
+        self.data_file_name = 'expected_results/booster_answers'
         self.accuracy_markers = 10
         self.space_charge_markers = 100
         Testclass_for_synergia.__init__(self,arg)
@@ -42,7 +42,7 @@ class Test_damping_ring(Testclass_for_synergia):
         self.kinetic_energy = 5.066 - 0.5*0.511e-3
         self.order = 1
         self.particle = 'positron'
-        self.data_file_name = 'damping_ring_answers.dat'
+        self.data_file_name = 'expected_results/damping_ring_answers'
         self.accuracy_markers = 2
         self.space_charge_markers = 200
         Testclass_for_synergia.__init__(self,arg)
