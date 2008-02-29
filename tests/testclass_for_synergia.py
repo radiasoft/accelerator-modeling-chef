@@ -12,6 +12,7 @@ from local_paths import tests_dir
 write_answers = 0
 accuracy = 7
 
+# mimic common use cases in synergia
 class Testclass_for_synergia(unittest.TestCase):
     
     def setUp(self):
