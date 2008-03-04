@@ -252,6 +252,7 @@ fi
 AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
 AC_CHECK_HEADER(shared_ptr.hpp,,[
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
+        BOOST_INC="-I"$BOOST_INC
         AC_SUBST(BOOST_INC)
         AC_MSG_RESULT([Location specified: ${BOOST_INC}])
 else
