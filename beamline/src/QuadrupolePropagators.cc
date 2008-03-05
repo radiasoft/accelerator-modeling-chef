@@ -85,6 +85,81 @@ void propagate( thinQuad& elm, Particle_t& p )
 
 }
 
+
+#if 0
+template<typename Particle_t>
+void mad_propagate( quadrupole& elm, Particle_t& p )
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t& state = p.State();
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  double const length = elm.Length();
+
+  Component_t q0divp0 = 1.0 + p.get_ndp(); 
+  Component_t K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
+  Component_t Beta    = p.Beta();   
+  Component_t Gamma   = p.Gamma();
+
+  Component_t kxsqr =  K1;
+  Component_t kysqr = -K1;
+
+  Component_t factor = ( elm.Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+
+  Component_t arg = factor * elm.Length();
+
+  Component_t cn_x, sn_x, cn_y, sn_y;
+  
+  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
+      cn_x = cos( arg );
+      sn_x = sin( arg )/factor;
+      cn_y = cosh( arg );
+      sn_y = sinh( arg )/factor;
+   } else {                                 // Defocussing horizontally
+      cn_x = cosh( arg );
+      sn_x = sinh( arg )/factor;
+      cn_y = cos( arg );
+      sn_y = sin( arg )/factor;
+   } 
+  
+    Component_t T200 =   ( length - sn_x * cn_x );
+    Component_t T203 = - ( sn_x * sn_x          );
+    Component_t T233 =   ( length + sn_x * cn_x );
+    Component_t T211 = - ( length - sn_y * cn_y );
+    Component_t T214 =   ( sn_y * sn_y          );        
+    Component_t T244 =   ( length + sn_y * cn_y );
+  
+    State_t instate =  state; 
+
+    instate[i_npx] /= q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
+    instate[i_npy] /= q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
+
+ 
+    state[i_x  ] =          cn_x * instate[i_x] +  sn_x * instate[i_npx];
+    state[i_npx] = -kxsqr * sn_x * instate[i_x] +  cn_x * instate[i_npx];
+    state[i_y  ] =          cn_y * instate[i_y] +  sn_y * instate[i_npy];
+    state[i_npy] = -kysqr * sn_y * instate[i_y] +  cn_y * instate[i_npy];
+
+    state[i_npx] *= q0divp0;          
+    state[i_npy] *= q0divp0;          
+    
+  // second order correction for the path length (as per MAD manual )
+
+    Component_t Dist = length + ( 
+	      ( T200 * instate[i_x  ] + 2.0 * T203 * instate[i_npx] ) * K1 * instate[i_x]
+	    +   T233 * instate[i_npx] * instate[i_npx]
+	    + ( T211 * instate[i_y  ] + 2.0 * T214 * instate[i_npy] ) * K1 * instate[i_y]
+	    +   T244 * instate[i_npy] * instate[i_npy] )/4.0;
+  
+    state[i_cdt] +=  Dist/Beta - elm.getReferenceTime();
+
+  }
+#endif
+
+
 //----------------------------------------------------------------------------------
 // Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
 //----------------------------------------------------------------------------------
@@ -219,77 +294,5 @@ void thinQuad::Propagator::operator()( thinQuad& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 namespace {
-
-template<typename Particle_t>
-void mad_propagate( thinQuad& elm, Particle_t p ) 
-{
-
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
-
-  State_t& state = p.State();
-
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  double const length = elm.Length();
-
-  Component_t q0divp0 = 1.0 + p.get_ndp(); 
-  Component_t K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
-  Component_t Beta    = p.Beta();   
-  Component_t Gamma   = p.Gamma();
-
-  Component_t kxsqr =  K1;
-  Component_t kysqr = -K1;
-
-  Component_t factor = ( elm.Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
-
-  Component_t arg = factor * elm.Length();
-
-  Component_t cn_x, sn_x, cn_y, sn_y;
-  
-  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
-      cn_x = cos( arg );
-      sn_x = sin( arg )/factor;
-      cn_y = cosh( arg );
-      sn_y = sinh( arg )/factor;
-   } else {                                 // Defocussing horizontally
-      cn_x = cosh( arg );
-      sn_x = sinh( arg )/factor;
-      cn_y = cos( arg );
-      sn_y = sin( arg )/factor;
-   } 
-  
-    Component_t T200 =   ( length - sn_x * cn_x );
-    Component_t T203 = - ( sn_x * sn_x          );
-    Component_t T233 =   ( length + sn_x * cn_x );
-    Component_t T211 = - ( length - sn_y * cn_y );
-    Component_t T214 =   ( sn_y * sn_y          );        
-    Component_t T244 =   ( length + sn_y * cn_y );
-  
-    State_t instate =  state; 
-
-    instate[i_npx] /= q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
-    instate[i_npy] /= q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
-
- 
-    state[i_x  ] =          cn_x * instate[i_x] +  sn_x * instate[i_npx];
-    state[i_npx] = -kxsqr * sn_x * instate[i_x] +  cn_x * instate[i_npx];
-    state[i_y  ] =          cn_y * instate[i_y] +  sn_y * instate[i_npy];
-    state[i_npy] = -kysqr * sn_y * instate[i_y] +  cn_y * instate[i_npy];
-
-    state[i_npx] *= q0divp0;          
-    state[i_npy] *= q0divp0;          
-    
-  // second order correction for the path length (as per MAD manual )
-
-    Component_t Dist = length + ( 
-	      ( T200 * instate[i_x  ] + 2.0 * T203 * instate[i_npx] ) * K1 * instate[i_x]
-	    +   T233 * instate[i_npx] * instate[i_npx]
-	    + ( T211 * instate[i_y  ] + 2.0 * T214 * instate[i_npy] ) * K1 * instate[i_y]
-	    +   T244 * instate[i_npy] * instate[i_npy] )/4.0;
-  
-    state[i_cdt] +=  Dist/Beta - elm.getReferenceTime();
-
-  }
 } // anonymous namespace
 

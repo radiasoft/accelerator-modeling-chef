@@ -69,6 +69,44 @@ void propagate( sbend& elm, Particle_t&     p )
   state[i_cdt] -= elm.getReferenceTime();   
 }
 
+
+template <typename Particle_t>
+void mad_propagate( sbend& elm, Particle_t& p)
+{
+
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t&     state    = p.State();
+
+  Component_t rho   = p.BRho()/ elm.Strength();
+
+  double const length = elm.Length();
+  double const angle  = elm.getBendAngle();
+ 
+  Component_t m00 =  cos(angle);
+  Component_t m03 =  sin(angle)*rho;
+  Component_t m05 =  rho*(1.0 - cos(angle))/p.Beta();
+  Component_t m14 =  length;
+  Component_t m20 = -sin(angle)/p.Beta();
+  Component_t m23 = -m05;
+  Component_t m25 =  length/p.Beta()/p.Gamma()/p.Gamma() - ( length - sin(angle)*rho )/p.Beta();
+  Component_t m30 = -sin(angle)/rho;
+  Component_t m33 =  m00;
+  Component_t m35 = -m20;
+
+  // bend  
+
+  State_t instate  = state;
+   
+  state[i_x  ] = m00*instate[i_x  ] + m03*instate[i_npx] +  m05*instate[i_ndp];  
+  state[i_y  ] = m14*instate[i_npy];
+  state[i_cdt] = m20*instate[i_x  ] + m23*instate[i_npx] +  m25*instate[i_ndp];
+  state[i_npx] = m30*instate[i_x  ] + m33*instate[i_npx] +  m35*instate[i_ndp];
+ 
+}
+
+
 //----------------------------------------------------------------------------------
 // Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
 //----------------------------------------------------------------------------------
@@ -77,6 +115,8 @@ void propagate( sbend& elm, Particle_t&     p )
 
 template void propagate(     sbend& elm,    Particle& p );
 template void propagate(     sbend& elm, JetParticle& p );
+template void mad_propagate( sbend& elm,    Particle& p );
+template void mad_propagate( sbend& elm, JetParticle& p );
 
 #endif
 
@@ -130,45 +170,3 @@ void sbend::Propagator::operator()( sbend& elm, JetParticle& p)
   ::propagate( elm, p);
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-namespace {
-
-template <typename Particle_t>
-void mad_propagate( sbend& elm, Particle_t& p)
-{
-
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
-
-  State_t&     state    = p.State();
-
-  Component_t rho   = p.BRho()/ elm.Strength();
-
-  double const length = elm.Length();
-  double const angle  = elm.getBendAngle();
- 
-  Component_t m00 =  cos(angle);
-  Component_t m03 =  sin(angle)*rho;
-  Component_t m05 =  rho*(1.0 - cos(angle))/p.Beta();
-  Component_t m14 =  length;
-  Component_t m20 = -sin(angle)/p.Beta();
-  Component_t m23 = -m05;
-  Component_t m25 =  length/p.Beta()/p.Gamma()/p.Gamma() - ( length - sin(angle)*rho )/p.Beta();
-  Component_t m30 = -sin(angle)/rho;
-  Component_t m33 =  m00;
-  Component_t m35 = -m20;
-
-  // bend  
-
-  State_t instate  = state;
-   
-  state[i_x  ] = m00*instate[i_x  ] + m03*instate[i_npx] +  m05*instate[i_ndp];  
-  state[i_y  ] = m14*instate[i_npy];
-  state[i_cdt] = m20*instate[i_x  ] + m23*instate[i_npx] +  m25*instate[i_ndp];
-  state[i_npx] = m30*instate[i_x  ] + m33*instate[i_npx] +  m35*instate[i_ndp];
- 
-}
-
-} // namespace

@@ -47,19 +47,6 @@ using FNAL::pcout;
 //       excitation !
 //-----------------------------------------------------------------------------------
 
-namespace { 
- struct  LWakeOrder {
-
-  typedef  Particle const& first_argument_type;
-  typedef  Particle const& second_argument_type;
-  typedef  bool     result_type;
-
-  bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
-   { 
-     return  ( lhs.get_cdt() < rhs.get_cdt() );  
-   }
- };
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -70,7 +57,7 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LWakeOrder() );
+   bunch.sort( (LWakeOrder()) );
 
    cdt_min_     =    (bunch.begin()  )->get_cdt(); 
    cdt_max_     =    ( --bunch.end() )->get_cdt();  
@@ -87,7 +74,7 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int 
     dipole_ver_( nsamples, double()    )
 {
 
-   bunch.sort( LWakeOrder() );
+   bunch.sort( (LWakeOrder()) );
   
    cdt_min_     =    (bunch.begin())->get_cdt(); 
    cdt_max_     =    cdt_min_ + length;

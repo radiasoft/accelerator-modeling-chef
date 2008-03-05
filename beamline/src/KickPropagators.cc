@@ -141,6 +141,16 @@ void propagate( Element_t& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
+template void driftpropagate( double const& length, bmlnElmnt& elm, Particle& p );
+template void driftpropagate( double const& length, bmlnElmnt& elm, JetParticle& p );
+
+template void applyKick( kick& elm, Particle& p);
+template void applyKick( kick& elm, JetParticle& p);
+template void applyKick( hkick& elm, Particle& p);
+template void applyKick( hkick& elm, JetParticle& p);
+template void applyKick( vkick& elm, Particle& p);
+template void applyKick( vkick& elm, JetParticle& p);
+
 template void propagate( kick& elm,    Particle& p );
 template void propagate( kick& elm, JetParticle& p );
 template void propagate( hkick& elm,    Particle& p );
