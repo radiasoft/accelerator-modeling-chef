@@ -184,12 +184,29 @@ void propagate( Element_t& elm, JetParticleBunch& b )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
+template void driftpropagate( double const& length, bmlnElmnt& elm, Particle& p );
+template void driftpropagate( double const& length, bmlnElmnt& elm, JetParticle& p );
+
 template void propagate( monitor& elm,    Particle& p );
 template void propagate( monitor& elm, JetParticle& p );
 template void propagate( hmonitor& elm,    Particle& p );
 template void propagate( hmonitor& elm, JetParticle& p );
 template void propagate( vmonitor& elm,    Particle& p );
 template void propagate( vmonitor& elm, JetParticle& p );
+
+template void propagate( monitor& elm, ParticleBunch& b );
+template void propagate( monitor& elm, JetParticleBunch& b );
+template void propagate( hmonitor& elm, ParticleBunch& b );
+template void propagate( hmonitor& elm, JetParticleBunch& b );
+template void propagate( vmonitor& elm, ParticleBunch& b );
+template void propagate( vmonitor& elm, JetParticleBunch& b );
+
+template double setMonitorState( monitor& elm,  Particle& p );
+template double setMonitorState( monitor& elm,  JetParticle& p );
+template double setMonitorState( hmonitor& elm,  Particle& p );
+template double setMonitorState( hmonitor& elm,  JetParticle& p );
+template double setMonitorState( vmonitor& elm,  Particle& p );
+template double setMonitorState( vmonitor& elm,  JetParticle& p );
 
 #endif
 

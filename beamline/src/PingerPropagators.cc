@@ -86,10 +86,10 @@ void propagate_bunch( Pinger& elm, TBunch<Particle_t>& b )
 
 template void propagate(     Pinger& elm,    Particle& p );
 template void propagate(     Pinger& elm, JetParticle& p );
+template void propagate_bunch( Pinger& elm, TBunch<Particle>& b );
+template void propagate_bunch( Pinger& elm, TBunch<JetParticle>& b );
 
 #endif
-
-
 
 } // namespace
 

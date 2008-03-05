@@ -29,13 +29,25 @@
 #ifndef BUNCHPROJECTOR_H
 #define BUNCHPROJECTOR_H
 
+#include <beamline/Particle.h>
 #include <vector>
 
 template <typename Particle_t> 
 class TBunch;
 
-class Particle;
 typedef TBunch<Particle> ParticleBunch;
+
+struct  LWakeOrder {
+  typedef  Particle const& first_argument_type;
+  typedef  Particle const& second_argument_type;
+  typedef  bool     result_type;
+
+  bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
+   { 
+     return  ( lhs.get_cdt() < rhs.get_cdt() );  
+   }
+};
+
 
 class BunchProjector {
 
