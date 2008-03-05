@@ -66,8 +66,8 @@ libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la \
     ../../parsers/xsif/src/libxsifparser.la \
-    -lboost_regex
-
+    $(BOOST_REGEX_LINK)
+    
 libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
