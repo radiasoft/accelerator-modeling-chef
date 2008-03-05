@@ -289,12 +289,17 @@ else
 fi
 ])
 
-AC_ARG_VAR([BOOST_PYTHON_LINK],    [link option for BOOST Python lib, default -lboost_python-gcc])dnl
+AC_ARG_VAR([BOOST_PYTHON_LINK],    [link option for BOOST Python lib, default -lboost_python])dnl
 if test -z "${BOOST_PYTHON_LINK}" ; then
         BOOST_PYTHON_LINK='-lboost_python'
 fi
 AC_SUBST(BOOST_PYTHON_LINK)
 
+AC_ARG_VAR([BOOST_REGEX_LINK],    [link option for BOOST regex lib, default is to substitute regex for python in BOOST_PYTHON_LINK])dnl
+if test -z "${BOOST_REGEX_LINK}" ; then
+        BOOST_REGEX_LINK=`echo x$BOOST_PYTHON_LINK | sed 's/python/regex/' | sed 's/^x//'`
+fi
+AC_SUBST(BOOST_PYTHON_LINK)
 
 # Checks for library functions.
 AC_CHECK_FUNCS([pow sqrt strcasecmp strdup])
