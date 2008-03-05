@@ -85,6 +85,7 @@
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
 #include <beamline/Bend.h>
+#include <beamline/BunchProjector.h>
 
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <boost/shared_ptr.hpp>
@@ -140,6 +141,15 @@ template boost::shared_ptr<CF_sbend>         boost::static_pointer_cast<CF_sbend
 template boost::shared_ptr<rbend>            boost::static_pointer_cast<rbend,             bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<Bend>             boost::static_pointer_cast<Bend,              bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 
+
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+template void TBunch<Particle>::sort<LWakeOrder>( LWakeOrder );
+// TEMPORARILY REMOVED: template void TBunch<JetParticle>::sort<LWakeOrder>( LWakeOrder ); ??? FIX ME ???
+#endif
+//----------------------------------------------------------------------------------
 
 
 
@@ -203,7 +213,8 @@ template class boost::function1<double, double const&,      std::allocator<void>
   // we force instantiation of an anomymous function objects. In that case, this turns out to be easier that attempting to 
   // instantiatiate the right templates ...
    
-template class boost::random::mersenne_twister<unsigned int, 32, 624, 397, 31, 2567483615u, 11, 7, 2636928640u, 15, 4022730752u, 18, 3346425566u>;
+template class boost::random::mersenne_twister<unsigned int,  32, 624, 397, 31, 2567483615u,  11, 7, 2636928640u,  15, 4022730752u,  18, 3346425566u>;
+template class boost::random::mersenne_twister<unsigned long, 32, 624, 397, 31, 2567483615ul, 11, 7, 2636928640ul, 15, 4022730752ul, 18, 3346425566ul>;
 
 //typedef  boost::mt19937 rnd_mt19937;
 //template class boost::variate_generator<boost::mt19937&, boost::normal_distribution<> >;
