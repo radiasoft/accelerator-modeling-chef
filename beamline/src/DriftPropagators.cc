@@ -93,8 +93,10 @@ void mad_propagate( drift& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( drift& elm,    Particle& p );
-template void propagate( drift& elm, JetParticle& p );
+template void propagate(     drift& elm,    Particle& p );
+template void propagate(     drift& elm, JetParticle& p );
+template void mad_propagate( drift& elm,    Particle& p );
+template void mad_propagate( drift& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------

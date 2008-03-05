@@ -196,6 +196,9 @@ void propagate( Element_t& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
+template void driftpropagate( double const& length, bmlnElmnt& elm, Particle& p );
+template void driftpropagate( double const& length, bmlnElmnt& elm, JetParticle& p );
+
 template void propagate<LCavityUpstream, Particle, upstream>( LCavityUpstream& elm,    Particle& p );
 template void propagate<LCavityUpstream, JetParticle, upstream>( LCavityUpstream& elm, JetParticle& p );
 template void propagate<LCavityDnstream, Particle, downstream>( LCavityDnstream& elm,    Particle& p );
