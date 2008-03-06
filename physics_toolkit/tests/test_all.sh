@@ -51,7 +51,7 @@ foreach w ( `ls *.cc | sed -e "s/.cc//"` )
       echo "  "
       echo "================================"
       echo Running $w.sh
-      $w.sh
+      ./$w.sh
       set return_status = $status
       if( $return_status ) then
         echo "*** ERROR ***"
