@@ -248,6 +248,8 @@ template class boost::detail::sp_counted_impl_p<quadrupole>;
 template class boost::detail::sp_counted_impl_p<thinQuad>;
 template class boost::detail::sp_counted_impl_p<sextupole>;
 template class boost::detail::sp_counted_impl_p<thinSextupole>;
+template class boost::detail::sp_counted_impl_p<Solenoid>;
+template class boost::detail::sp_counted_impl_p<marker>;
 template class boost::detail::sp_counted_impl_p<octupole>;
 template class boost::detail::sp_counted_impl_p<thinOctupole>;
 template class boost::detail::sp_counted_impl_p<thinDecapole>;
