@@ -343,8 +343,8 @@ void monitor::localPropagate( JetParticleBunch& p)
 vmonitor::vmonitor() 
 : monitor() 
 {
-       propagator_ = PropagatorPtr(new Propagator() ); 
-       propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator() ); 
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -353,22 +353,25 @@ vmonitor::vmonitor()
 vmonitor::vmonitor( const char* n ) 
 : monitor( n )
 {
-       propagator_ = PropagatorPtr(new Propagator() ); 
-       propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator() ); 
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vmonitor::vmonitor( const char* n, double const& l ) 
- : monitor( n,l )
-{}
+: monitor( n,l )
+{
+  propagator_ = PropagatorPtr(new Propagator() ); 
+  propagator_->setup(*this);
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vmonitor::vmonitor( vmonitor const& x ) 
-  : monitor( x ), propagator_(x.propagator_->Clone() ) 
+: monitor( x ), propagator_(x.propagator_->Clone() ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -451,7 +454,7 @@ hmonitor::hmonitor( char const* n )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hmonitor::hmonitor( char const* n, double const& l ) 
-  : monitor( n, l )
+: monitor( n, l )
 {
   propagator_ = PropagatorPtr(new Propagator() ); 
   propagator_->setup(*this);
@@ -461,7 +464,7 @@ hmonitor::hmonitor( char const* n, double const& l )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hmonitor::hmonitor( hmonitor const& x ) 
-  : monitor( x ), propagator_(x.propagator_->Clone() ) 
+: monitor( x ), propagator_(x.propagator_->Clone() ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
