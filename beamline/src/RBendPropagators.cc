@@ -156,7 +156,7 @@ template void propagate(     rbend& elm, JetParticle& p );
 void rbend::Propagator::setup( rbend& arg) 
 {
   
-  BmlPtr bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
   bml = BmlPtr(new beamline("RBEND_PRIVATE") );
  
   double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(arg); 
