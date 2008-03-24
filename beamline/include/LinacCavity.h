@@ -28,9 +28,11 @@
 ******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
+******
 *************************************************************************
 *************************************************************************
 *************************************************************************/
+
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
 
@@ -66,7 +68,7 @@ public:
                double const& rfreq_hz,           // RF frequency [Hz]
                double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
                double const& syncphase_rad,      // synchronous phase [radians]
-               bool   wake_on=false  );                   
+               bool   wake_on=true  );                   
 
   LinacCavity( LinacCavity const& );
 
