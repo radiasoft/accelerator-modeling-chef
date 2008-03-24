@@ -146,18 +146,14 @@ template boost::shared_ptr<Bend>             boost::static_pointer_cast<Bend,   
 // Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-template void TBunch<Particle>::sort<LWakeOrder>( LWakeOrder );
-// TEMPORARILY REMOVED: template void TBunch<JetParticle>::sort<LWakeOrder>( LWakeOrder ); ??? FIX ME ???
+//
+// not needed for now
+//
 #endif
 //----------------------------------------------------------------------------------
 
-
-
-template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> > >;
-template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
-template class boost::detail::sp_counted_impl_p<Slot>;
-template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
-template class boost::detail::sp_counted_impl_p<thinrfcavity>;
+template void TBunch<Particle>::sort<LWakeOrder>( LWakeOrder );
+// TEMPORARILY REMOVED: template void TBunch<JetParticle>::sort<LWakeOrder>( LWakeOrder ); ??? FIX ME ???
 
 template WakeKickPropagator * boost::addressof(WakeKickPropagator&);
 template WakeKickPropagator const * boost::addressof(WakeKickPropagator const&);
@@ -234,6 +230,11 @@ template class  std::map<std::string, boost::any>;
 template WakeKick::WakeKick( char const* name, boost::function< void( ParticleBunch& ) > );      
 
 
+template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> > >;
+template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
+template class boost::detail::sp_counted_impl_p<Slot>;
+template class boost::detail::sp_counted_impl_p<thinrfcavity>;
+template class boost::detail::sp_counted_impl_p<LinacCavity>;
 template class boost::detail::sp_counted_impl_p<LCavityUpstream>;
 template class boost::detail::sp_counted_impl_p<LCavityDnstream>;
 template class boost::detail::sp_counted_impl_p<WakeKick>;
@@ -254,7 +255,10 @@ template class boost::detail::sp_counted_impl_p<octupole>;
 template class boost::detail::sp_counted_impl_p<thinOctupole>;
 template class boost::detail::sp_counted_impl_p<thinDecapole>;
 template class boost::detail::sp_counted_impl_p<drift>;
-template class boost::detail::sp_counted_impl_p<LinacCavity>;
+template class boost::detail::sp_counted_impl_p<kick>;
+template class boost::detail::sp_counted_impl_p<gkick>;
+template class boost::detail::sp_counted_impl_p<hkick>;
+template class boost::detail::sp_counted_impl_p<vkick>;
 
 //---------------------------------------------
 // BasePropagators
@@ -296,6 +300,7 @@ template class BasePropagator<thinrfcavity>;
 template class BasePropagator<LinacCavity>;
 template class BasePropagator<BBLens>;
 
+template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
 template class boost::detail::sp_counted_impl_p<kick::Propagator>;
 template class boost::detail::sp_counted_impl_p<sector::Propagator>;
 template class boost::detail::sp_counted_impl_p<vkick::Propagator>;
