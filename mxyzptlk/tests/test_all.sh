@@ -38,7 +38,7 @@ foreach w ( `ls *.cc | sed -e "s/.cc//"` )
     echo "*** WARNING *** Omitting test $w"
     echo "*** WARNING ***"
   else
-    gmake $w
+    gmake -f makefile.local $w
     set return_status = $status
     if( $return_status ) then
       echo "*** ERROR ***"
