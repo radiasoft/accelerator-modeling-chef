@@ -20,7 +20,7 @@ echo "in directory `pwd`"
 echo "-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-"
 
 foreach w ( `ls *.cc | sed -e "s/.cc//"` ) 
-  gmake $w
+  gmake -f makefile.local $w
   set return_status = $status
   if( $return_status ) then
     echo "*** ERROR ***"
