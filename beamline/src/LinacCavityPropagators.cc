@@ -153,7 +153,7 @@ void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set )
   }
   else {
    for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) bml->erase(it); 
+     if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml->erase(it); } 
    } 
  
   }
