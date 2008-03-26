@@ -44,6 +44,9 @@ class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
   void       setup( LinacCavity& elm);
   void  operator()( LinacCavity& elm,         Particle& p);
   void  operator()( LinacCavity& elm,      JetParticle& p);
+
+  void   setWakeOn( LinacCavity& elm, bool set);
+  bool      wakeOn( LinacCavity const& elm )     const;
 };
 
 #endif //  LINACCAVITYPROPAGATORS_H
