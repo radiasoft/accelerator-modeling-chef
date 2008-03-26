@@ -39,7 +39,7 @@
 ******  Apr 2007 ostiguy@fnal.gov
 ******
 ******  - support for reference counted elements
-******  - eliminated unecessary casts
+******  - eliminated unnecessary casts
 ******  - use std::string for renaming
 ******  - changes to header file to reduce file coupling 
 ******
@@ -77,6 +77,8 @@ using FNAL::pcout;
 ///////////////////////////////////////////////////
 
 Solenoid::Solenoid()
+:  bmlnElmnt("", 1.0, 0.0), 
+   inEdge_(true), outEdge_(true)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -86,9 +88,8 @@ Solenoid::Solenoid()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Solenoid::Solenoid( const char* n, double const& l, double const& s )
-:   bmlnElmnt(n,l,s)
-  , inEdge_(true)
-  , outEdge_(true)
+:   bmlnElmnt(n,l,s),
+    inEdge_(true), outEdge_(true)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -98,10 +99,9 @@ Solenoid::Solenoid( const char* n, double const& l, double const& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Solenoid::Solenoid( Solenoid const& x )
-:   bmlnElmnt(x)
-  , inEdge_(x.inEdge_)
-  , outEdge_(x.outEdge_)
-  , propagator_(PropagatorPtr(x.propagator_->Clone()))
+:   bmlnElmnt(x),
+    inEdge_(x.inEdge_), outEdge_(x.outEdge_),
+    propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
