@@ -231,6 +231,8 @@ template std::vector<double>::iterator std::transform( std::vector<double>::iter
 template class  std::map<std::string, boost::any>;
 
 
+template class boost::detail::sp_counted_impl_p<bmlnElmnt>;
+template class boost::detail::sp_counted_impl_p<beamline>;
 template class boost::detail::sp_counted_impl_p<LCavityUpstream>;
 template class boost::detail::sp_counted_impl_p<LCavityDnstream>;
 template class boost::detail::sp_counted_impl_p<WakeKick>;
