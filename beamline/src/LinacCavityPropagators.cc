@@ -149,7 +149,6 @@ void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set )
  
   if ( set ) {
     beamline::iterator it = bml->begin(); 
-    ++it;
     bml->putBelow( it, elm);
   }
   else {
