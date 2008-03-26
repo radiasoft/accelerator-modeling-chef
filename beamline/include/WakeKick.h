@@ -64,9 +64,10 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
   ~WakeKick();
 
-   void localPropagate( Particle&      p );
-   void localPropagate( JetParticle&   p );
-   void localPropagate( ParticleBunch& b );
+   void localPropagate(    Particle&      p );
+   void localPropagate(    JetParticle&   p );
+   void localPropagate(    ParticleBunch& b );
+   void localPropagate( JetParticleBunch& b );
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
@@ -76,7 +77,6 @@ class DLLEXPORT WakeKick : public bmlnElmnt {
 
  private:
 
-   //void init();
    boost::function< void( ParticleBunch& ) > propagator_;
    
 

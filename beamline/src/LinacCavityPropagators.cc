@@ -178,3 +178,29 @@ void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void LinacCavity::Propagator::operator()( LinacCavity& elm, ParticleBunch& b ) 
+{
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+    (*it)->localPropagate(b); 
+  }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticleBunch& b ) 
+{
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+    (*it)->localPropagate(b); 
+  }
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
