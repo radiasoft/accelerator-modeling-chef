@@ -113,7 +113,24 @@ void BipolarCircuit::set(double const& current) {
       (*it)-> setStrength( current );
 
     } else {
+      (*pcerr) <<    "*** WARNING ***"
+                   "\n*** WARNING *** " << __FILE__ << ",line: " << __LINE__
+               <<  "\n*** WARNING *** void BipolarCircuit::set(double const& current)"
+                   "\n*** WARNING *** BipolarCircuit.cc is old, obsolete code that SHOULD"
+                   "\n*** WARNING *** HAVE BEEN ELIMINATED a long time ago.  The action"
+                   "\n*** WARNING *** of this segment has been masked out."
+                   "\n*** WARNING *** "
+               << endl;
+      #if 0
+      *** FIX ME ***
+      *** FIX ME ***  BipolarCircuit.cc is old, obsolete code that SHOULD
+      *** FIX ME ***  HAVE BEEN ELIMINATED a long time ago.  Right now it
+      *** FIX ME ***  does nothing more than produce an undefined reference
+      *** FIX ME ***  because of the following line, which I am masking.
+      *** FIX ME ***  - Leo Michelotti
+      *** FIX ME ***
       (*it)->setStrength( current *  boost::any_cast<double>(bit->info) );
+      #endif
     }
   }
 }
