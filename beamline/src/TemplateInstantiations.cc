@@ -113,6 +113,7 @@ template class BasePropagator<ThinPole>;
 template class BasePropagator<Pinger>;
 template class BasePropagator<thinMultipole>;
 
+template boost::shared_ptr<WakeKick>         boost::dynamic_pointer_cast<WakeKick,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<beamline const>   boost::dynamic_pointer_cast<beamline const,   bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<thinQuad>         boost::dynamic_pointer_cast<thinQuad,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<thinSextupole>    boost::dynamic_pointer_cast<thinSextupole,    bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
@@ -140,6 +141,8 @@ template boost::shared_ptr<sbend>            boost::static_pointer_cast<sbend,  
 template boost::shared_ptr<CF_sbend>         boost::static_pointer_cast<CF_sbend,          bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<rbend>            boost::static_pointer_cast<rbend,             bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<Bend>             boost::static_pointer_cast<Bend,              bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+
+template boost::shared_ptr<LinacCavity::Propagator> boost::dynamic_pointer_cast<LinacCavity::Propagator, BasePropagator<LinacCavity> >(boost::shared_ptr<BasePropagator<LinacCavity> > const&);
 
 
 //----------------------------------------------------------------------------------
