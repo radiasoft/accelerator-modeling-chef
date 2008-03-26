@@ -2,7 +2,7 @@
 
 ######################################################
 #
-# File: test-all.sh
+# File: test_all.sh
 #
 # Original: 
 #  version: March 8, 2007

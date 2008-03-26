@@ -1,5 +1,16 @@
 #!/bin/csh
 
+######################################################
+#
+# File: test_all.sh
+#
+# Date: March 25, 2008
+# 
+#   Author: Leo Michelotti
+#         : michelotti@fnal.gov
+#
+######################################################
+
 if (0 == ${?INSTALLDIR}) then
   echo "*** ERROR ***"
   echo "*** ERROR *** Environment variable INSTALLDIR has not been set."
