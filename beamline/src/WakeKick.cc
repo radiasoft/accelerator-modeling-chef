@@ -43,11 +43,17 @@
 
 using namespace std;
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 WakeKick::WakeKick( char const* name )
   : bmlnElmnt(name, 0.0, 0.0)
 { 
-  // propagator_ = PropagatorFactory::
+  std::cerr << "WARNING: WakeKick default constructor has been called." << std::endl;  
+  std::cerr << "WARNING: propagator will not be set. " << std::endl;  
+  // propagator_ = wake_propagator(); 
 }
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -99,6 +105,15 @@ void WakeKick::accept( ConstBmlVisitor& v ) const
 void WakeKick::localPropagate( ParticleBunch& bunch )
 {
   propagator_(bunch);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::localPropagate( JetParticleBunch& bunch )
+{
+  // DO NOTHING FOR NOW
+  // propagator_(bunch);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
