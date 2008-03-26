@@ -107,6 +107,9 @@ LinacCavity::LinacCavity( const char* name,         // name
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
+
+  setWakeOn( wake_on);
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -267,21 +270,15 @@ void  LinacCavity::setStrength( double const& eV)
 
 void  LinacCavity::setWakeOn( bool set )
 {
+  boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->setWakeOn(*this, set);
+}
 
-  if (set) { 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 
-     if  ( bml_->howMany() == 3 )  return; // wake is already enabled
-
-     beamline::iterator it = bml_->begin();
-     bml_->putBelow( it, elm_ );  
-  }
-  else { 
-   
-     if  ( bml_->howMany() == 2 )  return; // wake is already disabled
-
-     beamline::iterator it = bml_->begin(); ++it;
-     bml_->erase( it );  
-  }
+bool LinacCavity::wakeOn() const
+{
+  return boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->wakeOn( *this );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
@@ -351,8 +348,3 @@ void LinacCavity::localPropagate( JetParticleBunch& b)
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-bool LinacCavity::wakeOn() const
-{
-  return true;
-}

@@ -107,15 +107,59 @@ void LinacCavity::Propagator::setup( LinacCavity& arg )
   
   bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   arg.Length()/2.0,  arg.getFrequency(), 
                                                                          arg.Strength()/2.0, arg.getPhi() )   )  );
-
-  elm= WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref )  );  
- 
-  if (arg.wakeOn()) bml->append(elm); 
-
   bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", arg.Length()/2.0, arg.getFrequency(), 
                                                                          arg.Strength()/2.0, arg.getPhi() )   )  );
 
+  // wake
+
+  elm = WakeKickPtr( new WakeKick ( "Wake", wake_propagator_ref ) ); 
+
+
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool LinacCavity::Propagator::wakeOn( LinacCavity const& arg ) const
+{
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( const_cast<LinacCavity&>(arg) );
+
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) return true; 
+  }
+  
+  return false;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set ) 
+{
+
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
+  ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
+  
+  bool wakeon =  wakeOn(arg);
+
+  if (  set   &&  wakeon   ) return; // wake is already set   just return
+  if ( (!set) && (!wakeon) ) return; // wake is already unset just return
+ 
+  if ( set ) {
+    beamline::iterator it = bml->begin(); 
+    ++it;
+    bml->putBelow( it, elm);
+  }
+  else {
+   for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) bml->erase(it); 
+   } 
+ 
+  }
+}
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
