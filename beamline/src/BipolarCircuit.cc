@@ -113,6 +113,14 @@ void BipolarCircuit::set(double const& current) {
       (*it)-> setStrength( current );
 
     } else {
+      (*pcerr) <<    "*** WARNING ***"
+                   "\n*** WARNING *** " << __FILE__ << ",line: " << __LINE__
+               <<  "\n*** WARNING *** void BipolarCircuit::set(double const& current)"
+                   "\n*** WARNING *** BipolarCircuit.cc is old, obsolete code that SHOULD"
+                   "\n*** WARNING *** HAVE BEEN ELIMINATED a long time ago.  The action"
+                   "\n*** WARNING *** of this segment has been masked out."
+                   "\n*** WARNING *** "
+               << endl;
       #if 0
       *** FIX ME ***
       *** FIX ME ***  BipolarCircuit.cc is old, obsolete code that SHOULD
