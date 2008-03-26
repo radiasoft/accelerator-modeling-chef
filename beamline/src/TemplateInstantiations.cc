@@ -232,6 +232,8 @@ template WakeKick::WakeKick( char const* name, boost::function< void( ParticleBu
 
 template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> > >;
 template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
+template class boost::detail::sp_counted_impl_p<bmlnElmnt>;
+template class boost::detail::sp_counted_impl_p<beamline>;
 template class boost::detail::sp_counted_impl_p<Slot>;
 template class boost::detail::sp_counted_impl_p<thinrfcavity>;
 template class boost::detail::sp_counted_impl_p<LinacCavity>;
