@@ -41,7 +41,7 @@
 ******  
 ****** - refactored code to use single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
+******   implicit conversions.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
 ****** - all implementation details now completely moved to TJL   
