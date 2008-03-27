@@ -82,6 +82,7 @@
 #include <basic_toolkit/Frame.h>
 #include <basic_toolkit/Barnacle.h>
 
+#include <beamline/ElmPtr.h>
 #include <beamline/BasePropagator.h>
 
 #define NOTKNOWN   -123456.789
@@ -109,10 +110,7 @@ typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
 
-typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
-typedef boost::shared_ptr<beamline>  BmlPtr;
-
-typedef boost::shared_ptr<bmlnElmnt const> ConstElmPtr;
+typedef boost::shared_ptr<beamline>        BmlPtr;
 typedef boost::shared_ptr<beamline const>  ConstBmlPtr;
 
 template <typename T>
@@ -213,7 +211,7 @@ class DLLEXPORT bmlnElmnt {
 
 public:
   
-  bmlnElmnt( char const*   name="",  double const&  length=0.0, double const& strength=0.0 );
+  bmlnElmnt( std::string const& name="",  double const&  length=0.0, double const& strength=0.0 );
 
   bmlnElmnt( bmlnElmnt const&  );
 
