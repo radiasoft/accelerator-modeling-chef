@@ -26,16 +26,25 @@
 **************************************************************************
 **************************************************************************
 **************************************************************************/
+
 #ifndef BUNCHPROJECTOR_H
 #define BUNCHPROJECTOR_H
 
-#include <beamline/Particle.h>
 #include <vector>
 
 template <typename Particle_t> 
 class TBunch;
 
+class Particle;
 typedef TBunch<Particle> ParticleBunch;
+
+
+//----------------------------------------------------------------------------------
+// Workaround for g++ < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+#include <beamline/Particle.h>
 
 struct  LWakeOrder {
   typedef  Particle const& first_argument_type;
@@ -47,7 +56,9 @@ struct  LWakeOrder {
      return  ( lhs.get_cdt() < rhs.get_cdt() );  
    }
 };
+#endif
 
+// -----------------------------------------------------------------------------------
 
 class BunchProjector {
 
@@ -76,6 +87,8 @@ class BunchProjector {
     std::vector<double>                monopole_;
     std::vector<double>                dipole_hor_;
     std::vector<double>                dipole_ver_;
+
+
 
 };
 
