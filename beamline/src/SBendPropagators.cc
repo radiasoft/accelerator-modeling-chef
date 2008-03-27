@@ -50,6 +50,19 @@ namespace {
   Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
+template <typename T>
+inline double standardPart( T const& );
+
+template<>
+inline double standardPart( Jet const& value)    { return value.standardPart(); }
+
+template<>
+inline double standardPart( double const& value) { return value; }
+ 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename Particle_t>
 void propagate( sbend& elm, Particle_t&     p )
 {
@@ -69,42 +82,105 @@ void propagate( sbend& elm, Particle_t&     p )
   state[i_cdt] -= elm.getReferenceTime();   
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename Particle_t>
-void mad_propagate( sbend& elm, Particle_t& p)
+template < typename Element_t, typename Particle_t>
+void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
 {
 
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+  static const int BMLN_dynDim = 6;
 
-  State_t&     state    = p.State();
+  typedef typename PropagatorTraits<Particle_t>::State_t     State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t Component_t;
 
-  Component_t rho   = p.BRho()/ elm.Strength();
+  State_t& state = p.State();
+  
+  double const h      = 1/rho;                    // curvature
+  double const length = elm.Length();         
+  double const gamma  = standardPart( p.Gamma() );
+  double const beta   = standardPart( p.Beta()  );
 
-  double const length = elm.Length();
-  double const angle  = elm.getBendAngle();
- 
-  Component_t m00 =  cos(angle);
-  Component_t m03 =  sin(angle)*rho;
-  Component_t m05 =  rho*(1.0 - cos(angle))/p.Beta();
-  Component_t m14 =  length;
-  Component_t m20 = -sin(angle)/p.Beta();
-  Component_t m23 = -m05;
-  Component_t m25 =  length/p.Beta()/p.Gamma()/p.Gamma() - ( length - sin(angle)*rho )/p.Beta();
-  Component_t m30 = -sin(angle)/rho;
-  Component_t m33 =  m00;
-  Component_t m35 = -m20;
+  double const angle   = elm.getBendAngle();
 
-  // bend  
+  if(angle == 0.0) {
+    state[i_x  ] +=   length * state[i_npx];
+    state[i_y  ] +=   length * state[i_npy];
+    state[i_cdt] +=  -length /(beta*gamma*gamma) * state[i_ndp];
+    return 0;
+  }  
 
-  State_t instate  = state;
-   
-  state[i_x  ] = m00*instate[i_x  ] + m03*instate[i_npx] +  m05*instate[i_ndp];  
-  state[i_y  ] = m14*instate[i_npy];
-  state[i_cdt] = m20*instate[i_x  ] + m23*instate[i_npx] +  m25*instate[i_ndp];
-  state[i_npx] = m30*instate[i_x  ] + m33*instate[i_npx] +  m35*instate[i_ndp];
- 
+  double  matrix [ BMLN_dynDim ][BMLN_dynDim];
+  
+  for   ( int i=0; i < BMLN_dynDim; ++i) {
+    for ( int j=0; j < BMLN_dynDim; ++j){
+      matrix[i][j] = ( i==j) ? 1.0 : 0.0;
+    }
+  }
+  
+  double const kx     = h * sqrt(1.0 - n ); 
+  double const ky     = h * sqrt( n ); 
+  
+  
+  // entrance focusing 
+  
+  state[i_npx] +=  tan(elm.getEntryAngle())/rho *  state[i_x]; 
+  state[i_npy] -=  tan(elm.getEntryAngle())/rho *  state[i_y]; 
+
+  matrix[i_x  ][i_x  ] =           cos(kx*length);
+  matrix[i_x  ][i_npx] =  (1.0/kx)*sin(kx*length);
+  matrix[i_x  ][i_ndp] =  h/(kx*kx)*(1.0 - cos(kx*length));
+
+  matrix[i_npx][i_x   ] = -kx*sin(kx*length);
+  matrix[i_npx][i_npx ] =  cos(kx*length);
+  matrix[i_npx][i_ndp ] =  h/kx * sin(kx*length); 
+
+  matrix[i_y]  [i_y   ] =  cos(ky*length);
+  matrix[i_y]  [i_npy ] = ( ky == 0.0 ) ? length : (1.0/ky)*sin(ky*length);
+
+  matrix[i_npy][i_y   ] = -ky*sin(ky*length);
+  matrix[i_npy][i_npy ] =  cos(ky*length);
+
+  const double cnv =  - 1.0/beta;  
+
+  //----------------------------------------------------------------------------------
+  // Note: the std optical matrix formalism assumes the arc length s as the independent 
+  //       coordinate. CHEF uses cdt with t > 0 when the particle is *late* w/r to 
+  //       a reference particle. 
+  //       A conversion factor cnv from ds to cdt is introduced to convert from cdt   
+  //       to ds. A subtle difference is that cdt depends on dp/p not only 
+  //       through the change in path length, but also through the change in velocity
+  //       associated with a change in momentum. This latter effect is the origin
+  //       of the extra term   - length/(beta*gamma*gamma);   
+  // ----------------------------------------------------------------------------------
+
+  matrix[i_cdt][i_x]    =  cnv * (h/kx)*sin(kx*length);
+  matrix[i_cdt][i_npx]  =  cnv * (h/kx*kx)*(1.0-cos(kx*length));
+  matrix[i_cdt][i_ndp]  =  cnv * (h*h)/(kx*kx*kx)*(kx*length - sin(kx*length) ) - length/(beta*gamma*gamma); 
+
+  // Finally .. the mapping ...............................
+
+  State_t const& inState  = p.State();
+  State_t        outState( p.State().Dim() ); 
+
+  for(  int i=0; i<BMLN_dynDim; ++i  ) {
+    outState[i] = 0.0;
+    for( int j=0; j<BMLN_dynDim; ++j  ) {
+      outState[i] += matrix[i][j]*inState[j];
+    }
+  }
+
+  std::copy( outState.begin(), outState.end(), state.begin() ); 
+
+  // exit focusing ......................... 
+
+  state[i_npx] +=  tan( elm.getExitAngle())/rho *  state[i_x]; 
+  state[i_npy] -=  tan( elm.getExitAngle())/rho *  state[i_y]; 
+
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 //----------------------------------------------------------------------------------
@@ -115,13 +191,14 @@ void mad_propagate( sbend& elm, Particle_t& p)
 
 template void propagate(     sbend& elm,    Particle& p );
 template void propagate(     sbend& elm, JetParticle& p );
-template void mad_propagate( sbend& elm,    Particle& p );
-template void mad_propagate( sbend& elm, JetParticle& p );
+template void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
+template void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
+template double standardPart( double const& value);
+template double standardPart( Jet    const& value);
 
 #endif
 
 }// namespace
-
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -168,5 +245,29 @@ void sbend::Propagator::operator()( sbend& elm, Particle& p)
 void sbend::Propagator::operator()( sbend& elm, JetParticle& p)
 {
   ::propagate( elm, p);
+
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if 0
+
+void sbend::MADPropagator::operator()( sbend& elm, Particle& p)
+{
+  double const rho = p.BRho()/pbe->Strength();
+  ::mad_propagate( elm, p, rho, 0.0);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::MADPropagator::operator()( sbend& elm, JetParticle& p)
+{
+  // for MAD Propagator
+  //--------------------
+  double const rho = p.BRho()/pbe->Strength();
+  ::mad_propagate( elm, p, rho, 0.0);
+}
+
+#endif
