@@ -23,17 +23,19 @@
 ******             Email: ostiguy@fnal.gov                         
 ******
 ******                                                                
+******
 **************************************************************************
 *************************************************************************/
+
 #ifndef ELMPTR_H
 #define ELMPTR_H
 
-#include <complex>
 #include <boost/shared_ptr.hpp>
-#include <basic_toolkit/globaldefs.h>
-
 
 class bmlnElmnt;
-typdef public boost::shared_ptr<T>  ElmPtr;
+
+typedef boost::shared_ptr<bmlnElmnt>             ElmPtr;
+typedef boost::shared_ptr<bmlnElmnt const>  ConstElmPtr;
+
 
 #endif //  ELMPTR_H
