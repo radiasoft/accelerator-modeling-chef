@@ -154,7 +154,7 @@ void RefRegVisitor::setCdt( double const& x )
 void RefRegVisitor::visit( beamline& x )
 {
 
-  x.setEnergy( particle_.ReferenceEnergy() );
+  x.setMomentum( particle_.ReferenceMomentum() );
 
  
  std::vector<RFCavityPtr>     rfcavities;  
