@@ -42,8 +42,13 @@ class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LinacCavity& elm);
-  void  operator()( LinacCavity& elm,         Particle& p);
-  void  operator()( LinacCavity& elm,      JetParticle& p);
+  void  operator()( LinacCavity& elm,         Particle& p );
+  void  operator()( LinacCavity& elm,      JetParticle& p );
+  void  operator()( LinacCavity& elm,    ParticleBunch& b ); 
+  void  operator()( LinacCavity& elm, JetParticleBunch& b );   
+
+  void setWakeOn(   LinacCavity&       elm, bool set ); 
+  bool    wakeOn(   LinacCavity const& elm           ) const; 
 };
 
 #endif //  LINACCAVITYPROPAGATORS_H
