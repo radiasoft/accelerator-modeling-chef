@@ -109,6 +109,49 @@ void LinacCavity::Propagator::setup( LinacCavity& arg )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool LinacCavity::Propagator::wakeOn( LinacCavity const& arg ) const
+{
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( const_cast<LinacCavity&>(arg) );
+
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) {
+    if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) return true; 
+  }
+  
+  return false;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set ) 
+{
+
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
+  ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
+  
+  bool wakeon =  wakeOn(arg);
+
+  if (  set   &&  wakeon   ) return; // wake is already set   just return
+  if ( (!set) && (!wakeon) ) return; // wake is already unset just return
+ 
+  if ( set ) {
+    beamline::iterator it = bml->begin(); 
+    bml->putBelow( it, elm);
+  }
+  else {
+   for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
+     if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml->erase(it); } 
+   } 
+ 
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void LinacCavity::Propagator::operator()( LinacCavity& elm, Particle& p ) 
 {
   ::propagate(elm,p);
@@ -124,4 +167,31 @@ void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticle& p )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::operator()( LinacCavity& elm, ParticleBunch& b ) 
+{
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+    (*it)->localPropagate(b); 
+  }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticleBunch& b ) 
+{
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+    (*it)->localPropagate(b); 
+  }
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
