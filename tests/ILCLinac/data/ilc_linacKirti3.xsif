@@ -1,0 +1,164 @@
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Ansatz ILC main linac file -- 8 cavities per cryomodule,
+!                               4 CM per quad,
+!                               75/60 phase advance per cell,
+!                               linac curvature corresponds to mean 
+!                                     curvature of Earth.
+!
+! Auth:  PT, 08-Feb-2006.
+!
+! Mod:
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+BEAM, PARTICLE=POSITRON, ENERGY=15.0
+
+! Define the cavity:
+
+  Lc := 1.036
+  Fc := 1.3e3
+  Vc := 31.5 * Lc
+  Pc := -5.1
+  Ac := 0.078 / 2
+
+  MLCAV : LCAV, L = Lc, DELTAE = Vc, FREQ = Fc, PHI0 = Pc / 360, &
+          ELOSS = 1.432e13* Lc, APERTURE = Ac,                   &                 
+          LFILE = "ilc2005.lwake.sr.data",                       &
+          TFILE = "ilc2005.twake.sr.data"
+
+! Define an RF cavity with spare (not-on) status.
+
+  MLCAV_SPARE : MLCAV, DELTAE = 0
+
+! Define the quadrupoles
+
+  Lq :=  0.666
+  Aq :=  0.075 / 2
+  Kf :=  0.040884513963489
+  Kd := -0.036706337876835
+
+  QF: QUAD, L = Lq, K1 = Kf, APERTURE = Aq
+  QD: QUAD, L = Lq, K1 = Kd, APERTURE = Aq
+
+! Define the cryomodule drift lengths
+
+  D_CMEnd : DRIFT, L = 0.191
+  D_CC    : DRIFT, L = 0.283
+  D_CQ    : DRIFT, L = 0.247
+  D_QC    : DRIFT, L = 0.169 
+  D_BPM   : DRIFT, L = 0.001 
+  D_MAG   : DRIFT, L = 0.001 
+
+! Define the angle needed in the vertical correctors to guide the beam
+! around the curved linac
+
+  R_Earth     := 6370.0e3
+  L_CM_NoQuad := 2 * D_CMEnd[L] + 7 * D_CC[L] + 8 * LC
+  L_CM_Quad   := 2 * D_CMEnd[L] + 6 * D_CC[L] &
+                  + D_CQ[L] + D_QC[L] + Lq + 8 * Lc
+
+! Define the cryomodule kink angles
+
+  ANGLE_CM_NoQuad := -L_CM_NoQuad / R_Earth / 2
+  ANGLE_CM_Quad   := -L_CM_Quad   / R_Earth / 2
+
+  ang1 := angle_cm_noquad * 1e6
+  ang2 := angle_cm_quad * 1e6
+  ang0 = 2*ang1+6*ang2
+
+  YCOR_Angle      := 2 * ANGLE_CM_Quad + 6 * ANGLE_CM_NoQuad
+
+! For now, we will define the correctors and BPMs to be zero length
+
+  BPM  : MONI
+  XCOR : HKICK
+  YCOR : VKICK, KICK=YCOR_Angle
+  YCOR1 : VKICK, KICK=0.
+
+! Define the end-CM kinks themselves using a dispersion-free GKICK
+
+  KINK_CM_NoQuad : GKICK, L=0, DYP = -ANGLE_CM_NoQuad, T=0
+  KINK_CM_Quad   : GKICK, L=0, DYP = -ANGLE_CM_Quad,   T=0
+
+! Define the two cryomodules:  one with a quad, one without
+
+  
+
+  CM_NoQuad(cav) : LINE = ( KINK_CM_NoQuad, &
+                            D_CMEnd, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV, D_CC, &
+                            CAV,       &
+                            D_CMEnd,   &
+                            KINK_CM_NoQuad )
+
+  CM_QUAD(cav,MAGNET) : LINE = ( KINK_CM_Quad, &
+                                 D_CMEnd, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CQ, &
+                                 BPM,D_BPM,MAGNET,D_MAG,XCOR,YCOR,D_QC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV, D_CC, &
+                                 CAV,       &
+                                 D_CMEnd,   &
+                                 KINK_CM_Quad )
+
+! Start and end markers
+
+  MLSTART : MARK
+  MLEND   : MARK
+
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Beamline definitions
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+! FODO cell -- start with an F quad
+
+  FODO(cav) : LINE = (CM_QUAD(cav,QF), 3*CM_NoQuad(cav), &
+                      CM_Quad(cav,QD), 3*CM_NoQuad(cav)    )
+
+! The entire linac -- 114 FODO cells (912 modules, 304 RF stations) are
+! required to accelerate to just over 250 GeV from 15 GeV; a convenient
+! number of spares is 6 cells (48 modules, 16 RF stations), which 
+! constitutes 5.2% spares.
+
+BEGELIN : MARKER
+ENDELIN : MARKER
+BPMLAST : MONI
+
+LINAC : LINE = (BEGELIN, YCOR1, 114 * FODO(MLCAV),&
+                             5 * FODO(MLCAV_SPARE), &
+                             CM_QUAD(MLCAV,QF),&
+                             3*CM_NoQuad(MLCAV), &
+                             CM_Quad(MLCAV,QD),&
+                             BPMLAST, &
+                             3*CM_NoQuad(MLCAV),ENDELIN) 
+!========1=========2=========3=========4=========5=========6=========7=========8
+!
+! Definition of initial Twiss and orbit -- here the dispersion and the orbit
+! are set for a system in which the F and D dipoles have equal strength.
+! There are other constraints possible.
+!
+!========1=========2=========3=========4=========5=========6=========7=========8
+
+  BEAM_LINAC_IN : BEAM, E=15, NPART = 2E10, SIGT = 300E-6, SIGE = 0.0107, &
+       EX = 8E-6 * EMASS / 15, EY = 20E-9 * EMASS / 15
+
+  TWISS_LINAC_IN : BETA0, BETX = 117.1429, ALFX = -1.6792,    &
+                          BETY =  55.8316, ALFY =  0.8194,    &
+                          DY = 0.96510E-3, DPY = -15.3113E-6,  &
+                          Y = -18.146E-6, PY = 2.4347E-6
+!
+RETURN
+
