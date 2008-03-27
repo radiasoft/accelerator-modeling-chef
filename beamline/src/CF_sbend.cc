@@ -256,7 +256,7 @@ int CF_sbend::setOctupole( double const& arg_x )
   int counter = 0;
   for ( beamline::const_iterator it  = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) ) ++counter;
+    if( ( boost::dynamic_pointer_cast<thinOctupole const>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
@@ -280,7 +280,7 @@ int CF_sbend::setSextupole( double const& arg_x )
   int counter = 0;
   for ( beamline::const_iterator it  = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) ) ++counter;
+    if( ( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
@@ -322,7 +322,7 @@ int CF_sbend::setQuadrupole( double const& arg_x )
   for ( beamline::const_iterator it  = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
 
-    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) ++counter;
+    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) ++counter;
   }
   
   if (counter==0) return 1;
@@ -397,7 +397,7 @@ double CF_sbend::getOctupole() const
 
   for ( beamline::const_iterator it  = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinOctupole>(*it) )  {
+    if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
       strength += (*it)->Strength();
     }
   }
@@ -418,7 +418,7 @@ double CF_sbend::getSextupole() const
 
   for ( beamline::const_iterator it = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinSextupole>(*it) ) {
+    if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
       strength += (*it)->Strength();
     }
   }
@@ -437,7 +437,7 @@ double CF_sbend::getQuadrupole() const
 
   for ( beamline::const_iterator it  = bml_->begin(); 
                                  it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
+    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
        strength += (*it)->Strength();
      }
   }
