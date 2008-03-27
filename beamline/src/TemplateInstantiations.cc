@@ -33,6 +33,8 @@
 #include <utility>
 
 #include <basic_toolkit/Barnacle.h>
+#include <beamline/BasePropagator.h>
+#include <beamline/BasePropagator.tcc>
 #include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/BendPropagators.h>
@@ -109,10 +111,9 @@ template class boost::shared_ptr<CF_sbend>;
 template class boost::shared_ptr<sbend>; 
 template class boost::shared_ptr<thinrfcavity>; 
 
-template class BasePropagator<ThinPole>;
-template class BasePropagator<Pinger>;
-template class BasePropagator<thinMultipole>;
-
+template boost::shared_ptr<thinSextupole const> boost::dynamic_pointer_cast<thinSextupole const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinQuad      const> boost::dynamic_pointer_cast<thinQuad      const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinOctupole  const> boost::dynamic_pointer_cast<thinOctupole  const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<WakeKick>         boost::dynamic_pointer_cast<WakeKick,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<beamline const>   boost::dynamic_pointer_cast<beamline const,   bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<thinQuad>         boost::dynamic_pointer_cast<thinQuad,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
@@ -258,6 +259,9 @@ template class boost::detail::sp_counted_impl_p<vkick>;
 // BasePropagators
 //--------------------------------------------
 
+template class BasePropagator<ThinPole>;
+template class BasePropagator<Pinger>;
+template class BasePropagator<thinMultipole>;
 template class BasePropagator<drift>;
 template class BasePropagator<quadrupole>;
 template class BasePropagator<thinQuad>;
@@ -293,7 +297,10 @@ template class BasePropagator<rfcavity>;
 template class BasePropagator<thinrfcavity>;
 template class BasePropagator<LinacCavity>;
 template class BasePropagator<BBLens>;
+template class BasePropagator<WakeKick>;
 
+template class boost::detail::sp_counted_impl_p<WakeKick::Propagator>;
+template class boost::detail::sp_counted_impl_p<BasePropagator<WakeKick> >;
 template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
 template class boost::detail::sp_counted_impl_p<kick::Propagator>;
 template class boost::detail::sp_counted_impl_p<sector::Propagator>;
@@ -331,6 +338,7 @@ template class boost::detail::sp_counted_impl_p<CF_sbend::Propagator>;
 template class boost::detail::sp_counted_impl_p<CF_rbend::Propagator>;
 template class boost::detail::sp_counted_impl_p<Solenoid::Propagator>;
 
+
 template class boost::detail::sp_counted_impl_p<BasePropagator<Edge> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinOctupole> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<octupole> >;
@@ -366,6 +374,7 @@ template class boost::detail::sp_counted_impl_p<BasePropagator<BBLens> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<LCavityUpstream> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinSeptum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<ThinPole> >;
+
 
 namespace {
   std::list<std::pair<int, std::complex<double> > > dummy_list;
@@ -407,4 +416,3 @@ template class boost::function2<void,bmlnElmnt&, Particle& >;
 template class boost::function2<void,bmlnElmnt&, JetParticle& >;
 
 #endif //BEAMLINE_EXPLICIT_TEMPLATES
-
