@@ -57,7 +57,6 @@
 #include <beamline/BmlVisitor.h>
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
-#include <physics_toolkit/EdwardsTeng.h>  // ??? Doesn't belong here.
 #include <algorithm>
 
 using namespace boost;
