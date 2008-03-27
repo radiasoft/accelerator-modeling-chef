@@ -207,8 +207,8 @@ bool bmlnElmnt::PinnedFrameSet::altered()  const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s) 
-  : ident_( n ? n: "NONAME"),      
+bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s) 
+  : ident_( n ),      
     length_(l),     
     strength_(s),  
     align_(0),   
