@@ -32,7 +32,7 @@
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
-******    iterator, pre_order_iterator. post_order_iteartor, deep_iterator 
+******    iterator, pre_order_iterator. post_order_iterator, deep_iterator 
 ******    as well as const and reverse variants of the above
 ******
 ******  Jan - Mar 2007:  Jean-Francois Ostiguy 
@@ -43,6 +43,11 @@
 ****** - eliminated nested functor predicate and action classes  
 ******  Dec 2007        ostiguy@fnal.gov
 ****** - support for JetParticle bunch
+******  Mar 2008        ostiguy@fnal.gov
+****** - since magnetic element scale with _momentum_ beamline now has a 
+******   reference momentum attribute (rather than a reference energy). 
+****** - implemented scheme to allow elements to access parent beamline.
+******    
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -51,6 +56,7 @@
 #define BEAMLINE_H
 
 #include <list>
+#include <stack>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/LatticeFunctions.h>
@@ -69,36 +75,37 @@ class ConstBmlVisitor;
 
 class beamline: public bmlnElmnt {
 
+ public:
+
+  struct Node;
+
 public:
 
    enum LineMode { line, ring, unknown };
-
-   // ... iterator forward declarations
-   //-----------------------------------
 
    template<typename held_type>
    class iter;
 
    typedef iter<ElmPtr>                                                   iterator;     
-   typedef iter <ElmPtr const>                                      const_iterator;     
-
+   typedef iter<ElmPtr const>                                       const_iterator;     
+   
    template<typename held_type>
    class reverse_iter;
 
-   typedef reverse_iter<ElmPtr>                                   reverse_iterator;     
-   typedef reverse_iter<ElmPtr const>                       const_reverse_iterator;     
+   typedef reverse_iter<ElmPtr>                                    reverse_iterator;     
+   typedef reverse_iter<ElmPtr const>                        const_reverse_iterator;     
 
    template<typename held_type>
    class pre_order_iter;
 
    typedef pre_order_iter<ElmPtr>                               pre_order_iterator;     
-   typedef pre_order_iter<ElmPtr const>                   const_pre_order_iterator;     
+   typedef pre_order_iter<ElmPtr const>                    const_pre_order_iterator;     
 
    template<typename held_type>
    class reverse_pre_order_iter;
 
-   typedef reverse_pre_order_iter<ElmPtr>               reverse_pre_order_iterator;
-   typedef reverse_pre_order_iter<ElmPtr const>   const_reverse_pre_order_iterator;
+   typedef reverse_pre_order_iter<ElmPtr>                reverse_pre_order_iterator;
+   typedef reverse_pre_order_iter<ElmPtr const>    const_reverse_pre_order_iterator;
 
    template<typename held_type>
    class post_order_iter;
@@ -106,18 +113,17 @@ public:
    typedef post_order_iter<ElmPtr>                             post_order_iterator;     
    typedef post_order_iter<ElmPtr const>                 const_post_order_iterator;     
 
-
    template<typename held_type>
    class reverse_post_order_iter;
 
-   typedef reverse_post_order_iter<ElmPtr>              reverse_post_order_iterator;
-   typedef reverse_post_order_iter<ElmPtr const>  const_reverse_post_order_iterator;
+   typedef reverse_post_order_iter<ElmPtr>               reverse_post_order_iterator;
+   typedef reverse_post_order_iter<ElmPtr const>    const_reverse_post_order_iterator;
 
    template<typename held_type>
    class deep_iter;
 
    typedef deep_iter<ElmPtr>                                          deep_iterator;
-   typedef deep_iter<ElmPtr const>                              const_deep_iterator;
+   typedef deep_iter<ElmPtr const>                               const_deep_iterator;
 
 
    template<typename held_type>
@@ -127,9 +133,8 @@ public:
    typedef  reverse_deep_iter<ElmPtr const>             const_reverse_deep_iterator;
 
 
- // CONSTRUCTORS AND DESTRUCTOR____________________________________________________________
 
-   beamline( const char* nm = "NONAME" );
+   beamline( std::string const& name = "");
    beamline( beamline const& );
    beamline( FILE* );                  // Reading persistent object stored
                                       //  in a binary file.
@@ -142,25 +147,27 @@ public:
 
    void clear();                       // Returns state to empty beamline.
 
+   beamline const*  parent()  const  { return parent_; } 
+   beamline*        parent()         { return parent_; }    
+   
 
    double getReferenceTime()                    const;     
-   void setReferenceTime( double   const& );               
-   void setReferenceTime( Particle& );             
+   void   setReferenceTime( double   const& );               
+   void   setReferenceTime( Particle&       );             
 
-  // EDITING LATTICE_____________________________________________________________________
 
-   void     putAbove( iterator   it, ElmPtr const&  y ); // Insert y above (before;  upstream of) x
-   iterator putBelow( iterator   it, ElmPtr const&  y ); // Insert y below (after, downstream of) x
+   void     putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
+   iterator putBelow( iterator   it, ElmPtr y ); // Insert y below (after, downstream of) x
 
    iterator erase   ( iterator it );
    iterator erase   ( iterator pos1, iterator pos2 );
 
-   void     remove( ElmPtr elm);
+   void     remove( ElmPtr );
 
-   void insert( ElmPtr    const&  );
+   void insert( ElmPtr    );
    void insert( bmlnElmnt const&  );
 
-   void append( ElmPtr    const&  );
+   void append( ElmPtr    );
    void append( bmlnElmnt const&  );
 
    void Split( double const&, ElmPtr&, ElmPtr& ) const;
@@ -212,12 +219,9 @@ public:
   iterator     roll( iterator pos, double const& angle, double const& rpos);
 
 
-  // PROPAGATE PARTICLES
-
-
-  void localPropagate( Particle& );          
-  void localPropagate( ParticleBunch& );          
-  void localPropagate( JetParticle& );          
+  void localPropagate( Particle&         );          
+  void localPropagate( ParticleBunch&    );          
+  void localPropagate( JetParticle&      );          
   void localPropagate( JetParticleBunch& );          
 
   void enterLocalFrame( Particle&    )    const;   
@@ -233,7 +237,6 @@ public:
   void realignAllElements();  // WRITE
   void markAllPins();         // WRITE
 
-  // EDIT PROPERTIES________________________________________________________________
 
   inline beamline::LineMode getLineMode() const
   { return mode_; }
@@ -244,8 +247,7 @@ public:
   //    but carries information for higher level code,
   //    like dataHook_.
 
-  void setEnergy( double const&  nominalEnergyGeV );
-  void unTwiss();
+  void setMomentum( double const&  nominalMomentumGeV );
 
   void eraseBarnacles( const char* = 0 );
 
@@ -256,12 +258,7 @@ public:
   ElmPtr&        lastElement();
   ElmPtr const&  lastElement()  const;
 
-  bool   twissIsDone()  const;
-
-  void  setTwissIsDone();
-  void unsetTwissIsDone();
-
-  double Energy() const; 
+  double Momentum() const; 
 
   bool           isBeamline() const;
   bool                empty() const;
@@ -289,10 +286,7 @@ public:
 
   beamline flatten() const;     //   Produces a flattened version of itself.
 
-
-  // ITERATORS______________________________
-  // 
-  // STL-compatible iterators 
+  // STL-compatible iterators ...  
    
 
   public:
@@ -309,11 +303,10 @@ private:
   std::ostream&           writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );
 
-  double                  nominalEnergy_;    // In GeV
-  bool                    twissDone_;
+  double                  nominalMomentum_;    // In GeV
   LineMode                mode_;
+  beamline*               parent_;
   std::list<ElmPtr>       theList_; 
-
 
 }; 
 #endif // BEAMLINE_H
