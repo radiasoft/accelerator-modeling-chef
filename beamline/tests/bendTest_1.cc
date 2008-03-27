@@ -20,8 +20,9 @@
 // Note: NNN represents an integer
 // 
 // -print     prints parameters
-// -N  NNN    the bend angle is set to 2 pi / NNN
+// -N   NNN   the bend angle is set to 2 pi / NNN
 //            : default = 128
+// -dpp XXX   dp/p of the probe proton
 // 
 ////////////////////////////////////////////////////////////
 
@@ -39,6 +40,7 @@ struct Options
   bool   valid;
   double n;
   double pc;
+  double dpp;
   double energy;
   double brho;
   double rho;
@@ -56,6 +58,7 @@ Options::Options( int argc, char** argv, int lastargs )
   , pc(8)
   , bodyLength(2)
   , n(128)
+  , dpp(0)
 {
   Proton proton(100);
   proton.SetReferenceMomentum(pc);
@@ -83,12 +86,21 @@ Options::Options( int argc, char** argv, int lastargs )
       }
       else if( s == "N" ) {
         if( i < limit ) { 
-          n = atof( argv[i++] );
+          n = std::abs( atof( argv[i++] ) );
           bendAngle  = M_TWOPI/n;
           rho        = bodyLength / (2.0*sin( bendAngle/2.0 ));
           arcLength  = rho*bendAngle;
           bendField  = brho/rho;
         }
+        else {
+          cerr << "\n*** ERROR *** Too few parameters." << endl;
+          valid = false;
+        }
+      }
+      else if( s == "dpp" ) {
+        if( i < limit ) { 
+          dpp = atof( argv[i++] );
+        }        
         else {
           cerr << "\n*** ERROR *** Too few parameters." << endl;
           valid = false;
@@ -109,11 +121,11 @@ int main( int argc, char** argv )
 
   Options myOptions( argc, argv );
   if( myOptions.valid ) {
-    cout << "Command line: ";
+    cout << "\nCommand line: ";
     for( int i = 0; i < argc; i++ ) {
       cout << argv[i] << "  ";
     }
-    cout << '\n' << endl;
+    cout << endl;
   }
   else {
     return 1;
@@ -122,12 +134,17 @@ int main( int argc, char** argv )
   Proton proton( myOptions.energy );
 
   { // TEST 1: propagation through rbend
-  cout << "RBEND TEST" << endl;
+  rbend magnet( "", myOptions.bodyLength
+                  , myOptions.bendField
+                  , myOptions.bendAngle );
+
   proton.setStateToZero();
+  proton.set_ndp( myOptions.dpp );
   double px = sin(myOptions.bendAngle/2.0);
-  proton.set_npx( px );
+  proton.set_npx(px);
+  
+  cout << "RBEND TEST" << endl;
   cout << "Initial: " << proton.State() << endl;
-  rbend magnet( "", myOptions.bodyLength, myOptions.bendField, myOptions.bendAngle );
   magnet.propagate( proton );
   cout << "Final  : " << proton.State() << endl;
 
@@ -144,10 +161,15 @@ int main( int argc, char** argv )
   } // End TEST 1
 
   { // TEST 2: propagation through sbend
-  cout << "SBEND TEST" << endl;
+  sbend magnet( "", myOptions.arcLength
+                  , myOptions.bendField*(1.+myOptions.dpp)
+                  , myOptions.bendAngle );
+
   proton.setStateToZero();
+  proton.set_ndp( myOptions.dpp );
+
+  cout << "SBEND TEST" << endl;
   cout << "Initial: " << proton.State() << endl;
-  sbend magnet( "", myOptions.arcLength, myOptions.bendField, myOptions.bendAngle );
   magnet.propagate( proton );
   cout << "Final  : " << proton.State() << endl;
 
