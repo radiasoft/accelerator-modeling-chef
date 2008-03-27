@@ -331,9 +331,9 @@ bmlnElmnt* read_istream(istream& is)
       element->readFrom(is);
     }
     else {
-      double energy;
-      is >> energy;
-      static_cast<beamline*>(element)->setEnergy( energy );
+      double momentum;
+      is >> momentum;
+      static_cast<beamline*>(element)->setMomentum( momentum );
       bmlnElmnt *e = NULL;
       do {
         e = read_istream(is);
@@ -392,7 +392,7 @@ istream& operator>>(istream& is, beamline& bl)
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
   bmlnElmnt *e = 0;
-  is >> bl.nominalEnergy_;
+  is >> bl.nominalMomentum_;
   // Now, continue reading is until we see the end of this beamline
   length = 0;
   do {
