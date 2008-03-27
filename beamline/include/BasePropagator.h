@@ -108,7 +108,9 @@ class BasePropagator {
 
 };
 
+#ifndef  BEAMLINE_EXPLICIT_TEMPLATES 
 #include <beamline/BasePropagator.tcc>
+#endif
 
 #endif // BASEPROPAGATOR_H
 
