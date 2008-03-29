@@ -99,8 +99,8 @@ rbend::rbend()
     angle_(0.0),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
-    usAngle_(M_TWOPI),  // unitialized        
-    dsAngle_(-M_TWOPI)  // unitialized
+    usAngle_(M_TWOPI),  // uninitialized        
+    dsAngle_(-M_TWOPI)  // uninitialized
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -114,8 +114,8 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
     angle_(bendangle), 
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
-    usAngle_(M_TWOPI), // unitialized
-    dsAngle_(-M_TWOPI) // unitialized
+    usAngle_(bendangle/2.0),
+    dsAngle_(-bendangle/2.0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
