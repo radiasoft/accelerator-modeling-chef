@@ -251,8 +251,8 @@ int main( int argc, char** argv )
 
 
   JLterm termPtr;
-  IntArray exps( diffMap[0].getEnvNumVar() );  // Included for illustration
-                                               // ; not currently used.
+  IntArray exps( diffMap[0].getEnvNumVar() );
+                                             
   double ccc = 0;
   for(   int counter = 0
        ; counter < diffMap.Dim()
