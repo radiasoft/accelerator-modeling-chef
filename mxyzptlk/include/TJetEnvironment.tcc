@@ -696,7 +696,7 @@ EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( TMapping<T> const& map 
   T* refpoint = new T[ map.Dim() ];
 
   for (int i=0; i <map.Dim(); ++i) {
-    refpoint[i] =  map(i).standardPart();
+    refpoint[i] =  map[i].standardPart();
   }  
   
   EnvPtr<T> mapenv( map.Env() );   

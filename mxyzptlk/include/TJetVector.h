@@ -54,8 +54,8 @@
 ****** 
 ******  - New implementation. TJetVector is now based on a std::vector<Jet>
 ******    container (the previous version was based on a dynamically allocated 
-******    array of raw Jet*). Since Jet is now basically an envelopp for a 
-******    a smart ptr to implementation, its memory footprint is negligible. 
+******    array of raw Jet*). Since Jet is now basically an envelope for a 
+******    a smart_ptr to implementation, its memory footprint is minimal. 
 ******    Use of value semantics for Jet components vastly simplifies memory 
 ******    management.       
 ******  
@@ -128,6 +128,7 @@ protected:
 
 public:
 
+  typedef typename std::vector<TJet<T> >::value_type           value_type;
   typedef typename std::vector<TJet<T> >::iterator             iterator;
   typedef typename std::vector<TJet<T> >::const_iterator const_iterator;
 
@@ -171,8 +172,6 @@ public:
   TJet<T> const&   operator[]      ( int idx) const { return comp_[idx]; } 
   TJet<T>&         operator[]      ( int idx)       { return comp_[idx]; }  
 
-  TJet<T> const&   operator()      ( int ) const; 
-  TJet<T> &        operator()      ( int ); 
                    // WARNING: There is no way to use this and be
                    //          assured that environments are consistent.
 
