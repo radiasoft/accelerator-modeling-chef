@@ -1803,7 +1803,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   int    nbin      =  256;    bool attribute_nbin     = false;
   int    binmax    =  2048;   bool attribute_binmax   = false;
   double aperture  =  0.0;    bool attribute_aperture = false;
-  bool   wakeon    =  false;  bool attribute_wakeon   = false;
+  bool   wakeon    =  true;   bool attribute_wakeon   = false; // wake is enabled by default
    
   if ( eval( string("L"),         attributes, value) ) {  attribute_length  = true; length   = any_cast<double>(value); }
   if ( eval( string("E0"),        attributes, value) ) {  attribute_e0      = true; e0       = any_cast<double>(value); }
@@ -1822,7 +1822,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   // NOTE: for a linac, PHI0=0 implies being on crest.  
   //--------------------------------------------------
 
-   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*2*M_PI);
+   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*M_TWOPI, wakeon);
 
    elm->rename( label.c_str() );
    elm->setLength(length);
