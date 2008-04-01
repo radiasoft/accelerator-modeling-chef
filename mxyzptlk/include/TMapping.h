@@ -53,6 +53,11 @@
 ******
 ******  - New TJetVector base class implementation. See  TJetVector.h for details. 
 ******                                                                
+******  Mar 2008 ostiguy@fnal
+******  - Map composition and evaluation code refactored. 
+******  - Support for evaluation of complex maps                                                                   
+******  - added (missing) implementation for in-place Map composition
+******
 **************************************************************************
 *************************************************************************/
 #ifndef TMAPPING_H
@@ -91,17 +96,13 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   TMapping& operator= ( TMapping const& );
 
+  TVector<T> operator()( TVector<T> const& )   const;
+  TMapping   operator()( TMapping   const& ) const;  // TMapping composition.
 
-  TJet<T> const& operator()( int i ) const;
-  TJet<T>&       operator()( int i ); 
+  TVector<T> operator* ( TVector<T>   const& ) const;  //  an alias for operator()
+  TMapping   operator* ( TMapping     const& ) const;  //  an alias for operator()
 
-  Vector    operator()( Vector const& )   const;
-  TMapping  operator()( TMapping const& ) const;  // TMapping composition.
-
-  Vector    operator* ( Vector   const& ) const;  //  an alias for operator()
-  TMapping  operator* ( TMapping const& ) const;  //  an alias for operator()
-
-  TMapping* operator*=( TMapping const& );
+  TMapping& operator*=( TMapping const& );
 
   TMatrix<T> Jacobian() const; // Retained for backwards compatability
   TMatrix<T> jacobian() const;
@@ -121,26 +122,12 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 //-------------------------------------------------------------------------------
 
  template<>
- Vector  TMapping<double>::operator()( Vector const& ) const;
- 
- template<>
- Vector  TMapping<double>::operator* ( Vector const& ) const;  //  an alias for operator()
-
- template<>
  template<>
  TMapping<std::complex<double> >::TMapping( TMapping<double> const& );
 
 //-------------------------------------------------------------------------------
 // Inline methods
 //-------------------------------------------------------------------------------
-
-template<typename T>
-inline TJet<T> const& TMapping<T>::operator()( int i ) const
-{ return this->TJetVector<T>::operator()( i ); }
-
-template<typename T>
-inline TJet<T>& TMapping<T>::operator()( int i )
-{ return this->TJetVector<T>::operator()( i ); }
 
 
 template<typename T>
