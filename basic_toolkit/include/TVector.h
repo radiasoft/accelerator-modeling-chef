@@ -80,7 +80,7 @@ class DLLEXPORT TVector {
 
 private:
 
-  // typedef typename std::vector<T, boost::pool_allocator<T> > vector_t;  
+  // **** disabled **** typedef typename std::vector<T, boost::pool_allocator<T> > vector_t;  
 
   typedef typename std::vector<T> vector_t;  
 
@@ -92,6 +92,8 @@ private:
 public:
 
   
+  typedef typename vector_t::value_type                         value_type;
+
   typedef typename vector_t::iterator                             iterator;
   typedef typename vector_t::const_iterator                 const_iterator;
 
