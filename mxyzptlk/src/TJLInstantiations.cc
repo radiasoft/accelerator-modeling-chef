@@ -36,6 +36,7 @@
 #include <mxyzptlk/TJLterm.h>
 #include <mxyzptlk/TJL.h>
 #include <mxyzptlk/TJL.tcc>
+#include <mxyzptlk/TJet.h> // needed for TJet<double>::JetToJL
 
 #include <gms/FastPODAllocator.h>
 #include <gms/FastAllocator.h>
@@ -48,6 +49,7 @@
 #include <ext/hash_map>
 #include <algorithm>
 #include <istream>
+#include <boost/iterator/transform_iterator.hpp>
 
 
 // ============================================================================================
@@ -145,6 +147,18 @@ bool operator==(TJL<std::complex<double> > const&, std::complex<double> const&);
 template 
 bool operator==(TJL<double > const&, double const&);
 
+template
+JLPtr<double> TJL<double>::compose(  boost::transform_iterator< TJet<double>::JetToJL, std::vector<TJet<double> >::const_iterator > , 
+                                     boost::transform_iterator< TJet<double>::JetToJL, std::vector<TJet<double> >::const_iterator > ) const;
+template
+JLPtr<std::complex<double> > 
+ TJL<std::complex<double> >::compose(  boost::transform_iterator<TJet<std::complex<double> >::JetToJL, std::vector<TJet<std::complex<double> > >::const_iterator > ,
+                                       boost::transform_iterator<TJet<std::complex<double> >::JetToJL, std::vector<TJet<std::complex<double> > >::const_iterator > ) const;
+
+template
+double    TJL<double>::evaluate(  std::vector<double>::const_iterator,                  std::vector<double>::const_iterator ) const;
+template
+std::complex<double>   TJL<std::complex<double> >::evaluate( std::vector<std::complex<double> >::const_iterator, std::vector<std::complex<double> >::const_iterator ) const;
 
 template
 std::ostream& operator<<(std::ostream&, TJL<double > const&);
