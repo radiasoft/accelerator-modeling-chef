@@ -1287,10 +1287,10 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
 
   if( simple ) {
     if( (0.0 == e1) && (0.0 == e2) ) {
-      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, angle );
 	}
     else {
-      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+      elm = new rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, angle, e1, e2 );
     }
       
     elm->setTag("RBEND");
@@ -1298,9 +1298,9 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
   }
 
   if( (0.0 == e1) && (0.0 == e2) ) {
-      elm = new CF_rbend( label.c_str(),  length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0) );
+      elm = new CF_rbend( label.c_str(),  length, BRHO*(2.0*sin(0.5*angle))/length, angle );
   } else {
-      elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 );
+      elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, angle, e1, e2 );
   }
 
   aligner.xOffset = 0.0;

@@ -443,20 +443,20 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
 
       if( simple ) {
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = ElmPtr ( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) ) );
+          lbel = ElmPtr ( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle ) );
 	}
         else {
-          lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 ) );
+          lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle, e1, e2 ) );
         }
       }
       else {
         CF_rbend* p =0; 
 
         if( (0.0 == e1) && (0.0 == e2) ) {
-          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0) )         );
+          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle )         );
 	}
         else {
-          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, (angle/2.0), e1, e2 ) );
+          lbel = ElmPtr( p = new CF_rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle, e1, e2 ) );
 	}
 
         double multipoleStrength;
