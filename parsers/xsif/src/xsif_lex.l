@@ -23,6 +23,7 @@
 ******  Author: Jean-Francois Ostiguy
 ******          ostiguy@fnal.gov 
 ******
+******
 **************************************************************************
 **************************************************************************/
 
@@ -68,6 +69,8 @@ comment_end    "ENDCOMMENT"
 real            ([0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)|([-+]?[1-9]+\.?+([eE][-+]?[0-9]+))
 
 integer         [0-9]+[0-9]*  
+
+boolean         TRUE|true|FALSE|false   
 
 string          (\"[^\"]*\")|(\'[^\']*\')
 
@@ -119,6 +122,10 @@ blk             [ \t]
 {real}                                                   {    
                                                               yylval->dval = strtod(yytext,0);
                                                               return token::XSIF_VALUE;   
+                                                         }
+
+{boolean}                                                {    yylval->bval = boost::algorithm::iequals("TRUE",yytext); 
+                                                              return token::XSIF_BOOLEAN;   
                                                          }
 
 {string}                                                 { 
