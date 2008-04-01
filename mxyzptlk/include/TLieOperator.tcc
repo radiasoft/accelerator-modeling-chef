@@ -423,7 +423,7 @@ TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x )
  // are not relevant.                             - lpjm
  
  for(  int i=0;  i < x.Dim(); ++i) {
-  z(i) = expMap( t, x(i) );
+  z[i] = expMap( t, x[i] );
  }
  return z;
 }
@@ -437,7 +437,7 @@ TJetVector<T> TLieOperator<T>::expMap( TJet<T> const& t, TJetVector<T> const& x 
                        // The initial value not relevant.  - lpjm
 
  for(  int i = 0; i < x.Dim(); ++i) {
-  z(i) = expMap( t, x(i) );
+  z[i] = expMap( t, x[i] );
  }
 
  return z;
