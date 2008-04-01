@@ -43,6 +43,12 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
+******  Mar 2008 ostiguy@fnal
+******  - Map composition and evaluation code refactored. 
+******  - Support for evaluation of complex maps                                                                   
+******  - added (missing) implementation for in-place Map composition
+******
+******
 **************************************************************************
 *************************************************************************/
 
@@ -69,39 +75,4 @@ TMapping<std::complex<double> >::TMapping( TMapping<double> const& x)
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-Vector TMapping<double>::operator()( Vector const& x ) const
-{
- int i = x.Dim();
- if( ( i != myEnv_->numVar() ) || ( i != comp_.size() ) ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "Vector TMapping<double>::operator()( const Vector& ) const",
-          "Incompatible dimensions." ) );
- }
-
- Vector z( comp_.size() );
-
- for( i=0;  i <myEnv_->spaceDim(); ++i) {
-  z(i) = comp_[i]( x );
- }
-
- return z;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-Vector TMapping<double>::operator*( Vector const& x ) const
-{
- return this->operator()(x);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-
-
 
