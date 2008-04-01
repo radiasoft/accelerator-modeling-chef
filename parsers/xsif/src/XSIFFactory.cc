@@ -168,10 +168,10 @@ double  XSIFFactory::getVariableValue(const char* varname) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double XSIFFactory::getEnergy() const
+double XSIFFactory::getMomentum() const
 {
 
-  return driver_.m_energy;
+  return driver_.m_momentum;
 
 
 }//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -201,7 +201,7 @@ void XSIFFactory::dumpVariables() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFunc XSIFFactory::getInitialValues()  const 
+LattFuncs XSIFFactory::getInitialValues()  const 
 {   
   return driver_.initial_values_;
 }
