@@ -57,6 +57,9 @@
 ****** - monomial multiplication now handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
 ******  
+******  Mar 2008 ostiguy@fnal
+******  - Jet composition and evaluation code refactored and optimized. 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -73,6 +76,7 @@
 #include <basic_toolkit/MathConstants.h>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 
 //-----------------------------------------------------------------
@@ -322,6 +326,9 @@ void TJet<T>::setTermCoefficient(T const& value, IntArray const& exp)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #if 0 
+=========================================================================
+FIXME
+=========================================================================
 template<typename T>
 T operator[ IntArray const& ] const
 {  
@@ -338,7 +345,7 @@ T&      operator[]( IntArray const& exp)
   return jl_->setTermCoefficient( exp );
 
 }   
-
+=========================================================================
 #endif
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -425,7 +432,6 @@ TJetEnvironment<T>::parameters_.push_back( this );
 
 
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -920,9 +926,7 @@ TJet<T> acos( TJet<T> const& x )
 template<typename T>
 TJet<T> asin( TJet<T> const& x ) 
 { 
-
  return TJet<T>(x.jl_->asin() );
-
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -963,9 +967,7 @@ TJet<T> cosh( TJet<T> const& x )
 template<typename T>
 TJet<T> exp( TJet<T> const& x ) 
 { 
- 
  return   TJet<T>( x->exp() ); // x->exp() returns a new instance
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -974,9 +976,7 @@ TJet<T> exp( TJet<T> const& x )
 template<typename T>
 TJet<T> log ( TJet<T> const& x ) 
 { 
-
   return   TJet<T>( x->log() ); // x->log() returns a new instance
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -995,9 +995,7 @@ TJet<T> log10( TJet<T> const& x )
 template<typename T>
 TJet<T> pow( TJet<T> const& x, const double& s ) 
 { 
-
  return TJet<T>( x->pow(s)); // pow(s) creates a new JL
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1007,9 +1005,7 @@ TJet<T> pow( TJet<T> const& x, const double& s )
 template<typename T>
 TJet<T> pow( TJet<T> const& x, int n ) 
 { 
-
  return TJet<T>( x->pow(n)); // pow(h) creates a new JL
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1019,7 +1015,6 @@ template<typename T>
 TJet<T> sin( TJet<T> const& x ) 
 { 
   return TJet<T> ( x.jl_->sin() ); // Note:: TJL<T>::sin() clones its argument 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1040,8 +1035,7 @@ template<typename T>
 TJet<T> sqrt( TJet<T> const& x ) 
 {
   return TJet<T>( x.jl_->sqrt() ); // sqrt returns a copy 
-  
-}
+  }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1065,13 +1059,11 @@ TJet<T> tanh( TJet<T> const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 TJet<T>  erfc( TJet<T> const& z ) 
 {
   return ( ((T) 1.0) - erf( z ) );
 }
-
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1101,7 +1093,6 @@ template<typename T>
 typename TJet<T>::const_iterator  TJet<T>::begin() const 
 { 
    return const_iterator( static_cast<TJL<T> const&>(*jl_).begin() ); 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1131,8 +1122,8 @@ template<typename T>
 typename TJet<T>::reverse_iterator   TJet<T>::rbegin() 
 {
   return boost::make_reverse_iterator( end() );
-
 }
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1149,7 +1140,6 @@ template<typename T>
 typename TJet<T>::reverse_iterator        TJet<T>::rend()
 {
   return boost::make_reverse_iterator( begin() );
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1159,7 +1149,6 @@ template<typename T>
 typename TJet<T>::const_reverse_iterator  TJet<T>::rend()   const
 {
   return boost::make_reverse_iterator( begin() );
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1168,8 +1157,7 @@ typename TJet<T>::const_reverse_iterator  TJet<T>::rend()   const
 template<typename T>
 void TJet<T>::peekAt() const 
 {
-jl_->peekAt( );
-
+ jl_->peekAt( );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1200,10 +1188,8 @@ void TJet<T>::writeToFile( ofstream& outStr ) const
  jl_->writeToFile( outStr );
 }
 
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 void TJet<T>::clear() 
@@ -1236,9 +1222,7 @@ T TJet<T>::derivative( IntArray const& ind ) const
 template<typename T>
 TJet<T> TJet<T>::filter( int const& wgtLo, int const& wgtHi ) const 
 { 
-
  return TJet<T>( jl_->filter(wgtLo,wgtHi) ); 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1247,71 +1231,64 @@ TJet<T> TJet<T>::filter( int const& wgtLo, int const& wgtHi ) const
 template<typename T>
 TJet<T> TJet<T>::filter( bool (*f) ( IntArray const&, T const& ) ) const 
 { 
-
  return TJet<T>( jl_->filter(f) ); 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::operator() ( TJetVector<T> const& y ) const 
+TJet<T>  TJet<T>::operator() ( TJetVector<T>          const& y) const // composition 
 {
- 
- std::vector<TJet<T> > u( y.begin(), y.end() );
+ typedef typename boost::transform_iterator< JetToJL, typename TJetVector<T>::const_iterator>  const_jl_iterator; 
 
- TJet<T> z = operator()( u );
+ const_jl_iterator it_b(  y.begin(), (JetToJL()) );
+ const_jl_iterator it_e(  y.end(),   (JetToJL()) );
 
- return z;
+ return  jl_->compose(it_b, it_e); 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T> TJet<T>::operator() ( std::vector<TJet<T> > const& y ) const 
+TJet<T>  TJet<T>::operator() ( std::vector<TJet<T> >  const& y ) const // composition 
+{
+
+ typedef typename boost::transform_iterator< JetToJL, typename std::vector<TJet<T> >::const_iterator >  const_jl_iterator; 
+
+ const_jl_iterator it_b(  y.begin(), (JetToJL()) );
+ const_jl_iterator it_e(  y.end(),   (JetToJL()) );
+
+ return jl_->compose(it_b, it_e); 
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+T TJet<T>::operator()( std::vector<T> const& y ) const 
 { 
-
- std::vector<jl_t> yjl( jl_->getEnv()->numVar() );
-
- for(int i=0; i< jl_->getEnv()->numVar(); ++i) {
-
-    yjl[i] = y[i].jl_;
- }
-
- return TJet<T>( jl_->compose( yjl ) ); 
-
+ return  jl_->evaluate( y.begin(), y.end()); 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJet<T>::operator() ( Vector const& x ) const 
-{
- return jl_->operator()( x );
+T TJet<T>::operator()( TVector<T> const& y ) const 
+{ 
+ return  jl_->evaluate( y.begin(), y.end() ); 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-T TJet<T>::operator() ( std::vector<T> const&  x ) const 
-{
- return jl_->operator()( x );
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T> TJet<T>::D( IntArray const& n ) const 
 {
-
  return TJet<T> ( jl_->D(n) ); 
-
 } 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1322,7 +1299,4 @@ double sobolev_norm ( TJet<T> const& arg)
 {
   return arg.jl_->maxAbs();
 }
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

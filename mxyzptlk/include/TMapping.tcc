@@ -5,7 +5,6 @@
 ******  MXYZPTLK:  A C++ implementation of differential algebra.      
 ******                                    
 ******  File:      TMapping.tcc
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.    
 ******                All Rights Reserved                             
@@ -59,7 +58,11 @@
 ******
 ******  - New TJetVector base class implementation. See  TJetVector.h for details. 
 ****** 
-******                                                                
+******  Mar 2008 ostiguy@fnal
+******  - Map composition and evaluation code refactored. 
+******  - Support for evaluation of complex maps                                                                   
+******  - added (missing) implementation for in-place Map composition
+******
 **************************************************************************
 *************************************************************************/
 
@@ -160,7 +163,7 @@ template<typename T>
 TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
 {
 
- if( x.comp_.size() != (this->myEnv_)->numVar() ) {
+ if( this->Dim() != x.Dim() ){
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T> TMapping<T>::operator()( const TMapping<T>& ) const",
           "Incompatible dimensions." ) );
@@ -168,11 +171,34 @@ TMapping<T> TMapping<T>::operator()(  TMapping<T> const& x ) const
 
  TMapping<T> z( (this->comp_.size()), x.myEnv_ );
 
- for( int i=0; i< (this->myEnv_)->spaceDim(); ++i) {
-  z.comp_[i] = (this->comp_)[i]( x );
+ typename TMapping<T>::iterator itz = z.begin(); 
+ for( typename TMapping<T>::const_iterator it = this->begin(); it != this->end(); ++it, ++itz ) {
+  (*itz) = (*it)( x );
  }
 
-   return z;
+ return z;
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TVector<T> TMapping<T>::operator()(  TVector<T> const& x ) const
+{
+
+ if(  this->Dim() != x.Dim() ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "TMapping<T> TMapping<T>::operator()( TVector<T>& ) const",
+          "Incompatible dimensions." ) );
+ }
+
+ TVector<T> z( x.Dim() );
+ typename TVector<T>::iterator itz = z.begin(); 
+ for( typename TMapping<T>::const_iterator it = this->begin(); it != this->end(); ++it, ++itz ) {
+  (*itz) = (*it)( x );
+ }
+
+ return z;
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -182,16 +208,38 @@ template<typename T>
 TMapping<T> TMapping<T>::operator*( TMapping<T> const& x ) const
 {
   // alias for composition operator
-  return operator()( x );
+  return (*this)( x );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void operator*=( TMapping<T>& x, TMapping<T> const& y ) 
+TVector<T> TMapping<T>::operator*( TVector<T> const& x ) const
 {
- x = x*y;
+  // alias for composition operator
+  return (*this)( x );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T>& TMapping<T>::operator*=(  TMapping<T> const& x ) 
+{
+
+ if( x.comp_.size() != (this->myEnv_)->numVar() ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "TMapping<T> TMapping<T>::operator*=( TMapping<T> const& ) ",
+          "Incompatible dimensions." ) );
+ }
+
+ for( typename TMapping<T>::iterator it = this->begin(); it != this->end(); ++it) {
+  (*it) = (*it)( x );
+ }
+
+ return *this;
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -41,7 +41,7 @@
 ******  
 ****** - refactored code to use single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
-******   implicit conversions.
+******   implicit conversion.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
 ****** - all implementation details now completely moved to TJL   
@@ -62,6 +62,9 @@
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
 ****** 
+******  Mar 2008 ostiguy@fnal
+******  - Jet composition and evaluation code refactored and optimized. 
+******
 **************************************************************************
 *************************************************************************/
 #ifndef TJET_H
@@ -320,6 +323,9 @@ class TJet: public gms::FastAllocator  {
 
   friend class TLieOperator<T>;
 
+  friend struct  JetToJL;       // an adaptable unary function used for transform_iterators   
+
+
 protected:
 
   mutable jl_t   jl_; 
@@ -338,6 +344,14 @@ protected:
 protected:
 
   typename TJet::jl_t & operator->() const { return jl_; }
+
+private:
+
+  struct  JetToJL {
+     typedef JLPtr<T>  result_type;
+
+     JLPtr<T> const operator()( TJet<T> const& o) const { return o.jl_; }
+  };
 
 public:
 
@@ -415,11 +429,11 @@ public:
                                    // Returns those JLterms for which the 
                                    // argument is satisfied.
 
-  T        operator() ( Vector const& ) const;
-  T        operator() ( std::vector<T>  const&)  const;	// multinomial evaluation of the Jet variable.
+  TJet<T> operator() ( TJetVector<T>             const& ) const; // composition 
+  TJet<T> operator() ( std::vector<TJet<T> >     const& ) const; // composition 
 
-  TJet     operator() (  TJetVector<T>        const&   )  const;       // Self explanatory ...
-  TJet     operator() ( std::vector<TJet<T> > const& y )  const;       // Self explanatory .    FIXME !     
+  T       operator() ( TVector<T>      const& ) const; // evaluation 
+  T       operator() ( std::vector<T>  const& ) const; // evaluation 
 
   TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
 
@@ -632,12 +646,6 @@ inline EnvPtr<T> TJet<T>::Env() const
 {
   return jl_->getEnv();
 }
-
-//template<typename T>
-//inline void TJet<T>::Env(  EnvPtr<T> const& pje ) const
-//{
-//  jl_->setEnv(pje);
-//}
 
 
 template<typename T>
