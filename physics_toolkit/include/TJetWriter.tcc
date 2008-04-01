@@ -11,7 +11,7 @@
 ******  Copyright (c) 2006  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
-******  Author:    Leo Michelotti                                     
+******  Author:    Leo Michelotti  (michelotti@fnal.gov)
 ******                                                                
 ******             Fermilab                                           
 ******             P.O.Box 500                                        
@@ -33,8 +33,14 @@
 ******                                                                
 ****** Revision History:
 ****** ----------------
+******   April 1, 2008
+******     - Updated iterator and pointer syntax to match 
+******       our current usage.
+******       Leo Michelotti  (michelotti@fnal.gov)
+******
 ******   May, 2006: 
 ******     - Still just a prototype but nonetheless useful.
+******       Leo Michelotti  (michelotti@fnal.gov)
 ******
 **************************************************************************
 *************************************************************************/
@@ -89,16 +95,17 @@ string TJetWriter<T>::TJetWriter::_writeLatexDiracTabular(   const TJet<T>&     
 {
   stringstream uic;
 
-  const TJLterm<T>* termPtr;
+  TJLterm<double> termPtr;
   int d = jetRef.getEnvNumVar();
   int e;
   IntArray exps(d);
 
-  Jet::iterator iter( jetRef );
-  termPtr = ++iter;
-  while( 0 != termPtr ) {
+  for(   Jet::const_iterator iter = jetRef.begin()
+       ; iter != jetRef.end()
+       ; ++iter ) {
+    termPtr = *iter;
     uic << "\\\\ $\\langle \\,";
-    exps = termPtr->exponents();
+    exps = termPtr.exponents( jetRef.Env() );
     for( int j = 0; j < d; j++ ) {
       e = exps(j);
       if( 0 != e ) {
@@ -113,10 +120,9 @@ string TJetWriter<T>::TJetWriter::_writeLatexDiracTabular(   const TJet<T>&     
     uic << "$ & $|$ & $" 
         << ff 
         << " \\, \\rangle$ & $=$ & $" 
-        << termPtr->coefficient() 
+        << termPtr.coefficient() 
         << "$"
         << endl;
-    termPtr = ++iter;
   }
 
   return uic.str();
