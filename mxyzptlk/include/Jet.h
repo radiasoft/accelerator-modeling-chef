@@ -51,11 +51,7 @@
 typedef TJL<double>                    JL;
 typedef TJL<std::complex<double> >     JLC;
 
-typedef TJet<double>                   Jet;
-typedef TJet<std::complex<double> >    JetC;
-typedef Tcoord<double>                 coord;
-typedef Tcoord<std::complex<double> >  coordC;
-typedef Tparam<double>                 param;
-typedef Tparam<std::complex<double> >  paramC;
+#include <mxyzptlk/Jetfwd.h>
+
 
 #endif // JET_H
