@@ -67,6 +67,7 @@ using boost::iequals;
 
 %union
 {
+  bool                               bval;
   int                                ival;
   double                             dval;
   std::string*                       sval;    /* string could/should be allocated from a pool to avoid leaks */ 
@@ -96,6 +97,7 @@ using boost::iequals;
 %token    XSIF_INT_VALUE
 %token    XSIF_STRING_VALUE
 %token    XSIF_VARIABLE
+%token    XSIF_BOOLEAN
 %token    XSIF_IDENTIFIER
 %token    XSIF_VARASSIGNMENT
 
@@ -449,10 +451,13 @@ attribute:
                                                                                                delete $<sval>1;
                                                                                                delete $<pexp>3; 
                                                                                              } 
-       ;
-  /*******************************************
        |
-       XSIF_IDENTIFIER '=' XSIF_LOGICAL
+       XSIF_IDENTIFIER '=' XSIF_BOOLEAN                                                      { driver.m_attributes[*$<sval>1] = $<bval>3; 
+                                                                                               delete $<sval>1;
+                                                                                             } 
+       ;
+       |
+  /*******************************************
        |
        XSIF_IDENTIFIER '=' XSIF_INTEGER
        |
