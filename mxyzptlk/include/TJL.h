@@ -65,8 +65,9 @@
 ****** - added get/setTermCoefficient to efficiently get/set a specific monomial
 ******   coefficient.
 ******
+******  Mar 2008 ostiguy@fnal
+******  - Jet composition and evaluation code refactored and optimized. 
 ******  
-**************************************************************************
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -103,6 +104,9 @@
 
 template<typename T>
 class TJL;
+
+template<typename T>
+class TJetVector;
 
 template<typename T>
 bool operator==( TJL<T> const& x,     TJL<T> const& y ); 
@@ -168,8 +172,6 @@ JLPtr<T> operator/(  JLPtr<T> const & x,    T const& y  );
 
 JLPtr<double> real(  TJL<std::complex<double> >* const& z ); 
 JLPtr<double> imag(  TJL<std::complex<double> >* const& z );
-
-
 
 // **********************************************************************************************************
 
@@ -312,10 +314,11 @@ friend class TJL;
   T weightedDerivative( IntArray const& ) const;
   T derivative( IntArray const& )         const;
 
-  T operator()( Vector const& ) const;
-  T operator()( std::vector<T> const& ) const; // multinomial evaluation of the TJL variable.  
+  template<typename const_iterator_t>
+  T evaluate( const_iterator_t itb, const_iterator_t ite) const; 
 
-  JLPtr<T> compose( std::vector<JLPtr<T> > const& y ) const; 
+  template< typename const_iterator_t>
+  JLPtr<T> compose(  const_iterator_t itb, const_iterator_t ite ) const; //  Jet composition operator  
 
   TJL& operator=( TJL const& );
   TJL& operator=( T   const& );
@@ -338,33 +341,33 @@ friend class TJL;
 
     public:
 
-      iter_()               : m_node(0) {}
+      iter_()               : node_(0) {}
 
-      explicit iter_( U* p) : m_node(p) {}
+      explicit iter_( U* p) : node_(p) {}
 
       template <class OtherType> 
       iter_( iter_<OtherType> const& other , 
              typename boost::enable_if<boost::is_convertible<OtherType*, U*> , enabler>::type = enabler())
-           : m_node(other.m_node) {}
+           : node_(other.node_) {}
 
     private:
 
       friend class boost::iterator_core_access;
 
-      U&   dereference() const  { return *m_node; }  
+      U&   dereference() const  { return *node_; }  
         
-      void            increment()                                   { ++m_node;          } 
-      void            decrement()                                   { --m_node;          } 
-      void            advance( typename iter_::difference_type n )  { m_node += n;       }   
+      void            increment()                                   { ++node_;          } 
+      void            decrement()                                   { --node_;          } 
+      void            advance( typename iter_::difference_type n )  { node_ += n;       }   
       typename iter_::difference_type 
-                      distanceto( iter_ const&  j)                  { return m_node - j; }   
+                      distanceto( iter_ const&  j)                  { return node_ - j; }   
  
       bool equal( iter_ const& other) const 
             {
-              return this->m_node == other.m_node;
+              return this->node_ == other.node_;
             }
 
-      U* m_node;
+      U* node_;
    };
 
   typedef iter_<TJLterm<T> >             iterator;
@@ -493,6 +496,8 @@ friend class TJL;
   template< void T_function( T&, T const&) >
   static JLPtr<T>          add(  JLPtr<T> const&, JLPtr<T> const&); 
 
+
+
 };
 
 //-------------------------------------------------------------------------------------
@@ -506,6 +511,7 @@ TJL<std::complex<double> >::TJL( TJL<double> const& );
 template<> 
 template<> 
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
+
 
 //-------------------------------------------------------------------------------------
 // Inline functions 
