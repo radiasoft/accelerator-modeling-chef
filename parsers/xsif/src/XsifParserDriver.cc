@@ -438,7 +438,7 @@ void XsifParserDriver::error(  xsif_yy::location const& l, const string& m) cons
 
   stringstream ss; 
 
-  ss <<  "XSIF Parser syntax error : " << l  << m << endl;
+  ss <<  "XSIF Parser error : " << l  << m << endl;
 
   xsif_yy::location loc;
 
@@ -569,7 +569,6 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
 void XsifParserDriver::addLineToDictionary( std::string const& label, BmlPtr& bml ) 
 {
   m_lines[label] = BmlPtr(bml);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1069,6 +1068,7 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
  
 
  ElmPtr elm;
+ std::stringstream msg;
 
  if ( ( result.first != m_makefncs.end() ) && (distance(result.first, result.second) < 2)) {
     
@@ -1083,18 +1083,35 @@ XsifParserDriver::instantiateElement(xsif_yy::location const& yyloc, string cons
     }
 
     if ( !match ) {
-      std::stringstream ss; ss << "Element type \"" << type << "\" is unknown. " << std::ends;
-                 throw GenericException( __FILE__, __LINE__, "XsifParserDriver::instantiateElement", ss.str().c_str() );
+      msg.str(""); 
+      msg << "Element type \"" << type << "\" is unknown. " << std::ends;
+      error (yyloc, msg.str() );
     }
 
-    double BRHO   = m_variables["__BRHO"].evaluate();
-    elm = (this->*m_makefncs[result.first->first])(user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
+    boost::any value;
+    double length = ( eval( string("L"),  attributes, value) )  ?  any_cast<double>(value) : 0.0;
+
+    if ( length < 0.0) { 
+      msg.str(""); 
+      msg << "Element " << label << " has negative length attribute L = " << length << std::ends; 
+      error (  yyloc, msg.str() ); 
+    }
+
+    expr_map_t::iterator it = m_variables.find("__BRHO");  
+    if ( it == m_variables.end() ) {
+      msg.str(""); 
+      msg << "Particle momentum has not been set. Is the BEAM statement missing or incomplete ? "<< std::ends; 
+      error (  yyloc, msg.str() ); 
+    }
+
+   double BRHO   = m_variables["__BRHO"].evaluate();
+   elm = (this->*m_makefncs[result.first->first])(user_defined_elm, BRHO,  label, attributes);   // unambiguous match;
  }
  else {
 
-    std::stringstream ss; ss << "Element type \"" << type << "\" is ambiguous. " << std::ends;
-    throw GenericException( __FILE__, __LINE__, "XsifParserDriver::instantiateElement",  ss.str().c_str() );
-
+    msg.str(""); 
+    msg << "Element type \"" << type << "\" is ambiguous. " << std::ends;
+    error (yyloc, msg.str() );
  }
 
  addElmToDictionary( label, elm, attributes ); 
@@ -1803,7 +1820,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   int    nbin      =  256;    bool attribute_nbin     = false;
   int    binmax    =  2048;   bool attribute_binmax   = false;
   double aperture  =  0.0;    bool attribute_aperture = false;
-  bool   wakeon    =  false;  bool attribute_wakeon   = false;
+  bool   wakeon    =  true;   bool attribute_wakeon   = false; // wake is enabled by default
    
   if ( eval( string("L"),         attributes, value) ) {  attribute_length  = true; length   = any_cast<double>(value); }
   if ( eval( string("E0"),        attributes, value) ) {  attribute_e0      = true; e0       = any_cast<double>(value); }
@@ -1822,7 +1839,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   // NOTE: for a linac, PHI0=0 implies being on crest.  
   //--------------------------------------------------
 
-   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*2*M_PI);
+   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*M_TWOPI, wakeon);
 
    elm->rename( label.c_str() );
    elm->setLength(length);
