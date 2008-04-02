@@ -6,7 +6,7 @@
 !
 !(1) added a BEAM statement
 !(2) fixed a typo in the expression for drift D601E length attribute (LPING replaced by LPINGER)
-!(3) merged D0601E and D0601D to avoid dealing with a negative length.
+!(3) merged D602E and D602D to avoid dealing with a negative length.
 !(4) change the definition order for some markers elements
 !    used in beamlines before being defined.
 !(5) replaced RBENDS by SBENDS with face angles. 
@@ -3640,13 +3640,15 @@ D602F: DRIFT, L = 0.1397
 D602G: DRIFT, L = 0.81915 - LIQBU_END-LMIVC_SLOT-D1IN[L]
 ! 3 kicker layout inserted 10/10/02 by 
 D602A: DRIFT, L = 0.508 - LIQBD_END- 0.3
-D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
-                  -D602B[L]-LRWM-D602C[L]-D602D[L] &
-                  -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
-                  -LMIVC_SLOT-D1IN[L]-LIQBU_END
-
-D602DE: DRIFT, L = D602E[L] +  D602D[L]
-
+!D602E: DRIFT, L = LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
+!                  -D602B[L]-LRWM-D602C[L]-D602D[L] &
+!                  -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
+!                  -LMIVC_SLOT-D1IN[L]-LIQBU_END
+D602DE: DRIFT, L =  D602D[L] + & 
+                    LSS602-LIQBD_END-D602A[L]-3*LK602_SLOT-2*LK602_SPOOL &
+                   -D602B[L]-LRWM-D602C[L]-D602D[L] &
+                   -LWBPU-D602F[L]-LSCHOTTKY-LDAMPERPU-D602G[L] &
+                   -LMIVC_SLOT-D1IN[L]-LIQBU_END
 
 SS602: LINE = (IQBDEND,D602A,K602_INS,D602B,RWM,D602C, &
                 D602DE,WBPU,D602F,VSD,VDPU,D602G, &
