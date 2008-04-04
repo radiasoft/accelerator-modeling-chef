@@ -22,6 +22,7 @@
 ******                                                                
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #include <iostream>
@@ -29,11 +30,11 @@
 
 using namespace std;
 
-GenericException::GenericException( string fileName, 
-                                    int lineNumber, 
-                                    const char* fcn, 
-                                    const char* msg ):
-  _lineno(0)
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+GenericException::GenericException( string fileName, int lineNumber, const char* fcn,  const char* msg )
+ : lineno_(lineNumber)
 {
   ostringstream uic;
   uic << "\n*** ERROR *** "
@@ -51,9 +52,10 @@ GenericException::GenericException( string fileName,
          << endl;
     firstTime = false;
   }
-
-  _lineno = lineNumber;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const char* GenericException::what() const throw()
 {
@@ -61,7 +63,13 @@ const char* GenericException::what() const throw()
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int GenericException::lineNumber() const throw()
 {
-  return _lineno;
+  return lineno_;
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
