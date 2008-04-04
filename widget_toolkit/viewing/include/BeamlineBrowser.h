@@ -234,7 +234,7 @@ private:
     QPoint presspos;
     bool mousePressed;
 
-    static void  displayLine( QBmlRoot*, beamline::const_reverse_iterator rit, double& );
+    static void  displayLine( QBmlRoot*, BmlPtr, beamline::const_reverse_iterator rit, double& );
 
     std::list<QBmlRoot*>       topLevelItems_;
     QBmlRoot*                  lastClickedRootPtr_;
