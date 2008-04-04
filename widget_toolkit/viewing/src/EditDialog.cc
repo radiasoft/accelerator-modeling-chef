@@ -52,6 +52,7 @@
 
 #include <GenericException.h>
 #include <physics_toolkit/BeamlineContext.h>
+#include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/Slot.h>
 #include <beamline/marker.h>
@@ -506,7 +507,7 @@ void editDialog::visit( Slot& x )
 
 
       Particle* particlePtr = (_contextPtr->getParticle()).Clone();
-      _contextPtr->getReferenceParticle( *particlePtr );
+      *particlePtr = _contextPtr->getReferenceParticle();
 
       beamline::const_deep_iterator dbi  = _contextPtr->cheatBmlPtr()->deep_begin();
       ElmPtr q;
