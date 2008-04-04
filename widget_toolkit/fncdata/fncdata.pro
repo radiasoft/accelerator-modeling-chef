@@ -21,6 +21,7 @@ windows:CONFIG  += qt opengl x11 debug warn_on thread staticlib exceptions rtti
 unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
 INCLUDEPATH     += ../plotting/chefplot/include
+INCLUDEPATH     += /usr/local/vsqlite++/include
 INCLUDEPATH     += ../plotting/chefplot/src/ui
 
 HEADERS += ./include/MomentsFncData.h \
@@ -28,11 +29,14 @@ HEADERS += ./include/MomentsFncData.h \
            ./include/ETFncData.h \
            ./include/LBFncData.h \
            ./include/LattFncData.h \
-           ./include/BunchData.h
+           ./include/BunchData.h \
+           ./include/LFDataTable.h
 
 SOURCES += ./src/MomentsFncData.cc \
            ./src/DspnFncData.cc \
            ./src/ETFncData.cc \
            ./src/LBFncData.cc \
            ./src/LattFncData.cc \
-           ./src/BunchData.cc
+           ./src/BunchData.cc \
+           ./src/LFDataTable.cc 
+
