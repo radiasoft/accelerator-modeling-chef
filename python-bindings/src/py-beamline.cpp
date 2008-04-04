@@ -85,8 +85,8 @@ void (beamline::*beamline_propagateParticle)     (Particle&      ) =  &beamline:
 void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) =  &beamline::propagate;
 void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) =  &beamline::propagate;
 
-void (beamline::*insert1) (  ElmPtr const& )                       =  &beamline::insert;
-void (beamline::*append1) (  ElmPtr const& )                       =  &beamline::append;
+void (beamline::*insert1) (  ElmPtr )                              =  &beamline::insert;
+void (beamline::*append1) (  ElmPtr )                              =  &beamline::append;
 void (beamline::*accept1) (  BmlVisitor& )                         =  &beamline::accept;
 
 int (beamline::*countHowMany1)()       const                       =  &beamline::countHowMany;
@@ -169,13 +169,9 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("propagateJetParticle",   beamline_propagateJetParticle);
  beamline_.def("propagateParticleBunch", beamline_propagateParticleBunch);
 
- beamline_.def("setEnergy",      &beamline::setEnergy);
- beamline_.def("unTwiss",        &beamline::unTwiss);
+ beamline_.def("setMomentum",    &beamline::setMomentum);
  beamline_.def("eraseBarnacles", &beamline::eraseBarnacles);
 
- //beamline_.def("twiss", twiss1);
- //beamline_.def("twiss", twiss2);
- //beamline_.def("twiss", twiss3);
 
   // QUERIES
 
@@ -188,10 +184,7 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("depth",                      &beamline::depth);
  beamline_.def("firstElement",               &beamline_firstElement, return_value_policy<reference_existing_object>() );
  beamline_.def("lastElement",                &beamline_lastElement,  return_value_policy<reference_existing_object>() );
- beamline_.def("twissIsDone",                &beamline::twissIsDone);
- beamline_.def("setTwissIsDone",             &beamline::setTwissIsDone);
- beamline_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
- beamline_.def("Energy",                     &beamline::Energy);
+  beamline_.def("Momentum",                  &beamline::Momentum);
  beamline_.def("OrbitLength",                &beamline::OrbitLength);
  beamline_.def("accept",                     accept1);
  //beamline_.def("flatten",&beamline::flatten,

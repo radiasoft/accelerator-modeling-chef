@@ -85,14 +85,14 @@ class MappingWrapper: public TMapping<T> {
 
     boost::python::list terms[6];
     for (int i = 0; i<6; ++i) {
-      for ( Jet::iterator it = this->operator()(i).begin();  it != this->operator()(i).end(); ++it ) {
+      for ( Jet::iterator it = (*this)[i].begin();  it != (*this)[i].end(); ++it ) {
         tuple term = make_tuple(it->coefficient(),
-                                make_tuple(it->exponents(this->Env())(0),
-                                           it->exponents(this->Env())(1),
-                                           it->exponents(this->Env())(2),
-                                           it->exponents(this->Env())(3),
-                                           it->exponents(this->Env())(4),
-                                           it->exponents(this->Env())(5)));
+                                make_tuple(it->exponents(this->Env())[0],
+                                           it->exponents(this->Env())[1],
+                                           it->exponents(this->Env())[2],
+                                           it->exponents(this->Env())[3],
+                                           it->exponents(this->Env())[4],
+                                           it->exponents(this->Env())[5]));
         terms[i].append(term);
       }
     }
