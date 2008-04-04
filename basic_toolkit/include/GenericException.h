@@ -55,13 +55,14 @@ class DLLEXPORT GenericException : public std::exception
   // 3rd         : identifies function containing throw
   // 4th         : identifies type of error
 
-  ~GenericException() throw() {}
-  const char* what() const throw();
-  std::string errorString;
-  int lineNumber() const throw();
+ ~GenericException()                 throw() {}
+
+  char const*     what()       const throw();
+  std::string     errorString;
+  int             lineNumber() const throw();
 
  private:
-  int _lineno;
+  int lineno_;
 };
 
 #endif // GENEXC_H
