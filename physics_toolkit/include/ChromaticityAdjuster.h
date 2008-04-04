@@ -59,14 +59,15 @@
 #define CHROMADJUST_H
 
 #include <beamline/beamline.h>
+#include <beamline/sextupole.h>
 #include <physics_toolkit/Sage.h>
 
 class ChromaticityAdjuster : public Sage {
 
 public:
 
-  ChromaticityAdjuster( BmlPtr );
-  ChromaticityAdjuster( beamline const& );
+  ChromaticityAdjuster( BmlPtr,          sqlite::connection& db );
+  ChromaticityAdjuster( beamline const&, sqlite::connection& db);
 
 
  ~ChromaticityAdjuster();

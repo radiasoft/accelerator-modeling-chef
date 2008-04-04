@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      TuneAdjuster.h
-******  Version:   2.0
 ******                                                                
 ******  Copyright (c) 2001  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -78,8 +77,8 @@ class TuneAdjuster : public Sage {
 
 public:
 
-  TuneAdjuster( BmlPtr bml     ); // shared
-  TuneAdjuster( beamline const&); // beamline is cloned
+  TuneAdjuster( BmlPtr bml,       sqlite::connection& ); // shared
+  TuneAdjuster( beamline const&,  sqlite::connection& ); // beamline is cloned
 
  ~TuneAdjuster();
 

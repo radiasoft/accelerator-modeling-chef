@@ -5,7 +5,6 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   2.0
 ******                                    
 ******  File:      BmlUtil.h
 ******                                                                
@@ -61,24 +60,27 @@
 #include <list>
 #include <basic_toolkit/Matrix.h>
 #include <mxyzptlk/Mapping.h>
-#include <physics_toolkit/CovarianceSage.h>
 
+#include<beamline/ElmPtr.h>
+#include<beamline/BmlPtr.h>
+#include<beamline/LatticeFunctions.h>
 
-class BmlUtil
-{
+class Particle;
+
+class BmlUtil {
+
  public: 
-  static void normalize( MatrixC&, Vector& );
+
+  static void normalize( MatrixC& B, Vector& normalizedPhase );
   // On input: the columns of E contain eigenvectors of
   //   a one-turn matrix. 
   // On output: each column has been normalized
   //   for physical interpretation.
 
-  static int makeCovariance( CovarianceSage::Info& info,  
-                             const Particle&, 
-                             double = 40.0, double = 40.0, double = 40.0 );
-  static int makeCovariance( CovarianceSage::Info*,
-                             const Particle&, 
-                             double = 40.0, double = 40.0, double = 40.0 );
+  static int makeCovariance( LattFuncs & info,  
+                             Particle const&, 
+                             double eps1, double eps2, double eps3);
+
   // The preceding functions use the "alpha" and "beta" information
   //   in the argument, info, to construct what would be an uncoupled 
   //   equilibrium covariance matrix at those values of alpha and beta,

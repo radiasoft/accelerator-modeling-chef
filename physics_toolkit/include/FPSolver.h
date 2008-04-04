@@ -96,7 +96,9 @@ class FPSolver {
   int  operator()( JetParticle&, char const*, FP_CRITFUNC = 0 );   
   void operator()( JetParticle&,              FP_CRITFUNC = 0 );  // FixedPoint
 
- void eraseAll();
+  int solve( JetParticle& jp );
+
+  void eraseAll(); 
 
  private:
 
