@@ -828,10 +828,11 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         double alphaH, betaH, alphaV, betaV;
         double u, v;
 
-        alphaH = ( _topTracker->_p_info->alpha ).hor;
-        betaH  = ( _topTracker->_p_info->beta  ).hor;
-        alphaV = ( _topTracker->_p_info->alpha ).ver;
-        betaV  = ( _topTracker->_p_info->beta  ).ver;
+        CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*(_topTracker->_p_info));
+        alphaH = lf.alpha.hor;
+        betaH  = lf.beta.hor;
+        alphaV = lf.alpha.ver;
+        betaV  = lf.beta.ver;
 
         list<Orbit*> orbits3D;
         Vector z(3);
@@ -1424,10 +1425,10 @@ void Tracker::_view_norm()
 
   if( _p_info ) { delete _p_info; _p_info = 0; }
 
-  Vector sss( _bmlConPtr->particle_->State() );
+  Particle psave( _bmlConPtr->getParticle() );
 
   try {
-    _p_info = new LattFuncSage::lattFunc( _bmlConPtr->getTwissArray().back()  );
+    _p_info = new LattFuncs( _bmlConPtr->getInitial() );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -1439,10 +1440,11 @@ void Tracker::_view_norm()
     return;
   }
 
+  CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*_p_info);
   _p_leftWindow->storeCurrentContext();
   _p_leftWindow->setNormContext();
   if( 0 == _p_leftWindow->getTransformer() ) {
-    _p_leftWindow->setTransformer( new NormH( _p_info->alpha.hor, _p_info->beta.hor ) );
+    _p_leftWindow->setTransformer( new NormH( lf.alpha.hor, lf.beta.hor ) );
     _p_leftWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                              - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
   }
@@ -1450,7 +1452,7 @@ void Tracker::_view_norm()
   _p_rightWindow->storeCurrentContext();
   _p_rightWindow->setNormContext();
   if( 0 == _p_rightWindow->getTransformer() ) {
-    _p_rightWindow->setTransformer( new NormV( _p_info->alpha.ver, _p_info->beta.ver ) );
+    _p_rightWindow->setTransformer( new NormV( lf.alpha.ver, lf.beta.ver ) );
     _p_rightWindow->setRange( - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE, 
                               - DrawSpace::DEF_RANGE, DrawSpace::DEF_RANGE );
   }
@@ -1466,7 +1468,7 @@ void Tracker::_view_norm()
   _p_rightWindow->uploadBuffer();
 
    // Reset before exiting
-  _bmlConPtr->setParticleState(sss);
+  _bmlConPtr->setParticle(psave);
 }
 
 
@@ -1479,7 +1481,7 @@ void Tracker::_view_actang()
   if( _p_info ) { delete _p_info; _p_info = 0; }
 
   try {
-    _p_info = new LattFuncSage::lattFunc( _bmlConPtr->getTwissArray().back() );
+    _p_info = new LattFuncs( _bmlConPtr->getInitial() );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -1491,10 +1493,11 @@ void Tracker::_view_actang()
     return;
   }
 
-  double a1 = _p_info->alpha.hor;
-  double b1 = _p_info->beta.hor;
-  double a2 = _p_info->alpha.ver;
-  double b2 = _p_info->beta.ver;
+  CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*_p_info);
+  double a1 = lf.alpha.hor;
+  double b1 = lf.beta.hor;
+  double a2 = lf.alpha.ver;
+  double b2 = lf.beta.ver;
 
   _p_leftWindow->storeCurrentContext();
   _p_leftWindow->setActAngContext();
@@ -1887,7 +1890,7 @@ void Tracker::_tool_pdicOrb()
 
 
     // Finish and clean up ...
-    _bmlConPtr->setParticleState(w);
+    _bmlConPtr->setParticle(*dummyPtr);
 
     if( 0 != dummyPtr ) { delete dummyPtr; dummyPtr = 0; }
     if( 0 != jpPtr    ) { delete jpPtr;    jpPtr    = 0; }
@@ -1906,7 +1909,7 @@ void Tracker::_tool_dppMod()
       QHBox* qhb1 = new QHBox( qvb );
         new QLabel( "dp/p: ", qhb1 );
         QString stl;
-        stl.setNum( _bmlConPtr->getParticle_ndp() );
+        stl.setNum( _bmlConPtr->getParticle().State()[5] );
         QLineEdit* qle = new QLineEdit( stl, qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
@@ -1943,7 +1946,9 @@ void Tracker::_tool_dppMod()
       return;
     }
 
-    _bmlConPtr->setParticle_ndp( newdpp );
+    Particle p =  _bmlConPtr->getParticle();
+    p.set_ndp(newdpp); 
+    _bmlConPtr->setParticle(p);
   }
 
   delete wpu;
@@ -1952,32 +1957,40 @@ void Tracker::_tool_dppMod()
 
 void Tracker::_new_x( double x )
 {
-  _bmlConPtr->setParticle_x(x);
+  Particle p = _bmlConPtr->getParticle();
+  p.set_x(x);
+  _bmlConPtr->setParticle(p);
 }
 
 
 void Tracker::_new_xp( double xp )
 {
-  _bmlConPtr->setParticle_npx(xp);
+  Particle p = _bmlConPtr->getParticle();
+  p.set_npx(xp);
+  _bmlConPtr->setParticle(p);
 }
 
 
 void Tracker::_new_y( double y )
 {
-  _bmlConPtr->setParticle_y(y);
+  Particle p = _bmlConPtr->getParticle();
+  p.set_npy(y);
+  _bmlConPtr->setParticle(p);
 }
 
 
 void Tracker::_new_yp( double yp )
 {
-  _bmlConPtr->setParticle_npy(yp);
+  Particle p = _bmlConPtr->getParticle();
+  p.set_npy(yp);
+  _bmlConPtr->setParticle(p);
 }
 
 
 void Tracker::_makeNewOrbit()
 {
   if( _isIterating ) {
-    _p_currOrb = new Orbit( _bmlConPtr->getParticleState() );
+    _p_currOrb = new Orbit( _bmlConPtr->getParticle().State() );
     _myWheel.increment();
     _p_currOrb->setColor( _myWheel.red(), _myWheel.green(), _myWheel.blue() );
     orbits_.push_back( _p_currOrb );
@@ -1998,7 +2011,9 @@ void Tracker::_cnvFromView( double a, double b, const OrbitTransformer* otPtr )
 void Tracker::setState( const Vector& s )
 {
   if( s.Dim() == 6 ) {
-    _bmlConPtr->setParticleState( s );
+    Particle p = _bmlConPtr->getParticle();
+    p.State() = s;
+    _bmlConPtr->setParticle(p);
   }
   else {
     ostringstream uic;

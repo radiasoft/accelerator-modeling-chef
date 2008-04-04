@@ -63,14 +63,15 @@
 
 #include <basic_toolkit/ColorWheel.h>
 #include <basic_toolkit/VectorD.h>
-#include <physics_toolkit/LattFuncSage.h>
 #include <beamline/BmlPtr.h>
+#include <beamline/LatticeFunctions.h>
 
 // Predeclaration of classes...
 
 class DrawSpace;
 class Tracker;
 class PointEdit;
+class Particle;
 
 typedef void (*DrawFunc) ( DrawSpace* );
 
@@ -267,7 +268,7 @@ public:
   int run();
 
   std::list<Orbit*>       orbits_;
-  LattFuncSage::lattFunc* _p_info;
+  LattFuncs*              _p_info;
 
   void setState( const Vector& );
 
