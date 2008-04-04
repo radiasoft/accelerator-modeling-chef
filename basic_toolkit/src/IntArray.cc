@@ -139,10 +139,19 @@ IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
   Sum(); // this sets weight_ and   weight_is_valid to true;     
 
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // Assignment ...
+
+void IntArray::push_back( exponent_t const& value)
+{
+  comp_.push_back(value);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void IntArray::Set( int const* x, int n)
 {
@@ -168,8 +177,6 @@ void IntArray::Set( int x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// Algebraic functions ...
-
 IntArray& IntArray::operator= ( IntArray const& x )
 {
   if ( &x == this ) return *this;
@@ -184,26 +191,48 @@ IntArray& IntArray::operator= ( IntArray const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// Boolean functions ...
+IntArray IntArray::operator+( IntArray const& y) const 
+{
+  IntArray result( Dim(), (exponent_t()) );
+
+  std::transform( begin(), end(), y.begin(), result.begin(), std::plus<exponent_t>());
+
+  result.weight_is_valid_ = false;  
+  result.Sum();  // forces recomputation of the weight
+
+  return result;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+IntArray  IntArray::operator*  ( IntArray const& rhs) const
+{
+  IntArray result( Dim(), (exponent_t()) );
+  transform( begin(), end(), rhs.begin(), result.begin(), std::multiplies<exponent_t>() );
+
+  result.weight_is_valid_ = false;  
+  result.Sum();  // forces recomputation of the weight
+   
+  return result;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool IntArray::operator== ( IntArray const& rhs ) const
 {
-
   return std::equal( begin(), end(), rhs.begin() );
-
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool IntArray::PartialEqual( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2 )
 {
-  
   //compares only entries between IntArray(idx1) and IntArray(idx2) (inclusively).
  
   return std::equal( lhs.begin()+idx1, lhs.begin()+idx2+1,  rhs.begin()+idx1 );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -211,7 +240,6 @@ bool IntArray::PartialEqual( IntArray const& lhs, IntArray const& rhs, int idx1,
 
 bool IntArray::PartialLessThan( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2 )
 {
-  
   //compares only entries between IntArray(idx1) and IntArray(idx2) (inclusively).
  
    return std::lexicographical_compare( lhs.begin()+idx1, lhs.begin()+idx2+1, rhs.begin()+idx1,  rhs.begin()+idx2+1, std::less<exponent_t>() );
@@ -241,9 +269,7 @@ bool IntArray::operator< ( IntArray const& x ) const
 
 bool IntArray::operator<= ( IntArray const& x ) const
 {
-
   return std::lexicographical_compare( rbegin(), rend(), x.rbegin(),  x.rend(), std::less_equal<exponent_t>() );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -251,9 +277,7 @@ bool IntArray::operator<= ( IntArray const& x ) const
 
 bool IntArray::operator> ( IntArray const& x ) const
 {
-
   return std::lexicographical_compare( rbegin(), rend(), x.rbegin(),  x.rend(), std::greater<exponent_t>() );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -261,9 +285,7 @@ bool IntArray::operator> ( IntArray const& x ) const
 
 bool IntArray::operator>= ( IntArray const& x ) const
 {
-
   return std::lexicographical_compare( rbegin(), rend(), x.rbegin(), x.rend(), std::greater_equal<exponent_t>() );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -271,14 +293,12 @@ bool IntArray::operator>= ( IntArray const& x ) const
 
 bool IntArray::operator== ( int x ) const
 {
-
   for ( const_iterator it = begin();  it != end(); ++it ) 
   {
     if ( *it == x ) return false;
   }
 
   return true;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -287,22 +307,6 @@ bool IntArray::operator== ( int x ) const
 bool IntArray::operator!= ( int x ) const
 {
   return !( operator==( x ) );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-IntArray IntArray::operator+( IntArray const& y) const 
-{
-     
-     IntArray ret( *this );
-
-     std::transform( begin(), end(), y.begin(), ret.begin(), std::plus<exponent_t>());
-
-     ret.weight_is_valid_ = false;  
-     ret.Sum();  // forces recomputation of the weight
-   
-     return ret;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
