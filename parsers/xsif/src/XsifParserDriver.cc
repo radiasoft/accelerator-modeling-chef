@@ -530,7 +530,7 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
 { 
 
   beamline* bl = new beamline( name.c_str() ); 
-  bl->setEnergy( m_energy); 
+  bl->setMomentum( m_momentum); 
 
   map<string,  BmlPtr>::iterator bml_it;  
   map<string, ElmData>::iterator elm_it;  
@@ -702,7 +702,7 @@ BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string 
  
   BmlPtr bl( new beamline ( name_and_args.c_str() ) ); 
 
-  bl->setEnergy( m_energy );
+  bl->setMomentum( m_momentum );
 
   map<string,  ElmData>::iterator elm_it;
   map<string,   BmlPtr>::iterator bml_it;
@@ -880,7 +880,7 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
 
   
    m_BRHO          = pc/PH_CNV_brho_to_p;
-   m_energy        = energy;
+   m_momentum      = pc;
 
    Expression exp; exp.insert(ExprData(m_BRHO));
 
@@ -984,10 +984,10 @@ void XsifParserDriver::command_BETA0( xsif_yy::location const& yyloc,std::map<st
 
 
   initial_values_.arcLength        = 0.0;
-  initial_values_.dispersion.hor   = dx;
-  initial_values_.dispersion.ver   = dy;
-  initial_values_.dPrime.hor       = dpx; 
-  initial_values_.dPrime.ver       = dpy;
+  initial_values_.dispersion.x     = dx;
+  initial_values_.dispersion.y     = dy;
+  initial_values_.dispersion.xp    = dpx; 
+  initial_values_.dispersion.yp    = dpy;
   initial_values_.beta.hor         = betx;
   initial_values_.beta.ver         = bety;
   initial_values_.alpha.hor        = alfx;
@@ -1524,7 +1524,7 @@ ElmPtr  q;
 
 beamline*  temp  = new beamline( label.c_str() ); 
 
-temp->setEnergy( BRHO ); /// FIXME !!!! TOTAL ENERGY DEPENDS ON PARTICLE TYPE. USING BRHRO  
+temp->setMomentum( BRHO ); /// FIXME !!!! TOTAL ENERGY DEPENDS ON PARTICLE TYPE. USING BRHRO  
 
 double   kl[21]; { for (int i=0; i<21; ++i)   kl[i] = 0.0; } 
 double tilt[21]; { for (int i=0; i<21; ++i) tilt[i] = 0.0; }
