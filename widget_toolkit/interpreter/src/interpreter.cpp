@@ -66,57 +66,82 @@ int  testcomplete(char*);
 // We need to explicitly call initx because the modules are statically linked.
 
 
-Interpreter* Interpreter::_instance = 0;
+Interpreter* Interpreter::instance_ = 0;
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Interpreter::Interpreter() 
 
 {
 
+//-----------------------------------------------------------------------------------
+// NOTE: Usually, the initXXX function is called when a shared module named XXX is 
+//       dynamically loaded. 
+//       In order to pre-load a module in (e.g. as part of a lib linked to an object 
+//       that contains an embeded interpreter), it must first be explicitly initialized,
+//       ( since the dynamic loading function is not called ). 
+//       This can be accomplished either by calling initXXX() explicitly _after_
+//       calling  Py_Initialize() or by adding the module to the std module 
+//       initialization  list using PyImport_AppendInittab _before_ calling 
+//       Py_Initialize().     
+// ----------------------------------------------------------------------------------  
+
+   PyImport_AppendInittab( const_cast<char*>("ioredirector"),    &initioredirector    );
+   PyImport_AppendInittab( const_cast<char*>("basic_toolkit"),   &initbasic_toolkit   );
+   PyImport_AppendInittab( const_cast<char*>("mxyzptlk"),        &initmxyzptlk        );
+   PyImport_AppendInittab( const_cast<char*>("beamline"),        &initbeamline        );
+   PyImport_AppendInittab( const_cast<char*>("physics_toolkit"), &initphysics_toolkit );
+   PyImport_AppendInittab( const_cast<char*>("bmlfactory"),      &initbmlfactory      );
+   PyImport_AppendInittab( const_cast<char*>("chefplot"),        &initchefplot        );
+
+   // PyImport_AppendInittab( "chef",            &initchef            );
+
    Py_Initialize();
 
-// NOTE: Th init<modulename> function is normally implicitly 
-// called when a shared module is dynamically loaded. When a module is
-// linked in (e.g. as part of a lib linked to the interpreter), 
-// it must be explicitly initialized.
-  
-   initioredirector();
-   initbasic_toolkit();
-   initmxyzptlk();
-   initbeamline();
-   initphysics_toolkit();
-   initbmlfactory();
-   initchefplot();
+   // initioredirector();
+   // initbasic_toolkit();
+   // initmxyzptlk();
+   // initbeamline();
+   // initphysics_toolkit();
+   // initbmlfactory();
+   // initchefplot();
    // initchef() ***DISABLED ****
 
 // Call Python C API routines to use the interpreter.
 
-   _main_module     = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("__main__") ) );
-   _main_dictionary = boost::python::handle<> ( boost::python::borrowed( PyModule_GetDict(_main_module.get()) ) );
-   _sys_module      = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("sys") ) );
+   main_module_     = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("__main__") )       );
+   main_dictionary_ = boost::python::handle<> ( boost::python::borrowed( PyModule_GetDict(main_module_.get()) ) );
+   sys_module_      = boost::python::handle<> ( boost::python::borrowed( PyImport_AddModule("sys") )            );
 
-    runString("from math import *");
-    runString("import os,sys");
-    runString("import code");
-    runString("import  basic_toolkit");
-    runString("import  mxyzptlk");
-    runString("import  beamline");
-    runString("import  physics_toolkit");
-    runString("import  bmlfactory");
-    runString("import  chefplot");
+   runString("from math import *");
+   runString("import os,sys");
+   runString("import code");
+   runString("import  basic_toolkit");
+   runString("import  mxyzptlk");
+   runString("import  beamline");
+   runString("import  physics_toolkit");
+   runString("import  bmlfactory");
+   runString("import  chefplot");
    /// runString("import  chef"); ***DISABLED***
     runString("sys.path += '.'");
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Interpreter::~Interpreter() 
 {
 
   Py_Finalize(); //  terminate the interpreter and release its resources.
-  if (_instance) delete _instance;
-  _instance = 0; 
+  if (instance_) delete instance_;
+  instance_ = 0; 
 } 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Interpreter::runString(const char* s) 
 {
@@ -143,7 +168,7 @@ void Interpreter::runString(const char* s)
 
   try { 
   boost::python::handle<> pyrun_handle( PyRun_String( s , Py_single_input,
-             _main_dictionary.get(), _main_dictionary.get() ));
+             main_dictionary_.get(), main_dictionary_.get() ));
   }
   catch(std::exception& e)
   {
@@ -163,37 +188,47 @@ void Interpreter::runString(const char* s)
 } 
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Interpreter::redirectIO( IORedirector*& ior_stderr_ptr, IORedirector*& ior_stdout_ptr) 
 {
 
  
-  object        ior_stdout_obj  = object( _sys_module ).attr("stdout");
+  object        ior_stdout_obj  = object( sys_module_ ).attr("stdout");
   ior_stdout_ptr  = extract<IORedirector*>(ior_stdout_obj);
 
-  object        ior_stderr_obj  = object( _sys_module ).attr("stderr");
+  object        ior_stderr_obj  = object( sys_module_ ).attr("stderr");
   ior_stderr_ptr  = extract<IORedirector*>(ior_stderr_obj);
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 Interpreter* Interpreter::getInstance() 
 {
-
-  if (!_instance) _instance = new Interpreter();
-
-  return _instance;
-
+  return (instance_) ? instance_ : new Interpreter();
 } 
 
-const char* Interpreter::getPythonPrompt1() { 
-  return extract<const char*>( object( _sys_module ).attr("ps1") );
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+const char* Interpreter::getPythonPrompt1() 
+{ 
+  return extract<const char*>( object( sys_module_ ).attr("ps1") );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-const char* Interpreter::getPythonPrompt2() {
-  return extract<const char*>( object( _sys_module ).attr("ps2") );
+const char* Interpreter::getPythonPrompt2() 
+{
+  return extract<const char*>( object( sys_module_ ).attr("ps2") );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Interpreter::readFile(const char* fname) 
 {
@@ -276,3 +311,5 @@ void Interpreter::readFile(const char* fname)
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
