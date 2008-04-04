@@ -28,10 +28,6 @@
 #ifndef MLPTR_H
 #define MLPTR_H
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <complex>
 #include <boost/intrusive_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>
