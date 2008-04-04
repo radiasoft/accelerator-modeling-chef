@@ -28,7 +28,7 @@
 #include <boost/python.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 #include <basic_toolkit/Barnacle.h>
-#include <physics_toolkit/LattFuncSage.h>
+#include <beamline/LatticeFunctions.h>
 #include <string>
 
 using namespace boost::python;
@@ -40,26 +40,25 @@ using namespace boost::python;
 
 namespace {
   
-   struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
+struct BarnacleListIteratorWrapper: public BarnacleList::iterator {
 
-   BarnacleListIteratorWrapper( PyObject* self, BarnacleList::iterator const& it):  BarnacleList::iterator(it), self_(self) {} 
+  BarnacleListIteratorWrapper( PyObject* self, BarnacleList::iterator const& it):  BarnacleList::iterator(it), self_(self) {} 
 
-   BarnacleListIteratorWrapper( PyObject* self): self_(self) {} 
+  BarnacleListIteratorWrapper( PyObject* self): self_(self) {} 
 
-   std::string&         get_id()     { return (*this)->id;   }    
-   boost::any&        get_info()     { return (*this)->info; }    
+  std::string&         get_id()     { return (*this)->id;   }    
+  boost::any&        get_info()     { return (*this)->info; }    
 
-   PyObject* self_;
+  PyObject* self_;
  
 };
 
-static LattFuncSage::lattFunc& lattFunc_local(boost::any& data ) {
- 
-  return boost::any_cast<LattFuncSage::lattFunc&> ( data ); 
-
+CSLattFuncs& lattFunc_local(boost::any& data ) 
+{
+  return boost::any_cast<CSLattFuncs&> ( data ); 
 }
 
-}
+} //anonymous namespace
 
 BarnacleList::iterator         (BarnacleList::* begin_ptr  )() = &BarnacleList::begin;
 BarnacleList::iterator         (BarnacleList::* end_ptr    )() = &BarnacleList::end;
@@ -90,11 +89,6 @@ class_<BarnacleList>("BarnacleList")
  .def("__iter__",            range<return_value_policy<reference_existing_object> >( begin_ptr,  end_ptr  ) ) 
  .def("iterator",            range<return_value_policy<reference_existing_object> >( begin_ptr,  end_ptr  ) )
  .def("reverse_iterator",    range<return_value_policy<reference_existing_object> >( rbegin_ptr, rend_ptr ) );
-
-// class_<barnacle_indirect_iterator>("BarnacleListIterator")
-//  .def("id",   &BarnacleListIteratorWrapper::get_id,   return_value_policy<reference_existing_object>()  )  
-// .def("info", &BarnacleListIteratorWrapper::get_info, return_value_policy<reference_existing_object>()  ); 
-
 
 }
 

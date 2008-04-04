@@ -29,7 +29,6 @@
 #define BOOST_PYTHON_STATIC_MODULE
 
 #include <boost/python.hpp>
-#include <physics_toolkit/LattFuncSage.h>
 #include <iostream>
 
 using namespace boost::python;

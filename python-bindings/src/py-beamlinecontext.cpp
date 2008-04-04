@@ -30,6 +30,7 @@
 #include <iostream>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/beamline.h>
+#include <beamline/LatticeFunctions.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <basic_toolkit/Matrix.h>
@@ -43,12 +44,13 @@
 //----------------------------------------------------------------
 namespace { 
 
+#if  0
 boost::python::list getTwissArray_wrap(BeamlineContext& obj)
 {
 
-  std::vector<LattFuncSage::lattFunc> twiss_array = obj.getTwissArray();
+  std::vector<LattFuncs> twiss_array = obj.getTwissArray();
   boost::python::list twiss_list;
-  for ( std::vector<LattFuncSage::lattFunc>::iterator it  = twiss_array.begin(); 
+  for ( std::vector<LattFuncs>::iterator it  = twiss_array.begin(); 
 	it != twiss_array.end(); ++it) {
         twiss_list.append( *it );
   }   
@@ -79,6 +81,7 @@ boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
   boost::python::list dispersion_list;
   return  dispersion_list;
 }
+#endif
 
 
 } // anonymous namespace
@@ -87,14 +90,16 @@ boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
 // end local class and functions
 //----------------------------------------------------------------
 
-#define BOOST_PYTHON_STATIC_MODULE
-
 void wrap_beamlinecontext() {
 
 using namespace boost::python;
 
- class_<BeamlineContext, boost::noncopyable> ( "BeamlineContext", init<Particle const&, boost::shared_ptr<beamline> >() )
- .def( "assign",                         &BeamlineContext::assign )                         
+ class_<BeamlineContext, boost::noncopyable> ( "BeamlineContext", init<Particle const&, boost::shared_ptr<beamline> >() );
+
+}
+
+#if 0
+
  .def( "writeTree",                      &BeamlineContext::writeTree )
  .def( "name",                           &BeamlineContext::name)                             // const char* name() const;
  .def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, const Particle& ) const;
@@ -110,10 +115,6 @@ using namespace boost::python;
  .def( "getHorizontalEigenTune",         &BeamlineContext::getHorizontalEigenTune)             //double getHorizontalEigenTune()
  .def( "getVerticalEigenTune",           &BeamlineContext::getVerticalEigenTune)               // double getVerticalEigenTune()
 
-.def("getTwissArray",                    &getTwissArray_wrap       )
-.def("getETArray",                       &getETArray_wrap          )  
-.def("getCovarianceArray",               &getCovarianceArray_wrap  ) 
-.def("getDispersionArray",               &getDispersionArray_wrap  )
 .def("changeTunesBy",                    &BeamlineContext::changeTunesBy)                       // int changeTunesBy( double, double );
 
 .def("isRing",                           &BeamlineContext::isRing)
@@ -137,3 +138,13 @@ using namespace boost::python;
 //                                          return_value_policy<reference_existing_object>() )   // MatrixD equilibriumCovariance( double, double );
 // .def("addHTuneCorrector",               &BeamlineContext::addHTuneCorrector)                   // int addHTuneCorrector( const bmlnElmnt* );
 // .def("addVTuneCorrector",               &BeamlineContext::addVTuneCorrector)                   // int addVTuneCorrector( const bmlnElmnt* );
+
+#if 0
+.def("getTwissArray",                    &getTwissArray_wrap       )
+.def("getETArray",                       &getETArray_wrap          )  
+.def("getCovarianceArray",               &getCovarianceArray_wrap  ) 
+.def("getDispersionArray",               &getDispersionArray_wrap  )
+#endif
+
+
+#endif
