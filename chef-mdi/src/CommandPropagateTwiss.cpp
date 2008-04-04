@@ -35,29 +35,31 @@
 **************************************************************************/
 
 #include <CommandPropagateTwiss.h>
-#include <physics_toolkit/LattFuncSage.h>
+
 #include <vector>
-#include <physics_toolkit/LattFuncSage.h>
 #include <LattFncData.h>
 #include <CHEFPlotMain.h>
+#include <beamline/LatticeFunctions.h>
 
 using namespace std;
 
-QWidget* CommandPropagateTwiss::operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initialConditions ) 
+QWidget* CommandPropagateTwiss::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initialConditions ) 
 {
-    context->setInitialTwiss( initialConditions );
+    context->setInitial( initialConditions );
 
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "PlotWidget", Qt::WDestructiveClose );
 
+    context->computeCourantSnyder();
+    
     if( context->isTreatedAsRing() ) {
-      LattFncData lfd(   context->getTwissArray()
-                       , context->getHorizontalFracTune()
-                       , context->getVerticalFracTune()
+      LattFncData lfd(   context->dbConnection()
+                       , context->getHTune()
+                       , context->getVTune()
                        , context->cheatBmlPtr()            );
       plotWidget->addData( lfd  );
     }
     else {
-      LattFncData lfd(   context->getTwissArray()
+      LattFncData lfd(   context->dbConnection()
                        , -1.0
                        , -1.0
                        , context->cheatBmlPtr()            );

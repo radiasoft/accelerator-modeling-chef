@@ -39,7 +39,6 @@
 #include<vector>
 #include<basic_toolkit/GenericException.h>
 #include<physics_toolkit/BeamlineContext.h>
-#include<physics_toolkit/EdwardsTengSage.h>
 #include<CHEFPlotMain.h>
 #include<ETFncData.h>
 #include<qwidget.h>
@@ -62,9 +61,10 @@ QWidget* CommandEdwardsTeng::operator()( QWidget* parent, BmlContextPtr const& c
     plot->setGeometry(0,0, parent->width(), parent->height() );
     plot->setAutoClear(true);
 
-    ETFncData data(   context->getETArray()
-                    , context->getHorizontalEigenTune()
-                    , context->getVerticalEigenTune()
+    context->computeEdwardsTeng();
+    ETFncData data(   context->dbConnection()
+                    , context->getHTune()
+                    , context->getVTune()
                     , context->cheatBmlPtr()             );
     plot->addData(data);
     return plot;

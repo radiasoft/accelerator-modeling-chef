@@ -37,20 +37,21 @@
 
 #include <DspnFncData.h>
 #include <CHEFPlotMain.h>
-#include <physics_toolkit/DispersionSage.h>
 
 #include <string>
 #include <vector>
 
 using namespace std;
 
-QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr& context, DispersionSage::Info const& initial) 
+QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initial) 
 
 {
 
-    context->setInitialDispersion( initial );
+    context->setInitial( initial );
 
-    DspnFncData dfd( context->getDispersionArray(), context->cheatBmlPtr() );
+    context->computeDispersion();
+
+    DspnFncData dfd( context->dbConnection(), context->cheatBmlPtr() );
 
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "DspnplotWidget", Qt::WDestructiveClose );
  

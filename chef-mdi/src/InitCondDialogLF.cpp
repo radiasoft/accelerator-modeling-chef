@@ -30,7 +30,6 @@
 **************************************************************************/
 
 #include <InitCondDialogLF.h>
-#include <LattFuncSage.h>
 #include <qvalidator.h>
 #include <qlineedit.h>
 
@@ -59,21 +58,21 @@ InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFuncSage::lattFunc InitCondDialogLF::getInitCond() const
+LattFuncs InitCondDialogLF::getInitCond() const
 {
 
-  LattFuncSage::lattFunc lf;
+  CSLattFuncs lf;
 
   lf.beta.hor       = hBetaLineEdit->text().toDouble();
   lf.beta.ver       = vBetaLineEdit->text().toDouble();
   lf.alpha.hor      = hAlphaLineEdit->text().toDouble();
   lf.alpha.ver      = vAlphaLineEdit->text().toDouble();
 
-  lf.dispersion.hor = hEtaLineEdit->text().toDouble();
-  lf.dispersion.ver = vEtaLineEdit->text().toDouble();
+  lf.dispersion.x   =  hEtaLineEdit->text().toDouble();
+  lf.dispersion.y   = vEtaLineEdit->text().toDouble();
 
-  lf.dPrime.hor     = hEtaPrimeLineEdit->text().toDouble();
-  lf.dPrime.ver     = vEtaPrimeLineEdit->text().toDouble();
+  lf.dispersion.xp  = hEtaPrimeLineEdit->text().toDouble();
+  lf.dispersion.yp  = vEtaPrimeLineEdit->text().toDouble();
 
   lf.psi.hor        = hPsiLineEdit->text().toDouble();
   lf.psi.ver        = vPsiLineEdit->text().toDouble();  
@@ -84,34 +83,34 @@ LattFuncSage::lattFunc InitCondDialogLF::getInitCond() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void InitCondDialogLF:: setInitCond( LattFuncSage::lattFunc const& lf) 
+void InitCondDialogLF:: setInitCond( LattFuncs const& lf) 
 {
+
+  CSLattFuncs const& cslf = boost::get< CSLattFuncs const&>(lf);
 
   QString s("%1"); 
 
-  hBetaLineEdit->setText(  s.arg(lf.beta.hor) );
-  vBetaLineEdit->setText(  s.arg(lf.beta.ver) );
-  hAlphaLineEdit->setText( s.arg(lf.alpha.hor) );
-  vAlphaLineEdit->setText( s.arg(lf.alpha.ver) );
+  hBetaLineEdit->setText(  s.arg(cslf.beta.hor) );
+  vBetaLineEdit->setText(  s.arg(cslf.beta.ver) );
+  hAlphaLineEdit->setText( s.arg(cslf.alpha.hor) );
+  vAlphaLineEdit->setText( s.arg(cslf.alpha.ver) );
 						       
-  hEtaLineEdit->setText( s.arg(lf.dispersion.hor) );
-  vEtaLineEdit->setText( s.arg(lf.dispersion.ver) );
+  hEtaLineEdit->setText( s.arg(cslf.dispersion.x) );
+  vEtaLineEdit->setText( s.arg(cslf.dispersion.y) );
 				
-  hEtaPrimeLineEdit->setText( s.arg(lf.dPrime.hor) );
-  vEtaPrimeLineEdit->setText( s.arg(lf.dPrime.ver) );
+  hEtaPrimeLineEdit->setText( s.arg(cslf.dispersion.xp) );
+  vEtaPrimeLineEdit->setText( s.arg(cslf.dispersion.yp) );
 						       
-  hPsiLineEdit->setText( s.arg( lf.psi.hor ) );
-  vPsiLineEdit->setText( s.arg( lf.psi.ver ) );
+  hPsiLineEdit->setText( s.arg( cslf.psi.hor ) );
+  vPsiLineEdit->setText( s.arg( cslf.psi.ver ) );
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-InitCondDialogLF::dispersionMode()
+void InitCondDialogLF::dispersionMode()
 {
-
 
  hBetaLineEdit->setEnabled( false );
  vBetaLineEdit->setEnabled( false );

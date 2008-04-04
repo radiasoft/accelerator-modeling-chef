@@ -37,10 +37,11 @@
 
 #include<string>
 #include<vector>
+#include<beamline/ParticleBunch.h>
 #include<physics_toolkit/BeamlineContext.h>
-#include<physics_toolkit/LattFuncSage.h>
 #include<CHEFPlotMain.h>
 #include<LattFncData.h>
+#include<LFDataTable.h>
 #include<qwidget.h>
 
 using namespace std;
@@ -59,22 +60,30 @@ QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
+   context->computeCourantSnyder();
+
    if( context->isTreatedAsRing() ) {
-     LattFncData data(   context->getTwissArray()
-                       , context->getHorizontalFracTune()
-                       , context->getVerticalFracTune()
+
+     LattFncData data(   context->dbConnection()
+
+                       , context->getHTune()
+                       , context->getVTune()
                        , context->cheatBmlPtr()           );
      plot->addData(data);
    }
    else {
-     LattFncData data(   context->getTwissArray()
+     LattFncData data(   context->dbConnection()
                        , -1.0
                        , -1.0
                        , context->cheatBmlPtr()           );
      plot->addData(data);
    }
 
+
+   //   ( new LFDataTable( context->dbConnection(), parent, "Twiss Functions (uncoupled)" ) )->show();
+
    return plot;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

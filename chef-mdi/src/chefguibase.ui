@@ -74,6 +74,8 @@
         <action name="editAlignBendsAction"/>
     </item>
     <item text="Calculations" name="Calculations">
+        <action name="calculationsClosedOrbitAction"/>
+        <action name="calculationsDispersionAction"/>
         <action name="calculationsLatticeFunctionsAction"/>
         <item text="Lattice Functions" name="popupMenu_41" accel="">
             <action name="calculationsLatticeFunctionsTwissAction"/>
@@ -87,7 +89,6 @@
             <action name="calculationsPropagateMomentsAction"/>
             <action name="calculationsPropagateDispersionAction"/>
         </item>
-        <action name="calculationsDispersionAction"/>
         <action name="calculationsEmittanceDilutionAction"/>
     </item>
     <item text="Controls" name="Controls">
@@ -1306,6 +1307,17 @@
             <string>x vs y</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsClosedOrbitAction</cstring>
+        </property>
+        <property name="text">
+            <string>Closed Orbit</string>
+        </property>
+        <property name="menuText">
+            <string>Closed Orbit</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
@@ -1812,6 +1824,12 @@
         <receiver>CHEFGUIBase</receiver>
         <slot>editSelectLine()</slot>
     </connection>
+    <connection>
+        <sender>calculationsClosedOrbitAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>closedOrbit()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>fileNew()</slot>
@@ -1909,6 +1927,7 @@
     <slot>databaseRetrieve()</slot>
     <slot>toolsGenerateBunch()</slot>
     <slot>toolsDisplayBunch()</slot>
+    <slot>closedOrbit()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -32,7 +32,7 @@
 #define COMMANDPROPAGATEDISPERSION_H
 
 #include <physics_toolkit/BeamlineContext.h>
-#include <physics_toolkit/DispersionSage.h>
+#include <beamline/LatticeFunctions.h>
 
 class QWidget;
 
@@ -40,7 +40,7 @@ class CommandPropagateDispersion {
 
  public:
     
-  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, DispersionSage::Info const& initialConditions ); 
+  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initialConditions ); 
 
 };
 

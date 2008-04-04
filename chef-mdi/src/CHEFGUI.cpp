@@ -280,8 +280,8 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
    //---------------------------------
 
 #if 0
-     // there seems to be a bug in Qt when windows with a fixed size are displayed in a 
-     // QWorkspace.
+     // there seems to be a bug in Qt when windows with a fixed size windows
+     // are displayed in a QWorkspace.
  
     dbconnect_dlg_  = new DbConnectDialog(  dynamic_cast<QWorkspace*>( centralWidget_ ), 
                                             "Database Connection");  
@@ -347,27 +347,27 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
           boost::function<QWidget* (QWidget*, BmlContextPtr&)  >                                        ( CommandTwiss() ); 
 
     command_propagateTwiss_ = 
-          boost::function<QWidget* (QWidget*,  BmlContextPtr&, LattFuncSage::lattFunc const& ) >         ( CommandPropagateTwiss() ); 
+          boost::function<QWidget* (QWidget*,  BmlContextPtr&, LattFuncs const& ) >                      ( CommandPropagateTwiss() ); 
 
     command_computeMoments_ = 
           boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                        ( CommandMoments() );  
 
     //    command_propagateMoments_ = 
-    //      boost::function<QWidget* ( QWidget*, BmlContextPtr&,  CovarianceSage::Info  const&)    >    ( CommandPropagateMoments());  
+    //      boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncs const&)    >                ( CommandPropagateMoments());  
 
     command_propagateMoments_ = 
-           boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc  const&)    >   ( CommandPropagateMoments());  
+           boost::function<QWidget* ( QWidget*, BmlContextPtr&,  LattFuncs  const&)    >                 ( CommandPropagateMoments());  
 
     command_computeEdwardsTeng_ = 
       boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandEdwardsTeng());           
 
     command_computeEigenmodes_ = 
-          boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                        ( CommandEigenmodes()); 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                         ( CommandEigenmodes()); 
 
     command_computeDispersion_ = 
-      boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                            ( CommandDispersion()        ); 
+      boost::function<QWidget* ( QWidget*, BmlContextPtr&) >                                             ( CommandDispersion()        ); 
     command_propagateDispersion_ = 
-          boost::function<QWidget* ( QWidget*, BmlContextPtr&,  DispersionSage::Info const&)  >   ( CommandPropagateDispersion() ); 
+          boost::function<QWidget* ( QWidget*, BmlContextPtr&,   LattFuncs const&)  >                    ( CommandPropagateDispersion() ); 
 
 
 
@@ -438,10 +438,10 @@ void CHEFGUI::readBmlFile( QString s) {
       wpu->exec();
 
       if( qrb_proton_ptr->isDown() ) {
-        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Momentum()), bmlPtr) );
       }
       else {
-        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Momentum()), bmlPtr) );
       }
 
   delete wpu;
@@ -537,10 +537,10 @@ void CHEFGUI::openFile()
 
           const char* typeStringPtr = bfp->getParticleType();
           if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
-            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr) );
+            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(bmlPtr->Momentum()), bmlPtr) );
     	    }
           else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
-            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
+            p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Positron(bmlPtr->Momentum()), bmlPtr) );
     	    }
           else {
             QMessageBox mb(  QString("*** ERROR ***")
@@ -561,26 +561,29 @@ void CHEFGUI::openFile()
           ++nlines;
      }
      
-    LattFunc initial = bfp->getInitialValues();
+    LattFuncs initial = bfp->getInitialValues();
 
     //++++++++ FIXME !!!! ++++++++ 
     
-    LattFuncSage::lattFunc initialLattFunc;
-    DispersionSage::Info   initialDispersion;
-    CovarianceSage::Info   initialCovariance;
+    CSLattFuncs initialLattFunc;
+    CSLattFuncs const& lfi = boost::get<CSLattFuncs const&>(initial);
 
-    initialLattFunc.beta.hor       = initial.beta.hor;
-    initialLattFunc.alpha.hor      = initial.alpha.hor;
-    initialLattFunc.dispersion.hor = initial.dispersion.hor;
-    initialLattFunc.dPrime.hor     = initial.dPrime.hor;
+    LattFuncs  initialDispersion;
+    LattFuncs  initialCovariance;
 
-    initialLattFunc.beta.ver       = initial.beta.ver;
-    initialLattFunc.alpha.ver      = initial.alpha.ver;
-    initialLattFunc.dispersion.ver = initial.dispersion.ver;
-    initialLattFunc.dPrime.ver     = initial.dPrime.ver;
+    initialLattFunc.beta.hor       =lfi.beta.hor;
+    initialLattFunc.alpha.hor      =lfi.alpha.hor;
+    initialLattFunc.dispersion.x   =lfi.dispersion.x;
+    initialLattFunc.dispersion.xp  =lfi.dispersion.xp;
+
+    initialLattFunc.beta.ver       =lfi.beta.ver;
+    initialLattFunc.alpha.ver      =lfi.alpha.ver;
+    initialLattFunc.dispersion.y   =lfi.dispersion.y;
+    initialLattFunc.dispersion.yp  =lfi.dispersion.yp;
 
 
-    if ( p_currBmlCon_) p_currBmlCon_->setInitialTwiss( initialLattFunc );
+
+    if ( p_currBmlCon_) p_currBmlCon_->setInitial( initialLattFunc );
 
  }
 
@@ -838,10 +841,10 @@ CHEFGUI::parseEditorMAD8( CF_Editor* editor )
 
         const char* typeStringPtr = bfp->getParticleType();
         if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
-          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr ));
+          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Proton(bmlPtr->Momentum()), bmlPtr ));
 	}
         else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
-          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
+          p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Positron(bmlPtr->Momentum()), bmlPtr) );
 	}
         else {
           QMessageBox mb(  QString("*** ERROR ***")
@@ -1151,6 +1154,8 @@ void CHEFGUI::editCondense()
 void CHEFGUI::editNewOrder()
 {
 
+#if 0 
+----------------------------------------------------------------------------------------
   // One quick test ...
   if( !p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
@@ -1213,6 +1218,8 @@ void CHEFGUI::editNewOrder()
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
+
+#endif
 }
 
 
@@ -1364,7 +1371,7 @@ void CHEFGUI::editAlignBends()
       CFRbendPtr prototype( boost::static_pointer_cast<CF_rbend const>(selected)->Clone() );
 
       Particle particle (  p_currBmlCon_->getParticle() );
-      particle.SetReferenceEnergy( p_currBmlCon_->getEnergy() );
+      particle.SetReferenceMomentum( p_currBmlCon_->getMomentum() );
 
         // This line is almost certainly unnecessary.
       particle.setStateToZero();
@@ -1492,6 +1499,8 @@ void CHEFGUI::toolsDisplayBunch()
 
 void CHEFGUI::editEditElement()
 {
+#if  0
+
   // The code in this method was patterned after that
   // in CHEF::editNewOrder()
 
@@ -1566,6 +1575,7 @@ void CHEFGUI::editEditElement()
     QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
+#endif
 }
 
 
@@ -1737,7 +1747,8 @@ void CHEFGUI::editAlignData()
     rawData.push_back(r);
   }
 
-  SurveyMatcher sm( rawData, boost::const_pointer_cast<beamline>(bmlPtr) );
+  sqlite::connection db ( "./" + bmlPtr->Name() + ".db" );
+  SurveyMatcher sm( rawData, boost::const_pointer_cast<beamline>(bmlPtr), db );
 
 
   // Preparing the plot
@@ -1948,7 +1959,7 @@ void CHEFGUI::editAddMarkers()
     QString newName( oldbmlPtr->Name() );
     newName += ".marked";
     bmlPtr->rename( newName.ascii() );
-    bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
+    bmlPtr->setMomentum( oldbmlPtr->Momentum() );  // Probably unnecessary.
 
 
     // Generate a new BeamlineContext to handle the new line
@@ -2034,7 +2045,7 @@ void CHEFGUI::editAddQtMons()
     QString newName( oldbmlPtr->Name() );
     newName += ".monitored";
     bmlPtr->rename( newName.ascii() );
-    bmlPtr->setEnergy( oldbmlPtr->Energy() );  // Probably unnecessary.
+    bmlPtr->setMomentum( oldbmlPtr->Momentum() );  // Probably unnecessary.
 
     // Generate a new BeamlineContext to handle the new line
 
@@ -2057,6 +2068,8 @@ void CHEFGUI::editAddQtMons()
 
 void CHEFGUI::editMode()
 {
+#if 0
+
   if( 0 == p_currBmlCon_ ) {
     QMessageBox::information( 0, "CHEF", "Must select a beamline first." );
     return;
@@ -2132,6 +2145,8 @@ void CHEFGUI::editMode()
   }
 
   delete wpu;
+#endif
+
 }
 
 
@@ -2171,7 +2186,7 @@ void CHEFGUI::editPartition()
   newName += ".split";
 
   BmlPtr bmlPtr( new beamline( newName.ascii() ) );
-  bmlPtr->setEnergy( oldbmlPtr->Energy() );
+  bmlPtr->setMomentum( oldbmlPtr->Momentum() );
 
   ElmPtr spa, spb;
 
@@ -2224,7 +2239,7 @@ void CHEFGUI::editPartAndSect()
 
   BmlPtr bmlPtr( p_currBmlCon_->cheatBmlPtr()->Clone() );
 
-  double energy   = bmlPtr->Energy();
+  double energy   = bmlPtr->Momentum();
 
   // Insert equally spaced markers throughout the model.
   double bmlLength = 0.0;
@@ -2270,7 +2285,7 @@ void CHEFGUI::editPartAndSect()
 
   BmlPtr splitBmlPtr( new beamline( "Sectorized beamline" ) );
 
-  splitBmlPtr->setEnergy( energy );
+  splitBmlPtr->setMomentum( energy );
 
   if( returnCode == QDialog::Accepted ) {
 
@@ -2330,7 +2345,7 @@ void CHEFGUI::editPartAndSect()
 
       Particle particle(p_currBmlCon_->getParticle() );
 
-      particle.SetReferenceEnergy( p_currBmlCon_->getEnergy() );
+      particle.SetReferenceMomentum( p_currBmlCon_->getMomentum() );
         // This line is almost certainly unnecessary.
       particle.setStateToZero();
 
@@ -2562,11 +2577,9 @@ void CHEFGUI::propagateMoments()
   }
 
   if( QDialog::Accepted == initCondDialogMoments_->exec() ){
-    CovarianceSage::Info initialConditions = initCondDialogMoments_->getInitCond();
+    LattFuncs initialConditions = initCondDialogMoments_->getInitCond();
 
-    // ***** FIX ME !
-    // QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
-    QWidget* plot = 0;
+    QWidget* plot = command_propagateMoments_( centralWidget(), p_currBmlCon_, initialConditions); 
 
     plot->show();
 
@@ -2592,21 +2605,22 @@ void CHEFGUI::propagateDispersion()
     return;
   }
 
- initCondDialogDisp_->setInitCond( p_currBmlCon_->getInitialTwiss() );
+ initCondDialogDisp_->setInitCond( p_currBmlCon_->getInitial() );
 
  if( QDialog::Accepted == initCondDialogDisp_->exec() )
   {
-    LattFuncSage::lattFunc initialConditions = initCondDialogDisp_->getInitCond();
+    LattFuncs initialConditions = initCondDialogDisp_->getInitCond();
     
-    DispersionSage::Info info;
+    CSLattFuncs lf;
+    CSLattFuncs const& lfi = boost::get<CSLattFuncs const&>(initialConditions);
  
-    info.dispersion.hor =  initialConditions.dispersion.hor;
-    info.dispersion.ver =  initialConditions.dispersion.ver;
+    lf.dispersion.x  =  lfi.dispersion.x;
+    lf.dispersion.y  =  lfi.dispersion.y;
+    lf.dispersion.xp =  lfi.dispersion.xp;
+    lf.dispersion.yp =  lfi.dispersion.yp;
 
-    info.dPrime.hor =  initialConditions.dPrime.hor;
-    info.dPrime.ver =  initialConditions.dPrime.ver;
      
-    QWidget* plot = command_propagateDispersion_( centralWidget(), p_currBmlCon_ , info); 
+    QWidget* plot = command_propagateDispersion_( centralWidget(), p_currBmlCon_ , lf); 
    
     plot->show();
   }
@@ -2633,12 +2647,12 @@ void CHEFGUI::propagateTwiss()
   }
 
 
-  initCondDialogLF_->setInitCond( p_currBmlCon_->getInitialTwiss() );
+  initCondDialogLF_->setInitCond( p_currBmlCon_->getInitial() );
 
   if( QDialog::Accepted == initCondDialogLF_->exec() ) 
   {
 
-    LattFuncSage::lattFunc initialConditions = initCondDialogLF_->getInitCond();
+    LattFuncs initialConditions = initCondDialogLF_->getInitCond();
 
     QWidget* plot = command_propagateTwiss_( centralWidget(), p_currBmlCon_ , initialConditions); 
    
@@ -3242,6 +3256,7 @@ void CHEFGUI::enableMenus( bool set )
 //  Enable/Disable actions that do/do not make sense if
 //  at least one beamline is/is not defined;
 
+    calculationsClosedOrbitAction->setEnabled(set);
     calculationsLatticeFunctionsEigenvaluesAction->setEnabled(set);
     calculationsLatticeFunctionsTwissAction->setEnabled(set);
     calculationsLatticeFunctionsMomentsAction->setEnabled(set);
@@ -3477,6 +3492,14 @@ void CHEFGUI::databaseRetrieve()
   if ( default_db_ )  
       dbretrieve_dlg_->show();
 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CHEFGUI::closedOrbit()
+{ 
+  p_currBmlCon_->computeClosedOrbit();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
