@@ -1031,10 +1031,10 @@ BmlContextPtr BeamlineBrowser::readMADFile( const char* fileName,
 
   BmlContextPtr www;
   if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
-    www = BmlContextPtr( new BeamlineContext( Proton(pBml->Energy()), pBml ) );
+    www = BmlContextPtr( new BeamlineContext( Proton(pBml->Momentum()), pBml ) );
   }
   else if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
-    www =  BmlContextPtr( new BeamlineContext( Positron(pBml->Energy()), pBml) );
+    www =  BmlContextPtr( new BeamlineContext( Positron(pBml->Momentum()), pBml) );
   }
   else {
     ostringstream uic;
@@ -1086,7 +1086,7 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
 
   beamline::const_reverse_iterator rbi = ptr->cheatBmlPtr()->rbegin();
 
-  displayLine( root, rbi, s );
+  displayLine( root, boost::const_pointer_cast<beamline>(ptr->cheatBmlPtr()), rbi, s );
 
   str1.setNum( s );
   root->setText( 2, str1 + "-" + str2 );
@@ -1112,13 +1112,13 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
 }
 
 
-void BeamlineBrowser::displayLine( QBmlRoot* root, beamline::const_reverse_iterator bi, double& s )
+void BeamlineBrowser::displayLine( QBmlRoot* root, BmlPtr bml, beamline::const_reverse_iterator bi, double& s )
 {
   ElmPtr q;
   static bool firstTime = true;
   QString str1, str2;
 
-  for ( ;  bi != bi.rend(); ++bi )
+  for ( ;  bi != bml->rend(); ++bi )
   {
     q = (*bi);
     if( 0 == strcmp("beamline",q->Type()) ) {
@@ -1129,7 +1129,7 @@ void BeamlineBrowser::displayLine( QBmlRoot* root, beamline::const_reverse_itera
       beamline::const_reverse_iterator newbi = (*boost::static_pointer_cast<const beamline>(q) ).rbegin();
 
       str2.setNum(s);
-      BeamlineBrowser::displayLine( newBml, newbi, s );
+      BeamlineBrowser::displayLine( newBml, boost::static_pointer_cast<beamline>(q), newbi, s );
       str1.setNum( s );
       newBml->setText( 2, str1 + "-" + str2 );
     }
@@ -1348,10 +1348,10 @@ void BeamlineBrowser::infoWriter::visit( beamline const& x )
   QString stl;
   QString msg;
   msg.setNum( x.countHowManyDeeply() );
-  msg += QString( " elements. \nReference energy = " );
-  stl.setNum( x.Energy() );
+  msg += QString( " elements. \nReference momentum = " );
+  stl.setNum( x.Momentum() );
   msg += stl;
-  msg += QString( " Gev" );
+  msg += QString( " GeV/c" );
 
   QMessageBox::information( 0, cap, msg );
 }
