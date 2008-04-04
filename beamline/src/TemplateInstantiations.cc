@@ -106,10 +106,6 @@ template class TBunch<JetParticle>;
 
 template class list<ElmPtr>;
 
-template class boost::shared_ptr<CF_rbend>; 
-template class boost::shared_ptr<CF_sbend>; 
-template class boost::shared_ptr<sbend>; 
-template class boost::shared_ptr<thinrfcavity>; 
 
 template boost::shared_ptr<thinSextupole const> boost::dynamic_pointer_cast<thinSextupole const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<thinQuad      const> boost::dynamic_pointer_cast<thinQuad      const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
@@ -223,37 +219,97 @@ template std::vector<double>::iterator std::transform( std::vector<double>::iter
 template class  std::map<std::string, boost::any>;
 
 
-template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> > >;
-template class boost::detail::sp_counted_impl_p<beamline::pre_order_iter<boost::shared_ptr<bmlnElmnt> const> >;
-template class boost::detail::sp_counted_impl_p<bmlnElmnt>;
-template class boost::detail::sp_counted_impl_p<beamline>;
-template class boost::detail::sp_counted_impl_p<Slot>;
-template class boost::detail::sp_counted_impl_p<thinrfcavity>;
-template class boost::detail::sp_counted_impl_p<LinacCavity>;
-template class boost::detail::sp_counted_impl_p<LCavityUpstream>;
-template class boost::detail::sp_counted_impl_p<LCavityDnstream>;
-template class boost::detail::sp_counted_impl_p<WakeKick>;
-template class boost::detail::sp_counted_impl_p<sector>;
-template class boost::detail::sp_counted_impl_p<Bend>;
-template class boost::detail::sp_counted_impl_p<Edge>;
-template class boost::detail::sp_counted_impl_p<rbend>;
-template class boost::detail::sp_counted_impl_p<sbend>;
-template class boost::detail::sp_counted_impl_p<CF_sbend>;
-template class boost::detail::sp_counted_impl_p<CF_rbend>;
-template class boost::detail::sp_counted_impl_p<quadrupole>;
-template class boost::detail::sp_counted_impl_p<thinQuad>;
-template class boost::detail::sp_counted_impl_p<sextupole>;
-template class boost::detail::sp_counted_impl_p<thinSextupole>;
-template class boost::detail::sp_counted_impl_p<Solenoid>;
-template class boost::detail::sp_counted_impl_p<marker>;
-template class boost::detail::sp_counted_impl_p<octupole>;
-template class boost::detail::sp_counted_impl_p<thinOctupole>;
-template class boost::detail::sp_counted_impl_p<thinDecapole>;
-template class boost::detail::sp_counted_impl_p<drift>;
-template class boost::detail::sp_counted_impl_p<kick>;
-template class boost::detail::sp_counted_impl_p<gkick>;
-template class boost::detail::sp_counted_impl_p<hkick>;
-template class boost::detail::sp_counted_impl_p<vkick>;
+template class boost::shared_ptr<bmlnElmnt>;
+template       boost::shared_ptr<bmlnElmnt>::shared_ptr( bmlnElmnt*);
+
+template class boost::shared_ptr<beamline>;
+template       boost::shared_ptr<beamline>::shared_ptr( beamline* );
+
+
+// All ElmPtr, in alphabetical order 
+
+//template class boost::shared_ptr<Bend>;
+template       boost::shared_ptr<Bend>::shared_ptr( Bend* );
+
+//template class boost::shared_ptr<CF_rbend>;
+template       boost::shared_ptr<CF_rbend>::shared_ptr( CF_rbend* );
+
+//template class boost::shared_ptr<CF_sbend>;
+template       boost::shared_ptr<CF_sbend>::shared_ptr( CF_sbend* );
+
+//template class boost::shared_ptr<drift>;
+template       boost::shared_ptr<drift>::shared_ptr( drift* );
+
+
+//template class boost::shared_ptr<Edge>;
+template       boost::shared_ptr<Edge>::shared_ptr( Edge* );
+
+//template class boost::shared_ptr<hkick>;
+template       boost::shared_ptr<hkick>::shared_ptr( hkick* );
+
+template class boost::shared_ptr<gkick>;
+template       boost::shared_ptr<gkick>::shared_ptr( gkick* );
+
+template class boost::shared_ptr<kick>;
+template       boost::shared_ptr<kick>::shared_ptr(kick *);
+
+template class boost::shared_ptr<LCavityDnstream>;
+template       boost::shared_ptr<LCavityDnstream>::shared_ptr( LCavityDnstream* );
+
+template class boost::shared_ptr<LCavityUpstream>;
+template       boost::shared_ptr<LCavityUpstream>::shared_ptr( LCavityUpstream* );
+
+template class boost::shared_ptr<LinacCavity>;
+template       boost::shared_ptr<LinacCavity>::shared_ptr( LinacCavity* );
+
+template class boost::shared_ptr<marker>;
+template       boost::shared_ptr<marker>::shared_ptr(marker *);
+
+template class boost::shared_ptr<octupole>;
+template       boost::shared_ptr<octupole>::shared_ptr( octupole* );
+
+template class boost::shared_ptr<quadrupole>;
+template       boost::shared_ptr<quadrupole>::shared_ptr( quadrupole* );
+
+template class boost::shared_ptr<sbend>;
+template       boost::shared_ptr<sbend>::shared_ptr(sbend* );
+
+template class boost::shared_ptr<Slot>;
+template       boost::shared_ptr<Slot>::shared_ptr( Slot* );
+
+template class boost::shared_ptr<rbend>;
+template       boost::shared_ptr<rbend>::shared_ptr( rbend*);
+
+template class boost::shared_ptr<sector>;
+template       boost::shared_ptr<sector>::shared_ptr( sector*);
+
+template class boost::shared_ptr<sextupole>;
+template       boost::shared_ptr<sextupole>::shared_ptr( sextupole* );
+
+template class boost::shared_ptr<Solenoid>;
+template       boost::shared_ptr<Solenoid>::shared_ptr( Solenoid* );
+
+template class boost::shared_ptr<thinDecapole>;
+template       boost::shared_ptr<thinDecapole>::shared_ptr( thinDecapole* );
+
+template class boost::shared_ptr<thinQuad>;
+template       boost::shared_ptr<thinQuad>::shared_ptr( thinQuad* );
+
+template class boost::shared_ptr<thinrfcavity>;
+template       boost::shared_ptr<thinrfcavity>::shared_ptr( thinrfcavity*);
+
+template class boost::shared_ptr<thinOctupole>;
+template       boost::shared_ptr<thinOctupole>::shared_ptr( thinOctupole* );
+
+template class boost::shared_ptr<thinSextupole>;
+template       boost::shared_ptr<thinSextupole>::shared_ptr( thinSextupole* );
+
+template class boost::shared_ptr<vkick>;
+template       boost::shared_ptr<vkick>::shared_ptr( vkick* );
+
+template class boost::shared_ptr<WakeKick>;
+template       boost::shared_ptr<WakeKick>::shared_ptr( WakeKick* );
+
 
 //---------------------------------------------
 // BasePropagators
@@ -299,6 +355,7 @@ template class BasePropagator<LinacCavity>;
 template class BasePropagator<BBLens>;
 template class BasePropagator<WakeKick>;
 
+#if  1
 template class boost::detail::sp_counted_impl_p<WakeKick::Propagator>;
 template class boost::detail::sp_counted_impl_p<BasePropagator<WakeKick> >;
 template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
@@ -374,6 +431,7 @@ template class boost::detail::sp_counted_impl_p<BasePropagator<BBLens> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<LCavityUpstream> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinSeptum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<ThinPole> >;
+#endif
 
 
 namespace {
