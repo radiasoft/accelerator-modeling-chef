@@ -46,6 +46,7 @@
 #include <parsers/xsif/Expression.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/BmlPtr.h>
+#include <beamline/LatticeFunctions.h>
 
 
 class bmlnElmnt; 
@@ -190,12 +191,12 @@ class XsifParserDriver {
   yyscan_t                                          m_yyscanner; 
 
   double                                            m_BRHO;
-  double                                            m_energy;
+  double                                            m_momentum;
   std::string                                       m_particle_type_name;
 
   std::map<std::string, std::vector<std::string> >  valid_attributes_;
 
-  LattFunc                                          initial_values_;
+  CSLattFuncs                                       initial_values_;
 
   class ParserException: public GenericException {
 
