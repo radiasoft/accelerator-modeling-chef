@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      LBSage.h
-******  Version:   1.0
 ******                                                                
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -47,6 +46,8 @@
 ****** Mar 2007                                                                
 ****** - support for reference counted elements
 ****** - Pass particles by reference 
+*******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -60,36 +61,12 @@
 #include <physics_toolkit/Sage.h>
 
 
-class LBSage : public Sage
-{
-public:
-
-  struct Info {
-
-    Info(); 
-
-    double arcLength;
-    double beta_1x;
-    double beta_1y;
-    double beta_2x;
-    double beta_2y;
-    double alpha_1x;
-    double alpha_1y;
-    double alpha_2x;
-    double alpha_2y;
-    double u1;
-    double u2;
-    double u3;
-    double u4;
-    double nu_1;
-    double nu_2;
-  };
-
+class LBSage : public Sage {
 
 public:
 
-  LBSage( BmlPtr );
-  LBSage( beamline const&);
+  LBSage( BmlPtr,          sqlite::connection& db );
+  LBSage( beamline const&, sqlite::connection& db );
 
   int doCalc( JetParticle const& ); 
       // PRECONDITION: The JetParticle must be on the closed
@@ -101,7 +78,7 @@ public:
       // If default value is used for second argument, 
       //   information is attached to all elements.
 
-  std::vector<LBSage::Info> const& getLBArray();
+  std::vector<LattFuncs> const& getLatticeFunctions();
 
   void eraseAll();
 
@@ -109,7 +86,7 @@ private:
 
   LBSage( LBSage const&); // forbidden
 
-  std::vector<Info>   calcs_;  // array of calculated results
+  std::vector<LattFuncs>   calcs_;  // array of calculated results
 
 };
 

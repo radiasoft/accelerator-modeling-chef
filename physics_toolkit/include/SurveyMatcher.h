@@ -54,7 +54,7 @@ class SurveyMatcher : public Sage {
 
  public:
 
-  SurveyMatcher( std::vector<Vector> const&, BmlPtr );
+  SurveyMatcher( std::vector<Vector> const&, BmlPtr, sqlite::connection& db );
  
  ~SurveyMatcher();
 

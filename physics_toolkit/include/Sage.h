@@ -60,65 +60,65 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/beamline.h>
+#include <beamline/LatticeFunctions.h>
+#include <vector>
 
+namespace sqlite { class connection; }
 
-class Sage 
-{
+class Sage  {
 
 public:
 
- Sage( BmlPtr          );
- Sage( beamline const& );
+  Sage( BmlPtr,          sqlite::connection& db);
+  Sage( beamline const&, sqlite::connection& db);
 
- virtual ~Sage();
+  virtual ~Sage();
   
- void set_verbose();
- void unset_verbose();
+  void set_verbose();
+  void unset_verbose();
 
- virtual void eraseAll() = 0;
+  virtual void eraseAll() = 0;
 
- typedef bool (*CRITFUNC)( ConstElmPtr );
+  typedef bool (*CRITFUNC)( ConstElmPtr );
 
- static bool no ( ConstElmPtr );
- static bool yes( ConstElmPtr );
+  static bool no ( ConstElmPtr );
+  static bool yes( ConstElmPtr );
 
- static bool isRing( BmlPtr,          double = defGapTol_, double = defAngleTol_ );
- static bool isRing( beamline const&, double = defGapTol_, double = defAngleTol_ );
- 
-// The second argument is the maximum gap allowed 
- //   for a return of "true." 
+ //-------------------------------------------------------------------
+ // gap_tol, angle_tol are repectively the maximum position and angle 
+ // discontinuity allowed when  testing fiducial orbit closure.
  // These tests will return true for pathologically short lines
- //   like a beamline consisting of a single 1 mm drift.
- bool hasRing() const;
- bool isTreatedAsRing() const;
+ // like a beamline consisting of a single 1 mm drift.
+ //-------------------------------------------------------------------
 
- void setErrorStream( std::ostream* );
- void setOutputStream( std::ostream* );
+  static bool isRing( BmlPtr,          double const& gap_tol = defGapTol_, double const& angle_tol = defAngleTol_ );
+  static bool isRing( beamline const&, double const& gap_tol = defGapTol_, double const& angle_tol = defAngleTol_ );
+ 
+  bool hasRing() const;
+  bool isTreatedAsRing() const;
 
- void     treatAsRing( bool );
- void     attachLocalData( bool );
- void     setGapTolerance( double );
- double   getGapTolerance()            const;
- void     setAngleTolerance( double );
- double   getAngleTolerance()          const;
+  void     treatAsRing( bool );
+  void     setGapTolerance( double );
+  double   getGapTolerance()            const;
+  void     setAngleTolerance( double );
+  double   getAngleTolerance()          const;
 
+  static std::vector<double> compute_tunes( Matrix const& oneturn );
 
 protected:
 
- BmlPtr              myBeamlinePtr_;
- int                 nelms_;   
- bool                verbose_;
- bool                isRing_;
- bool                localData_;
- std::ostream*       errorStreamPtr_;
- std::ostream*       outputStreamPtr_;
- double              ringGapTolerance_;
- double              ringAngleTolerance_;
+  BmlPtr              bml_;
+  int                 nelms_;   
+  bool                verbose_;
+  bool                isRing_;
+  double              ringGapTolerance_;
+  double              ringAngleTolerance_;
+  sqlite::connection& db_;
 
 private:
 
- static double defGapTol_;
- static double defAngleTol_;
+  static double defGapTol_;
+  static double defAngleTol_;
  
  Sage( Sage const&); // copy forbidden 
 

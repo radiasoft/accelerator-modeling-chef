@@ -7,7 +7,6 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      BeamlineContext.h
-******  Version:   2.2
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc. / Fermilab     
 ******                All Rights Reserved                             
@@ -43,24 +42,28 @@
 ******
 **************************************************************************
 *************************************************************************/
-
 #ifndef BEAMLINECONTEXT_H
 #define BEAMLINECONTEXT_H
 
 #include <iostream>
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 #include <basic_toolkit/complexAddon.h>
 #include <mxyzptlk/Mapping.h>
-#include <physics_toolkit/LattFuncSage.h>
+#include <beamline/ElmPtr.h>
+#include <beamline/BmlPtr.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <physics_toolkit/EdwardsTengSage.h>
-#include <physics_toolkit/CovarianceSage.h>
-#include <physics_toolkit/LBSage.h>
-#include <physics_toolkit/DispersionSage.h>
+#include <beamline/LatticeFunctions.h>
 
+#include <sqlite/connection.hpp>
+
+template <typename Particle_t>
+class TBunch;
+typedef TBunch<Particle> ParticleBunch;
 
 class beamline;
+class alignmentData;
 class ClosedOrbitSage;
 class ChromaticityAdjuster;
 class TuneAdjuster;
@@ -84,35 +87,60 @@ typedef boost::shared_ptr<BeamlineContext>            BmlContextPtr;
 typedef boost::shared_ptr<BeamlineContext const>  ConstBmlContextPtr;
 
 
-class BeamlineContext
-{
+class BeamlineContext {
+
   public:
 
-    BeamlineContext( Particle const&, BmlPtr bml );
+    BeamlineContext( Particle const&, BmlPtr bml, std::string const& dbname ="");
    ~BeamlineContext();
-
-    int assign(  BmlPtr bml);
+ 
+    sqlite::connection& dbConnection() const;    
 
     void accept( ConstBmlVisitor& ) const;
-    void accept( BmlVisitor& );
+    void accept(      BmlVisitor& );
 
-    void setInitialDispersion( DispersionSage::Info const& );
-    DispersionSage::Info const& getInitialDispersion();
-
-    void setInitialTwiss( LattFuncSage::lattFunc const& );
-    LattFuncSage::lattFunc const& getInitialTwiss();
-
-    void setInitialCovariance( CovarianceSage::Info const& );
-    CovarianceSage::Info const& getInitialCovariance();
+    void                  setInitial( LattFuncs const& );
+    LattFuncs const&      getInitial( );
 
     void writeTree();
 
+    void   computeClosedOrbit( );
+    void    computeDispersion( );  
+    void computeCourantSnyder( );
+    void   computeEdwardsTeng( );
+    void    computeCovariance( );
+    void    computeEigenmodes( );
+    void    computeEigenTunes( );
 
-    // Beamline methods
+    double  getHTune();
+    double  getVTune();
+
+    MatrixD equilibriumCovariance();
+    void setAvgInvariantEmittance( double epsh, double epsv);   // Arguments are in units of pi mm-mr.
+
+    Particle const& getParticle();
+    void            setParticle(Particle const& );
+
+    bool isRing() const;
+    bool isTreatedAsRing() const;
+
+    void handleAsRing();
+    void handleAsLine();
+
+    Mapping const& getOneTurnMap();  // Side effect: calculates closed orbit if not
+    bool           onTransClosedOrbit( Particle const& ) const;
+
+    Particle  getRefParticle() const;
+    bool      hasReferenceParticle() const;
+
+
+   // Beamline methods
 
     std::string name() const;
+
     void rename( const char* );
     void peekAt( double& s, Particle const& ) const;
+
     double sumLengths() const;
 
     int setLength   ( ElmPtr, double );
@@ -123,102 +151,17 @@ class BeamlineContext
 
     int setAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion);
 
-    int replaceElement( ElmPtr , ElmPtr );
-    // Will replace the first argument with
-    // the second. Return values:
-    // 0 everything went as planned
-    // 1 first argument was not found
-    // 2 at least one argument was null
-    // 
-    // WARNING: Element *a will be deleted if the beamline has
-    // been cloned. It is assumed that *b has been created on the
-    // heap, and the BeamlineContext takes over ownership.
+    int replaceElement( ElmPtr oldelm, ElmPtr newelm); // 0 everything went as planned
+                                                       // 1 first argument was not found
+                                                       // 2 at least one argument was null
 
-    int processElements( boost::function<bool(bmlnElmnt &)> action );
-    // Returns number of elements processed.
+    int processElements( boost::function<bool(bmlnElmnt &)> action ); // Returns number of elements processed.
 
-    void setAvgInvariantEmittance( double, double );
-    // Sets the parameters used to calculate
-    //   an equilibrium covariance matrix.
-    // Arguments are in units of pi mm-mr.
-    //   The first is "mostly horizontal"; 
-    //   the second, "mostly vertical."
-    // If not set, default values are: (40,40).
+    double getMomentum() const;
 
-    double getEnergy() const;
-
-    int countHowManyDeeply() const;
+    int           countHowManyDeeply()       const;
     alignmentData getAlignmentData( ElmPtr ) const;
 
-    Mapping const& getOneTurnMap();
-    // Returns the one turn map; 
-    // Side effect: calculates closed orbit if not
-    // already done.
-    bool onTransClosedOrbit( const Particle& ) const;
-
-    bool hasReferenceParticle() const;
-    void setReferenceParticle( Particle const& );
-    int  getReferenceParticle( Particle& ) const;
-
-    // Returns -1 if no reference particle is available.
-    Particle const& getParticle();
-
-    Vector const& getParticleState() const;
-    void          loadParticleStateInto( Vector& );
-
-    double getParticle_x   ();
-    double getParticle_y   ();
-    double getParticle_cdt ();
-    double getParticle_npx ();
-    double getParticle_npy ();
-    double getParticle_ndp ();
-
-    void setParticleState( const Vector& );
-    void setParticle_x   ( double );
-    void setParticle_y   ( double );
-    void setParticle_cdt ( double );
-    void setParticle_npx ( double );
-    void setParticle_npy ( double );
-    void setParticle_ndp ( double );
-
-    bool isRing() const;
-    bool isTreatedAsRing() const;
-    void handleAsRing();
-    void handleAsLine();
-
-    void reset();
-    // This is a drastic function which almost acts
-    //   like a destructor. Effectively, all information
-    //   about previous calculations is eliminated.
-
-    // Sage methods ... and others
-    double getHorizontalFracTune();
-    double getVerticalFracTune();
-    double getHorizontalEigenTune();
-    double getVerticalEigenTune();
-
-    std::vector<LattFuncSage::lattFunc> const& getTwissArray();
-    std::vector<EdwardsTengSage::Info>  const& getETArray();
-    std::vector<CovarianceSage::Info>   const& getCovarianceArray();
-    std::vector<LBSage::Info>           const& getLBArray();
-    std::vector<DispersionSage::Info>   const& getDispersionArray();
-
-    MatrixD equilibriumCovariance();
-    MatrixD equilibriumCovariance( double, double );
-
-    // Arguments are the "invariant emittances" -
-    //   essentially two scaled action coordinates -
-    //   in pi mm-mr units. The first is "mostly horizontal," 
-    //   the second, "mostly vertical."
-    //   (See notes on eps1_ and eps2_ below.)
-    // This routine returns a covariance matrix over
-    //   the full phase space, but only the transverse
-    //   components should be believed. It assumes that
-    //   the longitudinal actions are zero.
-    // In the first form, the values of member data
-    //   eps1_ and eps2_ are used for the arguments.
-
-    // Adjuster methods
 
     void addHTuneCorrector( QuadrupolePtr );
     void addHTuneCorrector( ThinQuadPtr );
@@ -244,9 +187,6 @@ class BeamlineContext
 
     ConstBmlPtr cheatBmlPtr() const;
 
-    // Stream functions
-    friend std::ostream& operator<<( std::ostream&, const BeamlineContext& );
-    friend std::istream& operator>>( std::istream&,       BeamlineContext& );
 
     // !!! Eventually, these three should become private !!!
 
@@ -256,28 +196,35 @@ class BeamlineContext
     static const int NO_CHROMATICITY_ADJUSTER;
 
   private:
+    
+    void                 clear() const;
+
+    bool       closed_orbit_ok() const; 
+    bool         dispersion_ok() const;  
+    bool     courant_snyder_ok() const;
+    bool       edwards_teng_ok() const;
+    bool         covariance_ok() const;
+    bool         eigenmodes_ok() const;
 
     BeamlineContext( BeamlineContext const&); // forbidden
 
-    BmlPtr                p_bml_;
+    BmlPtr                bml_;
 
-    LattFuncSage*         p_lfs_;
-    EdwardsTengSage*      p_ets_;
-    CovarianceSage*       p_covs_;
-    LBSage*               p_lbs_;
-    ClosedOrbitSage*      p_cos_;
-    DispersionSage*       p_dsps_;
     ChromaticityAdjuster* p_ca_;
     TuneAdjuster*         p_ta_;
 
     // Initial conditions
-    LattFuncSage::lattFunc initialLattFunc_;
-    DispersionSage::Info   initialDispersion_;
-    CovarianceSage::Info   initialCovariance_;
 
-    double                dpp_; // value of dp/p used for dispersion calculation. default = 0.0001
-    double                eps1_, eps2_;
-    // Average invariant emittances in units of pi mm-mr.
+    LattFuncs             initialLattFunc_;
+    bool                  initial_lattfunc_set_;
+
+    double                dpp_;  // value of dp/p used for dispersion calculation. default = 0.0001
+    double                eps1_; // invariant emittances in units of pi mm-mr.
+    double                eps2_;
+
+
+    JetParticle           oneturnjp_; 
+
     //   Used for computing equilibrium covariance  matrix.
     //   Default values: eps_1_ = 40, eps_2_ = 40.
     // Relation to <I> = <aa*>: 
@@ -286,70 +233,28 @@ class BeamlineContext
     // I assume that  eps1_ is "mostly horizontal" and eps2_ is
     //   "mostly vertical."
 
+
+    //   ****************************FIXME !**************************************************************
+
  public:
+
+
     Particle*             particle_;    // we use a ptr here in order to preserve info about the actual particle type     
                                         // BAD !!! public beacsue of RayTrace::_pushParticle()':
     ParticleBunch*        particleBunchPtr_;   // BAD!!!! Needed because of DistributionWidget  
+
+    //   ****************************FIXME !**************************************************************
+
  private:
 
-    Particle               co_part_; 
-    // once created, holds initial state for
-    // (transverse) closed orbit.
 
-    Particle               disp_part_;
-    // same as above, but at reference energy*(1+dp/p)
+            std::string               dbname_;
+    mutable sqlite::connection        db_;
 
-    JetParticle            jetparticle_;
-
-    // once created, its state always contains
-    // one traversal of the beamline at the
-    // reference energy on the closed orbit.
-
-    // "small" numbers for testing orbit closure
- 
-    static const double smallClosedOrbitXError;
-    static const double smallClosedOrbitYError;
-    static const double smallClosedOrbitNPXError;
-    static const double smallClosedOrbitNPYError;
-
-
-    LattFuncSage::tunes      tunes_;
-    EdwardsTengSage::Tunes   eigentunes_;
-
-    // Status flags
-
-    bool normalLattFuncsCalcd_;
-    bool edwardstengFuncsCalcd_;
-    bool dispersionFuncsCalcd_;
-    bool momentsFuncsCalcd_;
-    bool LBFuncsCalcd_;
-    bool dispCalcd_;
-
-    bool hasRefParticle_;
-    bool closed_orbit_computed_;
-    bool tunes_computed_;
-    bool eigentunes_computed_;
-    bool initial_lattfunc_set_;
-    bool initial_dispersion_set_;
-    bool initial_covariance_set_;
-
-    // Operations
- 
-    void createTunes();
-    void createLFS();
-    void deleteLFS();
-    void createETS();
-    void deleteETS();
-    void createLBS();
-    void deleteLBS();
-    void createCOVS();
-    void deleteCOVS();
-    void createDSPS();
-    void deleteDSPS();
-    void createEigentunes();
-    void createClosedOrbit();
-    void deleteClosedOrbit();
-
+    static const double small_x_err;   // [m]   = 1.0e-9 
+    static const double small_y_err;   // [m]   = 1.0e-9 
+    static const double small_npx_err; // [rad] = 1.0e-9 
+    static const double small_npy_err; // [rad] = 1.0e-9 
 };
 
 #endif // BEAMLINECONTEXT_H
