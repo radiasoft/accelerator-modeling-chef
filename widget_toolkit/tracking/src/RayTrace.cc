@@ -1059,30 +1059,6 @@ void RayTrace::_opt_snglmode()
 }
 
 
-void RayTrace::_new_x( double x )
-{
-  _bmlConPtr->setParticle_x(x);
-}
-
-
-void RayTrace::_new_xp( double xp )
-{
-  _bmlConPtr->setParticle_npx(xp);
-}
-
-
-void RayTrace::_new_y( double y )
-{
-  _bmlConPtr->setParticle_y(y);
-}
-
-
-void RayTrace::_new_yp( double yp )
-{
-  _bmlConPtr->setParticle_npy(yp);
-}
-
-
 void RayTrace::_appendToHistory( double az, const Vector& state )
 {
   Ray* rayPtr = new Ray;
@@ -1095,7 +1071,9 @@ void RayTrace::_appendToHistory( double az, const Vector& state )
 void RayTrace::setState( const Vector& s )
 {
   if( s.Dim() == 6 ) {
-    _bmlConPtr->setParticleState( s );
+    Particle p( _bmlConPtr->getParticle() );
+    p.State() = s; 
+    _bmlConPtr->setParticle(p);
   }
   else {
     ostringstream uic;
@@ -1106,6 +1084,26 @@ void RayTrace::setState( const Vector& s )
   }
 }
 
+
+void  RayTrace::_new_x( double x)
+{
+  _bmlConPtr->particle_->State()[0] = x;
+}
+
+void    RayTrace::_new_xp( double xp)
+{
+  _bmlConPtr->particle_->State()[3] = xp;
+}
+
+void    RayTrace::_new_y( double y)
+{
+  _bmlConPtr->particle_->State()[1] = y;
+}
+
+void    RayTrace::_new_yp( double yp)
+{
+  _bmlConPtr->particle_->State()[4] = yp;
+}
 
 void RayTrace::_iterate()
 {
@@ -1130,7 +1128,7 @@ void RayTrace::_pushBunch()
   if( _isIterating ) 
   {
     for ( ParticleBunch::iterator it = pbPtr->begin();  it != pbPtr->end(); ++it ) {
-      _bmlConPtr->setParticleState(  it->State() );
+      _bmlConPtr->setParticle( *it );
       _pushParticle();
     }
 

@@ -62,7 +62,7 @@
 #include <basic_toolkit/ColorWheel.h>
 #include <basic_toolkit/VectorD.h>
 #include <beamline/BmlPtr.h>
-#include <physics_toolkit/LattFuncSage.h>
+#include <beamline/LatticeFunctions.h>
 
 // Predeclaration of classes...
 
@@ -96,8 +96,8 @@ public:
 
   int run();
 
-  std::list<Ray*>         _history;
-  LattFuncSage::lattFunc* _p_info;
+  std::list<Ray*>     _history;
+  LattFuncs*          _p_info;
 
   void      setBeamline( const beamline* );
   void      _process ( RayDrawSpace*, double, double );
