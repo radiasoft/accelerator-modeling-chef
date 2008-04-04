@@ -25,6 +25,7 @@
 #ifndef PLOTDATA_H
 #define PLOTDATA_H
 
+#include <sqlite/connection.hpp>
 #include <CurveData.h>
 #include <boost/shared_ptr.hpp>
 #include <beamline/beamline.h>
@@ -51,6 +52,9 @@ class PlotData {
     virtual ~PlotData();
     
     void             addCurve( CurveData& cv);
+
+    void                setDb( sqlite::connection& db );
+    sqlite::connection* getDb() const;
 
     void             setBeamline(ConstBmlPtr bml );
     ConstBmlPtr      getBeamline() const;
@@ -89,8 +93,9 @@ class PlotData {
     double                 scalemag_left_;
     double                 scalemag_right_;
     
-    Tunes                  tunes_;
-    ConstBmlPtr            bml_;
+    Tunes                          tunes_;
+    ConstBmlPtr                    bml_;
+    mutable sqlite::connection*    db_;
 
 };
 

@@ -121,6 +121,19 @@ void CHEFPlot::resizeLego()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
+void CHEFPlot::displayLattice( sqlite::connection& db) 
+{
+
+  plot_->setGeometry(0, lego_height_,  width(), height()- lego_height_);
+  lego_->setGeometry(plot_->canvas()->x(), 0,  plot_->canvas()->width(),  lego_height_);
+  lego_->setDb(db);
+  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 void CHEFPlot::displayLattice( ConstBmlPtr bml) 
 {
 
@@ -150,7 +163,7 @@ void  CHEFPlot::updateLatticeDisplay()
   int loffset = plot_->transform( QwtPlot::xBottom, xmin);
   int roffset = plot_->transform( QwtPlot::xBottom, xmax);
   
-  lego_->setBeamlineDisplayLimits(xmin, std::abs(xmax-xmin), loffset, roffset );
+  lego_->setView(xmin, std::abs(xmax-xmin), loffset, roffset );
   lego_->update();
 
 }
@@ -323,12 +336,15 @@ void CHEFPlot::zoomOff()
 
 void CHEFPlot::setData(PlotData const& pltdata) 
 {
-   ConstBmlPtr bml = pltdata.getBeamline(); 
+   ConstBmlPtr bml        = pltdata.getBeamline(); 
+   sqlite::connection* db = pltdata.getDb(); 
    
    if ( bml ) {
       displayLattice( bml );
       enableLegoPlot( true);
-
+   } else if ( db ) {
+      displayLattice( *db );
+      enableLegoPlot( true);
    } else {
      enableLegoPlot(false);
    }

@@ -35,7 +35,9 @@ INCLUDEPATH += ../chefplot/include
 INCLUDEPATH += ../chefplot/src/ui
 INCLUDEPATH +=  $${FNAL_INSTALL_TOP_DIR}/include/python-bindings
 
-INCLUDEPATH += $${PYTHON_INC}
+INCLUDEPATH += $${PYTHON_INC} 
+
+#INCLUDEPATH += /usr/lib/python2.5/site-packages/numpy/core/include
 
 LIBS	+= -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$$GLIB_LIBDIR -lglib-2.0
 

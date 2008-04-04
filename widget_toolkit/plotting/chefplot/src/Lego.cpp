@@ -5,7 +5,7 @@
 ******  CHEF:      A Qt-based Application 
 ******             Layered on top of of BEAMLINE.
 ******                                                                
-******  File:      lego.cpp
+******  File:      Lego.cpp
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc.   
 ******                All Rights Reserved                             
@@ -32,6 +32,9 @@
 **************************************************************************
 *************************************************************************/
 
+#include "/usr/local/vsqlite++/include/sqlite/connection.hpp"
+#include "/usr/local/vsqlite++/include/sqlite/query.hpp"
+
 #include <Lego.h>
 #include <beamline/beamline.h>
 #include <qpainter.h>
@@ -39,11 +42,14 @@
 #include <qpixmap.h>
 #include <iostream>
 
+#include <sstream>
+
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): 
-QWidget(parent,name,f), painter_(0),  pixmap_(0) 
+  QWidget(parent,name,f),  db_(0), bml_(), painter_(0),  pixmap_(0)
 {
  
    pixmap_  = new QPixmap(2048, height()); // the width cannot be changed during a paint event
@@ -66,9 +72,19 @@ LegoPlot::~LegoPlot()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void LegoPlot::setDb( sqlite::connection& db) 
+{
+  db_  = &db; 
+  bml_ = BmlPtr();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void LegoPlot::setBeamline( ConstBmlPtr bml) 
 {
      bml_ = bml;
+     db_  = 0; 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -83,7 +99,7 @@ ConstBmlPtr LegoPlot::getBeamline()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void LegoPlot::setBeamlineDisplayLimits(double x, double w, int loffset, int roffset) 
+void LegoPlot::setView(double x, double w, int loffset, int roffset) 
 {
   
   x0_      = x;
@@ -104,8 +120,9 @@ void  LegoPlot::resizeEvent ( QResizeEvent *event )
   QRect rect(QPoint(0,0), QSize(width(), height()));
 
   painter_->end();
-  delete painter_;
-  delete pixmap_; 
+
+  delete painter_; 
+  delete pixmap_;  
 
   pixmap_  = new QPixmap(2048, rect.height()); // the width cannot be changed during a paint event
   painter_ = new QPainter(pixmap_, this);
@@ -120,7 +137,7 @@ void  LegoPlot::resizeEvent ( QResizeEvent *event )
 void LegoPlot::paintEvent ( QPaintEvent *event )
 {
 
-  if( !bml_ ) return;
+  if( (!bml_) && (!db_) ) return;
 
   QRect legorect  = rect();
 
@@ -130,59 +147,91 @@ void LegoPlot::paintEvent ( QPaintEvent *event )
   painter_->setWindow(painter_->viewport());
   scale_ = double( ( roffset_ -loffset_ ) / w_ );
 
+  std::ostringstream sql;
+     sql << "SELECT type, length, strength FROM ELEMENTS"
+         << std::ends;
+
+  sqlite::query q(*db_, sql.str());
+  sqlite::result_type res = q.emit_result(); 
+
+     if ( !res ) return;
+
      double s   = 0;
-     double len = 0;
-     ElmPtr beptr;
+     do { 
 
-     for (beamline::const_deep_iterator it    = bml_->deep_begin();
-	                                it   != bml_->deep_end(); ++it) {
-       
-       beptr = *it;
+       std::string elmtype =  res->get_string(0); 
+       double len          =  res->get_double(1);
+       double strength     =  res->get_double(2);
 
-       len = beptr->Length();
+       bool   neg_strength = (strength < 0.0); 
+    
+       if ( (s+len) < x0_   ) { s += len; continue; }
 
-       if ( std::string(beptr->Type()) == std::string("sbend") ) {
+       if ( s > (x0_ + w_ ) ) break;
 
-            if ( (s+len) >= x0_) drawBend(len, s);
-  
-       } else  if ( std::string(beptr->Type()) == std::string("rbend") ) {
-
-            if ( (s+len) >= x0_) drawBend(len, s);
-  
-       } else  if ( std::string(beptr->Type()) == std::string("CF_sbend") ) {
-
-            if ( (s+len) >= x0_) drawBend(len, s);
-  
-       } else  if ( std::string(beptr->Type()) == std::string("CF_rbend") ) {
-
-            if ( (s+len) >= x0_) drawBend(len, s);
-  
-       } else if ( std::string(beptr->Type()) == std::string("quadrupole") ) {
-
-            if ( (s+len) >= x0_) drawQuad(len, s, (beptr->Strength()<0)  );
-
-       } else if ( std::string(beptr->Type()) == std::string("thinQuad") ) {
-
-            if ( (s+len) >= x0_) drawQuad(len, s,  (beptr->Strength()<0) );
-
-       } else if ( std::string(beptr->Type()) == std::string("sextupole") ) {
-
-            if ( (s+len) >= x0_) drawSext(len, s, (beptr->Strength()<0)  );
-
-       } else if ( std::string(beptr->Type()) == std::string("thinSextupole") ) {
-
-            if ( (s+len) >= x0_) drawSext(len, s,  (beptr->Strength()<0) );
-
+       if ( elmtype == "sbend"            )    {
+            drawBend(len, s);
+       } else  if ( elmtype == "rbend"    )    {
+            drawBend(len, s);
+       } else  if ( elmtype == "CF_sbend" )    {
+            drawBend(len, s);
+       } else  if ( elmtype == "CF_rbend" )    {
+            drawBend(len, s);
+       } else if ( elmtype == "quadrupole")    {
+            drawQuad(len, s, neg_strength  );
+       } else if ( elmtype == "thinQuad"     ) {
+            drawQuad(len, s,  neg_strength);
+       } else if ( elmtype == "sextupole"    ) {
+            drawSext(len, s, neg_strength );
+       } else if ( elmtype == "thinSextupole") {
+            drawSext(len, s,  neg_strength   );
        } else {
-         
-            if ( (s+len) >= x0_) drawDrift(len, s);
+            drawDrift(len, s);
+       };
+ 
+       s += len;
+ 
+      } while ( res->next_row() );
+
+#if  0  
+============================
+      double s   = 0;
+      for (beamline::const_deep_iterator it    = bml_->deep_begin();
+	                                 it   != bml_->deep_end(); ++it) {
+       
+       ElmPtr elm = *it;
+
+       std::string elmtype = elm->Type();
+       double len          = elm->Length();
+    
+       if ( (s+len) < x0_   ) continue;
+       if ( s > (x0_ + w_ ) ) break;
+
+       if ( elmtype == "sbend"            )  { 
+             drawBend(len, s);
+       } else if ( elmtype == "rbend"     ) {
+             drawBend(len, s);
+       } else if ( elmtype == "CF_sbend"  ) {
+             drawBend(len, s);
+       } else  if ( elmtype == "CF_rbend" ) {
+             drawBend(len, s);
+       } else if ( elmtype == "quadrupole") {
+             drawQuad(len, s,  (elm->Strength()<0)  );
+       } else if ( elmtype ==  "thinQuad" ) {
+             drawQuad(len, s,  (elm->Strength()<0) );
+       } else if ( elmtype ==  "sextupole") {
+             drawSext(len, s,  (elm->Strength()<0)  );
+       } else if ( elmtype ==  "thinSextupole") ) {
+              drawSext(len, s, (elm->Strength()<0) );
+       } else {
+              drawDrift(len, s);
        };
  
        s += len;
        
-       if ( s > (x0_ + w_ ) ) break;
-
      }
+=========================================
+#endif
 
         bitBlt(this, 0, 0, pixmap_, 0, 0, legorect.width(), legorect.height());
      

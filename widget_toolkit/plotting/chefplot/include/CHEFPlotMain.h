@@ -24,7 +24,8 @@
 #ifndef CHEFPLOTMAIN_H
 #define CHEFPLOTMAIN_H
 
-#include "chefplotmainbase.h" 
+#include <sqlite/connection.hpp> 
+#include <chefplotmainbase.h> 
 #include <beamline/beamline.h>
 #include <qcanvas.h>
 #include <qwmatrix.h>
@@ -43,6 +44,7 @@ class CHEFPlotMain: public CHEFPlotMainBase {
     CHEFPlotMain(QWidget* parent=0, const char* name=0, WFlags f=0);
    ~CHEFPlotMain();
 
+    void displayLattice(sqlite::connection& db);
     void displayLattice(BmlPtr bml);
     void addData(PlotData& cpdata);
     void showDataPoints(bool set);
