@@ -50,10 +50,10 @@ class QPyCHEF : public QPyCHEFBase {
   public:
 
   QPyCHEF(QWidget* p, const char* text);
-  ~QPyCHEF();
+ ~QPyCHEF();
 
 
-  const char* getPythonCurrentPrompt();
+  char const* getPythonCurrentPrompt();
 
   public slots:
 
@@ -67,15 +67,15 @@ class QPyCHEF : public QPyCHEFBase {
    
    void          initializePython();
 
-   Interpreter*  _interpreter;
-   int           _command_paragraph;
-   int           _command_index;
-   bool          _indented;
+   Interpreter*           interpreter_;
+   int                    command_paragraph_;
+   int                    command_index_;
+   bool                   indented_;
   
-   QString             _command_buffer;
-   std::queue<QString> _command_queue;
+   QString                command_buffer_;
+   std::queue<QString>    command_queue_;
 
-   PyCHEF_KeyPressFilter* _key_press_filter;
+   PyCHEF_KeyPressFilter* key_press_filter_;
   
 
 };
@@ -88,13 +88,14 @@ class PyCHEF_KeyPressFilter : public QObject
 
   public:
  
-  PyCHEF_KeyPressFilter(QPyCHEF* w) :_w(w) { }
+    PyCHEF_KeyPressFilter(QPyCHEF* w): w_(w) { }
   
    
-   protected:
+  protected:
 
      bool eventFilter( QObject *o, QEvent *e );
-     QPyCHEF *_w;
+
+     QPyCHEF *w_;
         
 };
 

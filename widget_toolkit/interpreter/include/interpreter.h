@@ -36,10 +36,7 @@
 #define INTERPRETER_H
 
 
-extern "C" { 
-
-int  testcomplete(char*);
-}
+extern "C" { int  testcomplete(char*); }
 
 
 #include <boost/python.hpp>
@@ -54,11 +51,11 @@ class Interpreter {
  public:
 
   static Interpreter*  getInstance();
-  void runString(const char* s);
-  void redirectIO( IORedirectorPtr& xstderr, IORedirectorPtr& xstdout);
-  const char* getPythonPrompt1();
-  const char* getPythonPrompt2();
-  void readFile( const char* fname);
+  void                 runString(const char* s);
+  void                 redirectIO( IORedirectorPtr& xstderr, IORedirectorPtr& xstdout);
+  char const*          getPythonPrompt1();
+  char const*          getPythonPrompt2();
+  void                 readFile( const char* fname);
 
  private:
 
@@ -68,12 +65,12 @@ class Interpreter {
 
  private:
   
-  boost::python::handle<>                  _main_module;
-  boost::python::handle<>                  _main_dictionary;
-  boost::python::handle<>                  _sys_module;
-  std::auto_ptr< boost::python::handle<> > _pyrun_handle_ptr;
+  boost::python::handle<>                  main_module_;
+  boost::python::handle<>                  main_dictionary_;
+  boost::python::handle<>                  sys_module_;
+  std::auto_ptr< boost::python::handle<> > pyrun_handle_ptr_;
 
-  static Interpreter* _instance;
+  static Interpreter*                      instance_;
     
 };
 
