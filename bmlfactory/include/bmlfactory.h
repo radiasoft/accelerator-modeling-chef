@@ -38,15 +38,15 @@
 #define BMLFACTORY_H
 
 #include <boost/shared_ptr.hpp>
+#include <beamline/ElmPtr.h>
+#include <beamline/LatticeFunctions.h>
 #include <list>
 #include <string>
 
 class   beamline;
 class   bmlnElmnt;
-struct  LattFunc;
 
 typedef boost::shared_ptr<beamline>  BmlPtr;
-typedef boost::shared_ptr<bmlnElmnt> ElmPtr;
 
 class bmlfactory {
 
@@ -65,12 +65,12 @@ class bmlfactory {
     virtual const char* getUseStatementBeamlineName()   const=0; 
           
     virtual const char* getParticleType()               const=0;
-    virtual double      getEnergy()                     const=0;
+    virtual double      getMomentum()                   const=0;
     virtual double      getBrho()                       const=0;
 
     virtual bool        variableIsDefined(const char* varname) const=0;
     virtual double      getVariableValue (const char* varname) const=0;   
-    virtual LattFunc    getInitialValues()                     const=0;   
+    virtual LattFuncs   getInitialValues()                     const=0;   
 
   protected:
 
