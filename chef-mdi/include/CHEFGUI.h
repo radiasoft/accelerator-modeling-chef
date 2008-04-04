@@ -60,7 +60,6 @@
 
 #include <physics_toolkit/DriftEliminator.h>
 #include <physics_toolkit/QuadEliminator.h>
-#include <physics_toolkit/DispersionSage.h>
 
 
 #include <BeamlineExpressionTree.h>
@@ -284,6 +283,8 @@ private slots:
   void makeFODO();
   void makeSingSext();
 
+  void closedOrbit();
+
   void periodicTwiss();
   void periodicET();
   void periodicMoments();
@@ -369,17 +370,17 @@ signals:
  private:
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeTwiss_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)> command_propagateTwiss_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncs const&)>              command_propagateTwiss_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeMoments_; 
-  //boost::function<QWidget*( QWidget*, BmlContextPtr& , CovarianceSage::Info const&)>   command_propagateMoments_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncSage::lattFunc const&)> command_propagateMoments_; 
+  //boost::function<QWidget*( QWidget*, BmlContextPtr& , LattFuncsconst&)>             command_propagateMoments_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&,   LattFuncs const&)>             command_propagateMoments_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEdwardsTeng_; 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEigenmodes_; 
 
   boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeDispersion_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&, DispersionSage::Info const&) >   command_propagateDispersion_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr&, LattFuncs const&) >              command_propagateDispersion_; 
 
 
 };

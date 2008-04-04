@@ -34,8 +34,7 @@
 
 #include <initconddialoglfbase.h>
 #include <InitCondDialogCovarianceBase.h>
-#include <physics_toolkit/LattFuncSage.h>
-#include <physics_toolkit/CovarianceSage.h>
+#include <beamline/LatticeFunctions.h>
 
 class InitCondDialogLF : public InitCondDialogLFBase {
 
@@ -51,8 +50,8 @@ Q_OBJECT
 
  public slots:
 
-   LattFuncSage::lattFunc getInitCond() const;
-   void                   setInitCond( LattFuncSage::lattFunc const& lf );
+   LattFuncs getInitCond() const;
+   void      setInitCond(  LattFuncs const& lf );
   
 };
 
@@ -68,8 +67,8 @@ class InitCondDialogCovariance: public InitCondDialogCovarianceBase {
 
  public slots:
 
-   CovarianceSage::Info   getInitCond()  const;
-   void                   setInitCond( CovarianceSage::Info const& info);
+   LattFuncs  getInitCond()  const;
+   void       setInitCond( LattFuncs const& info);
 
 };
 

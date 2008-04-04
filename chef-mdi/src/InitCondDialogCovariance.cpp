@@ -56,10 +56,13 @@ InitCondDialogCovariance::InitCondDialogCovariance(QWidget* parent, const char* 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CovarianceSage::Info InitCondDialogCovariance::getInitCond() const
+LattFuncs InitCondDialogCovariance::getInitCond() const
 {
 
-  CovarianceSage::Info info;
+  LattFuncs info;
+
+  // FIXME !
+#if 0
   Matrix& covariance = info.covariance;
 
   covariance(0,0)                         =      x_xLineEdit->text().toDouble();
@@ -73,6 +76,7 @@ CovarianceSage::Info InitCondDialogCovariance::getInitCond() const
   covariance(0,2)    =   covariance(2,0)  =    x_yLineEdit->text().toDouble();
   covariance(0,3)    =   covariance(0,3)  =  x_npyLineEdit->text().toDouble();
   covariance(2,1)    =   covariance(1,2)  =  y_npxLineEdit->text().toDouble();
+#endif
 
   return info;
 }
@@ -80,10 +84,13 @@ CovarianceSage::Info InitCondDialogCovariance::getInitCond() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void InitCondDialogCovariance:: setInitCond( CovarianceSage::Info const& info) 
+void InitCondDialogCovariance:: setInitCond( LattFuncs const& info) 
 {
+ 
+  // FIXME !
 
-  Matrix const& covariance = info.covariance;
+ #if 0 
+ Matrix const& covariance = info.covariance;
 
   QString s("%1"); 
 
@@ -98,6 +105,7 @@ void InitCondDialogCovariance:: setInitCond( CovarianceSage::Info const& info)
       x_yLineEdit->setText(  s.arg( covariance(1,2)) );
     x_npyLineEdit->setText(  s.arg( covariance(1,3)) );
     y_npxLineEdit->setText(  s.arg( covariance(2,1)) );
+#endif
 
 }
 

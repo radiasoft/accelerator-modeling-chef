@@ -39,7 +39,6 @@
 #include<vector>
 #include<basic_toolkit/GenericException.h>
 #include<physics_toolkit/BeamlineContext.h>
-#include<physics_toolkit/CovarianceSage.h>
 #include<CHEFPlotMain.h>
 #include<MomentsFncData.h>
 #include<qwidget.h>
@@ -62,9 +61,11 @@ QWidget* CommandMoments::operator()( QWidget* parent, BmlContextPtr const& conte
     plot->setGeometry(0,0, parent->width(), parent->height() );
     plot->setAutoClear(true);
 
-    MomentsFncData data(   context->getCovarianceArray()
-                         , context->getHorizontalEigenTune()
-                         , context->getVerticalEigenTune()
+      context->computeCovariance();
+
+      MomentsFncData data(   context->dbConnection()
+                         , context->getHTune()
+                         , context->getVTune()
                          , context->cheatBmlPtr()            );
 
     plot->addData( data );

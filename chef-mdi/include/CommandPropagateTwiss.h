@@ -32,15 +32,17 @@
 #define COMMANDPROPAGATETWISS_H
 
 #include <physics_toolkit/BeamlineContext.h>
-#include <physics_toolkit/LattFuncSage.h>
+#include <beamline/LatticeFunctions.h>
+
 
 class QWidget;
+union LattFunc;
 
 class CommandPropagateTwiss {
 
  public:
     
-  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initialConditions ); 
+  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initialConditions ); 
 
 };
 

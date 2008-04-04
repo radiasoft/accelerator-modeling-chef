@@ -61,11 +61,13 @@ QWidget* CommandEigenmodes::operator()( QWidget* parent, BmlContextPtr const& co
     plot->setCaption( caption.c_str() );
     plot->setGeometry(0,0, parent->width(), parent->height() );
     plot->setAutoClear(true);
+   
+    context->computeEigenmodes();
 
-    LBFncData data(   context->getLBArray()
-                    , context->getHorizontalEigenTune()
-                    , context->getVerticalEigenTune()
-                    , context->cheatBmlPtr()             );
+    LBFncData data(   context->dbConnection(), 
+                      context->getHTune(),
+                      context->getVTune(), 
+                      context->cheatBmlPtr() );
     plot->addData( data );
 
     return plot;

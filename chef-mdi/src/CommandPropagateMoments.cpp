@@ -39,7 +39,6 @@
 #include <CHEFPlotMain.h>
 
 #include <basic_toolkit/GenericException.h>
-#include <physics_toolkit/CovarianceSage.h>
 #include <physics_toolkit/BmlUtil.h>
 
 #include <string>
@@ -47,15 +46,17 @@
 
 using namespace std;
 
-QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& context, LattFuncSage::lattFunc const& initial )
+QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initial )
 {
-    CovarianceSage::Info initialCovariance;
+
+#if 0
+    CVLattFuncs initialCovariance;
 
     initialCovariance.arcLength = 0.0;
-    initialCovariance.beta.hor  = initial.beta.hor;
-    initialCovariance.beta.ver  = initial.beta.ver;
-    initialCovariance.alpha.hor = initial.alpha.hor;
-    initialCovariance.alpha.ver = initial.alpha.ver;
+    initialCovariance.beta.hor  = initial.cs.beta.hor;
+    initialCovariance.beta.ver  = initial.cs.beta.ver;
+    initialCovariance.alpha.hor = initial.cs.alpha.hor;
+    initialCovariance.alpha.ver = initial.cs.alpha.ver;
 
     // ------------------------------------------------------------------------------------------------------------
     // * The conversion from lattice function to covariance assumes equal horizontal and vertical emittance.
@@ -71,17 +72,21 @@ QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& co
 
     context->setInitialCovariance( initialCovariance );
  
+#endif
+
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "MMplotWidget", Qt::WDestructiveClose );
 
     if( context->isTreatedAsRing() ) {
-      MomentsFncData data(   context->getCovarianceArray()
-                           , context->getHorizontalEigenTune()
-                           , context->getVerticalEigenTune()
+      context->computeCovariance();
+      MomentsFncData data(   context->dbConnection()
+                           , context->getHTune()
+                           , context->getVTune()
                            , context->cheatBmlPtr()            );
       plotWidget->addData( data );
     }
     else {
-      MomentsFncData data(   context->getCovarianceArray()
+      context->computeCovariance();
+      MomentsFncData data(   context->dbConnection()
                            , -1.0
                            , -1.0
                            , context->cheatBmlPtr()            );

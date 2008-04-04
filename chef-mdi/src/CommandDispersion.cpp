@@ -38,7 +38,6 @@
 #include<string>
 #include<vector>
 #include<physics_toolkit/BeamlineContext.h>
-#include<physics_toolkit/DispersionSage.h>
 #include<CHEFPlotMain.h>
 #include<DspnFncData.h>
 #include<qwidget.h>
@@ -60,7 +59,9 @@ QWidget* CommandDispersion::operator()( QWidget* parent, BmlContextPtr const& bm
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
-   DspnFncData data ( bml->getDispersionArray(), bml->cheatBmlPtr() );
+   bml->computeDispersion();
+
+   DspnFncData data ( bml->dbConnection(), bml->cheatBmlPtr() );
    plot->addData( data );
 
    return plot;
