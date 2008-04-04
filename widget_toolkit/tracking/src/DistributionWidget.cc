@@ -338,12 +338,14 @@ void DistributionWidget::_finishConstructor()
 
          if( 0 != _bmlConPtr ) {
            if( _bmlConPtr->isTreatedAsRing() ) {
-             const LBSage::Info lbs
-               = _bmlConPtr->getLBArray().back();
-             beta_x  = lbs.beta_1x;
-             beta_y  = lbs.beta_2y;
-             alpha_x = lbs.alpha_1x;
-             alpha_y = lbs.alpha_2y;
+
+             // FIXME ! const EMLattFuncs lbs
+             // FIXME ! = boost::get<EMLattFuncs const>(_bmlConPtr->getLBArray().back() );
+
+             // FIXME ! beta_x  = lbs.beta1x;
+             // FIXME ! beta_y  = lbs.beta2y;
+             // FIXME ! alpha_x = lbs.alpha1x;
+             // FIXME ! alpha_y = lbs.alpha2y;
            }
          }
  
