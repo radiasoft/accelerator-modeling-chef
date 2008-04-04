@@ -74,12 +74,12 @@ class MAD8Factory: public bmlfactory {
     BmlPtr create_beamline( std::string bmlname,  double brho );
     BmlPtr create_beamline( std::string bmlname );               // deprecated 
 
-    bool     variableIsDefined(const char* varname) const;
-    double   getVariableValue(const char* varname)  const;   
-    LattFunc getInitialValues()                     const;   
+    bool      variableIsDefined(const char* varname) const;
+    double    getVariableValue(const char* varname)  const;   
+    LattFuncs getInitialValues()                     const;   
 
-    double getEnergy() const;
-    double getBrho() const;
+    double getMomentum() const;
+    double getBrho()     const;
 
 
   private:
