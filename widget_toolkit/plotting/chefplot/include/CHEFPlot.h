@@ -25,6 +25,7 @@
 #ifndef CHEFPLOT_H
 #define CHEFPLOT_H
 
+#include <sqlite/connection.hpp>
 #include <qwidget.h>
 #include <beamline/BmlPtr.h>
 #include <qwmatrix.h>
@@ -49,6 +50,7 @@ class CHEFPlot: public QWidget {
     CHEFPlot(QWidget * parent = 0, const char* name = 0, Qt::WFlags f = 0);
    ~CHEFPlot();
 
+    void              displayLattice(sqlite::connection& db);
     void              displayLattice(ConstBmlPtr bml);
     ConstBmlPtr       getBeamline();
 
