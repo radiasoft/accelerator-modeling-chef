@@ -395,9 +395,9 @@ JetVector JetParticle::VectorMomentum() const
 
  JetVector ret(3, state_.Env());
 
- ret(0) = p_ * state_[3];  // px
- ret(1) = p_ * state_[4];  
- ret(2) = p_ * get_npz();
+ ret[0] = p_ * state_[3];  // px
+ ret[1] = p_ * state_[4];  
+ ret[2] = p_ * get_npz();
 
  return ret;
 }
@@ -409,9 +409,9 @@ JetVector JetParticle::NormalizedVectorMomentum() const
 {
  JetVector ret(3, state_.Env());
 
- ret(0) = state_[3];  // px
- ret(1) = state_[4];  
- ret(2) = get_npz();
+ ret[0] = state_[3];  // px
+ ret[1] = state_[4];  
+ ret[2] = get_npz();
  
  return ret; 
 }

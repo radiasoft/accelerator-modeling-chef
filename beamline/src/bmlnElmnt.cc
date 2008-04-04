@@ -1038,17 +1038,17 @@ void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
 
   JetVector& state = p.State();
 
-  state(0) -= align_->x_offset();
-  state(1) -= align_->y_offset();
+  state[0] -= align_->x_offset();
+  state[1] -= align_->y_offset();
 
   if( align_->roll() != 0.0) {
-    Jet temp   = state(0) * cs + state(1) * sn;
-    state(1)   = state(1) * cs - state(0) * sn;
-    state(0)   = temp;
+    Jet temp   = state[0] * cs + state[1] * sn;
+    state[1]   = state[1] * cs - state[0] * sn;
+    state[0]   = temp;
 
-    temp       = state(3) * cs + state(4) * sn;
-    state(4)   = state(4) * cs - state(3) * sn;
-    state(3)   = temp;
+    temp       = state[3] * cs + state[4] * sn;
+    state[4]   = state[4] * cs - state[3] * sn;
+    state[3]   = temp;
   }
 
 

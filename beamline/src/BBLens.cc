@@ -206,7 +206,6 @@ Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
 {
   Vector  retvec(3);
   char    normal;
-  std::complex<double>  z;
 
   double  ds, meanSigma;
   std::complex<double>  arg1, arg2;
@@ -227,9 +226,9 @@ Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
            "Vector BBLens::NormalizedEField( double arg_x, double arg_y )", 
            "Asymptotic limit r seems too small." ) );
     }
-    retvec(0) = x/r;
-    retvec(1) = y/r;
-    retvec(2) = 0.0;
+    retvec[0] = x/r;
+    retvec[1] = y/r;
+    retvec[2] = 0.0;
     return retvec;
   }
 
@@ -243,15 +242,15 @@ Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
       // Test for small r .....
       if( r > 1.0e-6*meanSigma ) {
   	r = ( 1.0 - exp(-r/ meanSigma ) ) / r;
-  	retvec(0) = x*r;
-  	retvec(1) = y*r;
-  	retvec(2) = 0.0;
+  	retvec[0] = x*r;
+  	retvec[1] = y*r;
+  	retvec[2] = 0.0;
   	return retvec;
       }
       else {
-  	retvec(0) = x/meanSigma;
-  	retvec(1) = y/meanSigma;
-  	retvec(2) = 0.0;
+  	retvec[0] = x/meanSigma;
+  	retvec[1] = y/meanSigma;
+  	retvec[2] = 0.0;
   	return retvec;
       }
     } 
@@ -309,7 +308,7 @@ Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
   tmp1 = y/sigmaY;
   r   += tmp1*tmp1;
 
-  z    = retarg1;
+  std::complex<double> z    = retarg1;
   z   -= retarg2 * exp( - r/2.0 );
   z   *= - complex_i * MATH_SQRTPI / ds;
 
@@ -317,45 +316,45 @@ Vector BBLens::NormalizedEField( double const& arg_x, double const& arg_y )
   retvec(2) = 0.0;
   if( normal ) {
     if( quadrant == ur ) {
-      retvec(0) =   real(z);
-      retvec(1) = - imag(z);
+      retvec[0] =   real(z);
+      retvec[1] = - imag(z);
       return retvec;
     }
     if( quadrant == ul ) {
-      retvec(0) = - real(z);
-      retvec(1) = - imag(z);
+      retvec[0] = - real(z);
+      retvec[1] = - imag(z);
       return retvec;
     }
     if( quadrant == lr ) {
-      retvec(0) =   real(z);
-      retvec(1) =   imag(z);
+      retvec[0] =   real(z);
+      retvec[1] =   imag(z);
       return retvec;
     }
     if( quadrant == ll ) {
-      retvec(0) = - real(z);
-      retvec(1) =   imag(z);
+      retvec[0] = - real(z);
+      retvec[1] =   imag(z);
       return retvec;
     }
   }
   else {
     if( quadrant == ur ) {
-      retvec(0) = - imag(z);
-      retvec(1) =   real(z);
+      retvec[0] = - imag(z);
+      retvec[1] =   real(z);
       return retvec;
     }
     if( quadrant == ul ) {
-      retvec(0) =   imag(z);
-      retvec(1) =   real(z);
+      retvec[0] =   imag(z);
+      retvec[1] =   real(z);
       return retvec;
     }
     if( quadrant == lr ) {
-      retvec(0) = - imag(z);
-      retvec(1) = - real(z);
+      retvec[0] = - imag(z);
+      retvec[1] = - real(z);
       return retvec;
     }
     if( quadrant == ll ) {
-      retvec(0) =   imag(z);
-      retvec(1) = - real(z);
+      retvec[0] =   imag(z);
+      retvec[1] = - real(z);
       return retvec;
     }
     // ??? Just a guess; check this!
@@ -368,23 +367,14 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
 {
   JetVector  retvec(3);
   char       normal;
-  JetC       z;
-  Jet        x, y, r;
-  double     sigmaX, sigmaY, meanSigma, ds, ratio;
-
-  JetC       arg1;
-  JetC       arg2;
-  double     tmp1;
-  Jet        tmpJ;
-  JetC       retarg1;
-  JetC       retarg2;
+  Jet        r;
 
   enum       { ur, ul, lr, ll } quadrant;
 
-  x = arg_x;  
-  y = arg_y;
-  sigmaX = sigma_[0];
-  sigmaY = sigma_[1];
+  Jet x = arg_x;  
+  Jet y = arg_y;
+  double sigmaX = sigma_[0];
+  double sigmaY = sigma_[1];
 
   // Asymptotic limit ...
   if( ( sigmaX == 0.0 ) && ( sigmaY == 0.0 ) ) {
@@ -394,9 +384,9 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
            "JetVector BBLens::NormalizedEField( const Jet&, const Jet& )", 
            "Asymptotic limit r seems too small." ) );
     }
-    retvec(0) = x/r;
-    retvec(1) = y/r;
-    retvec(2) = 0.0;
+    retvec[0] = x/r;
+    retvec[1] = y/r;
+    retvec[2] = 0.0;
     return retvec;
   }
 
@@ -407,19 +397,19 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
           + pow( y.standardPart()/sigmaY, 2.0 ) ) > SIGMA_LIMIT )
       ) {
       r = x*x + y*y;
-      meanSigma = 2.0*sigmaX*sigmaY;
+      double meanSigma = 2.0*sigmaX*sigmaY;
       // Test for small r .....
       if( r.standardPart() > 1.0e-6*meanSigma ) {
   	r = ( 1.0 - exp(-r/ meanSigma ) ) / r;
-  	retvec(0) = x*r;
-  	retvec(1) = y*r;
-  	retvec(2) = 0.0;
+  	retvec[0] = x*r;
+  	retvec[1] = y*r;
+  	retvec[2] = 0.0;
   	return retvec;
       }
       else {
-  	retvec(0) = x/meanSigma;
-  	retvec(1) = y/meanSigma;
-  	retvec(2) = 0.0;
+  	retvec[0] = x/meanSigma;
+  	retvec[1] = y/meanSigma;
+  	retvec[2] = 0.0;
   	return retvec;
       }
     } 
@@ -453,76 +443,72 @@ JetVector BBLens::NormalizedEField( const Jet& arg_x, const Jet& arg_y )
 
   // Check for normal processing ...
   if( !( normal = ( sigmaX > sigmaY ) ) ) {
-   tmp1   = sigmaX;
-   sigmaX = sigmaY;
-   sigmaY = tmp1;
-   tmpJ   = x;
-   x      = y;
-   y      = tmpJ;
+   std::swap( sigmaX, sigmaY);
+   std::swap( x, y);
   }
 
   // The calculation ...
-  ds = sqrt(2.0*(sigmaX*sigmaX - sigmaY*sigmaY));
-  arg1 = ( (x/ds) + complex_i* (y/ds) );
-  ratio = sigmaY/sigmaX;
-  arg2 = ( (x*ratio)/ds ) + complex_i*( (y/ratio)/ds );
+  double    ds = sqrt(2.0*(sigmaX*sigmaX - sigmaY*sigmaY));
+  JetC    arg1 = ( (x/ds) + complex_i* (y/ds) );
+  double ratio = sigmaY/sigmaX;
+  JetC    arg2 = ( (x*ratio)/ds ) + complex_i*( (y/ratio)/ds );
 
-  retarg1 = w( arg1 );
-  retarg2 = w( arg2 );
+  JetC retarg1 = w( arg1 );
+  JetC retarg2 = w( arg2 );
 
   // Normalization ...
   r    = x/sigmaX;
-  r    = r*r;
-  tmpJ = y/sigmaY;
+  r    *= r;
+  Jet    tmpJ = y/sigmaY;
   r   += tmpJ*tmpJ;
 
-  z    = retarg1;
-  z   -= retarg2 * exp( - r/2.0 );
-  z    = - z*( complex_i * MATH_SQRTPI / ds );
+  JetC z    = retarg1;
+       z   -= retarg2 * exp( - r/2.0 );
+       z    = - z*( complex_i * MATH_SQRTPI / ds );
 
   // And return ...
-  retvec(2) = 0.0;
+  retvec[2] = 0.0;
   if( normal ) {
     if( quadrant == ur ) {
-      retvec(0) =   real(z);
-      retvec(1) = - imag(z);
+      retvec[0] =   real(z);
+      retvec[1] = - imag(z);
       return retvec;
     }
     if( quadrant == ul ) {
-      retvec(0) = - real(z);
-      retvec(1) = - imag(z);
+      retvec[0] = - real(z);
+      retvec[1] = - imag(z);
       return retvec;
     }
     if( quadrant == lr ) {
-      retvec(0) =   real(z);
-      retvec(1) =   imag(z);
+      retvec[0] =   real(z);
+      retvec[1] =   imag(z);
       return retvec;
     }
     if( quadrant == ll ) {
-      retvec(0) = - real(z);
-      retvec(1) =   imag(z);
+      retvec[0] = - real(z);
+      retvec[1] =   imag(z);
       return retvec;
     }
   }
   else {
     if( quadrant == ur ) {
-      retvec(0) = - imag(z);
-      retvec(1) =   real(z);
+      retvec[0] = - imag(z);
+      retvec[1] =   real(z);
       return retvec;
     }
     if( quadrant == ul ) {
-      retvec(0) =   imag(z);
-      retvec(1) =   real(z);
+      retvec[0] =   imag(z);
+      retvec[1] =   real(z);
       return retvec;
     }
     if( quadrant == lr ) {
-      retvec(0) = - imag(z);
-      retvec(1) = - real(z);
+      retvec[0] = - imag(z);
+      retvec[1] = - real(z);
       return retvec;
     }
     if( quadrant == ll ) {
-      retvec(0) =   imag(z);
-      retvec(1) = - real(z);
+      retvec[0] =   imag(z);
+      retvec[1] = - real(z);
       return retvec;
     }
     // ??? Just a guess; check this!
