@@ -78,28 +78,11 @@
 
 
 
-// ***  Note:
-// *** The following typedef can be safely redefined without 
-// *** breaking mxyzptlk. 
- 
-typedef int exponent_t;
-
-
-// **************************************************************************
-
-
-class IntArray;
-
- 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 class DLLEXPORT IntArray {
 
 public:
 
+  typedef   int exponent_t;
 
   typedef   std::vector<exponent_t >::iterator                 iterator;
   typedef   std::vector<exponent_t >::const_iterator     const_iterator;
@@ -107,6 +90,11 @@ public:
   typedef   std::vector<exponent_t >::reverse_iterator             reverse_iterator;
   typedef   std::vector<exponent_t >::const_reverse_iterator const_reverse_iterator;
    
+
+  IntArray( int  dim=0, int const* const components = 0 );
+  IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 );
+  IntArray( IntArray const& x);
+
   iterator begin();                
   iterator end();
 
@@ -119,23 +107,12 @@ public:
   const_reverse_iterator rbegin()  const; 
   const_reverse_iterator rend()    const;
 
-
-  // Constructors and the destructor ...
-
-  IntArray( int  dim=0, int const* const components = 0 );
-
-  IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 );
-
-  IntArray( IntArray const& x);
-
-
   // Assignment ...
+
+  void push_back( exponent_t const& value); 
 
   void     Set              ( int const* , int  n);
   void     Set              ( int  );
-
-  exponent_t const&   operator()  (  int i )  const;
-  exponent_t&         operator()  (  int i );  
 
   exponent_t const&   operator[]  (  int i )  const;
   exponent_t&         operator[]  (  int i );  
@@ -162,6 +139,7 @@ public:
   static bool   PartialLessThan      ( IntArray const& lhs, IntArray const& rhs, int idx1, int idx2); //  pure **standard** lexicographical ordering
 
   IntArray      operator+( IntArray const& ) const;
+  IntArray      operator*( IntArray const& ) const;
 
   // Queries ...
 
@@ -239,26 +217,13 @@ inline int  IntArray::Dim() const
 }
 
 
-inline  exponent_t const&  IntArray::operator()(  int i )  const
+inline IntArray::exponent_t const&  IntArray::operator[](  int i )  const
 { 
    return comp_[i]; 
 }    
 
 
-inline  exponent_t&       IntArray::operator()  ( int  i )
-{
-  weight_is_valid_ = false;
-  return comp_[i]; 
-}    
-
-
-inline exponent_t const&  IntArray::operator[](  int i )  const
-{ 
-   return comp_[i]; 
-}    
-
-
-inline  exponent_t&       IntArray::operator[]  ( int  i )
+inline   IntArray::exponent_t&       IntArray::operator[]  ( int  i )
 {
   weight_is_valid_ = false;
   return comp_[i]; 
