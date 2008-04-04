@@ -40,20 +40,14 @@
 
 using namespace boost::python;
 
-// defining the symbol below would prevent the initioredirector function to be exported
-// from the module, on platforms that supports this feature.
-
-// #define BOOST_PYTHON_STATIC_MODULE
-
 
 BOOST_PYTHON_MODULE( ioredirector )
 {
 
- class_<QObject, boost::noncopyable> ("QObject", no_init);
-  
- class_<IORedirector, bases<QObject>, boost::noncopyable>("IORedirector",init<>())
+  // class_<QObject, boost::noncopyable> ("QObject", no_init);
+  // class_<IORedirector, bases<QObject>, boost::noncopyable>("IORedirector",init<>())
+
+  class_<IORedirector, boost::noncopyable>("IORedirector",init<>())
    .def("read",  &IORedirector::read)
    .def("write", &IORedirector::write);
- 
-
 }

@@ -53,6 +53,8 @@
 
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 /* first, here is the signal handler */
 void 
@@ -83,6 +85,9 @@ catch_int(int sig_num)
   }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool 
 PyCHEF_KeyPressFilter::eventFilter( QObject *o, QEvent *e ) 
 {
@@ -96,7 +101,7 @@ PyCHEF_KeyPressFilter::eventFilter( QObject *o, QEvent *e )
 
   tewidget->getCursorPosition ( &para, &index );
    
-  int indexmin = strlen( _w->getPythonCurrentPrompt() );
+  int indexmin = strlen( w_->getPythonCurrentPrompt() );
   
         if ( e->type() == QEvent::KeyPress ) {
             // special processing for key press
@@ -134,25 +139,34 @@ PyCHEF_KeyPressFilter::eventFilter( QObject *o, QEvent *e )
 }
 
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 QPyCHEF::QPyCHEF(QWidget* parent, const char* name) : 
-QPyCHEFBase(parent, name), _indented(false)  
+QPyCHEFBase(parent, name), indented_(false)  
 {
 
-  _command_buffer = QString::null;
+  command_buffer_ = QString::null;
     
    initializePython();
-  _key_press_filter =   new  PyCHEF_KeyPressFilter( this );
-   py_textEdit->installEventFilter(  _key_press_filter );
+   key_press_filter_ =   new  PyCHEF_KeyPressFilter( this );
+   py_textEdit->installEventFilter(  key_press_filter_ );
    
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 QPyCHEF::~QPyCHEF() 
 {
     
-  py_textEdit->removeEventFilter( _key_press_filter );
-  delete _key_press_filter;
+  py_textEdit->removeEventFilter( key_press_filter_ );
+  delete key_press_filter_;
  }
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 QPyCHEF::initializePython() 
@@ -161,43 +175,49 @@ QPyCHEF::initializePython()
 // set the INT (Ctrl-C) signal handler to 'catch_int'
   signal(SIGINT, catch_int);
 
-  _interpreter = Interpreter::getInstance();
+  interpreter_ = Interpreter::getInstance();
 
   py_textEdit->setTextFormat ( Qt::PlainText );
   connect( py_textEdit, SIGNAL( returnPressed(void) ), this, SLOT (sendCommand(void)) );
 
-  _interpreter->runString("import ioredirector");
+  interpreter_->runString("import ioredirector");
 
-  _interpreter->runString("sys.ps1 = '>>> '");
-  _interpreter->runString("sys.ps2 = '... '");
-  _interpreter->runString("ior_stdout = ioredirector.IORedirector()");
-  _interpreter->runString("ior_stderr = ioredirector.IORedirector()");
-  _interpreter->runString("sys.stdout = ior_stdout");
-  _interpreter->runString("sys.stderr = ior_stderr");
+  interpreter_->runString("sys.ps1 = '>>> '");
+  interpreter_->runString("sys.ps2 = '... '");
+  interpreter_->runString("ior_stdout = ioredirector.IORedirector()");
+  interpreter_->runString("ior_stderr = ioredirector.IORedirector()");
+  interpreter_->runString("sys.stdout = ior_stdout");
+  interpreter_->runString("sys.stderr = ior_stderr");
 
   IORedirector* ior_stdout_ptr = 0;
   IORedirector* ior_stderr_ptr = 0;
   
-  _interpreter->redirectIO(ior_stderr_ptr, ior_stdout_ptr);
+  interpreter_->redirectIO(ior_stderr_ptr, ior_stdout_ptr);
 
   connect( ior_stdout_ptr,  SIGNAL( textReady(QString) ), this, SLOT (append(QString)) );
   connect( ior_stderr_ptr,  SIGNAL( textReady(QString) ), this, SLOT (append_err(QString)) );
 
-  _interpreter->runString("print 'PyCHEF (Python) %s on %s' % (sys.version, sys.platform)");
-  append( _interpreter->getPythonPrompt1() );
+  interpreter_->runString("print 'PyCHEF (Python) %s on %s' % (sys.version, sys.platform)");
+  append( interpreter_->getPythonPrompt1() );
 
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 const 
 char* QPyCHEF::getPythonCurrentPrompt() {
 
-  if (_indented ) {
-      return _interpreter->getPythonPrompt2();
+  if (indented_ ) {
+      return interpreter_->getPythonPrompt2();
   } else {
-      return _interpreter->getPythonPrompt1();
+      return interpreter_->getPythonPrompt1();
   }
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 
@@ -206,13 +226,17 @@ QPyCHEF::append(QString s) {
 
   py_textEdit->insert( s );  
 
-  _command_paragraph  = py_textEdit->paragraphs()-1;
-  _command_index      = py_textEdit->paragraphLength(_command_paragraph);
+  command_paragraph_  = py_textEdit->paragraphs()-1;
+  command_index_      = py_textEdit->paragraphLength( command_paragraph_ );
 
-  py_textEdit->setCursorPosition (_command_paragraph, _command_index);
+  py_textEdit->setCursorPosition (command_paragraph_, command_index_ );
 
 
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void QPyCHEF::append_err(QString s) {
 
@@ -220,43 +244,45 @@ void QPyCHEF::append_err(QString s) {
   
  py_textEdit->insert( s );  
 
- _command_paragraph  = py_textEdit->paragraphs()-1;
- _command_index      = py_textEdit->paragraphLength(_command_paragraph);
+ command_paragraph_  = py_textEdit->paragraphs()-1;
+ command_index_      = py_textEdit->paragraphLength(command_paragraph_);
 
- py_textEdit->setCursorPosition (_command_paragraph, _command_index);
+ py_textEdit->setCursorPosition (command_paragraph_, command_index_);
 
  py_textEdit->setColor( QColor("black") );
 
 }
 
 
-void 
-QPyCHEF::sendCommand()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void QPyCHEF::sendCommand()
 {
 
-   py_textEdit->setSelection ( _command_paragraph, _command_index, _command_paragraph, 
-                              py_textEdit->paragraphLength(_command_paragraph), 0);
+   py_textEdit->setSelection ( command_paragraph_, command_index_, command_paragraph_, 
+                              py_textEdit->paragraphLength( command_paragraph_), 0);
   
    QString command = py_textEdit->selectedText();
    py_textEdit->removeSelection();
 
    py_textEdit->append("");
-   _command_paragraph  = py_textEdit->paragraphs()-1;
-   _command_index      = py_textEdit->paragraphLength(_command_paragraph);
-   py_textEdit->setCursorPosition (_command_paragraph, _command_index);
+   command_paragraph_  = py_textEdit->paragraphs()-1;
+   command_index_      = py_textEdit->paragraphLength( command_paragraph_);
+   py_textEdit->setCursorPosition (command_paragraph_, command_index_);
 
 
    if ( noLeftTabs(command) == 0 ) {
-         _indented = false;
+         indented_ = false;
    } else {
-         _indented = true;
+         indented_ = true;
    };
    
 
    // first, take care of the case where the line is empty
    if ( command.stripWhiteSpace().length() == 0) 
    { 
-         append( _interpreter->getPythonPrompt1() );
+         append( interpreter_->getPythonPrompt1() );
          return;
    };
 
@@ -264,70 +290,63 @@ QPyCHEF::sendCommand()
    switch ( testcomplete( const_cast<char*>(( command.stripWhiteSpace() + QString("\n")).ascii() ) ) ) {
 
       case 0:
-        _command_queue.push( command + QString("\n") );
-       _indented = true;
+        command_queue_.push( command + QString("\n") );
+        indented_ = true;
         break;
              
       case 1:
-        _command_queue.push( command + QString("\n") );
+        command_queue_.push( command + QString("\n") );
         break;
 
       case -1:
-        _command_queue.push( command + QString("\n") );
-        _indented = false;
+        command_queue_.push( command + QString("\n") );
+        indented_ = false;
         break;
     };
 
-   if (_indented) {
-        append( _interpreter->getPythonPrompt2() );
+   if (indented_) {
+        append( interpreter_->getPythonPrompt2() );
         return;
    }
    
 
-   _command_buffer = QString::null;
+   command_buffer_ = QString::null;
 
-   while ( !_command_queue.empty() ) {
+   while ( !command_queue_.empty() ) {
      
-   _command_buffer = _command_buffer + _command_queue.front();
-                     _command_queue.pop();
+   command_buffer_ = command_buffer_ + command_queue_.front();
+                     command_queue_.pop();
                      
    };
 
-
    
   try {
-      
-    _interpreter->runString(_command_buffer.ascii() );
-
-    
+    interpreter_->runString(command_buffer_.ascii() );
   }
-
 
   catch (boost::python::error_already_set) {
    
        PyErr_Print( );
  
-      _command_paragraph  = py_textEdit->paragraphs()-1;
-      _command_index      = py_textEdit->paragraphLength(_command_paragraph);
+      command_paragraph_  = py_textEdit->paragraphs()-1;
+      command_index_      = py_textEdit->paragraphLength( command_paragraph_);
 
-      py_textEdit->setCursorPosition (_command_paragraph, _command_index);
+      py_textEdit->setCursorPosition (command_paragraph_, command_index_);
 
      
   }
 
-    _command_buffer = QString::null;
-    append( _interpreter->getPythonPrompt1() );
-
-
-  
+    command_buffer_ = QString::null;
+    append( interpreter_->getPythonPrompt1() );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-QPyCHEF::readFile(const char* fname) 
+void QPyCHEF::readFile(const char* fname) 
 {
-
-
-  _interpreter->readFile(fname);
-
+  interpreter_->readFile(fname);
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
