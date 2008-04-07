@@ -34,16 +34,19 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - forbade negative length elements
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - modified visitor to reduce src file coupling. 
 ******   visit() now takes advantage of (reference) dynamic type.
 ****** - use std::string consistently for string operations. 
 ******
-****** July 2007          ostiguy@fnal.gov
+****** Jul 2007           ostiguy@fnal.gov
 ****** - new, less memory-hungry PinnedFrameSet implementation
 ******   
-****** Dec 2007          ostiguy@fnal.gov
+****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ******                                                        
 **************************************************************************
@@ -208,6 +211,7 @@ bool bmlnElmnt::PinnedFrameSet::altered()  const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s) 
+try
   : ident_( n ? n: "NONAME"),      
     length_(l),     
     strength_(s),  
@@ -222,7 +226,25 @@ bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)
     tag_(), 
     pAperture_(0),
     dataHook()
-{}
+{
+  if( length_ < 0 ) {
+    ostringstream uic;
+    uic  << "Argument list "
+         "( " << n << ", " << l << ", " << s << " )"
+         " specifies a negative length.";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)", 
+           uic.str().c_str() ) );
+    // P.S. bmlnElmnt::GenericException will be eliminated soon.
+    // -lpjm
+  }
+}
+catch( bmlnElmnt::GenericException const& ge )
+{
+  // This catch block is included only out of paranoia.
+  // Nothing needs to be done here.
+  throw ge;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -250,6 +272,7 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
 
      init_internals(a.bml_, a.elm_); 
 }
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1252,14 +1275,7 @@ bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber, 
       << "\n*** ERROR *** ";
   errorString = uic.str();
 
-  static bool firstTime = true;
-  if( firstTime ) {
-    (*pcerr) << errorString;
-    (*pcerr) << "\n*** ERROR *** This message is printed only once."
-            "\n*** ERROR *** "
-         << endl;
-    firstTime = false;
-  }
+  (*pcerr) << errorString << endl;
 }
 
 
