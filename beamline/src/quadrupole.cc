@@ -53,6 +53,7 @@
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/QuadrupolePropagators.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -106,50 +107,101 @@ quadrupole::~quadrupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::setStrength( double const& s ) {
-
-
-  strength_                  = s - getShunt()*IToField();
-
+void quadrupole::setStrength( double const& s ) 
+{
+  strength_                 = s - getShunt()*IToField();
   double integratedStrength = strength_*length_;
 
   if( bml_) 
   {
-   int counter = 0;
+    int counter = 0;
+    for ( beamline::iterator it  = bml_->begin();
+                            it != bml_->end(); ++it ) {
+      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
+    }
 
-   for ( beamline::iterator it  = bml_->begin();
-	                    it != bml_->end(); ++it ) {
-     if( typeid(**it) == typeid(thinQuad ) )  ++counter;
-   }
+    if( counter <= 0 ) {
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void quadrupole::setStrength( double const& s ) {", 
+             "No thin quads in the internal beamline." ) );
+    }
+    else if( counter == 1) {
+      if(elm_) 
+      {
+        elm_->setStrength( integratedStrength );
+      }
+      else 
+      {
+        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void quadrupole::setStrength( double const& s ) {", 
+               "elm_ not set." ) );
+      }
+    }
+    else {
+      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+        if( typeid(**it) == typeid(thinQuad) ) {
+          (*it)->setStrength( integratedStrength/counter );
+        }
+      }
+    }
+  }
+}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-   if( counter <= 0 ) {
-     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-            "void quadrupole::setStrength( double const& s ) {", 
-            "No thin quads in the internal beamline." ) );
-   }
-   else if( counter == 1) {
-     if(elm_) 
-     {
-       elm_->setStrength( integratedStrength );
-     }
-     else 
-     {
-     throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-            "void quadrupole::setStrength( double const& s ) {", 
-            "elm_ not set." ) );
-     }
-   }
-   else {
+void quadrupole::setLength( double const& l ) 
+{
+  double ratio = length_;
+  bmlnElmnt::setLength( l );
+  ratio = length_ / ratio;
 
-       for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-       if( typeid(**it) == typeid(thinQuad) ) {
-           (*it)->setStrength( integratedStrength/counter );
-       }
-     }
-   }
- }
+  if( bml_) 
+  {
+    int counter = 0;
+    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
+    }
 
+    if( counter <= 0 ) {
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void quadrupole::setLength( double const& s )", 
+             "No thin quads in the internal beamline." ) );
+    }
+    else if( counter == 1) {
+      if(elm_) 
+      {
+        elm_->setStrength( ratio*elm_->Strength() );
+      }
+      else 
+      {
+        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void quadrupole::setLength( double const& s )", 
+               "elm_ not set." ) );
+      }
+    }
+    else {
+      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+        if( typeid(**it) == typeid(thinQuad) ) {
+          (*it)->setStrength( ratio*((*it)->Strength()) );
+        }
+        else if( typeid(**it) == typeid(drift) ) {
+          (*it)->setLength( ratio*((*it)->Length()) );
+        }
+        else {
+          ostringstream uic;
+          uic  << "Unrecognized element type "
+               << (*it)->Type()
+               << " in quadrupole "
+               << Name()
+               << "'s internal beamline.";
+          throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+                 "void quadrupole::setLength( double const& s )", 
+                 uic.str().c_str() ) );
+        }
+      }
+    }
+  }
 }
 
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -184,15 +236,19 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-
   a = QuadrupolePtr( Clone() );
   b = QuadrupolePtr( Clone()  );
 
   a->setLength( pc        * length_ );
   b->setLength( (1.0- pc) * length_ );
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
+  // Rename
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
 
