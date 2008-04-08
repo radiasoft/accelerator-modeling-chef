@@ -443,17 +443,18 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setLength( double const& x ) {
-  if( length_ < 0.0 ) {
-    (*pcerr) << "*** WARNING ***                       \n"
-            "*** WARNING *** bmlnElmnt::setLength  \n"
-            "*** WARNING *** Lengths must be positive.  \n"
-            "*** WARNING *** You have entered "
+void bmlnElmnt::setLength( double const& x ) 
+{
+  double oldLength = length_;
+
+  if( x < 0.0 ) {
+    (*pcerr) << "*** WARNING *** "
+              "\n*** WARNING *** bmlnElmnt::setLength"
+              "\n*** WARNING *** Lengths must be positive."
+              "\n*** WARNING *** You have entered"
          << x 
-         << "    \n"
-            "*** WARNING *** I will use its absolute\n"
-            "*** WARNING *** value.                \n"
-            "*** WARNING ***                       \n"
+         <<   "\n*** WARNING *** I will use its absolute value."
+              "\n*** WARNING *** "
          << endl;
     length_ = -x;
   }
@@ -461,6 +462,11 @@ void bmlnElmnt::setLength( double const& x ) {
     length_ = x;
   }
 
+  // ??? I am unsure whether it is better to do this      ???
+  // ??? here or to zero ctRef_ and REQUIRE another pass  ???
+  // ??? with the RefRegVisitor to set it correctly.      ???
+  // ??? - lpjm                                           ???
+  if( oldLength > 0 ) { ctRef_ *= (length_/oldLength); }
 }
 
 
