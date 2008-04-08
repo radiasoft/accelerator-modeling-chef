@@ -85,6 +85,7 @@ public:
  ~quadrupole();
 
   void setStrength( double const& );
+  void setLength( double const& );
  
   void localPropagate(         Particle& b );   
   void localPropagate(      JetParticle& b );   
