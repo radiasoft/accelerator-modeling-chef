@@ -39,8 +39,14 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** 
+****** Apr 2008           michelotti@fnal.gov
+****** - changed signature of setStrength(..) to
+******   match that of the virtual bmlnElmnt method
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -107,7 +113,7 @@ sextupole::~sextupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::setStrength( double s ) 
+void sextupole::setStrength( double const& s ) 
 {
   strength_ = s - getShunt()*IToField();
   elm_->setStrength( strength_*length_ );

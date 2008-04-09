@@ -34,6 +34,7 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+******
 ****** Mar 2007        ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
@@ -41,6 +42,10 @@
 ****** Dec 2007        ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
 ******
+****** Apr 2008        michelotti@fnal.gov
+****** - changed signature of setStrength(..) to
+******   match that of the virtual bmlnElmnt method
+****** 
 **************************************************************************
 *************************************************************************/
 #ifndef SEXTUPOLE_H
@@ -82,7 +87,8 @@ public:
 
  ~sextupole();
 
-  void setStrength( double );
+  void setStrength( double const& );
+  void setLength( double const& );
 
   void setCurrent( double );
 
