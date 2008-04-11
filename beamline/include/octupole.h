@@ -88,6 +88,7 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   void setStrength( double const& );
+  void setLength( double const& );
 
   void setCurrent( double const& );
 

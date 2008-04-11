@@ -86,6 +86,7 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
   void            setStrength( double const& eV);  
+  void              setLength( double const& );
 
   double          getReferenceTime() const;  
 

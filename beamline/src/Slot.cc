@@ -259,7 +259,27 @@ int Slot::setOutFrame( Frame const& frm )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- int Slot::checkFrame( Frame const& f ) const
+void Slot::setLength( double const& )
+{
+  (*pcerr) << "\n*** WARNING *** "
+              "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+           << "\n*** WARNING *** void Slot::setLength( double const& )"
+           << "\n*** WARNING *** This operation disallowed because of ambiguity."
+              "\n*** WARNING *** "
+           << endl;
+
+  ostringstream uic;
+  uic << "This operation is disallowed for Slots"
+         "\nbecause of ambiguity.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+         "void Slot::setLength( double const& )", 
+         uic.str().c_str() ) );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int Slot::checkFrame( Frame const& f ) const
 {
   static const Frame zero;
   static const int y = 1;

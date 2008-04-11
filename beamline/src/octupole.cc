@@ -55,6 +55,7 @@
 #include <beamline/octupole.h>
 #include <beamline/OctupolePropagators.h>
 #include <beamline/drift.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -119,9 +120,55 @@ octupole::~octupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::setStrength( double const& s ) {
- strength_ = s - getShunt()*IToField();
- elm_->setStrength( strength_*length_ );
+void octupole::setStrength( double const& s ) 
+{
+  strength_ = s - getShunt()*IToField();
+  elm_->setStrength( strength_*length_ );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void octupole::setLength( double const& l ) 
+{
+  if(bml_) 
+  {
+    double ratio = length_;
+    bmlnElmnt::setLength( l );
+    ratio = length_ / ratio;
+    int counter = 0;
+
+    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+      if( typeid(**it) == typeid(thinOctupole) ) {
+        ++counter;
+        (*it)->setStrength( ratio*((*it)->Strength()) );
+      }
+      else if( typeid(**it) == typeid(drift) ) {
+        (*it)->setLength( ratio*((*it)->Length()) );
+      }
+      else {
+        ostringstream uic;
+        uic  << "Unrecognized element type "
+             << (*it)->Type()
+             << " in " << Type() << " " << Name()
+             << "'s internal beamline.";
+        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void octupole::setLength( double const& s )", 
+               uic.str().c_str() ) );
+      }
+    }
+    if( counter <= 0 ) {
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void octupole::setLength( double const& s )", 
+             "No thin octupoles in the internal beamline." ) );
+    }
+  }
+  else 
+  {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void octupole::setLength( double const& s )", 
+           "Internal beamline not initialized!" ) );
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -165,15 +212,19 @@ void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-
   a = OctupolePtr( Clone() );
   b = OctupolePtr( Clone() );
 
   a->setLength(          pc* length_ );
   b->setLength( (1.0 - pc) * length_ );
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
+  // Rename
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
 

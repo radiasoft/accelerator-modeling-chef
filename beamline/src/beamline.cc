@@ -1564,6 +1564,19 @@ void beamline::setReferenceTime( double const& ct)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void beamline::setLength( double const& )
+{ 
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: Attempt to explicitly set the length of a beamline. "
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nontheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 beamline::iterator beamline::erase(beamline::iterator it)
 {
   std::list<ElmPtr>::iterator lit = it; // implicit conversion

@@ -100,6 +100,8 @@ class DLLEXPORT Slot : public bmlnElmnt {
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );
 
+   void setLength( double const& );
+
    Frame const& getInFrame() const
      { return in_; }
    Frame const& getOutFrame() const

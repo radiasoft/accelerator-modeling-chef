@@ -118,6 +118,8 @@ public:
   void                   setQ( double const& Q);
   void                   setR( double const& R);
   void            setStrength( double const& eV);  
+  void              setLength( double const& );
+
 
 private:
 

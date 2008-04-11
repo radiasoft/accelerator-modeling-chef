@@ -76,11 +76,12 @@ double const SIGMA_ROUND = 0.1;
 // **************************************************
 
 BBLens::BBLens( const char*   nm,
-                double const&        l, 
+                double const&        l, // IGNORED NOW BUT RETAINED
+                                        // FOR POSSIBLE FUTURE USE.
                 double const&        s,
                 double const&        gmm, 
                 const double* emt )
-  : bmlnElmnt( nm, l, s ),num_(s), gamma_(gmm)
+  : bmlnElmnt( nm, 0, s ),num_(s), gamma_(gmm)
 {
   if( ( fabs( gamma_ - 1.0 ) < 0.001 ) || 
       ( gamma_ < 1.0  ) 
