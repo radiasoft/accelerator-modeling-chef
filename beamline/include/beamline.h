@@ -147,6 +147,8 @@ public:
    void setReferenceTime( double   const& );               
    void setReferenceTime( Particle& );             
 
+   void setLength( double const& );
+
   // EDITING LATTICE_____________________________________________________________________
 
    void     putAbove( iterator   it, ElmPtr const&  y ); // Insert y above (before;  upstream of) x
