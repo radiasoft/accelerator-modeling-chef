@@ -74,6 +74,8 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/marker.h>
+#include <beamline/Edge.h>
 #include <beamline/rbend.h>
 #include <beamline/beamline.h>
 #include <beamline/RBendPropagators.h>
@@ -159,11 +161,12 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( const char* n, double const& l, double const& s, double const& bendangle, double const& us, double const& ds )
-  :   bmlnElmnt( n, l, s),
-   usFaceAngle_(us),
-   dsFaceAngle_(ds),
-      usAngle_(M_TWOPI), // not initialized
-      dsAngle_(-M_TWOPI) // not initialized
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle), 
+    usFaceAngle_(us),
+    dsFaceAngle_(ds),
+    usAngle_(  (bendangle/2.0) + us ),
+    dsAngle_(-((bendangle/2.0) + ds))
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
@@ -208,16 +211,18 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-rbend::rbend( char const* n, double const& l, double const& s,          double const& bendangle, 
-                                              double const& entryangle, double const& us, double const& ds )
-  :   bmlnElmnt( n, l, s),
-    usFaceAngle_(us), dsFaceAngle_(ds),
-    usAngle_(  entryangle + us ),
-    dsAngle_(-(entryangle + ds))
+rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+                                              double const& entry_angle, 
+                                              double const& us,          double const& ds )
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle),
+    usFaceAngle_(us), 
+    dsFaceAngle_(ds),
+    usAngle_(   entry_angle + us ),
+    dsAngle_( -(entry_angle + ds))
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
+ if( (0.0 < fabs(entry_angle)) && (fabs( entry_angle) < 1.0e-9) ) {
    usAngle_ = us;
    dsAngle_ = -ds;
    if( firstTime) {
@@ -225,7 +230,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
-          << fabs(entryangle) 
+          << fabs(entry_angle) 
           << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -235,7 +240,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
  }
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    usFaceAngle_ = 0.0;
-   usAngle_     = entryangle;
+   usAngle_     = entry_angle;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -251,7 +256,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    dsFaceAngle_ = 0.0;
-   dsAngle_     = -entryangle;
+   dsAngle_     = -entry_angle;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -273,11 +278,39 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+                                              double const& entry_angle, double const& exit_angle, 
+                                              double const& us,          double const& ds )
+try
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle),
+    usFaceAngle_(us), 
+    dsFaceAngle_(ds),
+    usAngle_(entry_angle + us),
+    dsAngle_( exit_angle - ds)
+{
+  // ??? FIX ME ???
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "rbend::rbend( char const* n, double const& l, double const& s, double const& bendangle, \n"
+         "                                    double const& entry_angle, double const& exit_angle,\n"
+         "                                    double const& us,          double const& ds          )",
+         "THIS CONSTRUCTOR IS NOT WRITTEN." ) );
+}
+catch( bmlnElmnt::GenericException const& ge )
+{
+  // This catch block is included only out of paranoia.
+  // Nothing needs to be done here.
+  throw ge;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 rbend::rbend( rbend const& x )
   : bmlnElmnt(x ),
-  angle_(x.angle_),
-  usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
-      usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
+    angle_(x.angle_),
+    usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
+    usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
     propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
@@ -314,8 +347,104 @@ bool rbend::isMagnet() const
   return true;
 }
 
+#if 1
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// NEW VERION BEGINS HERE
+
+void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
+
+  alignmentData ald( Alignment() );
+  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
+      && ( !hasParallelFaces()                    ) ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    firstTime = false;
+    (*pcerr) << "\n"
+            "\n*** WARNING ***"
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
+            "\n*** WARNING *** The new, split elements must be commissioned with"
+            "\n*** WARNING *** RefRegVisitor before being used."
+            "\n*** WARNING *** "
+         << endl;
+  }
+
+  // -------------------------------------------------------------------
+  // WARNING: The following code assumes that an rbend element
+  //          is modeled with a nested beamline, with edge effects, if any,
+  //          incorporated in upstream and downstream edge elements. 
+  //          It will *fail* when the propagator that assumes otherwise. 
+  //--------------------------------------------------------------------
+
+  // .. Check for the presence of a nested beamline with 3 elements ... 
+  // ---------------------------------------------------------------
+  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
+  if ( !valid_nested_beamline) { 
+       throw GenericException( __FILE__, __LINE__, 
+	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+          "Error: Cannot split: incompatible or missing nested beamline.");
+  }
+
+  RBendPtr rb_a( new rbend(   ""
+                            , pc*length_
+                            , strength_
+                            , angle_*pc         // Wrong, but unimportant (I hope)!
+                            , usFaceAngle_
+                            , 0.0 ) ); 
+  rb_a->setEntryAngle( this->getEntryAngle() ); // Reset from default
+  rb_a->nullExitEdge();
+  RBendPtr rb_b( new rbend(   ""
+                            , (1.0 - pc)*length_
+                            , strength_
+                            , angle_*(1.0-pc)   // Wrong, but unimportant (I hope)!
+                            , 0.0
+                            , dsFaceAngle_ ) );
+  rb_b->nullEntryEdge();
+  rb_b->setExitAngle( this->getExitAngle() );   // Reset from default
+
+  a = rb_a;
+  b = rb_b;
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  // -----------------------------------------------------------------
+  a->setAlignment( ald );
+  b->setAlignment( ald );
+
+  // Rename
+  // ------
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
+}
+
+
+#endif
+#if 0
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// CURRENT VERSION BEGINS HERE
 
 void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
@@ -369,8 +498,8 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   
   if ( !valid_nested_beamline) { 
        throw GenericException( __FILE__, __LINE__, 
-	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
-          "Error: Cannot split: incompatible or missing nested beamline.");
+         "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+         "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
   
@@ -388,6 +517,70 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   a = rb_a;
   b = rb_b;
 
+}
+
+#endif
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::nullExitEdge()
+{
+  if( bml_ ) {
+    ElmPtr& endpoint = bml_->lastElement();
+    if( typeid(*endpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current rbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*endpoint) == typeid(Edge) ) {
+      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << endpoint->Type() << " " << endpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void rbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void rbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::nullEntryEdge()
+{
+  if( bml_ ) {
+    ElmPtr& startpoint = bml_->firstElement();
+    if( typeid(*startpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current rbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*startpoint) == typeid(Edge) ) {
+      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << startpoint->Type() << " " << startpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void rbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void rbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
