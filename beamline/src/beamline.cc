@@ -1558,7 +1558,7 @@ void beamline::setReferenceTime( double const& ct)
 { 
   (*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
   (*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
-  (*pcerr) << "*** WARNING ****: Continuing, nontheless... " << std::endl;
+  (*pcerr) << "*** WARNING ****: Continuing, nonetheless... " << std::endl;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1569,7 +1569,7 @@ void beamline::setLength( double const& )
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: Attempt to explicitly set the length of a beamline. "
               "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nontheless... "
+              "\n*** WARNING ****: Continuing, nonetheless... "
               "\n*** WARNING ****: " 
            << std::endl;
 }

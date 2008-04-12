@@ -36,6 +36,7 @@
 #include <beamline/rbend.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
+#include <beamline/RefRegVisitor.h>
 
 using namespace std;
 
@@ -97,7 +98,7 @@ Options::Options( int argc, char** argv, int lastargs )
     s.assign( argv[i++] );
     if( '-' == s[0] ) {
       s.assign( s.substr(1) );
-      if( s == "pct" ) {
+      if( s == string("pct") ) {
         if( i < limit ) {
           pct = atof( argv[i++] );
           if( pct < 0 || pct > 1 ) {
@@ -167,6 +168,57 @@ int testStrengths(   ElmPtr const& a
        << b->Strength() << "  "
        << c->Strength() << "  "
        << endl;
+  return ret;
+}
+
+
+int testMaps(   ElmPtr    const& a
+              , ElmPtr    const& b
+              , ElmPtr    const& c
+              , Options   const& myOptions )
+{
+  int ret = 0;
+
+  JetProton probeOne( myOptions.energy );
+  JetProton probeTwo( myOptions.energy );
+
+  a->propagate( probeOne );
+  b->propagate( probeTwo );
+  c->propagate( probeTwo );
+
+  cout << "*** AFTER " << endl;
+  probeOne.State().printCoeffs();
+  probeTwo.State().printCoeffs();
+
+  cout << "*** THE DIFFERENCE " << endl;
+  Mapping diff( probeOne.State() - probeTwo.State() );
+  diff.printCoeffs();
+
+  cout << "*** THE DIFFERENCE COEFFICIENTS " << endl;
+  // ??? REWRITE THIS USING JETWRITER in ASCII MODE ???
+  int d = diff.Dim();
+  IntArray exps(d);
+  JLterm termPtr;
+  for( int i = 0; i < d; i++ ) {
+    cout << "Component " << i << ":" << endl;
+    for(   Jet::const_iterator iter = diff[i].begin()
+         ; iter != diff[i].end()
+         ; ++iter ) {
+      termPtr = *iter;
+      if( 10.0*std::numeric_limits<double>::epsilon() < std::abs( termPtr.coefficient() ) ) {
+    	cout <<   "*** FAILED *** "
+    	        "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+             << "\n*** FAILED *** : [" << i << "]:" 
+             <<                     termPtr.exponents( diff[i].Env() )
+             <<                     " = " << termPtr.coefficient()
+    	     << "\n*** FAILED *** "
+    	     << endl;
+    	ret = 4;
+      }
+    }
+    cout << endl;
+  }
+
   return ret;
 }
 
@@ -352,6 +404,7 @@ int main( int argc, char** argv )
   ret += testMaps( u, v, oo1, oo2, myOptions );
   }
 
+  #if 1
   { // rbend
   cout << "\n\n--- TESTING RBEND ---"
             "\n--- WITH PARALLEL EDGES ---\n"
@@ -359,17 +412,126 @@ int main( int argc, char** argv )
   oo0 = ElmPtr( new rbend ( "", myOptions.bodyLength
                               , myOptions.bendField
                               , myOptions.bendAngle ) );
+
+  Proton proton( myOptions.energy );
+
+  {
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  RefRegVisitor rrv( proton );
+  oo0->accept(rrv);
+  proton.setStateToZero();
+  }
+
+
   oo0->Split( myOptions.pct, oo1, oo2 );
+
+
+  {
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  RefRegVisitor rrv( proton );
+  oo1->accept(rrv);
+  oo2->accept(rrv);
+  proton.setStateToZero();
+  }
+
+
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+
+  cout << "PARTICLE PROPAGATION TEST" << endl;
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  cout << proton.State() << endl;
+  oo0->propagate( proton );
+  cout << proton.State() << endl;
+  proton.setStateToZero();
+
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  cout << proton.State() << endl;  
+  oo1->propagate( proton );
+  cout << proton.State() << endl;  
+  oo2->propagate( proton );
+  cout << proton.State() << endl;  
+  proton.setStateToZero();
+
+  {
+  cout << "JETPARTICLE PROPAGATION TEST" << endl;
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  JetProton jpr( proton );
+  cout << "BEFORE FULL RBEND" << endl;
+  jpr.State().printCoeffs();
+  oo0->propagate( jpr );
+  cout << "AFTER FULL RBEND" << endl;
+  jpr.State().printCoeffs();
+  proton.setStateToZero();
+  }
+
+  {
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  JetProton jpr( proton );
+  cout << "BEFORE SPLIT RBENDS" << endl;
+  jpr.State().printCoeffs();
+  oo1->propagate( jpr );
+  oo2->propagate( jpr );
+  cout << "AFTER SPLIT RBENDS" << endl;
+  jpr.State().printCoeffs();
+  proton.setStateToZero();
+  }
+
+
+  ret = 137;
+  }
+  #endif
+
+  #if 0
+  { // rbend
+  cout << "\n\n--- TESTING RBEND ---"
+            "\n--- WITH PARALLEL EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new rbend ( "", myOptions.bodyLength
+                              , myOptions.bendField
+                              , myOptions.bendAngle ) );
+  Proton proton( myOptions.energy );
+  {
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  RefRegVisitor rrv( proton );
+  oo0->accept(rrv);
+  proton.setStateToZero();
+  }
+
+  
+
+  oo0->Split( myOptions.pct, oo1, oo2 );
+
+  #if 1
+  beamline zzz;
+  zzz.append( oo1 );
+  zzz.append( oo2 );
+  {
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  RefRegVisitor rrv( proton );
+  zzz->accept(rrv);
+  proton.setStateToZero();
+  }
+
+  #endif
+  #if 0
   u   = ElmPtr( new rbend ( "", myOptions.pct*myOptions.bodyLength
                               , myOptions.bendField
                               , myOptions.pct*myOptions.bendAngle ) );
   v   = ElmPtr( new rbend ( "", (1.0 - myOptions.pct)*myOptions.bodyLength
                               , myOptions.bendField
                               , (1.0 - myOptions.pct)*myOptions.bendAngle ) );
+  #endif
   ret += testLengths( oo0, oo1, oo2, myOptions.pct );
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  #if 0
   ret += testMaps( u, v, oo1, oo2, myOptions );
+  #endif
+  #if 1
+  ret += testMaps( oo0, oo1, oo2, myOptions );
+  #endif
   }
+  #endif
 
   return ret;
 }

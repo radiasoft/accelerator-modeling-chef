@@ -275,7 +275,7 @@ void  LinacCavity::setLength( double const& )
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: Attempt to explicitly set the length of a LinacCavity. "
               "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nontheless... "
+              "\n*** WARNING ****: Continuing, nonetheless... "
               "\n*** WARNING ****: " 
            << std::endl;
 }
