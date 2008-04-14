@@ -31,6 +31,11 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     sbend had no internal structure then.
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -44,6 +49,7 @@
 ******   split elements.  The results should be interpreted carefully.
 ******   This is a stopgap measure. In the longer term, I intend
 ******   to remove the (vestigial) alignment data from these classes.
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
 ****** - new implementation: sbend is now a composite element
@@ -228,6 +234,40 @@ sbend::sbend( sbend const& x )
 
 sbend::~sbend() 
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::setStrength( double const& s ) 
+{
+  if( strength_ == 0 ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::setStrength( double const& s )", 
+           "Cannot set strength of sbend when initial strength is zero."
+           "\nCurrent version has no way of accessing attributes of edges." ) );
+  }
+
+  double oldStrength = strength_;
+  strength_ = s - getShunt()*IToField();
+  double ratio = strength_ / oldStrength;
+
+  if( bml_) 
+  {
+    for ( beamline::iterator it  = bml_->begin();
+                             it != bml_->end(); ++it ) {
+      (*it)->setStrength( ratio*((*it)->Strength()) );
+      // NOTE: if *it points to a marker -- i.e. if the
+      // sbend comes from splitting another sbend, so that
+      // one or both edges have been replaced with markers --
+      // setting its strength will do no harm.
+    }
+  }
+  else {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::setStrength( double const& s )", 
+           "IMPOSSIBLE: Internal beamline not initialized!" ) );
+  }
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

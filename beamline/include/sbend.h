@@ -34,6 +34,11 @@
 ******                                                                
 ******    REVISION HISTORY
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     sbend had no internal structure then.
+******     
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
@@ -109,6 +114,7 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+  void          setStrength( double const& );
   double        setBendAngle(double const& a) { return (angle_ = a); }
   double const& getBendAngle() const          { return angle_; }
   
