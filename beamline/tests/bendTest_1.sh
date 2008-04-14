@@ -6,6 +6,12 @@ if( 0 != $return_status ) then
   exit $return_status
   endif
 
+./bendTest_1 -m 1.1
+set return_status = $status
+if( 0 != $return_status ) then
+  exit $return_status
+  endif
+
 ./bendTest_1 -dpp -0.01
 set return_status = $status
 if( 0 != $return_status ) then
