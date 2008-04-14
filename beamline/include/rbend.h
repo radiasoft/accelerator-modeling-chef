@@ -35,6 +35,11 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
@@ -168,6 +173,8 @@ class DLLEXPORT rbend : public bmlnElmnt
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
+
+  void setStrength( double const& );
 
 private:
 

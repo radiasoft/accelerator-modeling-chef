@@ -33,6 +33,9 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - modified setStrength method
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -396,31 +399,65 @@ int CF_rbend::setDipoleField( double const& arg_x )
 }
 
 
+// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// REMOVE: 
+// REMOVE: void CF_rbend::setStrength( double const& s )
+// REMOVE: {
+// REMOVE: 
+// REMOVE:   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
+// REMOVE:  
+// REMOVE:   CFRbendPtr q;
+// REMOVE: 
+// REMOVE:   for ( beamline::iterator it  = bml_->begin(); 
+// REMOVE:                            it != bml_->end(); ++it ) {
+// REMOVE:     
+// REMOVE:     if ( ratio != 0.0  ) {
+// REMOVE:          (*it)->setStrength( ratio * (*it)->Strength() );
+// REMOVE:     } 
+// REMOVE:     else {
+// REMOVE:       if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->setStrength(s);
+// REMOVE:     }
+// REMOVE:    
+// REMOVE:   }
+// REMOVE: 
+// REMOVE:   strength_ = s; 
+// REMOVE: }
+// REMOVE: 
+// REMOVE: 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::setStrength( double const& s )
+void CF_rbend::setStrength( double const& s ) 
 {
-
-  double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
- 
-  CFRbendPtr q;
-
-  for ( beamline::iterator it  = bml_->begin(); 
-                           it != bml_->end(); ++it ) {
-    
-    if ( ratio != 0.0  ) {
-         (*it)->setStrength( ratio * (*it)->Strength() );
-    } 
-    else {
-      if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->setStrength(s);
-    }
-   
+  if( strength_ == 0 ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void CF_rbend::setStrength( double const& s )", 
+           "Cannot set strength of CF_rbend when initial strength is zero."
+           "\nCurrent version has no way of accessing attributes of edges." ) );
   }
 
-  strength_ = s; 
-}
+  double oldStrength = strength_;
+  strength_ = s - getShunt()*IToField();
+  double ratio = strength_ / oldStrength;
 
+  if( bml_) 
+  {
+    for ( beamline::iterator it  = bml_->begin();
+                             it != bml_->end(); ++it ) {
+      (*it)->setStrength( ratio*((*it)->Strength()) );
+      // NOTE: if *it points to a marker -- i.e. if the
+      // CF_rbend comes from splitting another CF_rbend, so that
+      // one or both edges have been replaced with markers --
+      // setting its strength will do no harm.
+    }
+  }
+  else {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::setStrength( double const& s )", 
+           "IMPOSSIBLE: Internal beamline not initialized!" ) );
+  }
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

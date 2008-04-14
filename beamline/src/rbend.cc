@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -319,6 +324,40 @@ rbend::rbend( rbend const& x )
 
 rbend::~rbend() 
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::setStrength( double const& s ) 
+{
+  if( strength_ == 0 ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::setStrength( double const& s )", 
+           "Cannot set strength of rbend when initial strength is zero."
+           "\nCurrent version has no way of accessing attributes of edges." ) );
+  }
+
+  double oldStrength = strength_;
+  strength_ = s - getShunt()*IToField();
+  double ratio = strength_ / oldStrength;
+
+  if( bml_) 
+  {
+    for ( beamline::iterator it  = bml_->begin();
+                             it != bml_->end(); ++it ) {
+      (*it)->setStrength( ratio*((*it)->Strength()) );
+      // NOTE: if *it points to a marker -- i.e. if the
+      // rbend comes from splitting another rbend, so that
+      // one or both edges have been replaced with markers --
+      // setting its strength will do no harm.
+    }
+  }
+  else {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::setStrength( double const& s )", 
+           "IMPOSSIBLE: Internal beamline not initialized!" ) );
+  }
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
