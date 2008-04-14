@@ -35,6 +35,11 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
@@ -77,21 +82,49 @@ class DLLEXPORT rbend : public bmlnElmnt
 
   rbend();
 
-  rbend( char const* name, double const& length, double const& field, double const& bendangle );
+  // Symmetric bend with parallel faces.
+  rbend( char const* name, 
+         double const& length,         // length [ meters ] 
+         double const& field,          // field  [ tesla ] (assumed along the y-axis) 
+         double const& bendangle );    // as specified in MAD;
+                                       // : sets entry and exit angles by default
+                                       // : for edge focusing calculations.
 
-// Symmetric bend with parallel faces.
-
-  rbend( char const* name, double const& length, double const& field, double const& bendangle, double const& entry_angle );
-
-  rbend( char const* name, double const& length, double const& field, double const& bendangle, double const&  usedge,     double const&  dsedge);
-
-  rbend( char const* name, double const& length, double const& field, double const& bendangle, double const& entry_angle, double const& usedge, double const& dsedge );
-
+  // Other possibilities
+  rbend( char const* name, 
+         double const& length, 
+         double const& field, 
+         double const& bendangle, 
+         double const& entry_angle );  // upstream entry angle
+                                       // : assumed symmetric
+  rbend( char const* name, 
+         double const& length, 
+         double const& field, 
+         double const& bendangle,
+         double const& usedge,         // upstream edge angle [radians]     
+         double const& dsedge);        // downstream edge angle [radians]
+                                       // : signs of previous two parameters
+                                       // : are as defined for rbends by MAD
+  rbend( char const* name, 
+         double const& length,
+         double const& field,
+         double const& bendangle,
+         double const& entry_angle,    // entry angle [radians] RELATIVE TO parallel faces
+                                       // (assumes symmetric pssage unless reset)
+         double const& usedge,
+         double const& dsedge );
+  rbend( char const* name, 
+         double const& length,
+         double const& field,
+         double const& bendangle,
+         double const& entry_angle,    // entry angle (generally > 0)
+         double const& exit_angle,     // exit  angle (generally < 0)
+         double const& usedge,
+         double const& dsedge );
   rbend( rbend const& );
+ ~rbend();
 
   rbend* Clone() const { return new rbend( *this ); }
-
- ~rbend();
 
   void localPropagate(         Particle&  p );   
   void localPropagate(      JetParticle&  p );  
@@ -137,6 +170,8 @@ class DLLEXPORT rbend : public bmlnElmnt
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
+
+  void setStrength( double const& );
 
 private:
 

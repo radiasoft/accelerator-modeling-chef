@@ -33,6 +33,11 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -74,6 +79,8 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/marker.h>
+#include <beamline/Edge.h>
 #include <beamline/rbend.h>
 #include <beamline/beamline.h>
 #include <beamline/RBendPropagators.h>
@@ -159,11 +166,12 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( const char* n, double const& l, double const& s, double const& bendangle, double const& us, double const& ds )
-  :   bmlnElmnt( n, l, s),
-   usFaceAngle_(us),
-   dsFaceAngle_(ds),
-      usAngle_(M_TWOPI), // not initialized
-      dsAngle_(-M_TWOPI) // not initialized
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle), 
+    usFaceAngle_(us),
+    dsFaceAngle_(ds),
+    usAngle_(  (bendangle/2.0) + us ),
+    dsAngle_(-((bendangle/2.0) + ds))
 {
  static bool firstTime = true;
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
@@ -208,16 +216,18 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-rbend::rbend( char const* n, double const& l, double const& s,          double const& bendangle, 
-                                              double const& entryangle, double const& us, double const& ds )
-  :   bmlnElmnt( n, l, s),
-    usFaceAngle_(us), dsFaceAngle_(ds),
-    usAngle_(  entryangle + us ),
-    dsAngle_(-(entryangle + ds))
+rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+                                              double const& entry_angle, 
+                                              double const& us,          double const& ds )
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle),
+    usFaceAngle_(us), 
+    dsFaceAngle_(ds),
+    usAngle_(   entry_angle + us ),
+    dsAngle_( -(entry_angle + ds))
 {
  static bool firstTime = true;
- if( (0.0 < fabs(entryangle)) && (fabs( entryangle) < 1.0e-9) ) {
+ if( (0.0 < fabs(entry_angle)) && (fabs( entry_angle) < 1.0e-9) ) {
    usAngle_ = us;
    dsAngle_ = -ds;
    if( firstTime) {
@@ -225,7 +235,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
           << "\n*** WARNING *** rbend::rbend( char* n, ... PropFunc* pf )"
              "\n*** WARNING *** | upstream entry angle | = " 
-          << fabs(entryangle) 
+          << fabs(entry_angle) 
           << " < 1 nanoradian."
              "\n*** WARNING *** It will be reset to zero."
              "\n*** WARNING *** This message is written once only."
@@ -235,7 +245,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
  }
  if ( (0.0 < fabs(us)) && (fabs( us ) < 1.0e-6) ) {
    usFaceAngle_ = 0.0;
-   usAngle_     = entryangle;
+   usAngle_     = entry_angle;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -251,7 +261,7 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
  }
  if ( (0.0 < fabs(ds)) && (fabs( ds ) < 1.0e-6) ) {
    dsFaceAngle_ = 0.0;
-   dsAngle_     = -entryangle;
+   dsAngle_     = -entry_angle;
    if( firstTime) {
      (*pcerr) <<   "*** WARNING *** "
              "\n*** WARNING *** File: " << __FILE__ << ", line " << __LINE__
@@ -273,11 +283,39 @@ rbend::rbend( char const* n, double const& l, double const& s,          double c
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+                                              double const& entry_angle, double const& exit_angle, 
+                                              double const& us,          double const& ds )
+try
+  : bmlnElmnt( n, l, s),
+    angle_(bendangle),
+    usFaceAngle_(us), 
+    dsFaceAngle_(ds),
+    usAngle_(entry_angle + us),
+    dsAngle_( exit_angle - ds)
+{
+  // ??? FIX ME ???
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "rbend::rbend( char const* n, double const& l, double const& s, double const& bendangle, \n"
+         "                                    double const& entry_angle, double const& exit_angle,\n"
+         "                                    double const& us,          double const& ds          )",
+         "THIS CONSTRUCTOR IS NOT WRITTEN." ) );
+}
+catch( bmlnElmnt::GenericException const& ge )
+{
+  // This catch block is included only out of paranoia.
+  // Nothing needs to be done here.
+  throw ge;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 rbend::rbend( rbend const& x )
   : bmlnElmnt(x ),
-  angle_(x.angle_),
-  usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
-      usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
+    angle_(x.angle_),
+    usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
+    usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
     propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
 
@@ -286,6 +324,40 @@ rbend::rbend( rbend const& x )
 
 rbend::~rbend() 
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::setStrength( double const& s ) 
+{
+  if( strength_ == 0 ) {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::setStrength( double const& s )", 
+           "Cannot set strength of rbend when initial strength is zero."
+           "\nCurrent version has no way of accessing attributes of edges." ) );
+  }
+
+  double oldStrength = strength_;
+  strength_ = s - getShunt()*IToField();
+  double ratio = strength_ / oldStrength;
+
+  if( bml_) 
+  {
+    for ( beamline::iterator it  = bml_->begin();
+                             it != bml_->end(); ++it ) {
+      (*it)->setStrength( ratio*((*it)->Strength()) );
+      // NOTE: if *it points to a marker -- i.e. if the
+      // rbend comes from splitting another rbend, so that
+      // one or both edges have been replaced with markers --
+      // setting its strength will do no harm.
+    }
+  }
+  else {
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::setStrength( double const& s )", 
+           "IMPOSSIBLE: Internal beamline not initialized!" ) );
+  }
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

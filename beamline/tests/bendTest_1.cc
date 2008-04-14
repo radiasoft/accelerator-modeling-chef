@@ -48,6 +48,7 @@ struct Options
   double arcLength;
   double bendAngle;
   double bendField;
+  double ratio;
 
   Options( int, char**, int=0 );
 };
@@ -59,6 +60,7 @@ Options::Options( int argc, char** argv, int lastargs )
   , bodyLength(2)
   , n(128)
   , dpp(0)
+  , ratio(1)
 {
   Proton proton(100);
   proton.SetReferenceMomentum(pc);
@@ -106,6 +108,15 @@ Options::Options( int argc, char** argv, int lastargs )
           valid = false;
         }
       }
+      else if( s == "m" ) {
+        if( i < limit ) { 
+          ratio = std::abs(atof( argv[i++] ));
+        }        
+        else {
+          cerr << "\n*** ERROR *** Too few parameters." << endl;
+          valid = false;
+        }
+      }
       else {
         cerr << "\n*** ERROR *** Unrecognized option: " << s << endl;
         valid = false;
@@ -132,11 +143,13 @@ int main( int argc, char** argv )
   }
 
   Proton proton( myOptions.energy );
+  proton.SetReferenceMomentum( myOptions.ratio*proton.ReferenceMomentum() );
 
   { // TEST 1: propagation through rbend
   rbend magnet( "", myOptions.bodyLength
                   , myOptions.bendField
                   , myOptions.bendAngle );
+  if( myOptions.ratio != 1 ) { magnet.setStrength( myOptions.ratio*magnet.Strength() ); }
 
   proton.setStateToZero();
   proton.set_ndp( myOptions.dpp );
@@ -164,6 +177,7 @@ int main( int argc, char** argv )
   sbend magnet( "", myOptions.arcLength
                   , myOptions.bendField*(1.+myOptions.dpp)
                   , myOptions.bendAngle );
+  if( myOptions.ratio != 1 ) { magnet.setStrength( myOptions.ratio*magnet.Strength() ); }
 
   proton.setStateToZero();
   proton.set_ndp( myOptions.dpp );
