@@ -34,7 +34,7 @@
 ****** REVISION HISTORY
 ******
 ****** Apr 2008           michelotti@fnal.gov
-****** - added octupole::setLength(..) method to override
+****** - added quadrupole::setLength(..) method to override
 ******   the base class implementation.
 ****** 
 ****** Mar 2007           ostiguy@fnal.gov
