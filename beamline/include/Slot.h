@@ -37,8 +37,12 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagators
+******
+****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder Slot::setLength method
 ******
 **************************************************************************
 *************************************************************************/
@@ -99,6 +103,8 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );
+
+   void setLength( double const& );
 
    Frame const& getInFrame() const
      { return in_; }

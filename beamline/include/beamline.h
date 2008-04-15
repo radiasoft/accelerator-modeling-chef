@@ -155,6 +155,7 @@ public:
    void   setReferenceTime( double   const& );               
    void   setReferenceTime( Particle&       );             
 
+   void setLength( double const& );
 
    void     putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
    iterator putBelow( iterator   it, ElmPtr y ); // Insert y below (after, downstream of) x
