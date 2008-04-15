@@ -109,14 +109,14 @@ quadrupole::~quadrupole()
 
 void quadrupole::setStrength( double const& s ) 
 {
-  strength_                 = s - getShunt()*IToField();
+  bmlnElmnt::setStrength(s);
   double integratedStrength = strength_*length_;
 
   if( bml_) 
   {
     int counter = 0;
     for ( beamline::iterator it  = bml_->begin();
-                            it != bml_->end(); ++it ) {
+                             it != bml_->end(); ++it ) {
       if( typeid(**it) == typeid(thinQuad ) )  ++counter;
     }
 
