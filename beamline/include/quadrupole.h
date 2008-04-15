@@ -34,13 +34,15 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - added quadrupole::setLength(..) method to override
+******   the base class implementation.
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
-******
 ****** - covariant return types
 ****** - support for reference counted elements
 ******
 ****** December 2007       ostiguy@fnal.gov
-******
 ****** - new typesafe propagator scheme
 ******
 **************************************************************************

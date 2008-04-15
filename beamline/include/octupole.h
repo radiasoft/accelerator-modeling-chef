@@ -34,9 +34,14 @@
 ******                                                                
 ****** REVISION HISTORY
 ****** 
+****** Apr 2008           michelotti@fnal.gov
+****** - added octupole::setLength(..) method to override
+******   the base class implementation.
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
 ******
@@ -88,6 +93,7 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   void setStrength( double const& );
+  void setLength( double const& );
 
   void setCurrent( double const& );
 

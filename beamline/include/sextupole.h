@@ -34,6 +34,10 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - added sextupole::setLength(..) method to override
+******   the base class implementation.
+****** 
 ****** Mar 2007        ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
@@ -87,6 +91,7 @@ public:
  ~sextupole();
 
   void setStrength( double const& );
+  void setLength( double const& );
 
   void setCurrent( double );
 
