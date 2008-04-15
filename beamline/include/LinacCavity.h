@@ -28,9 +28,16 @@
 ******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
+******
+****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder LinacCavity::setLength method
+****** - changed default wake_on attribute in constructor to conform
+******   with change made in branch StRel20080125-patches.
+****** 
 *************************************************************************
 *************************************************************************
 *************************************************************************/
+
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
 
@@ -66,7 +73,7 @@ public:
                double const& rfreq_hz,           // RF frequency [Hz]
                double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
                double const& syncphase_rad,      // synchronous phase [radians]
-               bool   wake_on=false  );                   
+               bool   wake_on=true  );                   
 
   LinacCavity( LinacCavity const& );
 
@@ -84,6 +91,7 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
   void            setStrength( double const& eV);  
+  void              setLength( double const& );
 
   double          getReferenceTime() const;  
 
