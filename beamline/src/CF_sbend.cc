@@ -402,7 +402,7 @@ void CF_sbend::setStrength( double const& s )
   }
 
   double oldStrength = strength_;
-  strength_ = s - getShunt()*IToField();
+  bmlnElmnt::setStrength(s);
   double ratio = strength_ / oldStrength;
 
   if( bml_) 
