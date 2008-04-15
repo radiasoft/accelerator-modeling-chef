@@ -33,11 +33,6 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     rbend had no internal structure then.
-******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -51,10 +46,18 @@
 ******   split elements.  The results should be interpreted carefully.
 ******   This is a stopgap measure. In the longer term, I intend
 ******   to remove the (vestigial) alignment data from these classes.
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
 ****** - new implementation: rbend is now a composite element
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+****** - corrected rbend::Split
+******   : including adding methods to nullify edge effects
+******     
 **************************************************************************
 *************************************************************************/
 //----------------------------------------------------------------------------------------------
@@ -386,8 +389,104 @@ bool rbend::isMagnet() const
   return true;
 }
 
+#if 1
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// NEW VERSION BEGINS HERE
+
+void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  // -----------------------------
+  // Preliminary tests ...
+  // -----------------------------
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           uic.str().c_str() ) );
+  }
+
+  alignmentData ald( Alignment() );
+  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
+      && ( !hasParallelFaces()                    ) ) {
+    ostringstream uic;
+    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
+            "\nwith an Alignment struct.  That rolls are allowed in such"
+            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           uic.str().c_str() ) );
+  }
+
+  static bool firstTime = true;
+  if( firstTime ) {
+    firstTime = false;
+    (*pcerr) << "\n"
+            "\n*** WARNING ***"
+            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
+            "\n*** WARNING *** The new, split elements must be commissioned with"
+            "\n*** WARNING *** RefRegVisitor before being used."
+            "\n*** WARNING *** "
+         << endl;
+  }
+
+  // -------------------------------------------------------------------
+  // WARNING: The following code assumes that an rbend element
+  //          is modeled with a nested beamline, with edge effects, if any,
+  //          incorporated in upstream and downstream edge elements. 
+  //          It will *fail* when the propagator that assumes otherwise. 
+  //--------------------------------------------------------------------
+
+  // .. Check for the presence of a nested beamline with 3 elements ... 
+  // ---------------------------------------------------------------
+  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
+  if ( !valid_nested_beamline) { 
+       throw GenericException( __FILE__, __LINE__, 
+	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+          "Error: Cannot split: incompatible or missing nested beamline.");
+  }
+
+  RBendPtr rb_a( new rbend(   ""
+                            , pc*length_
+                            , strength_
+                            , angle_*pc         // Wrong, but unimportant (I hope)!
+                            , usFaceAngle_
+                            , 0.0 ) ); 
+  rb_a->setEntryAngle( this->getEntryAngle() ); // Reset from default
+  rb_a->nullExitEdge();
+  RBendPtr rb_b( new rbend(   ""
+                            , (1.0 - pc)*length_
+                            , strength_
+                            , angle_*(1.0-pc)   // Wrong, but unimportant (I hope)!
+                            , 0.0
+                            , dsFaceAngle_ ) );
+  rb_b->nullEntryEdge();
+  rb_b->setExitAngle( this->getExitAngle() );   // Reset from default
+
+  a = rb_a;
+  b = rb_b;
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  // -----------------------------------------------------------------
+  a->setAlignment( ald );
+  b->setAlignment( ald );
+
+  // Rename
+  // ------
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
+}
+
+
+#endif
+#if 0
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// CURRENT VERSION BEGINS HERE
 
 void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
@@ -460,6 +559,70 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   a = rb_a;
   b = rb_b;
 
+}
+
+#endif
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::nullExitEdge()
+{
+  if( bml_ ) {
+    ElmPtr& endpoint = bml_->lastElement();
+    if( typeid(*endpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current rbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*endpoint) == typeid(Edge) ) {
+      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << endpoint->Type() << " " << endpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void rbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void rbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::nullEntryEdge()
+{
+  if( bml_ ) {
+    ElmPtr& startpoint = bml_->firstElement();
+    if( typeid(*startpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current rbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*startpoint) == typeid(Edge) ) {
+      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << startpoint->Type() << " " << startpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void rbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void rbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
