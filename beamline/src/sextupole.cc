@@ -34,6 +34,10 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - added octupole::setLength(..) method to override
+******   the base class implementation.
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -60,6 +64,7 @@
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/SextupolePropagators.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
@@ -115,10 +120,53 @@ sextupole::~sextupole()
 
 void sextupole::setStrength( double const& s ) 
 {
-  strength_ = s - getShunt()*IToField();
+  bmlnElmnt::setStrength(s);
   elm_->setStrength( strength_*length_ );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sextupole::setLength( double const& l ) 
+{
+  double ratio = length_;
+  bmlnElmnt::setLength( l );
+  ratio = length_ / ratio;
+
+  if( bml_) 
+  {
+    int counter = 0;
+    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+      if( typeid(**it) == typeid(thinSextupole) )  ++counter;
+    }
+
+    if( counter <= 0 ) {
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void sextupole::setLength( double const& s )", 
+             "No thin sextupoles in the internal beamline." ) );
+    }
+    else {
+      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
+        if( typeid(**it) == typeid(thinSextupole) ) {
+          (*it)->setStrength( ratio*((*it)->Strength()) );
+        }
+        else if( typeid(**it) == typeid(drift) ) {
+          (*it)->setLength( ratio*((*it)->Length()) );
+        }
+        else {
+          ostringstream uic;
+          uic  << "Unrecognized element type "
+               << (*it)->Type()
+               << " in " << Type() << " " << Name()
+               << "'s internal beamline.";
+          throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+                 "void sextupole::setLength( double const& s )", 
+                 uic.str().c_str() ) );
+        }
+      }
+    }
+  }
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -151,15 +199,19 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-
   SextupolePtr s_a( (Clone()) );
   SextupolePtr s_b( (Clone()) );
 
   s_a->setLength(       pc  *length_ );
   s_b->setLength(  (1.0-pc )*length_ );
 
-  // Rename
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
 
+  // Rename
   s_a->rename( ident_ + string("_1") );
   s_b->rename( ident_ + string("_2") );
 
