@@ -33,13 +33,19 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - added octupole::setLength(..) method to override
+******   the base class implementation.
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -109,14 +115,14 @@ quadrupole::~quadrupole()
 
 void quadrupole::setStrength( double const& s ) 
 {
-  strength_                 = s - getShunt()*IToField();
+  bmlnElmnt::setStrength(s);
   double integratedStrength = strength_*length_;
 
   if( bml_) 
   {
     int counter = 0;
     for ( beamline::iterator it  = bml_->begin();
-                            it != bml_->end(); ++it ) {
+                             it != bml_->end(); ++it ) {
       if( typeid(**it) == typeid(thinQuad ) )  ++counter;
     }
 
