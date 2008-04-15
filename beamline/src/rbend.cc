@@ -33,11 +33,6 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     rbend had no internal structure then.
-******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -51,10 +46,18 @@
 ******   split elements.  The results should be interpreted carefully.
 ******   This is a stopgap measure. In the longer term, I intend
 ******   to remove the (vestigial) alignment data from these classes.
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
 ****** - new implementation: rbend is now a composite element
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+****** - corrected rbend::Split
+******   : including adding methods to nullify edge effects
+****** 
 **************************************************************************
 *************************************************************************/
 //----------------------------------------------------------------------------------------------
@@ -389,7 +392,7 @@ bool rbend::isMagnet() const
 #if 1
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// NEW VERION BEGINS HERE
+// NEW VERSION BEGINS HERE
 
 void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {

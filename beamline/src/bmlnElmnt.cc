@@ -49,6 +49,9 @@
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ******                                                        
+****** Apr 2008           michelotti@fnal.gov
+****** - modified bmlnElmnt::setLength
+****** 
 **************************************************************************
 *************************************************************************/
 

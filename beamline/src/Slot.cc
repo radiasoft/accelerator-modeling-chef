@@ -39,10 +39,14 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
+******                                                                
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ****** - eliminated (unused) code for slots with embedded elements
-******                                                                
+****** 
+****** Apr 2008           michelotti@fnal.gov
+****** - added placeholder Slot::setLength method
+****** 
 **************************************************************************
 *************************************************************************/
 

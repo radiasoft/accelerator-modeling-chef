@@ -35,22 +35,24 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     rbend had no internal structure then.
-******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
 ******
 ****** Dec 2007           ostiguy@fnal.gov
-******
 ****** - new typesafe propagators 
 ****** - rbend is now implemented as composite element
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     rbend had no internal structure then.
+****** - added member functions to nullify edge effects
+******   : used by rbend::Split
+******     
 **************************************************************************
 *************************************************************************/
+
 #ifndef RBEND_H
 #define RBEND_H
 
