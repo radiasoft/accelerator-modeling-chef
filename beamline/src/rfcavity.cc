@@ -41,6 +41,9 @@
 ****** Dec 2007    ostiguy@fnal.gov
 ****** - new typesafe propagators
 ******
+****** Apr 2008    michelotti@fnal.gov
+****** - added placeholder rfcavity::setLength method
+******
 **************************************************************************
 *************************************************************************/
 
@@ -57,6 +60,8 @@
 #include <beamline/RefRegVisitor.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 // **************************************************
 //   class rfcavity 
@@ -191,6 +196,19 @@ double rfcavity::getReferenceTime()    const
 void rfcavity::setStrength( double const& strength)
 {
   bmlnElmnt::setStrength(strength);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::setLength( double const& strength)
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: Attempt to explicitly set the length of a rfcavity. "
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -49,6 +49,9 @@
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ******                                                        
+****** Apr 2008           michelotti@fnal.gov
+****** - modified bmlnElmnt::setLength
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -445,28 +448,48 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 
 void bmlnElmnt::setLength( double const& x ) 
 {
-  double oldLength = length_;
+  static bool firstTime = true;
 
-  if( x < 0.0 ) {
-    (*pcerr) << "*** WARNING *** "
-              "\n*** WARNING *** bmlnElmnt::setLength"
-              "\n*** WARNING *** Lengths must be positive."
-              "\n*** WARNING *** You have entered"
-         << x 
-         <<   "\n*** WARNING *** I will use its absolute value."
-              "\n*** WARNING *** "
-         << endl;
-    length_ = -x;
+  if( length_ > 0 ) {
+    double oldLength = length_;
+
+    if( x < 0.0 ) {
+      (*pcerr) << "*** WARNING *** "
+                "\n*** WARNING *** bmlnElmnt::setLength"
+                "\n*** WARNING *** Lengths must be positive."
+                "\n*** WARNING *** You have entered"
+           << x 
+           <<   "\n*** WARNING *** I will use its absolute value."
+                "\n*** WARNING *** "
+           << endl;
+      length_ = -x;
+    }
+    else {
+      length_ = x;
+    }
+
+    // ??? I am unsure whether it is better to do this      ???
+    // ??? here or to zero ctRef_ and REQUIRE another pass  ???
+    // ??? with the RefRegVisitor to set it correctly.      ???
+    // ??? - lpjm                                           ???
+    ctRef_ *= (length_/oldLength);
   }
+
   else {
-    length_ = x;
+    if( firstTime ) {
+      (*pcerr) <<   "*** WARNING *** "
+                  "\n*** WARNING *** bmlnElmnt::setLength"
+                  "\n*** WARNING *** Attempt made to change the length of a "
+                  "\n*** WARNING *** thin (i.e. zero length) element: "
+               << Type() << "  " << Name()
+               << "\n*** WARNING *** No change has been made."
+                  "\n*** WARNING *** "
+                  "\n*** WARNING *** This warning is printed only once."
+                  "\n*** WARNING *** "
+           << endl;
+      firstTime = false;
+    }
   }
-
-  // ??? I am unsure whether it is better to do this      ???
-  // ??? here or to zero ctRef_ and REQUIRE another pass  ???
-  // ??? with the RefRegVisitor to set it correctly.      ???
-  // ??? - lpjm                                           ???
-  if( oldLength > 0 ) { ctRef_ *= (length_/oldLength); }
 }
 
 
