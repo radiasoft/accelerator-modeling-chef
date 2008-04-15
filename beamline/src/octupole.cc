@@ -34,10 +34,6 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added octupole::setLength(..) method to override
-******   the base class implementation.
-****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -46,6 +42,10 @@
 ******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** 
+****** Apr 2008           michelotti@fnal.gov
+****** - added octupole::setLength(..) method to override
+******   the base class implementation.
 ****** 
 **************************************************************************
 *************************************************************************/

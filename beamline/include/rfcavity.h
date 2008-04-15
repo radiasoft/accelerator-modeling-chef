@@ -43,6 +43,9 @@
 ****** - support for new style propagators
 ****** - inner structure now based on hidden beamline object
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder rfcavity::setLength method
+******
 **************************************************************************
 *************************************************************************/
 

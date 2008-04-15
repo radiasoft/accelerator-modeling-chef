@@ -41,6 +41,9 @@
 ****** Dec 2007    ostiguy@fnal.gov
 ****** - new typesafe propagators
 ******
+****** Apr 2008    michelotti@fnal.gov
+****** - added placeholder rfcavity::setLength method
+******
 **************************************************************************
 *************************************************************************/
 
