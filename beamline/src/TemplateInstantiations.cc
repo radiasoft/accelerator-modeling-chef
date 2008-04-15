@@ -113,6 +113,9 @@ template class BasePropagator<ThinPole>;
 template class BasePropagator<Pinger>;
 template class BasePropagator<thinMultipole>;
 
+template boost::shared_ptr<thinSextupole const> boost::dynamic_pointer_cast<thinSextupole const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinQuad      const> boost::dynamic_pointer_cast<thinQuad      const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
+template boost::shared_ptr<thinOctupole  const> boost::dynamic_pointer_cast<thinOctupole  const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<WakeKick>         boost::dynamic_pointer_cast<WakeKick,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<beamline const>   boost::dynamic_pointer_cast<beamline const,   bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
 template boost::shared_ptr<thinQuad>         boost::dynamic_pointer_cast<thinQuad,         bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
