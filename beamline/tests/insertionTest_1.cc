@@ -61,6 +61,7 @@ struct Options
   double bendAngle;
   double bendField;
   int    order;
+  double mapTolerance;
 
   Options( int, char**, int=0 );
 };
@@ -80,6 +81,7 @@ Options::Options( int argc, char** argv, int lastargs )
   , n(128)
   , bodyLength(2)
   , order(3)
+  , mapTolerance(1.0e-13)
 {
   Proton proton(100);
   proton.SetReferenceMomentum(pc);
@@ -325,7 +327,7 @@ int main( int argc, char** argv )
   ret += testLengths( oo0, oo1, oo2, myOptions.pct );
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
   ret += testMaps( u, v, oo1, oo2, myOptions );
-  }
+  } // drift
 
   { // sextupole
   cout << "\n\n--- TESTING SEXTUPOLE ---\n" << endl;
@@ -342,7 +344,7 @@ int main( int argc, char** argv )
   ret += testLengths( oo0, oo1, oo2, myOptions.pct );
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
   ret += testMaps( u, v, oo1, oo2, myOptions );
-  }
+  } // sextupole
 
   { // octupole
   cout << "\n\n--- TESTING OCTUPOLE ---\n" << endl;
@@ -359,7 +361,7 @@ int main( int argc, char** argv )
   ret += testLengths( oo0, oo1, oo2, myOptions.pct );
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
   ret += testMaps( u, v, oo1, oo2, myOptions );
-  }
+  } // octupole
 
   { // sbend
   cout << "\n\n--- TESTING SBEND ---"
@@ -402,9 +404,9 @@ int main( int argc, char** argv )
   ret += testLengths( oo0, oo1, oo2, myOptions.pct );
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
   ret += testMaps( u, v, oo1, oo2, myOptions );
-  }
+  } // sbend
 
-  #if 1
+
   { // rbend
   cout << "\n\n--- TESTING RBEND ---"
             "\n--- WITH PARALLEL EDGES ---\n"
@@ -439,20 +441,46 @@ int main( int argc, char** argv )
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
 
   cout << "PARTICLE PROPAGATION TEST" << endl;
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  cout << proton.State() << endl;
+  double px = sin(myOptions.bendAngle/2.0);
+  proton.set_npx(px);
+  cout << "Initial: " << proton.State() << endl;
   oo0->propagate( proton );
-  cout << proton.State() << endl;
+  cout << "Final  : " << proton.State() << endl;
+  if( 1.0e-14 < std::abs( proton.get_npx() + px ) ) {
+    cout <<   "*** FAILED *** "
+            "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+         << "\n*** FAILED *** : Failed rbend test: 1.0e-14 < "
+         << std::abs( proton.get_npx() + px )
+         << "\n*** FAILED *** : Proton does not bend through correct angle"
+         << "\n*** FAILED *** : in original rbend. bendTest_1 should have"
+         << "\n*** FAILED *** : failed also!"
+         << "\n*** FAILED *** "
+         << endl;
+    ret = 2;
+  }
   proton.setStateToZero();
 
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  cout << proton.State() << endl;  
+  proton.set_npx(px);
+  cout << "Initial: " << proton.State() << endl;
   oo1->propagate( proton );
-  cout << proton.State() << endl;  
+  cout << "Mid    : " << proton.State() << endl;
   oo2->propagate( proton );
-  cout << proton.State() << endl;  
+  cout << "Final  : " << proton.State() << endl;
+  if( 1.0e-14 < std::abs( proton.get_npx() + px ) ) {
+    cout <<   "*** FAILED *** "
+            "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+         << "\n*** FAILED *** : Failed rbend test: 1.0e-14 < "
+         << std::abs( proton.get_npx() + px )
+         << "\n*** FAILED *** : Proton does not bend through correct angle."
+         << "\n*** FAILED *** : in split rbends."
+         << "\n*** FAILED *** "
+         << endl;
+    ret = 2;
+  }
   proton.setStateToZero();
 
+
+  Mapping firstMap, splitMap;
   {
   cout << "JETPARTICLE PROPAGATION TEST" << endl;
   proton.set_npx( sin(myOptions.bendAngle/2.0) );
@@ -462,8 +490,9 @@ int main( int argc, char** argv )
   oo0->propagate( jpr );
   cout << "AFTER FULL RBEND" << endl;
   jpr.State().printCoeffs();
-  proton.setStateToZero();
+  firstMap = jpr.State();
   }
+  proton.setStateToZero();
 
   {
   proton.set_npx( sin(myOptions.bendAngle/2.0) );
@@ -474,64 +503,51 @@ int main( int argc, char** argv )
   oo2->propagate( jpr );
   cout << "AFTER SPLIT RBENDS" << endl;
   jpr.State().printCoeffs();
+  splitMap = jpr.State();
+  }
   proton.setStateToZero();
+
+
+  Mapping diffMap( splitMap - firstMap );
+  cout << "\n\n--- BEGIN DIFFERENCE MAP ----------\n" << endl;
+  diffMap.printCoeffs();
+  cout << "\n--- END   DIFFERENCE MAP ----------\n" << endl;
+
+
+  JLterm termPtr;
+  IntArray exps( diffMap[0].getEnvNumVar() );
+                                             
+  double ccc = 0;
+  for(   int counter = 0
+       ; counter < diffMap.Dim()
+       ; ++counter ) {
+    Jet zlorfik = diffMap[ counter ];
+    for(   Jet::iterator iter = zlorfik.begin()
+         ; iter != zlorfik.end()
+         ; ++iter ) {
+      termPtr = *iter;
+      exps = termPtr.exponents( zlorfik.Env() );
+      ccc  = termPtr.coefficient();
+
+      // NOTE: THIS TEST IS NOT ADEQUATE
+      //     : IT SHOULD BE REFINED
+      if( myOptions.mapTolerance < std::abs(ccc) ) { 
+        cout <<   "*** FAILED *** "
+                "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+             << "\n*** FAILED *** : Failed difference; at exponent "
+             <<                     exps
+             <<                     " the coefficient = "
+             <<                     ccc
+             << "\n*** FAILED *** : rbend and sbend are not equivalent at order "
+             <<                     myOptions.order
+             << "\n*** FAILED *** "
+             << endl;
+        ret = 3;
+      }
+    }
   }
 
-
-  ret = 137;
-  }
-  #endif
-
-  #if 0
-  { // rbend
-  cout << "\n\n--- TESTING RBEND ---"
-            "\n--- WITH PARALLEL EDGES ---\n"
-       << endl;
-  oo0 = ElmPtr( new rbend ( "", myOptions.bodyLength
-                              , myOptions.bendField
-                              , myOptions.bendAngle ) );
-  Proton proton( myOptions.energy );
-  {
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  RefRegVisitor rrv( proton );
-  oo0->accept(rrv);
-  proton.setStateToZero();
-  }
-
-  
-
-  oo0->Split( myOptions.pct, oo1, oo2 );
-
-  #if 1
-  beamline zzz;
-  zzz.append( oo1 );
-  zzz.append( oo2 );
-  {
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  RefRegVisitor rrv( proton );
-  zzz->accept(rrv);
-  proton.setStateToZero();
-  }
-
-  #endif
-  #if 0
-  u   = ElmPtr( new rbend ( "", myOptions.pct*myOptions.bodyLength
-                              , myOptions.bendField
-                              , myOptions.pct*myOptions.bendAngle ) );
-  v   = ElmPtr( new rbend ( "", (1.0 - myOptions.pct)*myOptions.bodyLength
-                              , myOptions.bendField
-                              , (1.0 - myOptions.pct)*myOptions.bendAngle ) );
-  #endif
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  #if 0
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-  #endif
-  #if 1
-  ret += testMaps( oo0, oo1, oo2, myOptions );
-  #endif
-  }
-  #endif
+  } // rbend
 
   return ret;
 }
