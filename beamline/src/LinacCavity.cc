@@ -29,7 +29,9 @@
 ****** Dec 2007   ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ******
-**************************************************************************
+****** Apr 2008   michelotti@fnal.gov
+****** - added placeholder LinacCavity::setLength method
+******
 **************************************************************************
 *************************************************************************/
 
@@ -91,6 +93,8 @@
 #include <beamline/RefRegVisitor.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -263,6 +267,19 @@ void  LinacCavity::setStrength( double const& eV)
   bml_->firstElement()->setStrength(strength_*length1/length_ );
   bml_->lastElement()->setStrength(strength_ *length2/length_ );
 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void  LinacCavity::setLength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: Attempt to explicitly set the length of a LinacCavity. "
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
