@@ -116,7 +116,7 @@ sextupole::~sextupole()
 
 void sextupole::setStrength( double const& s ) 
 {
-  strength_ = s - getShunt()*IToField();
+  bmlnElmnt::setStrength(s);
   elm_->setStrength( strength_*length_ );
 }
 
