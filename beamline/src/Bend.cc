@@ -24,7 +24,10 @@
 ******                               
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY 
 ******
+****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder setLength and setStrength methods
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -91,11 +94,42 @@ bool Bend::isMagnet() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void Bend::setStrength( double const& )
+{
+  // this should never be called. 
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void Bend::setStrength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the strength of a Bend."
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Bend::setLength( double const& )
+{
+  // this should never be called. 
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void Bend::setStrength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the length of a Bend."
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   // this should never be called. 
-
- std::cerr << 
+  (*pcerr) << 
      "WARNING:  Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const has been called." 
 	   << std::endl;
 }

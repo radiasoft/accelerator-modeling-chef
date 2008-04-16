@@ -49,14 +49,15 @@
 ****** - new typesafe propagators
 ****** - new implementation: sbend is now a composite element
 ******                                                                  
-****** Apr 2008            michelotti@fnal.gov
+****** Apr 2008           michelotti@fnal.gov
+****** - added placeholder setLength method
 ****** - added setStrength method
 ******   : not needed in earlier implementations because
 ******     sbend had no internal structure then.
 ****** - modified sbend::Split
 ****** - added member functions to nullify edge effects
 ******   : used by modified sbend::Split
-******     
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -272,6 +273,21 @@ void sbend::setStrength( double const& s )
            "void sbend::setStrength( double const& s )", 
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void sbend::setLength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void sbend::setLength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the length of a sbend."
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

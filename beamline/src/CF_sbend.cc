@@ -33,18 +33,22 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - modified setStrength method
-******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
+******
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture  
+******
+****** Apr 2008            michelotti@fnal.gov
+****** - modified setStrength method
+****** - added placeholder setLength method
+******
 **************************************************************************
 *************************************************************************/
 
@@ -421,6 +425,21 @@ void CF_sbend::setStrength( double const& s )
            "void sbend::setStrength( double const& s )", 
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  CF_sbend::setLength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void CF_sbend::setLength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the length of a CF_sbend."
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

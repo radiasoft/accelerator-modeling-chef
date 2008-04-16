@@ -44,11 +44,13 @@
 ****** - rbend is now implemented as composite element
 ******
 ****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder setLength method
 ****** - added setStrength method
 ******   : not needed in earlier implementations because
 ******     rbend had no internal structure then.
 ****** - added member functions to nullify edge effects
 ******   : used by rbend::Split
+******
 ******     
 **************************************************************************
 *************************************************************************/
@@ -177,6 +179,7 @@ class DLLEXPORT rbend : public bmlnElmnt
     // must be commissioned with RefRegVisitor.
 
   void setStrength( double const& );
+  void setLength( double const& );
 
 private:
 
