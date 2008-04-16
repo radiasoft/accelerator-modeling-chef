@@ -456,6 +456,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                             , 0.0 ) ); 
   rb_a->setEntryAngle( this->getEntryAngle() ); // Reset from default
   rb_a->nullExitEdge();
+
   RBendPtr rb_b( new rbend(   ""
                             , (1.0 - pc)*length_
                             , strength_
