@@ -37,9 +37,15 @@
 ****** Mar 2007:          ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - added support for reference counted elements
+******
 ****** Dec 2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - modified signature of setLength method to conform
+******   to the virtual method in base class bmlnElmnt.
+****** - added placeholder setStrength method.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -107,8 +113,10 @@ public:
   double getField( WHICH_MULTIPOLE x ) 
     { return this->Field(x); }
 
+  void setStrength( double const& );
+  void setLength( double const& );
+
   void setSkew( WHICH_MULTIPOLE, alignmentData& );
-  void setLength( double x )                         { length_ = x; }
 
   alignmentData Skew( WHICH_MULTIPOLE );
   alignmentData getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }

@@ -39,9 +39,17 @@
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ****** - Use stack-based local Particle/jetparticle
+****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ******  - new typesafe propagator architecture
-******                                                               
+****** 
+****** Apr 2008           michelotti@fnal.gov
+****** - modified signature of setLength method to conform
+******   to the virtual method in base class bmlnElmnt.
+****** - wrote placeholder implementation for combinedFunction::setLength
+******   : evidently, one had never been written
+****** - added placeholder setStrength method.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -221,6 +229,36 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
     }
   }
   return multStrength;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void combinedFunction::setStrength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void combinedFunction::setStrength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the strength of a combinedFunction. "
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void combinedFunction::setLength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void combinedFunction::setLength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the length of a combinedFunction. "
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

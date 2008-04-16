@@ -2,15 +2,20 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
+****** BEAMLINE:  C++ objects for design and analysis
+******            of beamlines, storage rings, and   
+******            synchrotrons.                      
 ******                                    
-******  File:      Bend.h
+****** File:      Bend.h
 ******                                                                
+****** REVISION HISTORY 
+******
+****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder setLength and setStrength methods
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #ifndef BEND_H
 #define BEND_H
 
@@ -65,6 +70,9 @@ public:
   bool isMagnet() const;
 
   BendType getBendType() const;
+
+  void setStrength( double const& );
+  void setLength( double const& );
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
