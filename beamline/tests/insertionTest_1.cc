@@ -3,8 +3,8 @@
 // File:          insertionTest_1.cc
 // Author:        Leo Michelotti
 //
-// Revision date: Monday. April 7, 2008.  (original version)
-//                (NOTE: this is just the first installment.)
+// Revision date: Monday.    April  7, 2008.  (original version)
+//                Wednesday. April 16, 2008.  (current  version)
 //
 ////////////////////////////////////////////////////////////
 //
@@ -81,7 +81,7 @@ Options::Options( int argc, char** argv, int lastargs )
   , n(128)
   , bodyLength(2)
   , order(3)
-  , mapTolerance(1.0e-13)
+  , mapTolerance(1.0e-11)
 {
   Proton proton(100);
   proton.SetReferenceMomentum(pc);
@@ -279,180 +279,46 @@ int testMaps(   ElmPtr    const& u
 
 /////////////////////////////////////////////////////////////////////
 
-int main( int argc, char** argv )
+int testBendMap(  ElmPtr  const& oo0
+                , ElmPtr  const& oo1
+                , ElmPtr  const& oo2
+                , Options const& myOptions )
 {
   int ret = 0;
 
-  Options myOptions( argc, argv );
-  if( myOptions.valid ) {
-    cout << "\nCommand line: ";
-    for( int i = 0; i < argc; i++ ) {
-      cout << argv[i] << "  ";
-    }
-    cout << endl;
-  }
-  else {
-    return 1;
-  }
-
-
-  ElmPtr oo0, oo1, oo2;
-  ElmPtr u, v;
-  JetParticle::createStandardEnvironments( myOptions.order );
-
-
-  { // drift
-  cout << "\n\n--- TESTING DRIFT ---\n" << endl;
-  oo0 = ElmPtr( new drift( "", myOptions.driftLength ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u = ElmPtr( new drift( "",        myOptions.pct *myOptions.driftLength ) );
-  v = ElmPtr( new drift( "", (1.0 - myOptions.pct)*myOptions.driftLength ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
+  bool is_sbend = 0 == strcmp( "sbend", oo0->Type() );
+  bool is_rbend = 0 == strcmp( "rbend", oo0->Type() );
+  if( !is_sbend && !is_rbend ) {
+    cout <<   "*** FAILED *** "
+            "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+         << "\n*** FAILED *** : An impossibility has occurred."
+         << "\n*** FAILED *** : Magnet of type " << oo0->Type() << " sent to testBendMap."
+         << "\n*** FAILED *** "
+         << endl;
+    return 7;
   }
 
-  { // quadrupole
-  cout << "\n\n--- TESTING QUADRUPOLE ---\n" << endl;
-  oo0 = ElmPtr( new quadrupole(   ""
-                                , myOptions.quadLength
-                                , myOptions.quadStrength ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u = ElmPtr( new quadrupole(   ""
-                              , myOptions.pct*myOptions.quadLength
-                              , myOptions.quadStrength ) );
-  v = ElmPtr( new quadrupole(   ""
-                              , (1.0 - myOptions.pct)*myOptions.quadLength
-                              , myOptions.quadStrength ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-  } // drift
-
-  { // sextupole
-  cout << "\n\n--- TESTING SEXTUPOLE ---\n" << endl;
-  oo0 = ElmPtr( new sextupole(  ""
-                              , myOptions.sextLength
-                              , myOptions.sextStrength ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u = ElmPtr( new sextupole(   ""
-                            , myOptions.pct*myOptions.sextLength
-                            , myOptions.sextStrength ) );
-  v = ElmPtr( new sextupole(   ""
-                            , (1.0 - myOptions.pct)*myOptions.sextLength
-                            , myOptions.sextStrength ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-  } // sextupole
-
-  { // octupole
-  cout << "\n\n--- TESTING OCTUPOLE ---\n" << endl;
-  oo0 = ElmPtr( new octupole(   ""
-                              , myOptions.octLength
-                              , myOptions.octStrength ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u = ElmPtr( new octupole(   ""
-                            , myOptions.pct*myOptions.octLength
-                            , myOptions.octStrength ) );
-  v = ElmPtr( new octupole(   ""
-                            , (1.0 - myOptions.pct)*myOptions.octLength
-                            , myOptions.octStrength ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-  } // octupole
-
-  { // sbend
-  cout << "\n\n--- TESTING SBEND ---"
-            "\n--- WITH NORMAL ENTRY EDGES ---\n"
-       << endl;
-  oo0 = ElmPtr( new sbend ( "", myOptions.arcLength
-                              , myOptions.bendField
-                              , myOptions.bendAngle ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u   = ElmPtr( new sbend ( "", myOptions.pct*myOptions.arcLength
-                              , myOptions.bendField
-                              , myOptions.pct*myOptions.bendAngle ) );
-  v   = ElmPtr( new sbend ( "", (1.0 - myOptions.pct)*myOptions.arcLength
-                              , myOptions.bendField
-                              , (1.0 - myOptions.pct)*myOptions.bendAngle ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-
-
-  cout << "\n\n--- TESTING SBEND ---"
-            "\n--- WITH PARALLEL EDGES ---\n"
-       << endl;
-  oo0 = ElmPtr( new sbend ( "", myOptions.arcLength
-                              , myOptions.bendField
-                              , myOptions.bendAngle
-                              , myOptions.bendAngle/2.0
-                              , myOptions.bendAngle/2.0 ) );
-  oo0->Split( myOptions.pct, oo1, oo2 );
-  u   = ElmPtr( new sbend ( "", myOptions.pct*myOptions.arcLength
-                              , myOptions.bendField
-                              , myOptions.pct*myOptions.bendAngle
-                              , myOptions.bendAngle/2.0
-                              , 0 ) );
-  v   = ElmPtr( new sbend ( "", (1.0 - myOptions.pct)*myOptions.arcLength
-                              , myOptions.bendField
-                              , (1.0 - myOptions.pct)*myOptions.bendAngle
-                              , 0 
-                              , myOptions.bendAngle/2.0 ) );
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testMaps( u, v, oo1, oo2, myOptions );
-  } // sbend
-
-
-  { // rbend
-  cout << "\n\n--- TESTING RBEND ---"
-            "\n--- WITH PARALLEL EDGES ---\n"
-       << endl;
-  oo0 = ElmPtr( new rbend ( "", myOptions.bodyLength
-                              , myOptions.bendField
-                              , myOptions.bendAngle ) );
-
-  Proton proton( myOptions.energy );
-
-  {
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  RefRegVisitor rrv( proton );
-  oo0->accept(rrv);
-  proton.setStateToZero();
-  }
-
-
-  oo0->Split( myOptions.pct, oo1, oo2 );
-
-
-  {
-  proton.set_npx( sin(myOptions.bendAngle/2.0) );
-  RefRegVisitor rrv( proton );
-  oo1->accept(rrv);
-  oo2->accept(rrv);
-  proton.setStateToZero();
-  }
-
-
-  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
-  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  bool parallel = oo0->hasParallelFaces();
 
   cout << "PARTICLE PROPAGATION TEST" << endl;
+  Proton proton( myOptions.energy );
   double px = sin(myOptions.bendAngle/2.0);
-  proton.set_npx(px);
+
+  if( parallel ) { proton.set_npx(px); }
   cout << "Initial: " << proton.State() << endl;
   oo0->propagate( proton );
   cout << "Final  : " << proton.State() << endl;
-  if( 1.0e-14 < std::abs( proton.get_npx() + px ) ) {
+
+  double testValue = proton.get_npx();
+  if( parallel ) { testValue += px;   }
+
+  if( 1.0e-14 < std::abs( testValue ) ) {
     cout <<   "*** FAILED *** "
             "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
-         << "\n*** FAILED *** : Failed rbend test: 1.0e-14 < "
-         << std::abs( proton.get_npx() + px )
+         << "\n*** FAILED *** : Failed bend test: 1.0e-14 < "
+         << std::abs( testValue )
          << "\n*** FAILED *** : Proton does not bend through correct angle"
-         << "\n*** FAILED *** : in original rbend. bendTest_1 should have"
+         << "\n*** FAILED *** : in original " << oo0->Type() << ". bendTest_1 should have"
          << "\n*** FAILED *** : failed also!"
          << "\n*** FAILED *** "
          << endl;
@@ -460,19 +326,23 @@ int main( int argc, char** argv )
   }
   proton.setStateToZero();
 
-  proton.set_npx(px);
+  if( parallel ) { proton.set_npx(px); }
   cout << "Initial: " << proton.State() << endl;
   oo1->propagate( proton );
   cout << "Mid    : " << proton.State() << endl;
   oo2->propagate( proton );
   cout << "Final  : " << proton.State() << endl;
-  if( 1.0e-14 < std::abs( proton.get_npx() + px ) ) {
+
+  testValue = proton.get_npx();
+  if( parallel ) { testValue += px;   }
+
+  if( 1.0e-14 < std::abs( testValue ) ) {
     cout <<   "*** FAILED *** "
             "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
-         << "\n*** FAILED *** : Failed rbend test: 1.0e-14 < "
-         << std::abs( proton.get_npx() + px )
+         << "\n*** FAILED *** : Failed bend test: 1.0e-14 < "
+         << std::abs( testValue )
          << "\n*** FAILED *** : Proton does not bend through correct angle."
-         << "\n*** FAILED *** : in split rbends."
+         << "\n*** FAILED *** : in split " << oo0->Type() << "s."
          << "\n*** FAILED *** "
          << endl;
     ret = 2;
@@ -485,10 +355,10 @@ int main( int argc, char** argv )
   cout << "JETPARTICLE PROPAGATION TEST" << endl;
   proton.set_npx( sin(myOptions.bendAngle/2.0) );
   JetProton jpr( proton );
-  cout << "BEFORE FULL RBEND" << endl;
+  cout << "BEFORE FULL BEND" << endl;
   jpr.State().printCoeffs();
   oo0->propagate( jpr );
-  cout << "AFTER FULL RBEND" << endl;
+  cout << "AFTER FULL BEND" << endl;
   jpr.State().printCoeffs();
   firstMap = jpr.State();
   }
@@ -497,11 +367,11 @@ int main( int argc, char** argv )
   {
   proton.set_npx( sin(myOptions.bendAngle/2.0) );
   JetProton jpr( proton );
-  cout << "BEFORE SPLIT RBENDS" << endl;
+  cout << "BEFORE SPLIT BENDS" << endl;
   jpr.State().printCoeffs();
   oo1->propagate( jpr );
   oo2->propagate( jpr );
-  cout << "AFTER SPLIT RBENDS" << endl;
+  cout << "AFTER SPLIT BENDS" << endl;
   jpr.State().printCoeffs();
   splitMap = jpr.State();
   }
@@ -538,15 +408,186 @@ int main( int argc, char** argv )
              <<                     exps
              <<                     " the coefficient = "
              <<                     ccc
-             << "\n*** FAILED *** : rbend and sbend are not equivalent at order "
-             <<                     myOptions.order
+             << "\n*** FAILED *** : maps are not equivalent at order "
+             <<                     exps.Sum()
              << "\n*** FAILED *** "
              << endl;
         ret = 3;
       }
     }
   }
+  
+  return ret;
+}
 
+
+/////////////////////////////////////////////////////////////////////
+
+int main( int argc, char** argv )
+{
+  int ret = 0;
+
+  Options myOptions( argc, argv );
+  if( myOptions.valid ) {
+    cout << "\nCommand line: ";
+    for( int i = 0; i < argc; i++ ) {
+      cout << argv[i] << "  ";
+    }
+    cout << endl;
+  }
+  else {
+    return 1;
+  }
+
+
+  ElmPtr oo0, oo1, oo2;
+  ElmPtr u, v;
+  JetParticle::createStandardEnvironments( myOptions.order );
+
+
+  { // drift
+  cout << "\n\n--- TESTING DRIFT ---\n" << endl;
+  oo0 = ElmPtr( new drift( "", myOptions.driftLength ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u = ElmPtr( new drift( "",        myOptions.pct *myOptions.driftLength ) );
+  v = ElmPtr( new drift( "", (1.0 - myOptions.pct)*myOptions.driftLength ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  } // drift
+
+
+  { // quadrupole
+  cout << "\n\n--- TESTING QUADRUPOLE ---\n" << endl;
+  oo0 = ElmPtr( new quadrupole(   ""
+                                , myOptions.quadLength
+                                , myOptions.quadStrength ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u = ElmPtr( new quadrupole(   ""
+                              , myOptions.pct*myOptions.quadLength
+                              , myOptions.quadStrength ) );
+  v = ElmPtr( new quadrupole(   ""
+                              , (1.0 - myOptions.pct)*myOptions.quadLength
+                              , myOptions.quadStrength ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  } // quadrupole
+
+
+  { // sextupole
+  cout << "\n\n--- TESTING SEXTUPOLE ---\n" << endl;
+  oo0 = ElmPtr( new sextupole(  ""
+                              , myOptions.sextLength
+                              , myOptions.sextStrength ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u = ElmPtr( new sextupole(   ""
+                            , myOptions.pct*myOptions.sextLength
+                            , myOptions.sextStrength ) );
+  v = ElmPtr( new sextupole(   ""
+                            , (1.0 - myOptions.pct)*myOptions.sextLength
+                            , myOptions.sextStrength ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  } // sextupole
+
+
+  { // octupole
+  cout << "\n\n--- TESTING OCTUPOLE ---\n" << endl;
+  oo0 = ElmPtr( new octupole(   ""
+                              , myOptions.octLength
+                              , myOptions.octStrength ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u = ElmPtr( new octupole(   ""
+                            , myOptions.pct*myOptions.octLength
+                            , myOptions.octStrength ) );
+  v = ElmPtr( new octupole(   ""
+                            , (1.0 - myOptions.pct)*myOptions.octLength
+                            , myOptions.octStrength ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  } // octupole
+
+
+  { // sbend
+  cout << "\n\n--- TESTING SBEND ---"
+            "\n--- WITH NORMAL ENTRY EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new sbend ( "", myOptions.arcLength
+                              , myOptions.bendField
+                              , myOptions.bendAngle ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u   = ElmPtr( new sbend ( "", myOptions.pct*myOptions.arcLength
+                              , myOptions.bendField
+                              , myOptions.pct*myOptions.bendAngle ) );
+  v   = ElmPtr( new sbend ( "", (1.0 - myOptions.pct)*myOptions.arcLength
+                              , myOptions.bendField
+                              , (1.0 - myOptions.pct)*myOptions.bendAngle ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  ret += testBendMap( oo0, oo1, oo2, myOptions );
+
+
+  cout << "\n\n--- TESTING SBEND ---"
+            "\n--- WITH PARALLEL EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new sbend ( "", myOptions.arcLength
+                              , myOptions.bendField
+                              , myOptions.bendAngle
+                              , myOptions.bendAngle/2.0
+                              , myOptions.bendAngle/2.0 ) );
+  oo0->Split( myOptions.pct, oo1, oo2 );
+  u   = ElmPtr( new sbend ( "", myOptions.pct*myOptions.arcLength
+                              , myOptions.bendField
+                              , myOptions.pct*myOptions.bendAngle
+                              , myOptions.bendAngle/2.0
+                              , 0 ) );
+  v   = ElmPtr( new sbend ( "", (1.0 - myOptions.pct)*myOptions.arcLength
+                              , myOptions.bendField
+                              , (1.0 - myOptions.pct)*myOptions.bendAngle
+                              , 0 
+                              , myOptions.bendAngle/2.0 ) );
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testMaps( u, v, oo1, oo2, myOptions );
+  ret += testBendMap( oo0, oo1, oo2, myOptions );
+  } // sbend
+
+
+  { // rbend
+  cout << "\n\n--- TESTING RBEND ---"
+            "\n--- WITH PARALLEL EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new rbend ( "", myOptions.bodyLength
+                              , myOptions.bendField
+                              , myOptions.bendAngle ) );
+
+  Proton proton( myOptions.energy );
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  {
+  RefRegVisitor rrv( proton );
+  oo0->accept(rrv);
+  }
+  proton.setStateToZero();
+
+
+  oo0->Split( myOptions.pct, oo1, oo2 );
+
+
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  {
+  RefRegVisitor rrv( proton );
+  oo1->accept(rrv);
+  oo2->accept(rrv);
+  }
+  proton.setStateToZero();
+
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testBendMap( oo0, oo1, oo2, myOptions );
   } // rbend
 
   return ret;
