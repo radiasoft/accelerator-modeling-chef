@@ -34,11 +34,6 @@
 ******                                                                
 ******    REVISION HISTORY
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     sbend had no internal structure then.
-******     
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
@@ -49,6 +44,13 @@
 ****** - new typesafe propagator scheme
 ****** - sbend now implemented as a composite element  
 ******                                                                 
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     sbend had no internal structure then.
+****** - added member functions to nullify edge effects
+******   : used by sbend::Split
+******     
 **************************************************************************
 *************************************************************************/
 #ifndef SBEND_H
@@ -137,6 +139,8 @@ class DLLEXPORT sbend : public bmlnElmnt {
   double getEntryFaceAngle()   const; 
   double  getExitFaceAngle()   const; 
 
+  void nullExitEdge();
+  void nullEntryEdge();
 
 private:
 
