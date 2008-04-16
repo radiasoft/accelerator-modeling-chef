@@ -31,11 +31,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     sbend had no internal structure then.
-******     
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -54,6 +49,14 @@
 ****** - new typesafe propagators
 ****** - new implementation: sbend is now a composite element
 ******                                                                  
+****** Apr 2008            michelotti@fnal.gov
+****** - added setStrength method
+******   : not needed in earlier implementations because
+******     sbend had no internal structure then.
+****** - modified sbend::Split
+****** - added member functions to nullify edge effects
+******   : used by modified sbend::Split
+******     
 **************************************************************************
 *************************************************************************/
 
@@ -70,6 +73,8 @@
 #include <beamline/Particle.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
+#include <beamline/marker.h>
+#include <beamline/Edge.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -269,6 +274,68 @@ void sbend::setStrength( double const& s )
   }
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::nullExitEdge()
+{
+  if( bml_ ) {
+    ElmPtr& endpoint = bml_->lastElement();
+    if( typeid(*endpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current sbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*endpoint) == typeid(Edge) ) {
+      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << endpoint->Type() << " " << endpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void sbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void sbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::nullEntryEdge()
+{
+  if( bml_ ) {
+    ElmPtr& startpoint = bml_->firstElement();
+    if( typeid(*startpoint) == typeid(marker) ) {
+      // Nothing needs to be done.
+      // This occurs if the current sbend is a piece
+      // resulting from splitting another.
+    }
+    else if( typeid(*startpoint) == typeid(Edge) ) {
+      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
+    }
+    else {
+      ostringstream uic;
+      uic  <<   "Internal beamline ends in unrecognized element "
+           << startpoint->Type() << " " << startpoint->Name();
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+               "void sbend::nullExitEdge()",
+               uic.str().c_str() ) );
+    }
+  }
+  else {
+    throw GenericException( __FILE__, __LINE__, 
+      "void sbend::nullExitEdge()",
+      "An impossibility: internal beamline is null.");
+  }
+}
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -341,7 +408,6 @@ bool sbend::isMagnet() const
 
 void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
-
   alignmentData ald( Alignment() );
 
   if( 0. != ald.xOffset || 0. != ald.yOffset ) {
@@ -366,32 +432,55 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     }
   }
 
- // -------------------------------------------------------------------
- // WARNING: The following code assumes that an sbend element
- //          is modeled with a nested beamline, whith edge effects 
- //          incorporated in upstream and downstream edge elements. 
- //          Il will *fail* if propagator assumes otherwise. 
- //--------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // WARNING: The following code assumes that an sbend element
+  //          is modeled with a nested beamline, whith edge effects 
+  //          incorporated in upstream and downstream edge elements. 
+  //          Il will *fail* if propagator assumes otherwise. 
+  //--------------------------------------------------------------------
 
- // .. Check for the presence of a nested beamline with 3 elements ... 
+  // .. Check for the presence of a nested beamline with 3 elements ... 
 
   bool valid_nested_beamline = bml_ ? ( bml_->howMany() == 3 ) : false;
   
   if ( !valid_nested_beamline) { 
        throw GenericException( __FILE__, __LINE__, 
-	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+          "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
           "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
-  a = SBendPtr( new sbend( "", length_*pc,       strength_, angle_*pc,       usFaceAngle_,     0.0           ));  
-  b = SBendPtr( new sbend( "", length_*(1.0-pc), strength_, angle_*(1.0-pc), 0.0,              dsFaceAngle_  ));  
+  SBendPtr sb_a = SBendPtr( new sbend(   ""
+                                       , length_*pc
+                                       , strength_
+                                       , angle_*pc
+                                       , usFaceAngle_
+                                       , 0.0           ));
+  sb_a->setEntryAngle( this->getEntryAngle() );  // Reset from default
+  sb_a->nullExitEdge();
 
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
+  SBendPtr sb_b = SBendPtr( new sbend(   ""
+                                       , length_*(1.0-pc)
+                                       , strength_
+                                       , angle_*(1.0-pc)
+                                       , 0.0
+                                       , dsFaceAngle_  ));
+  sb_b->nullEntryEdge();
+  sb_b->setExitAngle( this->getExitAngle() );    // Reset from default
 
+  a = sb_a;
+  b = sb_b;
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  //   : the entire XXX::Split strategy should be/is being overhauled.
+  // -----------------------------------------------------------------
   a->setAlignment( ald );
   b->setAlignment( ald );
 
+  // Rename
+  // ------
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 }
 
 
