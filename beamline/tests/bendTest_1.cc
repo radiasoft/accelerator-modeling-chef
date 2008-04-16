@@ -18,10 +18,12 @@
 // OPTIONS
 // -------
 // Note: NNN represents an integer
+//       XXX             a double
 // 
 // -print     prints parameters
 // -N   NNN   the bend angle is set to 2 pi / NNN
 //            : default = 128
+// -m   XXX   multiplies the bend strength before testing
 // -dpp XXX   dp/p of the probe proton
 // 
 ////////////////////////////////////////////////////////////
@@ -110,7 +112,8 @@ Options::Options( int argc, char** argv, int lastargs )
       }
       else if( s == "m" ) {
         if( i < limit ) { 
-          ratio = std::abs(atof( argv[i++] ));
+          double mmm = atof( argv[i++] );
+          if( mmm != 0 ) { ratio = std::abs(mmm); }
         }        
         else {
           cerr << "\n*** ERROR *** Too few parameters." << endl;
