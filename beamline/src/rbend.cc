@@ -55,9 +55,10 @@
 ****** - added setStrength method
 ******   : not needed in earlier implementations because
 ******     rbend had no internal structure then.
+****** - added placeholder setLength method
 ****** - corrected rbend::Split
 ******   : including adding methods to nullify edge effects
-****** 
+******
 **************************************************************************
 *************************************************************************/
 //----------------------------------------------------------------------------------------------
@@ -360,6 +361,21 @@ void rbend::setStrength( double const& s )
            "void rbend::setStrength( double const& s )", 
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+
+void rbend::setLength( double const& )
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void rbend::setLength( double const& )" 
+              "\n*** WARNING ****: Attempt to explicitly set the length of a rbend."
+              "\n*** WARNING ****: This is most likely an error.  Will not comply."
+              "\n*** WARNING ****: Continuing, nonetheless... "
+              "\n*** WARNING ****: " 
+           << std::endl;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

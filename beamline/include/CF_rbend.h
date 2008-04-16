@@ -32,14 +32,20 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-******    REVISION HISTORY
-****** Mar 2007            ostiguy@fnal.gov
+****** REVISION HISTORY
+******
+****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
+******
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new type-safe propagators
+******
+****** Apr 2008           michelotti@fnal.gov
+****** - added placeholder setLength method
 ******
 **************************************************************************
 *************************************************************************/
@@ -166,6 +172,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
+  void setLength     ( double const& );
 
   double getQuadrupole() const;
   double getSextupole()  const;

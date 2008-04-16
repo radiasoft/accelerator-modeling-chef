@@ -45,6 +45,7 @@
 ****** - sbend now implemented as a composite element  
 ******                                                                 
 ****** Apr 2008            michelotti@fnal.gov
+****** - added placeholder setLength method
 ****** - added setStrength method
 ******   : not needed in earlier implementations because
 ******     sbend had no internal structure then.
@@ -116,7 +117,9 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
-  void          setStrength( double const& );
+  void setStrength( double const& );
+  void setLength( double const& );
+
   double        setBendAngle(double const& a) { return (angle_ = a); }
   double const& getBendAngle() const          { return angle_; }
   

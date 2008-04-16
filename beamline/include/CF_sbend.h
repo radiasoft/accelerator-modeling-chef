@@ -45,8 +45,12 @@
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators   
 ******
+****** Apr 2008           michelotti@fnal.gov
+****** - added placeholder setLength method
+******
 **************************************************************************
 *************************************************************************/
+
 #ifndef CF_SBEND_H
 #define CF_SBEND_H
 
@@ -154,6 +158,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   void setStrength   ( double const& );
   // Specific implementation of virtual bmlnElmnt method.
   // Modifies all internal elements.
+  void setLength     ( double const& );
 
   double getQuadrupole() const;
   double getSextupole()  const;
