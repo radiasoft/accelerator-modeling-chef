@@ -94,22 +94,6 @@ bool Bend::isMagnet() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::setStrength( double const& )
-{
-  // this should never be called. 
-  (*pcerr) <<   "*** WARNING ****: "
-              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void Bend::setStrength( double const& )" 
-              "\n*** WARNING ****: Attempt to explicitly set the strength of a Bend."
-              "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nonetheless... "
-              "\n*** WARNING ****: " 
-           << std::endl;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void Bend::setLength( double const& )
 {
   // this should never be called. 
