@@ -3,7 +3,8 @@
 // File:          bendTest_1.cc
 // Author:        Leo Michelotti
 // 
-// Revision date: Tuesday. March 25, 2008.  (original version)
+// Revision date: Tuesday.  March 25, 2008.  (original version)
+//                Thursday. April 17, 2008.  (current  version)
 // 
 ////////////////////////////////////////////////////////////
 // 
@@ -33,6 +34,8 @@
 #include <beamline/Particle.h>
 #include <beamline/sbend.h>
 #include <beamline/rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/CF_rbend.h>
 
 
 using namespace std;
@@ -148,7 +151,7 @@ int main( int argc, char** argv )
   Proton proton( myOptions.energy );
   proton.SetReferenceMomentum( myOptions.ratio*proton.ReferenceMomentum() );
 
-  { // TEST 1: propagation through rbend
+  { // rbend
   rbend magnet( "", myOptions.bodyLength
                   , myOptions.bendField
                   , myOptions.bendAngle );
@@ -174,9 +177,39 @@ int main( int argc, char** argv )
          << endl;
     ret = 2;
   }
-  } // End TEST 1
+  } // rbend
 
-  { // TEST 2: propagation through sbend
+
+  { // CF_rbend
+  CF_rbend magnet( "", myOptions.bodyLength
+                     , myOptions.bendField
+                     , myOptions.bendAngle/2.0 );
+  if( myOptions.ratio != 1 ) { magnet.setStrength( myOptions.ratio*magnet.Strength() ); }
+
+  proton.setStateToZero();
+  proton.set_ndp( myOptions.dpp );
+  double px = sin(myOptions.bendAngle/2.0);
+  proton.set_npx(px);
+  
+  cout << "CF_RBEND TEST" << endl;
+  cout << "Initial: " << proton.State() << endl;
+  magnet.propagate( proton );
+  cout << "Final  : " << proton.State() << endl;
+
+  if( 1.0e-14 < std::abs( proton.get_npx() + px ) ) {
+    cout <<   "*** FAILED *** "
+            "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+         << "\n*** FAILED *** : Failed CF_rbend test: 1.0e-14 < "
+         << std::abs( proton.get_npx() + px )
+         << "\n*** FAILED *** : Proton does not bend through correct angle."
+         << "\n*** FAILED *** "
+         << endl;
+    ret = 2;
+  }
+  } // CF_rbend
+
+
+  { // sbend
   sbend magnet( "", myOptions.arcLength
                   , myOptions.bendField*(1.+myOptions.dpp)
                   , myOptions.bendAngle );
@@ -200,7 +233,35 @@ int main( int argc, char** argv )
          << endl;
     ret = 3;
   }
-  } // End TEST 2
+  } // sbend
+
+
+  { // CF_sbend
+  CF_sbend magnet( "", myOptions.arcLength
+                     , myOptions.bendField*(1.+myOptions.dpp)
+                     , myOptions.bendAngle );
+  if( myOptions.ratio != 1 ) { magnet.setStrength( myOptions.ratio*magnet.Strength() ); }
+
+  proton.setStateToZero();
+  proton.set_ndp( myOptions.dpp );
+  
+  cout << "CF_SBEND TEST" << endl;
+  cout << "Initial: " << proton.State() << endl;
+  magnet.propagate( proton );
+  cout << "Final  : " << proton.State() << endl;
+
+  if( 1.0e-14 < std::abs( proton.get_npx() ) ) {
+    cout <<   "*** FAILED *** "
+            "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+         << "\n*** FAILED *** : Failed CF_sbend test: 1.0e-14 < "
+         << std::abs( proton.get_npx() )
+         << "\n*** FAILED *** : Proton does not bend through correct angle."
+         << "\n*** FAILED *** "
+         << endl;
+    ret = 2;
+  }
+  } // CF_sbend
+
 
   return ret;
 }
