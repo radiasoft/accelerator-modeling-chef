@@ -26,9 +26,6 @@
 ******                                                                
 ****** REVISION HISTORY 
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - added placeholder setLength and setStrength methods
-******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -89,22 +86,6 @@ Bend::~Bend()
 bool Bend::isMagnet() const
 {
   return true;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Bend::setStrength( double const& )
-{
-  // this should never be called. 
-  (*pcerr) <<   "*** WARNING ****: "
-              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void Bend::setStrength( double const& )" 
-              "\n*** WARNING ****: Attempt to explicitly set the strength of a Bend."
-              "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nonetheless... "
-              "\n*** WARNING ****: " 
-           << std::endl;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

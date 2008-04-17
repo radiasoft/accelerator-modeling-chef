@@ -10,9 +10,6 @@
 ******                                                                
 ****** REVISION HISTORY 
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - added placeholder setLength and setStrength methods
-******                                                                
 **************************************************************************
 *************************************************************************/
 
@@ -71,7 +68,6 @@ public:
 
   BendType getBendType() const;
 
-  void setStrength( double const& );
   void setLength( double const& );
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
