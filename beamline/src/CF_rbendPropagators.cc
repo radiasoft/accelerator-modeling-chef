@@ -21,12 +21,18 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******                                                                
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******
-******
+******  REVISION HISTORY:
+******  
+******  Apr 2008            michelotti@fnal.gov
+******  - bug fix: changed arguments sent to rbend constructors 
+******    in CF_rbend::Propagator::setup
+******  - bug fix: reduced length of separator element by two
+******  - nullified edge effects from internal bends.
+******    : edge effects to be handled by elements usedge and dsedge only
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -102,14 +108,22 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
   double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
   
-  Edge    usedge( "",   tan( arg.getEntryAngle()* field ) );  
-  rbend   usbend( "" , frontLength, field,  0.0,    arg.getEntryAngle(),  0.0               ); 
+  Edge       usedge( "",  tan( arg.getEntryAngle()*field ) );  
+  rbend      usbend( "" , frontLength, field,  0.0,    arg.getEntryFaceAngle(),  0.0                   ); 
+  rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      arg.getExitFaceAngle());
+  Edge       dsedge( "",  -tan( arg.getExitAngle()* field ) );  
 
-  rbend   dsbend( "",  frontLength, field,  0.0,    0.0,                  arg.getExitAngle());
-  Edge    dsedge( "",  -tan( arg.getExitAngle()* field ) );  
+  rbend   separator( "",  frontLength, field,  0.0,    0.0,                      0.0                   );
+  rbend        body( "",  sepLength,   field,  0.0,    0.0,                      0.0                   );
 
-  rbend   separator ( "",  2.0*frontLength, field,  0.0,     0.0,                  0.0     );
-  rbend   body      ( "",  sepLength,       field,  0.0,     0.0,                  0.0     );
+  usbend.nullEntryEdge();
+  usbend.nullExitEdge();
+  separator.nullEntryEdge();
+  separator.nullExitEdge();
+  dsbend.nullEntryEdge();
+  dsbend.nullExitEdge();
+  body.nullEntryEdge();
+  body.nullExitEdge();
 
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
@@ -139,7 +153,7 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
     bml_->append( ts       );
     bml_->append( tq       );
   
-    if ( i == n_-1) { 
+    if ( i == n_-1 ) { 
       bml_->append( dsbend );
       bml_->append( dsedge );
     } 
