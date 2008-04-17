@@ -25,8 +25,14 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******
-******
+******  REVISION HISTORY:
+******  
+******  Apr 2008            michelotti@fnal.gov
+******  - bug fix: changed arguments sent to sbend constructors 
+******    in CF_sbend::Propagator::setup
+******  - nullified edge effects from internal bends.
+******    : edge effects to be handled by elements usedge and dsedge only
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -93,7 +99,7 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
 
   if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
 
- //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
   //       the error when a magnet is split into 4 parts. See R. Talman 
   //         
@@ -106,16 +112,24 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
   
   Edge      usedge( "",   tan(arg.getEntryAngle())*field );  
-  sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length()) *arg.getBendAngle(), arg.getEntryAngle(), 0.0                ); 
-  sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length()) *arg.getBendAngle(), 0.0,                 arg.getExitAngle() );
+  sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                ); 
+  sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0,                 arg.getExitFaceAngle() );
   Edge      dsedge( "",  -tan(arg.getExitAngle())*field );  
-  sbend       body( "",   sepLength,     field, (     sepLength/arg.Length()) *arg.getBendAngle(), 0.0, 0.0 );
-  sbend  separator( "",   frontLength,   field, (   frontLength/arg.Length()) *arg.getBendAngle(), 0.0, 0.0 );
 
+  sbend  separator( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
+  sbend       body( "",   sepLength,       field, (  sepLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
+
+  usbend.nullEntryEdge();
+  usbend.nullExitEdge();
+  separator.nullEntryEdge();
+  separator.nullExitEdge();
+  dsbend.nullEntryEdge();
+  dsbend.nullExitEdge();
+  body.nullEntryEdge();
+  body.nullExitEdge();
 
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
-
  
   bml_ = BmlPtr( new beamline("CF_SBEND_INTERNALS") );
 
@@ -146,9 +160,9 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
       bml_->append( dsedge );
     } 
     else {
-      bml_->append( separator);
+      bml_->append( separator );
     }
- }
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
