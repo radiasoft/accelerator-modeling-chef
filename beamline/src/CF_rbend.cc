@@ -48,8 +48,11 @@
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
-******
-**************************************************************************
+****** - changed interpretation of "ang" argument to
+******   two constructors from "entry angle" to "bend angle,"
+******   in order to conform with usage in other bend constructors.
+****** 
+*************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
@@ -120,13 +123,13 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 CF_rbend::CF_rbend( char const*   nm,   // name
                     double const&        lng,  // length      [ meter    ]
                     double const&        fld,  // field       [ tesla    ]
-                    double const&        ang   // entry angle [ radians  ]
+                    double const&        ang   // bend angle  [ radians  ]
                     )
   : bmlnElmnt( nm, lng, fld ),
    usFaceAngle_(0.0),
    dsFaceAngle_(0.0),
-       usAngle_(ang),
-       dsAngle_(-ang),
+       usAngle_(ang/2.0),
+       dsAngle_(-ang/2.0),
     multipoles_()
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
@@ -158,17 +161,17 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_rbend::CF_rbend( const char*   nm,   // name
-                    double const&        lng,  // length      [meter]
-                    double const&        fld,  // field       [tesla]
-                    double const&        ang,  // entry angle [radians]
-                    double const&        us,   // upstream edge angle [radians]
-                    double const&        ds )  // downstream edge angle [radians] )
+CF_rbend::CF_rbend( const  char*   nm,   // name
+                    double const&  lng,  // length      [meter]
+                    double const&  fld,  // field       [tesla]
+                    double const&  ang,  // bend angle  [radians]
+                    double const&  us,   // upstream edge angle [radians]
+                    double const&  ds )  // downstream edge angle [radians] )
   : bmlnElmnt( nm, lng, fld ),
     usFaceAngle_(us),
     dsFaceAngle_(ds),
-    usAngle_(ang + us),
-    dsAngle_(-(ang + ds)),
+    usAngle_((ang/2.0) + us),
+    dsAngle_(-((ang/2.0) + ds)),
     multipoles_()
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  

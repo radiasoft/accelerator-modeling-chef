@@ -183,7 +183,7 @@ int main( int argc, char** argv )
   { // CF_rbend
   CF_rbend magnet( "", myOptions.bodyLength
                      , myOptions.bendField
-                     , myOptions.bendAngle/2.0 );
+                     , myOptions.bendAngle );
   if( myOptions.ratio != 1 ) { magnet.setStrength( myOptions.ratio*magnet.Strength() ); }
 
   proton.setStateToZero();

@@ -46,6 +46,9 @@
 ******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added placeholder setLength method
+****** - changed interpretation of "ang" argument to
+******   two constructors from "entry angle" to "bend angle,"
+******   in order to conform with usage in other bend constructors.
 ******
 **************************************************************************
 *************************************************************************/
@@ -91,10 +94,10 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   
   CF_rbend();
   CF_rbend( char const* name, double const& length, double const& field);
-  CF_rbend( char const* name, double const& length, double const& field, double const& usAngle);
+  CF_rbend( char const* name, double const& length, double const& field, double const& bendangle );
   CF_rbend( char const* name, double const& length, double const& field, double const& usFaceAngle, double const& dsFaceAngle);
-  CF_rbend( char const* name, double const& length, double const& field, double const& usAngle,
-                                                                         double const& usFaceAngle, double const& dsFaceAngle);     
+  CF_rbend( char const* name, double const& length, double const& field, double const& bendangle, 
+                                                                         double const& usFaceAngle, double const& dsFaceAngle);
 
   CF_rbend(CF_rbend const& );
 
