@@ -4,7 +4,7 @@
 // Author:        Leo Michelotti
 //
 // Revision date: Monday.    April  7, 2008.  (original version)
-//                Wednesday. April 16, 2008.  (current  version)
+//                Monday.    April 21, 2008.  (current  version)
 //
 ////////////////////////////////////////////////////////////
 //
@@ -34,6 +34,8 @@
 #include <beamline/octupole.h>
 #include <beamline/sbend.h>
 #include <beamline/rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/CF_rbend.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/RefRegVisitor.h>
@@ -61,7 +63,9 @@ struct Options
   double bendAngle;
   double bendField;
   int    order;
-  double mapTolerance;
+
+  std::vector<double> mapTolerance;
+  std::vector<double> sigma;
 
   Options( int, char**, int=0 );
 };
@@ -81,10 +85,24 @@ Options::Options( int argc, char** argv, int lastargs )
   , n(128)
   , bodyLength(2)
   , order(3)
-  , mapTolerance(1.0e-11)
 {
   Proton proton(100);
   proton.SetReferenceMomentum(pc);
+
+  double eps = 128.0*std::numeric_limits<double>::epsilon();
+  mapTolerance.push_back(eps);    // x
+  mapTolerance.push_back(eps);    // y
+  mapTolerance.push_back(eps);    // cdt
+  mapTolerance.push_back(eps);    // px/p
+  mapTolerance.push_back(eps);    // py/p
+  mapTolerance.push_back(eps);    // dp/p
+
+  sigma.push_back(0.001);  // x
+  sigma.push_back(0.001);  // y
+  sigma.push_back(0.001);  // cdt
+  sigma.push_back(0.001);  // px/p
+  sigma.push_back(0.001);  // py/p
+  sigma.push_back(0.001);  // dp/p
 
   energy     = proton.ReferenceEnergy();
   bendAngle  = M_TWOPI/n;
@@ -286,9 +304,11 @@ int testBendMap(  ElmPtr  const& oo0
 {
   int ret = 0;
 
-  bool is_sbend = 0 == strcmp( "sbend", oo0->Type() );
-  bool is_rbend = 0 == strcmp( "rbend", oo0->Type() );
-  if( !is_sbend && !is_rbend ) {
+  bool is_bend =    ( 0 == strcmp( "rbend"   , oo0->Type() ) )
+                 || ( 0 == strcmp( "sbend"   , oo0->Type() ) )
+                 || ( 0 == strcmp( "CF_rbend", oo0->Type() ) )
+                 || ( 0 == strcmp( "CF_sbend", oo0->Type() ) );
+  if( !is_bend ) {
     cout <<   "*** FAILED *** "
             "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
          << "\n*** FAILED *** : An impossibility has occurred."
@@ -386,12 +406,14 @@ int testBendMap(  ElmPtr  const& oo0
 
   JLterm termPtr;
   IntArray exps( diffMap[0].getEnvNumVar() );
-                                             
+
+  double scaler = 1;
   double ccc = 0;
   for(   int counter = 0
        ; counter < diffMap.Dim()
        ; ++counter ) {
     Jet zlorfik = diffMap[ counter ];
+    bool constTerm = true;
     for(   Jet::iterator iter = zlorfik.begin()
          ; iter != zlorfik.end()
          ; ++iter ) {
@@ -399,12 +421,34 @@ int testBendMap(  ElmPtr  const& oo0
       exps = termPtr.exponents( zlorfik.Env() );
       ccc  = termPtr.coefficient();
 
-      // NOTE: THIS TEST IS NOT ADEQUATE
-      //     : IT SHOULD BE REFINED
-      if( myOptions.mapTolerance < std::abs(ccc) ) { 
+      if( constTerm ) {
+        if( 0 != exps.Sum() ) {
+          cout <<   "*** FAILED *** "
+                  "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
+               << "\n*** FAILED *** : A serious mxyzptlk error occurred at map component "
+               <<                     counter
+               << "\n*** FAILED *** : The first term in the map had a non-zero exponent."
+               << "\n*** FAILED *** : This test will be aborted."
+               << "\n*** FAILED *** : "
+               << endl;
+          return 999;
+        }
+        scaler = 1;
+        constTerm = false;
+      }
+      else {
+        for( int k = 0; k < exps.Dim(); ++k ) {
+          if( 0 != exps[k] ) { scaler *= pow(myOptions.sigma[k],exps[k]); }
+        }
+        scaler /= myOptions.sigma[counter];
+      }
+
+      if( myOptions.mapTolerance[counter] < std::abs(scaler*ccc) ) { 
         cout <<   "*** FAILED *** "
                 "\n*** FAILED *** : " << __FILE__ << ", line " << __LINE__
-             << "\n*** FAILED *** : Failed difference; at exponent "
+             << "\n*** FAILED *** : Map component "
+             <<                     counter
+             <<                   " failed difference:  at exponent "
              <<                     exps
              <<                     " the coefficient = "
              <<                     ccc
@@ -416,7 +460,7 @@ int testBendMap(  ElmPtr  const& oo0
       }
     }
   }
-  
+
   return ret;
 }
 
@@ -589,6 +633,75 @@ int main( int argc, char** argv )
   ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
   ret += testBendMap( oo0, oo1, oo2, myOptions );
   } // rbend
+
+
+  { // CF_rbend
+  cout << "\n\n--- TESTING CF_RBEND ---"
+            "\n--- WITH PARALLEL EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new CF_rbend ( "", myOptions.bodyLength
+                                 , myOptions.bendField
+                                 , myOptions.bendAngle ) );
+
+  Proton proton( myOptions.energy );
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  {
+  RefRegVisitor rrv( proton );
+  oo0->accept(rrv);
+  }
+  proton.setStateToZero();
+
+
+  oo0->Split( myOptions.pct, oo1, oo2 );
+
+
+  proton.set_npx( sin(myOptions.bendAngle/2.0) );
+  {
+  RefRegVisitor rrv( proton );
+  oo1->accept(rrv);
+  oo2->accept(rrv);
+  }
+  proton.setStateToZero();
+
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testBendMap( oo0, oo1, oo2, myOptions );
+  } // CF_rbend
+
+
+  { // CF_sbend
+  cout << "\n\n--- TESTING CF_SBEND ---"
+            "\n--- WITH NORMAL ENTRY EDGES ---\n"
+       << endl;
+  oo0 = ElmPtr( new CF_sbend ( "", myOptions.arcLength
+                                 , myOptions.bendField
+                                 , myOptions.bendAngle
+                                 , 0
+                                 , 0 ) );
+
+  Proton proton( myOptions.energy );
+  {
+  RefRegVisitor rrv( proton );
+  oo0->accept(rrv);
+  }
+  proton.setStateToZero();
+
+
+  oo0->Split( myOptions.pct, oo1, oo2 );
+
+
+  {
+  RefRegVisitor rrv( proton );
+  oo1->accept(rrv);
+  oo2->accept(rrv);
+  }
+  proton.setStateToZero();
+
+  ret += testLengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testStrengths( oo0, oo1, oo2, myOptions.pct );
+  ret += testBendMap( oo0, oo1, oo2, myOptions );
+  } // CF_sbend
+
 
   return ret;
 }

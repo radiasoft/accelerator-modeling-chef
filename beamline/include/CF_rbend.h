@@ -49,6 +49,8 @@
 ****** - changed interpretation of "ang" argument to
 ******   two constructors from "entry angle" to "bend angle,"
 ******   in order to conform with usage in other bend constructors.
+****** - added member functions to nullify edge effects
+******   : used by CF_rbend::Split
 ******
 **************************************************************************
 *************************************************************************/
@@ -138,6 +140,9 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   double getEntryAngle()    const;
   double  getExitAngle()    const;
+
+  void nullExitEdge();
+  void nullEntryEdge();
 
   void setPoleFaceAngle( Particle const& p );
 

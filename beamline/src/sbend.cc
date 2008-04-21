@@ -424,7 +424,16 @@ bool sbend::isMagnet() const
 
 void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
+  // Preliminary tests ...
+  // -----------------------------
   alignmentData ald( Alignment() );
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic << "Requested percentage = " << pc << "; should be in [0,1].";
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+           uic.str().c_str() ) );
+  }
 
   if( 0. != ald.xOffset || 0. != ald.yOffset ) {
     if( !hasParallelFaces() ) {
