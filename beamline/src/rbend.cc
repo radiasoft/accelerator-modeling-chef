@@ -83,8 +83,6 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
-#include <beamline/marker.h>
-#include <beamline/Edge.h>
 #include <beamline/rbend.h>
 #include <beamline/beamline.h>
 #include <beamline/RBendPropagators.h>
@@ -92,6 +90,8 @@
 #include <beamline/JetParticle.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
+#include <beamline/marker.h>
+#include <beamline/Edge.h>
 
 using namespace std;
 using FNAL::pcout;
@@ -405,14 +405,11 @@ bool rbend::isMagnet() const
   return true;
 }
 
-#if 1
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// NEW VERSION BEGINS HERE
 
 void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
-  // -----------------------------
   // Preliminary tests ...
   // -----------------------------
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
@@ -454,7 +451,6 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   //          incorporated in upstream and downstream edge elements. 
   //          It will *fail* when the propagator that assumes otherwise. 
   //--------------------------------------------------------------------
-
   // .. Check for the presence of a nested beamline with 3 elements ... 
   // ---------------------------------------------------------------
   bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
@@ -497,88 +493,6 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
 }
-
-
-#endif
-#if 0
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// CURRENT VERSION BEGINS HERE
-
-void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
-{
-  // -----------------------------
-  // Preliminary tests ...
-  // -----------------------------
-
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
-           uic.str().c_str() ) );
-  }
-
-  alignmentData ald( Alignment() );
-  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
-      && ( !hasParallelFaces()                    ) ) {
-    ostringstream uic;
-    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
-            "\nwith an Alignment struct.  That rolls are allowed in such"
-            "\ncases is only a matter of courtesy. This is NOT encouraged!";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
-           uic.str().c_str() ) );
-  }
-
-  static bool firstTime = true;
-  if( firstTime ) {
-    firstTime = false;
-    (*pcerr) << "\n"
-            "\n*** WARNING ***"
-            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
-            "\n*** WARNING *** "
-         << endl;
- }
-
- // -------------------------------------------------------------------
- // WARNING: The following code assumes that an sbend element
- //          is modeled with a nested beamline, whith edge effects 
- //          incorporated in upstream and downstream edge elements. 
- //          Il will *fail* when the propagator that assumes otherwise. 
- //--------------------------------------------------------------------
-
- // .. Check for the presence of a nested beamline with 3 elements ... 
-
-  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
-  
-  if ( !valid_nested_beamline) { 
-       throw GenericException( __FILE__, __LINE__, 
-         "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
-         "Error: Cannot split: incompatible or missing nested beamline.");
-  }
-
-  
-  // FIXME:  usFaceAngle_ is no necessarily equal to -dsFaceAngle_ !
-
-  RBendPtr rb_a( new rbend( "", length_*pc,       strength_,  angle_*pc,         usFaceAngle_,  usAngle_, 0.0     ) ); 
-  RBendPtr rb_b( new rbend( "", length_*(1.0-pc), strength_,  angle_*(1.0-pc),   usFaceAngle_,  0.0,      dsAngle_) );   
-
-  rb_a->rename( ident_ + string("_1") );
-  rb_b->rename( ident_ + string("_2") );
-
-  rb_a->setAlignment( ald );
-  rb_b->setAlignment( ald );
-
-  a = rb_a;
-  b = rb_b;
-
-}
-
-#endif
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -700,7 +614,8 @@ double rbend::setExitAngle( double const& phi /* radians */ )
 
 bool rbend::hasParallelFaces() const
 {
-  return ( std::abs( usFaceAngle_ + dsFaceAngle_ ) <  1.0e-9 );
+  return (    (std::abs(usFaceAngle_) < 1.0e-9) 
+           && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -708,7 +623,8 @@ bool rbend::hasParallelFaces() const
 
 bool rbend::hasStandardFaces() const
 {
-  return ( (std::abs(usFaceAngle_) < 1.0e-9) && (std::abs(dsFaceAngle_) < 0.5e-9) );
+  return (    (std::abs(usFaceAngle_) < 1.0e-9) 
+           && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
