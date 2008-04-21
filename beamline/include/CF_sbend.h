@@ -47,6 +47,8 @@
 ******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added placeholder setLength method
+****** - added member functions to nullify edge effects
+******   : used by CF_sbend::Split
 ******
 **************************************************************************
 *************************************************************************/
@@ -173,6 +175,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   // NOT the integrated dipole field.
 
   double const& getBendAngle()   const { return angle_; }
+
+  void nullExitEdge();
+  void nullEntryEdge();
 
  private:
 
