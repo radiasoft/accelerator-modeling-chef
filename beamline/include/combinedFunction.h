@@ -87,6 +87,8 @@ public:
 
   combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
   void append(bmlnElmnt&);
 
   double AdjustPosition( Particle    const& );

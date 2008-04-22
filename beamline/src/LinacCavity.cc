@@ -91,6 +91,7 @@
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
+#include <beamline/marker.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -300,37 +301,20 @@ bool LinacCavity::wakeOn() const
   return boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->wakeOn( *this );
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+void LinacCavity::Split( double const&, ElmPtr& a, ElmPtr& b ) const
 {
-  //----------------------------------------------------------------------
-  // For a LinacCavity, strength_ represents the integrated strength 
-  // Splitting the cavity results in different value of strength_ both 
-  // each part.
-  //----------------------------------------------------------------------
-
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
-           uic.str().c_str() ) );
-  }
-
-  a = LinacCavityPtr( Clone() );
-  b = LinacCavityPtr( Clone() );
-
-  a->rename( Name() + string("_1") );
-  b->rename( Name() + string("_2") );
-  
-  a->setStrength( pc*Strength() );
-  a->setLength(   pc*Length()   );
-
-  b->setStrength( (1.0 - pc)*Strength() );
-  b->setLength(   (1.0 - pc)*Length()   );
-
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const"
+              "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
+              "\n*** WARNING ****: A marker and a clone of the original object will be returned."
+              "\n*** WARNING ****: " 
+           << std::endl;
+  a = ElmPtr( new marker("PLACEHOLDER") );
+  b = ElmPtr( Clone() );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
