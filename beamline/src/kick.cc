@@ -304,6 +304,7 @@ void hkick::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 void hkick::localPropagate( Particle& p) 
 { 
   (*propagator_)(*this,p);
@@ -461,6 +462,19 @@ double kick::getVerStrength() const
 {
   return   vh_ratio_*strength_; 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+// NOTE: 
+// NOTE: The base class bmlnElmnt::setLength(..) method is purposely
+// NOTE: NOT overridden.  Doing so would mean rescaling the strength of
+// NOTE: the kick, which violates the concept that a "kick" is a 
+// NOTE: fictitious element that provides a predefined change in
+// NOTE: transverse momentum.
+// NOTE: 
+// NOTE: Leo Michelotti
+// NOTE: 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -483,7 +483,6 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
   // -----------------------------------------------------------------
   a->setAlignment( ald );
   b->setAlignment( ald );
