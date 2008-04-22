@@ -466,6 +466,19 @@ double kick::getVerStrength() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+// NOTE: 
+// NOTE: The base class bmlnElmnt::setLength(..) method is purposely
+// NOTE: NOT overridden.  Doing so would mean rescaling the strength of
+// NOTE: the kick, which violates the concept that a "kick" is a 
+// NOTE: fictitious element that provides a predefined change in
+// NOTE: transverse momentum.
+// NOTE: 
+// NOTE: Leo Michelotti
+// NOTE: 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* kick::Type() const 
 { 
   return "kick"; 

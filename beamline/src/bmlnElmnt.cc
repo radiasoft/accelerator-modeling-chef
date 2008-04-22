@@ -448,25 +448,34 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 
 void bmlnElmnt::setLength( double const& x ) 
 {
-  static bool firstTime = true;
-
   if( length_ > 0 ) {
     double oldLength = length_;
 
-    if( x < 0.0 ) {
+    if( x > 0 ) {
+      length_ = x;
+    }
+    else if( x < 0 ) {
       (*pcerr) << "*** WARNING *** "
                 "\n*** WARNING *** bmlnElmnt::setLength"
                 "\n*** WARNING *** Lengths must be positive."
-                "\n*** WARNING *** You have entered"
-           << x 
-           <<   "\n*** WARNING *** I will use its absolute value."
+                "\n*** WARNING *** You have entered length " << x 
+           <<                    " for " << Type() << "  " << Name()
+           <<   "\n*** WARNING *** The absolute value will be used."
                 "\n*** WARNING *** "
            << endl;
       length_ = -x;
     }
     else {
-      length_ = x;
+      (*pcerr) << "*** WARNING *** "
+                "\n*** WARNING *** bmlnElmnt::setLength"
+                "\n*** WARNING *** Lengths must be positive."
+                "\n*** WARNING *** You have entered length " << x 
+           <<                    " for " << Type() << "  " << Name()
+           <<   "\n*** WARNING *** No change will be made."
+                "\n*** WARNING *** "
+           << endl;
     }
+
 
     // ??? I am unsure whether it is better to do this      ???
     // ??? here or to zero ctRef_ and REQUIRE another pass  ???
@@ -476,19 +485,14 @@ void bmlnElmnt::setLength( double const& x )
   }
 
   else {
-    if( firstTime ) {
-      (*pcerr) <<   "*** WARNING *** "
-                  "\n*** WARNING *** bmlnElmnt::setLength"
-                  "\n*** WARNING *** Attempt made to change the length of a "
-                  "\n*** WARNING *** thin (i.e. zero length) element: "
-               << Type() << "  " << Name()
-               << "\n*** WARNING *** No change has been made."
-                  "\n*** WARNING *** "
-                  "\n*** WARNING *** This warning is printed only once."
-                  "\n*** WARNING *** "
-           << endl;
-      firstTime = false;
-    }
+    (*pcerr) <<   "*** WARNING *** "
+                "\n*** WARNING *** bmlnElmnt::setLength"
+                "\n*** WARNING *** Attempt made to change the length of a "
+                "\n*** WARNING *** thin (i.e. zero length) element: "
+             << Type() << "  " << Name()
+             << "\n*** WARNING *** No change will be made."
+                "\n*** WARNING *** "
+         << endl;
   }
 }
 
@@ -1215,7 +1219,8 @@ Aperture* bmlnElmnt::getAperture() {
 
 void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
-
+  // Preliminary tests ...
+  // -----------------------------
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
@@ -1224,8 +1229,15 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
            uic.str().c_str() ) );
   }
 
+  //-----------------------------------------------------------------------------
+
   a = ElmPtr( Clone() );
   b = ElmPtr( Clone() );
+
+  // ---------------------------------------------
+  // Note: cloning should set the alignment struct
+  // via the bmlnElmnt copy constructor.  (see above)
+  // ---------------------------------------------
 
   a->ident_ = ident_ + string("_1") ;
   b->ident_ = ident_ + string("_2") ;
