@@ -91,6 +91,8 @@ public:
   rfcavity* Clone() const { return new rfcavity( *this ); }
  ~rfcavity();
 
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
   void localPropagate(         Particle& );
   void localPropagate(      JetParticle& );
   void localPropagate(    ParticleBunch& );

@@ -83,6 +83,8 @@ public:
 
  ~sector();
 
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
   Mapping const& getMap()    const;
   Matrix         getMatrix() const;
 
