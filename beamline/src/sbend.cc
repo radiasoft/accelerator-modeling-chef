@@ -426,7 +426,6 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
   // Preliminary tests ...
   // -----------------------------
-  alignmentData ald( Alignment() );
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
@@ -435,6 +434,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
            uic.str().c_str() ) );
   }
 
+  alignmentData ald( Alignment() );
   if( 0. != ald.xOffset || 0. != ald.yOffset ) {
     if( !hasParallelFaces() ) {
       ostringstream uic;
@@ -497,7 +497,6 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
   // -----------------------------------------------------------------
   a->setAlignment( ald );
   b->setAlignment( ald );
