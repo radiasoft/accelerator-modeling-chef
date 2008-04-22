@@ -137,13 +137,15 @@ void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const
 {
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void combinedFunction::Split( double const&, ElmPtr&, ElmPtr& ) const"
+           << "\n*** WARNING ****: void " << Type() << "::Split( double const&, ElmPtr&, ElmPtr& ) const"
               "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
-              "\n*** WARNING ****: A marker and a clone of the original object will be returned."
               "\n*** WARNING ****: " 
            << std::endl;
-  a = ElmPtr( new marker("PLACEHOLDER") );
-  b = ElmPtr( Clone() );
+  ostringstream uic;
+  uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+         "void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const", 
+         uic.str().c_str() ) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
