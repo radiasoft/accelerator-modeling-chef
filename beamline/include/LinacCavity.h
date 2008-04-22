@@ -77,6 +77,8 @@ public:
   LinacCavity* Clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
 
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
   void   setWakeOn( bool );
   bool   wakeOn() const;
 
@@ -102,9 +104,6 @@ public:
 
   const char* Type() const;
   bool    isMagnet() const;
-
- 
-  void Split( double const& pc, ElmPtr& a, ElmPtr& b ) const;
 
 private:
 

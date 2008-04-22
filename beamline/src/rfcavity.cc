@@ -58,6 +58,7 @@
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/RefRegVisitor.h>
+#include <beamline/marker.h>
 
 using namespace std;
 using FNAL::pcerr;
@@ -125,6 +126,22 @@ rfcavity::rfcavity( rfcavity const& x )
 rfcavity::~rfcavity()
 {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::Split( double const&, ElmPtr& a, ElmPtr& b ) const
+{
+  (*pcerr) <<   "*** WARNING ****: "
+              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** WARNING ****: void rfcavity::Split( double const&, ElmPtr&, ElmPtr& ) const"
+              "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
+              "\n*** WARNING ****: A marker and a clone of the original object will be returned."
+              "\n*** WARNING ****: " 
+           << std::endl;
+  a = ElmPtr( new marker("PLACEHOLDER") );
+  b = ElmPtr( Clone() );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
