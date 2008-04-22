@@ -250,7 +250,7 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
+  // -----------------------------------------------------------------
   a->setAlignment( Alignment() );
   b->setAlignment( Alignment() );
 

@@ -39,7 +39,7 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-****** 
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
 ****** 
@@ -225,7 +225,7 @@ void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
-  //   : the entire XXX::Split strategy should be/is being overhauled.
+  // -----------------------------------------------------------------
   a->setAlignment( Alignment() );
   b->setAlignment( Alignment() );
 
