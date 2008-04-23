@@ -34,12 +34,10 @@
 ******                                                                
 ******
 ****** Sep 2006    Jean-Francois Ostiguy ostiguy@fnal.gov
-******
 ****** - eliminated redundant (and dangerous) c-style hard casts
 ******   (dlist*) this  [ where this is a beamline * ]                    
 ****** 
 ****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
-******
 ****** - beamline: decoupled list container from public interface
 ******             now using std::list<> instead of dlist                                                   
 ****** - introduced new iterators with stl-compatible interface                                                                
@@ -47,7 +45,6 @@
 ******   DeepBeamlineIterator etc ..
 ******
 ****** Jan-Mar 2007  ostiguy@fnal.gov
-******
 ****** - added support for reference counted elements 
 ****** - eliminated unneeded dynamic casts             
 ******
@@ -59,6 +56,9 @@
 ****** - eliminated find( ..):    use stl::algorithm instead 
 ****** - eliminated replace/deepReplace
 ******        
+******  Apr 2008     michelotti@fnal.gov
+******  - additional argument list for beamline::InsertElementsFromList(..)
+******
 **************************************************************************
 *************************************************************************/
 
@@ -84,6 +84,186 @@ using namespace boost;
 using FNAL::pcerr;
 using FNAL::pcout;
 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+namespace {
+
+template<int USELENGTH>
+void iefl(  beamline* invoker
+          , Particle const& particle
+          , double& s
+          , std::list<std::pair<ElmPtr,double> >& inList )
+{
+ static const ElmPtr null;
+
+ beamline::iterator bml_iter = invoker->begin();
+
+ ElmPtr  p_be   = ( bml_iter == invoker->end() ) ? null : *bml_iter;
+
+ ElmPtr p_be_a;
+ ElmPtr p_be_b;
+
+ std::pair<ElmPtr,double>  p_ile = inList.front();  // top element; not removed
+
+ bool   firstWarning = true;
+
+ if( !p_be ) {
+  (*pcerr) << "\n*** WARNING *** "
+              "\n*** WARNING *** beamline::InsertElementsFromList(...)"
+              "\n*** WARNING *** The beamline is empty! "
+              "\n*** WARNING *** Nothing will be done. "
+              "\n*** WARNING *** "
+           << endl;
+  return;
+ }
+
+ if( ! (p_ile.first) ) {
+  (*pcerr) << "\n*** WARNING *** "
+              "\n*** WARNING *** beamline::InsertElementsFromList(...)"
+              "\n*** WARNING *** The list is empty! "
+              "\n*** WARNING *** Nothing will be done. "
+              "\n*** WARNING *** "
+       << endl;
+  return;
+ }
+
+
+ #if USELENGTH
+ #else
+ Particle lparticle(particle);
+ #endif
+
+ while( p_be && (p_ile.first) ) {
+  #if USELENGTH
+  double localLength = p_be->Length();
+  #else
+  double localLength = p_be->OrbitLength( lparticle );
+  #endif
+
+  if( typeid(*p_be) == typeid(beamline) )  {
+    #if USELENGTH
+    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList(s, inList );
+    #else
+    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( lparticle, s, inList );
+    #endif
+
+    p_ile = inList.front();   // this may have changed
+    ++bml_iter; 
+    p_be = (bml_iter == invoker->end()) ? null : *bml_iter; 
+  }
+
+  else if ( s + localLength <= p_ile.second )  {
+    s += localLength;
+    ++bml_iter; 
+    p_be = (bml_iter == invoker->end()) ? null : *bml_iter;     
+  }
+
+  else if ( s == p_ile.second ) {
+    invoker->putAbove( bml_iter, p_ile.first );
+    inList.pop_front();             // removes top element
+    if (inList.empty() ) break;
+    p_ile = inList.front();         // accesses new top element
+
+  }
+
+  else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
+    #if USELENGTH
+    bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList );
+    #else
+    bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( lparticle, s, inList );
+    #endif
+    p_ile = inList.front();     // this may have changed
+
+    ++bml_iter; 
+    p_be = (bml_iter == invoker->end()) ? null : *bml_iter;     
+
+    if( firstWarning ) {
+      (*pcerr) << "\n*** WARNING:                                   *** "
+                  "\n*** WARNING: Insertion into a combinedFunction *** "
+                  "\n*** WARNING: element will hide what is being   *** "
+                  "\n*** WARNING: inserted.                         *** "
+                  "\n*** WARNING:                                   *** "
+               << endl;
+      firstWarning = false;
+    }
+  }
+
+  else if ( ( p_ile.second > s ) && ( p_ile.second < s + localLength ) )  {
+    p_be->Split( ( p_ile.second - s )/localLength, p_be_a,  p_be_b );
+
+    invoker->putAbove( bml_iter, p_be_a      );
+    invoker->putAbove( bml_iter, p_ile.first );
+    invoker->putAbove( bml_iter, p_be_b      );
+
+    #if USELENGTH
+    s += ( p_be_a->Length() + p_ile.first->Length() );
+    #else
+    s += ( p_be_a->OrbitLength( lparticle ) + p_ile.first->OrbitLength( lparticle ) );
+    #endif
+
+    p_be = p_be_b;
+
+    bml_iter = invoker->erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+
+    inList.pop_front();                       // removes top element
+    if (inList.empty() ) break;
+    p_ile = inList.front();                   // accesses new top element
+
+    --bml_iter;                               // now points to p_be_b 
+  }
+
+  else {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** beamline::InsertElementsFromList( s, list ) "
+                "\n*** WARNING *** The impossible has happened at "
+                "\n*** WARNING *** s = " << s
+             << "\n*** WARNING *** and element: " << p_be->Type() << "  " 
+                                                  << p_be->Name()
+             << "\n*** WARNING *** "
+             << endl;
+    (*pcerr) << "Here are the tests:\n";
+    (*pcerr) << "else if ( s + localLength <= p_ile.second )\n"
+         << "else if ( " << setprecision(10) << ( s + localLength )
+         << " <= "       << setprecision(10) << ( p_ile.second )
+         << " )\n";
+    (*pcerr) << "else if ( s == p_ile->second )\n"
+         << "else if ( " << setprecision(10) << s 
+         << " == "       << setprecision(10) << p_ile.second 
+         << " )\n";
+    (*pcerr) << "else if (  typeid(*p_be) == typeid(combinedFunction)  )\n"
+         << "else if (  "
+         << typeid(*p_be).name()
+         << " == "
+         << typeid(combinedFunction).name()
+         << "  )\n";
+    (*pcerr) << "else if ( ( s < p_ile->second ) && ( p_ile->second < s + localLength ) )\n"
+         << "else if ( ( " << setprecision(10) << s 
+         << " < "          << setprecision(10) << p_ile.second 
+         << " ) && ( "     << setprecision(10) << p_ile.second 
+         << " < "          << setprecision(10) << ( s + localLength )
+         << " ) )\n";
+
+    s += localLength;
+    ++bml_iter;
+    p_be =  ( bml_iter == invoker->end() ) ? null: *bml_iter;
+  }
+ }
+}
+
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void iefl<0>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
+template void iefl<1>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
+
+#endif
+
+} // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -512,157 +692,20 @@ void beamline::append( bmlnElmnt const& elm )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList)
+void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
-
- static const ElmPtr null;
-
- beamline::iterator bml_iter = begin();
-
- ElmPtr  p_be   = ( bml_iter == end() ) ? null : *bml_iter;
-
- ElmPtr p_be_a;
- ElmPtr p_be_b;
-
- std::pair<ElmPtr,double>  p_ile = inList.front();  // top element; not removed
-
- bool   firstWarning = true;
-
- if( !p_be ) {
-  (*pcerr) << "\n"
-          "*** WARNING ***                                     \n"
-          "*** WARNING *** beamline::InsertElementsFromList( s_0, list ) \n"
-          "*** WARNING *** The beamline is empty!              \n"
-          "*** WARNING *** Nothing will be done.               \n"
-          "*** WARNING ***                                     \n"
-       << endl;
-  return;
- }
-
- if( ! (p_ile.first) ) {
-  (*pcerr) << "\n"
-          "*** WARNING ***                                     \n"
-          "*** WARNING *** beamline::InsertElementsFromList( s_0, list ) \n"
-          "*** WARNING *** The list is empty!                  \n"
-          "*** WARNING *** Nothing will be done.               \n"
-          "*** WARNING ***                                     \n"
-       << endl;
-  return;
- }
+  ::iefl<0>(this,particle,s,inList);
+}
 
 
- Particle lparticle(particle);
-
- while( p_be && (p_ile.first) ) {
-
-  if( typeid(*p_be) == typeid(beamline) ) {
-
-    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( lparticle, s, inList );
-
-    p_ile = inList.front();   // this may have changed
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter; 
-  }
-
-  else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second ) {
-
-    s += p_be->OrbitLength( lparticle );
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter;     
-  }
-
-  else if ( s == p_ile.second ) {
-
-    putAbove( bml_iter, p_ile.first );
-    inList.pop_front();             // removes top element
-    if (inList.empty() ) break;
-    p_ile = inList.front();         // accesses new top element
-
-  }
-
-  else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
-
-    p_be->bml_->InsertElementsFromList( lparticle, s, inList );
-    p_ile = inList.front();     // this may have changed
-
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter;     
-
-    if( firstWarning ) {
-      (*pcerr) << "\n*** WARNING:                                   *** "
-                   "\n*** WARNING: Insertion into a combinedFunction *** "
-                   "\n*** WARNING: element will hide what is being   *** "
-                   "\n*** WARNING: inserted.                         *** "
-                   "\n*** WARNING:                                   *** "
-               << endl;
-      firstWarning = false;
-    }
-  }
-
-  else if ( ( p_ile.second > s ) && ( p_ile.second < s + p_be->OrbitLength( lparticle ) ) )  {
-
-    p_be->Split( ( p_ile.second - s )/p_be->OrbitLength( lparticle ), p_be_a,  p_be_b );
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-    putAbove( bml_iter, p_be_a      );
-    putAbove( bml_iter, p_ile.first );
-    putAbove( bml_iter, p_be_b      );
-
-    s += ( p_be_a->OrbitLength( lparticle ) + p_ile.first->OrbitLength( lparticle ) );
-
-  
-    p_be = p_be_b;
-
-    bml_iter = erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
-
-    inList.pop_front();                       // removes top element
-    if (inList.empty() ) break;
-    p_ile = inList.front();                   // accesses new top element
-
-    --bml_iter;                               // now points to p_be_b 
-
-  }
-
-  else {
-    (*pcerr) << "\n"
-            "*** WARNING ***                                     \n"
-            "*** WARNING *** beamline::InsertElementsFromList( s, list ) \n"
-            "*** WARNING *** The impossible has happened at      \n"
-            "*** WARNING ***                                     \n"
-            "*** WARNING *** s = " << s << "                     \n"
-            "*** WARNING ***                                     \n"
-            "*** WARNING *** and element: " << p_be->Type() << "  " 
-                                            << p_be->Name() << " \n"
-            "*** WARNING ***                                     \n"
-         << endl;
-
-    (*pcerr) << "Here are the tests:\n";
-   (*pcerr) << "else if ( s + p_be->OrbitLength( lparticle ) <= p_ile.second )\n"
-         << "else if ( " << setprecision(10) << ( s + p_be->OrbitLength( lparticle ) )
-         << " <= "       << setprecision(10) << ( p_ile.second )
-         << " )\n";
-    (*pcerr) << "else if ( s == p_ile->second )\n"
-         << "else if ( " << setprecision(10) << s 
-         << " == "       << setprecision(10) << p_ile.second 
-         << " )\n";
-    (*pcerr) << "else if ( p_be->bml_ )\n"
-         << "else if ( " << p_be->bml_ << " )\n";
-    (*pcerr) << "else if ( ( s < p_ile->second ) && ( p_ile->second < s + p_be->OrbitLength( lparticle ) ) )\n"
-         << "else if ( ( " << setprecision(10) << s 
-         << " < "          << setprecision(10) << p_ile.second 
-         << " ) && ( "     << setprecision(10) << p_ile.second 
-         << " < "          << setprecision(10) << ( s + p_be->OrbitLength( lparticle ) )
-         << " ) )\n";
-
-
-    s += p_be->OrbitLength( lparticle );
-
-    ++bml_iter;
-    p_be =  ( bml_iter == end() ) ? null: *bml_iter;
-
-  }
- }
-
+void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList )
+{
+  Proton placeholder(200);  // unused, placeholder, dummy proton
+  ::iefl<1>(this,placeholder,s,inList);
 }
 
 

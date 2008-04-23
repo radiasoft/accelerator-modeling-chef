@@ -24,11 +24,10 @@
 ******  Author: Leo Michelotti 
 ******          michelotti@fnal.gov
 ******
-*******  REVISION HISTORY
+******  REVISION HISTORY
 ******
 ******  October 2006: Jean-Francois Ostiguy 
 ******                ostiguy@fnal.gov
-******
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
@@ -37,13 +36,17 @@
 ******
 ******  Jan - Mar 2007:  Jean-Francois Ostiguy 
 ******                   ostiguy@fnal.gov
+******  - support for reference counted elements
 ******
-****** - support for reference counted elements
-******  July 2007        ostiguy@fnal.gov
-****** - eliminated nested functor predicate and action classes  
-******  Dec 2007        ostiguy@fnal.gov
-****** - support for JetParticle bunch
-**************************************************************************
+******  Jul 2007         ostiguy@fnal.gov
+******  - eliminated nested functor predicate and action classes  
+******
+******  Dec 2007         ostiguy@fnal.gov
+******  - support for JetParticle bunch
+******
+******  Apr 2008         michelotti@fnal.gov
+******  - additional argument list for beamline::InsertElementsFromList(..)
+******
 **************************************************************************
 *************************************************************************/
 
@@ -177,24 +180,26 @@ public:
                                        // s_0 = 0, but s_0 is included so the
                                        // module can be used recursively.
 
-   void InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList);
-                                      // Will insert elements from the list into
-                                      // the beamline at locations specified in
-                                      // the list.  
+   void InsertElementsFromList(                  double& s, std::list<std::pair<ElmPtr,double> >& inList );
+   void InsertElementsFromList( Particle const&, double& s, std::list<std::pair<ElmPtr,double> >& inList );
+                                       // Both methods insert elements from the list into
+                                       // the beamline (in place) at locations specified in
+                                       // the list.  The only difference in behavior arises
+                                       // from using bmlnElmmnt::OrbitLength(Particle const&)
+                                       // rather than  bmlnElmnt::Length() in the second form
+                                       // when distributing the elements.
 
-
-
-  int startAt( ConstElmPtr const&,      // Resets the "beginning" of the
-               int = 1 );               // beamline to the element given
-                                        // by the argument. Should be used
-                                        // only for rings. Returns non-zero
-                                        // if error occurs (esp., no such
-                                        // element. The optional integer
-                                        // argument allows one to reset to
-                                        // nth occurrence of the element.
-  int startAt( const char*,             // Resets the "beginning" of the
-               int = 1 );               // beamline to the element whose
-                                        // name is given by the argument.
+  int startAt( ConstElmPtr const&,     // Resets the "beginning" of the
+               int = 1 );              // beamline to the element given
+                                       // by the argument. Should be used
+                                       // only for rings. Returns non-zero
+                                       // if error occurs (esp., no such
+                                       // element. The optional integer
+                                       // argument allows one to reset to
+                                       // nth occurrence of the element.
+  int startAt( const char*,            // Resets the "beginning" of the
+               int = 1 );              // beamline to the element whose
+                                       // name is given by the argument.
 
 
   sector*  makeSector ( iterator pos1, iterator pos2,  int degree, JetParticle& )  const;  //  sector equivalent to [ pos1, pos2 )
