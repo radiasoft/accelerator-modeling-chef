@@ -557,7 +557,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
   if( typeid(*p_be) == typeid(beamline) ) {
 
-    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList(particle, s, inList );
+    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( lparticle, s, inList );
 
     p_ile = inList.front();   // this may have changed
     ++bml_iter; 
@@ -582,7 +582,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
   else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
 
-    p_be->bml_->InsertElementsFromList( particle, s, inList );
+    p_be->bml_->InsertElementsFromList( lparticle, s, inList );
     p_ile = inList.front();     // this may have changed
 
     ++bml_iter; 
