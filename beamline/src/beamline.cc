@@ -56,8 +56,8 @@
 ****** - eliminated find( ..):    use stl::algorithm instead 
 ****** - eliminated replace/deepReplace
 ******        
-******  Apr 2008     michelotti@fnal.gov
-******  - additional argument list for beamline::InsertElementsFromList(..)
+****** Apr 2008     michelotti@fnal.gov
+****** - additional argument list for beamline::InsertElementsFromList(..)
 ******
 **************************************************************************
 *************************************************************************/
@@ -90,8 +90,8 @@ using FNAL::pcout;
 
 namespace {
 
-template<int USELENGTH>
 void iefl(  beamline* invoker
+          , bool USELENGTH
           , Particle const& particle
           , double& s
           , std::list<std::pair<ElmPtr,double> >& inList )
@@ -130,24 +130,24 @@ void iefl(  beamline* invoker
  }
 
 
- #if USELENGTH
- #else
- Particle lparticle(particle);
- #endif
+ Particle lparticle(particle);  // May just be dummy particle, but that's okay.
+ double localLength = 0;
 
  while( p_be && (p_ile.first) ) {
-  #if USELENGTH
-  double localLength = p_be->Length();
-  #else
-  double localLength = p_be->OrbitLength( lparticle );
-  #endif
+  if(USELENGTH) {
+    localLength = p_be->Length();
+  }
+  else {
+    double localLength = p_be->OrbitLength( lparticle );
+  }
 
   if( typeid(*p_be) == typeid(beamline) )  {
-    #if USELENGTH
-    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList(s, inList );
-    #else
-    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( lparticle, s, inList );
-    #endif
+    if(USELENGTH) {
+      boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList(s, inList );
+    }
+    else {
+      boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( lparticle, s, inList );
+    }
 
     p_ile = inList.front();   // this may have changed
     ++bml_iter; 
@@ -169,11 +169,12 @@ void iefl(  beamline* invoker
   }
 
   else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
-    #if USELENGTH
-    bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList );
-    #else
-    bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( lparticle, s, inList );
-    #endif
+    if(USELENGTH) {
+      bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList );
+    }
+    else {
+      bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( lparticle, s, inList );
+    }
     p_ile = inList.front();     // this may have changed
 
     ++bml_iter; 
@@ -197,11 +198,12 @@ void iefl(  beamline* invoker
     invoker->putAbove( bml_iter, p_ile.first );
     invoker->putAbove( bml_iter, p_be_b      );
 
-    #if USELENGTH
-    s += ( p_be_a->Length() + p_ile.first->Length() );
-    #else
-    s += ( p_be_a->OrbitLength( lparticle ) + p_ile.first->OrbitLength( lparticle ) );
-    #endif
+    if(USELENGTH) {
+      s += ( p_be_a->Length() + p_ile.first->Length() );
+    }
+    else {
+      s += ( p_be_a->OrbitLength( lparticle ) + p_ile.first->OrbitLength( lparticle ) );
+    }
 
     p_be = p_be_b;
 
@@ -251,17 +253,6 @@ void iefl(  beamline* invoker
   }
  }
 }
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void iefl<0>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
-template void iefl<1>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
-
-#endif
 
 } // namespace
 
@@ -691,23 +682,19 @@ void beamline::append( bmlnElmnt const& elm )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
-  ::iefl<0>(this,particle,s,inList);
+  ::iefl( this, false, particle, s, inList );
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
   Proton placeholder(200);  // unused, placeholder, dummy proton
-  ::iefl<1>(this,placeholder,s,inList);
+  ::iefl( this, true, placeholder, s, inList );
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
