@@ -95,8 +95,8 @@ using FNAL::pcout;
 
 namespace {
 
+template<bool USELENGTH>
 void iefl(  beamline* invoker
-          , bool USELENGTH
           , Particle const& particle
           , double& s
           , std::list<std::pair<ElmPtr,double> >& inList )
@@ -258,6 +258,17 @@ void iefl(  beamline* invoker
   }
  }
 }
+
+//----------------------------------------------------------------------------------
+// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
+//----------------------------------------------------------------------------------
+
+#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
+
+template void iefl<false>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
+template void iefl<true>( beamline*, Particle const&, double&, std::list<std::pair<ElmPtr,double> >& );
+
+#endif
 
 } // namespace
 
@@ -580,7 +591,7 @@ void beamline::append( bmlnElmnt const& elm )
 
 void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
-  ::iefl( this, false, particle, s, inList );
+  ::iefl<false>( this, particle, s, inList );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -589,7 +600,7 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
   Proton placeholder(200);  // unused, placeholder, dummy proton
-  ::iefl( this, true, placeholder, s, inList );
+  ::iefl<true>( this, placeholder, s, inList );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
