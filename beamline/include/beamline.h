@@ -31,7 +31,7 @@
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
-******    iterator, pre_order_iterator. post_order_iteartor, deep_iterator 
+******    iterator, pre_order_iterator. post_order_iterator, deep_iterator 
 ******    as well as const and reverse variants of the above
 ******
 ******  Jan - Mar 2007:  Jean-Francois Ostiguy 
