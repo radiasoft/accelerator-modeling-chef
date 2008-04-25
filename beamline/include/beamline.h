@@ -172,7 +172,7 @@ public:
 
    beamline*  reverse() const;                
 
-   void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );                 // NOT IMPLEMENTED !!!!
+   void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );
                                        // Will insert q into the beamline at
                                        // OrbitLength s, assuming the beamline
                                        // begins at OrbitLength s_0.  Normally
