@@ -589,6 +589,18 @@ void beamline::append( bmlnElmnt const& elm )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void beamline::InsertElementAt( double const& s_0, double const& s, ElmPtr q )
+{
+  std::list<std::pair<ElmPtr,double> >  aList;
+  std::pair<ElmPtr,double> aPair(q,s);
+  aList.push_back( aPair );
+  double ss = s_0;
+  InsertElementsFromList( ss, aList );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
   ::iefl<false>( this, particle, s, inList );
