@@ -275,14 +275,22 @@ void  LinacCavity::setStrength( double const& eV)
 
 void LinacCavity::setLength( double const& )
 {
-  (*pcerr) <<   "*** WARNING ****: "
-              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void LinacCavity::setLength( double const& )" 
-              "\n*** WARNING ****: Attempt to explicitly set the length of a LinacCavity."
-              "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nonetheless... "
-              "\n*** WARNING ****: " 
+  ostringstream methodIdent;
+  methodIdent << "void " << Type() << "::setLength( double const& )";
+  
+  (*pcerr) <<   "*** ERROR ****: "
+              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
+              "\n*** ERROR ****: Resetting the length of " 
+           << Type() << " is not allowed in this version."
+              "\n*** ERROR ****: " 
            << std::endl;
+
+  ostringstream uic;
+  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           methodIdent.str().c_str(),
+           uic.str().c_str() ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
