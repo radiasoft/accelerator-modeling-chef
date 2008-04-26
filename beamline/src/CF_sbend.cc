@@ -9,7 +9,7 @@
 ******  File:      CF_sbend.cc
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -438,16 +438,24 @@ void CF_sbend::setStrength( double const& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  CF_sbend::setLength( double const& )
+void CF_sbend::setLength( double const& )
 {
-  (*pcerr) <<   "*** WARNING ****: "
-              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void CF_sbend::setLength( double const& )" 
-              "\n*** WARNING ****: Attempt to explicitly set the length of a CF_sbend."
-              "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nonetheless... "
-              "\n*** WARNING ****: " 
+  ostringstream methodIdent;
+  methodIdent << "void " << Type() << "::setLength( double const& )";
+  
+  (*pcerr) <<   "*** ERROR ****: "
+              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
+              "\n*** ERROR ****: Resetting the length of " 
+           << Type() << " is not allowed in this version."
+              "\n*** ERROR ****: " 
            << std::endl;
+
+  ostringstream uic;
+  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           methodIdent.str().c_str(),
+           uic.str().c_str() ) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
