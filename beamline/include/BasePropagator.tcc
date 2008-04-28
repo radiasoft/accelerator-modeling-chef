@@ -63,5 +63,10 @@ void  BasePropagator<Element_t>::operator()(  Element_t& elm, JetParticleBunch& 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename Element_t>  
+void   BasePropagator<Element_t>::setAttribute( std::string const& attribute, double const& oldvalue, double const& value );
+{ 
+   
+} 
 
 

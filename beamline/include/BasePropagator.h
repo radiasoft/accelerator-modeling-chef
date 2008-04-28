@@ -101,6 +101,10 @@ class BasePropagator {
 
   virtual void  setup( Element_t&);
 
+  virtual void  setLength   ( double const& oldlength,      double const& length    ) = 0;
+  virtual void  setStrength ( double const& oldstrength,    double const& strength  ) = 0;
+  virtual void  setAttribute( std::string const& attribute, double const& oldvalue, double const& value );
+
   virtual void  operator()(  Element_t& elm,         Particle& p) = 0; 
   virtual void  operator()(  Element_t& elm,      JetParticle& p) = 0; 
   virtual void  operator()(  Element_t& elm,    ParticleBunch& b);  
