@@ -48,6 +48,9 @@ class thinLamb::Propagator : public BasePropagator<thinLamb> {
  
   Propagator* Clone() const { return new Propagator(*this); }
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( thinLamb& elm,              Particle&  p);
   void  operator()( thinLamb& elm,           JetParticle&  p);
   void  operator()( thinLamb& elm,         ParticleBunch&  b);

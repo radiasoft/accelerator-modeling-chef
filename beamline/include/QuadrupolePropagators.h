@@ -47,6 +47,9 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
   void  setup(quadrupole& elm); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( quadrupole& elm,             Particle& p);
   void  operator()( quadrupole& elm,          JetParticle& p);
 
@@ -64,6 +67,9 @@ public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( thinQuad& elm,              Particle& p);
   void  operator()( thinQuad& elm,           JetParticle& p);
 

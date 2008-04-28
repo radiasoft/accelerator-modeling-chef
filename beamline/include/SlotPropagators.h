@@ -45,6 +45,9 @@ class Slot::Propagator: public BasePropagator<Slot> {
  
   void  setup( Slot& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  Slot& elm,             Particle& p);
   void  operator()(  Slot& elm,          JetParticle& p);
 

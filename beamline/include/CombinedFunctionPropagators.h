@@ -42,6 +42,9 @@ class combinedFunction::Propagator: public BasePropagator<combinedFunction> {
 
   void  setup( combinedFunction& elm ); 
 
+  void  setLength   ( double const& length   ); 
+  void  setStrength ( double const& strength ); 
+
   void  operator()( combinedFunction& elm,             Particle& p);
   void  operator()( combinedFunction& elm,          JetParticle& p);
 

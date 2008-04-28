@@ -42,7 +42,10 @@ class thinDecapole::Propagator: public BasePropagator<thinDecapole> {
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
-
+  
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  thinDecapole& elm,            Particle& p);
   void  operator()(  thinDecapole& elm,         JetParticle& p);
 

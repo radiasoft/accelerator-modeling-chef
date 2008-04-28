@@ -50,6 +50,9 @@ public:
 
   void  setup( Pinger& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  Pinger& elm,            Particle& p);
   void  operator()(  Pinger& elm,         JetParticle& p);
   void  operator()(  Pinger& elm,       ParticleBunch& p);

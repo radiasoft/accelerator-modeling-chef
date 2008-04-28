@@ -45,6 +45,9 @@ class sector::Propagator: public BasePropagator<sector> {
  
   void  setup( sector& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  sector& elm,             Particle& p);
   void  operator()(  sector& elm,          JetParticle& p);
 

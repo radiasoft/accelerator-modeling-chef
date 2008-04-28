@@ -44,6 +44,9 @@ class kick::Propagator: public BasePropagator<kick> {
  
   void  setup( kick& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  kick& elm,             Particle& p);
   void  operator()(  kick& elm,          JetParticle& p);
 
@@ -56,7 +59,10 @@ class hkick::Propagator: public BasePropagator<hkick> {
   Propagator* Clone() const { return new Propagator(*this); }
  
   void  setup( hkick& elm ); 
-
+ 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  hkick& elm,             Particle& p);
   void  operator()(  hkick& elm,          JetParticle& p);
 
@@ -68,6 +74,9 @@ class vkick::Propagator: public BasePropagator<vkick> {
  
   void  setup( vkick& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  vkick& elm,             Particle& p);
   void  operator()(  vkick& elm,          JetParticle& p);
 

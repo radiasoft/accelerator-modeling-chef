@@ -46,6 +46,9 @@ public:
 
   void  setup( ThinPole& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  ThinPole& elm,       Particle& p);
   void  operator()(  ThinPole& elm,    JetParticle& p);
 
