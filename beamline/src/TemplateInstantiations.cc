@@ -436,6 +436,7 @@ template class boost::detail::sp_counted_impl_p<BasePropagator<ThinPole> >;
 
 namespace {
   std::list<std::pair<int, std::complex<double> > > dummy_list;
+  std::list<std::pair<boost::shared_ptr<bmlnElmnt>, double> > second_dummy_list;
 }
 
 // for RefRegVisitor
