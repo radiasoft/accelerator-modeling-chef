@@ -1,6 +1,5 @@
 /*************************************************************************
 **************************************************************************
-**************************************************************************
 ******                                                                
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
@@ -448,51 +447,71 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 
 void bmlnElmnt::setLength( double const& x ) 
 {
-  if( length_ > 0 ) {
-    double oldLength = length_;
+  static bool firstTime = true;
+  if( x < 0 ) {
+    (*pcerr) << "*** WARNING *** "
+              "\n*** WARNING *** bmlnElmnt::setLength"
+              "\n*** WARNING *** Lengths must be positive."
+              "\n*** WARNING *** You have entered length " << x 
+         <<                    " for " << Type() << "  " << Name()
+         <<   "\n*** WARNING *** The absolute value will be used."
+              "\n*** WARNING *** "
+         << endl;
+  }
+  double newLength = std::abs(x);
 
-    if( x > 0 ) {
-      length_ = x;
-    }
-    else if( x < 0 ) {
-      (*pcerr) << "*** WARNING *** "
-                "\n*** WARNING *** bmlnElmnt::setLength"
-                "\n*** WARNING *** Lengths must be positive."
-                "\n*** WARNING *** You have entered length " << x 
-           <<                    " for " << Type() << "  " << Name()
-           <<   "\n*** WARNING *** The absolute value will be used."
-                "\n*** WARNING *** "
-           << endl;
-      length_ = -x;
+  if( length_ > 0 ) {
+    if( newLength > 0 ) {
+      // ??? I am unsure whether it is better to do this      ???
+      // ??? here or to zero ctRef_ and REQUIRE another pass  ???
+      // ??? with the RefRegVisitor to set it correctly.      ???
+      // ??? - lpjm                                           ???
+      ctRef_ *= (newLength/length_);
+
+      length_ = newLength;
     }
     else {
-      (*pcerr) << "*** WARNING *** "
-                "\n*** WARNING *** bmlnElmnt::setLength"
-                "\n*** WARNING *** Lengths must be positive."
-                "\n*** WARNING *** You have entered length " << x 
-           <<                    " for " << Type() << "  " << Name()
-           <<   "\n*** WARNING *** No change will be made."
-                "\n*** WARNING *** "
-           << endl;
+      (*pcerr) <<   "*** ERROR *** :"
+                  "\n*** ERROR *** : " << __FILE__ << "," << __LINE__
+               << "\n*** ERROR *** : void bmlnElmnt::setLength( double const& x )"
+                  "\n*** ERROR *** : Attempt made to zero the length of " 
+               <<                    Type() << " " << Name()
+               <<                    ", whose current length is " 
+               <<                    length_
+               << "\n*** ERROR *** : This is not allowed."
+               << endl;
+
+      ostringstream uic;
+      uic  << "Attempt made to zero the length of " 
+           << Type() << " " << Name()
+           << ", whose current length is " 
+           << length_
+           << "\nThis is not allowed.";
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+             "void bmlnElmnt::setLength( double const& x )", 
+             uic.str().c_str() ) );
     }
-
-
-    // ??? I am unsure whether it is better to do this      ???
-    // ??? here or to zero ctRef_ and REQUIRE another pass  ???
-    // ??? with the RefRegVisitor to set it correctly.      ???
-    // ??? - lpjm                                           ???
-    ctRef_ *= (length_/oldLength);
   }
 
   else {
-    (*pcerr) <<   "*** WARNING *** "
-                "\n*** WARNING *** bmlnElmnt::setLength"
-                "\n*** WARNING *** Attempt made to change the length of a "
-                "\n*** WARNING *** thin (i.e. zero length) element: "
-             << Type() << "  " << Name()
-             << "\n*** WARNING *** No change will be made."
-                "\n*** WARNING *** "
-         << endl;
+    length_ = newLength;
+
+    if( firstTime ) {
+      (*pcerr) <<   "*** WARNING *** : "
+                  "\n*** WARNING *** : " << __FILE__ << "," << __LINE__
+               << "\n*** WARNING *** : void bmlnElmnt::setLength( double const& x )"
+                  "\n*** WARNING *** : Attempt made to change the length of a "
+                  "\n*** WARNING *** : thin (i.e. zero length) element: "
+               << Type() << ", " << Name() << "."
+                  "\n*** WARNING *** : The change will be made, but proceed"
+                  "\n*** WARNING *** : very cautiously. If nothing else, timing"
+                  "\n*** WARNING *** : will have to be recalculated with a RefRegVisitor."
+                  "\n*** WARNING *** : "
+                  "\n*** WARNING *** : This message printed only once."
+                  "\n*** WARNING *** : "
+               << endl;
+      firstTime = false;
+    }
   }
 }
 
