@@ -45,6 +45,9 @@ public:
 
   void  setup( thinMultipole& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  thinMultipole& elm,       Particle& p);
   void  operator()(  thinMultipole& elm,    JetParticle& p);
 

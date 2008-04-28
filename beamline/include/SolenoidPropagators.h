@@ -45,6 +45,9 @@ class Solenoid::Propagator: public BasePropagator<Solenoid> {
  
   void  setup( Solenoid& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  Solenoid& elm,             Particle& p);
   void  operator()(  Solenoid& elm,          JetParticle& p);
 

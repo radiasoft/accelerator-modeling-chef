@@ -46,6 +46,9 @@ class gkick::Propagator: public BasePropagator<gkick> {
  
   void  setup( gkick& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  gkick& elm,             Particle& p);
   void  operator()(  gkick& elm,          JetParticle& p);
 };

@@ -46,6 +46,9 @@ public:
 
   void  setup( CF_sbend& elm ); 
 
+  void  setLength   ( double const& length   ); 
+  void  setStrength ( double const& strength ); 
+
   void  operator()(  CF_sbend& elm,            Particle& p);
   void  operator()(  CF_sbend& elm,         JetParticle& p);
 

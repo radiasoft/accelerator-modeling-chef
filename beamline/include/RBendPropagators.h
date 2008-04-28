@@ -45,6 +45,9 @@ class rbend::Propagator: public BasePropagator<rbend> {
 
   void  setup(rbend& elm); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( rbend& elm,             Particle& p);
   void  operator()( rbend& elm,          JetParticle& p);
 };

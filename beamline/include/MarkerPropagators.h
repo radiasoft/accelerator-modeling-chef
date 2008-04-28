@@ -49,6 +49,9 @@ class marker::Propagator: public BasePropagator<marker> {
  
   void  setup( marker& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  marker& elm,             Particle& p);
   void  operator()(  marker& elm,          JetParticle& p);
   void  operator()(  marker& elm,        ParticleBunch& p);

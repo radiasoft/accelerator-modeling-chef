@@ -42,6 +42,10 @@ class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityUpstream& elm);
+
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+
   void  operator()( LCavityUpstream& elm,              Particle& p);
   void  operator()( LCavityUpstream& elm,           JetParticle& p);
 
@@ -54,6 +58,10 @@ class LCavityDnstream::Propagator : public BasePropagator<LCavityDnstream> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( LCavityDnstream& elm);
+
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( LCavityDnstream& elm,              Particle& p);
   void  operator()( LCavityDnstream& elm,           JetParticle& p);
 

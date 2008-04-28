@@ -46,6 +46,9 @@ public:
 
   void  setup( octupole& elm); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( octupole& elm,             Particle& p);
   void  operator()( octupole& elm,          JetParticle& p);
 
@@ -63,6 +66,9 @@ public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( thinOctupole& elm,             Particle& p);
   void  operator()( thinOctupole& elm,          JetParticle& p);
 

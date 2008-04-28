@@ -42,6 +42,9 @@ class Edge::Propagator: public BasePropagator<Edge> {
  
   Propagator* Clone() const { return new Propagator(*this); }
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+
   void  operator()(  Edge& elm,            Particle& p);
   void  operator()(  Edge& elm,         JetParticle& p);
 

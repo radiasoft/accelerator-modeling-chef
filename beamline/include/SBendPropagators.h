@@ -45,6 +45,9 @@ class sbend::Propagator: public BasePropagator<sbend> {
 
   void  setup( sbend& elm); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  sbend& elm,             Particle& p);
   void  operator()(  sbend& elm,          JetParticle& p);
 

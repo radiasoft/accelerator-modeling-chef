@@ -45,6 +45,9 @@ class thinSeptum::Propagator: public BasePropagator<thinSeptum> {
  
   void  setup( thinSeptum& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  thinSeptum& elm,             Particle& p);
   void  operator()(  thinSeptum& elm,          JetParticle& p);
 

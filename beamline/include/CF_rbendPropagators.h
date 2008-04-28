@@ -49,6 +49,9 @@ public:
   Propagator* Clone() const { return new Propagator(*this); }
 
   void  setup( CF_rbend& elm ); 
+   
+  void  setLength   ( double const& length   ); 
+  void  setStrength ( double const& strength ); 
 
   void  operator()(  CF_rbend& elm,            Particle& p);
   void  operator()(  CF_rbend& elm,         JetParticle& p);

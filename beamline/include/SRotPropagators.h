@@ -42,6 +42,10 @@ class srot::Propagator : public BasePropagator<srot> {
   Propagator* Clone() const { return new Propagator(*this); }
 
   void       setup( srot& elm);
+
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()( srot& elm,         Particle& p);
   void  operator()( srot& elm,      JetParticle& p);
 

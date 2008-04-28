@@ -50,6 +50,9 @@ class monitor::Propagator: public BasePropagator<monitor> {
  
   void  setup( monitor& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  monitor& elm,            Particle& p);
   void  operator()(  monitor& elm,         JetParticle& p);
   void  operator()(  monitor& elm,       ParticleBunch& p);
@@ -66,6 +69,9 @@ class hmonitor::Propagator: public BasePropagator<hmonitor> {
  
   void  setup( hmonitor& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  hmonitor& elm,            Particle& p);
   void  operator()(  hmonitor& elm,         JetParticle& p);
   void  operator()(  hmonitor& elm,       ParticleBunch& p);
@@ -81,6 +87,9 @@ class vmonitor::Propagator: public BasePropagator<vmonitor> {
  
   void  setup( vmonitor& elm ); 
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void  operator()(  vmonitor& elm,            Particle& p);
   void  operator()(  vmonitor& elm,         JetParticle& p);
   void  operator()(  vmonitor& elm,       ParticleBunch& p);

@@ -57,6 +57,9 @@ public:
 
   void setup( WakeKick& elm);
 
+  void  setLength   ( double const& length   );
+  void  setStrength ( double const& strength );
+ 
   void operator()(  WakeKick&  elm,          Particle& p );
   void operator()(  WakeKick&  elm,       JetParticle& p );
   void operator()(  WakeKick&  elm,     ParticleBunch& b );
