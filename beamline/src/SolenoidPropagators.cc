@@ -1,6 +1,5 @@
 /*************************************************************************
 **************************************************************************
-**************************************************************************
 ******                                                                
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
@@ -10,7 +9,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -38,9 +37,14 @@
 ******  - adapted to new propagator architecture
 ******  - templated version
 ******  - various optimizations
-******                                                              
+******  
+******  April 2008    michelotti@fnal.gov
+******  - bug fixes: errors had been made in transcribing 
+******    from original algorithm to current one
+******  
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -88,7 +92,7 @@ void propagate( Solenoid& elm, Particle_t & p )
 
   if( elm.hasInEdge() ) {
     npx += edgeKick*y;
-    npy += edgeKick*x;
+    npy -= edgeKick*x;
   }
 
   //------------
@@ -123,13 +127,18 @@ void propagate( Solenoid& elm, Particle_t & p )
   //----------------------------------------------------------------------------
   #endif
   
-  npx =     cs*npx + sn*npy ;
-  npy =  (-sn)*npx + cs*npy ;
+  Component_t x_i   = x;
+  Component_t y_i   = y;
+  Component_t npx_i = npx;
+  Component_t npy_i = npy;
+
+  npx =     cs*npx_i + sn*npy_i;
+  npy =  (-sn)*npx_i + cs*npy_i;
   
   cs -= 1.0;
 
-  x += (    cs*(-npy) + sn*npx ) / (2.0*edgeKick);
-  y += ( (-sn)*(-npy) + cs*npx ) / (2.0*edgeKick);
+  x += (    cs*(-npy_i) + sn*npx_i ) / (2.0*edgeKick);
+  y += ( (-sn)*(-npy_i) + cs*npx_i ) / (2.0*edgeKick);
 
 
   //-----------------
@@ -138,7 +147,7 @@ void propagate( Solenoid& elm, Particle_t & p )
 
   if( elm.hasOutEdge() ) {
     npx -= edgeKick*y;
-    npy -= edgeKick*x;
+    npy += edgeKick*x;
   }
 
 
@@ -152,7 +161,7 @@ void propagate( Solenoid& elm, Particle_t & p )
   Component_t duration =   elm.Length() 
                    / ( p.get_npz() * p.ReferenceMomentum() / p.Energy() );
 
-   cdt += ( duration - elm.getReferenceTime() );
+  cdt += ( duration - elm.getReferenceTime() );
 }
 
 //----------------------------------------------------------------------------------
