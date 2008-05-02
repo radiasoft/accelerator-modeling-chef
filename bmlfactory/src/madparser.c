@@ -36,8 +36,24 @@
 ******    Made both lexer and parser reentrant. 
 ******    Eliminated global variable mp.
 ******
+******  - April 2008, michelotti@fnal.gov
+******    * Added flag to test whether BEAM statement has
+******      set kinematic variable (i.e. momentum, energy, or gamma).
+******      : if not, then beamline will not be instantiated by 
+******        MAD8Factory because the flag will be caught within 
+******        madparser_get_brho(.) and/or madparser_set_bml_ref_energy(.)
+******      : without something like this, beamlines have been instantiated
+******        with elements possessing invalid (i.e. NAN) strength attributes.
+******    * Replaced numerical value of proton mass with PH_NORM_mp.
+******      : appeared in function madparser_init(.)
+******      : numerical value disagreed with PH_NORM_mp, which is more recent.
+******      : change made also in function madparser_set_beam_particle_mass(.)
+******      : PH_NORM_mp is found in basic_toolkit/include/PhysicsConstants.h,
+******        which already was being #included.
+******
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -181,6 +197,7 @@ struct madparser_ {
 
     int             comment_at_eof_;
     int             comment_mode_;
+    int             beam_kinematics_valid_;
 
     beam_element*   current_bel_;
     char            current_bel_type_[BEL_NAME_LENGTH];
@@ -306,8 +323,9 @@ madparser_init( const char* filename_in,
          /*
            flags initialization
           */
-      mp->comment_at_eof_ = 0;
-      mp->comment_mode_   = 0;
+      mp->comment_at_eof_        = 0;
+      mp->comment_mode_          = 0;
+      mp->beam_kinematics_valid_ = 0;
          /*
            current beam element initialization          
           */
@@ -323,7 +341,7 @@ madparser_init( const char* filename_in,
       mp->use_statement_beamline_name_ = NULL;
 
       mp->beam_params_.particle_type_ = "PROTON";  
-      mp->beam_params_.mass_          = 0.93827231;  /* THIS DOES NOT BELONG HERE */
+      mp->beam_params_.mass_          = PH_NORM_mp;
       mp->beam_params_.charge_        = 1.0;         
       mp->beam_params_.energy_        = 1.0;         
       mp->beam_params_.pc_            = 1.0;         
@@ -950,7 +968,7 @@ void
 madparser_set_beam_particle_mass( madparser* mp, double mass) {
   if( fabs( mass - PH_NORM_mp) < 1.0e-6*fabs(mass + PH_NORM_mp) ) {
     if( 0 == strcasecmp( "PROTON", mp->beam_params_.particle_type_  ) ) {
-      mp->beam_params_.mass_ = mass;
+      mp->beam_params_.mass_ = PH_NORM_mp;
     }
     else {
       madparser_set_beam_particle_type( mp, "PROTON" );
@@ -959,7 +977,7 @@ madparser_set_beam_particle_mass( madparser* mp, double mass) {
 
   else if( fabs( mass - PH_NORM_me) < 1.0e-6*fabs(mass + PH_NORM_me) ) {
     if( 0 == strcasecmp( "POSITRON", mp->beam_params_.particle_type_  ) ) {
-      mp->beam_params_.mass_ = mass;
+      mp->beam_params_.mass_ = PH_NORM_me;
     }
     else {
       madparser_set_beam_particle_type( mp, "POSITRON" );
@@ -1024,6 +1042,8 @@ madparser_set_beam_energy( madparser* mp, double value){
     mp->beam_params_.kenergy_ = ek;
     mp->beam_params_.brho_    = brho;
     mp->beam_params_.gamma_   = gamma;
+   
+    mp->beam_kinematics_valid_ = 1;
   }
 } 
 
@@ -1046,6 +1066,8 @@ madparser_set_beam_momentum( madparser* mp, double value){
   mp->beam_params_.kenergy_ = ek;
   mp->beam_params_.brho_    = brho;
   mp->beam_params_.gamma_   = gamma;
+   
+  mp->beam_kinematics_valid_ = 1;
 }
 
 
@@ -1077,6 +1099,8 @@ madparser_set_beam_gamma( madparser* mp, double value){
     mp->beam_params_.kenergy_ = ek;
     mp->beam_params_.brho_    = brho;
     mp->beam_params_.gamma_   = gamma;
+   
+    mp->beam_kinematics_valid_ = 1;
   }
 }
 
@@ -1109,7 +1133,12 @@ madparser_set_beam_particle_type( madparser* mp, char* type){
 double
 madparser_get_brho(  madparser* mp ) { 
 
-  return mp->beam_params_.brho_;
+  if( 0 != mp->beam_kinematics_valid_ ) {
+    return mp->beam_params_.brho_;
+  }
+  else {
+    bmlfactory_exit( __FILE__, __LINE__, "BEAM statement missing or comes too late\nor did not include kinematic data (energy|momentum|gamma).");
+  }
 
 }
 
@@ -1117,7 +1146,12 @@ madparser_get_brho(  madparser* mp ) {
 void
 madparser_set_bml_ref_energy(madparser* mp, beam_line* bml) {
 
-  bml->reference_energy_ = mp->beam_params_.energy_;
+  if( 0 != mp->beam_kinematics_valid_ ) {
+    bml->reference_energy_ = mp->beam_params_.energy_;
+  }
+  else {
+    bmlfactory_exit( __FILE__, __LINE__, "BEAM statement missing or comes too late\nor did not include kinematic data (energy|momentum|gamma).");
+  }
  
 }
 
