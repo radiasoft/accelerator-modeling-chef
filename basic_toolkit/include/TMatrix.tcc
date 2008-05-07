@@ -335,11 +335,22 @@ TMatrix<T> TMatrix<T>::inverse() const
 
 
 template<typename T>
-void    TMatrix<T>:: switch_columns( int col1, int col2) {
-
+void    TMatrix<T>:: switch_columns( int col1, int col2) 
+{
   if (ml_->count() > 1) ml_= ml_->clone();
   ml_->switch_columns(col1,col2);
+};
 
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+void    TMatrix<T>:: switch_rows( int col1, int col2) 
+{
+  if (ml_->count() > 1) ml_= ml_->clone();
+  ml_->switch_rows(col1,col2);
 };
 
 
