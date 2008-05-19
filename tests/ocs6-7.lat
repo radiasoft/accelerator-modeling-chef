@@ -29,6 +29,8 @@
 TWOPI     := 6.2831853071795864769
 E0        := 5.0  ! Beam Energy [[ momentum? ]]
 
+BEAM, PARTICLE=POSITRON, PC=5.066
+
 
 !--------1---------2---------3---------4---------5---------6---------7--------8
 ! RF Cavities
@@ -334,4 +336,3 @@ RING      :  LINE=( 2*( ARC, WIGGLER_STRAIGHT ), &
                         ARC, UTILITY_STRAIGHT    )
  
 
-BEAM, PARTICLE=POSITRON, PC=5.066
