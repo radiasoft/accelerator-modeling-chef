@@ -143,7 +143,7 @@ void iefl(  beamline* invoker
     localLength = p_be->Length();
   }
   else {
-    double localLength = p_be->OrbitLength( lparticle );
+    localLength = p_be->OrbitLength( lparticle );
   }
 
   if( typeid(*p_be) == typeid(beamline) )  {
