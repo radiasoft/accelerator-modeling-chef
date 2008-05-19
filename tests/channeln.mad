@@ -1,3 +1,4 @@
+beam,   particle=proton, pc=8
 !scaling
 !scale=0.112312466/0.299792458
 scale=0.374749636
