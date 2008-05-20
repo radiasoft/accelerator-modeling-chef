@@ -180,6 +180,10 @@ DrawSpace3D::DrawSpace3D( TrbWidget* p )
   _z_scale = std::abs( std::abs(_z_min) > std::abs(_z_max) ? 
                        _z_min : _z_max
                      );
+  if( 0 == _x_scale ) { _x_scale = 1.0; }
+  if( 0 == _y_scale ) { _y_scale = 1.0; }
+  if( 0 == _z_scale ) { _z_scale = 1.0; }
+
   _sx_cell_width = (_x_cell_width/(_x_scale));
   _sy_cell_width = (_y_cell_width/(_y_scale)); 
 }
