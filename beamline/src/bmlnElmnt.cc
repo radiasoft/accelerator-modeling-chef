@@ -59,6 +59,7 @@
 
 #include <iomanip>
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
@@ -234,14 +235,12 @@ try
     uic  << "Argument list "
          "( " << n << ", " << l << ", " << s << " )"
          " specifies a negative length.";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)", 
            uic.str().c_str() ) );
-    // P.S. bmlnElmnt::GenericException will be eliminated soon.
-    // -lpjm
   }
 }
-catch( bmlnElmnt::GenericException const& ge )
+catch( GenericException const& ge )
 {
   // This catch block is included only out of paranoia.
   // Nothing needs to be done here.
@@ -487,7 +486,7 @@ void bmlnElmnt::setLength( double const& x )
            << ", whose current length is " 
            << length_
            << "\nThis is not allowed.";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void bmlnElmnt::setLength( double const& x )", 
              uic.str().c_str() ) );
     }
@@ -1243,7 +1242,7 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
            uic.str().c_str() ) );
   }
@@ -1314,37 +1313,6 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
 double bmlnElmnt::Length() const
 {
   return length_;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// Exceptions
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bmlnElmnt::GenericException::GenericException( string fileName, int lineNumber, char const* fcn, char const* msg )
-{
-  ostringstream uic;
-  uic << "\n*** ERROR *** "
-         "\n*** ERROR *** File: " << fileName << ", Line: " << lineNumber
-      << "\n*** ERROR *** " << fcn
-      << "\n*** ERROR *** " << msg
-      << "\n*** ERROR *** ";
-  errorString = uic.str();
-
-  (*pcerr) << errorString << endl;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-const char* bmlnElmnt::GenericException::what() const throw()
-{
-  return errorString.c_str();
 }
 
 

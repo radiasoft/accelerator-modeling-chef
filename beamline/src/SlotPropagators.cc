@@ -30,6 +30,7 @@
 **************************************************************************
 *************************************************************************/
 
+#include <basic_toolkit/GenericException.h>
 #include <beamline/SlotPropagators.h>
 #include <beamline/Slot.h>
 #include <beamline/Particle.h>
@@ -87,7 +88,7 @@ void propagate( Slot& elm, Particle_t& p )
    std::ostringstream uic;
       uic << elm.Type() << "  " << elm.Name()
           << ": Velocity is not forward: it may be NAN.";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+      throw( GenericException( __FILE__, __LINE__,
              "void Slot::localPropagate( Particle& p )", 
              uic.str().c_str() ) );
   };

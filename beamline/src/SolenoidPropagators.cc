@@ -49,6 +49,7 @@
 #include <config.h>
 #endif
 
+#include <basic_toolkit/GenericException.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/SolenoidPropagators.h>
@@ -119,7 +120,7 @@ void propagate( Solenoid& elm, Particle_t & p )
       ++counter;
     }
     else {
-      throw bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw GenericException( __FILE__, __LINE__, 
             "void Solenoid::localPropagate( Particle& p )",
             "Too many iterations to normalize cosine." );
     }

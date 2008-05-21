@@ -63,6 +63,7 @@
 *************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/combinedFunction.h>
@@ -604,7 +605,7 @@ LattFunc beamline::whatIsLattice( int n )
     uic  << "Argument n = " << n 
          << " lies outside [0," 
          << (numElem-1) << "].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "LattFunc beamline::whatIsLattice( int n ) {", 
            uic.str().c_str() ) );
  }
@@ -749,7 +750,7 @@ beamline* beamline::reverse() const {
 
 void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
 {
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
          "void beamline::Split( double const&, bmlnElmnt&, bmlnElmnt& )", 
          "This method should not be invoked by a beamline object." ) );
 }
@@ -1511,7 +1512,7 @@ void beamline::enterLocalFrame( Particle& p ) const
     if( (typeid( *(*it) ) == typeid(sbend) ) ||
         (typeid( *(*it) ) == typeid(rbend) ) ) {    
 
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( Particle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
     }
@@ -1531,7 +1532,7 @@ void beamline::enterLocalFrame( JetParticle& p ) const
 
     if( (typeid( *(*it) ) == typeid(sbend) )||
         (typeid( *(*it) ) == typeid(rbend) )  ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( JetParticle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
     }
@@ -1632,7 +1633,7 @@ void beamline::setLength( double const& )
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }
