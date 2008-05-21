@@ -81,6 +81,7 @@
 #include <typeinfo>
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <beamline/rbend.h>
@@ -299,13 +300,13 @@ try
     dsAngle_( exit_angle - ds)
 {
   // ??? FIX ME ???
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
          "rbend::rbend( char const* n, double const& l, double const& s, double const& bendangle, \n"
          "                                    double const& entry_angle, double const& exit_angle,\n"
          "                                    double const& us,          double const& ds          )",
          "THIS CONSTRUCTOR IS NOT WRITTEN." ) );
 }
-catch( bmlnElmnt::GenericException const& ge )
+catch( GenericException const& ge )
 {
   // This catch block is included only out of paranoia.
   // Nothing needs to be done here.
@@ -335,7 +336,7 @@ rbend::~rbend()
 void rbend::setStrength( double const& s ) 
 {
   if( strength_ == 0 ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void rbend::setStrength( double const& s )", 
            "Cannot set strength of rbend when initial strength is zero."
            "\nCurrent version has no way of accessing attributes of edges." ) );
@@ -357,7 +358,7 @@ void rbend::setStrength( double const& s )
     }
   }
   else {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void rbend::setStrength( double const& s )", 
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
@@ -381,7 +382,7 @@ void rbend::setLength( double const& )
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }
@@ -423,7 +424,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
            uic.str().c_str() ) );
   }
@@ -435,7 +436,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     uic  <<   "Not allowed to displace an rbend with non-parallel faces";
             "\nwith an Alignment struct.  That rolls are allowed in such"
             "\ncases is only a matter of courtesy. This is NOT encouraged!";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
            uic.str().c_str() ) );
   }
@@ -520,7 +521,7 @@ void rbend::nullExitEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << endpoint->Type() << " " << endpoint->Name();
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
                "void rbend::nullExitEdge()",
                uic.str().c_str() ) );
     }
@@ -551,7 +552,7 @@ void rbend::nullEntryEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << startpoint->Type() << " " << startpoint->Name();
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
                "void rbend::nullExitEdge()",
                uic.str().c_str() ) );
     }

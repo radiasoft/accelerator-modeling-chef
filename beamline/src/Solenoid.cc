@@ -60,6 +60,7 @@
 #include <iomanip>
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/Solenoid.h>
 #include <beamline/SolenoidPropagators.h>
 #include <beamline/BmlVisitor.h>
@@ -133,7 +134,7 @@ void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void Solenoid::Split( double const&, bmlnElmnt**, bmlnElmnt** ) const", 
            uic.str().c_str() ) );
   }

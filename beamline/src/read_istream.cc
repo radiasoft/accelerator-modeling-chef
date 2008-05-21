@@ -51,6 +51,7 @@
 #endif
 
 #include <iomanip>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/beamline_elements.h>
 
@@ -381,7 +382,7 @@ istream& operator>>(istream& is, beamline& bl)
              << type << ",  " << name << ", ignored"
              << "\n **** WARNING **** This program may crash and burn soon."
              << endl;
-    throw(   bmlnElmnt::GenericException( __FILE__, __LINE__
+    throw(   GenericException( __FILE__, __LINE__
            , "istream& operator>>(istream& is, beamline& bl)"
            , uic.str().c_str() ) );
   }

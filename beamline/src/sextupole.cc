@@ -59,6 +59,7 @@
 #endif
 
 
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/sextupole.h>
 #include <beamline/drift.h>
@@ -141,7 +142,7 @@ void sextupole::setLength( double const& l )
     }
 
     if( counter <= 0 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void sextupole::setLength( double const& s )", 
              "No thin sextupoles in the internal beamline." ) );
     }
@@ -159,7 +160,7 @@ void sextupole::setLength( double const& l )
                << (*it)->Type()
                << " in " << Type() << " " << Name()
                << "'s internal beamline.";
-          throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          throw( GenericException( __FILE__, __LINE__, 
                  "void sextupole::setLength( double const& s )", 
                  uic.str().c_str() ) );
         }
@@ -193,7 +194,7 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
   }
