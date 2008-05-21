@@ -55,6 +55,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/octupole.h>
@@ -157,20 +158,20 @@ void octupole::setLength( double const& l )
              << (*it)->Type()
              << " in " << Type() << " " << Name()
              << "'s internal beamline.";
-        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        throw( GenericException( __FILE__, __LINE__, 
                "void octupole::setLength( double const& s )", 
                uic.str().c_str() ) );
       }
     }
     if( counter <= 0 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void octupole::setLength( double const& s )", 
              "No thin octupoles in the internal beamline." ) );
     }
   }
   else 
   {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void octupole::setLength( double const& s )", 
            "Internal beamline not initialized!" ) );
   }
@@ -211,7 +212,7 @@ void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void octupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }

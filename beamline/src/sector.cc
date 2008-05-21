@@ -53,6 +53,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/sector.h>
 #include <beamline/SectorPropagators.h>
 #include <beamline/BmlVisitor.h>
@@ -88,14 +89,14 @@ sector::sector( const char* n, std::vector<double> const& bH,  std::vector<doubl
 {
 
  if( pH[1] <= pH[0] ) {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+   throw( GenericException( __FILE__, __LINE__, 
           "sector::sector( ...)"
           "Horizontal phases inverted." ) );
  }
  else deltaPsiH_ = pH[1] - pH[0];
 
  if( pV[1] <= pV[0] ) {
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+   throw( GenericException( __FILE__, __LINE__, 
           "sector::sector( ...)", 
           "Vertical phases inverted." ) );
  }
@@ -215,7 +216,7 @@ void sector::Split( double const&, ElmPtr& a, ElmPtr& b ) const
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
          "void sector::Split( double const&, ElmPtr&, ElmPtr& ) const", 
          uic.str().c_str() ) );
 }

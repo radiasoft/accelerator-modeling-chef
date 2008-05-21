@@ -194,22 +194,6 @@ class DLLEXPORT bmlnElmnt {
 
 
  public:
-
- struct GenericException : public std::exception {
-
-    GenericException( std::string, int, const char* = "", const char* = "" );
-    // Miscellaneous errors
-    // 1st argument: name of file in which exception is thrown
-    // 2nd         : line from which exception is thrown
-    // 3rd         : identifies function containing throw
-    // 4th         : identifies type of error
-    ~GenericException() throw() {}
-    const char* what() const throw();
-    std::string errorString;
-  };
-
-
-public:
   
   bmlnElmnt( std::string const& name="",  double const&  length=0.0, double const& strength=0.0 );
 

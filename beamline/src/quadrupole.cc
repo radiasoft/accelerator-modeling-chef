@@ -54,6 +54,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/quadrupole.h>
 #include <beamline/drift.h>
 #include <beamline/beamline.h>
@@ -127,7 +128,7 @@ void quadrupole::setStrength( double const& s )
     }
 
     if( counter <= 0 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void quadrupole::setStrength( double const& s ) {", 
              "No thin quads in the internal beamline." ) );
     }
@@ -138,7 +139,7 @@ void quadrupole::setStrength( double const& s )
       }
       else 
       {
-        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        throw( GenericException( __FILE__, __LINE__, 
                "void quadrupole::setStrength( double const& s ) {", 
                "elm_ not set." ) );
       }
@@ -170,7 +171,7 @@ void quadrupole::setLength( double const& l )
     }
 
     if( counter <= 0 ) {
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void quadrupole::setLength( double const& s )", 
              "No thin quads in the internal beamline." ) );
     }
@@ -181,7 +182,7 @@ void quadrupole::setLength( double const& l )
       }
       else 
       {
-        throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+        throw( GenericException( __FILE__, __LINE__, 
                "void quadrupole::setLength( double const& s )", 
                "elm_ not set." ) );
       }
@@ -201,7 +202,7 @@ void quadrupole::setLength( double const& l )
                << " in quadrupole "
                << Name()
                << "'s internal beamline.";
-          throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+          throw( GenericException( __FILE__, __LINE__, 
                  "void quadrupole::setLength( double const& s )", 
                  uic.str().c_str() ) );
         }
@@ -236,7 +237,7 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }

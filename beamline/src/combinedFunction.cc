@@ -58,6 +58,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/JetParticle.h>
@@ -143,7 +144,7 @@ void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
          "void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const", 
          uic.str().c_str() ) );
 }
@@ -283,7 +284,7 @@ void combinedFunction::setLength( double const& )
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }
@@ -419,7 +420,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
   m = ( jetparticle.State().Jacobian() )( x, x );
   m -= 1.0;
   if( std::abs(m) < 1.0e-12 ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "double combinedFunction::AdjustPosition( JetParticle const& arg_jp )", 
            "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
