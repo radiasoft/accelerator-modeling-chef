@@ -30,6 +30,7 @@
 *************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/Bend.h>
 #include <beamline/BendPropagators.h>
 #include <beamline/Particle.h>
@@ -106,7 +107,7 @@ void Bend::setLength( double const& )
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }

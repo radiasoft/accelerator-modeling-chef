@@ -55,6 +55,7 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/marker.h>
 #include <beamline/Slot.h>
 #include <beamline/SlotPropagators.h>
@@ -114,7 +115,7 @@ Slot::Slot( char const* nm, Frame const& y )
 {
   if( !out_.isOrthonormal() )
   {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+    throw( GenericException( __FILE__, __LINE__,
            "Slot::Slot( char const * nm, Frame const& y )", 
            "Current implementation requires that frames be orthonormal." ) );
   }
@@ -254,7 +255,7 @@ int Slot::setOutFrame( Frame const& frm )
   int ret = 0;
   if( ret = frm.isOrthonormal() ) { out_ = frm; }   
   else {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+    throw( GenericException( __FILE__, __LINE__,
          " int Slot::setOutFrame( const Frame& frm )", 
          "Current implementation requires that frames be orthonormal." ) );
   }
@@ -275,7 +276,7 @@ void Slot::setLength( double const& )
   ostringstream uic;
   uic << "This operation is disallowed for Slots"
          "\nbecause of ambiguity.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+  throw( GenericException( __FILE__, __LINE__,
          "void Slot::setLength( double const& )", 
          uic.str().c_str() ) );
 }
@@ -292,13 +293,13 @@ int Slot::checkFrame( Frame const& f ) const
   int ret = 0;
 
   if( !f.isOrthonormal() ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+    throw( GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires that frames be orthonormal." ) );
   }
 
   if( f.getOrigin() != zero.getOrigin() ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+    throw( GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires no displacement of origin." ) );
   }
@@ -306,7 +307,7 @@ int Slot::checkFrame( Frame const& f ) const
   else if( (  f.getAxis(y) != zero.getAxis(y) ) && 
            (  f.getAxis(z) != zero.getAxis(z) )
          ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+    throw( GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation allows rotation about "
            "y or z axis, but not both." ) );
@@ -422,7 +423,7 @@ istream& Slot::readFrom( istream& is )
     if ( strcasecmp(type, "slot_END") != 0 ) {
       ostringstream uic;
       uic << "Expecting \"slot_END\" but got " << type;
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
+      throw( GenericException( __FILE__, __LINE__,
              "istream& Slot::readFrom( istream& is )", 
              uic.str().c_str() ) );
     }

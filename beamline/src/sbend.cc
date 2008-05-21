@@ -68,6 +68,7 @@
 #include <iomanip>
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/sbend.h>
 #include <beamline/SBendPropagators.h>
@@ -118,7 +119,7 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
  if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
    uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+   throw( GenericException( __FILE__, __LINE__, 
           "sbend::sbend( char* n, double const& l, double const& s, double const& alpha, PropFunc* pf )",
           uic.str().c_str() ) );
  }
@@ -161,7 +162,7 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
  if ( std::abs( alpha ) < 1.0e-9 ) {
    ostringstream uic;
    uic  << "| bend angle | = " << std::abs(alpha) << " < 1 nanoradian.";
-   throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+   throw( GenericException( __FILE__, __LINE__, 
           "sbend::sbend( double const& l, double const& s, ... )",
           uic.str().c_str() ) );
  }
@@ -247,7 +248,7 @@ sbend::~sbend()
 void sbend::setStrength( double const& s ) 
 {
   if( strength_ == 0 ) {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void sbend::setStrength( double const& s )", 
            "Cannot set strength of sbend when initial strength is zero."
            "\nCurrent version has no way of accessing attributes of edges." ) );
@@ -269,7 +270,7 @@ void sbend::setStrength( double const& s )
     }
   }
   else {
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void sbend::setStrength( double const& s )", 
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
@@ -293,7 +294,7 @@ void sbend::setLength( double const& )
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }
@@ -317,7 +318,7 @@ void sbend::nullExitEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << endpoint->Type() << " " << endpoint->Name();
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
                "void sbend::nullExitEdge()",
                uic.str().c_str() ) );
     }
@@ -348,7 +349,7 @@ void sbend::nullEntryEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << startpoint->Type() << " " << startpoint->Name();
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
                "void sbend::nullExitEdge()",
                uic.str().c_str() ) );
     }
@@ -437,7 +438,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
-    throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__, 
            "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
   }
@@ -449,7 +450,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
       uic  <<   "Not allowed to displace an sbend with non-parallel faces"
               "\nwith an Alignment struct.  That rolls are allowed in such"
               "\ncases is only a matter of courtesy. This is NOT encouraged!";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
              uic.str().c_str() ) );
     }
@@ -459,7 +460,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
               "\nwith an Alignment struct other than in its middle."
               "\nThat rolls are allowed in such cases is only a matter"
               "\nof courtesy. This is NOT encouraged!";
-      throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__, 
              "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
              uic.str().c_str() ) );
     }
