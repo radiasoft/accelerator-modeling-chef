@@ -41,6 +41,9 @@
 ****** - use std::string for string operations. 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008           ostiguy@fnal.gov
+****** - added explicit assignment operator implementations.
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -81,7 +84,7 @@ Pinger::Pinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Pinger::Pinger(char const* n) 
+Pinger::Pinger(std::string const& n) 
   : bmlnElmnt(n ,0.0, 0.0 ),  kick_direction_(0), counter_(-1)
 {
   propagator_ = PropagatorPtr( new Propagator() );
@@ -91,7 +94,7 @@ Pinger::Pinger(char const* n)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Pinger::Pinger(char const* n, double const& k, double const& r, int c) 
+Pinger::Pinger(std::string const& n, double const& k, double const& r, int c) 
   : bmlnElmnt(n, 0.0, k), kick_direction_(r), counter_(c)
 {
   propagator_ = PropagatorPtr( new Propagator() );
@@ -102,8 +105,7 @@ Pinger::Pinger(char const* n, double const& k, double const& r, int c)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Pinger::Pinger( Pinger const& o) 
-  : bmlnElmnt(o),  kick_direction_(o.kick_direction_), counter_(o. counter_), 
-    propagator_(PropagatorPtr(o.propagator_->Clone()))
+  : bmlnElmnt(o),  kick_direction_(o.kick_direction_), counter_(o. counter_) 
 {}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,6 +113,19 @@ Pinger::Pinger( Pinger const& o)
 
 Pinger::~Pinger() 
 {}
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Pinger& Pigner::operator=( Pinger const& rhs)
+{
+  if ( this == &rhs ) return *this;
+  bmlnElmnt::operator=(rhs);
+
+  kick_direction_  = rhs.kick_direction_;
+  counter_         = rhs.counter_;        
+
+  return *this;
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -160,40 +175,6 @@ void  Pinger::accept( ConstBmlVisitor& v ) const
   v.visit( *this ); 
 }
 
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Pinger::localPropagate( Particle& p) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Pinger::localPropagate( JetParticle& p) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Pinger::localPropagate( ParticleBunch& p) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Pinger::localPropagate( JetParticleBunch& p) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 /*********  HPinger Constructors *********/
 
@@ -204,14 +185,14 @@ HPinger::HPinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-HPinger::HPinger(char const* name) 
+HPinger::HPinger(std::string const& name) 
  : Pinger(name, 0.0, 0.0, -1) 
 {}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-HPinger::HPinger(char const* name, double const& kick, int count) 
+HPinger::HPinger(std::string const& name, double const& kick, int count) 
 : Pinger(name, kick, 0.0, count) 
 {}
 
@@ -231,10 +212,21 @@ HPinger::~HPinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+HPinger& HPigner::operator=( HPinger const& rhs)
+{
+  if ( this == &rhs ) return *this;
+  Pinger::operator=(rhs);
+  return *this;
+
+}
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 char const* HPinger::Type() const 
 { 
   return "HPinger"; 
 }
+
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -272,14 +264,14 @@ VPinger::VPinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-VPinger::VPinger(char const* name) 
+VPinger::VPinger(std::string const& name) 
 : Pinger(name, 0.0, M_PI_2, -1) 
 {}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-VPinger::VPinger(char const* name, double const& kick, int c) 
+VPinger::VPinger(std::string const& name, double const& kick, int c) 
 : Pinger(name, kick, M_PI_2, c) 
 {}
 
@@ -295,6 +287,17 @@ VPinger::VPinger( VPinger const& p)
 
 VPinger::~VPinger() 
  {}
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+VPinger& VPigner::operator=( VPinger const& rhs)
+{
+  if ( this == &rhs ) return *this;
+  Pinger::operator=(rhs);
+  return *this;
+
+}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -46,6 +46,9 @@
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added octupole::setLength(..) method to override
 ******   the base class implementation.
+****** May 2008           ostiguy@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -85,7 +88,7 @@ octupole::octupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-octupole::octupole( const char* n, double const& l, double const& s ) 
+octupole::octupole( std::string const& n, double const& l, double const& s ) 
 : bmlnElmnt( n, l, s ) 
 { 
   propagator_ = PropagatorPtr( new Propagator() );  
@@ -97,7 +100,7 @@ octupole::octupole( const char* n, double const& l, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 octupole::octupole( octupole const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt( x )
 {}
 
 
@@ -126,69 +129,6 @@ octupole::~octupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::setStrength( double const& s ) 
-{
-  bmlnElmnt::setStrength(s);
-  elm_->setStrength( strength_*length_ );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void octupole::setLength( double const& l ) 
-{
-  if(bml_) 
-  {
-    double ratio = length_;
-    bmlnElmnt::setLength( l );
-    ratio = length_ / ratio;
-    int counter = 0;
-
-    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-      if( typeid(**it) == typeid(thinOctupole) ) {
-        ++counter;
-        (*it)->setStrength( ratio*((*it)->Strength()) );
-      }
-      else if( typeid(**it) == typeid(drift) ) {
-        (*it)->setLength( ratio*((*it)->Length()) );
-      }
-      else {
-        ostringstream uic;
-        uic  << "Unrecognized element type "
-             << (*it)->Type()
-             << " in " << Type() << " " << Name()
-             << "'s internal beamline.";
-        throw( GenericException( __FILE__, __LINE__, 
-               "void octupole::setLength( double const& s )", 
-               uic.str().c_str() ) );
-      }
-    }
-    if( counter <= 0 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void octupole::setLength( double const& s )", 
-             "No thin octupoles in the internal beamline." ) );
-    }
-  }
-  else 
-  {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void octupole::setLength( double const& s )", 
-           "Internal beamline not initialized!" ) );
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void octupole::setCurrent( double const& s ) 
-{
- elm_->setCurrent( s );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 const char* octupole::Type() const 
 { 
   return "octupole"; 
@@ -212,7 +152,7 @@ void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw( GenericException( __FILE__, __LINE__, 
+    throw(  GenericException( __FILE__, __LINE__, 
            "void octupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
            uic.str().c_str() ) );
   }
@@ -256,38 +196,6 @@ void octupole::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::localPropagate( Particle&    p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  octupole::localPropagate( JetParticle& p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void octupole::localPropagate( ParticleBunch&    b )   
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  octupole::localPropagate( JetParticleBunch& b )   
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 // **************************************************
 //   class thinOctupole
 // **************************************************
@@ -304,7 +212,7 @@ thinOctupole::thinOctupole ()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinOctupole::thinOctupole ( const char* n, double const& s ) 
+thinOctupole::thinOctupole ( std::string const& n, double const& s ) 
  : bmlnElmnt( n, 0.0, s ) 
 {
  // The strength is to be interpreted as
@@ -317,7 +225,7 @@ thinOctupole::thinOctupole ( const char* n, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinOctupole::thinOctupole( thinOctupole const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -327,7 +235,6 @@ thinOctupole& thinOctupole::operator=( thinOctupole const& rhs)
 {
   if (&rhs == this) return *this;
   bmlnElmnt::operator=(rhs);
-  propagator_ = PropagatorPtr(rhs.propagator_->Clone());
   return *this;
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -366,37 +273,5 @@ void thinOctupole::accept( BmlVisitor& v )
 void thinOctupole::accept( ConstBmlVisitor& v ) const 
 { 
   v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinOctupole::localPropagate( Particle&    p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  thinOctupole::localPropagate( JetParticle& p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinOctupole::localPropagate( ParticleBunch&    b )   
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  thinOctupole::localPropagate( JetParticleBunch& b )   
-{ 
-  (*propagator_)(*this, b);        
 }
 
