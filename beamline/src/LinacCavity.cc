@@ -28,6 +28,7 @@
 ******
 ****** Dec 2007   ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
+******
 ****** Apr 2008   michelotti@fnal.gov
 ****** - added placeholder LinacCavity::setLength method
 ****** May 2008   ostiguy@fnal.gov
@@ -86,7 +87,6 @@
 //=====================================================================================
 
 #include <iomanip>
-#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
 #include <beamline/LinacCavityPropagators.h>
@@ -105,7 +105,7 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LinacCavity::LinacCavity( const char* name,         // name
+LinacCavity::LinacCavity( std::string const& name,
                           double const& length,     // length [m]
                           double const& f,          // rf frequency 
                           double const& eV,         // rf voltage 
@@ -125,8 +125,7 @@ LinacCavity::LinacCavity( const char* name,         // name
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
- : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_),
-   propagator_( x.propagator_->Clone() )
+ : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -138,13 +137,13 @@ LinacCavity::~LinacCavity()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LinacCavity& LinacCavity::operator=( LinacCavity const& rhs) 
+LinacCavity& LinacCavity::operator=(LinacCavity& o)
 {
-  if ( &rhs == this ) return *this;
-  bmlnElmnt::operator=(rhs);
-  w_rf_   = rhs.w_rf_;
-  phi_s_  = rhs.phi_s_;
+  if (this == &o ) return *this;
+  
+  bmlnElmnt::operator=(o);
   return *this;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -274,44 +273,6 @@ double const& LinacCavity::getRadialFrequency() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
 
-void  LinacCavity::setStrength( double const& eV)
-{
-  strength_ = eV*1.0e-9; 
-
-  double length1 = bml_->firstElement()->Length();
-  double length2 = bml_->lastElement()->Length();
-
-  bml_->firstElement()->setStrength(strength_*length1/length_ );
-  bml_->lastElement()->setStrength(strength_ *length2/length_ );
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void LinacCavity::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
 void  LinacCavity::setWakeOn( bool set )
 {
   boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->setWakeOn(*this, set);
@@ -338,42 +299,8 @@ void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
          "void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const", 
          uic.str().c_str() ) );
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void LinacCavity::localPropagate( Particle& p)
-{
-  (*propagator_)(*this,p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void LinacCavity::localPropagate( JetParticle& p)
-{
-  (*propagator_)(*this,p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void LinacCavity::localPropagate( ParticleBunch& b)
-{
-  (*propagator_)(*this,b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void LinacCavity::localPropagate( JetParticleBunch& b)
-{
-  (*propagator_)(*this,b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
