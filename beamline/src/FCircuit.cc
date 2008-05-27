@@ -49,6 +49,7 @@
 #include <config.h>
 #endif
 
+#if  0
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/FCircuit.h>
@@ -176,3 +177,4 @@ void FCircuit::append( ElmPtr q ) {
    field_ = q->Strength();
 }
 
+#endif
