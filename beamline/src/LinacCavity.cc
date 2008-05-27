@@ -87,6 +87,7 @@
 //=====================================================================================
 
 #include <iomanip>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
 #include <beamline/LinacCavityPropagators.h>
@@ -299,7 +300,7 @@ void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__, 
          "void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const", 
          uic.str().c_str() ) );
 }

@@ -109,7 +109,7 @@ thinLamb& thinLamb::operator=( thinLamb const& rhs)
   ExtBeamline_ =  rhs.ExtBeamline_;
   RefState_    =  rhs.RefState_;
 
-  return *this 
+  return *this; 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

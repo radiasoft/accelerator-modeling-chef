@@ -37,24 +37,21 @@
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added sextupole::setLength(..) method to override
 ******   the base class implementation.
-****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
-****** 
 ****** Apr 2008           michelotti@fnal.gov
 ****** - changed signature of setStrength(..) to
 ******   match that of the virtual bmlnElmnt method
 ****** May 2008           ostiguy@fnal.gov
-*******- setStrength() now dispatched to propagator by base class
-*******  (no longer virtual)
-*******- added explicit implementation for assignment operator
-*******
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
+******
 **************************************************************************
 *************************************************************************/
 
