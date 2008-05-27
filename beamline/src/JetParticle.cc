@@ -81,27 +81,23 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetParticle::JetParticle( double const& mass, double const& energy )
+JetParticle::JetParticle( double const& mass, double const& charge, double const& momentum )
   : tag_(""),       
-    q_(0.0),
-    E_(energy),         
+    q_(charge),
     m_(mass),         
-    p_( sqrt( E_*E_ - m_*m_ ) ),         
-gamma_(E_/m_),     
+    p_( momentum ),         
+gamma_(ReferenceEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
-   pn_( beta_*gamma_),        
- bRho_(p_ / PH_CNV_brho_to_p ),      
- pni2_( (pn_ > 0.0) ? (1.0 / ( pn_*pn_) ) : 1.0e33 ),      
-  wgt_(1.0)       
+ bRho_(p_ / ((q_/PH_MKS_e) * PH_CNV_brho_to_p ))      
 {                          
 
   state_ = Mapping( "id", Jet__environment::getLastEnv() );    
 
-  if( energy < mass ) {
+  if( momentum <= 0.0 ) {
   ostringstream uic;
-  uic  << "Energy, " << energy << " GeV, is less than mass, " << mass << " GeV.";
+  uic  << "Momentum " << momentum << " GeV is <= 0.0  ";
   throw( GenericException( __FILE__, __LINE__, 
-         "JetParticle::JetParticle( double, double )",
+         "JetParticle::JetParticle( double const&, double const&, double const& )",
          uic.str().c_str() ) );
   }
  
@@ -111,24 +107,20 @@ gamma_(E_/m_),
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetParticle::JetParticle( double const& mass, double const& energy, Mapping const& state) 
+JetParticle::JetParticle( double const& mass, double const& charge, double const& momentum, Mapping const& state) 
   : tag_(""),       
-    q_(0.0),
-    E_(energy),         
+    q_(charge),
     m_(mass),         
-    p_( sqrt( E_*E_ - m_*m_ ) ),         
-gamma_(E_/m_),     
+    p_( momentum ),         
+gamma_(ReferenceEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
-   pn_( beta_*gamma_),        
- bRho_(p_ / PH_CNV_brho_to_p ),      
- pni2_(pn_ > 0.0 ? ( 1.0 / ( pn_*pn_) ) : 1.0e33),      
-  wgt_(1.0),       
+bRho_(p_ /((q_/PH_MKS_e)*PH_CNV_brho_to_p )),
  state_(state_)
 {                          
 
- if( energy < mass ) {
+ if( momentum <= 0.0 ) {
   ostringstream uic;
-  uic  << "Energy, " << energy << " GeV, is less than mass, " << mass << " GeV.";
+  uic  << "Momentum,  " << p_ << " GeV, <= 0.0";
   throw(  GenericException( __FILE__, __LINE__, 
          "JetParticle::JetParticle( double, double, double* )",
          uic.str().c_str() ) );
@@ -141,15 +133,11 @@ gamma_(E_/m_),
 JetParticle::JetParticle( Particle const& u , EnvPtr<double> const& pje) 
  : tag_(u.tag_),       
     q_(u.q_),
-    E_(u.E_),         
     m_(u.m_),         
     p_(u.p_),         
 gamma_(u.gamma_),     
  beta_(u.beta_),      
-   pn_(u.pn_),        
- bRho_(u.bRho_),      
- pni2_(u.pni2_),      
- wgt_(u.wgt_),
+ bRho_(u.bRho_),
  state_(  u.state_.Dim() )
 {
    int dim =  u.state_.Dim();       
@@ -167,15 +155,11 @@ gamma_(u.gamma_),
 JetParticle::JetParticle(JetParticle const& u)
  : tag_(u.tag_),       
     q_(u.q_),
-    E_(u.E_),         
     m_(u.m_),         
     p_(u.p_),         
 gamma_(u.gamma_),     
  beta_(u.beta_),      
-   pn_(u.pn_),        
  bRho_(u.bRho_),      
- pni2_(u.pni2_),      
-  wgt_(u.wgt_),       
 state_(u.state_) {}
 
 
@@ -190,11 +174,8 @@ JetParticle& JetParticle::operator=(JetParticle const& u)
  
   tag_   = u.tag_;
   q_     = u.q_;
-  E_     = u.E_;
   p_     = u.p_;
   m_     = u.m_;
-  pn_    = u.pn_;
-  pni2_  = u.pni2_;
   bRho_  = u.bRho_;
   beta_  = u.beta_;
   gamma_ = u.gamma_;
@@ -313,16 +294,16 @@ MatrixD JetParticle::SymplecticTest() {
   MatrixD M( 6, 6 );
   MatrixD T( "I", 6 ), Ti( "I", 6 );
 
-  T( 2, 2 ) = 1.0 / PH_MKS_c;
-  T( 3, 3 ) = this->ReferenceMomentum() / PH_MKS_c;
-  T( 4, 4 ) = this->ReferenceMomentum() / PH_MKS_c;
-  T( 5, 5 ) = - ( this->ReferenceMomentum() 
+  T[2][2] = 1.0 / PH_MKS_c;
+  T[3][3] = this->ReferenceMomentum() / PH_MKS_c;
+  T[4][4] = this->ReferenceMomentum() / PH_MKS_c;
+  T[5][5] = - ( this->ReferenceMomentum() 
                 * ( this->Momentum() ).standardPart() )
                 / ( this->Energy() ).standardPart();
-  Ti( 2, 2 ) = 1.0 / T( 2, 2 );
-  Ti( 3, 3 ) = 1.0 / T( 3, 3 );
-  Ti( 4, 4 ) = 1.0 / T( 4, 4 );
-  Ti( 5, 5 ) = 1.0 / T( 5, 5 );
+  Ti[2][2] = 1.0 / T[2][2];
+  Ti[3][3] = 1.0 / T[3][3];
+  Ti[4][4] = 1.0 / T[4][4];
+  Ti[5][5] = 1.0 / T[5][5];
   M = (this->state_) .Jacobian();
   M = T*M*Ti;
   return  - M*J*M.transpose()*J;
@@ -336,55 +317,35 @@ void JetParticle::SetReferenceEnergy( double const& energy ) {
 
  if( energy < m_ ) {
   ostringstream uic;
-  uic  << "Energy, " << E_ << " GeV, is less than mass, " << m_ << " GeV.";
+  uic  << "Energy, " << ReferenceEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
   throw(  GenericException( __FILE__, __LINE__, 
          "void JetParticle::SetReferenceEnergy( double )", 
          uic.str().c_str() ) );
  }
 
- E_     = energy;
- p_     = sqrt( E_*E_ - m_*m_ );
- bRho_  = p_ / PH_CNV_brho_to_p;
- gamma_ = E_ / m_;
+ p_     = sqrt( ReferenceEnergy()*ReferenceEnergy() - m_*m_ );
+ bRho_  = p_ / (q_/PH_MKS_e)* PH_CNV_brho_to_p;
+ gamma_ = ReferenceEnergy() / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
- pn_    = beta_*gamma_;
- pni2_  = (pn_ > 0.0 ) ? 1.0 / ( pn_*pn_ ) : 1.0e33;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetParticle::SetReferenceMomentum( double const& new_p ) 
+void JetParticle::SetReferenceMomentum( double const& p ) 
 {
- p_       = new_p;
- E_       = sqrt( p_*p_ + m_*m_ );
- bRho_    = p_ / PH_CNV_brho_to_p;
- gamma_   = E_ / m_;
+ p_       = p;
+ bRho_    = p_ / (q_/PH_MKS_e)*PH_CNV_brho_to_p;
+ gamma_   = ReferenceEnergy() / m_;
  beta_    = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
- pn_      = beta_*gamma_;
- pni2_    = ( pn_ > 0.0 ) ? 1.0 / ( pn_*pn_ ) : 1.0e33;
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double JetParticle::setWeight( double const& w )
-{
-  double ret = wgt_;
-  wgt_ = ( w >= 0.0 ) ? w : 1.0;
-
-  return ret;
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetVector JetParticle::VectorBeta() const
 {
-
   return VectorMomentum()/Energy();
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -423,18 +384,16 @@ JetVector JetParticle::NormalizedVectorMomentum() const
 //   class JetProton
 // **************************************************
 
-JetProton::JetProton() : JetParticle( PH_NORM_mp,  PH_NORM_mp ){
- q_ = PH_MKS_e;
-}
+JetProton::JetProton() 
+ : JetParticle( PH_NORM_mp, PH_MKS_e, PH_NORM_mp )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetProton::JetProton( double const& energy ) 
-: JetParticle( PH_NORM_mp, energy )
-{
- q_ = PH_MKS_e;
-}
+: JetParticle( PH_NORM_mp, PH_MKS_e, energy )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -473,19 +432,15 @@ JetProton::~JetProton()
 // **************************************************
 
 JetAntiProton::JetAntiProton() 
-: JetParticle( PH_NORM_mp, PH_NORM_mp)
-{
- q_ = - PH_MKS_e;
-}
+: JetParticle( PH_NORM_mp,  - PH_MKS_e, PH_NORM_mp)
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetAntiProton::JetAntiProton( double const& energy ) 
-: JetParticle( PH_NORM_mp, energy )
-{
- q_ = - PH_MKS_e;
-}
+: JetParticle( PH_NORM_mp, - PH_MKS_e, energy )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -526,19 +481,15 @@ JetAntiProton::~JetAntiProton()
 // **************************************************
 
 JetElectron::JetElectron() 
-: JetParticle( PH_NORM_me, PH_NORM_me ) 
-{
- q_ = - PH_MKS_e;
-}
+: JetParticle( PH_NORM_me, - PH_MKS_e, PH_NORM_me ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetElectron::JetElectron( double const& energy ) 
-: JetParticle( PH_NORM_me, energy ) 
-{
- q_ = - PH_MKS_e;
-}
+JetElectron::JetElectron( double const& momentum ) 
+: JetParticle( PH_NORM_me, - PH_MKS_e, momentum ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -579,19 +530,15 @@ JetElectron::~JetElectron()
 // **************************************************
 
 JetPositron::JetPositron() 
-: JetParticle( PH_NORM_me, PH_NORM_me ) 
-{
- q_ = PH_MKS_e;
-}
+: JetParticle( PH_NORM_me,  PH_MKS_e, PH_NORM_me ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetPositron::JetPositron( double const& energy ) 
-: JetParticle( PH_NORM_me, energy ) 
-{
- q_ = PH_MKS_e;
-}
+JetPositron::JetPositron( double const& momentum ) 
+: JetParticle( PH_NORM_me,  PH_MKS_e, momentum ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -631,17 +578,15 @@ JetPositron::~JetPositron() {}
 // **************************************************
 
 JetMuon::JetMuon() 
-: JetParticle( PH_NORM_mmu, PH_NORM_mmu )
-{
- q_ = - PH_MKS_e;
-}
+: JetParticle( PH_NORM_mmu,  - PH_MKS_e, PH_NORM_mmu )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetMuon::JetMuon( double const& energy ) : JetParticle( PH_NORM_mmu, energy ){
- q_ = - PH_MKS_e;
-}
+JetMuon::JetMuon( double const& momentum ) 
+: JetParticle( PH_NORM_mmu, - PH_MKS_e,  momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -684,19 +629,15 @@ JetMuon::~JetMuon()
 // **************************************************
 
 JetAntiMuon::JetAntiMuon() 
-: JetParticle( PH_NORM_mmu, PH_NORM_mmu )
-{
- q_ = PH_MKS_e;
-}
+: JetParticle( PH_NORM_mmu,  PH_MKS_e, PH_NORM_mmu )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetAntiMuon::JetAntiMuon( double const& energy ) 
-: JetParticle( PH_NORM_mmu, energy )
-{
- q_ = PH_MKS_e;
-}
+JetAntiMuon::JetAntiMuon( double const& momentum ) 
+: JetParticle( PH_NORM_mmu,PH_MKS_e,  momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
