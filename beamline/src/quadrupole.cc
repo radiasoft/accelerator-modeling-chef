@@ -73,7 +73,7 @@ using FNAL::pcout;
 // **************************************************
 
 quadrupole::quadrupole()
-  : bmlnElmnt( "", 1.0, 0.0 )
+  :  bmlnElmnt( "", 1.0, 0.0 )
 {
      propagator_ = PropagatorPtr( new Propagator( 4 ) );     
      propagator_->setup(*this);
@@ -82,7 +82,7 @@ quadrupole::quadrupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-quadrupole::quadrupole( const char* n, double const& l, double const& s )
+quadrupole::quadrupole( std::string const& n, double const& l, double const& s )
   : bmlnElmnt( n, l, s)
 {
      propagator_ = PropagatorPtr( new Propagator(4) );     
@@ -94,7 +94,7 @@ quadrupole::quadrupole( const char* n, double const& l, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::quadrupole( quadrupole const& x ) 
-  : bmlnElmnt(x), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt(x)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,105 +111,18 @@ quadrupole* quadrupole::Clone() const
 quadrupole::~quadrupole() 
 {}
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::setStrength( double const& s ) 
+quadrupole& quadrupole::operator=( quadrupole const& o)
 {
-  bmlnElmnt::setStrength(s);
-  double integratedStrength = strength_*length_;
+  if ( this == &o ) return *this; 
 
-  if( bml_) 
-  {
-    int counter = 0;
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
-    }
+  bmlnElmnt::operator=(o);
 
-    if( counter <= 0 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void quadrupole::setStrength( double const& s ) {", 
-             "No thin quads in the internal beamline." ) );
-    }
-    else if( counter == 1) {
-      if(elm_) 
-      {
-        elm_->setStrength( integratedStrength );
-      }
-      else 
-      {
-        throw( GenericException( __FILE__, __LINE__, 
-               "void quadrupole::setStrength( double const& s ) {", 
-               "elm_ not set." ) );
-      }
-    }
-    else {
-      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-        if( typeid(**it) == typeid(thinQuad) ) {
-          (*it)->setStrength( integratedStrength/counter );
-        }
-      }
-    }
-  }
+  return (*this);
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::setLength( double const& l ) 
-{
-  double ratio = length_;
-  bmlnElmnt::setLength( l );
-  ratio = length_ / ratio;
-
-  if( bml_) 
-  {
-    int counter = 0;
-    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
-    }
-
-    if( counter <= 0 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void quadrupole::setLength( double const& s )", 
-             "No thin quads in the internal beamline." ) );
-    }
-    else if( counter == 1) {
-      if(elm_) 
-      {
-        elm_->setStrength( ratio*elm_->Strength() );
-      }
-      else 
-      {
-        throw( GenericException( __FILE__, __LINE__, 
-               "void quadrupole::setLength( double const& s )", 
-               "elm_ not set." ) );
-      }
-    }
-    else {
-      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-        if( typeid(**it) == typeid(thinQuad) ) {
-          (*it)->setStrength( ratio*((*it)->Strength()) );
-        }
-        else if( typeid(**it) == typeid(drift) ) {
-          (*it)->setLength( ratio*((*it)->Length()) );
-        }
-        else {
-          ostringstream uic;
-          uic  << "Unrecognized element type "
-               << (*it)->Type()
-               << " in quadrupole "
-               << Name()
-               << "'s internal beamline.";
-          throw( GenericException( __FILE__, __LINE__, 
-                 "void quadrupole::setLength( double const& s )", 
-                 uic.str().c_str() ) );
-        }
-      }
-    }
-  }
-}
 
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -238,7 +151,7 @@ void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void quadrupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "void quadrupole::Split( double const& pc,  ElmPtr& a,  ElmPtr& b )", 
            uic.str().c_str() ) );
   }
 
@@ -292,41 +205,6 @@ void quadrupole::accept( ConstBmlVisitor& v ) const {
   v.visit( *this ); 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::localPropagate( Particle&    p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  quadrupole::localPropagate( JetParticle& p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 // **************************************************
 //   class thinQuad
@@ -342,7 +220,7 @@ thinQuad::thinQuad()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinQuad::thinQuad( const char* n, double const& s ) 
+thinQuad::thinQuad( std::string const& n, double const& s ) 
   : bmlnElmnt(n, 0.0, s) 
 {
   propagator_ = PropagatorPtr( new Propagator() ); 
@@ -354,7 +232,7 @@ thinQuad::thinQuad( const char* n, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( thinQuad const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -370,6 +248,19 @@ thinQuad* thinQuad::Clone() const
 
 thinQuad::~thinQuad() 
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad& thinQuad::operator=( thinQuad const& o)
+{
+  if ( this == &o ) return *this; 
+
+  bmlnElmnt::operator=(o);
+
+  return (*this);
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -402,34 +293,3 @@ void thinQuad::accept( ConstBmlVisitor& v ) const {
   v.visit( *this ); 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinQuad::localPropagate( Particle&    p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  thinQuad::localPropagate( JetParticle& p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinQuad::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinQuad::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);        
-}

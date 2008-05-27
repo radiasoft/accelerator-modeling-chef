@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-******
+*****
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -121,7 +121,7 @@ rbend::rbend()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( const char* n, double const& l, double const& s, double const& bendangle) 
+rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle) 
   : bmlnElmnt( n, l, s ),
     angle_(bendangle), 
     usFaceAngle_(0.0),
@@ -137,7 +137,7 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( const char* n, double const& l, double const& s, double const& bendangle, double const& entryangle ) 
+rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle, double const& entryangle ) 
   : bmlnElmnt( n, l, s),
     angle_(bendangle), 
     usFaceAngle_(0.0),
@@ -170,7 +170,7 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( const char* n, double const& l, double const& s, double const& bendangle, double const& us, double const& ds )
+rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle, double const& us, double const& ds )
   : bmlnElmnt( n, l, s),
     angle_(bendangle), 
     usFaceAngle_(us),
@@ -221,7 +221,7 @@ rbend::rbend( const char* n, double const& l, double const& s, double const& ben
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+rbend::rbend( std::string const& n, double const& l, double const& s,           double const& bendangle, 
                                               double const& entry_angle, 
                                               double const& us,          double const& ds )
   : bmlnElmnt( n, l, s),
@@ -288,7 +288,7 @@ rbend::rbend( char const* n, double const& l, double const& s,           double 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( char const* n, double const& l, double const& s,           double const& bendangle, 
+rbend::rbend( std::string const& n, double const& l, double const& s,           double const& bendangle, 
                                               double const& entry_angle, double const& exit_angle, 
                                               double const& us,          double const& ds )
 try
@@ -320,8 +320,7 @@ rbend::rbend( rbend const& x )
   : bmlnElmnt(x ),
     angle_(x.angle_),
     usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
-    usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_),
-    propagator_(PropagatorPtr(x.propagator_->Clone()))
+    usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -329,63 +328,6 @@ rbend::rbend( rbend const& x )
 
 rbend::~rbend() 
 {}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::setStrength( double const& s ) 
-{
-  if( strength_ == 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::setStrength( double const& s )", 
-           "Cannot set strength of rbend when initial strength is zero."
-           "\nCurrent version has no way of accessing attributes of edges." ) );
-  }
-
-  double oldStrength = strength_;
-  bmlnElmnt::setStrength(s);
-  double ratio = strength_ / oldStrength;
-
-  if( bml_) 
-  {
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      (*it)->setStrength( ratio*((*it)->Strength()) );
-      // NOTE: if *it points to a marker -- i.e. if the
-      // rbend comes from splitting another rbend, so that
-      // one or both edges have been replaced with markers --
-      // setting its strength will do no harm.
-    }
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::setStrength( double const& s )", 
-           "IMPOSSIBLE: Internal beamline not initialized!" ) );
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void rbend::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -676,41 +618,9 @@ void rbend::accept( ConstBmlVisitor& v ) const
   v.visit(*this ); 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 double rbend::getEntryAngle() const
 {
   return usAngle_;
