@@ -69,8 +69,8 @@ using FNAL::pcout;
 //   class rfcavity 
 // **************************************************
 
-rfcavity::rfcavity( const char* name_arg)
-  :   bmlnElmnt(name_arg, 1.0, 0.0),
+rfcavity::rfcavity( std::string const& name)
+  :   bmlnElmnt(name, 1.0, 0.0),
   w_rf_(0.0),
   phi_s_(0.0),
   sin_phi_s_(0.0),
@@ -86,7 +86,7 @@ rfcavity::rfcavity( const char* name_arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rfcavity::rfcavity( const char* name_arg, // name
+rfcavity::rfcavity( std::string const& name,
                     double const& lng_arg,    // length [m]
                     double const& f_arg,      // rf frequency 
                     double const& eV_arg,     // rf voltage 
@@ -94,7 +94,7 @@ rfcavity::rfcavity( const char* name_arg, // name
                     double const& Q_arg,      // Quality factor 
                     double const& R_arg       // shunt impedance 
                   ) 
-:   bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ) ,
+:   bmlnElmnt( name, lng_arg, eV_arg*1.0e-9 ) ,
     w_rf_(MATH_TWOPI*f_arg),
     phi_s_(phi_s_arg),
     sin_phi_s_(sin(phi_s_arg)),
@@ -116,8 +116,7 @@ rfcavity::rfcavity( rfcavity const& x )
     sin_phi_s_(x.sin_phi_s_),
     Q_(x.Q_),
     R_(x.R_),
-    h_(x.h_),
-    propagator_ (x.propagator_->Clone()) 
+    h_(x.h_)
 {}
 
 
@@ -127,6 +126,23 @@ rfcavity::rfcavity( rfcavity const& x )
 rfcavity::~rfcavity()
 {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+rfcavity& rfcavity::operator=( rfcavity const& rhs) 
+{
+  if ( this == &rhs) return *this;
+  bmlnElmnt::operator=(rhs);
+  w_rf_      = rhs.w_rf_;
+  phi_s_     = rhs.phi_s_;
+  sin_phi_s_ = rhs.sin_phi_s_;
+  Q_         = rhs.Q_;
+  R_         = rhs.R_;
+  h_         = rhs.h_;
+  return *this;
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -208,37 +224,6 @@ double rfcavity::getReferenceTime()    const
   }
 
   return value;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::setStrength( double const& strength)
-{
-  bmlnElmnt::setStrength(strength);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -412,39 +397,6 @@ double const& rfcavity::getHarmonicNumber() const
   return h_; 
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::localPropagate( Particle& p) 
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::localPropagate( JetParticle& p) 
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::localPropagate( ParticleBunch& b) 
-{
-  (*propagator_)(*this, b);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::localPropagate( JetParticleBunch& b) 
-{
-  (*propagator_)(*this, b);
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -453,8 +405,8 @@ void rfcavity::localPropagate( JetParticleBunch& b)
 //   class thinrfcavity 
 // **************************************************
 
-thinrfcavity::thinrfcavity(const char *name_arg) 
-:   bmlnElmnt(name_arg, 0.0, 0.0)
+thinrfcavity::thinrfcavity(std::string const& name) 
+:   bmlnElmnt(name, 0.0, 0.0)
   , w_rf_( 0.0 )
   , phi_s_( 0.0 )
   , sin_phi_s_( 0.0 )
@@ -469,14 +421,14 @@ thinrfcavity::thinrfcavity(const char *name_arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinrfcavity::thinrfcavity(const char * name_arg, // name
+thinrfcavity::thinrfcavity(std::string const& name,
                    	   double const& f_arg,      // rf frequency 
                    	   double const& eV_arg,     // rf voltage 
                    	   double const& phi_s_arg,  // synchronous phase 
                    	   double const& Q_arg,      // Quality factor 
                    	   double const& R_arg       // shunt impedance 
                    	   ) 
-:   bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ) 
+:   bmlnElmnt( name, 0.0, eV_arg*1.0e-9 ) 
   , w_rf_( MATH_TWOPI*f_arg )
   , phi_s_( phi_s_arg )
   , sin_phi_s_( sin(phi_s_) )
@@ -498,7 +450,7 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
   , sin_phi_s_( x.sin_phi_s_ )
   , Q_( x.Q_ )
   , R_( x.R_ )
-  , h_( x.h_ ), propagator_ (x.propagator_->Clone() )
+  , h_( x.h_ )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -508,7 +460,23 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
 thinrfcavity::~thinrfcavity()
 {}
 
+/||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinrfcavity& rfcavity::operator=( thinrfcavity const& rhs) 
+{
+  if ( this == &rhs) return *this;
+  bmlnElmnt::operator=(rhs);
+  w_rf_      = rhs.w_rf_;
+  phi_s_     = rhs.phi_s_;
+  sin_phi_s_ = rhs.sin_phi_s_;
+  Q_         = rhs.Q_;
+  R_         = rhs.R_;
+  h_         = rhs.h_;
+  return *this;
+
+}
+/||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& thinrfcavity::writeTo(ostream& os) 
@@ -687,38 +655,6 @@ double const& thinrfcavity::getR()                const
 double const& thinrfcavity::getHarmonicNumber()   const 
 { 
   return h_; 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinrfcavity::localPropagate( Particle& p) 
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinrfcavity::localPropagate( JetParticle& p) 
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinrfcavity::localPropagate( ParticleBunch& b) 
-{
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinrfcavity::localPropagate( JetParticleBunch& b) 
-{
-  (*propagator_)(*this, b);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
