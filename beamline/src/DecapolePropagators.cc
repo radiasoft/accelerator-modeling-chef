@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
 ******
 **************************************************************************
 *************************************************************************/
@@ -48,7 +53,7 @@ namespace {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename Particle_t>
-void propagate( thinDecapole& elm, Particle_t & p ) 
+void propagate( thinDecapole const& elm, Particle_t & p ) 
 {
 
  // "Strength" is B'l in Tesla
@@ -79,8 +84,8 @@ void propagate( thinDecapole& elm, Particle_t & p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( thinDecapole& elm,    Particle& p );
-template void propagate( thinDecapole& elm, JetParticle& p );
+template void propagate( thinDecapole const& elm,    Particle& p );
+template void propagate( thinDecapole const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
@@ -91,17 +96,17 @@ template void propagate( thinDecapole& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thinDecapole::Propagator::operator()( thinDecapole& elm, Particle& p ) 
+void thinDecapole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<thinDecapole const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinDecapole::Propagator::operator()( thinDecapole& elm, JetParticle&     p ) 
+void thinDecapole::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<thinDecapole const&>(elm), p);
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******
 **************************************************************************
 *************************************************************************/
@@ -48,7 +53,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( octupole& elm,  Particle_t&     p )
+void propagate( octupole const& elm,  Particle_t&     p )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -56,9 +61,9 @@ void propagate( octupole& elm,  Particle_t&     p )
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 
@@ -66,7 +71,7 @@ void propagate( octupole& elm,  Particle_t&     p )
 }
 
 template <typename Particle_t>
-void propagate( thinOctupole& elm, Particle_t & p ) 
+void propagate( thinOctupole const& elm, Particle_t & p ) 
 {
 
  // "Strength" is B'l in Tesla
@@ -96,10 +101,10 @@ void propagate( thinOctupole& elm, Particle_t & p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     octupole& elm,    Particle& p );
-template void propagate(     octupole& elm, JetParticle& p );
-template void propagate( thinOctupole& elm,    Particle& p );
-template void propagate( thinOctupole& elm, JetParticle& p );
+template void propagate(     octupole const& elm,    Particle& p );
+template void propagate(     octupole const& elm, JetParticle& p );
+template void propagate( thinOctupole const& elm,    Particle& p );
+template void propagate( thinOctupole const& elm, JetParticle& p );
 
 #endif
 
@@ -109,7 +114,7 @@ template void propagate( thinOctupole& elm, JetParticle& p );
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::Propagator::setup( octupole& arg)
+void octupole::Propagator::setup( bmlnElmnt& arg)
 {
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
   ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
@@ -123,32 +128,40 @@ void octupole::Propagator::setup( octupole& arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::Propagator::operator()( octupole& elm, Particle&  p )
+void  octupole::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  ::propagate(elm, p );
+  setup(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void octupole::Propagator::operator()(  octupole& elm, JetParticle&  p ) 
+void octupole::Propagator::operator()( bmlnElmnt const& elm, Particle&  p )
 { 
-  ::propagate(elm, p );
+  ::propagate( static_cast<octupole const&>(elm),p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinOctupole::Propagator::operator()( thinOctupole& elm, Particle&  p )
+void octupole::Propagator::operator()(  bmlnElmnt const& elm, JetParticle&  p ) 
 { 
-  ::propagate(elm, p );
+  ::propagate( static_cast<octupole const&>(elm),p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinOctupole::Propagator::operator()(  thinOctupole& elm, JetParticle&  p ) 
+void thinOctupole::Propagator::operator()( bmlnElmnt const& elm, Particle&  p )
 { 
-  ::propagate(elm,p );
+  ::propagate( static_cast<thinOctupole const&>(elm),p );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinOctupole::Propagator::operator()(  bmlnElmnt const& elm, JetParticle&  p ) 
+{ 
+  ::propagate( static_cast<thinOctupole const&>(elm),p );
 }
 

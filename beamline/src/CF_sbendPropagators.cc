@@ -32,7 +32,10 @@
 ******    in CF_sbend::Propagator::setup
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
-******  
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 **************************************************************************
 *************************************************************************/
 
@@ -58,7 +61,7 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 template<typename Particle_t>
-void propagate( CF_sbend& elm, Particle_t&  p)
+void propagate( CF_sbend const& elm, Particle_t&  p)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -66,9 +69,9 @@ void propagate( CF_sbend& elm, Particle_t&  p)
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 
@@ -92,12 +95,11 @@ template void propagate( CF_sbend& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::Propagator::setup( CF_sbend& arg ) 
+void CF_sbend::Propagator::setup( bmlnElmnt& arg ) 
 {
+  CF_sbend& elm = static_cast<CF_sbend&>(arg);
 
-  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
-
-  if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
+  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(elm);
 
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
@@ -107,37 +109,29 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   // 2* ends +   body     =  L  
   //----------------------------------------------------------------------------       
 
-  double field       =  arg.Strength();
-  double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
-  double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
+  double field       =  elm.Strength();
+  double frontLength =   (6.0/15.0)*( elm.Length()/(4.0*n_) );
+  double sepLength   =  (16.0/15.0)*( elm.Length()/(4.0*n_) );
   
-  Edge      usedge( "",   tan(arg.getEntryAngle())*field );  
-  sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                ); 
-  sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0,                 arg.getExitFaceAngle() );
-  Edge      dsedge( "",  -tan(arg.getExitAngle())*field );  
+  Edge      usedge( "",   tan(elm.getEntryAngle())*field );  
+  sbend     usbend( "" ,  frontLength,     field, (frontLength/elm.Length())*elm.getBendAngle(), elm.getEntryFaceAngle(), 0.0                ); 
+  sbend     dsbend( "",   frontLength,     field, (frontLength/elm.Length())*elm.getBendAngle(), 0.0,                 elm.getExitFaceAngle() );
+  Edge      dsedge( "",  -tan(elm.getExitAngle())*field );  
 
-  sbend  separator( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
-  sbend       body( "",   sepLength,       field, (  sepLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
+  sbend  separator( "",   frontLength,     field, (frontLength/elm.Length())*elm.getBendAngle(), 0.0, 0.0 );
+  sbend       body( "",   sepLength,       field, (  sepLength/elm.Length())*elm.getBendAngle(), 0.0, 0.0 );
 
-  usbend.nullEntryEdge();
-  usbend.nullExitEdge();
-  separator.nullEntryEdge();
-  separator.nullExitEdge();
-  dsbend.nullEntryEdge();
-  dsbend.nullExitEdge();
-  body.nullEntryEdge();
-  body.nullExitEdge();
 
-  thinSextupole ts( "",0.0 );
-  thinQuad      tq( "",0.0 );
+  thinSextupole ts( "", (1.0/4.0*n_)*elm.getSextupole()/elm.Length() );
+  thinQuad      tq( "", (1.0/4.0*n_)*elm.getQuadrupole()/elm.Length()  );
  
   bml_ = BmlPtr( new beamline("CF_SBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {
 
     if ( i == 0 ) { 
-      bml_->append( usedge );
-      bml_->append( usbend );
+      if ( usedge.Strength() != 0.0 ) bml_->append( usedge  );
+      bml_->append( usbend  );
     } 
     else {
       bml_->append( separator);
@@ -157,7 +151,7 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   
     if ( i == n_-1 ) { 
       bml_->append( dsbend );
-      bml_->append( dsedge );
+      if ( usedge.Strength() != 0.0 ) bml_->append( dsedge  );
     } 
     else {
       bml_->append( separator );
@@ -168,17 +162,25 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::Propagator::operator()(CF_sbend& elm, Particle& p )
+void  CF_sbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  ::propagate(elm,p);
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::Propagator::operator()(CF_sbend& elm, JetParticle& p )
+void CF_sbend::Propagator::operator()(bmlnElmnt const& elm, Particle& p )
 { 
-  ::propagate(elm,p);
+  ::propagate(static_cast<CF_sbend const&>(elm),p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_sbend::Propagator::operator()(bmlnElmnt const& elm, JetParticle& p )
+{ 
+  ::propagate(static_cast<CF_sbend const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

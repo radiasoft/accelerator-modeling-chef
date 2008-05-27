@@ -25,12 +25,16 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******
-******
 ****** Note: The Bend propagation algorithm is documented in  
 ******       L. Michelotti, "Exact Map Through Ideal Bends (Again ?)
 ******       Proceedings of the 1995 PAC, p 2828  
-******   
+******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 ******
 **************************************************************************
 *************************************************************************/
@@ -57,7 +61,7 @@ namespace {
 
 template<typename Particle_t>
 void propagate( std::complex<double> const& propPhase, 
-                std::complex<double> const& propTerm, double const& dphi, Bend& elm, Particle_t& p ) 
+                std::complex<double> const& propTerm, double const& dphi, Bend const& elm, Particle_t& p ) 
 {
 
  typedef typename PropagatorTraits<Particle_t>::State_t              State_t;
@@ -73,7 +77,7 @@ void propagate( std::complex<double> const& propPhase,
  Component_t psq = 1.0 + state[i_ndp];
  psq *= psq;
 
- Component_t E_factor = 1.0 / sqrt( psq + p.PNI2() );
+ Component_t E_factor = 1.0 / sqrt( psq + 1.0/( p.pn()*p.pn() ));
 
  Component_t beta_1 = E_factor * state[i_npx];
  Component_t beta_2 = E_factor * state[i_npy];
@@ -122,9 +126,9 @@ void propagate( std::complex<double> const& propPhase,
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
 template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, Particle& p ); 
+                         std::complex<double> const& propTerm, double const& dphi, Bend const& elm, Particle& p ); 
 template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend& elm, JetParticle& p ); 
+                         std::complex<double> const& propTerm, double const& dphi, Bend const& elm, JetParticle& p ); 
 #endif
 //-----------------------------------------------------------------------------------
 
@@ -133,8 +137,10 @@ template void propagate( std::complex<double> const& propPhase,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::setup(Bend& elm) 
+void Bend::Propagator::setup(bmlnElmnt& arg) 
 {
+  
+  Bend& elm = static_cast<Bend&>(arg); 
 
   double& angle_       = Bend::bend_core_access::get_angle(elm);  
   double& usAngle_     = Bend::bend_core_access::get_usAngle(elm); 
@@ -178,16 +184,27 @@ void Bend::Propagator::setup(Bend& elm)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::operator()( Bend& elm, Particle& p ) 
-{
-  ::propagate(propPhase_, propTerm_, dphi_, elm, p);
+void  Bend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::operator()( Bend& elm, JetParticle& p ) 
+void Bend::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate( propPhase_, propTerm_, dphi_, elm, p);
+  ::propagate(propPhase_, propTerm_, dphi_,  static_cast<Bend const&>(elm), p);
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Bend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+{
+  ::propagate( propPhase_, propTerm_, dphi_, static_cast<Bend const&>(elm), p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

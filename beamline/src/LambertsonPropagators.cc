@@ -24,6 +24,12 @@
 ******  Authors:    Leo Michelotti         michelotti@fnal.gov
 ******              Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -40,22 +46,22 @@
 namespace {
 
 template<typename Particle_t>
-void propagate( thinLamb& elm, Particle_t& p);
+void propagate( thinLamb const& elm, Particle_t& p);
  
 template<>
-void propagate( thinLamb& elm,    Particle& p) { } // empty specialization 
+void propagate( thinLamb const& elm,    Particle& p) { } // empty specialization 
 
 template<>
-void propagate( thinLamb& elm, JetParticle& p) { } // empty specialization 
+void propagate( thinLamb const& elm, JetParticle& p) { } // empty specialization 
 
 template<>
-void propagate( thinLamb& elm, JetParticleBunch& b)
+void propagate( thinLamb const& elm, JetParticleBunch& b)
 {  
 // NOT DEFINED -- FIX ME ! 
 }  
 
 template<>
-void propagate( thinLamb& elm, ParticleBunch& p)
+void propagate( thinLamb const& elm, ParticleBunch& p)
 {
 
   // FIXME !
@@ -118,8 +124,8 @@ void propagate( thinLamb& elm, ParticleBunch& p)
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( thinLamb& elm,    Particle& p );
-template void propagate( thinLamb& elm, JetParticle& p );
+template void propagate( thinLamb const& elm,    Particle& p );
+template void propagate( thinLamb const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
@@ -129,33 +135,33 @@ template void propagate( thinLamb& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( thinLamb& elm,    Particle& p ) 
+void thinLamb::Propagator::operator()( bmlnElmnt const& elm,    Particle& p ) 
 { 
-  ::propagate(elm,p);
+  ::propagate(static_cast<thinLamb const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( thinLamb& elm, JetParticle& p ) 
+void thinLamb::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 { 
-  ::propagate(elm,p);
+  ::propagate(static_cast<thinLamb const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( thinLamb& elm,  ParticleBunch& b ) 
+void thinLamb::Propagator::operator()( bmlnElmnt const& elm,  ParticleBunch& b ) 
 { 
-  ::propagate(elm,b);
+  ::propagate(static_cast<thinLamb const&>(elm),b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( thinLamb& elm,  JetParticleBunch& b ) 
+void thinLamb::Propagator::operator()( bmlnElmnt const& elm,  JetParticleBunch& b ) 
 { 
-  ::propagate(elm,b);
+  ::propagate(static_cast<thinLamb const&>(elm),b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

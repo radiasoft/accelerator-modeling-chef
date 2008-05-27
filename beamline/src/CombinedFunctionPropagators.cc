@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
 ******
 ******
 **************************************************************************
@@ -49,7 +54,7 @@ namespace {
 
 
  template<typename Particle_t>
- void propagate( combinedFunction& elm, Particle_t& p)
+ void propagate( combinedFunction const& elm, Particle_t& p)
  {
     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -66,8 +71,8 @@ namespace {
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( combinedFunction& elm,    Particle& p );
-template void propagate( combinedFunction& elm, JetParticle& p );
+template void propagate( combinedFunction const& elm,    Particle& p );
+template void propagate( combinedFunction const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
@@ -75,20 +80,28 @@ template void propagate( combinedFunction& elm, JetParticle& p );
 } // namespace
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::Propagator::operator()( combinedFunction& elm, Particle& p ) 
-{
-  ::propagate( elm, p);
+void  combinedFunction::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::Propagator::operator()( combinedFunction& elm, JetParticle&     p ) 
+void combinedFunction::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate( elm,p);
+  ::propagate( static_cast<combinedFunction const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void combinedFunction::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+{
+  ::propagate( static_cast<combinedFunction const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

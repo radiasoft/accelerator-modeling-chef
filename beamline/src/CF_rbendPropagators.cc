@@ -32,6 +32,9 @@
 ******  - bug fix: reduced length of separator element by two
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
 ******  
 **************************************************************************
 *************************************************************************/
@@ -57,7 +60,7 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 template<typename Particle_t>
-void propagate( CF_rbend& elm, Particle_t&  p)
+void propagate( CF_rbend const& elm, Particle_t&  p)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -67,9 +70,9 @@ void propagate( CF_rbend& elm, Particle_t&  p)
 
   Component_t cdt_in = state[i_cdt];
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
  
@@ -93,8 +96,10 @@ template void propagate( CF_rbend& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::setup( CF_rbend& arg ) 
+void CF_rbend::Propagator::setup( bmlnElmnt& arg ) 
 {
+
+  CF_rbend& elm = static_cast<CF_rbend&>(arg);
 
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
@@ -104,31 +109,31 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   // 2* ends +   body     =  L  
   //----------------------------------------------------------------------------       
 
-  double field       =  arg.Strength();
-  double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
-  double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
+  double field       =  elm.Strength();
+  double frontLength =   (6.0/15.0)*( elm.Length()/(4.0*n_) );
+  double sepLength   =  (16.0/15.0)*( elm.Length()/(4.0*n_) );
   
-  Edge       usedge( "",  tan( arg.getEntryAngle()*field ) );  
-  rbend      usbend( "" , frontLength, field,  0.0,    arg.getEntryFaceAngle(),  0.0                   ); 
-  rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      arg.getExitFaceAngle());
-  Edge       dsedge( "",  -tan( arg.getExitAngle()* field ) );  
+  Edge       usedge( "",  tan( elm.getEntryAngle()*field ) );  
+  rbend      usbend( "" , frontLength, field,  0.0,    elm.getEntryFaceAngle(),  0.0                   ); 
+  rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      elm.getExitFaceAngle());
+  Edge       dsedge( "",  -tan( elm.getExitAngle()*field ) );  
 
   rbend   separator( "",  frontLength, field,  0.0,    0.0,                      0.0                   );
   rbend        body( "",  sepLength,   field,  0.0,    0.0,                      0.0                   );
 
-  usbend.nullEntryEdge();
-  usbend.nullExitEdge();
+     usbend.nullEntryEdge();
+     usbend.nullExitEdge();
   separator.nullEntryEdge();
   separator.nullExitEdge();
-  dsbend.nullEntryEdge();
-  dsbend.nullExitEdge();
-  body.nullEntryEdge();
-  body.nullExitEdge();
+     dsbend.nullEntryEdge();
+     dsbend.nullExitEdge();
+       body.nullEntryEdge();
+       body.nullExitEdge();
 
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
 
-  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
+  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(elm);
   bml_ = BmlPtr( new beamline("CF_RBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {
@@ -166,17 +171,25 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::operator()(CF_rbend& elm, Particle& p )
+void  CF_rbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  ::propagate(elm,p);
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::operator()(CF_rbend& elm, JetParticle& p )
+void CF_rbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 { 
-  ::propagate(elm,p);
+  ::propagate( static_cast<CF_rbend const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_rbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+{ 
+  ::propagate(  static_cast<CF_rbend const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

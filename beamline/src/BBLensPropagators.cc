@@ -24,10 +24,12 @@
 ******  Authors:  Leo   Michelotti  michelotti@fnal.gov
 ******            J.-F. Ostiguy     ostiguy@fnal.gov
 ******                                                                
-******              Fermilab  
-******              Batavia, IL   60510                                
-******                                                                
-******                                              
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -51,7 +53,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( BBLens& elm, Particle_t& p )
+void propagate( BBLens const& elm, Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -90,8 +92,8 @@ void propagate( BBLens& elm, Particle_t& p )
 //-----------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( BBLens& elm,    Particle& p );
-template void propagate( BBLens& elm, JetParticle& p );
+template void propagate( BBLens const& elm,    Particle& p );
+template void propagate( BBLens const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------
@@ -101,23 +103,23 @@ template void propagate( BBLens& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::setup( BBLens& elm)
+void BBLens::Propagator::setup( bmlnElmnt& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::operator()( BBLens& elm, Particle& p ) 
+void BBLens::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<BBLens const&>(elm), p );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::operator()( BBLens& elm, JetParticle&     p ) 
+void BBLens::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<BBLens const&>(elm), p );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

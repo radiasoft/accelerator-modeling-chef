@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
 ******
 **************************************************************************
 *************************************************************************/
@@ -46,7 +51,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( drift& elm, Particle_t& p )
+void propagate( drift const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -67,7 +72,7 @@ void propagate( drift& elm, Particle_t& p )
 }
 
 template<typename Particle_t>
-void mad_propagate( drift& elm, Particle_t& p )
+void mad_propagate( drift const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -93,10 +98,10 @@ void mad_propagate( drift& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     drift& elm,    Particle& p );
-template void propagate(     drift& elm, JetParticle& p );
-template void mad_propagate( drift& elm,    Particle& p );
-template void mad_propagate( drift& elm, JetParticle& p );
+template void propagate(     drift const& elm,    Particle& p );
+template void propagate(     drift const& elm, JetParticle& p );
+template void mad_propagate( drift const& elm,    Particle& p );
+template void mad_propagate( drift const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
@@ -106,17 +111,17 @@ template void mad_propagate( drift& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void drift::Propagator::operator()( drift& elm, Particle& p ) 
+void drift::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+ ::propagate(static_cast<drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void drift::Propagator::operator()( drift& elm, JetParticle&     p ) 
+void drift::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  ::propagate(elm,p);
+ ::propagate(static_cast<drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -126,17 +131,17 @@ void drift::Propagator::operator()( drift& elm, JetParticle&     p )
 // ****   MAD style optical propagator ***** 
 
 
-void MADDriftPropagator::operator()( drift& elm, Particle& p )  
+void MADDriftPropagator::operator()( bmlnElmnt const& elm, Particle& p )  
 {
- ::mad_propagate(elm,p);
+ ::mad_propagate(static_cast<drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void MADDriftPropagator::operator()( drift& elm, JetParticle& p )
+void MADDriftPropagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 {  
- ::mad_propagate(elm,p);
+ ::mad_propagate(static_cast<drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
