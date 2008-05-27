@@ -41,16 +41,16 @@
 ****** - modified visitor to reduce src file coupling. 
 ******   visit() now takes advantage of (reference) dynamic type.
 ****** - use std::string consistently for string operations. 
-******
 ****** Jul 2007           ostiguy@fnal.gov
 ****** - new, less memory-hungry PinnedFrameSet implementation
-******   
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
-******                                                        
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified bmlnElmnt::setLength
-****** 
+****** May 2008           michelotti@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
+****** - eliminated obsolete attributes (IToField_, etc ) 
 **************************************************************************
 *************************************************************************/
 
@@ -219,8 +219,6 @@ try
     length_(l),     
     strength_(s),  
     align_(0),   
-    iToField_(1.0),   
-    shuntCurrent_(0.0), 
     bml_(),      
     elm_(),    
     pinnedFrames_(),
@@ -235,9 +233,11 @@ try
     uic  << "Argument list "
          "( " << n << ", " << l << ", " << s << " )"
          " specifies a negative length.";
-    throw( GenericException( __FILE__, __LINE__, 
+    throw(  GenericException( __FILE__, __LINE__, 
            "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)", 
            uic.str().c_str() ) );
+    // P.S. bmlnElmnt::GenericException will be eliminated soon.
+    // -lpjm
   }
 }
 catch( GenericException const& ge )
@@ -255,8 +255,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
                     length_(a.length_),     
                   strength_(a.strength_),  
                      align_(0),   
-                  iToField_(a.iToField_),   
-              shuntCurrent_(a.shuntCurrent_), 
                        bml_(),      
                        elm_(),    
               pinnedFrames_(a.pinnedFrames_),
@@ -264,12 +262,13 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
                 attributes_(a.attributes_),
                        tag_(a.tag_),
                  pAperture_(0),
-                     dataHook()
+                   dataHook()
 {
 
+     pAperture_ = a.pAperture_ ? a.pAperture_->Clone() : 0;
+     align_ = a.align_     ? new alignment(*a.align_)  : 0;
 
- pAperture_ = a.pAperture_ ? a.pAperture_->Clone()    : 0;
-     align_ = a.align_     ? new alignment(*a.align_) : 0;
+     propagator_ =  a.isBeamline() ? PropagatorPtr(): PropagatorPtr( a.propagator_->Clone() );
 
      init_internals(a.bml_, a.elm_); 
 }
@@ -337,8 +336,6 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     length_       = rhs.length_;     
     strength_     = rhs.strength_;  
     align_        = rhs.align_ ? new alignment(*rhs.align_) : 0;  
-    iToField_     = rhs.iToField_;   
-    shuntCurrent_ = rhs.shuntCurrent_; 
     bml_          = BmlPtr();      
     elm_          = ElmPtr();    
     pinnedFrames_ = rhs.pinnedFrames_;
@@ -347,6 +344,7 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     tag_          = rhs.tag_;
     pAperture_    = rhs.pAperture_ ? rhs.pAperture_->Clone() : 0 ; 
     dataHook      = rhs.dataHook;
+    propagator_   = isBeamline() ? PropagatorPtr() : PropagatorPtr(rhs.propagator_->Clone());
 
     init_internals(rhs.bml_, rhs.elm_); 
 
@@ -367,178 +365,81 @@ bmlnElmnt::~bmlnElmnt() {
 }
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// Begin: basic propagator functions
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-void bmlnElmnt::propagate( Particle& x ) 
-{
-  if( !align_  ) {
-    localPropagate  ( x );
-  }
-  else {
-    enterLocalFrame ( x );
-    localPropagate  ( x );
-    leaveLocalFrame ( x );
-  }
-}
-
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::propagate( JetParticle& x )
-{
-  if( !align_  ) {
-    localPropagate  ( x );
-  }
-  else {
-    enterLocalFrame ( x );
-    localPropagate  ( x );
-    leaveLocalFrame ( x );
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void bmlnElmnt::propagate( ParticleBunch& x )
+void bmlnElmnt::setLength( double const& length ) 
 {
 
-  if( !align_  ) {
-    localPropagate  ( x );
-  }
-  else {
 
-    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
-    localPropagate  ( x );
-    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
+   if ( isBeamline() ) {
 
+    throw(   GenericException( __FILE__, __LINE__, 
+             "void bmlnElmnt::setLength( double const& length )",
+             "Resetting the length of a beamline is not allowed." ));
+   }
+
+
+   if( length <= 0 ) {
+    
+    stringstream msg;  
+    msg << " ***ERROR***: Lengths must be nonzero and positive. You have entered length " << length 
+               <<  " for " << Type() << "  " << Name() << endl;
+    throw(  GenericException( __FILE__, __LINE__, 
+					  "void bmlnElmnt::setLength( double const& length )", msg.str() ));
   }
+
+#if  0
+  if( length_ == 0.0 ) {
+    stringstream msg;  
+    msg << "*** ERROR ***: The length of a thin element cannot be modified. \n"
+        << "You have entered length " << length 
+        << " for " << Type() << "  " << Name() 
+        << endl;
+    throw(   GenericException( __FILE__, __LINE__, 
+             "void bmlnElmnt::setLength( double const& length )", msg.str() ));
+  }
+#endif
+ 
+  length_ = length;
+
+  // Notify propagator of attribute change  
+
+  propagator_->setAttribute(*this, "LENGTH", length );
+
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void bmlnElmnt::propagate( JetParticleBunch& x )
+void bmlnElmnt::setStrength( double const& s ) 
 {
 
-  if( !align_  ) {
-    localPropagate  ( x );
-  }
-  else {
+  if ( isBeamline() ) {
 
-    for ( JetParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
-    localPropagate  ( x );
-    for ( JetParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
+    throw(   GenericException( __FILE__, __LINE__, 
+             "void bmlnElmnt::setLength( double const& x )",
+             "Resetting the strength of a beamline is not allowed." ) );
+   }
 
-  }
-}
+  strength_ = s; 
 
+  // Notify propagator of attribute change  
 
+  propagator_->setAttribute(*this, "STRENGTH", s );
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::setLength( double const& x ) 
-{
-  static bool firstTime = true;
-  if( x < 0 ) {
-    (*pcerr) << "*** WARNING *** "
-              "\n*** WARNING *** bmlnElmnt::setLength"
-              "\n*** WARNING *** Lengths must be positive."
-              "\n*** WARNING *** You have entered length " << x 
-         <<                    " for " << Type() << "  " << Name()
-         <<   "\n*** WARNING *** The absolute value will be used."
-              "\n*** WARNING *** "
-         << endl;
-  }
-  double newLength = std::abs(x);
-
-  if( length_ > 0 ) {
-    if( newLength > 0 ) {
-      // ??? I am unsure whether it is better to do this      ???
-      // ??? here or to zero ctRef_ and REQUIRE another pass  ???
-      // ??? with the RefRegVisitor to set it correctly.      ???
-      // ??? - lpjm                                           ???
-      ctRef_ *= (newLength/length_);
-
-      length_ = newLength;
-    }
-    else {
-      (*pcerr) <<   "*** ERROR *** :"
-                  "\n*** ERROR *** : " << __FILE__ << "," << __LINE__
-               << "\n*** ERROR *** : void bmlnElmnt::setLength( double const& x )"
-                  "\n*** ERROR *** : Attempt made to zero the length of " 
-               <<                    Type() << " " << Name()
-               <<                    ", whose current length is " 
-               <<                    length_
-               << "\n*** ERROR *** : This is not allowed."
-               << endl;
-
-      ostringstream uic;
-      uic  << "Attempt made to zero the length of " 
-           << Type() << " " << Name()
-           << ", whose current length is " 
-           << length_
-           << "\nThis is not allowed.";
-      throw( GenericException( __FILE__, __LINE__, 
-             "void bmlnElmnt::setLength( double const& x )", 
-             uic.str().c_str() ) );
-    }
-  }
-
-  else {
-    length_ = newLength;
-
-    if( firstTime ) {
-      (*pcerr) <<   "*** WARNING *** : "
-                  "\n*** WARNING *** : " << __FILE__ << "," << __LINE__
-               << "\n*** WARNING *** : void bmlnElmnt::setLength( double const& x )"
-                  "\n*** WARNING *** : Attempt made to change the length of a "
-                  "\n*** WARNING *** : thin (i.e. zero length) element: "
-               << Type() << ", " << Name() << "."
-                  "\n*** WARNING *** : The change will be made, but proceed"
-                  "\n*** WARNING *** : very cautiously. If nothing else, timing"
-                  "\n*** WARNING *** : will have to be recalculated with a RefRegVisitor."
-                  "\n*** WARNING *** : "
-                  "\n*** WARNING *** : This message printed only once."
-                  "\n*** WARNING *** : "
-               << endl;
-      firstTime = false;
-    }
-  }
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setStrength( double const& s ) {
-  strength_ = s - getShunt()*IToField(); 
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::setCurrent( double const& I ) {
-  setStrength((I-getShunt()) * IToField());
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
+void bmlnElmnt::peekAt( double& s, Particle const& p ) const
 { 
  (*pcout) << setw(12) << s;
 
- s += const_cast<bmlnElmnt*>(this)->OrbitLength( prt );  // Kludge!!
+ s += const_cast<bmlnElmnt*>(this)->OrbitLength( p );  // Kludge!!
 
  (*pcout) << setw(12) << s           
                   << " : " 
@@ -547,7 +448,6 @@ void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
       << setw(15) << Type()      
       << setw(12) << length_      
       << setw(12) << strength_    
-      << setw(12) << shuntCurrent_
       << endl;
 }
 
@@ -1216,7 +1116,7 @@ void bmlnElmnt::setReferenceTime( double const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::rename( std::string n ) {
+void bmlnElmnt::rename( std::string const&  n ) {
 
   ident_ = (!n.empty()) ? n : string("NONAME"); 
 
@@ -1275,16 +1175,6 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setShunt(double const& a) 
-{ 
-  // Set the value of the shunt, creating it if necessary
-  setStrength( strength_ + ( shuntCurrent_ - a ) * IToField() );
-  shuntCurrent_ = a;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
@@ -1386,3 +1276,112 @@ void bmlnElmnt::setReferenceTime( Particle& particle)
   propagate( particle );
   setReferenceTime( particle.get_cdt() );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::propagate( Particle& x ) const
+{
+  if( !align_  ) {
+    localPropagate  ( x );
+  }
+  else {
+    enterLocalFrame ( x );
+    localPropagate  ( x );
+    leaveLocalFrame ( x );
+  }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::propagate( JetParticle& x ) const
+{
+
+  if( !align_  ) {
+    localPropagate  ( x );
+  }
+  else {
+    enterLocalFrame ( x );
+    localPropagate  ( x );
+    leaveLocalFrame ( x );
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void bmlnElmnt::propagate( ParticleBunch& x ) const
+{
+
+  if( !align_  ) {
+    localPropagate  ( x );
+  }
+  else {
+
+    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
+    localPropagate  ( x );
+    for ( ParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
+
+  }
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void bmlnElmnt::propagate( JetParticleBunch& x ) const
+{
+
+  if( !align_  ) {
+    localPropagate  ( x );
+  }
+  else {
+
+    for ( JetParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { enterLocalFrame( *it ); }
+    localPropagate  ( x );
+    for ( JetParticleBunch::iterator it = x.begin();  it != x.end(); ++it) { leaveLocalFrame( *it ); }
+
+  }
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::localPropagate( Particle& p ) const
+{
+  (*propagator_)(*this, p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::localPropagate( JetParticle& p ) const
+{
+  (*propagator_)(*this, p);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::localPropagate( ParticleBunch& b ) const
+{
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::localPropagate( JetParticleBunch& b ) const
+{
+  (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+

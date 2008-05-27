@@ -49,7 +49,10 @@
 ****** - wrote placeholder implementation for combinedFunction::setLength
 ******   : evidently, one had never been written
 ****** - added placeholder setStrength method.
-****** 
+****** May 2008           ostiguy@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -91,7 +94,7 @@ combinedFunction::combinedFunction()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n) 
+combinedFunction::combinedFunction( std::string const& n ) : bmlnElmnt(n) 
 {
   bml_ =  BmlPtr( new beamline );
 }
@@ -99,7 +102,7 @@ combinedFunction::combinedFunction( const char* n ) : bmlnElmnt(n)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-combinedFunction::combinedFunction( const char* n, beamline const& b ) 
+combinedFunction::combinedFunction( std::string const& n, beamline const& b ) 
 : bmlnElmnt(n) 
 {
   bml_ = BmlPtr( b.Clone() );
@@ -144,7 +147,7 @@ void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
+  throw(  GenericException( __FILE__, __LINE__, 
          "void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const", 
          uic.str().c_str() ) );
 }
@@ -249,44 +252,6 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
     }
   }
   return multStrength;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void combinedFunction::setStrength( double const& )
-{
-  (*pcerr) <<   "*** WARNING ****: "
-              "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void combinedFunction::setStrength( double const& )" 
-              "\n*** WARNING ****: Attempt to explicitly set the strength of a combinedFunction. "
-              "\n*** WARNING ****: This is most likely an error.  Will not comply."
-              "\n*** WARNING ****: Continuing, nonetheless... "
-              "\n*** WARNING ****: " 
-           << std::endl;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void combinedFunction::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -417,7 +382,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 
   double f, m, z;
 
-  m = ( jetparticle.State().Jacobian() )( x, x );
+  m = ( jetparticle.State().Jacobian() )[x][x];
   m -= 1.0;
   if( std::abs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -525,40 +490,6 @@ void combinedFunction::accept( BmlVisitor& v )
 void combinedFunction::accept( ConstBmlVisitor& v ) const 
 { 
  v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void combinedFunction::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)( *this,p ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void combinedFunction::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)( *this,p ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-void combinedFunction::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)( *this,b ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void combinedFunction::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)( *this,b ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
