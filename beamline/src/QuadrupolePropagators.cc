@@ -25,7 +25,13 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
 ******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -48,7 +54,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( quadrupole& elm, Particle_t& p )
+void propagate( quadrupole const& elm, Particle_t& p )
 {
    
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -56,9 +62,9 @@ void propagate( quadrupole& elm, Particle_t& p )
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
   
@@ -66,7 +72,7 @@ void propagate( quadrupole& elm, Particle_t& p )
 }
 
 template <typename Particle_t>
-void propagate( thinQuad& elm, Particle_t& p ) 
+void propagate( thinQuad const& elm, Particle_t& p ) 
 {
 
  // "Strength" is B'l in Tesla
@@ -88,50 +94,9 @@ void propagate( thinQuad& elm, Particle_t& p )
 
 #if 0
 template<typename Particle_t>
-void mad_propagate( quadrupole& elm, Particle_t& p )
+void mad_propagate( quadrupole const& elm, Particle_t& p )
 {
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  double const length = elm.Length();
-
-  Component_t q0divp0 = 1.0 + p.get_ndp(); 
-  Component_t K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
-  Component_t Beta    = p.Beta();   
-  Component_t Gamma   = p.Gamma();
-
-  Component_t kxsqr =  K1;
-  Component_t kysqr = -K1;
-
-  Component_t factor = ( elm.Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
-
-  Component_t arg = factor * elm.Length();
-
-  Component_t cn_x, sn_x, cn_y, sn_y;
-  
-  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
-      cn_x = cos( arg );
-      sn_x = sin( arg )/factor;
-      cn_y = cosh( arg );
-      sn_y = sinh( arg )/factor;
-   } else {                                 // Defocussing horizontally
-      cn_x = cosh( arg );
-      sn_x = sinh( arg )/factor;
-      cn_y = cos( arg );
-      sn_y = sin( arg )/factor;
-   } 
-  
-    Component_t T200 =   ( length - sn_x * cn_x );
-    Component_t T203 = - ( sn_x * sn_x          );
-    Component_t T233 =   ( length + sn_x * cn_x );
-    Component_t T211 = - ( length - sn_y * cn_y );
-    Component_t T214 =   ( sn_y * sn_y          );        
-    Component_t T244 =   ( length + sn_y * cn_y );
-  
     State_t instate =  state; 
 
     instate[i_npx] /= q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
@@ -166,10 +131,10 @@ void mad_propagate( quadrupole& elm, Particle_t& p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     quadrupole& elm,    Particle& p );
-template void propagate(     quadrupole& elm, JetParticle& p );
-template void propagate(       thinQuad& elm,    Particle& p );
-template void propagate(       thinQuad& elm, JetParticle& p );
+template void propagate(     quadrupole const& elm,    Particle& p );
+template void propagate(     quadrupole const& elm, JetParticle& p );
+template void propagate(       thinQuad const& elm,    Particle& p );
+template void propagate(       thinQuad const& elm, JetParticle& p );
 
 #endif
 
@@ -178,7 +143,7 @@ template void propagate(       thinQuad& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Propagator::setup( quadrupole& arg)
+void quadrupole::Propagator::setup( bmlnElmnt& arg)
 {
  
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
@@ -260,39 +225,94 @@ void quadrupole::Propagator::setup( quadrupole& arg)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Propagator::operator()( quadrupole& elm, Particle& p ) 
-{
-  ::propagate(elm ,p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::Propagator::operator()( quadrupole& elm, JetParticle& p ) 
-{
-  ::propagate(elm,p);
+void  quadrupole::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinQuad::Propagator::operator()( thinQuad& elm, Particle& p ) 
+void quadrupole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<quadrupole const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinQuad::Propagator::operator()( thinQuad& elm, JetParticle& p ) 
+void quadrupole::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<quadrupole const&>(elm),p);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinQuad::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+{
+  ::propagate( static_cast<thinQuad const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-namespace {
-} // anonymous namespace
+void thinQuad::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+{
+  ::propagate( static_cast<thinQuad const&>(elm),p);
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#if  0
+void quadrupole::MADPropagator::setup( )  
+{
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t& state = p.State();
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  double const length = elm.Length();
+
+  Component_t q0divp0 = 1.0 + p.get_ndp(); 
+  Component_t K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
+  Component_t Beta    = p.Beta();   
+  Component_t Gamma   = p.Gamma();
+
+  Component_t kxsqr =  K1;
+  Component_t kysqr = -K1;
+
+  Component_t factor = ( elm.Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+
+  Component_t arg = factor * elm.Length();
+
+  Component_t cn_x, sn_x, cn_y, sn_y;
+  
+  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
+      cn_x = cos( arg );
+      sn_x = sin( arg )/factor;
+      cn_y = cosh( arg );
+      sn_y = sinh( arg )/factor;
+   } else {                                 // Defocussing horizontally
+      cn_x = cosh( arg );
+      sn_x = sinh( arg )/factor;
+      cn_y = cos( arg );
+      sn_y = sin( arg )/factor;
+   } 
+  
+    Component_t T200 =   ( length - sn_x * cn_x );
+    Component_t T203 = - ( sn_x * sn_x          );
+    Component_t T233 =   ( length + sn_x * cn_x );
+    Component_t T211 = - ( length - sn_y * cn_y );
+    Component_t T214 =   ( sn_y * sn_y          );        
+    Component_t T244 =   ( length + sn_y * cn_y );
+  
+
+#endif
 

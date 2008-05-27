@@ -37,6 +37,9 @@
 ******                            
 ****** - refactored and streamlined code: take advantage of 
 ******   Vector and Mapping operators.  
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******                                    
 ******
 **************************************************************************
@@ -61,7 +64,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( sector& elm, Particle_t& p )
+void propagate( sector const& elm, Particle_t& p )
 {
 
  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -83,8 +86,8 @@ void propagate( sector& elm, Particle_t& p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     sector& elm,    Particle& p );
-template void propagate(     sector& elm, JetParticle& p );
+template void propagate(     sector const& elm,    Particle& p );
+template void propagate(     sector const& elm, JetParticle& p );
 
 #endif
 
@@ -94,25 +97,25 @@ template void propagate(     sector& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void sector::Propagator::setup(sector& elm )
+void sector::Propagator::setup( bmlnElmnt& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void sector::Propagator::operator()( sector& elm, Particle& p ) 
+void sector::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<sector const&>(elm),p);
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sector::Propagator::operator()( sector& elm, JetParticle& p ) 
+void sector::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<sector const&>(elm),p);
 }
 
 

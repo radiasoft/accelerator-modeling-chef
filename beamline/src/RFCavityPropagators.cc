@@ -21,9 +21,14 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
-******  Authors:   Jean-Francois Ostiguy  ostiguy@fnal.gov                                                  
+******  Authors:   Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******             Leo Michelotti         michelotti@fnal.gov                                    
 ******             
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******                                                                
 ******   
 **************************************************************************
@@ -54,7 +59,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( thinrfcavity& elm, Particle_t&  p)
+void propagate( thinrfcavity const& elm, Particle_t&  p)
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -84,16 +89,16 @@ void propagate( thinrfcavity& elm, Particle_t&  p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( rfcavity& elm, Particle_t&  p)
+void propagate( rfcavity const& elm, Particle_t&  p)
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 }
@@ -104,10 +109,10 @@ void propagate( rfcavity& elm, Particle_t&  p)
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(         rfcavity& elm,    Particle& p );
-template void propagate(         rfcavity& elm, JetParticle& p );
-template void propagate(     thinrfcavity& elm,    Particle& p );
-template void propagate(     thinrfcavity& elm, JetParticle& p );
+template void propagate(         rfcavity const& elm,    Particle& p );
+template void propagate(         rfcavity const& elm, JetParticle& p );
+template void propagate(     thinrfcavity const& elm,    Particle& p );
+template void propagate(     thinrfcavity const& elm, JetParticle& p );
 
 #endif
 
@@ -117,8 +122,11 @@ template void propagate(     thinrfcavity& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Propagator::setup( rfcavity& elm)
+void rfcavity::Propagator::setup( bmlnElmnt& arg)
 {
+
+  rfcavity& elm = static_cast<rfcavity&>(arg);
+
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
   bml = BmlPtr(new beamline(""));
@@ -130,41 +138,82 @@ void rfcavity::Propagator::setup( rfcavity& elm)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Propagator::operator()( rfcavity& elm, Particle& p)
-{
-  ::propagate(elm, p);
+void  rfcavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Propagator::operator()( rfcavity& elm, JetParticle& p)
+void rfcavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
 {
-  ::propagate(elm, p);
+  ::propagate(static_cast<rfcavity const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinrfcavity::Propagator::setup( thinrfcavity& elm)
+void rfcavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
+{
+  ::propagate(static_cast<rfcavity const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::Propagator::setup( bmlnElmnt& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinrfcavity::Propagator::operator()( thinrfcavity& elm, Particle& p)
+void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
 {
-  ::propagate(elm, p);
+  ::propagate(static_cast<thinrfcavity const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinrfcavity::Propagator::operator()( thinrfcavity& elm, JetParticle& p)
+void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 {
-  ::propagate(elm, p);
+  ::propagate(static_cast<thinrfcavity const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0
+void rfcavity::setStrength( double const& strength)
+{
+  bmlnElmnt::setStrength(strength);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::setLength( double const& )
+{
+  ostringstream methodIdent;
+  methodIdent << "void " << Type() << "::setLength( double const& )";
+  
+  (*pcerr) <<   "*** ERROR ****: "
+              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
+              "\n*** ERROR ****: Resetting the length of " 
+           << Type() << " is not allowed in this version."
+              "\n*** ERROR ****: " 
+           << std::endl;
+
+  ostringstream uic;
+  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
+  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
+           methodIdent.str().c_str(),
+           uic.str().c_str() ) );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#endif

@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******
 ******
 **************************************************************************
@@ -64,7 +69,7 @@ inline double standardPart( double const& value) { return value; }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( sbend& elm, Particle_t&     p )
+void propagate( sbend const& elm, Particle_t&     p )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -73,9 +78,9 @@ void propagate( sbend& elm, Particle_t&     p )
   State_t& state = p.State();
 
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline:: const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
   
@@ -86,7 +91,7 @@ void propagate( sbend& elm, Particle_t&     p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template < typename Element_t, typename Particle_t>
-void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
+void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
 {
 
   static const int BMLN_dynDim = 6;
@@ -189,10 +194,10 @@ void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& 
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     sbend& elm,    Particle& p );
-template void propagate(     sbend& elm, JetParticle& p );
-template void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
-template void mad_propagate( sbend& elm, Particle_t& p, double const& rho, double const& n )
+template void propagate(     sbend const& elm,    Particle& p );
+template void propagate(     sbend const& elm, JetParticle& p );
+template void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
+template void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
 template double standardPart( double const& value);
 template double standardPart( Jet    const& value);
 
@@ -204,24 +209,26 @@ template double standardPart( Jet    const& value);
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::setup( sbend& arg)
+void sbend::Propagator::setup( bmlnElmnt& arg)
 { 
   
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
+  sbend& elm = static_cast<sbend&>(arg);
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm); 
   bml = BmlPtr( new beamline("SBEND_PRIVATE") );
  
-  double& angle_       = sbend::sbend_core_access::get_angle(arg);  
-  double& usAngle_     = sbend::sbend_core_access::get_usAngle(arg); 
-  double& dsAngle_     = sbend::sbend_core_access::get_dsAngle(arg); 
-  double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(arg); 
-  double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(arg); 
+  double& angle_       = sbend::sbend_core_access::get_angle(elm);  
+  double& usAngle_     = sbend::sbend_core_access::get_usAngle(elm); 
+  double& dsAngle_     = sbend::sbend_core_access::get_dsAngle(elm); 
+  double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(elm); 
+  double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(elm); 
 
 
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * arg.Strength() ) );
+  EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
 
-  BendPtr bend( new Bend( "", arg.Length(),  arg.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
+  BendPtr  bend( new Bend( "", elm.Length(),  elm.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
 
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* arg.Strength() ) );
+  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* elm.Strength() ) );
 
 
   bml->append( uedge );
@@ -234,18 +241,25 @@ void sbend::Propagator::setup( sbend& arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::operator()( sbend& elm, Particle& p)
-{
-  ::propagate( elm, p);
+void  sbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::operator()( sbend& elm, JetParticle& p)
+void sbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
 {
-  ::propagate( elm, p);
+  ::propagate( static_cast<sbend const&>(elm), p);
+}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
+{
+  ::propagate( static_cast<sbend const&>(elm), p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -253,21 +267,25 @@ void sbend::Propagator::operator()( sbend& elm, JetParticle& p)
 
 #if 0
 
-void sbend::MADPropagator::operator()( sbend& elm, Particle& p)
+void sbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p)
 {
   double const rho = p.BRho()/pbe->Strength();
-  ::mad_propagate( elm, p, rho, 0.0);
+  ::mad_propagate( static_cast<sbend&>(elm), p, rho, 0.0);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::MADPropagator::operator()( sbend& elm, JetParticle& p)
+void sbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 {
   // for MAD Propagator
   //--------------------
   double const rho = p.BRho()/pbe->Strength();
-  ::mad_propagate( elm, p, rho, 0.0);
+  ::mad_propagate( static_cast<sbend&>(elm), p, rho, 0.0);
 }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #endif
