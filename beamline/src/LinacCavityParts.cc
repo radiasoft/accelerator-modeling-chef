@@ -28,6 +28,10 @@
 ******
 ****** Dec 2007   ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
+****** May 2008   ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ******
 **************************************************************************
 **************************************************************************
@@ -41,7 +45,7 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LCavityUpstream::LCavityUpstream( const  char*  name, double const& length, double const& rfreq,         
+LCavityUpstream::LCavityUpstream( std::string const& name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
   : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
@@ -53,8 +57,8 @@ LCavityUpstream::LCavityUpstream( const  char*  name, double const& length, doub
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityUpstream::LCavityUpstream( LCavityUpstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_),
-    propagator_(o.propagator_->Clone() )
+  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
+
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -71,6 +75,20 @@ LCavityUpstream* LCavityUpstream::Clone() const
 LCavityUpstream::~LCavityUpstream()
 {}
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LCavityUpstream& LCavityUpstream::operator=(  LCavityUpstream const& rhs)
+{
+  if (this == &rhs) return *this;
+
+  bmlnElmnt::operator=( rhs);
+
+  w_rf_   = rhs.w_rf_;
+  phi_s_  = rhs.phi_s_;
+
+  return *this;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -146,41 +164,12 @@ void  LCavityUpstream::setPhi( double const& radians)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::localPropagate( Particle& p)
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityUpstream::localPropagate( JetParticle& p)
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityUpstream::localPropagate( ParticleBunch& b)
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityUpstream::localPropagate( JetParticleBunch& b)
-{ 
-  (*propagator_)(*this, b);
-}
-
 //----------------------------------------------------------------------------------
 //  DOWSTREAM LCAVITY SECTION
 //----------------------------------------------------------------------------------
 
 
-LCavityDnstream::LCavityDnstream( const  char*  name, double const& length, double const& rfreq,         
+LCavityDnstream::LCavityDnstream( std::string const&  name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
   : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
@@ -192,8 +181,7 @@ LCavityDnstream::LCavityDnstream( const  char*  name, double const& length, doub
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityDnstream::LCavityDnstream( LCavityDnstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_),
-    propagator_(o.propagator_->Clone() )
+  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -210,6 +198,21 @@ LCavityDnstream* LCavityDnstream::Clone() const
 LCavityDnstream::~LCavityDnstream()
 {}
 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LCavityDnstream& LCavityDnstream::operator=(  LCavityDnstream const& rhs)
+{
+  if (this == &rhs) return *this;
+
+  bmlnElmnt::operator=( rhs);
+
+  w_rf_   = rhs.w_rf_;
+  phi_s_  = rhs.phi_s_;
+
+  return *this;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -285,31 +288,3 @@ void  LCavityDnstream::setPhi( double const& radians)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::localPropagate( Particle& p)
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityDnstream::localPropagate( JetParticle& p)
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityDnstream::localPropagate( ParticleBunch& b)
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  LCavityDnstream::localPropagate( JetParticleBunch& b)
-{ 
-  (*propagator_)(*this, b);
-}
