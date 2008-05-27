@@ -40,6 +40,9 @@
 ****** - use std::string for string operations. 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008           ostiguy@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
 ******                                                               
 **************************************************************************
 *************************************************************************/
@@ -72,7 +75,7 @@ thinDecapole::thinDecapole ()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinDecapole::thinDecapole ( char const* n, double const& s ) 
+thinDecapole::thinDecapole ( std::string const& n, double const& s ) 
  : bmlnElmnt( n, 0.0, s ) 
 {
  // The strength is to be interpreted as
@@ -85,7 +88,7 @@ thinDecapole::thinDecapole ( char const* n, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole( thinDecapole const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr( x.propagator_->Clone()))  
+  : bmlnElmnt( x )
 {}
 
 
@@ -97,7 +100,6 @@ thinDecapole& thinDecapole::operator=( thinDecapole const& rhs)
   if ( &rhs == this) return *this;
 
   bmlnElmnt::operator=( rhs); 
-  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );   
 
   return *this;
 }
@@ -146,37 +148,5 @@ void thinDecapole::accept( BmlVisitor& v )
 void thinDecapole::accept( ConstBmlVisitor& v ) const  
 { 
   v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinDecapole::localPropagate( Particle&    p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  thinDecapole::localPropagate( JetParticle& p )   
-{ 
-  (*propagator_)(*this, p);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinDecapole::localPropagate( ParticleBunch&  b)   
-{ 
-  (*propagator_)(*this, b);        
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  thinDecapole::localPropagate( JetParticleBunch& b )   
-{ 
-  (*propagator_)(*this, b);        
 }
 

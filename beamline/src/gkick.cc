@@ -114,8 +114,7 @@ gkick::gkick( gkick const& x )
     angle_( x.angle_ ),  
     dz_   ( x.dx_  ),    
     v_    ( x.v_   ),  
-    t_    ( x.t_   ),
-    propagator_( x.propagator_->Clone() )
+    t_    ( x.t_   )
 {}
 
 
@@ -137,8 +136,6 @@ gkick&  gkick::operator=( gkick const& rhs) {
   dz_   = rhs.dx_;    
   v_    = rhs.v_;  
   t_    = rhs.t_;
-  propagator_ = PropagatorPtr(rhs.propagator_->Clone() );
-
   return *this; 
 }
 
@@ -242,14 +239,14 @@ void  gkick::set_t( double const& t)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&   gkick::xOffset()
+double const&   gkick::xOffset() const
 {
   return dx_; 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&   gkick::xpOffset()
+double const&   gkick::xpOffset() const
 {
    return dxp_; 
 }
@@ -257,7 +254,7 @@ double const&   gkick::xpOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::yOffset()
+double const&    gkick::yOffset() const
 {
    return dy_; 
 }
@@ -266,7 +263,7 @@ double const&    gkick::yOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  gkick:: ypOffset()
+double const&  gkick:: ypOffset() const
 {
    return dyp_; 
 }
@@ -274,7 +271,7 @@ double const&  gkick:: ypOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::lOffset()
+double const&    gkick::lOffset() const
 {
    return dl_; 
 }
@@ -282,7 +279,7 @@ double const&    gkick::lOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::pOffset()
+double const&    gkick::pOffset() const
 {
    return dp_; 
 }
@@ -290,7 +287,7 @@ double const&    gkick::pOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::zOffset()
+double const&    gkick::zOffset() const
 {
    return dz_; 
 }
@@ -298,7 +295,7 @@ double const&    gkick::zOffset()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::angle()
+double const&    gkick::angle() const
 {
    return angle_; 
 }
@@ -306,7 +303,7 @@ double const&    gkick::angle()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::v()
+double const&    gkick::v() const
 {
    return v_; 
 }
@@ -314,7 +311,7 @@ double const&    gkick::v()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&    gkick::t()
+double const&    gkick::t() const
 {
    return t_; 
 }
@@ -351,36 +348,5 @@ void gkick::accept( BmlVisitor& v )
 void gkick::accept( ConstBmlVisitor& v ) const
 {
    v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void gkick::localPropagate( Particle& p ) 
-{
-   (*propagator_)( *this, p); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void gkick::localPropagate( JetParticle& p ) 
-{
-   (*propagator_)( *this, p); 
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void gkick::localPropagate( ParticleBunch& b ) 
-{
-   (*propagator_)( *this, b); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void gkick::localPropagate( JetParticleBunch& b ) 
-{
-   (*propagator_)( *this, b); 
 }
 
