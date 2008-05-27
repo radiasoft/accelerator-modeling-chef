@@ -75,7 +75,7 @@ ThinPole::ThinPole( int pole)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ThinPole::ThinPole( const char* name, double const& integrated_strength, int pole)
+ThinPole::ThinPole( std::string const& name, double const& integrated_strength, int pole)
   : bmlnElmnt( name, 0.0, integrated_strength ), pole_(pole)
 {
   propagator_ = PropagatorPtr(new Propagator() );
@@ -140,39 +140,6 @@ int ThinPole::getPole() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::localPropagate(Particle& p)
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ThinPole::localPropagate(JetParticle& p)
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ThinPole::localPropagate(ParticleBunch& b)
-{
-  (*propagator_)(*this, b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void ThinPole::localPropagate(JetParticleBunch& b)
-{
-  (*propagator_)(*this, b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 // **************************************************
 //   class thin2pole 
 // **************************************************
@@ -185,7 +152,7 @@ thin2pole::thin2pole()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-thin2pole::thin2pole( const char* name, double const& integrated_strength )
+thin2pole::thin2pole( std::string const& name, double const& integrated_strength )
   : ThinPole( name, integrated_strength,2 )
 {}
 
@@ -245,7 +212,7 @@ thin12pole::thin12pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-thin12pole::thin12pole ( const char* n, double const& s ) 
+thin12pole::thin12pole ( std::string const& n, double const& s ) 
 : ThinPole( n, s, 12 ) 
 {}
 
@@ -302,7 +269,7 @@ thin14pole::thin14pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin14pole::thin14pole ( const char* n, double const& s ) 
+thin14pole::thin14pole ( std::string const& n, double const& s ) 
   : ThinPole( n, s,14 ) 
 {}
 
@@ -360,7 +327,7 @@ thin16pole::thin16pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin16pole::thin16pole ( const char* n, double const& s ) 
+thin16pole::thin16pole ( std::string const& n, double const& s ) 
   : ThinPole( n, s, 16 )
 {}
 
@@ -414,7 +381,7 @@ thin18pole::thin18pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin18pole::thin18pole ( const char* n, double const& s ) 
+thin18pole::thin18pole ( std::string const&  n, double const& s ) 
   : ThinPole( n, s, 18 )
 {}
 
