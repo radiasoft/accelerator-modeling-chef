@@ -126,7 +126,7 @@ Pinger& Pinger::operator=( Pinger const& rhs)
   counter_         = rhs.counter_;        
 
   return *this;
-
+}
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -212,7 +212,7 @@ HPinger::~HPinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-HPinger& HPigner::operator=( HPinger const& rhs)
+HPinger& HPinger::operator=( HPinger const& rhs)
 {
   if ( this == &rhs ) return *this;
   Pinger::operator=(rhs);
@@ -291,7 +291,7 @@ VPinger::~VPinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-VPinger& VPigner::operator=( VPinger const& rhs)
+VPinger& VPinger::operator=( VPinger const& rhs)
 {
   if ( this == &rhs ) return *this;
   Pinger::operator=(rhs);
