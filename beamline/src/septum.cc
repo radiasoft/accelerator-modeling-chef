@@ -41,6 +41,10 @@
 ****** - use std::string for string operations.
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008           ostiguy@fnal.gov
+*******- setStrength()/Length() now dispatched to propagator by base class
+*******  (no longer virtual)
+*******- added explicit implementation for assignment operator
 **************************************************************************
 *************************************************************************/
 
@@ -64,7 +68,7 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSeptum::thinSeptum( char const* n )
+thinSeptum::thinSeptum( std::string const& n )
 : bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
@@ -74,7 +78,7 @@ thinSeptum::thinSeptum( char const* n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, double const& xw)
+thinSeptum::thinSeptum( std::string const& n, double const& sP, double const& sN, double const& xw)
   : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
 {
   propagator_ = PropagatorPtr( new Propagator() );
@@ -96,7 +100,7 @@ thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
 
 thinSeptum::thinSeptum( thinSeptum const& x ) 
   : bmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
-    xWire_(x.xWire_), propagator_(x.propagator_->Clone() )
+    xWire_(x.xWire_)
 {}
 
 
@@ -112,7 +116,6 @@ thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
   strengthPos_ =  rhs.strengthPos_;
   strengthNeg_ =  rhs.strengthNeg_;
   xWire_       =  rhs.xWire_;
-  propagator_  =  PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this;
 }
@@ -193,30 +196,3 @@ void thinSeptum::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinSeptum::localPropagate( Particle& p ) 
-{ 
-   (*propagator_)(*this, p); 
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSeptum::localPropagate( JetParticle& p ) 
-{ 
-   (*propagator_)(*this, p); 
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSeptum::localPropagate( ParticleBunch& b ) 
-{ 
-   (*propagator_)(*this, b); 
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSeptum::localPropagate( JetParticleBunch& b ) 
-{ 
-   (*propagator_)(*this, b); 
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
