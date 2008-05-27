@@ -39,13 +39,15 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
-****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ****** - eliminated (unused) code for slots with embedded elements
-****** 
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added placeholder Slot::setLength method
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -55,7 +57,6 @@
 #endif
 
 #include <basic_toolkit/iosetup.h>
-#include <basic_toolkit/GenericException.h>
 #include <beamline/marker.h>
 #include <beamline/Slot.h>
 #include <beamline/SlotPropagators.h>
@@ -115,7 +116,7 @@ Slot::Slot( char const* nm, Frame const& y )
 {
   if( !out_.isOrthonormal() )
   {
-    throw( GenericException( __FILE__, __LINE__,
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            "Slot::Slot( char const * nm, Frame const& y )", 
            "Current implementation requires that frames be orthonormal." ) );
   }
@@ -133,8 +134,7 @@ Slot::Slot( char const* nm, Frame const& y )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( Slot const& x )
-  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ), 
-    propagator_(x.propagator_->Clone() )
+  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ) 
 {
   align_ =  x.align_ ? new alignment(*x.align_) : 0; 
 }
@@ -148,6 +148,20 @@ Slot::~Slot()
   if( align_) { delete align_; align_ = 0; }
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Slot& Slot::operator=( Slot const& other) 
+{
+   if (this == &other) return *this;  
+
+   bmlnElmnt::operator=(other);
+   
+   in_  = other.in_;
+   out_ = other.out_;
+
+   return *this;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -160,7 +174,7 @@ void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
   out_.reset();
 
   Vector driftOffset(3); 
-  driftOffset(2) = lng;
+  driftOffset[2] = lng;
   
   out_.rotate( - ang, out_.getyAxis() );
   out_.translate( driftOffset );
@@ -177,7 +191,7 @@ void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
   out_.reset();
 
   Vector driftOffset(3); 
-  driftOffset(2) = lng;
+  driftOffset[2] = lng;
   
   out_.translate( driftOffset );
   out_.rotate( - ang, out_.getyAxis() );
@@ -193,7 +207,7 @@ void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
   out_.reset();
 
   Vector driftOffset(3); 
-  driftOffset(2) = lng;
+  driftOffset[2] = lng;
   
   out_.rotate( - ang, out_.getxAxis() );
   out_.translate( driftOffset );
@@ -210,7 +224,7 @@ void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
   out_.reset();
 
   Vector driftOffset(3); 
-  driftOffset(2) = lng;
+  driftOffset[2] = lng;
   
   out_.translate( driftOffset );
   out_.rotate( - ang, out_.getxAxis() );
@@ -255,30 +269,10 @@ int Slot::setOutFrame( Frame const& frm )
   int ret = 0;
   if( ret = frm.isOrthonormal() ) { out_ = frm; }   
   else {
-    throw( GenericException( __FILE__, __LINE__,
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
          " int Slot::setOutFrame( const Frame& frm )", 
          "Current implementation requires that frames be orthonormal." ) );
   }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Slot::setLength( double const& )
-{
-  (*pcerr) << "\n*** WARNING *** "
-              "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-           << "\n*** WARNING *** void Slot::setLength( double const& )"
-           << "\n*** WARNING *** This operation disallowed because of ambiguity."
-              "\n*** WARNING *** "
-           << endl;
-
-  ostringstream uic;
-  uic << "This operation is disallowed for Slots"
-         "\nbecause of ambiguity.";
-  throw( GenericException( __FILE__, __LINE__,
-         "void Slot::setLength( double const& )", 
-         uic.str().c_str() ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -293,13 +287,13 @@ int Slot::checkFrame( Frame const& f ) const
   int ret = 0;
 
   if( !f.isOrthonormal() ) {
-    throw( GenericException( __FILE__, __LINE__,
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires that frames be orthonormal." ) );
   }
 
   if( f.getOrigin() != zero.getOrigin() ) {
-    throw( GenericException( __FILE__, __LINE__,
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation requires no displacement of origin." ) );
   }
@@ -307,7 +301,7 @@ int Slot::checkFrame( Frame const& f ) const
   else if( (  f.getAxis(y) != zero.getAxis(y) ) && 
            (  f.getAxis(z) != zero.getAxis(z) )
          ) {
-    throw( GenericException( __FILE__, __LINE__,
+    throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
            " int Slot::checkFrame( const Frame& f ) const", 
            "Current implementation allows rotation about "
            "y or z axis, but not both." ) );
@@ -336,37 +330,6 @@ double Slot::OrbitLength( const Particle& x )
   return length_;
 }
  
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  Slot::localPropagate( Particle& p)
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  Slot::localPropagate( JetParticle& p)
-{
-  (*propagator_)(*this, p);
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  Slot::localPropagate( ParticleBunch& b)
-{
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  Slot::localPropagate( JetParticleBunch& b)
-{
-  (*propagator_)(*this, b);
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -423,7 +386,7 @@ istream& Slot::readFrom( istream& is )
     if ( strcasecmp(type, "slot_END") != 0 ) {
       ostringstream uic;
       uic << "Expecting \"slot_END\" but got " << type;
-      throw( GenericException( __FILE__, __LINE__,
+      throw( bmlnElmnt::GenericException( __FILE__, __LINE__,
              "istream& Slot::readFrom( istream& is )", 
              uic.str().c_str() ) );
     }
