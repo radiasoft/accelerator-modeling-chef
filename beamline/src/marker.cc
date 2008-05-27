@@ -41,6 +41,9 @@
 ****** - use std::string for string operations. 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008           ostiguy@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
 **************************************************************************
 *************************************************************************/
 
@@ -68,7 +71,7 @@ marker::marker() : bmlnElmnt()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-marker::marker( const char* n ) 
+marker::marker( std::string const& n ) 
   : bmlnElmnt(n) 
 {
   propagator_ = PropagatorPtr( new Propagator() );
@@ -80,7 +83,7 @@ marker::marker( const char* n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 marker::marker( marker const& x ) 
-  : bmlnElmnt( x ), propagator_(x.propagator_->Clone()) 
+  : bmlnElmnt( x )
 {}
 
 
@@ -92,8 +95,6 @@ marker&  marker::operator=( marker const& rhs)
   if ( &rhs == this ) return *this;
   
   bmlnElmnt::operator=(rhs);
-
-  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this;
 }
@@ -137,38 +138,6 @@ void marker::accept( BmlVisitor& v )
 void marker::accept( ConstBmlVisitor& v ) const 
 { 
   v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void marker::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void marker::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void marker::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void marker::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
