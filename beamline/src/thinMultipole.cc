@@ -37,67 +37,27 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinMultipole::thinMultipole () 
- : bmlnElmnt( "", 0.0, 0.0 ) 
+  : bmlnElmnt( "", 0.0, 0.0 ), poles_() 
 {
-
- static bool firstCall = true;
-
- if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.                      " );
-   printf( "\n*** SORRY:                                       \n" );
-   firstCall = false;
- }
-
+  propagator_ = PropagatorPtr( new Propagator());
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinMultipole::thinMultipole ( char const* name) 
- : bmlnElmnt( name, 0.0, 0.0 ) 
+thinMultipole::thinMultipole ( std::string const& name) 
+  : bmlnElmnt( name, 0.0, 0.0 ), poles_() 
 {
-
- static bool firstCall = true;
-
- if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.                      " );
-   printf( "\n*** SORRY:                                       \n" );
-   firstCall = false;
- }
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-thinMultipole::thinMultipole ( const char* n, double const& s ) 
-: bmlnElmnt( n, 0.0, s ) 
-{
- static bool firstCall = true;
-
- if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.   Length and tilt    " );
-   printf( "\n*** SORRY: information are being ignored.          " );
-   printf( "\n*** SORRY:                                       \n" );
-   firstCall = false;
- }
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinMultipole::thinMultipole(  thinMultipole const& x ) 
-: bmlnElmnt( x )
+  : bmlnElmnt( x ), poles_(x.poles_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -125,6 +85,30 @@ bool thinMultipole::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void  thinMultipole::setPole(int n, std::complex<double> const&  coeff)
+{
+  poles_[n] = coeff; 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinMultipole::const_iterator thinMultipole::begin() const
+{
+  return poles_.begin();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinMultipole::const_iterator thinMultipole::end() const
+{
+  return poles_.end();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinMultipole::accept( BmlVisitor& v ) 
 {
   v.visit(*this);
@@ -140,33 +124,4 @@ void thinMultipole::accept( ConstBmlVisitor& v ) const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinMultipole::localPropagate( Particle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinMultipole::localPropagate( JetParticle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinMultipole::localPropagate( ParticleBunch& b )
-{
-  (*propagator_)(*this, b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinMultipole::localPropagate( JetParticleBunch& b )
-{
-  (*propagator_)(*this, b);
-}
 
