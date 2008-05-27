@@ -41,6 +41,8 @@
 ****** - replaced c-style list with std::list 
 **************************************************************************
 *************************************************************************/
+#if  0
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -119,3 +121,4 @@ void ICircuit::append( ElmPtr q ) {
 
 }
 
+#endif
