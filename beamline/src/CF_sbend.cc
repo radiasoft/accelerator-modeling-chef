@@ -38,19 +38,20 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-******
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
-******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture  
-******
 ****** Apr 2008            michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
 ****** - modified sbend::Split
 ****** - added member functions to nullify edge effects
 ******   : used by modified sbend::Split
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ******
 **************************************************************************
 *************************************************************************/
@@ -70,8 +71,8 @@
 
 #include <iomanip>
 
-#include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <beamline/beamline.h>
 #include <beamline/CF_sbend.h>
@@ -110,18 +111,19 @@ CF_sbend::CF_sbend()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_sbend::CF_sbend( const char*          nm,   // name
+CF_sbend::CF_sbend( std::string const& name,
                     double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
                     double const&        ang )
-  : bmlnElmnt( nm, lng, fld ),
+  : bmlnElmnt( name, lng, fld ),
         angle_(ang),
   usFaceAngle_(0.0),
   dsFaceAngle_(0.0),
       usAngle_(0.0),
       dsAngle_(0.0),
-   multipoles_()
+   multipoles_(4,std::complex<double>(0.0,0.0) )
 {
+
   propagator_ = PropagatorPtr( new Propagator(1) ); 
   propagator_->setup(*this);
 }
@@ -130,19 +132,19 @@ CF_sbend::CF_sbend( const char*          nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-CF_sbend::CF_sbend( const char*   nm,   // name
+CF_sbend::CF_sbend( std::string const& name,
                     double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
                     double const&        ang,  // bend angle [ radians ]
                     double const&        us,   // upstream edge angle [radians]
                     double const&        ds)   // downstream edge angle [radians]
-: bmlnElmnt( nm, lng, fld ),
+: bmlnElmnt( name, lng, fld ),
        angle_(ang),
  usFaceAngle_(us),
  dsFaceAngle_(ds),
      usAngle_(us),
      dsAngle_(-ds),
-  multipoles_()
+  multipoles_(4, std::complex<double>(0.0,0.0) ) 
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); 
   propagator_->setup(*this);
@@ -158,9 +160,9 @@ CF_sbend::CF_sbend( CF_sbend const& x )
   dsFaceAngle_(x.dsFaceAngle_),
       usAngle_(x.usAngle_),
       dsAngle_(x.dsAngle_),
-   multipoles_(x.multipoles_),
-   propagator_(PropagatorPtr(x.propagator_->Clone()))
-{}
+   multipoles_(x.multipoles_)
+{
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -185,40 +187,7 @@ void CF_sbend::peekAt( double& s, Particle const& prt )
       << setw(12) << getQuadrupole()/length_
       << setw(12) << 2.0*getSextupole()/length_
       << setw(12) << 6.0*getOctupole()/length_
-      << setw(12) << shuntCurrent_
       << endl;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::localPropagate( Particle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::localPropagate( JetParticle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::localPropagate( ParticleBunch& b )
-{
-  (*propagator_)(*this, b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::localPropagate( JetParticleBunch& b )
-{
-  (*propagator_)(*this, b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -264,49 +233,19 @@ double CF_sbend::setExitAngle( double const& phi /* radians */ )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_sbend::setOctupole( double const& arg_x )
+void CF_sbend::setOctupole( double const& pole )
 {
-   
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinOctupole const>(*it) ) ) ++counter;
-  }
-
-  if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
-      (*it)->setStrength( arg_x/counter );
-    }
-  }
-  return 0;
- 
+  multipoles_[3] = pole;
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_sbend::setSextupole( double const& arg_x )
+void CF_sbend::setSextupole( double const& pole )
 {
-
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) ) ++counter;
-  }
-
-  if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-                           it != bml_->end(); ++it ) {
-   if ( boost::dynamic_pointer_cast<thinSextupole>(*it) )  {
-     (*it)->setStrength( arg_x/counter );
-   }
-  }
-  
-  return 0;
+  multipoles_[2] = pole;
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -331,26 +270,12 @@ bool CF_sbend::hasStandardFaces() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_sbend::setQuadrupole( double const& arg_x )
+void CF_sbend::setQuadrupole( double const& pole)
 {
 
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
+  multipoles_[1] = pole;
+  propagator_->setup(*this);
 
-    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) ++counter;
-  }
-  
-  if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
-   if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
-    (*it)->setStrength( arg_x/counter );
-   }
-  }
-  
-  return 0;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -373,172 +298,12 @@ int CF_sbend::setDipoleField( double const& arg_x )
 
 }
 
-
-// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// REMOVE: 
-// REMOVE: void CF_sbend::setStrength( double const& s )
-// REMOVE: {
-// REMOVE: 
-// REMOVE:   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
-// REMOVE:  
-// REMOVE:   CFSbendPtr q;
-// REMOVE: 
-// REMOVE:   for ( beamline::iterator it  = bml_->begin(); 
-// REMOVE:                            it != bml_->end(); ++it ) {
-// REMOVE:     
-// REMOVE:     if ( ratio != 0.0  ) {
-// REMOVE:          (*it)->setStrength( ratio * (*it)->Strength() );
-// REMOVE:     } 
-// REMOVE:     else {
-// REMOVE:       if ( q = boost::dynamic_pointer_cast<CF_sbend>(*it) ) q->setStrength(s);
-// REMOVE:     }
-// REMOVE:    
-// REMOVE:   }
-// REMOVE: 
-// REMOVE: 
-// REMOVE:   strength_ = s; 
-// REMOVE: 
-// REMOVE: }
-// REMOVE: 
-// REMOVE: 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::setStrength( double const& s ) 
-{
-  if( strength_ == 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void CF_sbend::setStrength( double const& s )", 
-           "Cannot set strength of CF_sbend when initial strength is zero."
-           "\nCurrent version has no way of accessing attributes of edges." ) );
-  }
-
-  double oldStrength = strength_;
-  bmlnElmnt::setStrength(s);
-  double ratio = strength_ / oldStrength;
-
-  if( bml_) 
-  {
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      (*it)->setStrength( ratio*((*it)->Strength()) );
-      // NOTE: if *it points to a marker -- i.e. if the
-      // CF_sbend comes from splitting another CF_sbend, so that
-      // one or both edges have been replaced with markers --
-      // setting its strength will do no harm.
-    }
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::setStrength( double const& s )", 
-           "IMPOSSIBLE: Internal beamline not initialized!" ) );
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::nullExitEdge()
-{
-  if( bml_ ) {
-    ElmPtr& endpoint = bml_->lastElement();
-    if( typeid(*endpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current CF_sbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*endpoint) == typeid(Edge) ) {
-      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << endpoint->Type() << " " << endpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void CF_sbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void CF_sbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_sbend::nullEntryEdge()
-{
-  if( bml_ ) {
-    ElmPtr& startpoint = bml_->firstElement();
-    if( typeid(*startpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current CF_sbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*startpoint) == typeid(Edge) ) {
-      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << startpoint->Type() << " " << startpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void CF_sbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void CF_sbend::nullEntryEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_sbend::getOctupole() const
 {
-
-  // Returns the **integrated** octupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
-      strength += (*it)->Strength();
-    }
-  }
-  return strength;
-
+  return  multipoles_[3].real()*length_;
 }
 
 
@@ -547,18 +312,7 @@ double CF_sbend::getOctupole() const
 
 double CF_sbend::getSextupole() const
 {
-
-  // Returns the **integrated** sextupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
-      strength += (*it)->Strength();
-    }
-  }
-  return strength;
+  return multipoles_[2].real()*length_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -566,19 +320,7 @@ double CF_sbend::getSextupole() const
 
 double CF_sbend::getQuadrupole() const
 {
-
-  // Returns the **integrated** quadrupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
-       strength += (*it)->Strength();
-     }
-  }
-
-  return strength;
+  return multipoles_[1].real()*length_;
 }
 
 
@@ -655,7 +397,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                       , usFaceAngle_
                                       , 0.0            ));
   p_a->setEntryAngle( getEntryAngle() );
-  p_a->nullExitEdge();
+
   
   b = CFSbendPtr( p_b = new CF_sbend(   ""
                                       , (1.0 - pc)*length_
@@ -663,13 +405,13 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                       , (1.0 - pc)*angle_
                                       , 0.0
                                       , dsFaceAngle_       ));
-  p_b->nullEntryEdge();
   p_b->setExitAngle( getExitAngle() );
 
 
   // Assign pole strengths
   // Note: pole strengths scale with length.
   // -----------------------------
+
   double poleStrength = getQuadrupole();
   p_a->setQuadrupole( pc*poleStrength );
   p_b->setQuadrupole( (1.0 - pc)*poleStrength );

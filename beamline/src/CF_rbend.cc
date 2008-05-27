@@ -38,13 +38,10 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
-******     
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
-******     
 ****** Dec                ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
-******     
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
@@ -53,7 +50,11 @@
 ******   in order to conform with usage in other bend constructors.
 ****** - corrected rbend::Split
 ******   : including adding methods to nullify edge effects
-****** 
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
+******
 *************************************************************************
 *************************************************************************/
 
@@ -96,7 +97,7 @@ CF_rbend::CF_rbend()
     dsFaceAngle_(0.0),
     usAngle_(M_TWOPI),
     dsAngle_(-M_TWOPI),
-    multipoles_()
+    multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); 
   propagator_->setup(*this);
@@ -106,16 +107,14 @@ CF_rbend::CF_rbend()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_rbend::CF_rbend( const char*   nm,   // name
-                    double const& lng,  // length      [ meter    ]
-                    double const& fld   // field       [ tesla    ]
-                     )  
-  : bmlnElmnt( nm, lng, fld ),
+CF_rbend::CF_rbend( std::string const&  name,
+                    double const& length, double const& field )  
+  : bmlnElmnt( name, length, field ),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
     usAngle_(M_TWOPI),
     dsAngle_(-M_TWOPI),
-    multipoles_()
+    multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
   propagator_->setup(*this);
@@ -125,17 +124,16 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_rbend::CF_rbend( char const*   nm,   // name
-                    double const& lng,  // length      [ meter    ]
-                    double const& fld,  // field       [ tesla    ]
-                    double const& ang   // bend angle  [ radians  ]
-                    )
-  : bmlnElmnt( nm, lng, fld ),
+CF_rbend::CF_rbend( std::string const& name,
+                    double const& length,
+                    double const& field,
+                    double const& angle )
+  : bmlnElmnt( name, length, field ),
    usFaceAngle_(0.0),
    dsFaceAngle_(0.0),
-       usAngle_(ang/2.0),
-       dsAngle_(-ang/2.0),
-    multipoles_()
+       usAngle_(angle/2.0),
+       dsAngle_(-angle/2.0),
+    multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
   propagator_->setup(*this);
@@ -146,17 +144,17 @@ CF_rbend::CF_rbend( char const*   nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-CF_rbend::CF_rbend( const char*   nm,   // name
-                    double const& lng,  // length     [ meter    ]
-                    double const& fld,  // field      [ tesla    ]
+CF_rbend::CF_rbend( std::string const& name,
+                    double const& length,
+                    double const& field,
                     double const& us,   // upstream face angle [radians]
                     double const& ds )
-  : bmlnElmnt( nm, lng, fld ),
+  : bmlnElmnt( name, length, field ),
    usFaceAngle_(us),
    dsFaceAngle_(ds),
        usAngle_(M_TWOPI),
        dsAngle_(-M_TWOPI),
-    multipoles_()
+    multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
   propagator_->setup(*this);
@@ -166,19 +164,19 @@ CF_rbend::CF_rbend( const char*   nm,   // name
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CF_rbend::CF_rbend( const  char*   nm,   // name
-                    double const&  lng,  // length      [meter]
-                    double const&  fld,  // field       [tesla]
-                    double const&  ang,  // bend angle  [radians]
+CF_rbend::CF_rbend( std::string const&   name,
+                    double const&  length,  //   [meter]
+                    double const&  field,   //   [tesla]
+                    double const&  angle,   //   bend angle  [radians]
                     double const&  us,   // upstream edge angle [radians]
                     double const&  ds )  // downstream edge angle [radians] )
-  : bmlnElmnt( nm, lng, fld ),
-    angle_(ang),
+  : bmlnElmnt( name, length, field ),
+    angle_(angle),
     usFaceAngle_(us),
     dsFaceAngle_(ds),
-    usAngle_((ang/2.0) + us),
-    dsAngle_(-((ang/2.0) + ds)),
-    multipoles_()
+    usAngle_((angle/2.0) + us),
+    dsAngle_(-((angle/2.0) + ds)),
+    multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
   propagator_->setup(*this);
@@ -194,8 +192,7 @@ CF_rbend::CF_rbend( CF_rbend const& x )
      dsFaceAngle_(x.dsFaceAngle_),
          usAngle_(x.usAngle_),
          dsAngle_(x.dsAngle_),
-      multipoles_(x.multipoles_),
-      propagator_(PropagatorPtr(x.propagator_->Clone()))
+      multipoles_(x.multipoles_)
 { }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -218,47 +215,11 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 
   usAngle_     =  rhs.usAngle_;
   dsAngle_     =  rhs.dsAngle_;
-
-  propagator_  =  rhs.propagator_;
  
   bml_       =  BmlPtr( rhs.bml_->Clone() );  
 
   return *this;
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::localPropagate( Particle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::localPropagate( JetParticle& p )
-{
-  (*propagator_)(*this, p);
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::localPropagate( ParticleBunch& b )
-{
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::localPropagate( JetParticleBunch& b )
-{
-  (*propagator_)(*this, b);
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -307,47 +268,82 @@ double CF_rbend::setExitAngle( double const& phi /* radians */ )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_rbend::setOctupole( double const& arg_x )
+int CF_rbend::setDipoleField( double const& arg_x )
 {
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinOctupole const>(*it) ) ) ++counter;
-  }
-
-  if (counter==0) return 1;
+ 
+  strength_ = arg_x; 
  
   for ( beamline::iterator it  = bml_->begin(); 
 	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
-      (*it)->setStrength( arg_x/counter );
-    }
+    if( boost::dynamic_pointer_cast<rbend>(*it) ) { 
+     (*it)->setStrength( arg_x );
+   }
   }
+
   return 0;
- 
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_rbend::setQuadrupole( double const& value)
+{
+  multipoles_[1] = value;
+  propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_rbend::setSextupole( double const& arg_x )
+void CF_rbend::setSextupole( double const& value)
 {
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) ) ++counter;
-  }
+  multipoles_[2] = value;
+  propagator_->setup(*this);
+ 
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) { 
-      (*it)->setStrength( arg_x/counter );
-    }
-  }
-  return 0;
- 
+void CF_rbend::setOctupole( double const& value )
+{
+  multipoles_[3] = value;
+  propagator_->setup(*this);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+double CF_rbend::getDipoleField() const
+{
+  return strength_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double CF_rbend::getQuadrupole() const
+{
+  return multipoles_[1].real();
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double CF_rbend::getSextupole() const
+{
+  return multipoles_[2].real();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+double CF_rbend::getOctupole() const
+{
+  return multipoles_[3].real();
 }
 
 
@@ -370,197 +366,6 @@ bool CF_rbend::hasStandardFaces() const
            && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
 
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int CF_rbend::setQuadrupole( double const& arg_x )
-{
-
-  int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( ( boost::dynamic_pointer_cast<thinQuad const>(*it) ) ) ++counter;
-  }
-
-  if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinQuad>(*it) ) { 
-      (*it)->setStrength( arg_x/counter );
-    }
-  }
-  return 0;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int CF_rbend::setDipoleField( double const& arg_x )
-{
- 
-  strength_ = arg_x; 
- 
-  for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<rbend>(*it) ) { 
-     (*it)->setStrength( arg_x );
-   }
-  }
-
-  return 0;
-}
-
-
-// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// REMOVE: 
-// REMOVE: void CF_rbend::setStrength( double const& s )
-// REMOVE: {
-// REMOVE: 
-// REMOVE:   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
-// REMOVE:  
-// REMOVE:   CFRbendPtr q;
-// REMOVE: 
-// REMOVE:   for ( beamline::iterator it  = bml_->begin(); 
-// REMOVE:                            it != bml_->end(); ++it ) {
-// REMOVE:     
-// REMOVE:     if ( ratio != 0.0  ) {
-// REMOVE:          (*it)->setStrength( ratio * (*it)->Strength() );
-// REMOVE:     } 
-// REMOVE:     else {
-// REMOVE:       if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->setStrength(s);
-// REMOVE:     }
-// REMOVE:    
-// REMOVE:   }
-// REMOVE: 
-// REMOVE:   strength_ = s; 
-// REMOVE: }
-// REMOVE: 
-// REMOVE: 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::setStrength( double const& s ) 
-{
-  if( strength_ == 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::setStrength( double const& s )", 
-           "Cannot set strength of CF_rbend when initial strength is zero."
-           "\nCurrent version has no way of accessing attributes of edges." ) );
-  }
-
-  double oldStrength = strength_;
-  bmlnElmnt::setStrength(s);
-  double ratio = strength_ / oldStrength;
-
-  if( bml_) 
-  {
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      (*it)->setStrength( ratio*((*it)->Strength()) );
-      // NOTE: if *it points to a marker -- i.e. if the
-      // CF_rbend comes from splitting another CF_rbend, so that
-      // one or both edges have been replaced with markers --
-      // setting its strength will do no harm.
-    }
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::setStrength( double const& s )", 
-           "IMPOSSIBLE: Internal beamline not initialized!" ) );
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double CF_rbend::getOctupole() const
-{
- // Returns the **integrated** octupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
-      strength += (*it)->Strength();
-    }
-  }
-  return strength;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double CF_rbend::getSextupole() const
-{
-  // Returns the **integrated** sextupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
-      strength += (*it)->Strength();
-    }
-  }
-  return strength;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double CF_rbend::getQuadrupole() const
-{
-  // Returns the **integrated** quadrupole
-
-  double strength = 0.0;
-
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
-       strength += (*it)->Strength();
-     }
-  }
-
-  return strength;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double CF_rbend::getDipoleField() const
-{
-  return strength_;
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -606,6 +411,7 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "_angle" are private data members.
   // -----------------------------
+
   CF_rbend* p_a = 0;
   CF_rbend* p_b = 0;
 
@@ -733,7 +539,6 @@ void CF_rbend::peekAt( double& s, Particle const& prt )
       << setw(12) << ((this->getQuadrupole())/length_)
       << setw(12) << (2.0*(this->getSextupole())/length_)
       << setw(12) << (6.0*(this->getOctupole())/length_)
-      << setw(12) << shuntCurrent_
       << endl;
 }
 
@@ -865,7 +670,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
   propagate(jetparticle);
 
-  double m = jetstate.Jacobian()( xp, x );
+  double m = jetstate.Jacobian()[xp][x];
   if( fabs(m) < 1.0e-12 ) {
      throw( GenericException( __FILE__, __LINE__, 
            "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
@@ -898,7 +703,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
     jetparticle.setState(instate); 
     propagate( jetparticle );
  
-    m =  (jetstate.Jacobian())( xp, x );
+    m =  (jetstate.Jacobian())[xp][x];
     if( fabs(m) < 1.0e-12 ) {
       throw( GenericException( __FILE__, __LINE__, 
              "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
