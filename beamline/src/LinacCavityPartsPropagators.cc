@@ -27,6 +27,12 @@
 ******              Leo Michelotti        
 ******              michelotti@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 ******
 **************************************************************************
 **************************************************************************
@@ -51,7 +57,7 @@ namespace { // anonymous namespace
 
 
 template<typename Particle_t>
-void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
+void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -77,7 +83,7 @@ void driftpropagate( double const& length, bmlnElmnt& elm, Particle_t& p )
 enum Position_t { upstream, downstream }; 
 
 template<typename Element_t, typename Particle_t, Position_t position>
-void propagate( Element_t& elm, Particle_t& p ) 
+void propagate( Element_t const& elm, Particle_t& p ) 
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -214,46 +220,64 @@ template void propagate<LCavityDnstream, JetParticle, downstream>( LCavityDnstre
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::setup(  LCavityUpstream& elm)
+void  LCavityUpstream::Propagator::setup(  bmlnElmnt& elm)
 {}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
+}
+
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::operator()( LCavityUpstream& elm, Particle& p )
+
+void  LCavityUpstream::Propagator::operator()(  bmlnElmnt const& elm, Particle& p )
 {
-  ::propagate<LCavityUpstream, Particle, upstream>(elm, p);  
+  ::propagate<LCavityUpstream,  Particle, upstream>( static_cast<LCavityUpstream const&>(elm), p );  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::operator()( LCavityUpstream& elm, JetParticle& p )
+void  LCavityUpstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 {
-  ::propagate<LCavityUpstream, JetParticle, upstream>(elm, p);  
+  ::propagate<LCavityUpstream, JetParticle, upstream>( static_cast<LCavityUpstream const&>(elm), p);  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void  LCavityDnstream::Propagator::setup(  LCavityDnstream& elm)
+void  LCavityDnstream::Propagator::setup(  bmlnElmnt& elm)
 {}
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::Propagator::operator()( LCavityDnstream& elm, Particle& p )
+void  LCavityDnstream::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 {
-  ::propagate<LCavityDnstream, Particle, downstream>(elm, p);  
+  ::propagate<LCavityDnstream, Particle, downstream>( static_cast<LCavityDnstream const&>(elm), p);  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::Propagator::operator()( LCavityDnstream& elm, JetParticle& p )
+void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 {
-  ::propagate<LCavityDnstream, JetParticle, downstream>(elm, p);  
+  ::propagate<LCavityDnstream, JetParticle, downstream>( static_cast<LCavityDnstream const&>(elm), p);  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

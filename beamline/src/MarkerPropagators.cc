@@ -22,7 +22,13 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
-******             ostiguy@fnal.gov                                                   
+******             ostiguy@fnal.gov
+******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.      
 ******                                           
 **************************************************************************
 *************************************************************************/
@@ -37,31 +43,31 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void marker::Propagator::setup( marker& elm ) 
+void marker::Propagator::setup( bmlnElmnt& elm ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void marker::Propagator::operator()( marker& elm, Particle& p ) 
+void marker::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void marker::Propagator::operator()( marker& elm, JetParticle& p ) 
+void marker::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void marker::Propagator::operator()( marker& elm, ParticleBunch& b ) 
+void marker::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void marker::Propagator::operator()( marker& elm, JetParticleBunch& b ) 
+void marker::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& b ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

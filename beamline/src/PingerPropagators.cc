@@ -25,6 +25,11 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******
 **************************************************************************
 *************************************************************************/
@@ -46,7 +51,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( Pinger& elm, Particle_t& p )
+void propagate( Pinger const& elm, Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -61,7 +66,7 @@ void propagate( Pinger& elm, Particle_t& p )
 } 
 
 template<typename Particle_t>
-void propagate_bunch( Pinger& elm, TBunch<Particle_t>& b )
+void propagate_bunch( Pinger const& elm, TBunch<Particle_t>& b )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -84,10 +89,10 @@ void propagate_bunch( Pinger& elm, TBunch<Particle_t>& b )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     Pinger& elm,    Particle& p );
-template void propagate(     Pinger& elm, JetParticle& p );
-template void propagate_bunch( Pinger& elm, TBunch<Particle>& b );
-template void propagate_bunch( Pinger& elm, TBunch<JetParticle>& b );
+template void propagate(     Pinger const& elm,    Particle& p );
+template void propagate(     Pinger const& elm, JetParticle& p );
+template void propagate_bunch( Pinger const& elm, TBunch<Particle>& b );
+template void propagate_bunch( Pinger const& elm, TBunch<JetParticle>& b );
 
 #endif
 
@@ -97,39 +102,39 @@ template void propagate_bunch( Pinger& elm, TBunch<JetParticle>& b );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::setup( Pinger& elm)
+void Pinger::Propagator::setup( bmlnElmnt& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, Particle& p ) 
+void Pinger::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<Pinger const&>(elm),p );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, JetParticle&     p ) 
+void Pinger::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<Pinger const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, ParticleBunch& b ) 
+void Pinger::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b ) 
 {
-  ::propagate_bunch(elm,b);
+  ::propagate_bunch(static_cast<Pinger const&>(elm),b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( Pinger& elm, JetParticleBunch&     b ) 
+void Pinger::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch&     b ) 
 {
-  ::propagate_bunch(elm,b);
+  ::propagate_bunch(static_cast<Pinger const&>(elm),b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

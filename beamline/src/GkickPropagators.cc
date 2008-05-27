@@ -24,6 +24,11 @@
 ******                                                                
 ******  Authors: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.                             
 ******
 **************************************************************************
 *************************************************************************/
@@ -45,7 +50,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( gkick& elm, Particle_t& p )
+void propagate( gkick const& elm, Particle_t& p )
 {
 
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -77,8 +82,8 @@ void propagate( gkick& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( gkick& elm,    Particle& p );
-template void propagate( gkick& elm, JetParticle& p );
+template void propagate( gkick const& elm,    Particle& p );
+template void propagate( gkick const& elm, JetParticle& p );
 
 #endif
 //-----------------------------------------------------------------------------------
@@ -89,23 +94,23 @@ template void propagate( gkick& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::setup( gkick& elm )
+void gkick::Propagator::setup( bmlnElmnt& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::operator()( gkick& elm, Particle& p )
+void gkick::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 {
-  ::propagate(elm, p);
+ ::propagate( static_cast<gkick const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::operator()(gkick& elm,  JetParticle& p )
+void gkick::Propagator::operator()( bmlnElmnt const& elm,  JetParticle& p )
 {
-  ::propagate(elm, p);
+  ::propagate( static_cast<gkick const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

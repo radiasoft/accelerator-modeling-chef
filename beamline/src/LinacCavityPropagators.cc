@@ -22,9 +22,16 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******            
-******  Author:    Jean-Francois Ostiguy  ostiguy@fnal.gov                                              
+******  Author:    Jean-Francois Ostiguy  
+******             ostiguy@fnal.gov
 ******                                                                
-********************************************************* **************
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
+************************************************************************
 ************************************************************************
 *************************************************************************/
 
@@ -51,7 +58,7 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 template<typename Particle_t>
-void propagate( LinacCavity& elm, Particle_t&  p)
+void propagate( LinacCavity const& elm, Particle_t&  p)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -59,9 +66,9 @@ void propagate( LinacCavity& elm, Particle_t&  p)
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 
@@ -74,8 +81,8 @@ void propagate( LinacCavity& elm, Particle_t&  p)
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( LinacCavity& elm,    Particle& p );
-template void propagate( LinacCavity& elm, JetParticle& p );
+template void propagate( LinacCavity const& elm,    Particle& p );
+template void propagate( LinacCavity const& elm, JetParticle& p );
 
 #endif
 
@@ -87,23 +94,24 @@ template void propagate( LinacCavity& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::setup( LinacCavity& arg ) 
+void LinacCavity::Propagator::setup( bmlnElmnt& arg ) 
 {
  
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
-  ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
+  LinacCavity& elm = static_cast< LinacCavity&>(arg);
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+  ElmPtr& wk  = bmlnElmnt::core_access::get_ElmPtr(elm);
   
   bml = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
   
-  bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   arg.Length()/2.0,  arg.getFrequency(), 
-                                                                         arg.Strength()/2.0, arg.getPhi() )   )  );
-
-  elm= WakeKickPtr( new WakeKick ( "WAKE" ) ); 
+  bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   elm.Length()/2.0,   elm.getFrequency(), 
+                                                                         elm.Strength()/2.0, elm.getPhi() )   )  );
+  wk = WakeKickPtr( new WakeKick ( "WAKE" ) ); 
  
-  if (arg.wakeOn()) bml->append(elm); 
+  if ( elm.wakeOn()) bml->append(wk); 
 
-  bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", arg.Length()/2.0, arg.getFrequency(), 
-                                                                         arg.Strength()/2.0, arg.getPhi() )   )  );
+  bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", elm.Length()/2.0, elm.getFrequency(), 
+                                                                         elm.Strength()/2.0, elm.getPhi() )   )  );
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -152,27 +160,35 @@ void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( LinacCavity& elm, Particle& p ) 
-{
-  ::propagate(elm,p);
+void  LinacCavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticle& p ) 
+void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast< LinacCavity const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( LinacCavity& elm, ParticleBunch& b ) 
+void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+  ::propagate( static_cast< LinacCavity const&>(elm),p);
+}
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b ) 
+{
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it) {
     (*it)->localPropagate(b); 
   }
 }
@@ -181,11 +197,11 @@ void LinacCavity::Propagator::operator()( LinacCavity& elm, ParticleBunch& b )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( LinacCavity& elm, JetParticleBunch& b ) 
+void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& b ) 
 {
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it) {
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it) {
     (*it)->localPropagate(b); 
   }
 

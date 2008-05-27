@@ -25,16 +25,22 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation
+******
 ******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
 
-#include <basic_toolkit/GenericException.h>
 #include <beamline/SlotPropagators.h>
 #include <beamline/Slot.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
+#include <basic_toolkit/GenericException.h>
 
 namespace {
 
@@ -55,7 +61,7 @@ bool betaParallelTest( Jet const&   betaParallel ) {
 }
 
 template <typename Particle_t>
-void propagate( Slot& elm, Particle_t& p )
+void propagate( Slot const& elm, Particle_t& p )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t           State_t;
@@ -89,7 +95,7 @@ void propagate( Slot& elm, Particle_t& p )
       uic << elm.Type() << "  " << elm.Name()
           << ": Velocity is not forward: it may be NAN.";
       throw( GenericException( __FILE__, __LINE__,
-             "void Slot::localPropagate( Particle& p )", 
+             "void propagate( Slot const& elm, Particle_t& p )", 
              uic.str().c_str() ) );
   };
 
@@ -116,8 +122,8 @@ void propagate( Slot& elm, Particle_t& p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(          Slot& elm,    Particle& p );
-template void propagate(          Slot& elm, JetParticle& p );
+template void propagate(  Slot const& elm,    Particle& p );
+template void propagate(  Slot const& elm, JetParticle& p );
 
 #endif
 
@@ -127,23 +133,23 @@ template void propagate(          Slot& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::setup(Slot& elm)
+void Slot::Propagator::setup( bmlnElmnt& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::operator()( Slot& elm, Particle& p ) 
+void Slot::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<Slot const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::operator()( Slot& elm, JetParticle&     p ) 
+void Slot::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<Slot const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
