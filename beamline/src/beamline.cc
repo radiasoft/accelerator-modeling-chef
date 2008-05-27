@@ -33,33 +33,28 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******
-****** Sep 2006    Jean-Francois Ostiguy ostiguy@fnal.gov
+****** Sep 2006    ostiguy@fnal.gov
 ****** - eliminated redundant (and dangerous) c-style hard casts
 ******   (dlist*) this  [ where this is a beamline * ]                    
-****** 
-****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
+****** Oct 2006:   ostiguy@fnal.gov
 ****** - beamline: decoupled list container from public interface
 ******             now using std::list<> instead of dlist                                                   
 ****** - introduced new iterators with stl-compatible interface                                                                
 ****** - eliminated all references to old-style BeamlineIterator, 
 ******   DeepBeamlineIterator etc ..
-******
-****** Jan-Mar 2007  ostiguy@fnal.gov
+****** Jan-Mar 2007 ostiguy@fnal.gov
 ****** - added support for reference counted elements 
 ****** - eliminated unneeded dynamic casts             
-******
-****** Sep 2007      ostiguy@fnal.gov
+****** Sep 2007     ostiguy@fnal.gov
 ****** - new iterator based interface for misalignments and rotations.  
 ******   introducing a misalignments trough an entire beamline is now 
 ******   a O(N) operation.
 ****** - refactored rotateRel(..) moveRel(..): eliminate duplicated code 
 ****** - eliminated find( ..):    use stl::algorithm instead 
 ****** - eliminated replace/deepReplace
-******        
 ****** Mar 2008      ostiguy@fnal.gov
 ****** - introduced support for hierachical information ( i.e. an ElmPtr
 ******   can discover its parent )
-******        
 ****** Apr 2008     michelotti@fnal.gov
 ****** - additional argument list for beamline::InsertElementsFromList(..)
 ******
@@ -102,6 +97,7 @@ void iefl(  beamline* invoker
           , double& s
           , std::list<std::pair<ElmPtr,double> >& inList )
 {
+ 
  static const ElmPtr null;
 
  beamline::iterator bml_iter = invoker->begin();
@@ -144,7 +140,7 @@ void iefl(  beamline* invoker
     localLength = p_be->Length();
   }
   else {
-    localLength = p_be->OrbitLength( lparticle );
+    double localLength = p_be->OrbitLength( lparticle );
   }
 
   if( typeid(*p_be) == typeid(beamline) )  {
@@ -436,9 +432,9 @@ void beamline::clear()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( Particle& x ) 
+void beamline::localPropagate( Particle& x ) const 
 {
- for ( beamline::iterator it = begin(); it != end();  ++it ) { 
+ for ( const_iterator it = begin(); it != end();  ++it ) { 
 
    (*it)->propagate( x );
  }
@@ -447,9 +443,9 @@ void beamline::localPropagate( Particle& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( ParticleBunch& x ) 
+void beamline::localPropagate( ParticleBunch& x ) const
 {
- for (beamline::iterator it = begin(); it != end();  ++it ) { 
+ for ( const_iterator it = begin(); it != end();  ++it ) { 
    (*it) -> propagate( x );
  }
 } 
@@ -457,10 +453,10 @@ void beamline::localPropagate( ParticleBunch& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( JetParticle& x ) 
+void beamline::localPropagate( JetParticle& x ) const
 {
 
- for (beamline::iterator it = begin(); it != end();  ++it ) { 
+ for ( const_iterator it = begin(); it != end();  ++it ) { 
  
    (*it)->propagate( x );
 
@@ -470,9 +466,9 @@ void beamline::localPropagate( JetParticle& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::localPropagate( JetParticleBunch& x ) 
+void beamline::localPropagate( JetParticleBunch& x ) const
 {
- for (beamline::iterator it = begin(); it != end();  ++it ) { 
+ for ( const_iterator it = begin(); it != end();  ++it ) { 
    (*it) -> propagate( x );
  }
 } 
@@ -646,7 +642,7 @@ beamline* beamline::reverse() const {
 
 void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
 {
-  throw( GenericException( __FILE__, __LINE__, 
+  throw(  GenericException( __FILE__, __LINE__, 
          "void beamline::Split( double const&, bmlnElmnt&, bmlnElmnt& )", 
          "This method should not be invoked by a beamline object." ) );
 }
@@ -1436,7 +1432,7 @@ void beamline::enterLocalFrame( Particle& p ) const
     if( (typeid( *(*it) ) == typeid(sbend) ) ||
         (typeid( *(*it) ) == typeid(rbend) ) ) {    
 
-      throw( GenericException( __FILE__, __LINE__, 
+      throw(  GenericException( __FILE__, __LINE__, 
              "void beamline::enterLocalFrame( Particle& p ) const", 
              "Not implemented for beamlines containing bends." ) );
     }
@@ -1542,29 +1538,6 @@ void beamline::setReferenceTime( double const& ct)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::setLength( double const& )
-{ 
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 beamline::iterator beamline::erase( beamline::iterator it)
 {
   std::list<ElmPtr>::iterator lit = it.base();  
@@ -1596,6 +1569,7 @@ int beamline::howMany() const
 void beamline::setReferenceTime( Particle& particle) 
 {
 
+  //       EXPERIMENTAL ... NOT USED  ! 
 #if 0
 
  std::vector<RFCavityPtr>     rfcavities;  
