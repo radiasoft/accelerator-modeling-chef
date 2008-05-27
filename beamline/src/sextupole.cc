@@ -50,14 +50,17 @@
 ****** Apr 2008           michelotti@fnal.gov
 ****** - changed signature of setStrength(..) to
 ******   match that of the virtual bmlnElmnt method
-****** 
+****** May 2008           ostiguy@fnal.gov
+*******- setStrength() now dispatched to propagator by base class
+*******  (no longer virtual)
+*******- added explicit implementation for assignment operator
+*******
 **************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
@@ -87,7 +90,7 @@ sextupole::sextupole ()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sextupole::sextupole ( const char* n, double l, double s ) 
+sextupole::sextupole ( std::string const& n, double const& l, double const& s ) 
 : bmlnElmnt( n, l, s ) 
 {
   propagator_ =  PropagatorPtr( new Propagator() );
@@ -98,7 +101,7 @@ sextupole::sextupole ( const char* n, double l, double s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole( sextupole const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -119,63 +122,14 @@ sextupole::~sextupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::setStrength( double const& s ) 
+sextupole& sextupole::operator=( sextupole const& o)
 {
-  bmlnElmnt::setStrength(s);
-  elm_->setStrength( strength_*length_ );
+  if ( this == &o ) return *this; 
+
+  bmlnElmnt::operator=(o);
+  propagator_->setup(*this);
+  return (*this);
 }
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sextupole::setLength( double const& l ) 
-{
-  double ratio = length_;
-  bmlnElmnt::setLength( l );
-  ratio = length_ / ratio;
-
-  if( bml_) 
-  {
-    int counter = 0;
-    for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-      if( typeid(**it) == typeid(thinSextupole) )  ++counter;
-    }
-
-    if( counter <= 0 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void sextupole::setLength( double const& s )", 
-             "No thin sextupoles in the internal beamline." ) );
-    }
-    else {
-      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-        if( typeid(**it) == typeid(thinSextupole) ) {
-          (*it)->setStrength( ratio*((*it)->Strength()) );
-        }
-        else if( typeid(**it) == typeid(drift) ) {
-          (*it)->setLength( ratio*((*it)->Length()) );
-        }
-        else {
-          ostringstream uic;
-          uic  << "Unrecognized element type "
-               << (*it)->Type()
-               << " in " << Type() << " " << Name()
-               << "'s internal beamline.";
-          throw( GenericException( __FILE__, __LINE__, 
-                 "void sextupole::setLength( double const& s )", 
-                 uic.str().c_str() ) );
-        }
-      }
-    }
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sextupole::setCurrent( double s ) {
- elm_->setCurrent( s );
-}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -248,35 +202,6 @@ void sextupole::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sextupole::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sextupole::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sextupole::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
 
 // **************************************************
 //   class thinSextupole
@@ -293,7 +218,7 @@ thinSextupole::thinSextupole ()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSextupole::thinSextupole ( const char* n, double s ) 
+thinSextupole::thinSextupole ( std::string const& n, double const& s ) 
 : bmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
@@ -305,7 +230,7 @@ thinSextupole::thinSextupole ( const char* n, double s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSextupole::thinSextupole( thinSextupole const& x ) 
-  : bmlnElmnt( x ), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -321,6 +246,18 @@ thinSextupole* thinSextupole::Clone() const
 
 thinSextupole::~thinSextupole() 
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSextupole& thinSextupole::operator=( thinSextupole const& o)
+{
+  if ( this == &o ) return *this; 
+
+  bmlnElmnt::operator=(o);
+  propagator_->setup(*this);
+  return (*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -358,31 +295,3 @@ void thinSextupole::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinSextupole::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSextupole::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSextupole::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinSextupole::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}

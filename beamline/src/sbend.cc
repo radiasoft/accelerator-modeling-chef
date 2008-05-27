@@ -107,7 +107,7 @@ sbend::sbend()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-sbend::sbend( const char* n, double const& l, double const& s, double const& alpha ) 
+sbend::sbend( std::string const& n, double const& l, double const& s, double const& alpha ) 
   : bmlnElmnt( n, l, s ),
           angle_(alpha),
     usFaceAngle_(0.0),
@@ -146,7 +146,7 @@ sbend::sbend( const char* n, double const& l, double const& s, double const& alp
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-sbend::sbend( const char* n, double const& l, double const& s, double const& alpha, 
+sbend::sbend( std::string const& n, double const& l, double const& s, double const& alpha, 
               double const& usfaceangle, double const& dsfaceangle )
   :    bmlnElmnt( n, l, s),
              angle_(alpha),
@@ -232,72 +232,16 @@ sbend::sbend( sbend const& x )
   usFaceAngle_(x.usFaceAngle_),
   dsFaceAngle_(x.dsFaceAngle_),
       usAngle_(x.usAngle_),
-      dsAngle_(x.dsAngle_),
-   propagator_(PropagatorPtr(x.propagator_->Clone()))
-{}
+      dsAngle_(x.dsAngle_)
+{
+  propagator_->setup(*this);
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::~sbend() 
 {}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::setStrength( double const& s ) 
-{
-  if( strength_ == 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::setStrength( double const& s )", 
-           "Cannot set strength of sbend when initial strength is zero."
-           "\nCurrent version has no way of accessing attributes of edges." ) );
-  }
-
-  double oldStrength = strength_;
-  bmlnElmnt::setStrength(s);
-  double ratio = strength_ / oldStrength;
-
-  if( bml_) 
-  {
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      (*it)->setStrength( ratio*((*it)->Strength()) );
-      // NOTE: if *it points to a marker -- i.e. if the
-      // sbend comes from splitting another sbend, so that
-      // one or both edges have been replaced with markers --
-      // setting its strength will do no harm.
-    }
-  }
-  else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::setStrength( double const& s )", 
-           "IMPOSSIBLE: Internal beamline not initialized!" ) );
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
-
-void sbend::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -604,38 +548,6 @@ void sbend::accept( BmlVisitor& v )
 void sbend::accept( ConstBmlVisitor& v ) const 
 { 
   v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::localPropagate( Particle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::localPropagate( JetParticle& p ) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::localPropagate( ParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::localPropagate( JetParticleBunch& b ) 
-{ 
-  (*propagator_)(*this, b);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
