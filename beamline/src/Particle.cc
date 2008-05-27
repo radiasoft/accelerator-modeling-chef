@@ -7,7 +7,6 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      Particle.cc
-******  Version:   2.4
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
@@ -57,7 +56,11 @@
 ******                                                                
 ******  Oct 2007 ostiguy@fnal.gov
 ******  - private allocator for state_ vector  
-******                                                               
+******  May 2008 ostiguy@fnal.gov
+******  - particle charge initialized in base class
+******  - brho is now a signed quantity so that a propagator 
+******    does not need to check neither the sign nor the magnitude 
+******    of the charge.
 **************************************************************************
 *************************************************************************/
 
@@ -84,27 +87,24 @@ int const    BMLN_dynDim = 6;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Particle::Particle( double const& mass, double const& energy ) 
+Particle::Particle( double const& mass, double const& charge, double const& momentum ) 
 :   tag_(""),   
-      q_(0.0),   
-      E_(energy),  
+      q_(charge),   
       m_(mass), 
-      p_(sqrt(E_*E_-m_*m_)), 
-  gamma_(E_/m_), 
+      p_(momentum ), 
+  gamma_(ReferenceEnergy()/m_), 
    beta_( sqrt( 1.0 - 1.0 / (gamma_*gamma_)) ), 
-     pn_(beta_*gamma_), 
-   bRho_( p_/ PH_CNV_brho_to_p), 
-   pni2_( (pn_ != 0.0 ) ? 1.0 / ( pn_*pn_ ): 1.0e33 ), 
-    wgt_(1.0), 
+   bRho_(  p_/ ( (q_/PH_MKS_e)* PH_CNV_brho_to_p) ), 
   state_(PSD)
 
 
 {
  for( int i = 0; i < BMLN_dynDim; i++ ) state_[i] = 0.0;
 
- if( E_ < m_ ) {
+ if( momentum < 0.0 ) {
   ostringstream uic;
-  uic  << "Energy, " << E_ << " GeV, is less than mass, " << m_ << " GeV.";
+  uic  << "Momentum, " << momentum << " GeV, is <= 0.0";
+  uic  << "Energy, " << ReferenceEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
   throw(  GenericException( __FILE__, __LINE__, 
          "Particle::Particle( double, double )", 
           uic.str().c_str() ) );
@@ -115,29 +115,25 @@ Particle::Particle( double const& mass, double const& energy )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Particle::Particle( double const& mass, double const& energy, Vector const& s ) 
+Particle::Particle( double const& mass, double const& charge, double const& momentum, Vector const& s ) 
 :     tag_(""),   
-      q_(0.0),   
-      E_(energy),  
+      q_(charge),   
       m_(mass), 
-      p_( sqrt(E_*E_ - m_*m_) ), 
-  gamma_( E_/m_ ), 
+      p_( momentum ), 
+  gamma_( ReferenceEnergy()/m_ ), 
    beta_( sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) )), 
-     pn_( beta_*gamma_), 
-   bRho_( p_ / PH_CNV_brho_to_p ), 
-   pni2_( pn_ != 0.0 ?  1.0 / ( pn_*pn_ ): 1.0e33 ), 
-    wgt_(1.0), 
+   bRho_( p_ / ( (q_/PH_MKS_e) * PH_CNV_brho_to_p )), 
   state_(PSD)
 
 {
 
  for( int i = 0; i < BMLN_dynDim; i++ ) state_[i] = s[i];
 
- if( E_ < m_ ) {
+ if( momentum < 0.0 ) {
   ostringstream uic;
-  uic  << "Energy, " << E_ << " GeV, is less than mass, " << m_ << " GeV.";
+  uic  << "Momentum, " << momentum << " GeV, is <= 0.0";
   throw(  GenericException( __FILE__, __LINE__, 
-         "Particle::Particle( double, double, double* )", 
+         "Particle::Particle( double, double, Vector const& )", 
          uic.str().c_str() ) );
  }
 
@@ -149,15 +145,11 @@ Particle::Particle( double const& mass, double const& energy, Vector const& s )
 Particle::Particle( Particle const& u ) 
 :   tag_(u.tag_),   
       q_(u.q_),   
-      E_(u.E_),  
       m_(u.m_), 
       p_(u.p_), 
   gamma_(u.gamma_), 
    beta_(u.beta_), 
-     pn_(u.pn_), 
    bRho_(u.bRho_), 
-   pni2_(u.pni2_), 
-    wgt_(u.wgt_), 
   state_(u.state_)
 { }
 
@@ -167,15 +159,11 @@ Particle::Particle( Particle const& u )
 Particle::Particle( JetParticle const& u ) 
 :  tag_(u.tag_), 
      q_(u.q_),
-     E_(u.E_), 
      m_(u.m_), 
      p_(u.p_), 
  gamma_(u.gamma_), 
   beta_(u.beta_), 
-    pn_(u.pn_), 
-  bRho_(u.bRho_), 
-  pni2_(u.pni2_), 
-   wgt_(u.wgt_)
+  bRho_(u.bRho_)
 {
   state_ = u.state_.standardPart();
 
@@ -205,25 +193,6 @@ void Particle::dtor()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if 0
-void Particle::setState(  Vector const & u ) 
-{
-
- if( u.Dim() != BMLN_dynDim ) {
-  ostringstream uic;
-  uic  << "Dimension of argument, " << u.Dim() << ", does not match "
-          "phase space dimension, " << BMLN_dynDim << "." << endl;
-  throw( GenericException( __FILE__, __LINE__, 
-         "void Particle::setState( const Vector& )", 
-         uic.str().c_str() ) );
- }
-
- state_ = u;
-} 
-#endif
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Particle::setStateToZero() {
  for( int i = 0; i < BMLN_dynDim; i++ )  state_[i] = 0.0;
@@ -243,40 +212,22 @@ void Particle::SetReferenceEnergy( double const& energy )
          uic.str().c_str() ) );
   }
 
- E_     = energy;
- p_     = sqrt( E_*E_ - m_*m_ );
- bRho_  = p_ / PH_CNV_brho_to_p;
- gamma_ = E_ / m_;
+ p_     = sqrt( ReferenceEnergy()*ReferenceEnergy() - m_*m_ );
+ bRho_  = p_ / ( (q_/PH_MKS_e)* PH_CNV_brho_to_p );
+ gamma_ = ReferenceEnergy() / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
- pn_    = beta_*gamma_;
- pni2_  = pn_ != 0.0 ? 1.0 / ( pn_*pn_ ) : 1.0e33;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Particle::SetReferenceMomentum( double const& new_p ) 
+void Particle::SetReferenceMomentum( double const& p ) 
 {
 
- p_     = new_p;
- E_     = sqrt( new_p*new_p + m_*m_ );
- bRho_  = p_ / PH_CNV_brho_to_p;
- gamma_ = E_ / m_;
+ p_     = p;
+ bRho_  = p_ / ( (q_/PH_MKS_e) * PH_CNV_brho_to_p );
+ gamma_ = ReferenceEnergy() / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
- pn_    = beta_*gamma_;
- pni2_  = pn_ != 0.0 ? 1.0 / ( pn_*pn_ ) : 1.0e33; 
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double Particle::setWeight( double const& w )
-{
-  double ret   = wgt_;
-  wgt_         = (w >= 0.0 ) ?  w : 1.0; 
-  return ret;
 }
 
 
@@ -310,9 +261,9 @@ Vector Particle::NormalizedVectorMomentum() const
 
  Vector ret(3);
 
- ret(0) = state_[3];
- ret(1) = state_[4];
- ret(2) = get_npz();
+ ret[0] = state_[3];
+ ret[1] = state_[4];
+ ret[2] = get_npz();
 
  return ret;
 
@@ -328,11 +279,8 @@ Particle& Particle::operator=( Particle const& p )
 
   tag_   = p.tag_;
   q_     = p.q_;
-  E_     = p.E_;
   p_     = p.p_;
   m_     = p.m_;
-  pn_    = p.pn_;
-  pni2_  = p.pni2_;
   bRho_  = p.bRho_;
   beta_  = p.beta_;
   gamma_ = p.gamma_;
@@ -366,28 +314,22 @@ void   Particle::setTag(std::string const& tag)
 // **************************************************
 
 Proton::Proton() 
- : Particle( PH_NORM_mp ,PH_NORM_mp) 
-{
- q_ = PH_MKS_e;
-}
+ : Particle( PH_NORM_mp , PH_MKS_e, PH_NORM_mp) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Proton::Proton( double const& energy ) 
- : Particle( PH_NORM_mp, energy )
-{
- q_ = PH_MKS_e;
-}
+Proton::Proton( double const& momentum ) 
+ : Particle( PH_NORM_mp, PH_MKS_e, momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Proton::Proton( double const& energy, Vector const& s ) 
- : Particle( PH_NORM_mp, energy, s )
-{
- q_ = PH_MKS_e;
-}
+Proton::Proton( double const& momentum, Vector const& s ) 
+ : Particle( PH_NORM_mp, PH_MKS_e, momentum, s )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -441,28 +383,22 @@ Proton& Proton::operator=(Proton const& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 AntiProton::AntiProton() 
- : Particle( PH_NORM_mp, PH_NORM_mp ) 
-{
- q_ = - PH_MKS_e;
-}
+ : Particle( PH_NORM_mp,  - PH_MKS_e, PH_NORM_mp ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiProton::AntiProton( double const& energy ) 
- : Particle( PH_NORM_mp, energy )
-{
- q_ = - PH_MKS_e;
-}
+AntiProton::AntiProton( double const& momentum ) 
+ : Particle( PH_NORM_mp,  - PH_MKS_e, momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiProton::AntiProton( double const& energy, Vector const& s ) 
- : Particle( PH_NORM_mp, energy, s )
-{
- q_ = - PH_MKS_e;
-}
+AntiProton::AntiProton( double const& momentum, Vector const& s ) 
+ : Particle( PH_NORM_mp,  - PH_MKS_e, momentum, s )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -517,28 +453,22 @@ AntiProton& AntiProton::operator=(AntiProton const& p)
 // **************************************************
 
 Electron::Electron() 
- : Particle ( PH_NORM_me,  PH_NORM_me )
-{
- q_ = - PH_MKS_e;
-}
+ : Particle ( PH_NORM_me,   - PH_MKS_e, PH_NORM_me )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Electron::Electron( double const& W ) 
- : Particle( PH_NORM_me, W )
-{
- q_ = - PH_MKS_e;
-}
+ : Particle( PH_NORM_me, -PH_MKS_e, W )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Electron::Electron( double const& W, Vector const& s ) 
-: Particle( PH_NORM_me, W, s )
-{
- q_ = - PH_MKS_e;
-}
+: Particle( PH_NORM_me, - PH_MKS_e, W, s )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -590,37 +520,36 @@ Electron& Electron::operator=(Electron const& p) {
 //   class Positron
 // **************************************************
 
-Positron::Positron() : Particle ( PH_NORM_me, PH_NORM_me )
-{
- q_ =  PH_MKS_e;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Positron::Positron( double const& W ) : Particle( PH_NORM_me, W )
-{
- q_ =  PH_MKS_e;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Positron::Positron( double const& W, Vector const& s ) : Particle( PH_NORM_me, W, s )
-{
- q_ =  PH_MKS_e;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Positron::Positron( Positron const& u ) : Particle( u ) 
+Positron::Positron() 
+: Particle ( PH_NORM_me, PH_MKS_e, PH_NORM_me )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Positron::Positron( JetPositron const& p): Particle(p) {}
+Positron::Positron( double const& W ) 
+ : Particle( PH_NORM_me,  PH_MKS_e, W )
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Positron::Positron( double const& W, Vector const& s ) 
+: Particle( PH_NORM_me,  PH_MKS_e, W, s )
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Positron::Positron( Positron const& u ) 
+: Particle( u ) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Positron::Positron( JetPositron const& p)
+: Particle(p) {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -656,26 +585,23 @@ Positron& Positron::operator=(Positron const& p)
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-Muon::Muon() : Particle( PH_NORM_mmu,  PH_NORM_mmu ) 
-{
- q_ = -PH_MKS_e;
-}
+Muon::Muon() 
+: Particle( PH_NORM_mmu,   -PH_MKS_e, PH_NORM_mmu ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Muon::Muon( double const& energy ) : Particle( PH_NORM_mmu, energy )
-{
- q_ = -PH_MKS_e;
-}
+Muon::Muon( double const& momentum ) 
+: Particle( PH_NORM_mmu, -PH_MKS_e, momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Muon::Muon( double const& energy, Vector const& s ) : Particle( PH_NORM_mmu, energy, s )
-{
- q_ = -PH_MKS_e;
-}
+Muon::Muon( double const& momentum, Vector const& s ) 
+: Particle( PH_NORM_mmu,-PH_MKS_e,  momentum, s )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -721,36 +647,37 @@ Muon& Muon::operator=(Muon const& p) {
 // **************************************************
 
 
-AntiMuon::AntiMuon() : Particle( PH_NORM_mmu,  PH_NORM_mmu ) 
-{
- q_ = PH_MKS_e;
-}
+AntiMuon::AntiMuon() 
+: Particle( PH_NORM_mmu, PH_MKS_e, PH_NORM_mmu ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiMuon::AntiMuon( double const& energy ) : Particle( PH_NORM_mmu, energy ){
- q_ = PH_MKS_e;
-}
+AntiMuon::AntiMuon( double const& momentum ) 
+: Particle( PH_NORM_mmu,  PH_MKS_e, momentum )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiMuon::AntiMuon( double const& energy, Vector const& s ) : Particle( PH_NORM_mmu, energy, s ){
- q_ = PH_MKS_e;
-}
+AntiMuon::AntiMuon( double const& momentum, Vector const& s ) 
+: Particle( PH_NORM_mmu,  PH_MKS_e, momentum, s )
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiMuon::AntiMuon( AntiMuon const& u ) : Particle( u ) {
-}
+AntiMuon::AntiMuon( AntiMuon const& u ) 
+: Particle( u ) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiMuon::AntiMuon( JetAntiMuon const & p): Particle(p) {}
-
+AntiMuon::AntiMuon( JetAntiMuon const & p)
+: Particle(p) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
