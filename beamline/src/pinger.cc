@@ -117,7 +117,7 @@ Pinger::~Pinger()
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Pinger& Pigner::operator=( Pinger const& rhs)
+Pinger& Pinger::operator=( Pinger const& rhs)
 {
   if ( this == &rhs ) return *this;
   bmlnElmnt::operator=(rhs);
