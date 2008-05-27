@@ -25,6 +25,12 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov      
 ******                                                                
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator() implementation.
+****** 
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -49,7 +55,7 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::setup( WakeKick& elm) 
+void WakeKick::Propagator::setup( bmlnElmnt& elm) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -97,8 +103,10 @@ WakeKick::Propagator::Propagator( WakeKick::Propagator const& other )
 //       length was set a-priori in such a way that this condition is met.  
 //----------------------------------------------------------------------------------------------
 
-void WakeKick::Propagator::operator()(  WakeKick& elm, ParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bunch )
 {
+
+  WakeKick const& elm = static_cast<WakeKick const&>(arg); 
 
   BunchProjector projector(bunch, interval_, nsamples_);
 
@@ -217,7 +225,7 @@ void WakeKick::Propagator::operator()(  WakeKick& elm, ParticleBunch& bunch )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void WakeKick::Propagator::operator()(  WakeKick& elm, JetParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& bunch )
 {
   // does nothing for the moment
 }
@@ -225,7 +233,7 @@ void WakeKick::Propagator::operator()(  WakeKick& elm, JetParticleBunch& bunch )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::operator()(  WakeKick&  elm,     Particle& p  )
+void WakeKick::Propagator::operator()(  bmlnElmnt const&  elm,     Particle& p  )
 {
   // does nothing for the moment
 }
@@ -233,7 +241,7 @@ void WakeKick::Propagator::operator()(  WakeKick&  elm,     Particle& p  )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::operator()(  WakeKick&  elm,  JetParticle& p)
+void WakeKick::Propagator::operator()(  bmlnElmnt const&  elm,  JetParticle& p)
 {
   // does nothing for the moment
 }
@@ -241,7 +249,7 @@ void WakeKick::Propagator::operator()(  WakeKick&  elm,  JetParticle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::debug(  WakeKick&  elm, ParticleBunch& bunch )
+void WakeKick::Propagator::debug(  WakeKick& elm, ParticleBunch& bunch )
 {
   const BunchProjector projector(bunch);
   
