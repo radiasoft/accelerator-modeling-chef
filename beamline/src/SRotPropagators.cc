@@ -21,16 +21,15 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
-******  Author:    Leo Michelotti                                     
+******  Authors:   michelotti@fnal.gov                                     
+******                ostiguy@fnal.gov                                                        
 ******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov   
-******                                                                
+****** REVISION HISTORY:
+******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -50,7 +49,7 @@ namespace {
 
 
 template<typename Particle_t>
-void propagate( srot& elm, Particle_t& p )
+void propagate( srot const& elm, Particle_t& p )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -85,8 +84,8 @@ void propagate( srot& elm, Particle_t& p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(     srot& elm,    Particle& p );
-template void propagate(     srot& elm, JetParticle& p );
+template void propagate(     srot const& elm,    Particle& p );
+template void propagate(     srot const& elm, JetParticle& p );
 
 #endif
 
@@ -97,23 +96,23 @@ template void propagate(     srot& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void srot::Propagator::setup( srot& elm)
+void srot::Propagator::setup( bmlnElmnt& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void srot::Propagator::operator()( srot& elm, Particle& p ) 
+void srot::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<srot const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void srot::Propagator::operator()( srot& elm, JetParticle&     p ) 
+void srot::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<srot const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

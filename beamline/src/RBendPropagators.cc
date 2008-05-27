@@ -22,10 +22,14 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Authors:   Leo Michelotti         michelotti@fnal.gov
-******             Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Authors:   Leo Michelotti           michelotti@fnal.gov
+******             Jean-Francois Ostiguy    ostiguy@fnal.gov
 ******
+****** REVISION HISTORY:
 ******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******
 **************************************************************************
 *************************************************************************/
@@ -64,7 +68,7 @@ inline double standardPart( double const& value) { return value; }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( rbend& elm, Particle_t& p )
+void propagate( rbend const& elm, Particle_t& p )
 {
    
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
@@ -72,9 +76,9 @@ void propagate( rbend& elm, Particle_t& p )
 
   State_t& state = p.State();
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 
@@ -86,7 +90,7 @@ void propagate( rbend& elm, Particle_t& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template < typename Element_t, typename Particle_t>
-void mad_propagate( Element_t& elm, Particle_t& p, double const& rho, double const& n )
+void mad_propagate( Element_t const& elm, Particle_t& p, double const& rho, double const& n )
 {
 
   int const BMLN_dynDim = 6;
@@ -201,24 +205,26 @@ template double standardPart( Jet    const& );
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::setup( rbend& arg) 
+void rbend::Propagator::setup( bmlnElmnt& arg) 
 {
   
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
   bml = BmlPtr(new beamline("RBEND_PRIVATE") );
  
-  double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(arg); 
-  double& dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(arg); 
-  double& usAngle_     = rbend::rbend_core_access::get_usAngle(arg); 
-  double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(arg); 
+  rbend& elm = static_cast<rbend&>(elm); 
+ 
+  double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(elm); 
+  double& dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(elm); 
+  double& usAngle_     = rbend::rbend_core_access::get_usAngle(elm); 
+  double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(elm); 
 
 
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * arg.Strength() ) );
+  EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
 
-  BendPtr bend( new Bend( "RBEND_PRIVATE",  arg.Length(), arg.Strength() , arg.getBendAngle(),  usAngle_,  dsAngle_, 
+  BendPtr bend( new Bend( "RBEND_PRIVATE",  elm.Length(), elm.Strength() , elm.getBendAngle(),  usAngle_,  dsAngle_, 
                                                           usFaceAngle_,  dsFaceAngle_ , Bend::type_rbend)  );
 
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * arg.Strength() ) );
+  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ) );
 
 
   bml->append( uedge );
@@ -230,24 +236,32 @@ void rbend::Propagator::setup( rbend& arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::operator()( rbend& elm, Particle& p ) 
+void  rbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate( static_cast<rbend const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::operator()( rbend& elm, JetParticle& p ) 
+void rbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate(elm,p);
+  ::propagate(static_cast<rbend const&>(elm), p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #if 0
-void rbend::MADPropagator::operator()( rbend& elm, Particle& p ) 
+void rbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
 
   double const rho    = standardPart( p.BRho() )/elm.Strength();
@@ -255,20 +269,22 @@ void rbend::MADPropagator::operator()( rbend& elm, Particle& p )
   // field index = -(dB/B)/ (dx/rho) 
 
   double const n      = - ( 1.0/ elm.Length() ) * elm.getQuadrupole() / elm.Strength() * rho;                       
-  ::propagate(elm, p, n);
+  ::propagate(static_cast<rbend const&>(elm), p, n);
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::MADPropagator::operator()( rbend& elm, JetParticle& p ) 
+void rbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
   double const rho    = standardPart( p.BRho() )/elm.Strength();
 
   // field index = -(dB/B)/ (dx/rho) 
 
   double const n      = - ( 1.0/ elm.Length() ) * elm.getQuadrupole() / elm.Strength() * rho;                       
-  ::propagate(elm, p, n);
+  ::propagate(static_cast<rbend const&>(elm), p, n);
 }
+
+
 #endif

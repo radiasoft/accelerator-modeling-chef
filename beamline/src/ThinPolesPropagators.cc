@@ -24,6 +24,10 @@
 ******  Authors: Jean-Francois Ostiguy ostiguy@fnal.gov
 ******           Leo Michelotti        michelotti@fnal.gov
 ******
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
+****** 
 ***************************************************************************
 ***************************************************************************
 **************************************************************************/
@@ -60,7 +64,7 @@ namespace {
 
 
 template<typename Element_t, typename Particle_t>
-void propagate( Element_t& elm, Particle_t& p )
+void propagate( Element_t const& elm, Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -113,10 +117,10 @@ void propagate( int n, Element_t& elm, Particle_t& p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(        ThinPole& elm,      Particle& p );
-template void propagate(        ThinPole& elm,   JetParticle& p );
-template void propagate( int n, ThinPole& elm,      Particle& p );
-template void propagate( int n, ThinPole& elm,   JetParticle& p );
+template void propagate(        ThinPole const& elm,      Particle& p );
+template void propagate(        ThinPole const& elm,   JetParticle& p );
+template void propagate( int n, ThinPole const& elm,      Particle& p );
+template void propagate( int n, ThinPole const& elm,   JetParticle& p );
 
 #endif
 
@@ -127,23 +131,25 @@ template void propagate( int n, ThinPole& elm,   JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::setup( ThinPole& elm) 
+void ThinPole::Propagator::setup( bmlnElmnt& elm) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::operator()( ThinPole& elm, Particle& p ) 
+void ThinPole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  (elm.getPole() == 2) ? ::propagate(elm,p) : ::propagate(elm.getPole()/2-1,elm,p);
+   ThinPole const& tp = static_cast<ThinPole const&>(elm);
+  (tp.getPole() == 2) ? ::propagate(tp,p) : ::propagate(tp.getPole()/2-1,tp,p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::operator()( ThinPole& elm, JetParticle&     p ) 
+void ThinPole::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
 {
-  (elm.getPole() == 2) ? ::propagate(elm,p) : ::propagate(elm.getPole()/2-1,elm,p);
+  ThinPole const& tp = static_cast<ThinPole const&>(elm);
+  (tp.getPole() == 2) ? ::propagate(elm,p) : ::propagate(tp.getPole()/2-1,elm,p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
