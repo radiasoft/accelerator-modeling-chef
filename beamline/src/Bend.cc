@@ -22,15 +22,19 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******                               
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov                         
+******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******                                                                
 ****** REVISION HISTORY 
+******
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ******
 **************************************************************************
 *************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
-#include <basic_toolkit/GenericException.h>
 #include <beamline/Bend.h>
 #include <beamline/BendPropagators.h>
 #include <beamline/Particle.h>
@@ -54,8 +58,7 @@ Bend::Bend( const char* n, double const& l, double const& s, double const& alpha
     dsAngle_(dsAngle),
     usFaceAngle_(usFaceAngle),
     dsFaceAngle_(dsFaceAngle),
-    type_(bend_type),
-    propagator_()
+    type_(bend_type)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -71,9 +74,11 @@ Bend::Bend( Bend const& x )
     usAngle_(x.usAngle_),
     dsAngle_(x.dsAngle_),
 usFaceAngle_(x.usFaceAngle_),
-dsFaceAngle_(x.dsFaceAngle_),
-  propagator_(PropagatorPtr(x.propagator_->Clone()))
-{}
+dsFaceAngle_(x.dsFaceAngle_)
+{
+  propagator_->setup(*this);
+}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -84,32 +89,26 @@ Bend::~Bend()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool Bend::isMagnet() const
+Bend& Bend::operator=(Bend const& rhs)
 {
-  return true;
+  if (this == &rhs) return *this;
+
+  bmlnElmnt::operator=(rhs);
+  angle_       = rhs.angle_;
+  usAngle_     = rhs.usAngle_;
+  dsAngle_     = rhs.dsAngle_;
+  usFaceAngle_ = rhs.usFaceAngle_;
+  dsFaceAngle_ = rhs.dsFaceAngle_;
+
+  return *this;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::setLength( double const& )
+bool Bend::isMagnet() const
 {
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
+  return true;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -154,37 +153,6 @@ void Bend::accept( BmlVisitor& v )
 void Bend::accept( ConstBmlVisitor& v ) const 
 { 
   v.visit( *this ); 
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Bend::localPropagate(Particle& p) 
-{ 
-  (*propagator_)(*this, p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Bend::localPropagate(JetParticle& p) 
-{ 
-  (*propagator_)(*this, p);
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Bend::localPropagate(ParticleBunch& b) 
-{ 
-  (*propagator_)(*this, b);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Bend::localPropagate(JetParticleBunch& b) 
-{ 
-  (*propagator_)(*this, b);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

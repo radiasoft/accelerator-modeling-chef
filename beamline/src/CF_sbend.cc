@@ -161,14 +161,28 @@ CF_sbend::CF_sbend( CF_sbend const& x )
       usAngle_(x.usAngle_),
       dsAngle_(x.dsAngle_),
    multipoles_(x.multipoles_)
-{
-}
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::~CF_sbend()
 {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CF_sbend& CF_sbend::operator=(CF_sbend const& rhs)
+{
+  if (this == &rhs) return *this;
+  bmlnElmnt:operator=(rhs);
+  angle_       = rhs.angle_;
+  usFaceAngle_ = rhs.usFaceAngle_;
+  dsFaceAngle_ = rhs.dsFaceAngle_;
+  usAngle_     = rhs.usAngle_;
+  dsAngle_     = rhs.dsAngle_;
+  multipoles_  = rhs.multipoles_;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
