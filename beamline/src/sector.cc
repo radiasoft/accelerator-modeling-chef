@@ -39,11 +39,14 @@
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
-******
 ****** July 2007         ostiguy@fnal.gov
 ****** - restructured constructors   
 ****** Dec 2007         ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ******
 **************************************************************************
 *************************************************************************/
@@ -74,7 +77,7 @@ namespace {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( const char* n, std::vector<double> const& bH,  std::vector<double> const& aH,  std::vector<double> const& pH, 
+sector::sector( std::string const& n, std::vector<double> const& bH,  std::vector<double> const& aH,  std::vector<double> const& pH, 
                                std::vector<double> const& bV,  std::vector<double> const& aV,  std::vector<double> const& pV, double const& l  ) 
   : bmlnElmnt( n, l ), 
       mapType_(0),        
@@ -103,28 +106,28 @@ sector::sector( const char* n, std::vector<double> const& bH,  std::vector<doubl
  else deltaPsiV_ = pV[1] - pV[0];
 
  for   ( int i=0; i< BMLN_dynDim; ++i) {
-     mapMatrix_(i,i) = 1.0;
+     mapMatrix_[i][i] = 1.0;
  }
 
  double    dummy = sqrt( betaH_[1] / betaH_[0] );   // --- Horizontal sector
  double       cs = cos( deltaPsiH_ );
  double       sn = sin( deltaPsiH_ );
- mapMatrix_(0,0) = ( cs + alphaH_[0] * sn ) * dummy;
- mapMatrix_(3,3) = ( cs - alphaH_[1] * sn ) / dummy;
+ mapMatrix_[0][0] = ( cs + alphaH_[0] * sn ) * dummy;
+ mapMatrix_[3][3] = ( cs - alphaH_[1] * sn ) / dummy;
  dummy           = sqrt( betaH_[0] * betaH_[1] );
- mapMatrix_(0,3) = dummy * sn;
- mapMatrix_(3,0) = (   ( alphaH_[0] - alphaH_[1]     ) * cs
+ mapMatrix_[0][3] = dummy * sn;
+ mapMatrix_[3][0] = (   ( alphaH_[0] - alphaH_[1]     ) * cs
                      - ( 1.0 + alphaH_[0]*alphaH_[1] ) * sn
                    ) / dummy;
 
            dummy = sqrt( betaV_[1] / betaV_[0] );   // --- Vertical sector
               cs = cos( deltaPsiV_ );
               sn = sin( deltaPsiV_ );
- mapMatrix_(1,1) = ( cs + alphaV_[0] * sn ) * dummy;
- mapMatrix_(4,4) = ( cs - alphaV_[1] * sn ) / dummy;
+ mapMatrix_[1][1] = ( cs + alphaV_[0] * sn ) * dummy;
+ mapMatrix_[4][4] = ( cs - alphaV_[1] * sn ) / dummy;
            dummy = sqrt( betaV_[0] * betaV_[1] );
- mapMatrix_(1,4) = dummy * sn;
- mapMatrix_(4,1) = (   ( alphaV_[0] - alphaV_[1]     ) * cs
+ mapMatrix_[1][4] = dummy * sn;
+ mapMatrix_[4][1] = (   ( alphaV_[0] - alphaV_[1]     ) * cs
                      - ( 1.0 + alphaV_[0]*alphaV_[1] ) * sn
                    ) / dummy;
 
@@ -138,7 +141,7 @@ sector::sector( const char* n, std::vector<double> const& bH,  std::vector<doubl
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( const char* n, Mapping const& m, double const& l, char mpt ) 
+sector::sector( std::string const& n, Mapping const& m, double const& l, char mpt ) 
   : bmlnElmnt( n, l, 0.0), 
       mapType_(mpt),        
         myMap_(m),
@@ -159,7 +162,7 @@ sector::sector( const char* n, Mapping const& m, double const& l, char mpt )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sector::sector( const char* n, double const& l, char mpt ) 
+sector::sector( std::string const& n, double const& l, char mpt ) 
   :  bmlnElmnt( n, l, 0.0), 
       mapType_(mpt),        
         myMap_(),
@@ -192,8 +195,7 @@ sector::sector( sector const& x )
         betaV_(x.betaV_),     
        alphaV_(x.alphaV_),    
     deltaPsiV_(x.deltaPsiV_),
-     mapMatrix_(x.mapMatrix_),
-    propagator_(x.propagator_->Clone() )
+     mapMatrix_(x.mapMatrix_)
 {}
 
 
@@ -203,8 +205,27 @@ sector::sector( sector const& x )
 sector::~sector() 
 {}
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sector& sector::operator=( sector const& rhs)
+{
+   if ( this == &rhs)  return *this;
+   bmlnElmnt::operator=(rhs);
+      mapType_ = rhs.mapType_;
+        myMap_ = rhs.myMap_;
+        betaH_ = rhs.betaH_;
+       alphaH_ = rhs.alphaH_;
+    deltaPsiH_ = rhs.deltaPsiH_;
+        betaV_ = rhs.betaV_;
+       alphaV_ = rhs.alphaV_;
+    deltaPsiV_ = rhs.deltaPsiV_;
+    mapMatrix_ = rhs.mapMatrix_;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sector::Split( double const&, ElmPtr& a, ElmPtr& b ) const
 {
@@ -259,18 +280,6 @@ void sector::setFrequency( Jet (*fcn)( const Jet& ) )
 const char* sector::Type() const 
 { 
   return "sector"; 
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sector::setLength( double const& )
-{
-  (*pcerr) << "*** WARNING ***                                \n"
-          "*** WARNING *** sector::setLength does nothing.\n"
-          "*** WARNING ***                                \n"
-       << endl;
 }
 
 
@@ -342,35 +351,4 @@ void  sector::accept( ConstBmlVisitor& v ) const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  sector::localPropagate( Particle& p ) 
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  sector::localPropagate( JetParticle& p ) 
-{
-  (*propagator_)(*this, p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  sector::localPropagate( ParticleBunch& b ) 
-{
-  (*propagator_)(*this, b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  sector::localPropagate( JetParticleBunch& b ) 
-{
-  (*propagator_)(*this, b);
-}
-
-
 

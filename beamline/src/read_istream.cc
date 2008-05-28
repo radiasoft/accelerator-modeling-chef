@@ -228,7 +228,7 @@ bmlnElmnt* read_istream(istream& is)
     element = thinLambPtr;
   }
   else if( strcasecmp(type,             "thinMultipole") == 0 ) {
-    thinMultipolePtr = new thinMultipole(name, strength);
+    thinMultipolePtr = new thinMultipole(name);
     element = thinMultipolePtr;
   }
   else if( strcasecmp(type,             "thinOctupole") == 0 ) {
