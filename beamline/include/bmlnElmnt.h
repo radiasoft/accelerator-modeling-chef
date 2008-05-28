@@ -36,15 +36,12 @@
 ****** -----------------
 ****** 
 ****** Oct 2006:   Jean-Francois Ostiguy  ostiguy@fnal.gov
-******
 ****** - beamline: improved implementation. beamline is no longer 
 ******             derived from a list container, but rather contains 
 ******             an instance of a list.  std:list<> is used rather 
-******             than the old style (void*) dlist, which is not type safe and
-******             could not hold smart pointers. 
-******
+******             than the old style (void*) dlist, which is not type 
+******             safe and could not hold smart pointers. 
 ****** Dec 2006:   ostiguy@fnal.gov  
-******
 ****** - fixed (possibly long standing) memory corruption problems 
 ******   in bmlnElmnt destructor for many element types.   
 ******   Introduced elm_core_access empty class to grant Propagators 
@@ -53,16 +50,18 @@
 ****** - eliminated raw c-style strings 
 ****** - Eliminated obsolete tagging functions 
 ****** - various public interface cleanups
-****** 
 ****** Mar 2007:   ostiguy@fnal.gov
 ****** - support for reference counted elements    
-******
 ****** July 2007   ostiguy@fnal.gov
-*****  - new, less memory hungry implementation for PinnedFrameSet
-*****  - eliminated nested functor base classes (e.g. CRITFUNC) 
+****** - new, less memory hungry implementation for PinnedFrameSet
+****** - eliminated nested functor base classes (e.g. CRITFUNC) 
 ****** Dec 2007   ostiguy@fnal.gov
-*****  - new typesafe propagators
-*****
+****** - new typesafe propagators
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+****** - Propagate/localPropagate functions now const correct
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -137,10 +136,13 @@ bmlnElmnt* read_istream(std::istream&);
 class DLLEXPORT bmlnElmnt {
 
   friend class beamline; 
+  friend class core_access; 
 
  public:
+ 
+   typedef boost::shared_ptr<BasePropagator> PropagatorPtr;   
 
-  class core_access;
+   class core_access;
 
    //--------------------------------------------------------------
    // PinnedFrameSet 
@@ -192,8 +194,7 @@ class DLLEXPORT bmlnElmnt {
      }
   };
 
-
- public:
+public:
   
   bmlnElmnt( std::string const& name="",  double const&  length=0.0, double const& strength=0.0 );
 
@@ -216,16 +217,6 @@ class DLLEXPORT bmlnElmnt {
 
   void acceptInner( BmlVisitor& );
   void acceptInner( ConstBmlVisitor& ) const;
-
-  void propagate(         Particle& );
-  void propagate(      JetParticle& );
-  void propagate(    ParticleBunch& );
-  void propagate( JetParticleBunch& );
-
-  virtual void localPropagate(         Particle& ) = 0;
-  virtual void localPropagate(      JetParticle& ) = 0;
-  virtual void localPropagate(    ParticleBunch& ) = 0;
-  virtual void localPropagate( JetParticleBunch& ) = 0;
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)
@@ -266,11 +257,21 @@ class DLLEXPORT bmlnElmnt {
     { return pinnedFrames_.downStream(); }
 
 
-  virtual void enterLocalFrame( Particle&                ) const;
-  virtual void enterLocalFrame( JetParticle&             ) const;
+  void propagate(         Particle& p ) const;
+  void propagate(      JetParticle& p ) const;
+  void propagate(    ParticleBunch& b ) const;
+  void propagate( JetParticleBunch& b ) const;
 
-  virtual void leaveLocalFrame( Particle&                ) const;
-  virtual void leaveLocalFrame( JetParticle&             ) const;
+  virtual void localPropagate(         Particle& p ) const;
+  virtual void localPropagate(      JetParticle& p ) const;
+  virtual void localPropagate(    ParticleBunch& b ) const;
+  virtual void localPropagate( JetParticleBunch& b ) const;
+
+  void enterLocalFrame( Particle&                ) const;
+  void enterLocalFrame( JetParticle&             ) const;
+
+  void leaveLocalFrame( Particle&                ) const;
+  void leaveLocalFrame( JetParticle&             ) const;
 
   // Editing functions
 
@@ -291,12 +292,11 @@ class DLLEXPORT bmlnElmnt {
 
   //  ... Modifiers
 
-  virtual void setLength     ( double const& );
-  virtual void setStrength   ( double const& );
-  virtual void setCurrent    ( double const& );
-  virtual void setShunt      ( double const& a);
+  void    setLength   ( double const& );
+  void    setStrength ( double const& );
+
           void setAperture   ( Aperture* );
-          void rename        ( std::string name);  
+          void rename        ( std::string const& name );  
 
 
   virtual double getReferenceTime()                    const;     // returns ctRef_
@@ -308,12 +308,12 @@ class DLLEXPORT bmlnElmnt {
   // ... Query functions 
 
   alignmentData        Alignment( void )        const;
-  Aperture*            getAperture( void );     // returns a clone of the aperture class
-  int                  hasAperture( void )      const  { return  ( pAperture_ ? 1 : 0 ); }
-  double               Strength()               const  { return strength_; }
+  Aperture*            getAperture();           // returns a clone of the aperture class
+  bool                 hasAperture()            const  { return  pAperture_; }
+
+  double               Strength()               const  { return strength_;   }
   double               Length()                 const;
 
-  virtual double       Current()                const  { return strength_/iToField_; }
 
   virtual bool equivTo( bmlnElmnt const& ) const;
 
@@ -323,8 +323,8 @@ class DLLEXPORT bmlnElmnt {
   virtual bool isSimple()   const;
   virtual bool isMagnet()   const = 0;
 
-  std::string          Name()                   const  { return ident_; }
-  virtual const char*  Type()                   const = 0;
+  std::string const&          Name()   const  { return ident_; }
+  virtual char const*         Type()   const = 0;
 
 
   virtual double OrbitLength( Particle const& ) { return length_; }
@@ -333,11 +333,6 @@ class DLLEXPORT bmlnElmnt {
                                    // Will be different from "length"
                                    // for rbends.
 
-  double const& IToField() const      { return iToField_;     }
-  double const& getShunt() const      { return shuntCurrent_; }
-
-
-
 protected:
 
   std::string                       ident_;            // Name identifier of the element.
@@ -345,10 +340,6 @@ protected:
   double                            strength_;         // Interpretation depends on object.
   
   alignment*                        align_;
-  double                            iToField_;         // Conversion factor for current through
-                                                      // magnet in amperes to field or gradient etc.
-  double                            shuntCurrent_;     // Does this element have a shunt?
-
   PinnedFrameSet                    pinnedFrames_;
 
   mutable double                    ctRef_;            // (normalized) time required for
@@ -364,6 +355,8 @@ protected:
 
   BmlPtr                             bml_;             // The element may be composite.
   ElmPtr                             elm_;             // with one active part.
+
+  PropagatorPtr  propagator_;
 
 private:
 
@@ -383,17 +376,18 @@ public:
 
   BarnacleList dataHook;   // Carries data as service to application program.
 
-
-
 };
 
 class bmlnElmnt::core_access {
 
  public:
 
-  static ElmPtr&  get_ElmPtr( bmlnElmnt& o) { return o.elm_;   }
-  static BmlPtr&  get_BmlPtr( bmlnElmnt& o) { return o.bml_;   }
-  static double&  get_ctRef ( bmlnElmnt& o) { return o.ctRef_; }
+  static ElmPtr const&  get_ElmPtr( bmlnElmnt const& o) { return o.elm_;   }
+  static BmlPtr const&  get_BmlPtr( bmlnElmnt const& o) { return o.bml_;   }
+  static double const&  get_ctRef ( bmlnElmnt const& o) { return o.ctRef_; }
+  static ElmPtr&        get_ElmPtr( bmlnElmnt& o)       { return o.elm_;   }
+  static BmlPtr&        get_BmlPtr( bmlnElmnt& o)       { return o.bml_;   }
+  static double&        get_ctRef ( bmlnElmnt& o)       { return o.ctRef_; }
 
 };
    

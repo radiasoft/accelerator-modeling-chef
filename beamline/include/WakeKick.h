@@ -25,6 +25,10 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                         
 ******                                                                
+******  May 2008 ostiguy@fnal.gov
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
+******  - no assumption about internal structure
 ******
 **************************************************************************
 **************************************************************************
@@ -56,34 +60,21 @@ private:
 
 public:
 
-   typedef boost::shared_ptr<BasePropagator<WakeKick> > PropagatorPtr;   
-
-   WakeKick( char const* name );      
+   WakeKick( std::string const& name );      
 
    WakeKick( WakeKick const& );
 
    WakeKick* Clone() const { return new WakeKick( *this ); }
 
-   WakeKick& operator=( WakeKick const& rhs);
-
-   void setup();
-
   ~WakeKick();
 
-   void localPropagate(         Particle& p );
-   void localPropagate(      JetParticle& p );
-   void localPropagate(    ParticleBunch& b );
-   void localPropagate( JetParticleBunch& b );
+   WakeKick& operator=( WakeKick const& rhs);
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
 
    const char* Type()     const;
    bool        isMagnet() const;
-
- private:
-  
-   PropagatorPtr  propagator_;
 
 } ;
 
