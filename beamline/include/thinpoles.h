@@ -42,12 +42,13 @@
 ******
 ******  Mar 2007 ostiguy@fnal.gov 
 ******  - added support for reference counted elements
-******                                           
 ******  Dec 2007 ostiguy@fnal.gov
 ******  - streamlined constructors      
 ******  - common base class 
 ******  - new type-safe propagator scheme    
-******
+******  May 2008 ostiguy@fnal
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
 **************************************************************************
 *************************************************************************/
 
@@ -90,20 +91,15 @@ protected:
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<ThinPole> > PropagatorPtr;   
-
   ThinPole( int pole );
-  ThinPole( char const*  name, double const& integrated_strength, int pole);
+  ThinPole( std::string const& name, double const& integrated_strength, int pole);
   ThinPole( ThinPole const& );
 
   ThinPole* Clone() const = 0;
 
  ~ThinPole();
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
+  ThinPole& operator=( ThinPole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -116,8 +112,6 @@ public:
  protected:
  
   int           pole_; 
-  PropagatorPtr propagator_;
-
 };
 
 
@@ -128,12 +122,14 @@ class DLLEXPORT thin2pole : public ThinPole {
 public:
 
   thin2pole();
-  thin2pole( char const* name, double const& integrated_strength);
+  thin2pole( std::string const& name, double const& integrated_strength);
   thin2pole( thin2pole const& );
 
   thin2pole* Clone() const { return new thin2pole( *this ); }
 
  ~thin2pole();
+
+  thin2pole& operator=( thin2pole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -151,11 +147,13 @@ class DLLEXPORT thin12pole : public ThinPole {
 public:
 
   thin12pole();
-  thin12pole( char const* name, double const& strength);
-  thin12pole( const thin12pole& );
+  thin12pole( std::string const& name, double const& strength);
+  thin12pole( thin12pole const& );
   thin12pole* Clone() const { return new thin12pole( *this ); }
 
  ~thin12pole();
+
+  thin12pole& operator=( thin12pole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -172,10 +170,13 @@ class DLLEXPORT thin14pole : public ThinPole {
 public:
 
   thin14pole();
-  thin14pole( char const* name, double const& strength);
+  thin14pole( std::string const& name, double const& strength);
   thin14pole( thin14pole const& );
   thin14pole* Clone() const { return new thin14pole( *this ); }
+
  ~thin14pole();
+
+  thin14pole& operator=( thin14pole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -193,7 +194,7 @@ public:
 
   thin16pole();
 
-  thin16pole( char const* name, double const& strength );
+  thin16pole( std::string const& name, double const& strength );
   thin16pole( thin16pole const & );
   thin16pole* Clone() const { return new thin16pole( *this ); }
  ~thin16pole();
@@ -213,10 +214,13 @@ class DLLEXPORT thin18pole : public ThinPole {
 public:
 
   thin18pole();
-  thin18pole( char const* name, double const&  strength );
+  thin18pole( std::string const& name, double const&  strength );
   thin18pole( thin18pole const& );
   thin18pole* Clone() const { return new thin18pole( *this ); }
+
  ~thin18pole();
+
+  thin18pole& operator=( thin18pole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
