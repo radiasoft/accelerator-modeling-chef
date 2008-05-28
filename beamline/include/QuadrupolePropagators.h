@@ -25,6 +25,9 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -36,22 +39,21 @@
 class Particle;
 class JetParticle;
 
-class quadrupole::Propagator: public BasePropagator<quadrupole> {
+class quadrupole::Propagator: public BasePropagator {
 
  public:
 
   Propagator ( int n): n_(n) {}
-  Propagator ( Propagator const& o ): BasePropagator<quadrupole>(), n_(o.n_) {}
+  Propagator ( Propagator const& o ): BasePropagator(), n_(o.n_) {}
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup(quadrupole& elm); 
+  void  setup(bmlnElmnt& elm); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
+  void  setAttribute(  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
  
-  void  operator()( quadrupole& elm,             Particle& p);
-  void  operator()( quadrupole& elm,          JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,             Particle& p);
+  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
 
  private:
 
@@ -61,19 +63,43 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
 
 //------------------------------------------------------------------  
 
-class thinQuad::Propagator: public BasePropagator<thinQuad> {
+class thinQuad::Propagator: public BasePropagator {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()( thinQuad& elm,              Particle& p);
-  void  operator()( thinQuad& elm,           JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,              Particle& p);
+  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
 
 };
+
+//----------------------------------------------------------------
+
+#if 0
+
+class quadrupole::MADPropagator: public BasePropagator {
+
+ public:
+
+  Propagator () {}
+  Propagator ( Propagator const& o );
+
+  Propagator* Clone() const { return new Propagator(*this); }
+
+  void  setup(bmlnElmnt& elm); 
+
+  void  setAttribute(  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+ 
+  void  operator()( bmlnElmnt const& elm,             Particle& p);
+  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
+
+ private:
+
+  
+};
+#endif
+
 
 #endif //  QUADRUPOLEPROPAGATORS_H
 

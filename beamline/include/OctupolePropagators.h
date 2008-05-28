@@ -22,8 +22,12 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Author: Jean-Francois Ostiguy  
+******          ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -37,20 +41,19 @@
 class Particle;
 class JetParticle;
 
-class octupole::Propagator: public BasePropagator<octupole> {
+class octupole::Propagator: public BasePropagator {
 
 public:
 
   Propagator(int n=4):  n_(n) {}
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup( octupole& elm); 
+  void  setup( bmlnElmnt& elm); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
+  void  setAttribute (  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
  
-  void  operator()( octupole& elm,             Particle& p);
-  void  operator()( octupole& elm,          JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,             Particle& p);
+  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
 
  private:
 
@@ -60,17 +63,14 @@ public:
 
 //------------------------------------------------------------------  
 
-class thinOctupole::Propagator: public BasePropagator<thinOctupole> {
+class thinOctupole::Propagator: public BasePropagator {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()( thinOctupole& elm,             Particle& p);
-  void  operator()( thinOctupole& elm,          JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,             Particle& p);
+  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
 
 };
 

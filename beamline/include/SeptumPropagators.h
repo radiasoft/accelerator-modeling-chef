@@ -24,6 +24,10 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
+******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ****** 
 ******                                                                
 **************************************************************************
@@ -33,23 +37,21 @@
 #define SEPTUMPROPAGATORS_H
 
 #include <beamline/septum.h>
+#include <beamline/BasePropagator.h>
 
 class Particle;
 class JetParticle;
 
-class thinSeptum::Propagator: public BasePropagator<thinSeptum> {
+class thinSeptum::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( thinSeptum& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  thinSeptum& elm,             Particle& p);
-  void  operator()(  thinSeptum& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 

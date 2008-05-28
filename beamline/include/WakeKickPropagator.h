@@ -25,6 +25,11 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                         
 ******                                                                
+****** REVISION HISTORY
+******
+****** May 2008 ostiguy@fnal.gov
+****** - propagator moved (back) to base class
+****** - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -45,7 +50,7 @@ class TBunch;
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
-class WakeKick::Propagator: public BasePropagator<WakeKick>   {
+class WakeKick::Propagator: public BasePropagator {
 
 public:
 
@@ -55,15 +60,12 @@ public:
 
   Propagator* Clone() const; 
 
-  void setup( WakeKick& elm);
+  void setup( bmlnElmnt& elm);
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void operator()(  WakeKick&  elm,          Particle& p );
-  void operator()(  WakeKick&  elm,       JetParticle& p );
-  void operator()(  WakeKick&  elm,     ParticleBunch& b );
-  void operator()(  WakeKick&  elm,  JetParticleBunch& b );
+  void operator()(  bmlnElmnt const&  elm,          Particle& p );
+  void operator()(  bmlnElmnt const&  elm,       JetParticle& p );
+  void operator()(  bmlnElmnt const&  elm,     ParticleBunch& b );
+  void operator()(  bmlnElmnt const&  elm,  JetParticleBunch& b );
 
   void debug( WakeKick&  elm, ParticleBunch&);
 

@@ -22,8 +22,12 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Author: Jean-Francois Ostiguy  
+******          ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -36,7 +40,7 @@
 class Particle;
 class JetParticle;
 
-class sextupole::Propagator: public BasePropagator<sextupole> {
+class sextupole::Propagator: public BasePropagator {
 
 public:
 
@@ -44,10 +48,11 @@ public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup( sextupole& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  operator()(  sextupole& elm,            Particle& p);
-  void  operator()(  sextupole& elm,         JetParticle& p);
+  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const&  value);
+  void  operator()(  bmlnElmnt const& elm,            Particle& p);
+  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
 
  private:
 
@@ -58,14 +63,14 @@ public:
 
 //------------------------------------------------------------------  
 
-class thinSextupole::Propagator: public BasePropagator<thinSextupole> {
+class thinSextupole::Propagator: public BasePropagator {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  operator()( thinSextupole& elm,            Particle& p);
-  void  operator()( thinSextupole& elm,         JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,            Particle& p);
+  void  operator()( bmlnElmnt const& elm,         JetParticle& p);
 
 };
 

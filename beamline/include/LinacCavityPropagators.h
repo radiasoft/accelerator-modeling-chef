@@ -35,17 +35,20 @@
 class Particle;
 class JetParticle;
 
-class LinacCavity::Propagator : public BasePropagator<LinacCavity> {
+class LinacCavity::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void       setup( LinacCavity& elm);
-  void  operator()( LinacCavity& elm,         Particle& p );
-  void  operator()( LinacCavity& elm,      JetParticle& p );
-  void  operator()( LinacCavity& elm,    ParticleBunch& b ); 
-  void  operator()( LinacCavity& elm, JetParticleBunch& b );   
+  void       setup( bmlnElmnt& elm);
+
+  void  setAttribute (  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+
+  void  operator()( bmlnElmnt const& elm,         Particle& p );
+  void  operator()( bmlnElmnt const& elm,      JetParticle& p );
+  void  operator()( bmlnElmnt const& elm,    ParticleBunch& b ); 
+  void  operator()( bmlnElmnt const& elm, JetParticleBunch& b );   
 
   void setWakeOn(   LinacCavity&       elm, bool set ); 
   bool    wakeOn(   LinacCavity const& elm           ) const; 

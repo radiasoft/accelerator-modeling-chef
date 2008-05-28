@@ -24,6 +24,10 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
+******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ****** 
 ******                                                                
 **************************************************************************
@@ -33,23 +37,21 @@
 #define SECTORPROPAGATORS_H
 
 #include <beamline/sector.h>
+#include <beamline/BasePropagator.h>
 
 class Particle;
 class JetParticle;
 
-class sector::Propagator: public BasePropagator<sector> {
+class sector::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( sector& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  sector& elm,             Particle& p);
-  void  operator()(  sector& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 

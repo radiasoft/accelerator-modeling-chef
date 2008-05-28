@@ -24,6 +24,9 @@
 ******                                                                
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -37,19 +40,16 @@
 class    Particle;
 class JetParticle;
 
-class thinMultipole::Propagator: public BasePropagator<thinMultipole> {
+class thinMultipole::Propagator: public BasePropagator {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup( thinMultipole& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  thinMultipole& elm,       Particle& p);
-  void  operator()(  thinMultipole& elm,    JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,       Particle& p);
+  void  operator()(  bmlnElmnt const& elm,    JetParticle& p);
 
 };
 
