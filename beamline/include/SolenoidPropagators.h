@@ -22,8 +22,12 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Author: Jean-Francois Ostiguy  
+******          ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -37,19 +41,18 @@
 class Particle;
 class JetParticle;
 
-class Solenoid::Propagator: public BasePropagator<Solenoid> {
+class Solenoid::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( Solenoid& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
+  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const&  value);
  
-  void  operator()(  Solenoid& elm,             Particle& p);
-  void  operator()(  Solenoid& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 

@@ -24,6 +24,10 @@
 ******                                                                
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
+******
 ******
 ******
 **************************************************************************
@@ -42,21 +46,18 @@ typedef TBunch<JetParticle> JetParticleBunch;
 
 #include <beamline/pinger.h>
 
-class Pinger::Propagator: public BasePropagator<Pinger> {
+class Pinger::Propagator: public BasePropagator {
 
 public:
 
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup( Pinger& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  Pinger& elm,            Particle& p);
-  void  operator()(  Pinger& elm,         JetParticle& p);
-  void  operator()(  Pinger& elm,       ParticleBunch& p);
-  void  operator()(  Pinger& elm,    JetParticleBunch& p);
+  void  operator()(  bmlnElmnt const& elm,            Particle& p);
+  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
+  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
 };
 
 
