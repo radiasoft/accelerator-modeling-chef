@@ -73,14 +73,9 @@ public:
 
   marker* Clone() const { return new marker( *this ); }
 
+ ~marker();
+
   marker& operator=( marker const& rhs);
-
-  virtual ~marker();
-
-  void localPropagate(        Particle&   );
-  void localPropagate(     JetParticle&   );
-  void localPropagate(   ParticleBunch&   );
-  void localPropagate( JetParticleBunch&  );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
