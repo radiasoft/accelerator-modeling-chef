@@ -25,13 +25,19 @@
 ******  Author: Jean-Francois Ostiguy  
 ******          ostiguy@fnal.gov
 ******
-******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic bmlmElmnt type use in signatures
 **************************************************************************
 *************************************************************************/
 #ifndef BASEPROPAGATOR_H
 #define BASEPROPAGATOR_H
 
 #include <complex>
+#include <string>
+#include <boost/any.hpp>
+
+class   bmlnElmnt;
 
 class    Particle;
 class JetParticle;
@@ -76,9 +82,9 @@ template<typename Particle_t>
 template<>
 struct PropagatorTraits<Particle> {
   typedef Vector                                   State_t;
-  typedef double                               Component_t;
-  typedef std::complex<double>                 ComplexComponent_t;
-  typedef Vector                                  Vector_t;
+  typedef double                                   Component_t;
+  typedef std::complex<double>                     ComplexComponent_t;
+  typedef Vector                                   Vector_t;
   static double  norm(  PropagatorTraits<Particle>::Component_t const& comp);  
 };  
 
@@ -91,30 +97,29 @@ struct PropagatorTraits<JetParticle> {
   static double  norm( PropagatorTraits<JetParticle>::Component_t const& comp);  
 };  
    
- 
-template<typename Element_t>
+
 class BasePropagator {
 
  public:
   
-  virtual BasePropagator<Element_t>* Clone() const                = 0;
+   BasePropagator(); 
+   BasePropagator( BasePropagator const& o); 
 
-  virtual void  setup( Element_t&);
+   BasePropagator& operator=( BasePropagator const& o); 
 
-  virtual void  setLength   ( double const& oldlength,      double const& length    ) = 0;
-  virtual void  setStrength ( double const& oldstrength,    double const& strength  ) = 0;
-  virtual void  setAttribute( std::string const& attribute, double const& oldvalue, double const& value );
+   virtual BasePropagator* Clone() const                                 = 0;
 
-  virtual void  operator()(  Element_t& elm,         Particle& p) = 0; 
-  virtual void  operator()(  Element_t& elm,      JetParticle& p) = 0; 
-  virtual void  operator()(  Element_t& elm,    ParticleBunch& b);  
-  virtual void  operator()(  Element_t& elm, JetParticleBunch& b);  
+   virtual void  setup( bmlnElmnt& );
+  
+   virtual void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value );
+
+   virtual void  operator()(  bmlnElmnt const& elm,         Particle& p) = 0; 
+   virtual void  operator()(  bmlnElmnt const& elm,      JetParticle& p) = 0; 
+   virtual void  operator()(  bmlnElmnt const& elm,    ParticleBunch& b);  
+   virtual void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
 
 };
 
-#ifndef  BEAMLINE_EXPLICIT_TEMPLATES 
-#include <beamline/BasePropagator.tcc>
-#endif
 
 #endif // BASEPROPAGATOR_H
 
