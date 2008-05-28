@@ -7,9 +7,31 @@
 ******            synchrotrons.                      
 ******                                    
 ****** File:      Bend.h
+******
+******  Copyright (c) Fermi Alliance / Fermilab    
+******                All Rights Reserved                             
 ******                                                                
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******  
+******  Author:    Jean-Francois Ostiguy                       
+******             ostiguy@fnal.gov
+******
 ****** REVISION HISTORY 
 ******
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
@@ -37,8 +59,6 @@ class DLLEXPORT Bend : public bmlnElmnt {
    
 public:
 
-  typedef boost::shared_ptr<BasePropagator<Bend> > PropagatorPtr;   
-
   enum BendType {type_sbend, type_rbend };
 
   Bend(  char const* name, double const& orbit_length_m, 
@@ -55,10 +75,7 @@ public:
 
  ~Bend();
 
-  void localPropagate(         Particle&   p );
-  void localPropagate(      JetParticle&   p ); 
-  void localPropagate(    ParticleBunch&   b );
-  void localPropagate( JetParticleBunch&   b ); 
+  Bend& operator=(Bend const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -67,8 +84,6 @@ public:
   bool isMagnet() const;
 
   BendType getBendType() const;
-
-  void setLength( double const& );
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
@@ -83,8 +98,6 @@ private:
   double usFaceAngle_;      // [radians] entry (upstream) and exit (downstream) 
   double dsFaceAngle_;      // angles of the fiducial orbit referenced
                             // to the physical edge of the magnet. 
-
-  PropagatorPtr  propagator_;
 
   std::ostream& writeTo(std::ostream&); 
   std::istream& readFrom(std::istream&); 

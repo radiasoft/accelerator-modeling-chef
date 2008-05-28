@@ -39,6 +39,11 @@
 ****** - added proper  assigment operator  
 ****** Dec 2007         ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+****** - function to compute E field now templated 
 **************************************************************************
 *************************************************************************/
 #ifndef BBLENS_H
@@ -46,6 +51,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <vector>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -62,15 +68,28 @@ typedef boost::shared_ptr<BBLens>            BBLensPtr;
 typedef boost::shared_ptr<BBLens const> ConstBBLensPtr;
 
 
+template <typename T>
+struct EVector_t;
+
+template <> 
+struct EVector_t<Jet> {
+  typedef JetVector Type;
+  typedef JetC      ComplexComponentType;
+}; 
+
+template <> 
+struct EVector_t<double> {
+  typedef               Vector   Type;
+  typedef std::complex<double>   ComplexComponentType;
+}; 
+
 class DLLEXPORT BBLens : public bmlnElmnt {
 
   class Propagator;
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<BBLens> > PropagatorPtr;   
-
-  BBLens( const char* name=0, double const&  length = 1.0
+  BBLens(  std::string const& name="", double const&  length = 1.0
              /* length [m]: the length of the bunch
                 in its rest frame */,
           double const&        = 3.3e11
@@ -90,12 +109,6 @@ public:
 
   BBLens& operator=( BBLens const&);
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-
-
   char useRound;         // By default = 1
                          // If 1: then round beam approximation
                          // used when horizontal and vertical 
@@ -106,26 +119,18 @@ public:
   void          setDistCharge( double const& nparticles); 
   double const& getDistCharge() const; 
 
-  void setSigmas( double const* sigmas);
-  void GetSigma( double* );
+  void                       setSigmas(std::vector<double> const& );
+  std::vector<double> const& getSigmas() const;
 
-  void AdjustSigma();
+  template <typename T> 
+  typename EVector_t<T>::Type         NormalizedEField( T const& x, T const& y ) const; 
+                                      /* returns the "normalized" electric field
+                                         in the rest frame of the bunch, in inverse
+                                         meters.  To get the field [V/m], this must
+                                         be multiplied by Q/(2 pi epsilon_o), where
+                                         Q is the line density of charge [C/m] (in
+                                         rest frame). */
 
-  Vector NormalizedEField( double const& x, double const& y );
-             /* returns the "normalized" electric field
-                in the rest frame of the bunch, in inverse
-                meters.  To get the field [V/m], this must
-                be multiplied by Q/(2 pi epsilon_o), where
-                Q is the line density of charge [C/m] (in
-                rest frame). */
-
-  JetVector NormalizedEField( const Jet& x, const Jet& y );
-             /* returns the "normalized" electric field
-                in the rest frame of the bunch, in inverse
-                meters.  To get the field [V/m], this must
-                be multiplied by Q/(2 pi epsilon_o), where
-                Q is the line density of charge [C/m] (in
-                rest frame). */
 
   void accept( BmlVisitor& v );            
   void accept( ConstBmlVisitor& v ) const; 
@@ -133,23 +138,37 @@ public:
   const char* Type()     const;
   bool        isMagnet() const;
 
-  Vector Beta();
+  Vector Beta() const;
   
+
+  template <typename T >
+  static double toDouble( T const& value);
+
 
 private:
 
-  double emittance_[3];   // One sigma (noninvariant) emittance / pi
-  double gamma_;          // Relativistic gamma
-  double beta_;           // Relativistic beta
-  double num_;            // Number of proton charges; if the bunch
-                          // is negatively charged, then this number
-                          // is negative.
-  double sigma_[3];       // This will depend on position in the 
-                          // lattice.  The third component is zero
-                          // for now.
-
-  PropagatorPtr propagator_;
+  double emittance_[3];                // One sigma (noninvariant) emittance / pi
+  double gamma_;                       // Relativistic gamma
+  double beta_;                        // Relativistic beta
+  double num_;                         // Number of proton charges; if the bunch
+                                       // is negatively charged, then this number
+                                       // is negative.
+  std::vector<double> sigmas_;         // This will depend on position in the 
+                                       // lattice.  The third component is zero
+                                       // for now.
 
 };
+
+// specializations
+
+template <>  
+double BBLens::toDouble( double const& value);
+
+template <>
+double BBLens::toDouble ( Jet const& value); 
+
+#ifndef  BEAMLINE_EXPLICIT_TEMPLATES
+#include <beamline/BBLens.tcc>
+#endif
 
 #endif // BBLENS_H
