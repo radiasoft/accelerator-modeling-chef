@@ -36,7 +36,7 @@
 ******
 ******  REVISION HISTORY:
 ******
-******  Dec 2006 ostiguy@fnal.gov                                                                
+******  Dec 2006 ostiguy@fnal.gov
 ******
 ******  Major revision 
 ****** 
@@ -54,7 +54,10 @@
 ******                                                                
 ******  Oct 2007 ostiguy@fnal.gov
 ******  - private allocator for state vector  
-******
+****** May 2008  ostiguy@fnal.gov
+****** - eliminated a few data members. They are now computed on the fly, as needed.
+****** - brho is now a signed quantity
+****** - particle types are intialized on the basis of momentum
 **************************************************************************
 *************************************************************************/
 #ifndef PARTICLE_H
@@ -129,23 +132,16 @@ protected:
   std::string tag_;        // tag for arbitrary identification
                            // of a particle.
   double      q_;          // electric charge [C]
-  double      E_;          // reference energy in GeV
   double      m_;          // mass in GeV / c^2
   double      p_;          // reference momentum in GeV / c
   double      gamma_;      // reference gamma
   double      beta_;       // normalized reference velocity = v/c
-  double      pn_;         // normalized reference momentum = pc/mc^2 = p/mc
-                           //                               = beta*gamma
   double      bRho_;       // normalized reference momentum / charge
-  double      pni2_;       // ( 1/pn )^2
-
-  double      wgt_;        // Statistical weight: i.e. macroparticle
-                           // Default value: 1.0
   Vector      state_;      
 
 
-  Particle( double  const& massGeV_c2, double const& energyGeV );  
-  Particle( double  const& massGeV_c2, double const& energyGeV, Vector const& state );
+  Particle( double  const& massGeV_c2, double const& charge, double const& pc);  
+  Particle( double  const& massGeV_c2, double const& charge, double const& pc, Vector const& state );
 
 public:
 
@@ -192,6 +188,7 @@ public:
   Vector const& State()                    const;
 
   double        Energy()                   const;
+  double        KineticEnergy()            const;
   double        Momentum()                 const;
   double        NormalizedMomentum()       const;
   double const& Mass()                     const;
@@ -200,12 +197,12 @@ public:
   double        BetaX()                    const;
   double        BetaY()                    const;
   double        BetaZ()                    const;
+  double        pn()                       const;
   double const& ReferenceBRho()            const;
   double const& ReferenceBeta()            const;
   double const& ReferenceGamma()           const;
   double const& ReferenceMomentum()        const;
-  double const& PNI2()                     const;
-  double const& ReferenceEnergy()          const;
+  double        ReferenceEnergy()          const;
   double const& Weight()                   const;
   double const& Charge()                   const;
   Vector        VectorBeta()               const;
@@ -264,8 +261,8 @@ public:
 class DLLEXPORT  Electron : public Particle {
 public:
   Electron();
-  Electron( double   const& energyGeV );
-  Electron( double   const& energyGeV , Vector const& state);
+  Electron( double   const& pc );
+  Electron( double   const& pc , Vector const& state);
   Electron( Electron const& );
 
   explicit Electron( JetElectron const& );
@@ -281,8 +278,8 @@ public:
 class DLLEXPORT  Positron : public Particle {
 public:
   Positron();
-  Positron( double const& energyGeV );
-  Positron( double const& energyGeV, Vector const& state );
+  Positron( double const& pc );
+  Positron( double const& pc, Vector const& state );
   Positron( Positron const& );
 
   explicit Positron( JetPositron const& );
@@ -297,8 +294,8 @@ public:
 class DLLEXPORT Muon : public Particle {
 public:
   Muon();
-  Muon( double const& energyGeV );
-  Muon( double const& energyGeV, Vector const& state);
+  Muon( double const& pc );
+  Muon( double const& pc, Vector const& state);
   Muon( Muon const& );
 
   explicit Muon( JetMuon const& );
@@ -313,8 +310,8 @@ public:
 class DLLEXPORT  AntiMuon : public Particle {
 public:
   AntiMuon();
-  AntiMuon( double const& energyGeV );
-  AntiMuon( double const& energyGeV, Vector const& state );
+  AntiMuon( double const& pc );
+  AntiMuon( double const& pc, Vector const& state );
   AntiMuon( AntiMuon const& );
 
   explicit AntiMuon( JetAntiMuon const& );
@@ -369,13 +366,15 @@ class particle_core_access
   inline Vector&       Particle::State()       { return state_; } 
   inline Vector const& Particle::State() const { return state_; } 
 
+  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[ndpIndex] );  }
   inline double         Particle::Energy()                   const   { double p = Momentum(); 
                                                                        return sqrt( p*p + m_*m_ );       }
-  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[ndpIndex] );  }
+  inline double         Particle::KineticEnergy()            const   { return Energy() - m_;             }
   inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[ndpIndex] );       }
   inline double  const& Particle::Mass()                     const   { return m_;                        }
   inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
   inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
+  inline double         Particle::pn()                       const   { return beta_*gamma_;              } 
   inline double         Particle::BetaX()                    const   { return (get_npx()*ReferenceMomentum())/Energy(); }
   inline double         Particle::BetaY()                    const   { return (get_npy()*ReferenceMomentum())/Energy(); }
   inline double         Particle::BetaZ()                    const   { return (get_npz()*ReferenceMomentum())/Energy(); }
@@ -383,9 +382,7 @@ class particle_core_access
   inline double  const& Particle::ReferenceBeta()            const   { return beta_;                     }
   inline double  const& Particle::ReferenceGamma()           const   { return gamma_;                    }
   inline double  const& Particle::ReferenceMomentum()        const   { return p_;                        }
-  inline double  const& Particle::PNI2()                     const   { return pni2_;                     }
-  inline double  const& Particle::ReferenceEnergy()          const   { return E_;                        }
-  inline double  const& Particle::Weight()                   const   { return wgt_;                      } 
+  inline double         Particle::ReferenceEnergy()          const   { return sqrt(p_*p_ + m_*m_);       }
   inline double  const& Particle::Charge()                   const   { return q_;                        }
   inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[ndpIndex] ); }
 
