@@ -37,19 +37,20 @@
 ******  Changes: Original version.
 ******                                                                
 ******  Apr 2007 ostiguy@fnal.gov
-******
 ******  - support for reference counted elements
 ******  - eliminated unnecessary casts
 ******  - use std::string for renaming
 ******  - changes to header file to reduce file coupling 
-******
 ******  Dec 2007 ostiguy@fnal.gov
 ******  - new typesafe propagator architecture
-****** 
 ******  February 20, 2008  michelotti@fnal.gov
 ******  - bug fix: instantiated attribute propagator_
 ******    in the Solenoid constructors
-****** 
+******  May 2008 ostiguy@fnal.gov
+******  - setStrength() now dispatched to propagator by base class
+******    (no longer virtual)
+******  - added explicit implementation for assignment operator
+******
 **************************************************************************
 *************************************************************************/
 
@@ -69,13 +70,6 @@
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
-
-
-///////////////////////////////////////////////////
-// 
-// Constructors (and the destructor)
-// 
-///////////////////////////////////////////////////
 
 Solenoid::Solenoid()
 :  bmlnElmnt("", 1.0, 0.0), 
@@ -101,8 +95,7 @@ Solenoid::Solenoid( const char* n, double const& l, double const& s )
 
 Solenoid::Solenoid( Solenoid const& x )
 :   bmlnElmnt(x),
-    inEdge_(x.inEdge_), outEdge_(x.outEdge_),
-    propagator_(PropagatorPtr(x.propagator_->Clone()))
+    inEdge_(x.inEdge_), outEdge_(x.outEdge_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -122,12 +115,17 @@ Solenoid::~Solenoid()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+Solenoid& Solenoid::operator=( Solenoid const& rhs)
+{
+  if ( &rhs == this ) return *this; 
+  bmlnElmnt::operator=(rhs);
+  inEdge_  = rhs.inEdge_;
+  outEdge_ = rhs.outEdge_;
+  return *this; 
+}
 
-///////////////////////////////////////////////////
-// 
-// Other member function(s) (except localPropagate)
-// 
-///////////////////////////////////////////////////
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 {
@@ -172,7 +170,6 @@ bool Solenoid::isMagnet() const
   return true;
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -195,9 +192,7 @@ bool Solenoid::hasInEdge()   const
 
 bool Solenoid::hasOutEdge()  const
 {
-
   return outEdge_;
-
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -214,39 +209,6 @@ void Solenoid::accept( ConstBmlVisitor& v ) const
 { 
   v.visit( *this ); 
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Solenoid::localPropagate( Particle &p ) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Solenoid::localPropagate( JetParticle &p ) 
-{ 
-  (*propagator_)(*this,p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Solenoid::localPropagate( ParticleBunch &b ) 
-{ 
-  (*propagator_)(*this,b);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Solenoid::localPropagate( JetParticleBunch &b ) 
-{ 
-  (*propagator_)(*this,b);
-}
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
