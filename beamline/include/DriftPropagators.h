@@ -25,6 +25,9 @@
 ******  Author: Jean-Francois Ostiguy  
 ******          ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -33,28 +36,22 @@
 
 #include <beamline/drift.h>
 
-class drift::Propagator : public BasePropagator<drift> {
+class drift::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()( drift& elm,         Particle& p);
-  void  operator()( drift& elm,      JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,    Particle& p);
+  void  operator()( bmlnElmnt const& elm, JetParticle& p);
 };
 
-class MADDriftPropagator : public BasePropagator<drift> {
+class MADDriftPropagator : public BasePropagator {
 
   MADDriftPropagator* Clone() const { return new MADDriftPropagator(*this); }
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()( drift& elm,    Particle& p);
-  void  operator()( drift& elm, JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,    Particle& p);
+  void  operator()( bmlnElmnt const& elm, JetParticle& p);
 
 };
 

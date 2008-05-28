@@ -25,6 +25,9 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
 ****** 
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -38,19 +41,16 @@ class Particle;
 class JetParticle;
 
 
-class gkick::Propagator: public BasePropagator<gkick> {
+class gkick::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( gkick& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  gkick& elm,             Particle& p);
-  void  operator()(  gkick& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 };
 
 #endif    // GKICK_H

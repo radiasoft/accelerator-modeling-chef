@@ -24,6 +24,9 @@
 ******                                                                
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -42,19 +45,16 @@ typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
 
-class thinLamb::Propagator : public BasePropagator<thinLamb> {
+class thinLamb::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()( thinLamb& elm,              Particle&  p);
-  void  operator()( thinLamb& elm,           JetParticle&  p);
-  void  operator()( thinLamb& elm,         ParticleBunch&  b);
-  void  operator()( thinLamb& elm,      JetParticleBunch&  b);
+  void  operator()( bmlnElmnt const& elm,              Particle&  p);
+  void  operator()( bmlnElmnt const& elm,           JetParticle&  p);
+  void  operator()( bmlnElmnt const& elm,         ParticleBunch&  b);
+  void  operator()( bmlnElmnt const& elm,      JetParticleBunch&  b);
 
 };
 

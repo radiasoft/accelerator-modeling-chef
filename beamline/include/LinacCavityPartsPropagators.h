@@ -24,6 +24,9 @@
 ******                                                                
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -35,35 +38,33 @@
 class Particle;
 class JetParticle;
 
-class LCavityUpstream::Propagator : public BasePropagator<LCavityUpstream> {
+class LCavityUpstream::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void       setup( LCavityUpstream& elm);
+  void       setup( bmlnElmnt& elm);
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
+  void  setAttribute ( bmlnElmnt& elm, std::string const& name, boost::any const& value );
 
-  void  operator()( LCavityUpstream& elm,              Particle& p);
-  void  operator()( LCavityUpstream& elm,           JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,              Particle& p);
+  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
 
 };
 
-class LCavityDnstream::Propagator : public BasePropagator<LCavityDnstream> {
+class LCavityDnstream::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void       setup( LCavityDnstream& elm);
+  void       setup( bmlnElmnt& elm);
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
+  void  setAttribute ( bmlnElmnt& elm, std::string const& name, boost::any const& value );
  
-  void  operator()( LCavityDnstream& elm,              Particle& p);
-  void  operator()( LCavityDnstream& elm,           JetParticle& p);
+  void  operator()( bmlnElmnt const& elm,              Particle& p);
+  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
 
 };
 

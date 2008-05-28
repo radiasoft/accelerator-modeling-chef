@@ -25,6 +25,9 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov  
 ****** 
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -36,49 +39,40 @@
 class Particle;
 class JetParticle;
 
-class kick::Propagator: public BasePropagator<kick> {
+class kick::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( kick& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  kick& elm,             Particle& p);
-  void  operator()(  kick& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 
-class hkick::Propagator: public BasePropagator<hkick> {
+class hkick::Propagator: public BasePropagator {
 
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( hkick& elm ); 
+  void  setup( bmlnElmnt& elm ); 
  
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  hkick& elm,             Particle& p);
-  void  operator()(  hkick& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 
-class vkick::Propagator: public BasePropagator<vkick> {
+class vkick::Propagator: public BasePropagator {
 
   Propagator* Clone() const { return new Propagator(*this); }
  
-  void  setup( vkick& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   );
-  void  setStrength ( double const& strength );
- 
-  void  operator()(  vkick& elm,             Particle& p);
-  void  operator()(  vkick& elm,          JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
 
 };
 
