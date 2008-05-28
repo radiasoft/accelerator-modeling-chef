@@ -43,7 +43,6 @@
 ****** - eliminated obsolete support for "fast" arcsin 
 ****** - new typesafe propagator scheme
 ****** - sbend now implemented as a composite element  
-******                                                                 
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder setLength method
 ****** - added setStrength method
@@ -51,7 +50,10 @@
 ******     sbend had no internal structure then.
 ****** - added member functions to nullify edge effects
 ******   : used by sbend::Split
-******     
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure   
 **************************************************************************
 *************************************************************************/
 #ifndef SBEND_H
@@ -77,15 +79,13 @@ class DLLEXPORT sbend : public bmlnElmnt {
  
   class sbend_core_access;
 
-  typedef boost::shared_ptr<BasePropagator<sbend> > PropagatorPtr;   
-
   sbend();
 
-  sbend( const char* name, double const& length, 
-	                   double const& strength,
-                           double const& bendangle );
+  sbend( std::string const& name, double const& length, 
+	                          double const& strength,
+                                  double const& bendangle );
 
-  sbend( const char* name,
+  sbend( std::string const& name,
          double const& length,
          double const& strength,    double const& bendangle,
          double const& usfaceangle, double const& dsfaceangle );
@@ -104,11 +104,6 @@ class DLLEXPORT sbend : public bmlnElmnt {
   void leaveLocalFrame(    Particle& ) const;
   void leaveLocalFrame( JetParticle& ) const;
 
-  void localPropagate(         Particle& p ); 
-  void localPropagate(      JetParticle& p ); 
-  void localPropagate(    ParticleBunch& b ); 
-  void localPropagate( JetParticleBunch& b ); 
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
@@ -116,9 +111,6 @@ class DLLEXPORT sbend : public bmlnElmnt {
   bool isMagnet() const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
-
-  void setStrength( double const& );
-  void setLength( double const& );
 
   double        setBendAngle(double const& a) { return (angle_ = a); }
   double const& getBendAngle() const          { return angle_; }
@@ -152,8 +144,6 @@ private:
   double   dsFaceAngle_;
   double   usAngle_;
   double   dsAngle_;
-
-  PropagatorPtr propagator_;
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

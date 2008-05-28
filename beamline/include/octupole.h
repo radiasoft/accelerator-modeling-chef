@@ -34,16 +34,18 @@
 ******                                                                
 ****** REVISION HISTORY
 ****** 
-****** Apr 2008           michelotti@fnal.gov
-****** - added octupole::setLength(..) method to override
-******   the base class implementation.
-****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-****** 
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
+****** Apr 2008           michelotti@fnal.gov
+****** - added octupole::setLength(..) method to override
+******   the base class implementation.
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -77,10 +79,8 @@ class DLLEXPORT octupole : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<octupole> > PropagatorPtr;   
-
   octupole();
-  octupole( char const* name, double const& length,    double const& strength);
+  octupole( std::string const& name, double const& length,    double const& strength);
 
   octupole( octupole const& );
   octupole* Clone() const { return new octupole( *this ); }
@@ -92,24 +92,13 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void setStrength( double const& );
-  void setLength( double const& );
-
   void setCurrent( double const& );
-
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
 
   const char* Type() const;
   bool isMagnet() const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
- private:
-
-  PropagatorPtr propagator_; 
 };
 
 
@@ -119,10 +108,8 @@ class DLLEXPORT thinOctupole : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinOctupole> > PropagatorPtr;   
-
   thinOctupole();
-  thinOctupole( char const* name,  double const& strength );
+  thinOctupole( std::string const& name,  double const& strength );
   thinOctupole( thinOctupole const& );
 
   thinOctupole* Clone() const { return new thinOctupole( *this ); }
@@ -131,20 +118,11 @@ public:
 
  ~thinOctupole();
 
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
-
- private:
-  
-  PropagatorPtr propagator_; 
 
 };
 

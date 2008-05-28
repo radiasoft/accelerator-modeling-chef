@@ -34,16 +34,18 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added quadrupole::setLength(..) method to override
-******   the base class implementation.
-****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
-******
-****** December 2007       ostiguy@fnal.gov
+****** December 2007      ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
+****** Apr 2008           michelotti@fnal.gov
+****** - added quadrupole::setLength(..) method to override
+******   the base class implementation.
+****** May 2008           ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -68,43 +70,35 @@ typedef boost::shared_ptr<thinQuad const>   ConstThinQuadPtr;
 
 class DLLEXPORT quadrupole : public bmlnElmnt {
 
-  class Propagator;  
+  class    Propagator;  
+  class MADPropagator;  
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<quadrupole> > PropagatorPtr; 
 
   // length    in meters^-1
   // strength (B') in Tesla-meters^-1
 
-
   quadrupole();
-  quadrupole( char const* name, double const& length, double const& strength );
+  quadrupole( std::string const& name, double const& length, double const& strength );
   quadrupole( quadrupole const& );
 
   quadrupole* Clone() const;
 
  ~quadrupole();
 
-  void setStrength( double const& );
-  void setLength( double const& );
  
-  void localPropagate(         Particle& b );   
-  void localPropagate(      JetParticle& b );   
-  void localPropagate(    ParticleBunch& b ); 
-  void localPropagate( JetParticleBunch& b ); 
+  quadrupole& operator=( quadrupole const& o);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  const char* Type() const;
-  bool isMagnet() const;
+  char const* Type()     const;
+  bool        isMagnet() const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
-private:
-
-  PropagatorPtr            propagator_;  
+ private:
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
@@ -114,29 +108,24 @@ private:
 
 //-------------------------------------------------------------------------------
 
-class DLLEXPORT thinQuad : public bmlnElmnt
-{
+class DLLEXPORT thinQuad : public bmlnElmnt {
 
-  class Propagator;  
+  class    Propagator;  
+  class MADPropagator;  
 
 public:
 
   // integrated_strength (B'L) in Tesla; + = horizontally focussing
 
-  typedef boost::shared_ptr<BasePropagator<thinQuad> > PropagatorPtr; 
-
   thinQuad();
-  thinQuad( char const* name, double const& integrated_strength );    // B'L in Tesla; + = horizontally focussing
+  thinQuad( std::string const& name, double const& integrated_strength );    // B'L in Tesla; + = horizontally focussing
   thinQuad( thinQuad const& );
 
   thinQuad* Clone() const;
 
  ~thinQuad();
 
-  void localPropagate(         Particle& b );   
-  void localPropagate(      JetParticle& b );   
-  void localPropagate(    ParticleBunch& b ); 
-  void localPropagate( JetParticleBunch& b ); 
+  thinQuad& operator=( thinQuad const& o);
 
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;
@@ -144,9 +133,6 @@ public:
   bool        isMagnet()   const;
   char const* Type()       const;
 
- private:
-
-  PropagatorPtr propagator_;  
 };
 
 #endif // QUADRUPOLE_H

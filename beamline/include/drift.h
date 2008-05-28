@@ -39,6 +39,10 @@
 ****** - support for reference counted elements
 ****** Dec 2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -47,7 +51,6 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-
 
 class   BmlVisitor;
 class   ConstBmlVisitor;
@@ -73,10 +76,8 @@ class DLLEXPORT drift : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<drift> > PropagatorPtr;   
-
   drift();
-  drift( char const* name, double length ); //  length of drift in meters
+  drift( std::string const& name, double length ); //  length of drift in meters
 
   drift( drift  const&);
 
@@ -84,10 +85,7 @@ public:
 
  ~drift();
 
-  void localPropagate(Particle&         p); 
-  void localPropagate(JetParticle&      p); 
-  void localPropagate(ParticleBunch&    b); 
-  void localPropagate(JetParticleBunch& b); 
+  drift& operator=(drift const&); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -97,12 +95,9 @@ public:
 
  private:
 
-  drift& operator=(drift const&); // not implemented yet
-
   friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt*    read_istream(std::istream&);
 
-  PropagatorPtr              propagator_; 
 };
 
 #endif // DRIFT_H

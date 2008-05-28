@@ -41,8 +41,14 @@
 ******  - changes to header file to reduce file coupling 
 ****** Dec 2007 ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+******
 **************************************************************************
 *************************************************************************/
+
 #ifndef SOLENOID_H
 #define SOLENOID_H
 
@@ -65,20 +71,19 @@ class DLLEXPORT Solenoid : public bmlnElmnt {
 
 public:
 
-  // Constructors 
-
-  typedef boost::shared_ptr<BasePropagator<Solenoid> > PropagatorPtr;   
-
   Solenoid();
   Solenoid( const  char*,   // name
             double const&,  // (orbit) length  [meters]
             double const&   // magnetic field [tesla]
           );
+
   Solenoid( Solenoid const& );
 
   Solenoid* Clone() const;
 
   ~Solenoid();   
+
+  Solenoid& operator=( Solenoid const& );
 
   const char* Type() const;
   bool isMagnet()   const;
@@ -88,11 +93,6 @@ public:
 
   void Split( double const&, ElmPtr& , ElmPtr& ) const;
 
-  void localPropagate(         Particle&  );
-  void localPropagate(      JetParticle&  );
-  void localPropagate(    ParticleBunch&  );
-  void localPropagate( JetParticleBunch&  );
-
   bool hasInEdge()   const;
   bool hasOutEdge()  const;
 
@@ -100,7 +100,6 @@ private:
 
   bool          inEdge_;
   bool          outEdge_;
-  PropagatorPtr propagator_;
 
 };
 

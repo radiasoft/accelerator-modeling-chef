@@ -37,18 +37,17 @@
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added sextupole::setLength(..) method to override
 ******   the base class implementation.
-****** 
 ****** Mar 2007        ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
 ****** Dec 2007        ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-******
 ****** Apr 2008        michelotti@fnal.gov
 ****** - changed signature of setStrength(..) to
 ******   match that of the virtual bmlnElmnt method
-****** 
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
 **************************************************************************
 *************************************************************************/
 #ifndef SEXTUPOLE_H
@@ -78,27 +77,15 @@ class DLLEXPORT sextupole : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<sextupole> > PropagatorPtr;   
-
   sextupole();
-  sextupole( const char*,  /* name     */
-             double,       /* length   */
-             double        /* strength */ );
-
+  sextupole( std::string const& name, double const& length, 
+                                      double const& strength );
   sextupole( sextupole const& );
   sextupole* Clone() const;
 
  ~sextupole();
 
-  void setStrength( double const& );
-  void setLength( double const& );
-
-  void setCurrent( double );
-
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
+  sextupole& operator=( sextupole const& );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -108,9 +95,6 @@ public:
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
- private:
- 
-  PropagatorPtr  propagator_;
 } ;
 
 
@@ -123,30 +107,21 @@ class DLLEXPORT thinSextupole : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinSextupole> > PropagatorPtr;   
-
   thinSextupole();
-  thinSextupole( char const* name,  double strength );
+  thinSextupole( std::string const& name,  double const& strength );
 
   thinSextupole( thinSextupole const& );
 
   thinSextupole* Clone() const;
  ~thinSextupole();
 
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
+  thinSextupole& operator=( thinSextupole const& );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
   bool isMagnet() const;
-
- private:
-
-  PropagatorPtr  propagator_;
 
 } ;
 

@@ -40,6 +40,10 @@
 ****** - support for reference counted elements
 ****** Dec 2007    ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -49,7 +53,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
-
+#include <vector>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -64,15 +68,13 @@ class DLLEXPORT thinLamb : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinLamb> > PropagatorPtr;   
-  
   // x position of the septum
   // extracted beamline pointer
   // s  reference state for extraction beamline
 
   thinLamb();
-  thinLamb( char const* name);      
-  thinLamb( char const*  name, double const& septum_pos_x,  BmlPtr& b,  double* state );   
+  thinLamb( std::string const&  name);      
+  thinLamb( std::string const&  name, double const& septum_pos_x,  BmlPtr& b,  double* state );   
   
   thinLamb(                    double const& septum_pos_x,  BmlPtr& b,  double* state );   
   
@@ -80,18 +82,15 @@ public:
 
   thinLamb* Clone() const { return new thinLamb( *this ); }
 
-  virtual ~thinLamb();
+ ~thinLamb();
   
+  thinLamb& operator=( thinLamb const&);
+
   void setSeptum( double const& x); 
   void setBeamline( BmlPtr& b); 
   void setRefState( const double* s);
 
   void getRefState( double* );
-  
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
   
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -102,16 +101,14 @@ public:
 private:
 
 
-  double    xSeptum_;       // position of Lambertson septum in meters.
-  BmlPtr    ExtBeamline_;   // pointer to the beamline of extracted particles.
-  double    RefState_[6];   // A particle in the "field" region
-                            // with phase space state of RefState()
-                            // will be on the reference orbit of the
-                            // extraction line.  The specified coordinates are 
-                            // SUBTRACTED from the particle coordinates.
+  double              xSeptum_;       // position of Lambertson septum in meters.
+  BmlPtr              ExtBeamline_;   // pointer to the beamline of extracted particles.
+  std::vector<double> RefState_;      // A particle in the "field" region
+                                      // with phase space state of RefState()
+                                      // will be on the reference orbit of the
+                                      // extraction line.  The specified coordinates are 
+                                      // SUBTRACTED from the particle coordinates.
   
-  PropagatorPtr  propagator_;
-
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 

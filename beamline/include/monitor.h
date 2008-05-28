@@ -37,15 +37,16 @@
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
 ****** Sep 2007           ostiguy@fnal.gov
-******
 ****** - added systematic and random errors 
 ****** - added bunch propagation
-******   
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
-******
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+****** - monitor reading attributes declared mutable
 **************************************************************************
 *************************************************************************/
 #ifndef MONITOR_H
@@ -75,39 +76,34 @@ class DLLEXPORT monitor : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<monitor> > PropagatorPtr;   
-
   monitor();
-  monitor( char const* name );
-  monitor( char const* name, double const& length);
+  monitor( std::string const& name );
+  monitor( std::string const& name, double const& length);
   monitor( monitor const& );
 
   monitor* Clone() const  { return new monitor( *this ); }
 
  ~monitor();
 
+  monitor& operator=(monitor const& rhs);
+
   double hposition() const; 
   double vposition() const; 
 
-  void setHposition( double const& );
-  void setVposition( double const& );
+  void setHposition( double const& ) const;
+  void setVposition( double const& ) const;
 
   double const& npx() const; 
   double const& npy() const; 
 
-  void setNpx( double const& ); 
-  void setNpy( double const& );
+  void setNpx( double const& ) const; 
+  void setNpy( double const& ) const;
 
   double        setDriftFraction( double f ); 
   double const& getDriftFraction()  const;
 
   std::ostream& writeTo (std::ostream&); 
   std::istream& readFrom(std::istream&);
-
-  void localPropagate( Particle&   );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x );
-  void localPropagate( JetParticleBunch& x );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -122,10 +118,10 @@ protected:
 
   bool          enabled_;          // enabled or defective/disabled   
 
-  double        xpos_;   // recorded single particle or bunch averaged position
-  double        ypos_;   // recorded single particle or bunch averaged position
-  double        npx_;    // recorded single particle npx -- not really belongs in a monitor this is an extension
-  double        npy_;    // recorded single particle npy -- not really belongs in a monitor this is an extension
+  mutable double        xpos_;   // recorded single particle or bunch averaged position
+  mutable double        ypos_;   // recorded single particle or bunch averaged position
+  mutable double        npx_;    // recorded single particle npx -- not really belongs in a monitor this is an extension
+  mutable double        npy_;    // recorded single particle npy -- not really belongs in a monitor this is an extension
 
   double        dx_;     // systematic offset
   double        dy_;     // systematic offset
@@ -136,8 +132,6 @@ protected:
  private:
 
   double        driftFraction_;
-  PropagatorPtr propagator_;
-
 };
 
 //==================================================================================
@@ -148,28 +142,19 @@ class DLLEXPORT hmonitor : public monitor {
 
  public:
 
-  typedef boost::shared_ptr<BasePropagator<hmonitor> > PropagatorPtr;   
-
   hmonitor();
-  hmonitor( const char*  name );
-  hmonitor( const char*, double const& length); 
+  hmonitor( std::string const& name );
+  hmonitor( std::string const& name, double const& length); 
   hmonitor( hmonitor const& );
 
   hmonitor* Clone() const  { return new hmonitor( *this ); }
 
  ~hmonitor();
 
-  void localPropagate( Particle&   );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x );
-  void localPropagate( JetParticleBunch& x );
+  hmonitor& operator=(hmonitor const& rhs);
 
   const char* Type()     const;
   bool        isMagnet() const;
-
- private:
-
-  PropagatorPtr propagator_;
 
  };
 
@@ -181,28 +166,20 @@ class DLLEXPORT vmonitor : public monitor {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<vmonitor> > PropagatorPtr;   
-
   vmonitor();  
-  vmonitor( const char* name );
-  vmonitor( const char* name, double const& length); 
-  vmonitor( const vmonitor& );
+  vmonitor( std::string const& name );
+  vmonitor( std::string const& name, double const& length); 
+  vmonitor( vmonitor const& );
 
   vmonitor* Clone() const  { return new vmonitor( *this ); }
 
  ~vmonitor();
 
-  void localPropagate( Particle&   );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x );
-  void localPropagate( JetParticleBunch& x );
+  vmonitor& operator=(vmonitor const& rhs);
 
   const char* Type()     const;
   bool        isMagnet() const;
 
- private:
-
-  PropagatorPtr propagator_;
 
 };
 
