@@ -26,32 +26,29 @@
 ******
 ******  REVISION HISTORY
 ******
-******  October 2006: Jean-Francois Ostiguy 
-******                ostiguy@fnal.gov
+******  October 2006  ostiguy@fnal.gov
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
 ******  - implemented new STL compatible iterators 
 ******    iterator, pre_order_iterator. post_order_iterator, deep_iterator 
 ******    as well as const and reverse variants of the above
-******
-******  Jan - Mar 2007:  Jean-Francois Ostiguy 
-******                   ostiguy@fnal.gov
+******  Jan - Mar 2007 ostiguy@fnal.gov
 ******  - support for reference counted elements
-******
 ******  Jul 2007         ostiguy@fnal.gov
 ******  - eliminated nested functor predicate and action classes  
-******
 ******  Dec 2007         ostiguy@fnal.gov
 ******  - support for JetParticle bunch
-******
 ******  Mar 2008        ostiguy@fnal.gov
-****** - since magnetic element scale with _momentum_ beamline now has a 
+******  - since magnetic element scale with _momentum_ beamline now has a 
 ******   reference momentum attribute (rather than a reference energy). 
-****** - implemented scheme to allow elements to access parent beamline.
-******
+******  - implemented scheme to allow elements to access parent beamline.
 ******  Apr 2008         michelotti@fnal.gov
 ******  - additional argument list for beamline::InsertElementsFromList(..)
-******
+******* May 2008 ostiguy@fnal.gov
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
+******  - no assumption about internal structure
+******  - localPropagate/Propagate now const-correct
 **************************************************************************
 *************************************************************************/
 
@@ -158,8 +155,6 @@ public:
    void   setReferenceTime( double   const& );               
    void   setReferenceTime( Particle&       );             
 
-   void setLength( double const& );
-
    void     putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
    iterator putBelow( iterator   it, ElmPtr y ); // Insert y below (after, downstream of) x
 
@@ -225,16 +220,16 @@ public:
   iterator     roll( iterator pos, double const& angle, double const& rpos);
 
 
-  void localPropagate( Particle&         );          
-  void localPropagate( ParticleBunch&    );          
-  void localPropagate( JetParticle&      );          
-  void localPropagate( JetParticleBunch& );          
+  void localPropagate( Particle&         ) const;          
+  void localPropagate( ParticleBunch&    ) const;          
+  void localPropagate( JetParticle&      ) const;          
+  void localPropagate( JetParticleBunch& ) const;          
 
-  void enterLocalFrame( Particle&    )    const;   
-  void enterLocalFrame( JetParticle&    ) const;   
+  void enterLocalFrame( Particle&        ) const;   
+  void enterLocalFrame( JetParticle&     ) const;   
 
-  void leaveLocalFrame( Particle&    )    const;   
-  void leaveLocalFrame( JetParticle&    ) const;   
+  void leaveLocalFrame( Particle&        ) const;   
+  void leaveLocalFrame( JetParticle&     ) const;   
 
 
   void accept( BmlVisitor& v );
