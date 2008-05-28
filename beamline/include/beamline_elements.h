@@ -43,31 +43,36 @@
 // BEAMLINE CLASSES
 // ****************
 
-#include <beamline/kick.h>
-#include <beamline/gkick.h>
-#include <beamline/rfcavity.h>
-#include <beamline/LinacCavity.h>
-#include <beamline/srot.h>
-#include <beamline/monitor.h>
-#include <beamline/marker.h>
+#include <beamline/BBLens.h>
+#include <beamline/Bend.h>
+#include <beamline/CF_rbend.h>
+#include <beamline/CF_sbend.h>
+#include <beamline/combinedFunction.h>
+#include <beamline/decapole.h>
 #include <beamline/drift.h>
+#include <beamline/decapole.h>
+#include <beamline/Edge.h>
+#include <beamline/gkick.h>
+#include <beamline/kick.h>
+#include <beamline/lambertson.h>
+#include <beamline/LinacCavity.h>
+#include <beamline/marker.h>
+#include <beamline/monitor.h>
+#include <beamline/octupole.h>
+#include <beamline/pinger.h>
+#include <beamline/quadrupole.h>
+#include <beamline/rfcavity.h>
 #include <beamline/rbend.h>
 #include <beamline/sbend.h>
-#include <beamline/CF_sbend.h>
-#include <beamline/CF_rbend.h>
 #include <beamline/sector.h>
-#include <beamline/quadrupole.h>
-#include <beamline/sextupole.h>
-#include <beamline/octupole.h>
-#include <beamline/decapole.h>
-#include <beamline/thinpoles.h>
-#include <beamline/thinMultipole.h>
-#include <beamline/BBLens.h>
 #include <beamline/septum.h>
-#include <beamline/lambertson.h>
-#include <beamline/combinedFunction.h>
-#include <beamline/pinger.h>
+#include <beamline/sextupole.h>
 #include <beamline/Slot.h>
 #include <beamline/Solenoid.h>
+#include <beamline/srot.h>
+#include <beamline/thinMultipole.h>
+#include <beamline/thinpoles.h>
+#include <beamline/WakeKick.h>
+
 
 #endif // BEAMLINE_ELEMENTS_H
