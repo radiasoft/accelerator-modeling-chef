@@ -24,6 +24,11 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                         
 ******                                           
+****** REVISION HISTORY
+****** May 2008 ostiguy@fnal
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
+******  - added pole iterators
 **************************************************************************
 *************************************************************************/
 
@@ -32,6 +37,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <map>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -44,26 +50,25 @@ typedef boost::shared_ptr<thinMultipole const> ConstThinMultipolePtr;
 class DLLEXPORT thinMultipole : public bmlnElmnt {
 
   class Propagator;
+ 
+  typedef std::map<int, std::complex<double> >::const_iterator const_iterator; 
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinMultipole> > PropagatorPtr;   
-
   thinMultipole(); 
-  thinMultipole( char const* name ); 
-  thinMultipole( char const* name, double const& strength);
+  thinMultipole( std::string const& name ); 
   thinMultipole( thinMultipole const& );
 
   thinMultipole* Clone() const { return new thinMultipole( *this ); }
 
  ~thinMultipole();
 
-  void setPole(int n, std::complex<double> const&  coeff);
+  thinMultipole& operator=(thinMultipole const& rhs);
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
+  void                      setPole(int n, std::complex<double> const&  coeff);
+  
+  const_iterator begin() const;
+  const_iterator   end() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -73,9 +78,7 @@ public:
 
   private:
   
-    PropagatorPtr propagator_;
- 
-  //std::vector< std::pair<int, std::complex<double> > terms_;
+   std::map<int, std::complex<double> > poles_;
 
 } ;
 
