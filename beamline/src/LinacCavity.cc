@@ -138,11 +138,15 @@ LinacCavity::~LinacCavity()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LinacCavity& LinacCavity::operator=(LinacCavity& o)
+LinacCavity& LinacCavity::operator=(LinacCavity const& rhs)
 {
-  if (this == &o ) return *this;
+  if (this == &rhs ) return *this;
   
-  bmlnElmnt::operator=(o);
+  bmlnElmnt::operator=(rhs);
+
+  w_rf_  = rhs.w_rf_;
+  phi_s_ = rhs.phi_s_;
+
   return *this;
 
 }
