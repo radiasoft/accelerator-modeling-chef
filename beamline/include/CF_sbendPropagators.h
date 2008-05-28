@@ -24,6 +24,9 @@
 ******                                                                
 ******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -36,7 +39,7 @@
 class Particle;
 class JetParticle;
 
-class CF_sbend::Propagator: public BasePropagator<CF_sbend> {
+class CF_sbend::Propagator: public BasePropagator {
 
 public:
 
@@ -44,13 +47,12 @@ public:
   
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void  setup( CF_sbend& elm ); 
+  void  setup( bmlnElmnt& elm ); 
 
-  void  setLength   ( double const& length   ); 
-  void  setStrength ( double const& strength ); 
+  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value); 
 
-  void  operator()(  CF_sbend& elm,            Particle& p);
-  void  operator()(  CF_sbend& elm,         JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,            Particle& p);
+  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
 
  private:
 

@@ -22,8 +22,12 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******                                                                
 ******                                                                
-******  Author: Jean-Francois Ostiguy  ostiguy@fnal.gov
+******  Author: Jean-Francois Ostiguy  
+******          ostiguy@fnal.gov
 ******
+******  May 2008 ostiguy@fnal.gov
+******  - propagator moved (back) to base class
+******  - generic type bmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -32,15 +36,17 @@
 
 #include <beamline/BBLens.h>
 
-class BBLens::Propagator : public BasePropagator<BBLens> {
+class BBLens::Propagator : public BasePropagator {
 
  public:
  
   Propagator* Clone() const { return new Propagator(*this); }
 
-  void       setup( BBLens& elm);
-  void  operator()( BBLens& elm,       Particle&   p);
-  void  operator()( BBLens& elm,    JetParticle&   p);
+  void       setup( bmlnElmnt& elm);
+
+  void  operator()( bmlnElmnt const& elm,       Particle&   p);
+  void  operator()( bmlnElmnt const& elm,    JetParticle&   p);
+
 };
 
 #endif //  BBLENSPROPAGATORS_H
