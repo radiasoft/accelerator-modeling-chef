@@ -37,10 +37,12 @@
 ******  - adapted to new propagator architecture
 ******  - templated version
 ******  - various optimizations
-******  
 ******  April 2008    michelotti@fnal.gov
 ******  - bug fixes: errors had been made in transcribing 
 ******    from original algorithm to current one
+****** May 2008 ostiguy@fnal.gov
+******  - propagator moved backed to base class. Use static downcast 
+******    in operator()() implementation.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -49,7 +51,6 @@
 #include <config.h>
 #endif
 
-#include <basic_toolkit/GenericException.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/SolenoidPropagators.h>
@@ -65,7 +66,7 @@ namespace {
 
 
 template <typename Particle_t>
-void propagate( Solenoid& elm, Particle_t & p )
+void propagate( Solenoid const& elm, Particle_t & p )
 {
 
   // ***  NOTE: This implementation assumes the magnetic axis of
@@ -120,7 +121,7 @@ void propagate( Solenoid& elm, Particle_t & p )
       ++counter;
     }
     else {
-      throw GenericException( __FILE__, __LINE__, 
+      throw bmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void Solenoid::localPropagate( Particle& p )",
             "Too many iterations to normalize cosine." );
     }
@@ -171,8 +172,8 @@ void propagate( Solenoid& elm, Particle_t & p )
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate(          Solenoid& elm,    Particle& p );
-template void propagate(          Solenoid& elm, JetParticle& p );
+template void propagate(   Solenoid const& elm,    Particle& p );
+template void propagate(   Solenoid const& elm, JetParticle& p );
 
 #endif
 
@@ -182,7 +183,7 @@ template void propagate(          Solenoid& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::setup( Solenoid& arg) 
+void Solenoid::Propagator::setup( bmlnElmnt& arg) 
 {
   // empty for the moment ...
 }
@@ -190,17 +191,25 @@ void Solenoid::Propagator::setup( Solenoid& arg)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::operator()( Solenoid& elm, Particle& p )
-{
-  ::propagate( elm, p);
+void  Solenoid::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::operator()( Solenoid& elm, JetParticle& p )
+void Solenoid::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 {
-  ::propagate( elm, p);
+  ::propagate( static_cast<Solenoid const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Solenoid::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+{
+  ::propagate( static_cast<Solenoid const&>(elm), p);
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
