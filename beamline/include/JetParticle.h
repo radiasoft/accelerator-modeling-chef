@@ -53,7 +53,11 @@
 ******    with no real benefit. Propagators should use access function to 
 ******    change state. There is no significant penalty, if any.       
 ******  - use empty core_access class as access control mechanism 
-******                                                                
+****** May 2008  ostiguy@fnal.gov
+****** - eliminated a few data members. They are now computed on the fly, 
+******   as needed.
+****** - brho is now a signed quantity
+****** - particle types are intialized on the basis of momentum
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -123,18 +127,12 @@ protected:
   std::string tag_;   // Utility tag for arbitrary identification
                       // of a particle.
   double   q_;        // electric charge [C]
-  double   E_;        // reference energy in GeV
   double   m_;        // mass in GeV / c^2
   double   p_;        // reference momentum in GeV / c
   double   gamma_;    // reference gamma
   double   beta_;     // normalized reference velocity = v/c
-  double   pn_;       // normalized reference momentum = pc/mc^2 = p/mc
   double   bRho_;     // normalized reference momentum / charge
                       //                               = beta*gamma
-  double   pni2_;     // ( 1/pn )^2
-  double   wgt_;      // Statistical weight: i.e. macrojetparticle
-                      // Default value: 1.0
-
   Mapping state_;
                       // state_[0] = x
                       // state_[1] = y
@@ -145,8 +143,8 @@ protected:
   // ctors
 
 
-  JetParticle( double const&  massGeV_c2,  double  const& energyGeV );                
-  JetParticle( double const&  massGeV_c2,  double  const& energyGeV,  Mapping const&  state );
+  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& energyGeV );                
+  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& energyGeV,  Mapping const&  state );
 
 public:
 
@@ -216,6 +214,7 @@ public:
                              // ( x, y, cdt; px/p, py/p, dp/p )
 
   Jet           Energy()               const;
+  Jet           KineticEnergy()        const;
   Jet           Momentum()             const;
   Jet           NormalizedMomentum()   const;
   double const& Mass()                 const;
@@ -223,10 +222,9 @@ public:
   double const& ReferenceBeta()        const;
   double const& ReferenceGamma()       const;
   Jet           Gamma()                const;
+  double        pn()                   const;
   double const& ReferenceMomentum()    const;
-  double const& PNI2()                 const;
-  double const& ReferenceEnergy()      const; 
-  double const& Weight()               const;
+  double        ReferenceEnergy()      const; 
   double const& Charge()               const;
 
   JetVector VectorBeta()     const;
@@ -242,7 +240,7 @@ public:
 
 struct DLLEXPORT  JetProton : public JetParticle {
   JetProton();
-  JetProton( double    const&    EnergyGeV );
+  JetProton( double    const&    momentum );
   JetProton( JetProton const& );
 
   explicit JetProton( Proton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
@@ -256,7 +254,7 @@ struct DLLEXPORT  JetProton : public JetParticle {
 
 struct DLLEXPORT  JetAntiProton : public JetParticle {
   JetAntiProton();
-  JetAntiProton( double        const& EnergyGeV  );
+  JetAntiProton( double        const& momentum  );
   JetAntiProton( JetAntiProton const& );
 
   explicit JetAntiProton( AntiProton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
@@ -270,7 +268,7 @@ struct DLLEXPORT  JetAntiProton : public JetParticle {
 
 struct DLLEXPORT  JetElectron : public JetParticle {
   JetElectron();
-  JetElectron( double      const& EnergyGeV );
+  JetElectron( double      const& momentum );
   JetElectron( JetElectron const& );
 
   explicit JetElectron( Electron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv());
@@ -284,7 +282,7 @@ struct DLLEXPORT  JetElectron : public JetParticle {
 
 struct DLLEXPORT  JetPositron : public JetParticle {
   JetPositron();
-  JetPositron( double      const& EnergyGeV );
+  JetPositron( double      const& momentum );
   JetPositron( JetPositron const& );
 
   explicit JetPositron( Positron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
@@ -298,7 +296,7 @@ struct DLLEXPORT  JetPositron : public JetParticle {
 
 struct DLLEXPORT  JetMuon : public JetParticle {
   JetMuon();
-  JetMuon( double  const& EnergyGeV);
+  JetMuon( double  const& momentum);
   JetMuon( JetMuon const& );
 
   explicit JetMuon( Muon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
@@ -313,7 +311,7 @@ struct DLLEXPORT  JetMuon : public JetParticle {
 struct DLLEXPORT  JetAntiMuon : public JetParticle {
 
   JetAntiMuon();
-  JetAntiMuon( double      const& EnergyGeV  );
+  JetAntiMuon( double      const& momentum  );
   JetAntiMuon( JetAntiMuon const& );
 
 
@@ -376,21 +374,22 @@ class jetparticle_core_access
 
 
   inline Jet           JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ ); }
+  inline Jet           JetParticle::KineticEnergy()      const { return Energy() - m_;                            }
   inline Jet           JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                   } 
   inline Jet           JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                       }
   inline double const& JetParticle::Mass()               const { return m_;                                       }
   inline double const& JetParticle::ReferenceBRho()      const { return bRho_;                                    }
   inline double const& JetParticle::ReferenceBeta()      const { return beta_;                                    }
   inline Jet           JetParticle::Beta()               const { return Momentum() / Energy();                    }
+  inline double        JetParticle::pn()                 const { return beta_*gamma_;                             }
   inline Jet           JetParticle::BetaX()              const { return (get_npx()*ReferenceMomentum())/Energy(); }
   inline Jet           JetParticle::BetaY()              const { return (get_npy()*ReferenceMomentum())/Energy(); }
   inline Jet           JetParticle::BetaZ()              const { return (get_npz()*ReferenceMomentum())/Energy(); }
   inline double const& JetParticle::ReferenceGamma()     const { return gamma_;                                   }
   inline Jet           JetParticle::Gamma()              const { return Energy() / m_;                            }
   inline double const& JetParticle::ReferenceMomentum()  const { return p_;                                       }
-  inline double const& JetParticle::PNI2()               const { return pni2_;                                    }
-  inline double const& JetParticle::ReferenceEnergy()    const { return E_;                                       } 
-  inline double const& JetParticle::Weight()             const { return wgt_;                                     }
+  inline double        JetParticle::ReferenceEnergy()    const { return sqrt( p_*p_-m_*m_);                       } 
+
   inline double const& JetParticle::Charge()             const { return q_;                                       }
   inline Jet           JetParticle::BRho()               const { return bRho_*( 1.0 + state_[5] );                }
 
