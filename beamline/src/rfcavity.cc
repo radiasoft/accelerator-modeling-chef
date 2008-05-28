@@ -34,15 +34,16 @@
 ****** REVISION HISTORY:
 ******                   
 ****** April 2007  ostiguy@fnal.gov
-******
 ****** - support for reference counted elements 
 ****** - visitor interface takes advantage of compiler dynamic typing
-******                                                                 
 ****** Dec 2007    ostiguy@fnal.gov
 ****** - new typesafe propagators
-******
 ****** Apr 2008    michelotti@fnal.gov
 ****** - added placeholder rfcavity::setLength method
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -460,10 +461,9 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
 thinrfcavity::~thinrfcavity()
 {}
 
-/||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinrfcavity& rfcavity::operator=( thinrfcavity const& rhs) 
+thinrfcavity& thinrfcavity::operator=( thinrfcavity const& rhs) 
 {
   if ( this == &rhs) return *this;
   bmlnElmnt::operator=(rhs);
@@ -476,7 +476,7 @@ thinrfcavity& rfcavity::operator=( thinrfcavity const& rhs)
   return *this;
 
 }
-/||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& thinrfcavity::writeTo(ostream& os) 

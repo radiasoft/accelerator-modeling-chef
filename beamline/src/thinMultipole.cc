@@ -69,6 +69,18 @@ thinMultipole::~thinMultipole()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+thinMultipole& thinMultipole::operator=(thinMultipole const& rhs)
+{
+  if ( this == &rhs) return *this;
+  bmlnElmnt::operator=(rhs);
+  poles_ = rhs.poles_;
+  return *this;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 const char* thinMultipole::Type() const 
 { 
   return "thinMultipole"; 

@@ -41,6 +41,9 @@
 ******   visit() takes advantage of (reference) dynamic type
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators
+******  May 2008 ostiguy@fnal
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -99,6 +102,16 @@ srot::srot( srot const& x )
 
 srot::~srot() 
 {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+srot& operator( srot const& rhs)  
+{
+  if (this == &rhs) return *this;
+  bmlnElmnt::operator=(rhs);
+  return *this;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
