@@ -39,6 +39,10 @@
 ******  - support for reference counted elements
 ******  Dec 2007:         ostiguy@fnal.gov
 ******  - new typesafe propagators
+******  May 2008 ostiguy@fnal
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
+******  - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -64,32 +68,21 @@ class DLLEXPORT thinDecapole : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinDecapole> > PropagatorPtr;
-
   thinDecapole();
-  thinDecapole( char const*  name, double const& strength);
+  thinDecapole( std::string const& name, double const& strength);
   thinDecapole( thinDecapole const& );
 
   thinDecapole* Clone() const;
 
-  thinDecapole& operator=( thinDecapole const& rhs);  
-  
  ~thinDecapole();
 
-  void localPropagate(              Particle& p );
-  void localPropagate(           JetParticle& p );
-  void localPropagate(         ParticleBunch& b );
-  void localPropagate(      JetParticleBunch& b );
-
+  thinDecapole& operator=( thinDecapole const& rhs);  
+  
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;  
 
   const char* Type() const;
   bool isMagnet()    const;
-
- private:
-
-  PropagatorPtr   propagator_;
 
 } ;
 

@@ -37,15 +37,16 @@
 ****** Mar 2007:          ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - added support for reference counted elements
-******
 ****** Dec 2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
-******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified signature of setLength method to conform
 ******   to the virtual method in base class bmlnElmnt.
 ****** - added placeholder setStrength method.
-****** 
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 **************************************************************************
 *************************************************************************/
 
@@ -74,11 +75,9 @@ class DLLEXPORT combinedFunction : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<combinedFunction> > PropagatorPtr;   
-
   combinedFunction();
-  combinedFunction( char const* name);
-  combinedFunction( char const* name, beamline const& );
+  combinedFunction( std::string const& name);
+  combinedFunction( std::string const& name, beamline const& );
   combinedFunction( beamline const& );
 
   combinedFunction( combinedFunction const& );
@@ -99,11 +98,6 @@ public:
   void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
   void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
 
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
   
@@ -114,9 +108,6 @@ public:
   double Field( WHICH_MULTIPOLE );
   double getField( WHICH_MULTIPOLE x ) 
     { return this->Field(x); }
-
-  void setStrength( double const& );
-  void setLength( double const& );
 
   void setSkew( WHICH_MULTIPOLE, alignmentData& );
 
@@ -131,9 +122,6 @@ private:
   bool hasMultipole( ElmPtr elm, WHICH_MULTIPOLE mult );  
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
-
-  PropagatorPtr propagator_;
-
 };
 
 

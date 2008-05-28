@@ -34,13 +34,14 @@
 ******                                                                
 ******                                                                
 ******  REVISION HISTORY
-******  Mar 2007           ostiguy@fnal.gov
+******  Mar 2007  ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
-******  Dec 2007           ostiguy@fnal.gov
+******  Dec 2007  ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-******
+******  May 2008  ostiguy@fnal
+******  - proper, explicit assignment operator
+******  - propagator moved (back) to base class
 **************************************************************************
 *************************************************************************/
 
@@ -65,11 +66,9 @@ class DLLEXPORT thinSeptum : public bmlnElmnt{
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinSeptum> > PropagatorPtr;   
-
-  thinSeptum( char const*  name );
+  thinSeptum( std::string const&  name );
   
-  thinSeptum( char const*  name,
+  thinSeptum( std::string const&  name,
 	    double const& sPos,    // kick in strength in radians for x > xWire 
 	    double const& sNeg,    // kick in strength in radians for x < xWire 
 	    double const& x );     // position of wire septum in meters
@@ -89,15 +88,10 @@ public:
   void setStrengths( double const& sPos, double const& sNeg); 
   void setWire( double const& x); 
   
-  double const& getPosStrength() { return strengthPos_; }
-  double const& getNegStrength() { return strengthNeg_; }
-  double const& getWireX()       { return xWire_;       }
+  double const& getPosStrength() const { return strengthPos_; }
+  double const& getNegStrength() const { return strengthNeg_; }
+  double const& getWireX()       const { return xWire_;       }
   
-  void localPropagate(         Particle&  p );
-  void localPropagate(      JetParticle&  p );
-  void localPropagate(    ParticleBunch&  p );
-  void localPropagate( JetParticleBunch&  p );
-
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
@@ -111,9 +105,6 @@ private:
   double strengthPos_;    // kick in strength in radians for x > xWire
   double strengthNeg_;	  // kick in strength in radians for x < xWire
   double xWire_;	  // position of wire septum in meters
-
-  PropagatorPtr  propagator_; 
-  
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

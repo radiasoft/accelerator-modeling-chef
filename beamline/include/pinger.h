@@ -37,10 +37,12 @@
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-******
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure
 **************************************************************************
 *************************************************************************/
 
@@ -61,45 +63,39 @@ protected:
 
 public:
    
-  typedef boost::shared_ptr<BasePropagator<Pinger> > PropagatorPtr;   
-
   Pinger();       	                                              // Assumes a zero, horizontal kick
   Pinger( double const& kick_rad, double const& direction_rad =0, int ntrns = -1);
             // direction_rad==0 (Hor) (def) ntrs =number of turns before firing
-  Pinger( const char*  name);                                       // Assumes zero, horizontal kick 
-  Pinger( const char*  name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
+  Pinger( std::string const& name);                                       // Assumes zero, horizontal kick 
+  Pinger( std::string const& name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
   Pinger( Pinger const& );
   Pinger* Clone() const { return new Pinger( *this ); }
 
  ~Pinger(); 
 
+  Pinger& operator=( Pinger const& rhs); 
+
   const char* Type()     const;
   bool        isMagnet() const;
-
-  void localPropagate( Particle& );
-  void localPropagate( JetParticle& );
-  void localPropagate( ParticleBunch& x );
-  void localPropagate( JetParticleBunch& x );
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void arm( int n )  { counter_ = n; }
-  bool countdown()   { counter_ = counter_ > -1 ? --counter_ : -1 ; return (counter_ == -1);}
-  void disarm()      { counter_ = -1; }
-  bool isArmed()     { return ( counter_ >= 0 ); };
+  void arm( int n )  const { counter_ = n; }
+  bool countdown()   const { counter_ = counter_ > -1 ? --counter_ : -1 ; return (counter_ == -1);} const
+  void disarm()      const { counter_ = -1; }
+  bool isArmed()     const { return ( counter_ >= 0 ); }
   
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
   
-  double const& getKickDirection()                { return kick_direction_; }
+  double const& getKickDirection() const          { return kick_direction_; }
   void          setKickDirection(double const& k) { kick_direction_ = k; }
 
 protected:
 
-  double        kick_direction_;	/* In which direction is the kick? */
-  int           counter_;               /* Counts number of turns before firing. */
-  PropagatorPtr propagator_; 
+  double         kick_direction_;	/* In which direction is the kick? */
+  mutable int           counter_;               /* Counts number of turns before firing. */
 
 };
 
@@ -109,13 +105,15 @@ class DLLEXPORT HPinger : public Pinger {
  public:
 
   HPinger();       	                        // Assumes a zero, horizontal kick
-  HPinger( const char* name);                  // Assumes zero kick 
-  HPinger( const char* name, double const& kick_rad = 0.0, int count = -1);
+  HPinger( std::string const& name);                  // Assumes zero kick 
+  HPinger( std::string const& name, double const& kick_rad = 0.0, int count = -1);
   HPinger( HPinger const& );
 
   HPinger* Clone() const { return new HPinger( *this ); }
 
  ~HPinger();
+
+  HPinger& operator=( HPinger const& rhs); 
 
   const char* Type() const;
   bool        isMagnet() const;
@@ -130,14 +128,16 @@ class DLLEXPORT VPinger : public Pinger {
  public:
 
   VPinger();       	                                             
-  VPinger( char const* name ); //Assumes zero kick 
-  VPinger( char const* name,  double const& kick_rad = 0.0, int count   = -1);
+  VPinger( std::string const& name ); //Assumes zero kick 
+  VPinger( std::string const& name,  double const& kick_rad = 0.0, int count   = -1);
 
   VPinger( VPinger const& );
 
   VPinger* Clone() const { return new VPinger( *this ); }
 
  ~VPinger();
+
+  VPinger& operator=( VPinger const& rhs); 
 
   const char* Type() const;
   bool        isMagnet() const;

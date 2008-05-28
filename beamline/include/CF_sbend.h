@@ -37,18 +37,19 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******                                                                
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on nested, regular reference counted
 ******   beamline object
-******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators   
-******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added placeholder setLength method
 ****** - added member functions to nullify edge effects
 ******   : used by CF_sbend::Split
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -78,34 +79,29 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
  public:
 
-  typedef boost::shared_ptr<BasePropagator<CF_sbend> > PropagatorPtr;   
-
   CF_sbend();
 
-  CF_sbend( const char*,// name
-            double const&,     // length       [ meters ]
-            double const&,     // field        [ tesla ]
-            double const&);    // bend angle   [ radians ]
+  CF_sbend( std::string const& name,
+            double const&  length,        //[ meters ]
+            double const&  field,         //[ tesla ]
+            double const&  bend_angle);   //[ radians ]
               
 
-  CF_sbend( const char*,       // name
-            double const&,     // length  [ meters ]
-            double const&,     // field   [ tesla ]
-            double const&,     // geometric bend angle   [ radians ]
-            double const&,     // upstream edge angle [radians]
-            double const& );   // downstream edge angle [radians]
+  CF_sbend( std::string const& name,
+            double const& length,          // [meters ]
+            double const& field,           // [tesla  ]
+            double const& bend_angle,      // [radians]
+            double const& us_edge_angle,   // [radians]
+            double const& ds_edge_angle ); // [radians]
 
   CF_sbend( CF_sbend const& );
 
   CF_sbend* Clone() const 
     { return new CF_sbend( *this ); }
 
-  ~CF_sbend();
+ ~CF_sbend();
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& ); 
-  void localPropagate( JetParticleBunch& ); 
+  CF_sbend& operator=( CF_sbend const& rhs);
 
   void accept(      BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
@@ -140,9 +136,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  int setQuadrupole ( double const& );  
-  int setSextupole  ( double const& );  
-  int setOctupole   ( double const& );  
+  void setQuadrupole ( double const& );  
+  void setSextupole  ( double const& );  
+  void setOctupole   ( double const& );  
 
   // The argument is integrated multipole strength
   // i.e., .setQuadrupole ( B'l   )
@@ -156,11 +152,6 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   int setDipoleField ( double const& );  
   // Here the argument is the dipole field, 
   // NOT the integrated dipole field.
-
-  void setStrength   ( double const& );
-  // Specific implementation of virtual bmlnElmnt method.
-  // Modifies all internal elements.
-  void setLength     ( double const& );
 
   double getQuadrupole() const;
   double getSextupole()  const;
@@ -176,8 +167,6 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   double const& getBendAngle()   const { return angle_; }
 
-  void nullExitEdge();
-  void nullEntryEdge();
 
  private:
 
@@ -190,10 +179,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
                             // registration particle is used, default
                             // values depend only on edge angles (see
                             // below).
-  
-  std::list<std::pair<int, std::complex<double> > > multipoles_;
 
-  PropagatorPtr   propagator_;  
+  std::vector<std::complex<double> > multipoles_;
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

@@ -197,7 +197,10 @@ public:
   thin16pole( std::string const& name, double const& strength );
   thin16pole( thin16pole const & );
   thin16pole* Clone() const { return new thin16pole( *this ); }
+
  ~thin16pole();
+
+  thin16pole& operator=( thin16pole const& rhs);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

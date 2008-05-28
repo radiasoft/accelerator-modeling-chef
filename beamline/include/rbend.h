@@ -38,11 +38,9 @@
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
-******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagators 
 ****** - rbend is now implemented as composite element
-******
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder setLength method
 ****** - added setStrength method
@@ -50,7 +48,10 @@
 ******     rbend had no internal structure then.
 ****** - added member functions to nullify edge effects
 ******   : used by rbend::Split
-******
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******     
 **************************************************************************
 *************************************************************************/
@@ -76,8 +77,6 @@ class DLLEXPORT rbend : public bmlnElmnt
 
  public:
 
-  typedef boost::shared_ptr<BasePropagator<rbend> > PropagatorPtr;   
-
   class        rbend_core_access;
   friend class rbend_core_access;
 
@@ -87,7 +86,7 @@ class DLLEXPORT rbend : public bmlnElmnt
   rbend();
 
   // Symmetric bend with parallel faces.
-  rbend( char const* name, 
+  rbend( std::string const& name, 
          double const& length,         // length [ meters ] 
          double const& field,          // field  [ tesla ] (assumed along the y-axis) 
          double const& bendangle );    // as specified in MAD;
@@ -95,13 +94,13 @@ class DLLEXPORT rbend : public bmlnElmnt
                                        // : for edge focusing calculations.
 
   // Other possibilities
-  rbend( char const* name, 
+  rbend( std::string const& name, 
          double const& length, 
          double const& field, 
          double const& bendangle, 
          double const& entry_angle );  // upstream entry angle
                                        // : assumed symmetric
-  rbend( char const* name, 
+  rbend( std::string const& name, 
          double const& length, 
          double const& field, 
          double const& bendangle,
@@ -109,7 +108,7 @@ class DLLEXPORT rbend : public bmlnElmnt
          double const& dsedge);        // downstream edge angle [radians]
                                        // : signs of previous two parameters
                                        // : are as defined for rbends by MAD
-  rbend( char const* name, 
+  rbend( std::string const& name, 
          double const& length,
          double const& field,
          double const& bendangle,
@@ -117,7 +116,7 @@ class DLLEXPORT rbend : public bmlnElmnt
                                        // (assumes symmetric pssage unless reset)
          double const& usedge,
          double const& dsedge );
-  rbend( char const* name, 
+  rbend( std::string const& name, 
          double const& length,
          double const& field,
          double const& bendangle,
@@ -129,11 +128,6 @@ class DLLEXPORT rbend : public bmlnElmnt
  ~rbend();
 
   rbend* Clone() const { return new rbend( *this ); }
-
-  void localPropagate(         Particle&  p );   
-  void localPropagate(      JetParticle&  p );  
-  void localPropagate(    ParticleBunch&  b );   
-  void localPropagate( JetParticleBunch&  b );  
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -178,9 +172,6 @@ class DLLEXPORT rbend : public bmlnElmnt
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.
 
-  void setStrength( double const& );
-  void setLength( double const& );
-
 private:
 
   double   angle_;
@@ -188,8 +179,6 @@ private:
   double   dsFaceAngle_;
   double   usAngle_;
   double   dsAngle_;
-
-  PropagatorPtr  propagator_;
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

@@ -26,9 +26,12 @@
 ******
 ****** REVISION HISTORY 
 ******
-****** Dec 2007            ostiguy@fnal.gov
+****** Dec 2007  ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-****** - sbend now implemented as a composite element  
+****** May 2008  ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 **************************************************************************
@@ -62,9 +65,7 @@ class LCavityUpstream: public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<LCavityUpstream> > PropagatorPtr;
-  
- LCavityUpstream( const  char*  name,
+ LCavityUpstream( std::string const& name,
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
@@ -76,6 +77,8 @@ public:
   LCavityUpstream* Clone() const;
  ~LCavityUpstream();
 
+  LCavityUpstream& operator=(  LCavityUpstream const& rhs);
+
   double const&          getPhi()                const;
   double                 getDesignEnergyGain()   const;
 
@@ -84,11 +87,6 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-  
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
@@ -99,9 +97,6 @@ public:
 
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
-
-  PropagatorPtr         propagator_;
-
 };
 
 //-------------------------------------------------------------------------------
@@ -112,9 +107,7 @@ class LCavityDnstream: public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<LCavityDnstream> > PropagatorPtr;
-
-  LCavityDnstream( const  char*  name,
+  LCavityDnstream( std::string const& name,
 	       double const& length_m,
                double const& rfreq_hz,         // RF frequency [Hz]
                double const& voltage_volts,    // max energy gain per turn [eV] (strength*10**9)
@@ -125,6 +118,8 @@ public:
   LCavityDnstream* Clone() const;
  ~LCavityDnstream();
 
+  LCavityDnstream& operator=(  LCavityDnstream const& rhs);
+
   double const&          getPhi()                const;
   double                 getDesignEnergyGain()   const;
 
@@ -133,10 +128,6 @@ public:
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  void localPropagate(         Particle& p );
-  void localPropagate(      JetParticle& p );
-  void localPropagate(    ParticleBunch& b );
-  void localPropagate( JetParticleBunch& b );
   
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
@@ -149,7 +140,6 @@ public:
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
 
-  PropagatorPtr         propagator_;
 };
 
 #endif // LINACCAVITYPARTS_H

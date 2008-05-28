@@ -28,6 +28,10 @@
 ******
 ****** Dec  2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -54,22 +58,15 @@ class DLLEXPORT gkick : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<gkick> > PropagatorPtr;  
-
   gkick();
 
   gkick( gkick const& x);
 
   gkick* Clone() const { return new gkick( *this ); }
 
-  gkick& operator=( gkick const& rhs);
-
  ~gkick();
 
-  void localPropagate(       Particle&   );
-  void localPropagate(     JetParticle&  );
-  void localPropagate(   ParticleBunch&  );
-  void localPropagate( JetParticleBunch& );
+  gkick& operator=( gkick const& rhs);
 
   const char* Type()       const;
   bool        isMagnet()   const;
@@ -90,16 +87,16 @@ public:
   void     set_v( double const& );
   void     set_t( double const& );
 
-  double const&    xOffset();
-  double const&   xpOffset();
-  double const&    yOffset();
-  double const&   ypOffset();
-  double const&    lOffset();
-  double const&    pOffset();
-  double const&    zOffset();
-  double const&    angle();
-  double const&    v();
-  double const&    t();
+  double const&    xOffset() const;
+  double const&   xpOffset() const;
+  double const&    yOffset() const;
+  double const&   ypOffset() const;
+  double const&    lOffset() const;
+  double const&    pOffset() const;
+  double const&    zOffset() const;
+  double const&    angle()   const;
+  double const&    v()       const;
+  double const&    t()       const;
 
  private:
 
@@ -113,8 +110,6 @@ public:
   double dz_;     // is the longitudinal displacement.
   double v_;      // is the  extrance-exit parameter  of the  kick.  
   double t_;      // is the momentum dependence  parameter.
-
-  PropagatorPtr   propagator_;
 
 };
 

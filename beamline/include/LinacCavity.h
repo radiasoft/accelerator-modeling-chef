@@ -28,12 +28,15 @@
 ******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-******
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder LinacCavity::setLength method
 ****** - changed default wake_on attribute in constructor to conform
 ******   with change made in branch StRel20080125-patches.
-****** 
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+******
 *************************************************************************
 *************************************************************************/
 
@@ -65,9 +68,7 @@ class LinacCavity: public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<LinacCavity> > PropagatorPtr;
-
-  LinacCavity( const  char*  name,
+  LinacCavity( std::string const& name,
 	       double const& length_m,
                double const& rfreq_hz,           // RF frequency [Hz]
                double const& voltage_volts,      // max energy gain per turn [eV] (strength*10**9)
@@ -79,6 +80,8 @@ public:
   LinacCavity* Clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
 
+  LinacCavity& operator=(LinacCavity const& o);
+  
   void   setWakeOn( bool );
   bool   wakeOn() const;
 
@@ -89,16 +92,9 @@ public:
   double                 getFrequency() const;
   double const&    getRadialFrequency() const;
   void                 setPhi( double const& radians);  
-  void            setStrength( double const& eV);  
-  void              setLength( double const& );
 
   double          getReferenceTime() const;  
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-  
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
@@ -117,8 +113,6 @@ private:
 
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
-
-  PropagatorPtr         propagator_;
 
 };
 

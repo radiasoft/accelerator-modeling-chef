@@ -39,7 +39,9 @@
 ****** - support for reference counted elements
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-******
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
 **************************************************************************
 *************************************************************************/
 
@@ -67,15 +69,15 @@ class DLLEXPORT sector : public bmlnElmnt {
  
 public:
 
-  typedef boost::shared_ptr<BasePropagator<sector> > PropagatorPtr;   
+  sector( std::string const& name = "", double const& length = 0.0, char mapType= 1);
 
-  sector( const char* = 0, double const& length = 0.0, char mapType= 1);
+  sector( std::string const& name, std::vector<double> const& betaH,  std::vector<double> const& alphaH,  
+                                   std::vector<double> const& psiH,
+                                   std::vector<double> const& betaV,  std::vector<double> const& alphaV,  
+                                   std::vector<double> const& psiV,  double const& length );
 
-  sector( const char*, std::vector<double> const& betaH,  std::vector<double> const& alphaH,  std::vector<double> const& psiH,
-                       std::vector<double> const& betaV,  std::vector<double> const& alphaV,  std::vector<double> const& psiV,  double const& length );
 
-
-  sector( const char*, Mapping const&,  double const& length, char mapType=1 );
+  sector( std::string const& name , Mapping const&,  double const& length, char mapType=1 );
 
   sector( sector const& );
 
@@ -83,15 +85,12 @@ public:
 
  ~sector();
 
+  sector& operator=( sector const& rhs);
+
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
   Mapping const& getMap()    const;
   Matrix         getMatrix() const;
-
-  void localPropagate(         Particle&  p );   
-  void localPropagate(      JetParticle&  p );   
-  void localPropagate(    ParticleBunch&  b );   
-  void localPropagate( JetParticleBunch&  b );   
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -99,8 +98,6 @@ public:
   void setFrequency( double (*)( double const& ) );
   void setFrequency( Jet    (*)( Jet    const& ) );
  
- void setLength( double const& );
-
   const char* Type()     const;
  
   bool        isMagnet() const;
@@ -124,7 +121,6 @@ private:
   double               deltaPsiV_;
   MatrixD              mapMatrix_;
  
-  PropagatorPtr        propagator_;
 };
 
 

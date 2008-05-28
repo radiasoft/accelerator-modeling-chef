@@ -38,14 +38,15 @@
 ******
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - support for new style propagators
 ****** - inner structure now based on hidden beamline object
-******
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder rfcavity::setLength method
-******
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure
 **************************************************************************
 *************************************************************************/
 
@@ -75,10 +76,8 @@ class rfcavity : public bmlnElmnt {
      
 public:
  
-  typedef boost::shared_ptr<BasePropagator<rfcavity> > PropagatorPtr;   
-
-  rfcavity( const char* = "" ); 
-  rfcavity( const char*,     // Name
+  rfcavity( std::string const&  = "" ); 
+  rfcavity( std::string const& name,  
             double const&,   // length [m]
             double const&,   // RF frequency [Hz]
             double const&,   // max energy gain per turn [eV] (strength*10**9)
@@ -90,6 +89,8 @@ public:
 
   rfcavity* Clone() const { return new rfcavity( *this ); }
  ~rfcavity();
+
+  rfcavity& operator=( rfcavity const& rhs);
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
@@ -122,9 +123,6 @@ public:
   void                 setPhi( double const& radians);  
   void                   setQ( double const& Q);
   void                   setR( double const& R);
-  void            setStrength( double const& eV);  
-  void              setLength( double const& );
-
 
 private:
 
@@ -144,7 +142,6 @@ private:
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
-  PropagatorPtr  propagator_;
 };
 
 
@@ -154,10 +151,8 @@ class thinrfcavity : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<thinrfcavity> > PropagatorPtr;   
-
-  thinrfcavity( const char* = "NONAME" ); // Name
-  thinrfcavity( const char *,   // Name
+  thinrfcavity( std::string const&  name ="" ); 
+  thinrfcavity( std::string const&  name,
                 double const&,   // RF frequency [Hz]
                 double const&,   // max energy gain per turn [eV] (strength*10**9)
                 double const&,   // synchronous phase [radians]
@@ -168,6 +163,8 @@ public:
   thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
 
  ~thinrfcavity();
+
+  thinrfcavity& operator=( thinrfcavity const& rhs);
 
   double const& getPhi()              const; 
   double const& getRadialFrequency()  const; 
@@ -185,11 +182,6 @@ public:
 
   char const* Type() const;
   bool    isMagnet() const;
-
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& ); 
-  void localPropagate( JetParticleBunch& ); 
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -211,9 +203,6 @@ private:
                                  //     revolution frequency of a ring
                                  //   Note: this is *NOT* a cavity attribute,
                                  //   but is included for convenience.
-  PropagatorPtr  propagator_;
-
-
 };
 
 

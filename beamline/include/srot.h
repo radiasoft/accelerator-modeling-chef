@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      srot.h
 ******                                                                
@@ -39,6 +38,9 @@
 ****** - added support for reference-counted elements
 ****** Dec 2007          ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
 ******
 **************************************************************************
 *************************************************************************/
@@ -63,21 +65,16 @@ class DLLEXPORT srot : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<srot> > PropagatorPtr;   
-
   srot();
-  srot( char const* name);
-  srot( char const* name, double const& strength); // rotation angle in radians 
+  srot( std::string const& name);
+  srot( std::string const& name, double const& strength); // rotation angle in radians 
   srot( srot const& );
 
   srot* Clone() const { return new srot( *this ); }
 
  ~srot();
 
-  void localPropagate(          Particle& p );
-  void localPropagate(       JetParticle& p );
-  void localPropagate(     ParticleBunch& b );
-  void localPropagate(  JetParticleBunch& b );
+  srot& operator=(srot const&);
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -85,9 +82,6 @@ public:
   bool        isMagnet() const;
   char const*     Type() const;
 
- private:
-
-  PropagatorPtr propagator_;
 };
 
 #endif // SROT_H

@@ -39,6 +39,10 @@
 ****** - support for reference counted elements
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -63,10 +67,8 @@ class DLLEXPORT marker : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<marker> > PropagatorPtr;   
-
-  marker();                       // Data to be written to standard output
-  marker( char const* name);      // Name identifier.
+  marker();                         
+  marker( std::string const& name); 
   marker( marker const& );
 
   marker* Clone() const { return new marker( *this ); }
@@ -86,9 +88,6 @@ public:
   const char* Type()     const;
   bool        isMagnet() const;
 
- private:
-
-  PropagatorPtr propagator_; 
 };
 
 #endif // MARKER_H

@@ -37,12 +37,14 @@
 ****** Mar 2007            ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-******
 ****** Dec 2007            ostiguy@fnal.gov
 ****** - new typesafe propagators
-******
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder Slot::setLength method
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
@@ -67,8 +69,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
  public:
 
-   typedef boost::shared_ptr<BasePropagator<Slot> > PropagatorPtr;   
-
    Slot();
    Slot( char const*  name);
 
@@ -78,6 +78,11 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
    ~Slot();
  
+   Slot* Clone() const
+     { return new Slot( *this ); }
+
+   Slot& operator=( Slot const& other); 
+
    void makeUpstreamHorizontal   ( double const& length, double const& angle );
    void makeDownstreamHorizontal ( double const& length, double const& angle );
    void makeUpstreamVertical     ( double const& length, double const& angle );
@@ -88,14 +93,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
 
-   void localPropagate(         Particle& );
-   void localPropagate(      JetParticle& );
-   void localPropagate(    ParticleBunch& );
-   void localPropagate( JetParticleBunch& );
- 
-   Slot* Clone() const
-     { return new Slot( *this ); }
-
    void Split( double const& s, ElmPtr&, ElmPtr& ) const;
 
    bool         isMagnet()  const;
@@ -103,8 +100,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );
-
-   void setLength( double const& );
 
    Frame const& getInFrame() const
      { return in_; }
@@ -117,8 +112,6 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
    Frame in_;
    Frame out_;
-
-   PropagatorPtr propagator_;
 
    std::ostream& writeTo ( std::ostream& );
    std::istream& readFrom( std::istream& );

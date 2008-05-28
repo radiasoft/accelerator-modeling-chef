@@ -39,6 +39,10 @@
 ****** - support for reference counted elements
 ****** Dec  2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 *****
 **************************************************************************
 *************************************************************************/
@@ -71,12 +75,10 @@ class DLLEXPORT hkick : public bmlnElmnt {
 public:
 
 
-  typedef boost::shared_ptr<BasePropagator<hkick> > PropagatorPtr;   
-
   hkick();
-  hkick( char const* name);                                         // name; assumes zero kick
-  hkick( char const* name,                 double const& kick);     // kick size in radians
-  hkick( char const* name,  double const& length, double const& kick);     // kick size in radians
+  hkick( std::string const& name);                                         // name; assumes zero kick
+  hkick( std::string const& name,                 double const& kick);     // kick size in radians
+  hkick( std::string const& name,  double const& length, double const& kick);     // kick size in radians
   hkick( hkick const& );
 
   hkick* Clone() const { return new hkick( *this ); }
@@ -85,20 +87,11 @@ public:
 
  ~hkick();
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-
   const char* Type()       const;
   bool        isMagnet()   const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
-
- private:
- 
-  PropagatorPtr propagator_;
 
 };
 
@@ -110,12 +103,10 @@ class DLLEXPORT vkick : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<vkick> > PropagatorPtr;   
-
   vkick();                                                             // Assumes zero kick
-  vkick( char const* );                                                // name; assumes zero kick
-  vkick( char const*  name, double const& kick);                       // kick size in radians
-  vkick( char const*,double const& length, double const& kick );       // kick size in radians
+  vkick( std::string const& );                                                // name; assumes zero kick
+  vkick( std::string const&  name, double const& kick);                       // kick size in radians
+  vkick( std::string const&,double const& length, double const& kick );       // kick size in radians
   vkick( vkick const& );
 
   vkick* Clone() const { return new vkick( *this ); }
@@ -124,20 +115,11 @@ public:
 
  ~vkick();
 
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type()       const;
   bool        isMagnet()   const;
-
- private:
-
-  PropagatorPtr propagator_;
 
 };
 
@@ -148,12 +130,10 @@ class DLLEXPORT kick : public bmlnElmnt {
 
 public:
 
-  typedef boost::shared_ptr<BasePropagator<kick> > PropagatorPtr;   
-
   kick();
-  kick( char const* name );
-  kick( char const* name,                         double const& horizontal_kick, double const& vertical_kick);
-  kick( char const* name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
+  kick( std::string const& name );
+  kick( std::string const& name,                         double const& horizontal_kick, double const& vertical_kick);
+  kick( std::string const& name,   double const& length, double const& horizontal_kick, double const& vertical_kick);
 
   kick( kick const& );
 
@@ -162,12 +142,6 @@ public:
   kick& operator=( kick const& rhs);
 
  ~kick();
-
-  void localPropagate(         Particle& );
-  void localPropagate(      JetParticle& );
-  void localPropagate(    ParticleBunch& );
-  void localPropagate( JetParticleBunch& );
-
 
   void accept(BmlVisitor& v);
   void accept(ConstBmlVisitor& v) const;
@@ -184,8 +158,6 @@ public:
 private:
 
   double vh_ratio_;
-
-  PropagatorPtr propagator_;
 
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
