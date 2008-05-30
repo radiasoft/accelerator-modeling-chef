@@ -1,0 +1,70 @@
+#######################################################
+## 
+## File: makefile.local 
+##       for directory widget_toolkit/tests/lpsDemo
+## 
+## This Makefile requires that four environment
+## variables be predefined: CPP, BOOST_INC, QTDIR, and INSTALLDIR
+## See the chef-config/config.pri.* files for examples.
+## 
+## $BOOST_INC   must contain the subdirectory   boost.
+## $QTDIR       must contain     subdirectories include, bin, and lib.
+## $INSTALLDIR  must conatin     subdirectories include and lib
+## 
+## Leo Michelotti
+## Wednesday. May 28, 2008
+## 
+#######################################################
+
+.SUFFIXES: .o .cpp .cc 
+
+INCS       = -I. \
+             -I$(QTDIR)/include \
+             -I$(BOOST_INC) \
+             -I$(INSTALLDIR)/include
+
+LIBS       = -L$(INSTALLDIR)/lib \
+             -lmxyzptlk -lbasic_toolkit \
+             -Wl,-rpath,$(INSTALLDIR)/lib \
+             -L$(QTDIR)/lib \
+             -lqt-mt \
+             -Wl,-rpath,$(QTDIR)/lib
+
+MOC      = $(QTDIR)/bin/moc
+
+.cc.o:
+	$(CPP) $(CPPFLAGS) $(INCS) -c $*.cc
+.o :
+	$(CPP) $(CPPFLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
+.cc :
+	$(CPP) $(CPPFLAGS) $(INCS) -o $@ $< $(LIBS)
+
+MOCOBJS = moc_DrawSpace2D.o  moc_Tracker.o moc_PointEdit.o
+SRCOBJS = DrawSpace2D.o Orbit.o RFMap.o normalForm.o PointEdit.o Tracker.o
+
+all: lpsDemo
+
+lpsDemo: lpsDemo.o $(SRCOBJS) $(MOCOBJS)
+	g++ -o lpsDemo lpsDemo.o $(SRCOBJS) $(MOCOBJS) $(LIBS)
+
+Tracker.o: Tracker.cc Tracker.h RFMap.h PointEdit.h DrawSpace2D.h Orbit.h
+DrawSpace2D.o: DrawSpace2D.cc DrawSpace2D.h Orbit.h Tracker.h
+Orbit.o: Orbit.cc Orbit.h
+PointEdit.o: PointEdit.cc PointEdit.h
+RFMap.o: RFMap.cc RFMap.h
+
+lpsDemo.o: lpsDemo.cc  RFMap.h Tracker.h
+normalForm.o: normalForm.cc  
+
+moc_DrawSpace2D.o: moc_DrawSpace2D.cc
+moc_Tracker.o: moc_Tracker.cc
+moc_PointEdit.o: moc_PointEdit.cc
+
+moc_DrawSpace2D.cc: DrawSpace2D.h
+	$(MOC) DrawSpace2D.h -o moc_DrawSpace2D.cc
+
+moc_Tracker.cc: Tracker.h
+	$(MOC) Tracker.h -o moc_Tracker.cc
+
+moc_PointEdit.cc: PointEdit.h
+	$(MOC) PointEdit.h -o moc_PointEdit.cc
