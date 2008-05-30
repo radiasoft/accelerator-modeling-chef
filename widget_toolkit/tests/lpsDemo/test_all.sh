@@ -33,9 +33,9 @@ if (0 == ${?QTDIR}) then
   exit 1
 endif
 
-if (0 == ${?CPP}) then
+if (0 == ${?CXX}) then
   echo "*** ERROR ***"
-  echo "*** ERROR *** Environment variable CPP has not been set."
+  echo "*** ERROR *** Environment variable CXX has not been set."
   echo "*** ERROR ***"
   exit 1
 endif

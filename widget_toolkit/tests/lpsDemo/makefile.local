@@ -4,7 +4,7 @@
 ##       for directory widget_toolkit/tests/lpsDemo
 ## 
 ## This Makefile requires that four environment
-## variables be predefined: CPP, BOOST_INC, QTDIR, and INSTALLDIR
+## variables be predefined: CXX, BOOST_INC, QTDIR, and INSTALLDIR
 ## See the chef-config/config.pri.* files for examples.
 ## 
 ## $BOOST_INC   must contain the subdirectory   boost.
@@ -33,11 +33,11 @@ LIBS       = -L$(INSTALLDIR)/lib \
 MOC      = $(QTDIR)/bin/moc
 
 .cc.o:
-	$(CPP) $(CPPFLAGS) $(INCS) -c $*.cc
+	$(CXX) $(CXXFLAGS) $(INCS) -c $*.cc
 .o :
-	$(CPP) $(CPPFLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 .cc :
-	$(CPP) $(CPPFLAGS) $(INCS) -o $@ $< $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCS) -o $@ $< $(LIBS)
 
 MOCOBJS = moc_DrawSpace2D.o  moc_Tracker.o moc_PointEdit.o
 SRCOBJS = DrawSpace2D.o Orbit.o RFMap.o normalForm.o PointEdit.o Tracker.o
