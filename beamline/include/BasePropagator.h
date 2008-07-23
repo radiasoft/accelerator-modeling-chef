@@ -28,8 +28,11 @@
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
 ******  - generic bmlmElmnt type use in signatures
+******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
+
 #ifndef BASEPROPAGATOR_H
 #define BASEPROPAGATOR_H
 
