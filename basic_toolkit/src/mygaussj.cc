@@ -61,8 +61,8 @@ void mygaussj(MatrixD& a, int n, MatrixD& b, int m )
       if (ipiv[j] != 1)
 	for (k=0;k<n;k++) {
 	  if (ipiv[k] == 0) {
-	    if (fabs(a(j,k)) >= big) {
-	      big=fabs(a(j,k));
+	    if (fabs(a[j][k]) >= big) {
+	      big=fabs(a[j][k]);
 	      irow=j;
 	      icol=k;
 	    }
@@ -71,29 +71,29 @@ void mygaussj(MatrixD& a, int n, MatrixD& b, int m )
 	}
     ++(ipiv[icol]);
     if (irow != icol) {
-      for (l=0;l<n;l++) std::swap(a(irow,l),a(icol,l) );
-      for (l=0;l<m;l++) std::swap( b(irow,l),b(icol,l) );
+      for (l=0;l<n;++l) std::swap( a[irow][l], a[icol][l] );
+      for (l=0;l<m;++l) std::swap( b[irow][l], b[icol][l] );
     }
     indxr[i]=irow;
     indxc[i]=icol;
-    if (a(icol,icol) == 0.0) 
+    if (a[icol][icol] == 0.0) 
       cerr << "GAUSSJ: Singular Matrix-2 " << a << endl;
-    pivinv=1.0/a(icol,icol);
-    a(icol,icol) = 1.0;
-    for (l=0;l<n;l++) a(icol,l) *= pivinv;
-    for (l=0;l<m;l++) b(icol,l) *= pivinv;
+    pivinv=1.0/a[icol][icol];
+    a[icol][icol] = 1.0;
+    for (l=0;l<n;l++) a[icol][l] *= pivinv;
+    for (l=0;l<m;l++) b[icol][l] *= pivinv;
     for (ll=0;ll<n;ll++)
       if (ll != icol) {
-	dum=a(ll,icol);
-	a(ll,icol)=0.0;
-	for (l=0;l<n;l++) a(ll,l) -= a(icol,l)*dum;
-	for (l=0;l<m;l++) b(ll,l) -= b(icol,l)*dum;
+	dum=a[ll][icol];
+	a[ll][icol]=0.0;
+	for (l=0;l<n;l++) a[ll][l] -= a[icol][l]*dum;
+	for (l=0;l<m;l++) b[ll][l] -= b[icol][l]*dum;
       }
   }
   for (l=n-1;l>=0;l--) {
     if (indxr[l] != indxc[l])
       for (k=0;k<n;k++)
-	std::swap(a(k,indxr[l]),a(k,indxc[l]));
+	std::swap(a[k][indxr[l]],a[k][indxc[l]]);
   }
 }
 
@@ -103,11 +103,11 @@ void mygaussj(MatrixD& a, int n, Vector& b)
 
   MatrixD btmp(b.Dim(), 1);
 
-  for (int i=0; i<b.Dim(); ++i ) btmp(i,0) = b[i]; 
+  for (int i=0; i<b.Dim(); ++i ) btmp[i][0] = b[i]; 
 
   mygaussj( a, n, btmp, 1); 
 
-  for (int i=0; i<b.Dim(); ++i ) b[i] = btmp(i,0); 
+  for (int i=0; i<b.Dim(); ++i ) b[i] = btmp[i][0]; 
   
 }
 
