@@ -31,15 +31,20 @@
 ******   - refactored code to use single template parameter instead of two
 ******   - introduced implicit conversions 
 ******   - using boost::intrusive_pointer for reference counting
-******   - eliminated access to internals of implementation class (TML) from class TMatrix.
-******   - eliminated separate MatrixC class implementation (used to be derived from Matrix<T1,T2>)
-******   - organized code to support both implicit and explicit template instantiations
+******   - eliminated access to internals of implementation class (TML) 
+******     from class TMatrix.
+******   - eliminated separate MatrixC class implementation 
+******     (used to inherit from Matrix<T1,T2>)
+******   - organized code to support both implicit and 
+******     explicit template instantiations
 ******   - fixed incorrect complex version of eigenvalues/eigenvectors 
 ******   - separated eigenvalue/eigenvector reordering function 
-******   - eliminated code that attempted to discriminate between objects allocated
-******     on the stack and objects allocated from the free store.
+******   - eliminated code that attempted to discriminate between objects 
+******     allocated on the stack and objects allocated from the free store.
 ******                                                                
-******                                                                
+****** May 2008 ostiguy@fnal.gov
+******   - added general symplecticity test
+******                                                               
 **************************************************************************
 *************************************************************************/
 #if HAVE_CONFIG_H
@@ -54,6 +59,7 @@
 #include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/TML.h>
+#include <basic_toolkit/TVector.h>
 
 #ifdef WIN32
 extern long   srand48(long int);
@@ -119,15 +125,6 @@ TMatrix<T>::TMatrix(int rows, int columns, T* initval)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<T>::TMatrix(const char* flag, int dimension)
- : ml_( MLPtr<T>( new TML<T>( flag,dimension) ) )   // ,m1d_(this, 0) 
-{} 
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
 TMatrix<T>::TMatrix(TMatrix const& X)
  : ml_(X.ml_) // , m1d_(this, 0)  
 { }
@@ -178,11 +175,11 @@ TMatrix<T>& TMatrix<T>::operator=(TVector<T> const& x)
  
   if ( rows() == 1) {
    
-      for (int i=0; i<  cols(); ++i ) (*this)(0,i) = x(i);
+      for (int i=0; i<  cols(); ++i ) (*this)(0,i) = x[i];
       return *this;
    }
 
-  for (int i=0; i< rows(); ++i )  (*this) (i,0) = x(i);
+  for (int i=0; i< rows(); ++i )  (*this) (i,0) = x[i];
 
   return *this;
 }
@@ -304,9 +301,54 @@ T TMatrix<T>::trace() const
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool TMatrix<T>::isOrthogonal() const
+double TMatrix<T>::maxNorm() const
 {
-   return ml_->isOrthogonal();
+   return ml_->maxNorm();
+}
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool TMatrix<T>::isOrthogonal( double eps) const
+{ 
+  TMatrix<T> W = ( this->dagger() * (*this) - TMatrix<T>::Imatrix( this-> rows() ) );  
+  return ( W.maxNorm() < eps ) ;
+}
+
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool  TMatrix<T>::isSymplectic(char convention, double eps) const
+{ 
+  
+   // 'S' = beam dynamics ordering convention 
+   // 'J' = hamiltonian pertubation theory convention  
+
+   if (rows() != cols() ) return false;   
+   if (rows() % 2 != 0  ) return false;   
+   if (cols() % 2 != 0  ) return false;   
+
+   TMatrix<T> S; 
+
+   if ( (convention == 's') || (convention == 'S' )) { 
+      S = Smatrix( rows() ); 
+   } 
+   else if ( (convention == 'j') || convention == 'J') { 
+      S = Jmatrix( rows() ); 
+   }
+   else {
+     throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::isSymplectic"
+                              "Unknown state variable ordering convention") );
+   }     
+
+   TMatrix<T> M(*this);
+  
+   M = ( M.dagger()*S*M ) - S; 
+
+   return ( M.maxNorm() < eps );
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -335,22 +377,11 @@ TMatrix<T> TMatrix<T>::inverse() const
 
 
 template<typename T>
-void    TMatrix<T>:: switch_columns( int col1, int col2) 
-{
+void    TMatrix<T>:: switch_columns( int col1, int col2) {
+
   if (ml_->count() > 1) ml_= ml_->clone();
   ml_->switch_columns(col1,col2);
-};
 
-
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-void    TMatrix<T>:: switch_rows( int col1, int col2) 
-{
-  if (ml_->count() > 1) ml_= ml_->clone();
-  ml_->switch_rows(col1,col2);
 };
 
 
@@ -599,11 +630,9 @@ void TMatrix<T>::GaussJordan( TMatrix& A, TMatrix& rhs)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMatrix<std::complex<double> > TMatrix<T>::eigenValues() const
+TVector<std::complex<double> > TMatrix<T>::eigenValues() const
 {
-  TMatrix<std::complex<double> > ret;
-  ret.ml_= ml_->eigenValues(); 
-  return  ret; 
+  return ml_->eigenValues(); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -648,3 +677,107 @@ void TMatrix<T>::lu_back_subst( int* permutations, TMatrix& rhs)
  ml_->lu_back_subst( permutations, rhs.ml_ );
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMatrix<T> const TMatrix<T>::Smatrix(int n)
+{   
+   if ( n%2 != 0 ) {
+      throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::JMatrix(int n) "
+                              "A Symplectic matrix must have even dimensionality.") );
+   }     
+  
+   TMatrix<T> S(n,n);
+   for (int i=0; i<n; ++i) {  
+     for (int j=0; j<n; ++j) {
+       if ( ((i%2)== 0) && ((j-i)==1) ) S[i][j] =  1; 
+       if ( ((i%2)!= 0) && ((i-j)==1) ) S[i][j] = -1; 
+     }
+   } 
+
+   return S;
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMatrix<T> const TMatrix<T>::Jmatrix(int n)   
+{
+   if ( n%2 != 0 ) {
+      throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::JMatrix(int n) "
+                              "A Symplectic matrix must have even dimensionality.") );
+   }     
+  
+   TMatrix<T> J(n,n);
+   for (int i=0; i<n; ++i) {  
+     for (int j=0; j<n; ++j) {
+       if (j == i+n/2)  J[i][j] =  1; 
+       if (i == j+n/2)  J[i][j] = -1; 
+     }
+   } 
+
+   return J;
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+   
+template<typename T>
+TMatrix<T> const TMatrix<T>::Imatrix(int n)   
+{
+  
+   TMatrix<T> I(n,n);
+   for (int i=0; i<n; ++i) { I[i][i] = T(1.0); } 
+
+   return I;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+   
+template<typename T>
+TMatrix<std::complex<double> > const  TMatrix<T>::Qmatrix(int n) 
+{
+   if ( n%2 != 0 ) {
+      throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::QMatrix(int n) "
+                              "A Symplectic matrix must have even dimensionality.") );
+   }     
+  
+   TMatrix<std::complex<double> > Q(n,n);
+   
+   for (int i=0; i <6; i+=2 ) { 
+          Q[i  ][i]  = 1.0/sqrt(2.0);   Q[i  ][i+1] =  std::complex<double>(0.0,  1.0)/sqrt(2.0); 
+          Q[i+1][i]  = 1.0/sqrt(2.0);   Q[i+1][i+1] =  std::complex<double>(0.0, -1.0)/sqrt(2.0); 
+   }
+
+   return Q;
+}   
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+   
+template<typename T>
+TMatrix<std::complex<double> > const TMatrix<T>::Rmatrix(int n) 
+{
+   if ( n%2 != 0 ) {
+      throw( GenericException( __FILE__,  __LINE__, 
+                              "TMatrix<T>::RMatrix(int n) "
+                              "A Symplectic matrix must have even dimensionality.") );
+   }     
+  
+   TMatrix<std::complex<double> > R(n,n);
+
+   for (int i=0; i<n/2; ++i ){
+          R[i][i    ]       =  1.0/sqrt(2.0);   
+          R[i][i+n/2]       =  std::complex<double>(0.0,  1.0)/sqrt(2.0);
+
+          R[i+n/2][i]       =  1.0/sqrt(2.0); 
+          R[i+n/2][i+n/2]   =  std::complex<double>(0.0, -1.0)/sqrt(2.0); 
+   }
+
+   return R;
+}   
