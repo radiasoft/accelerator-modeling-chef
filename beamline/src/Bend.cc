@@ -74,7 +74,8 @@ Bend::Bend( Bend const& x )
     usAngle_(x.usAngle_),
     dsAngle_(x.dsAngle_),
 usFaceAngle_(x.usFaceAngle_),
-dsFaceAngle_(x.dsFaceAngle_)
+dsFaceAngle_(x.dsFaceAngle_),
+       type_(x.type_)
 {
   propagator_->setup(*this);
 }
@@ -99,6 +100,7 @@ Bend& Bend::operator=(Bend const& rhs)
   dsAngle_     = rhs.dsAngle_;
   usFaceAngle_ = rhs.usFaceAngle_;
   dsFaceAngle_ = rhs.dsFaceAngle_;
+         type_ = rhs.type_;
 
   return *this;
 }
