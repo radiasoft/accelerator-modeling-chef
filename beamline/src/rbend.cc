@@ -344,7 +344,7 @@ double rbend::OrbitLength( Particle const& x )
 {
   // Computes arclength of orbit assuming a symmetric bend.
   // WARNING: This is not the true arclength under all conditions.
-  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength_;
+  double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / Strength();
   return tworho * asin( length_ / tworho );
 }
 
@@ -413,7 +413,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   RBendPtr rb_a( new rbend(   ""
                             , pc*length_
-                            , strength_
+                            , Strength()
                             , angle_*pc         // Wrong, but unimportant (I hope)!
                             , usFaceAngle_
                             , 0.0 ) ); 
@@ -422,7 +422,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   RBendPtr rb_b( new rbend(   ""
                             , (1.0 - pc)*length_
-                            , strength_
+                            , Strength()
                             , angle_*(1.0-pc)   // Wrong, but unimportant (I hope)!
                             , 0.0
                             , dsFaceAngle_ ) );
@@ -511,7 +511,7 @@ void rbend::nullEntryEdge()
 
 void rbend::setPoleFaceAngle( Particle const& p )
 {
-  double psi = asin( (strength_*length_) / (2.0*p.ReferenceBRho()) );
+  double psi = asin( (Strength()*length_) / (2.0*p.ReferenceBRho()) );
   // i.e., sin( psi ) = (l/2) / rho
   //                  = Bl/(2*Brho)
   //                  = 1/2 symmetric bend angle

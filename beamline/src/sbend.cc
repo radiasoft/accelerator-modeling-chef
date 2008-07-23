@@ -429,7 +429,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   SBendPtr sb_a = SBendPtr( new sbend(   ""
                                        , length_*pc
-                                       , strength_
+                                       , Strength()
                                        , angle_*pc
                                        , usFaceAngle_
                                        , 0.0           ));
@@ -438,7 +438,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   SBendPtr sb_b = SBendPtr( new sbend(   ""
                                        , length_*(1.0-pc)
-                                       , strength_
+                                       , Strength()
                                        , angle_*(1.0-pc)
                                        , 0.0
                                        , dsFaceAngle_  ));

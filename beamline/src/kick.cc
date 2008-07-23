@@ -342,7 +342,7 @@ kick&  kick::operator=( kick const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& kick::writeTo(ostream& os) {
-	os << OSTREAM_DOUBLE_PREC << strength_ << "  " << vh_ratio_*strength_;
+	os << OSTREAM_DOUBLE_PREC << Strength() << "  " << vh_ratio_*Strength();
 	os << "\n";
 	return os;
 }
@@ -353,7 +353,7 @@ ostream& kick::writeTo(ostream& os) {
 istream& kick::readFrom(istream& is) {
 	double a,b;
 	is >> a >> b;
-	strength_  = a;
+	setStrength(a );
 	vh_ratio_  = (a !=0) ? b/a : b;
 	return is;
 }
@@ -364,9 +364,9 @@ istream& kick::readFrom(istream& is) {
 
 void  kick::setHorStrength(double const& value)
 {
-  double vstrength = strength_* vh_ratio_; 
-  strength_  = value;
-  vh_ratio_  = (strength_ != 0.0) ? vstrength/strength_ : vstrength;
+  double vstrength = Strength() * vh_ratio_; 
+  setStrength( value);
+  vh_ratio_  = (Strength() != 0.0) ? vstrength/Strength() : vstrength;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -374,15 +374,15 @@ void  kick::setHorStrength(double const& value)
 
 void   kick::setVerStrength(double const& value)
 {
-  vh_ratio_ = (strength_ != 0.0) ? value/strength_ : value;
+  vh_ratio_ = ( Strength() != 0.0) ? value/Strength() : value;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  kick::getHorStrength() const
+double  kick::getHorStrength() const
 {
-  return   strength_; 
+  return   Strength(); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -390,7 +390,7 @@ double const&  kick::getHorStrength() const
 
 double kick::getVerStrength() const
 {
-  return   vh_ratio_*strength_; 
+  return   vh_ratio_*Strength(); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

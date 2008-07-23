@@ -372,7 +372,7 @@ double const& rfcavity::getRadialFrequency() const
 
 double rfcavity::getDesignEnergyGain()   const
 {
-    return strength_*sin_phi_s_; 
+    return Strength()*sin_phi_s_; 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
