@@ -106,7 +106,7 @@ srot::~srot()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-srot& operator( srot const& rhs)  
+srot& srot::operator=( srot const& rhs)  
 {
   if (this == &rhs) return *this;
   bmlnElmnt::operator=(rhs);
