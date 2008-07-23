@@ -39,34 +39,34 @@
 #include <basic_toolkit/MathConstants.h>
 
 RandomOrthogonal::RandomOrthogonal( int n )
-: _dim(n), _passes(1)
+: dim_(n), passes_(1)
 {
 
-  _omitted = new bool*[ _dim ];
-  for( int i=0; i< _dim; ++i) {
-    _omitted[i] = new bool[ _dim ];
-    for(int j=0; j< _dim; ++j) { _omitted[i][j] = false; }
-    _omitted[i][i] = true;
+  omitted_ = new bool*[ dim_ ];
+  for( int i=0; i< dim_; ++i) {
+    omitted_[i] = new bool[ dim_ ];
+    for(int j=0; j< dim_; ++j) { omitted_[i][j] = false; }
+    omitted_[i][i] = true;
   }
 
-  _lowerTheta = new double*[ _dim ];
-  for( int i=0; i< _dim; ++i) {
-    _lowerTheta[i] = new double[ _dim ];
-    for( int j=0; j< _dim; ++j) { _lowerTheta[i][j] = 0.0; }
+  lowerTheta_ = new double*[ dim_ ];
+  for( int i=0; i< dim_; ++i) {
+    lowerTheta_[i] = new double[ dim_ ];
+    for( int j=0; j< dim_; ++j) { lowerTheta_[i][j] = 0.0; }
   }
 
-  _upperTheta = new double*[ _dim ];
-  for( int i=0; i <_dim; ++i ) {
-    _upperTheta[i] = new double[ _dim ];
-    for( int j=0; j< _dim; ++j) { _upperTheta[i][j] = M_TWOPI; }
-    _upperTheta[i][i] = 0.0;
+  upperTheta_ = new double*[ dim_ ];
+  for( int i=0; i <dim_; ++i ) {
+    upperTheta_[i] = new double[ dim_ ];
+    for( int j=0; j< dim_; ++j) { upperTheta_[i][j] = M_TWOPI; }
+    upperTheta_[i][i] = 0.0;
   }
 
-  _rangeTheta = new double*[ _dim ];
-  for( int i=0; i< _dim; ++i) {
-    _rangeTheta[i] = new double[ _dim ];
-    for( int j=0; j<_dim; ++j) { _rangeTheta[i][j] = M_TWOPI; }
-    _rangeTheta[i][i] = 0.0;
+  rangeTheta_ = new double*[ dim_ ];
+  for( int i=0; i< dim_; ++i) {
+    rangeTheta_[i] = new double[ dim_ ];
+    for( int j=0; j<dim_; ++j) { rangeTheta_[i][j] = M_TWOPI; }
+    rangeTheta_[i][i] = 0.0;
   }
 }
 
@@ -76,17 +76,17 @@ RandomOrthogonal::RandomOrthogonal( int n )
 
 RandomOrthogonal::~RandomOrthogonal()
 {
-  for( int i = 0; i < _dim; i++ ) {
-    delete [] _omitted[i];
-    delete [] _lowerTheta[i];
-    delete [] _upperTheta[i];
-    delete [] _rangeTheta[i];
+  for( int i = 0; i < dim_; i++ ) {
+    delete [] omitted_[i];
+    delete [] lowerTheta_[i];
+    delete [] upperTheta_[i];
+    delete [] rangeTheta_[i];
   }
 
-  delete [] _omitted;
-  delete [] _lowerTheta;
-  delete [] _upperTheta;
-  delete [] _rangeTheta;
+  delete [] omitted_;
+  delete [] lowerTheta_;
+  delete [] upperTheta_;
+  delete [] rangeTheta_;
 }
 
 
@@ -95,9 +95,9 @@ RandomOrthogonal::~RandomOrthogonal()
 
 void RandomOrthogonal::omitIndex( int i, int j )
 {
-  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) {
-    _omitted[i][j] = true;
-    _omitted[j][i] = true;
+  if( 0 <= i  &&  i < dim_  &&  0 <= j  &&  j < dim_ ) {
+    omitted_[i][j] = true;
+    omitted_[j][i] = true;
   }
 }
 
@@ -107,7 +107,7 @@ void RandomOrthogonal::omitIndex( int i, int j )
 
 void RandomOrthogonal::omitIndex( int n )
 {
-  for( int i = 0; i < _dim; i++ ) {
+  for( int i = 0; i < dim_; i++ ) {
     this->omitIndex( n, i );
   }
 }
@@ -118,9 +118,9 @@ void RandomOrthogonal::omitIndex( int n )
 
 void RandomOrthogonal::includeIndex( int i, int j )
 {
-  if( 0 <= i  &&  i < _dim  &&  0 <= j  &&  j < _dim ) {
-    _omitted[i][j] = false;
-    _omitted[j][i] = false;
+  if( 0 <= i  &&  i < dim_  &&  0 <= j  &&  j < dim_ ) {
+    omitted_[i][j] = false;
+    omitted_[j][i] = false;
   }
 }
 
@@ -130,7 +130,7 @@ void RandomOrthogonal::includeIndex( int i, int j )
 
 void RandomOrthogonal::includeIndex( int n )
 {
-  for( int i = 0; i < _dim; i++ ) {
+  for( int i = 0; i < dim_; i++ ) {
     this->includeIndex( n, i );
   }
 }
@@ -141,7 +141,7 @@ void RandomOrthogonal::includeIndex( int n )
 
 void RandomOrthogonal::setNumberOfPasses( int n )
 {
-  if( 0 < n ) { _passes = n; }
+  if( 0 < n ) { passes_ = n; }
 }
 
 
@@ -151,8 +151,8 @@ void RandomOrthogonal::setNumberOfPasses( int n )
 void RandomOrthogonal::setRange( int i, int j, double lo, double hi )
 {
   // Check and condition the arguments
-  if( i < 0  ||  _dim <= i  ||
-      j < 0  ||  _dim <= j  ||
+  if( i < 0  ||  dim_ <= i  ||
+      j < 0  ||  dim_ <= j  ||
       hi <= lo )
   { return; }
 
@@ -165,12 +165,12 @@ void RandomOrthogonal::setRange( int i, int j, double lo, double hi )
   while( hi > M_TWOPI  ) { hi -= M_TWOPI; }
 
   // Set the range
-  _lowerTheta[i][j] = lo;
-  _lowerTheta[j][i] = lo;
-  _upperTheta[i][j] = hi;
-  _upperTheta[j][i] = hi;
-  _rangeTheta[i][j] = hi - lo;
-  _rangeTheta[j][i] = hi - lo;
+  lowerTheta_[i][j] = lo;
+  lowerTheta_[j][i] = lo;
+  upperTheta_[i][j] = hi;
+  upperTheta_[j][i] = hi;
+  rangeTheta_[i][j] = hi - lo;
+  rangeTheta_[j][i] = hi - lo;
 }
 
 
@@ -179,7 +179,7 @@ void RandomOrthogonal::setRange( int i, int j, double lo, double hi )
 
 void RandomOrthogonal::setRange( int n, double lo, double hi )
 {
-  for( int i = 0; i < _dim; i++ ) {
+  for( int i = 0; i < dim_; i++ ) {
     this->setRange( n, i, lo, hi );
   }
 }
@@ -194,21 +194,19 @@ TMatrix<double> RandomOrthogonal::build()
   // but quickly. It will have to be redone
   // if used many times in an application.
 
-  int i, j, p;
-  double theta, cs, sn, tmp;
-  TMatrix<double> R( "I", _dim );
-  TMatrix<double> U( "I", _dim );
-  TMatrix<double> W( "I", _dim );
+  TMatrix<double> R = TMatrix<double>::Imatrix( dim_ );
+  TMatrix<double> U = TMatrix<double>::Imatrix( dim_ );
+  TMatrix<double> W = TMatrix<double>::Imatrix( dim_ );
 
-  for( p = 0; p < _passes; p++ ) {
-    for( i = 0; i < _dim-1; i++ ) {
-      for( j = i+1; j < _dim; j++ ) {
-        if( !(_omitted[i][j]) ) {
-          theta = _lowerTheta[i][j] + drand48()*_rangeTheta[i][j];
-          cs = cos( theta );
-          sn = sin( theta );
-          W(i,i) =  cs;  W(i,j) = sn;
-          W(j,i) = -sn;  W(j,j) = cs;
+  for( int p = 0; p < passes_; p++ ) {
+    for( int i = 0; i < dim_-1; i++ ) {
+      for( int j = i+1; j < dim_; j++ ) {
+        if( !(omitted_[i][j]) ) {
+          double theta = lowerTheta_[i][j] + drand48()*rangeTheta_[i][j];
+          double cs = cos( theta );
+          double sn = sin( theta );
+          W[i][i] =  cs;  W[i][j] = sn;
+          W[j][i] = -sn;  W[j][j] = cs;
           R = R*W;
           W = U;
         }
