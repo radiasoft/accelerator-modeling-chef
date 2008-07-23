@@ -66,9 +66,9 @@ Matrix SVDFit::sqrt( Matrix& x )
     // probably the slowest possible way to do this.
     double aaa;
     for( int j = 0; j < c; j++ ) {
-      aaa = std::sqrt(W(j));
+      aaa = std::sqrt(W[j]);
       for( int i = 0; i < r; i++ ) {
-        U(i,j) *= aaa;
+        U[i][j] *= aaa;
       }
     }
   
@@ -153,8 +153,7 @@ void SVDFit::finishConstruction_()
   for( int i=0; i < rows_; ++i ) {
     for( int j=0; j < rows_; ++j ) {
 
-      if( i == j ) { cov_(i,j) = 1.0; }
-      else         { cov_(i,j) = 0.0; }
+      if( i == j ) { cov_[i][j] = ( i == j ) ? 1.0 : 0.0; }
     }
   }
   covInv_ = cov_;
@@ -201,10 +200,10 @@ void SVDFit::setErrorCovariance( Matrix const& E )
      sigInv_ = Matrix( rows_, rows_ );
 
     for( int i=0;  i < rows_; ++i) {
-      cov_(i,i)    = std::abs( E(i,0) );
-      sig_(i,i)    = std::sqrt( fabs( E(i,0) ) );
-      covInv_(i,i) = 1.0/std::abs( E(i,0) );
-      sigInv_(i,i) = 1.0/std::sqrt( fabs( E(i,0) ) );
+      cov_[i][i]    = std::abs( E[i][0] );
+      sig_[i][i]    = std::sqrt( fabs( E[i][0] ));
+      covInv_[i][i] = 1.0/std::abs( E[i][0] );
+      sigInv_[i][i] = 1.0/std::sqrt( fabs( E[i][0] ));
     }
 
     applyWeights_ = true;
@@ -290,16 +289,16 @@ void SVDFit::buildSolver_()
   // -------------------------------------
   double wMax = -1.0; 
   for( int j = 0; j < cols_; j++ ) {
-    if( wMax < xW_(j) ) { wMax = xW_(j); }
+    if( wMax < xW_[j] ) { wMax = xW_[j]; }
     // NOTE: singular values are non-negative 
     // NOTE: by definition and construction.
   }
   wMax *= limW_;
 
   for( int j = 0; j < cols_; j++ ) {
-    if( xW_(j) < wMax ) {
-      for (int i=0; i < rows_; i++) { xU_(i,j) = 0.; }
-      xW_(j) = 0;
+    if( xW_[j] < wMax ) {
+      for (int i=0; i < rows_; i++) { xU_[i][j] = 0.; }
+      xW_[j] = 0;
     }
   } 
 
@@ -307,16 +306,16 @@ void SVDFit::buildSolver_()
   // ... probably the slowest possible way to do this.
   double aaa;
   for( int j=0; j < cols_; ++j) {
-    if( 0 < xW_(j) ) {
-      aaa = 1.0/xW_(j);
+    if( 0 < xW_[j] ) {
+      aaa = 1.0/xW_[j];
       for( int i = 0; i < cols_; i++ ) {
-        xV_(i,j) *= aaa;
+        xV_[i][j] *= aaa;
       }
     }
     else {
       for( int i = 0; i < cols_; i++ ) {
-        xV_(i,j) = 0;  // Not strictly necessary,
-      }                // but paranoia seldom hurts.
+        xV_[i][j] = 0;  // Not strictly necessary,
+      }                 // but paranoia seldom hurts.
     }
   }
 
@@ -395,7 +394,7 @@ Matrix SVDFit::D() const
   int n = xW0_.Dim();
   Matrix ret(n,n);
   for( int i = 0; i < n; i++ ) {
-    ret(i,i) = xW0_(i);
+    ret[i][i] = xW0_[i];
   }
   return ret;
 }
