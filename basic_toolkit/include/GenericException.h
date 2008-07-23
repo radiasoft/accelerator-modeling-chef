@@ -48,7 +48,7 @@ class DLLEXPORT GenericException : public std::exception
 {
 
  public:
-  GenericException( std::string, int, const char* = "", const char* = "" );
+  GenericException( std::string, int, std::string const& = "", std::string const& = "" );
   // Miscellaneous errors
   // 1st argument: name of file in which exception is thrown
   // 2nd         : line from which exception is thrown
