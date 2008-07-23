@@ -47,16 +47,6 @@
 #include <functional>
 #include <complex>
 
-#ifdef CHECKOUT
-#undef CHECKOUT
-#endif
-
-#define CHECKOUT(type, test, fcn, message)                       \
-  if( test ) {                                           \
-    throw( GenericException( __FILE__, __LINE__, fcn, message ) ); \
-  }
-
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -64,13 +54,7 @@
 template<>
 double TVector<double>::operator* ( TVector <double> const& x ) const
 {
-
-#ifndef NOCHECKS
-  CHECKOUT(double, Dim() != x.Dim(), "TVector<double>::operator*", "dimensions incompatible.")
-#endif
-
   return std::inner_product(theVector_.begin(), theVector_.end(), x.theVector_.begin(), 0.0);
-
 }
 
 
@@ -79,35 +63,13 @@ double TVector<double>::operator* ( TVector <double> const& x ) const
 
 template<> 
 std::complex<double> 
-TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const {
-
-#ifndef NOCHECKS
-  CHECKOUT(std::complex<double>, Dim() != x.Dim(), "TVector<double>::operator*", "dimensions incompatible.")
-#endif
-
-   
-
+TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const 
+{
   return std::real( std::inner_product( theVector_.begin(),  theVector_.end(), 
                                       x.theVector_.begin(),  std::complex<double>(), 
                                       std::plus<std::complex<double> >(),
 				      op_mult() )); 
-
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-template<>
-bool 
-TVector<double>::operator > ( TVector<double> const& x ) const
-{
-#ifndef NOCHECKS
-  CHECKOUT(double, Dim() != x.Dim(), "TVector<T>::operator>", "Dimensions incompatible.")
-#endif
-
-  for( int i=0; i < Dim(); ++i) if( theVector_[i] <=  x.theVector_[i] ) return false;
-  return true;
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -115,9 +77,7 @@ TVector<double>::operator > ( TVector<double> const& x ) const
 template<>
 double TVector<double>::Norm () const
 {
-
   return std::sqrt( (*this) * (*this) );  
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -126,9 +86,7 @@ double TVector<double>::Norm () const
 template<>
 double TVector<std::complex<double> >::Norm () const
 {
-
   return std::sqrt( std::real( (*this) * (*this) ) );  
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
