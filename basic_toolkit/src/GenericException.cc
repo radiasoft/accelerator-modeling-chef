@@ -33,7 +33,7 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-GenericException::GenericException( string fileName, int lineNumber, const char* fcn,  const char* msg )
+GenericException::GenericException( string fileName, int lineNumber, std::string const& fcn,  std:: string const& msg )
  : lineno_(lineNumber)
 {
   ostringstream uic;
@@ -44,14 +44,6 @@ GenericException::GenericException( string fileName, int lineNumber, const char*
       << "\n*** ERROR *** ";
   errorString = uic.str();
 
-  static bool firstTime = true;
-  if( firstTime ) {
-    cerr << errorString;
-    cerr << "\n*** ERROR *** This message is printed only once."
-            "\n*** ERROR *** "
-         << endl;
-    firstTime = false;
-  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
