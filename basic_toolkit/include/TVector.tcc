@@ -85,17 +85,6 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// #define NOCHECKS
-
-#define CHECKOUT(test,fcn,message)                       \
-  if( test ) {                                           \
-    throw( GenericException( __FILE__, __LINE__, fcn, message ) ); \
-  }
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 // ================================================================
 //      Constructors and the destructor ...
 //
@@ -104,9 +93,6 @@ template<typename T>
 TVector<T>::TVector( int n, T const* x, OutputFormat* fmtPtr )
 : theVector_(n,T()), ofPtr_(fmtPtr)
 {
-
-  CHECKOUT(n <= 0, "TVector<T>::TVector", "Dimension must be positive.")
-
 
   if (!x) return; 
   std::copy(x, x+n, theVector_.begin());   
@@ -146,13 +132,13 @@ TVector<T>::TVector( TMatrix<T> const& x ): ofPtr_(0)
 
   if( x.rows() == 1 ) {
     for (int i=0; i < x.cols(); ++i) { 
-         theVector_.push_back( x(0,i) );
+         theVector_.push_back( x[0][i] );
     }
     return;
   }
  
   for (int i=0; i < x.rows(); ++i) {
-         theVector_.push_back( x(i,0) );
+         theVector_.push_back( x[i][0] );
   }
  
 }
@@ -172,42 +158,6 @@ void TVector<T>::reset()
 template<typename T>
 TVector<T>::TVector::~TVector()
 { }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TVector<T>::Set( const T* x )
-{
-  int n = theVector_.size();
-  
-  std::copy(x, x+n, theVector_.begin() ); 
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-T const& TVector<T>::operator() ( int i ) const
-{
-  if ( ( 0 <= i ) && ( i < Dim() ) ) { return theVector_[i]; }
-  else {
-    throw( GenericException( __FILE__, __LINE__, "T TVector<T>::operator() ( int i ) const", "Index out of range.") );
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-T& TVector<T>::operator() ( int i )
-{
-  if ( ( 0 <= i ) && ( i < Dim() ) ) { return theVector_[i]; }
-  else {
-    throw( GenericException( __FILE__, __LINE__, "T& TVector<T>::operator() ( int i )", "Index out of range.") );
-  }
-}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -345,12 +295,6 @@ TVector<T>& TVector<T>::operator/=( T const& c )
 template<typename T>
 TVector<T> TVector<T>::operator^ ( TVector<T> const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT(( Dim() != 3) || ( x.Dim() != 3 ),
-           "TVector<T>::operator^",
-           "Operator defined only for dimension=3." )
-#endif
-
   TVector<T> z( 3 );
   z.theVector_[ 0 ] = theVector_[ 1 ] * x.theVector_[ 2 ] - theVector_[ 2 ] * x.theVector_[ 1 ];
   z.theVector_[ 1 ] = theVector_[ 2 ] * x.theVector_[ 0 ] - theVector_[ 0 ] * x.theVector_[ 2 ];
@@ -384,13 +328,10 @@ bool TVector<T>::operator!= ( TVector<T> const& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if  0
 template<typename T>
 bool TVector<T>::operator< ( TVector<T> const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT(Dim() != x.Dim(), "TVector<T>::operator<", "Dimensions incompatible.")
-#endif
-
   const_iterator it  =   begin(); 
   const_iterator itx = x.begin(); 
 
@@ -407,9 +348,6 @@ bool TVector<T>::operator< ( TVector<T> const& x ) const
 template<typename T>
 bool TVector<T>::operator<= (  TVector<T> const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT( Dim() != x.Dim(), "TVector<T>::operator<=", "Dimensions incompatible.")
-#endif
 
   const_iterator it  =   begin(); 
   const_iterator itx = x.begin(); 
@@ -426,9 +364,6 @@ bool TVector<T>::operator<= (  TVector<T> const& x ) const
 template<typename T>
 bool TVector<T>::operator>= ( TVector<T> const& x ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT(Dim() != x.Dim(), "TVector<T>::operator>=", "Dimensions incompatible.")
-#endif
 
   const_iterator it  =   begin(); 
   const_iterator itx = x.begin(); 
@@ -440,6 +375,8 @@ bool TVector<T>::operator>= ( TVector<T> const& x ) const
 
 
 }
+
+#endif
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -512,11 +449,6 @@ bool TVector<T>::IsUnit() const
 template<typename T>
 void TVector<T>::Rotate ( TVector& v, double const& theta ) const
 {
-#ifndef NOCHECKS
-  CHECKOUT(( Dim() != 3) || ( v.Dim() != 3 ),
-           "Vector::Rotate",
-           "Dimension must be 3." )
-#endif
 
   TVector<T> e  = Unit();
  
@@ -675,7 +607,5 @@ typename TVector<T>::const_reverse_iterator TVector<T>::rend()  const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#undef CHECKOUT
 
 #endif // TVECTOR_TCC
