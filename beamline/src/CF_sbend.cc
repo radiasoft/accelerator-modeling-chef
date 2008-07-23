@@ -197,7 +197,7 @@ void CF_sbend::peekAt( double& s, Particle const& prt )
       << setw(15) << ident_       
       << setw(15) << Type()      
       << setw(12) << length_      
-      << setw(12) << strength_    
+      << setw(12) << Strength()    
       << setw(12) << getQuadrupole()/length_
       << setw(12) << 2.0*getSextupole()/length_
       << setw(12) << 6.0*getOctupole()/length_
@@ -295,17 +295,17 @@ void CF_sbend::setQuadrupole( double const& pole)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_sbend::setDipoleField( double const& arg_x )
+int CF_sbend::setDipoleField( double const& value)
 {
 
   for ( beamline::iterator it  = bml_->begin(); 
 	                   it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<sbend>(*it) ) { 
-     (*it)->setStrength( arg_x );
+     (*it)->setStrength( value );
     }
   }
 
-  strength_ =  arg_x; 
+  setStrength( value ); 
 
   return 0;
 
@@ -341,9 +341,9 @@ double CF_sbend::getQuadrupole() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const& CF_sbend::getDipoleField() const
+double CF_sbend::getDipoleField() const
 {
-  return strength_;
+  return Strength();
 }
 
 
@@ -406,7 +406,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   a = CFSbendPtr( p_a = new CF_sbend(   ""
                                       , pc*length_
-                                      , strength_
+                                      , Strength()
                                       , pc*angle_
                                       , usFaceAngle_
                                       , 0.0            ));
@@ -415,7 +415,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   
   b = CFSbendPtr( p_b = new CF_sbend(   ""
                                       , (1.0 - pc)*length_
-                                      , strength_
+                                      , Strength()
                                       , (1.0 - pc)*angle_
                                       , 0.0
                                       , dsFaceAngle_       ));

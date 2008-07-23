@@ -237,7 +237,7 @@ double const&  LinacCavity::getPhi()  const
 
 double LinacCavity::getDesignEnergyGain()   const
 {
-  return strength_* cos(phi_s_); 
+  return Strength() * cos(phi_s_); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

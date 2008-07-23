@@ -126,7 +126,7 @@ double const&  LCavityUpstream::getRadialFrequency()  const
 
 double LCavityUpstream::getDesignEnergyGain()   const
 {
-  return strength_* cos(phi_s_); 
+  return Strength()* cos(phi_s_); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -250,7 +250,7 @@ double const&  LCavityDnstream::getRadialFrequency()  const
 
 double LCavityDnstream::getDesignEnergyGain()   const
 {
-  return strength_* cos(phi_s_); 
+  return Strength()* cos(phi_s_); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
