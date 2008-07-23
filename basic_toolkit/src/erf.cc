@@ -59,17 +59,11 @@ std::complex<double>  w( std::complex<double> const& z );
 
 std::complex<double>  erfSeries( const std::complex<double> & z ) 
 {
-  static std::complex<double>  series;
-  static std::complex<double>  oldseries;
-  static std::complex<double>  arg;
-  static double  den;
-  static std::complex<double>  term;
-
-  series        = 1.0;
-  oldseries     = 0.0;
-  arg           = 2.0*z*z;
-  den           = 1.0;
-  term          = 1.0;
+  static std::complex<double> series        = 1.0;
+  static std::complex<double> oldseries     = 0.0;
+  static std::complex<double> arg           = 2.0*z*z;
+  double                      den           = 1.0;
+  std::complex<double>        term          = 1.0;
 
   while( series != oldseries ) {
     oldseries = series;
@@ -90,19 +84,12 @@ std::complex<double>  erf( const std::complex<double> & z )
     return ( 1.0 - std::exp(u*u)*w(u) );
   }
 
-  static std::complex<double>  series;
-  static std::complex<double>  oldseries;
-  static std::complex<double>  arg;
-  static std::complex<double>  term;
-  static double  den;
-  static double  fctr_x;
-
-  series        = 1.0;
-  oldseries     = 0.0;
-  arg           = - z*z;
-  den           = 1.0;
-  term          = 1.0;
-  fctr_x        = 0.0;
+  std::complex<double>  series        = 1.0;
+  std::complex<double>  oldseries     = 0.0;
+  std::complex<double>  arg           = - z*z;
+  double                den           = 1.0;
+  std::complex<double>  term          = 1.0;
+  double                fctr_x        = 0.0;
 
   while( series != oldseries ) {
     oldseries = series;
@@ -128,32 +115,34 @@ std::complex<double>  erfc( const std::complex<double> & z )
 std::complex<double>  w( std::complex<double> const& z ) 
 {
   static const std::complex<double>  mi( 0., -1. );
-  static double x;
-  static double y;
   
-  x = real(z);
-  y = imag(z);
+  double x = real(z);
+  double y = imag(z);
 
-  if( y < 0.0 )
-    return 2.0*std::exp( -z*z ) - w( -z );
+  if( y < 0.0 ) return 2.0*std::exp( -z*z ) - w( -z );
 
-  if( x < 0.0 ) 
-    return conj( w( std::complex<double> ( - x, y ) ) );
+  if( x < 0.0 ) return conj( w( std::complex<double> ( - x, y ) ) );
 
-  if( ( x > 6.0 ) || ( y > 6.0 ) ) 
+  if( ( x > 6.0 ) || ( y > 6.0 ) ) {
+
+    std::complex<double> z2 = z*z;
+
     return ( - mi * z * (
-                        ( 0.5124242  /( z*z - 0.2752551 )) + 
-                        ( 0.05176536 /( z*z - 2.724745  ))
+                        ( 0.5124242  /( z2 - 0.2752551 )) + 
+                        ( 0.05176536 /( z2 - 2.724745  ))
                         ) 
            );
+  }
 
-  if( ( x > 3.9 ) || ( y > 3.0 ) ) 
+  if( ( x > 3.9 ) || ( y > 3.0 ) ) {
+    std::complex<double> z2 = z*z;
     return ( - mi * z * (
-                        ( 0.4613135   /( z*z - 0.1901635 )) + 
-                        ( 0.09999216  /( z*z - 1.7844927 )) + 
-                        ( 0.002883894 /( z*z - 5.5253437 ))
+                        ( 0.4613135   /( z2 - 0.1901635 )) + 
+                        ( 0.09999216  /( z2 - 1.7844927 )) + 
+                        ( 0.002883894 /( z2 - 5.5253437 ))
                         ) 
            );
+  }
 
   return std::exp( -z*z )*( 1.0 - erf( mi*z ) );
 
