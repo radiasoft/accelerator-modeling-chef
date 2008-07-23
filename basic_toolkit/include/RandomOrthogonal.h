@@ -52,8 +52,11 @@
 class DLLEXPORT RandomOrthogonal
 {
   public: 
+ 
     RandomOrthogonal( int /* dimension */ );
-    ~RandomOrthogonal();
+   ~RandomOrthogonal();
+
+    RandomOrthogonal( RandomOrthogonal const& o);
 
     void omitIndex( int );  
     void omitIndex( int, int );  
@@ -70,12 +73,12 @@ class DLLEXPORT RandomOrthogonal
     MatrixD build();
     
   private:
-    int      _dim;
-    int      _passes;
-    bool**   _omitted;        // owned
-    double** _lowerTheta;     // owned
-    double** _upperTheta;     // owned
-    double** _rangeTheta;     // owned
+    int      dim_;
+    int      passes_;
+    bool**   omitted_;        // owned
+    double** lowerTheta_;     // owned
+    double** upperTheta_;     // owned
+    double** rangeTheta_;     // owned
 };
 
 
