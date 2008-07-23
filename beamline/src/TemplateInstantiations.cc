@@ -159,7 +159,8 @@ template   LengthMore *       boost::addressof(        LengthMore& );
 template StrengthMore *       boost::addressof(      StrengthMore& );
 template StrengthLess *       boost::addressof(      StrengthLess& );
 
-template LattRing boost::any_cast<LattRing>(boost::any&);
+template LattRing  boost::any_cast<LattRing>(boost::any&);
+template LattRing* boost::any_cast<LattRing>(boost::any*);
 
 template std::ostream& boost::operator<< (std::ostream&, boost::shared_ptr<beamline> const&);
 
@@ -345,7 +346,12 @@ template std::vector<boost::shared_ptr<rfcavity> >::iterator
 
 
 
-template LattRing* boost::any_cast<LattRing>(boost::any*);
+
+//template double   boost::any_cast<double>(boost::any const&);
+
+template boost::any::any( double const& );
+template double   boost::any_cast<double>( boost::any& );
+
 
 // for PropagatorFactory
 
@@ -359,5 +365,43 @@ std::map<int, jetparticle_propagator_t> jetparticle_propagators_map_;
 
 template class boost::function2<void,bmlnElmnt&, Particle& >;
 template class boost::function2<void,bmlnElmnt&, JetParticle& >;
+
+//------------------------------------------------------
+// iterators 
+//------------------------------------------------------
+ 
+template       class       beamline::iter<ElmPtr>;     
+template       class       beamline::iter<ElmPtr const>;     
+   
+
+template       class       beamline::reverse_iter<ElmPtr>;     
+template       class       beamline::reverse_iter<ElmPtr const>;     
+
+template       class       beamline::pre_order_iter<ElmPtr>;     
+template       class       beamline::pre_order_iter<ElmPtr const>;     
+
+template       class       beamline::reverse_pre_order_iter<ElmPtr>;
+template       class       beamline::reverse_pre_order_iter<ElmPtr const>;
+
+
+template       class       beamline::post_order_iter<ElmPtr>;     
+template       class       beamline::post_order_iter<ElmPtr const>;     
+
+
+template       class       beamline::reverse_post_order_iter<ElmPtr>;
+template       class       beamline::reverse_post_order_iter<ElmPtr const>;
+
+
+template       class       beamline::deep_iter<ElmPtr>;
+template       class       beamline::deep_iter<ElmPtr const>;
+
+
+template       class       beamline::reverse_deep_iter<ElmPtr>;
+template       class       beamline::reverse_deep_iter<ElmPtr const>;
+
+template class boost::function1<double, TVector<double> const&,          std::allocator<void> >;
+template class boost::function1<TVector<double>, TVector<double> const&, std::allocator<void> >;
+template class boost::function1<Matrix, TVector<double> const&,          std::allocator<void> >;
+
 
 #endif //BEAMLINE_EXPLICIT_TEMPLATES
