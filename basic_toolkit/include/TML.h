@@ -54,6 +54,7 @@
 #define TML_H
 
 #include <iostream>
+#include <functional>
 #include <complex>
 #include <cmath>
 
@@ -170,21 +171,9 @@ public:
   typedef  typename TMLTraits<T>::norm_return_type norm_return_type;
   typedef  typename TMLTraits<T>::norm_arg_type       norm_arg_type;
 
- private:
-
-  T** mdata_;      // row ptr array to access matrix data
-  T*  data_;       // matrix raw data
-  int nrows_;      // number of rows
-  int ncols_;      // number of columns
-
-  void       copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
-
-  static double tiny_;     // pivot threshold
-
-  static  abs_return_type   abs(abs_arg_type const&); 
-  static norm_return_type norm(norm_arg_type const&); 
-
- public:
+  struct abs_less : public std::binary_function<bool, T const&, T const&>  {
+    bool operator()( T const& lhs, T const& rhs ) const { return std::abs(lhs) < std::abs(rhs); } 
+  };
 
   // Constructors and destructors_____________________________________
 
@@ -195,7 +184,6 @@ public:
   template <typename U>
   TML(TML<U> const&);
 
-  explicit TML(const char*, int);
   explicit TML(int rows, int columns,        T  initval = T());
   explicit TML(int rows, int columns,  const T* initval);
 
@@ -225,11 +213,9 @@ public:
   MLPtr<T> dagger()    const; 
   MLPtr<T> inverse()   const;
  
-  MLPtr<std::complex<double> > eigenValues()     const; 
-  MLPtr<std::complex<double> > eigenVectors()    const; 
+  TVector<std::complex<double> > eigenValues()     const; 
+  MLPtr<std::complex<double> >   eigenVectors()    const; 
   
-  static void orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
- 
   static void                            GaussJordan( TML<T>& a, TML<T>&     b);
   static void                            GaussJordan( TML<T>& a, TVector<T>& b);
 
@@ -237,9 +223,9 @@ public:
   static TVector<T>       backSubstitute( MLPtr<T> const& U, Vector const& W, MLPtr<T> const & V, 
                                           TVector<T> const& rhs, double threshold);  
 
-  T      determinant() const; 
-  T      trace() const; 
-  bool   isOrthogonal() const;
+  T      determinant()  const; 
+  T      trace()        const; 
+  double maxNorm()      const;
 
   T& operator()(int const& i, int const& j);  
   T  operator()(int const& i, int const& j) const; 
@@ -337,6 +323,21 @@ public:
     int r, c;
   };
 
+ private:
+
+  T** mdata_;      // row ptr array to access matrix data
+  T*  data_;       // matrix raw data
+  int nrows_;      // number of rows
+  int ncols_;      // number of columns
+
+  void       copy_column(MLPtr<T> const& mm, int from_col, int to_col); 
+
+  static double tiny_;     // pivot threshold
+
+  static  abs_return_type   abs(abs_arg_type const&); 
+  static norm_return_type norm(norm_arg_type const&); 
+
+
 };
 
 //----------------------------------------------------------------------------------------
@@ -353,16 +354,11 @@ TML<std::complex<double> >::TML(const TML<double>&);
 template<> MLPtr<double>                 TML<double>::dagger()                      const;     
 template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::dagger()       const; 
 
-template<> MLPtr<std::complex<double> >  TML<double>::eigenValues()                 const;  
-template<> MLPtr<std::complex<double> >  TML<double>::eigenVectors()                const; 
+template<> TVector<std::complex<double> >  TML<double>::eigenValues()                 const;  
+template<>   MLPtr<std::complex<double> >  TML<double>::eigenVectors()                const; 
 
-template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::eigenValues()  const;
-template<> MLPtr<std::complex<double> >  TML<std::complex<double> >::eigenVectors() const;
-
-template<>
-void TML<double>::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors);  // undefined !
-template<>
-void TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigenvalues,   MLPtr<std::complex<double> >& eigenvectors); 
+template<> TVector<std::complex<double> >  TML<std::complex<double> >::eigenValues()  const;
+template<> MLPtr<std::complex<double> >    TML<std::complex<double> >::eigenVectors() const;
 
 template<> void TML<double>::SVD (MLPtr<double>& U, Vector& W, MLPtr<double>& V ) const;   
 
