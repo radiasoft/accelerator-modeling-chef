@@ -143,8 +143,8 @@ protected:
   // ctors
 
 
-  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& energyGeV );                
-  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& energyGeV,  Mapping const&  state );
+  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& momentum);                
+  JetParticle( double const&  massGeV_c2,  double const& charge, double  const& momentum,  Mapping const&  state );
 
 public:
 
@@ -205,13 +205,8 @@ public:
 
 
 
-  static void createStandardEnvironments( int order = 1 );
+  //static void createStandardEnvironments( int order = 1 );
 
-  MatrixD SymplecticTest();  // Tests the state for the
-                             // symplectic condition, 1 = - MJM^t; 
-                             // returns unit matrix if all is well.
-                             // Note: this assumes a 6x6 state: 
-                             // ( x, y, cdt; px/p, py/p, dp/p )
 
   Jet           Energy()               const;
   Jet           KineticEnergy()        const;
