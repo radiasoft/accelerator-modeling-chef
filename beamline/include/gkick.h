@@ -74,7 +74,6 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void   setStrength( double const& );
 
   void    set_dx( double const& );
   void   set_dxp( double const& );
