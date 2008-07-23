@@ -91,58 +91,6 @@ TML<T>::TML()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TML<T>::TML(const char* flag, int dimension )
- : nrows_(dimension), ncols_(dimension)
-{
-
-  if( ( (dimension%2) != 0) &&
-      (flag[0] == 'J') ) {
-    throw( GenericMatrixException( dimension, dimension
-                     , "TML<T>::TML<T>(const char* flag, int dimension)"
-                     , "Dimension must be even for J matrix") );
-  }
-
-  mdata_ = new T* [nrows_];
-
-  int sz = nrows_*ncols_;
-
-  T* dataPtr = data_ = new T [ sz ];
-
-  for( int i=0; i<nrows_; ++i ) { 
-    mdata_[i] = dataPtr;
-    dataPtr  += ncols_;
-  }
-
-   // reset dataPtr
-
-   dataPtr = data_;
- 
-   for( int i=0;  i<sz;  ++i) {
-      (*dataPtr) = T(); 
-      ++dataPtr; 
-   }
-
-
-  if (flag[0]  == 'I') {
-    for ( int i=0; i<dimension; ++i) {
-       mdata_[i][i] = T(1.0); 
-    }
-  } else if (flag[0] == 'J') {
-    for (int i= dimension/2; i< dimension; ++i) {
-      mdata_[i-dimension/2][i] = T(1.0); 
-      mdata_[i][i-dimension/2] = T(-1.0);
-    }
-  } else {
-      throw( GenericMatrixException( dimension, dimension
-                     , "TML<T>::TML<T>(const char* flag, int dimension)"
-                     , (std::string("Unknown flag: ")+flag).c_str() ));
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 TML<T>::TML(int rows, int columns, T initval)
  : nrows_(rows), ncols_(columns)
 {
@@ -303,38 +251,12 @@ T TML<T>::trace() const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-bool TML<T>::isOrthogonal() const
+double TML<T>::maxNorm() const 
 {
- if( nrows_ != ncols_ ) { return false; }
-
-  MLPtr<T> self( new TML<T>(*this) ); // deepcopy  
-
-  MLPtr<T> W( multiply<T>( self, self->transpose() ));
-
-  int n = nrows_;
-
-  for( int i=0; i<n; ++i ) {
-    for( int j=0; j<n; ++j ) {
-      if( i != j ) { if( 1.0e-12 < norm( (*W)(i,j) ) )       { return false; } }
-      else         { if( 1.0e-12 < norm( (*W)(i,j) - 1.0 ) ) { return false; } }
-    }
-  }
-
-  W = multiply<T>( self->transpose(),  self);
-
-  for( int i=0; i<n; ++i ) {
-    for( int j = 0; j<n; ++j ) {
-      if( i != j ) { if( 1.0e-12 < norm( (*W)(i,j) ) )       { return false; } }
-      else         { if( 1.0e-12 < norm( (*W)(i,j) - 1.0 ) ) { return false; } }
-    }
-  }
-
-  return true;
+  return std::abs( *( std::max_element( data_, data_+(nrows_*ncols_), typename TML<T>::abs_less() )) ); 
 }
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<typename T>
 T TML<T>::determinant() const
@@ -383,12 +305,16 @@ MLPtr<T> TML<T>::inverse() const
     throw( NotSquare( nrows_, ncols_, "TML<T>::inverse()" )  );
   }
   else {
-    MLPtr<T> Y( new TML<T>("I",nrows_) );            // create an identity TMatrix<T>
-    int* indx = new int[ncols_];                     // create the "index vector"
+    MLPtr<T> Y( new TML<T>(nrows_, nrows_, T() ));   // create an identity matrix
+    for (int i=0; i< nrows_; ++i) (*Y)(i,i) = T(1.0);
+
+    int indx[ncols_];                                // create the "index vector"
     MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );  // see Press & Flannery
 
     // perform the decomposition once:
+
     int d;
+
     MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
     try {
       decomp = lu_decompose(indx,d);
@@ -410,22 +336,20 @@ MLPtr<T> TML<T>::inverse() const
       (*FNAL::pcerr) << uic.str() << endl;
 
       for(int i=0; i<nrows_ ; ++i) {
-        for(int j=0; j<ncols_ ; ++i) {
+        for(int j=0; j<ncols_ ; ++j) {
           Y->mdata_[i][j] = 0.0;
         }
       }      
-      delete []indx;
       return Y;
     }
 
     // Finish calculating the inverse
-    for(int col = 0; col < ncols_; ++col){
+    for(int col= 0; col< ncols_; ++col){
       B->copy_column(Y,col,0);
       decomp->lu_back_subst(indx,B);
       Y->copy_column(B,0,col);
     }
 
-    delete []indx;
     return Y;
   }
 }
@@ -537,9 +461,9 @@ template<typename T>
 std::ostream& operator<<( std::ostream& os, const TML<T>& x)
 {
 
-  for(int i=0; i< x.nrows_; i++) {
+  for(int i=0; i< x.nrows_; ++i) {
     os << "( ";
-    for(int j=0; j< x.ncols_; j++) {
+    for(int j=0; j< x.ncols_; ++j) {
       os  << x.mdata_[i][j] << ", ";
     }
     os << " )\n";
@@ -708,7 +632,7 @@ MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector mult
   for( int row=0; row< x->nrows_; ++row) {
       sum = T();
       for(int i=0; i<x->ncols_; ++i) {
-        sum += x->mdata_[row][i] * y(i);
+        sum += x->mdata_[row][i] * y[i];
       }
       z->mdata_[row][0] = sum;
   }
@@ -814,11 +738,12 @@ template<typename T>
 void TML<T>::switch_columns(int col1, int col2) 
 {
   
-  MLPtr<T> temp( new TML<T>(nrows_, 1, T()) );
+  std::vector<T> tmp_col;
+
+  // temporarily store col1:
 
   for(int row=0; row< nrows_; ++row) {
-    // temporarily store col 1:
-    temp->mdata_[row][0] = mdata_[row][col1];
+    tmp_col.push_back ( mdata_[row][col1] );
   }
 
   for(int row=0; row< nrows_; ++row) {
@@ -826,8 +751,9 @@ void TML<T>::switch_columns(int col1, int col2)
   }
 
   for(int row=0;  row< nrows_; ++row) {
-    mdata_[row][col2] = temp->mdata_[row][0]; // move temp to col2
+    mdata_[row][col2] = tmp_col[row];          // move temp to col2
  }
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -837,6 +763,13 @@ void TML<T>::switch_columns(int col1, int col2)
 template<typename T>
 void TML<T>::switch_rows(int row1, int row2) 
 {
+
+  // mdata_ is an array of **T;  data is stored row-wise.
+
+  std::swap( mdata_[row1], mdata_[row2] ); 
+
+#if 0 
+
   MLPtr<T> temp( new TML<T>(1,ncols_, T()) );
 
   for(int col=0; col < ncols_; ++col) {
@@ -851,6 +784,8 @@ void TML<T>::switch_rows(int row1, int row2)
   for(int col=0; col < ncols_; ++col) {
     mdata_[row2][col] = temp->mdata_[0][col]; // move temp to row2
   }
+#endif
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
