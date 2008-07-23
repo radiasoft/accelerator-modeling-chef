@@ -32,13 +32,14 @@
 #ifndef LATTICEFUNCTIONS_H
 #define LATTICEFUNCTIONS_H
 
-#include <boost/variant.hpp>
+#include <basic_toolkit/TVector.h>
 
- struct Tunes {
+
+struct Tunes {
     double hor;
     double ver;
     double lng;
- };
+};
 
 struct LattRing  {
   struct {
@@ -52,7 +53,8 @@ struct LattRing  {
 
 } ;
 
-struct closed_orbit_t {
+struct reference_orbit_t {
+
    double x;
    double xp;
    double y;
@@ -60,17 +62,31 @@ struct closed_orbit_t {
 };
 
 struct dispersion_t {
-    double x;
-    double xp;
-    double y;
-    double yp;
+  
+  // the dispersion is stored in a vector of dimension 6 for compatibility with 6D transfer matrices
+
+  dispersion_t( );
+  dispersion_t( dispersion_t const& o );
+  dispersion_t& operator=( dispersion_t const& rhs );
+  
+  TVector<double> eta;
+
+  double& x;
+  double& xp;
+  double& y;
+  double& yp;
 };
  
+//------------------------------------------------------
+// Standard, uncoupled Courant-Snyder Lattice functions 
+//------------------------------------------------------
+
 struct CSLattFuncs {
 
   double arcLength;
 
-  closed_orbit_t closed_orbit;
+  reference_orbit_t reference_orbit;
+
   dispersion_t   dispersion;
 
   struct beta_t {
@@ -89,11 +105,65 @@ struct CSLattFuncs {
 }; // Courant-Snyder
 
 
+//------------------------------------------------------
+//  Generalized (4D) Courant-Snyder Lattice functions 
+//------------------------------------------------------
+//
+//  beta_1x = mode1.beta.hor
+//  beta_1y = mode1.beta.ver
+
+//  beta_2x = mode2.beta.hor
+//  beta_2y = mode2.beta.ver
+
+// etc ....
+
+struct CSLattFuncs4D{
+
+  CSLattFuncs4D() {}
+
+  explicit   CSLattFuncs4D( CSLattFuncs const& o);
+
+  double arcLength;
+
+  reference_orbit_t reference_orbit;
+
+  dispersion_t   dispersion;
+  
+  struct beta_t { 
+     double hor;
+     double ver;
+  };
+
+  struct alpha_t { 
+     double hor;
+     double ver;
+  };
+
+  struct mode_t {
+     beta_t  beta; 
+     alpha_t alpha; 
+     double  psi;
+  };
+
+
+  mode_t mode1;
+  mode_t mode2;
+
+}; 
+
+//------------------------------------------------------
+//  Edwards-Teng (4D) Lattice Functions 
+//------------------------------------------------------
+
 struct ETLattFuncs{
+
+  ETLattFuncs() {} 
+
+  explicit ETLattFuncs( CSLattFuncs const& lf); 
 
   double         arcLength;
 
-  closed_orbit_t closed_orbit;
+  reference_orbit_t reference_orbit;
   dispersion_t   dispersion;
 
   struct  beta_t {
@@ -114,11 +184,20 @@ struct ETLattFuncs{
 }; // Edwards-Teng
 
 
+//------------------------------------------------------
+//  Covariance  
+//------------------------------------------------------
+
 struct CVLattFuncs {
+
+  CVLattFuncs() {} 
+
+  explicit CVLattFuncs( CSLattFuncs const& lf); 
 
   double arcLength;
 
-  closed_orbit_t closed_orbit;
+  reference_orbit_t reference_orbit;
+
   dispersion_t   dispersion;
 
   struct beta_t {
@@ -139,35 +218,5 @@ struct CVLattFuncs {
 };  // covariance
 
 
-struct EMLattFuncs {
-
-  double arcLength;
-
-  closed_orbit_t closed_orbit;
-  dispersion_t   dispersion;
-
-  double beta1x; 
-  double beta1y; 
-  double alpha1x; 
-  double alpha1y; 
-  double psi1;
-  double beta2x; 
-  double beta2y; 
-  double alpha2x; 
-  double alpha2y; 
-  double psi2;
-
-
-};  // eigenmodes
-
-
-typedef boost::variant<CSLattFuncs, ETLattFuncs, EMLattFuncs, CVLattFuncs>  LattFuncs;
-
-
-#if 0
-std::ostream& operator<<(std::ostream&, LattRing const&);
-std::ostream& operator<<(std::ostream&, LattFunc const&);
-std::istream& operator>>(std::istream&, LattFunc&);
-#endif
 
 #endif // LATTICEFUNCTIONS_H
