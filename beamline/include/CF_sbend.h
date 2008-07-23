@@ -161,7 +161,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   //       .getSextupole()  returns B''l/2
   //       .getOctupole()   returns B'''l/6
 
-  double const& getDipoleField() const;
+  double getDipoleField() const;
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
