@@ -94,7 +94,7 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
       p_(momentum ), 
   gamma_(ReferenceEnergy()/m_), 
    beta_( sqrt( 1.0 - 1.0 / (gamma_*gamma_)) ), 
-   bRho_(  p_/ ( (q_/PH_MKS_e)* PH_CNV_brho_to_p) ), 
+   bRho_(  p_/ ( q_/PH_MKS_e* PH_CNV_brho_to_p ) ), 
   state_(PSD)
 
 
@@ -122,7 +122,7 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
       p_( momentum ), 
   gamma_( ReferenceEnergy()/m_ ), 
    beta_( sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) )), 
-   bRho_( p_ / ( (q_/PH_MKS_e) * PH_CNV_brho_to_p )), 
+   bRho_( p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p )), 
   state_(PSD)
 
 {
@@ -212,9 +212,9 @@ void Particle::SetReferenceEnergy( double const& energy )
          uic.str().c_str() ) );
   }
 
- p_     = sqrt( ReferenceEnergy()*ReferenceEnergy() - m_*m_ );
- bRho_  = p_ / ( (q_/PH_MKS_e)* PH_CNV_brho_to_p );
- gamma_ = ReferenceEnergy() / m_;
+ p_     = sqrt( energy*energy- m_*m_ );
+ bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
+ gamma_ = energy / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
 
@@ -225,7 +225,7 @@ void Particle::SetReferenceMomentum( double const& p )
 {
 
  p_     = p;
- bRho_  = p_ / ( (q_/PH_MKS_e) * PH_CNV_brho_to_p );
+ bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
  gamma_ = ReferenceEnergy() / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
@@ -527,15 +527,15 @@ Positron::Positron()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Positron::Positron( double const& W ) 
- : Particle( PH_NORM_me,  PH_MKS_e, W )
+Positron::Positron( double const& momentum ) 
+ : Particle( PH_NORM_me,  PH_MKS_e, momentum )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Positron::Positron( double const& W, Vector const& s ) 
-: Particle( PH_NORM_me,  PH_MKS_e, W, s )
+Positron::Positron( double const& momentum, Vector const& s ) 
+: Particle( PH_NORM_me,  PH_MKS_e, momentum, s )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
