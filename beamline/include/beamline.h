@@ -29,13 +29,13 @@
 ******  October 2006  ostiguy@fnal.gov
 ******  - beamline no longer inherits from c-style void*  dlist container
 ******  - element container is now a private  nested std::list<> member
-******  - implemented new STL compatible iterators 
+******  - implemented new STL compatible iterators: 
 ******    iterator, pre_order_iterator. post_order_iterator, deep_iterator 
 ******    as well as const and reverse variants of the above
 ******  Jan - Mar 2007 ostiguy@fnal.gov
 ******  - support for reference counted elements
 ******  Jul 2007         ostiguy@fnal.gov
-******  - eliminated nested functor predicate and action classes  
+******  - eliminated nested functor predicates and action classes  
 ******  Dec 2007         ostiguy@fnal.gov
 ******  - support for JetParticle bunch
 ******  Mar 2008        ostiguy@fnal.gov
@@ -49,6 +49,7 @@
 ******  - propagator moved (back) to base class
 ******  - no assumption about internal structure
 ******  - localPropagate/Propagate now const-correct
+
 **************************************************************************
 *************************************************************************/
 
@@ -75,12 +76,15 @@ class ConstBmlVisitor;
 
 class beamline: public bmlnElmnt {
 
- public:
+private:
 
-  struct Node;
+    template<typename U, int Dummy>
+    struct iter_traits{ };
 
 public:
 
+   struct Node;
+ 
    enum LineMode { line, ring, unknown };
 
    template<typename held_type>
@@ -173,14 +177,11 @@ public:
 
    beamline*  reverse() const;                
 
-   void InsertElementAt( double const& s_0, double const& s,  ElmPtr q );                 // NOT IMPLEMENTED !!!!
-                                       // Will insert q into the beamline at
-                                       // OrbitLength s, assuming the beamline
-                                       // begins at OrbitLength s_0.  Normally
-                                       // will be invoked by a user program using
-                                       // s_0 = 0, but s_0 is included so the
-                                       // module can be used recursively.
 
+   // std::pair<iterator,double> insertAt( iterator const& pos, double const& ds, ElmPtr elm );  
+
+
+   void InsertElementAt( double const& s_0, double const& s,  ElmPtr q ); 
    void InsertElementsFromList(                  double& s, std::list<std::pair<ElmPtr,double> >& inList );
    void InsertElementsFromList( Particle const&, double& s, std::list<std::pair<ElmPtr,double> >& inList );
                                        // Both methods insert elements from the list into
@@ -189,6 +190,7 @@ public:
                                        // from using bmlnElmmnt::OrbitLength(Particle const&)
                                        // rather than  bmlnElmnt::Length() in the second form
                                        // when distributing the elements.
+
 
   int startAt( ConstElmPtr const&,      // Resets the "beginning" of the
                int = 1 );               // beamline to the element given
@@ -292,9 +294,66 @@ public:
 
   public:
 
+    const_iterator begin() const;                           
+          iterator       begin();                                 
+         
 
-#include <beamline/beamline_iterators.h> 
+    const_iterator end()   const;                           
+          iterator end();                                         
 
+
+    const_reverse_iterator rbegin() const;                  
+          reverse_iterator rbegin();                              
+
+
+    const_reverse_iterator rend()   const;                  
+          reverse_iterator       rend();                          
+
+
+    const_pre_order_iterator pre_begin() const;             
+          pre_order_iterator       pre_begin();                   
+
+
+    const_pre_order_iterator pre_end() const;               
+          pre_order_iterator       pre_end();                
+
+
+    const_reverse_pre_order_iterator rpre_begin()  const;   
+          reverse_pre_order_iterator       rpre_begin();          
+
+
+    const_reverse_pre_order_iterator rpre_end() const;      
+          reverse_pre_order_iterator       rpre_end();            
+
+
+    const_post_order_iterator post_begin() const;           
+          post_order_iterator post_begin();                 
+
+
+    const_post_order_iterator post_end()  const;            
+          post_order_iterator post_end();                         
+
+
+    const_reverse_post_order_iterator rpost_begin() const;  
+          reverse_post_order_iterator rpost_begin();              
+
+
+    const_reverse_post_order_iterator rpost_end() const;    
+          reverse_post_order_iterator rpost_end();                
+
+
+    const_deep_iterator deep_begin() const;                 
+          deep_iterator       deep_begin();                       
+
+    const_deep_iterator deep_end() const;                   
+          deep_iterator deep_end();                               
+
+    const_reverse_deep_iterator rdeep_begin() const;        
+          reverse_deep_iterator rdeep_begin();                    
+
+
+    const_reverse_deep_iterator rdeep_end() const;          
+          reverse_deep_iterator rdeep_end();                      
 
 private:
 
@@ -310,4 +369,10 @@ private:
   std::list<ElmPtr>       theList_; 
 
 }; 
+
+
+#include <beamline/beamline_iterators.h> 
+
+
+
 #endif // BEAMLINE_H
