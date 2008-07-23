@@ -7,8 +7,19 @@
 ******                                    
 ******  File:      Distribution.cc
 ******                                                                
-******  Copyright (c) 1990 Universities Research Association, Inc.    
-******                All Rights Reserved                             
+******  Copyright (c) Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
+******
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
@@ -20,9 +31,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -103,9 +111,9 @@ MultiGaussian::MultiGaussian( const Vector& average,
   _covariance( average.Dim(), average.Dim() ),
   _R( average.Dim(), average.Dim() )
 {
-  int i;
+
   int n = average.Dim();
-  for( i = 0; i < n; i++ ) { _covariance(i,i) = deviation(i)*deviation(i); }
+  for( int i=0; i<n; ++i) { _covariance[i][i] = deviation[i]*deviation[i]; }
   RandomOrthogonal generator( n );
   _R = generator.build();
   _covariance = _R * _covariance * _R.transpose();
@@ -127,7 +135,7 @@ void MultiGaussian::setSigma( const Vector& s )
   }
  
   for( int i = 0; i < s.Dim(); i++ ) {
-    if( s(i) >= 0.0 ) { _sigma(i) = s(i); }
+    if( s[i] >= 0.0 ) { _sigma[i] = s[i]; }
   }
 }
 
@@ -169,7 +177,7 @@ Vector MultiGaussian::getValue() const
     } while (r >= 1.0);
     factor = sqrt(-2.0*log(r)/r);
     w = random2 * factor;
-    ret(i) = w*_sigma(i);
+    ret[i] = w*_sigma[i];
   }
 
   ret = _mean + _R*ret;
