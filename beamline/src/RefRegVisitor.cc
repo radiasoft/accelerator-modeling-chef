@@ -179,8 +179,8 @@ void RefRegVisitor::visit( beamline& x )
         double momentum = particle_.ReferenceMomentum();
        
         if(   (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) && ( !getInnerFlag())  )  { 
-             (*it)->setStrength( ((*it)->Strength())*(momentum/initialMomentum_) );
-        }
+             (*it)->setStrengthScale( momentum/initialMomentum_ );
+	}
 
         (*it)->accept(*this);
 
