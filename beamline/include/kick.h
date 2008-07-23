@@ -146,8 +146,8 @@ public:
   void accept(BmlVisitor& v);
   void accept(ConstBmlVisitor& v) const;
 
-  double const& getHorStrength() const;
-  double        getVerStrength() const;
+  double  getHorStrength() const;
+  double  getVerStrength() const;
 
   void setHorStrength( double const& value);  
   void setVerStrength( double const& value);   
