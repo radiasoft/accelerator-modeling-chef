@@ -294,6 +294,7 @@ public:
 
   void    setLength   ( double const& );
   void    setStrength ( double const& );
+  void    setStrengthScale( double const&);
 
           void setAperture   ( Aperture* );
           void rename        ( std::string const& name );  
@@ -311,7 +312,8 @@ public:
   Aperture*            getAperture();           // returns a clone of the aperture class
   bool                 hasAperture()            const  { return  pAperture_; }
 
-  double               Strength()               const  { return strength_;   }
+  double               Strength()               const;
+  double               strengthScale()          const;
   double               Length()                 const;
 
 
@@ -333,11 +335,15 @@ public:
                                    // Will be different from "length"
                                    // for rbends.
 
+private:
+
+  double                            strength_;           // Interpretation depends on object.
+  double                            pscale_;             // momentum scaling factor ( for a linac, pscale_ != 1.0 )     
+
 protected:
 
-  std::string                       ident_;            // Name identifier of the element.
-  double                            length_;           // Length of object [ meters ]
-  double                            strength_;         // Interpretation depends on object.
+  std::string                       ident_;              // Name identifier of the element.
+  double                            length_;             // Length of object [ meters ]
   
   alignment*                        align_;
   PinnedFrameSet                    pinnedFrames_;
