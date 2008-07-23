@@ -52,8 +52,8 @@
 #include <numeric>
 #include <functional>
 #include <algorithm>
+#include <list>
 
-#include <basic_toolkit/complexAddon.h>
 #include <basic_toolkit/TMatrix.h>
 #include <basic_toolkit/MathConstants.h>
 #ifdef WIN32
@@ -457,8 +457,13 @@ FFTFunctor<std::complex<double>, std::complex<double>, fft_forward> const* boost
 template 
 FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const& );
 
+template
+FFTFunctor<std::complex<double>, double, (transform_type)1> const* 
+boost::addressof(FFTFunctor<std::complex<double>, double, (transform_type)1> const&);
 
-
+template
+FFTFunctor<double, std::complex<double>, (transform_type)-1> const* 
+boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> const&);
 
 
 template class ConvolutionFunctor<double>;
@@ -466,6 +471,15 @@ template class ConvolutionFunctor<std::complex<double> >;
 
 template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
+
+
+
+// ----------------------------------------------------------------------------
+// Misc Instantiations related to STL
+// ----------------------------------------------------------------------------
+
+template class
+std::list<int>;
 
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
