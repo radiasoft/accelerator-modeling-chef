@@ -88,9 +88,9 @@ public:
 
   void setSeptum( double const& x); 
   void setBeamline( BmlPtr& b); 
-  void setRefState( const double* s);
 
-  void getRefState( double* );
+  void                       setRefState( std::vector<double> const& );
+  std::vector<double> const& getRefState() const;
   
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
