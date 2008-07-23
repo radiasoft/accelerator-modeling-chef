@@ -57,10 +57,15 @@
 #include <complex>
 #include <basic_toolkit/TML.h>
 
-template <typename T> class TVector; 
-template <typename T> class TMatrix; 
 
-// Friend functions
+template <typename T>
+class TMatrix;
+
+template <typename T>
+class TVector;
+
+void orderColumns( TVector<std::complex<double> >& eigenvalues,   
+                   TMatrix<std::complex<double> >& eigenvectors ); 
 
 TMatrix<double> real( TMatrix<std::complex<double> > const& x );
 TMatrix<double> imag( TMatrix<std::complex<double> > const& x );
@@ -97,10 +102,13 @@ template<typename T> bool operator!=( TMatrix<T> const&, TMatrix<T> const& );
 template<typename T> bool operator!=( TMatrix<T> const&, T          const& );
 template<typename T> bool operator!=( T          const&, TMatrix<T> const& );
 
+
 template<typename T>
 class DLLEXPORT TMatrix {
 
 public:
+
+  enum ordering_t { j_ordering=0, s_ordering=1 };
 
   template<typename U>
   friend class TMatrix;
@@ -122,27 +130,13 @@ public:
   };
 
 
-protected:
-
-  MLPtr<T>       ml_;
-
-
- private:
-
-  void       copy_column(TMatrix&  x, int, int );   // used by the eigenroutines.
-
-
  public:
 
-  // Constructors and destructors_____________________________________
-
   TMatrix();
-  TMatrix(int);
+  explicit TMatrix(int);
   TMatrix(int rows, int columns);
   TMatrix(int rows, int columns, T  initval);
   TMatrix(int rows, int columns, T* initval);
-  TMatrix(const char* flag, int dimension); // create an identity matrix
-                                           // or a symplectic matrix
 
   template<typename U>
   TMatrix(TMatrix<U> const& );
@@ -153,11 +147,19 @@ protected:
 
   TMatrix<T>* Clone() const;
 
+  static TMatrix<T> const Imatrix(int n); // identity matrix   
+  static TMatrix<T> const Smatrix(int n); // symplectic matrix, beam physics variable ordering  
+  static TMatrix<T> const Jmatrix(int n); // symplectic matrix, canonical perturbation theory variable ordering    
+  static TMatrix<std::complex<double> > const Qmatrix(int n); // Oscillator matrix, beam physics variable ordering  
+  static TMatrix<std::complex<double> > const Rmatrix(int n); // Oscillator matrix, canonical perturbation theory variable ordering  
+   
   // Public member functions__________________________________________
 
 
   void      switch_columns( int, int ); // used by SurveyMatcher
+
   void      switch_rows( int, int );
+
   TMatrix   scale() const;
   TMatrix   lu_decompose(  int* permutations,     int&    ) const;
   void      lu_back_subst( int* permutations, TMatrix& rhs);
@@ -170,8 +172,10 @@ protected:
   TMatrix                        Square()       const;
   T                              determinant()  const;
   TMatrix                        inverse()      const;
-  TMatrix<std::complex<double> > eigenValues()  const;
+
+  TVector<std::complex<double> > eigenValues()  const;
   TMatrix<std::complex<double> > eigenVectors() const;
+
   T                              trace()        const ; 
 
   static void                    GaussJordan( TMatrix& A, TVector<T> & rhs);
@@ -181,16 +185,17 @@ protected:
 
   static TVector<T>              backSubstitute(TMatrix const& U, TVector<T> const& W, 
                                                 TMatrix const& V, TVector<T> const& rhs, double threshold=-1.0); // threshold < 0.0 ==> threshold = svmax*macheps
-  bool                           isOrthogonal() const;
+
+  double                         maxNorm() const;
+  bool                           isOrthogonal( double eps=1.0e-12) const;
+  bool                           isSymplectic( char convention='J', double eps=1.0e-12) const; // 'S' = beam dynamics ordering convention 
+                                                                                               // 'J' = hamiltonian pertubation theory convention  
 
   // Operators________________________________________________________
   
   
   TMatrix& operator=(TMatrix    const&);
   TMatrix& operator=(TVector<T> const&);
-
-  T      &  operator()(int const& row, int const& column);
-  T const&  operator()(int const& row, int const& column) const;
 
   Matrix1D       operator[](int const& index)         { return Matrix1D( *this, index); } 
   Matrix1D const operator[](int const& index) const   { return Matrix1D( const_cast<TMatrix<T>&>(*this), index); } 
@@ -233,6 +238,19 @@ protected:
 
   friend std::ostream& operator<< <T>(std::ostream&, TMatrix<T> const&);
 
+protected:
+
+  MLPtr<T>       ml_;
+
+
+ private:
+
+  T      &  operator()(int const& row, int const& column);
+  T const&  operator()(int const& row, int const& column) const;
+
+  void       copy_column(TMatrix&  x, int, int );   // used by the eigenroutines.
+
+
 };
 
 //------------------------------------
@@ -256,11 +274,21 @@ template<>
 TVector<double> TMatrix<double>::backSubstitute(TMatrix<double> const& U, TVector<double> const& W, 
                                                 TMatrix<double> const& V, TVector<double> const& rhs, double threshold);
 
+//-----------------------------------------
+// Standalone functions related to TMatrix
+//-----------------------------------------
+
+TMatrix<std::complex<double> >         matrix_conj( TMatrix<std::complex<double> > const& A );  // element-wise complex conjugate   
+TMatrix<std::complex<double> >      symplecticSort( TMatrix<std::complex<double> > const& E );  // sort eigenvectors of a symplectic matrix
+TMatrix<std::complex<double> >   normalize_columns( TMatrix<std::complex<double> > const& E );  // normalize column vectors 
+
+TMatrix<std::complex<double> > 
+toNormalForm( TMatrix<std::complex<double> >const& E, TMatrix<double>::ordering_t ordering = TMatrix<double>:: j_ordering ); 
+
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <basic_toolkit/TMatrix.tcc>
 #endif
-
 
 #endif // TMATRIX_H
 
