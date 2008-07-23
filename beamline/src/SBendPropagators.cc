@@ -223,12 +223,13 @@ void sbend::Propagator::setup( bmlnElmnt& arg)
   double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(elm); 
   double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(elm); 
 
+  double str = arg.Strength();
 
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
+  EdgePtr uedge( new Edge("",  tan(usAngle_) * str ) );
 
-  BendPtr  bend( new Bend( "", elm.Length(),  elm.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
+  BendPtr  bend( new Bend( "", elm.Length(),  str, angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
 
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* elm.Strength() ) );
+  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* str ) );
 
 
   bml->append( uedge );

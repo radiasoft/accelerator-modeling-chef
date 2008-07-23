@@ -211,21 +211,21 @@ void rbend::Propagator::setup( bmlnElmnt& arg)
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
   bml = BmlPtr(new beamline("RBEND_PRIVATE") );
  
-  rbend& elm = static_cast<rbend&>(elm); 
+  rbend& elm = static_cast<rbend&>(arg); 
  
   double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(elm); 
   double& dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(elm); 
   double& usAngle_     = rbend::rbend_core_access::get_usAngle(elm); 
   double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(elm); 
 
+  
 
   EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
 
-  BendPtr bend( new Bend( "RBEND_PRIVATE",  elm.Length(), elm.Strength() , elm.getBendAngle(),  usAngle_,  dsAngle_, 
+  BendPtr bend( new Bend( "RBEND_PRIVATE",  elm.Length(), elm.Strength(), elm.getBendAngle(),  usAngle_,  dsAngle_, 
                                                           usFaceAngle_,  dsFaceAngle_ , Bend::type_rbend)  );
 
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ) );
-
+  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ));
 
   bml->append( uedge );
   bml->append( bend  );

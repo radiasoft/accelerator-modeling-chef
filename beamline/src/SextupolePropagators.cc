@@ -70,6 +70,8 @@ void propagate( sextupole const& elm, Particle_t&     p )
   state[i_cdt] -= elm.getReferenceTime(); 
 }
 
+//-----------------------------------------------------------------------------
+
 template<typename Particle_t>
 void propagate( thinSextupole const& elm, Particle_t& p )
 {

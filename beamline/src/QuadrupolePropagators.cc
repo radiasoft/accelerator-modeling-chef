@@ -154,7 +154,7 @@ void quadrupole::Propagator::setup( bmlnElmnt& arg)
  
   double frontLength     = 6.0*(lng/4.0)/15.0;
   double sepLength       = ( lng - 2.0*frontLength ) / 3.0;
-  double quarterStrength = arg.Strength()*lng/4.0;
+  double quarterStrength = str*lng/4.0;
  
   bml = BmlPtr( new beamline("QUADRUPOLE_PRIVATE") );
 
@@ -175,8 +175,8 @@ void quadrupole::Propagator::setup( bmlnElmnt& arg)
   else if( n_ == 4 ) {      
     bml->append( DriftPtr( new drift( "", frontLength ) ));
     bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
-
-    for( int i = 0; i<3; ++i) {
+ 
+   for( int i = 0; i<3; ++i) {
       bml->append( DriftPtr( new drift( "", sepLength ) ));
       bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
     }
@@ -198,6 +198,7 @@ void quadrupole::Propagator::setup( bmlnElmnt& arg)
     for( int i=0; i<u; ++i) {
       bml->append( DriftPtr( new drift( "", frontLength ) ) );
       bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
+
       for( int i=0; i<3; ++i) {
         bml->append( DriftPtr( new drift( "", sepLength ) ));
         bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
@@ -213,6 +214,7 @@ void quadrupole::Propagator::setup( bmlnElmnt& arg)
   else {                   
     bml->append( DriftPtr( new drift( "", lng / ( 2.0*n_ ) )  ));
     bml->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ) );
+
     for( int i=0; i<n_-1; ++i ) {
       bml->append( DriftPtr( new drift( "", lng / n_ ) ));
       bml->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ));
