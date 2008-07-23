@@ -88,7 +88,7 @@ JetParticle::JetParticle( double const& mass, double const& charge, double const
     p_( momentum ),         
 gamma_(ReferenceEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
- bRho_(p_ / ((q_/PH_MKS_e) * PH_CNV_brho_to_p ))      
+ bRho_(p_ / (q_/PH_MKS_e * PH_CNV_brho_to_p ))      
 {                          
 
   state_ = Mapping( "id", Jet__environment::getLastEnv() );    
@@ -114,7 +114,7 @@ JetParticle::JetParticle( double const& mass, double const& charge, double const
     p_( momentum ),         
 gamma_(ReferenceEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
-bRho_(p_ /((q_/PH_MKS_e)*PH_CNV_brho_to_p )),
+bRho_(p_ /(q_/PH_MKS_e*PH_CNV_brho_to_p ) ),
  state_(state_)
 {                          
 
@@ -272,47 +272,6 @@ Jet& JetParticle::State( int i )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetParticle::createStandardEnvironments( int deg )
-{
-  // Create an initial Jet environment 
-  double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
-  Jet__environment::BeginEnvironment( deg );
-  coord x(0.0),  y(0.0),  z(0.0),
-       px(0.0), py(0.0), pz(0.0);
-  JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-MatrixD JetParticle::SymplecticTest() {
-
- // Note: this assumes a 6x6 state_: ( x, y, cdt; px/p, py/p, dp/p )
-
-  MatrixD J( "J", 6 );
-  MatrixD M( 6, 6 );
-  MatrixD T( "I", 6 ), Ti( "I", 6 );
-
-  T[2][2] = 1.0 / PH_MKS_c;
-  T[3][3] = this->ReferenceMomentum() / PH_MKS_c;
-  T[4][4] = this->ReferenceMomentum() / PH_MKS_c;
-  T[5][5] = - ( this->ReferenceMomentum() 
-                * ( this->Momentum() ).standardPart() )
-                / ( this->Energy() ).standardPart();
-  Ti[2][2] = 1.0 / T[2][2];
-  Ti[3][3] = 1.0 / T[3][3];
-  Ti[4][4] = 1.0 / T[4][4];
-  Ti[5][5] = 1.0 / T[5][5];
-  M = (this->state_) .Jacobian();
-  M = T*M*Ti;
-  return  - M*J*M.transpose()*J;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void JetParticle::SetReferenceEnergy( double const& energy ) {
 
  if( energy < m_ ) {
@@ -323,9 +282,9 @@ void JetParticle::SetReferenceEnergy( double const& energy ) {
          uic.str().c_str() ) );
  }
 
- p_     = sqrt( ReferenceEnergy()*ReferenceEnergy() - m_*m_ );
- bRho_  = p_ / (q_/PH_MKS_e)* PH_CNV_brho_to_p;
- gamma_ = ReferenceEnergy() / m_;
+ p_     = sqrt( energy*energy - m_*m_ );
+ bRho_  = p_ / ( q_/PH_MKS_e* PH_CNV_brho_to_p );
+ gamma_ = energy / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
 
@@ -335,7 +294,7 @@ void JetParticle::SetReferenceEnergy( double const& energy ) {
 void JetParticle::SetReferenceMomentum( double const& p ) 
 {
  p_       = p;
- bRho_    = p_ / (q_/PH_MKS_e)*PH_CNV_brho_to_p;
+ bRho_    = p_ / ( q_/PH_MKS_e*PH_CNV_brho_to_p);
  gamma_   = ReferenceEnergy() / m_;
  beta_    = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
