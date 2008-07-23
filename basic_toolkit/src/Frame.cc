@@ -5,7 +5,7 @@
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
 ******                                    
 ******  File:      Frame.cc
-******  Version:   4.1
+
 ******  Date:      March 15, 2005
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
@@ -68,7 +68,7 @@ Frame::Frame()
 
    for( int i=0; i<3; ++i) {
       for( int j=0; j< 3; ++j) {
-        e_(i,j) = ( i == j ) ? 1.0 : 0.0; 
+        e_[i][j] = ( i == j ) ? 1.0 : 0.0; 
       }
    }
 }
@@ -159,7 +159,7 @@ int Frame::setOrigin ( Vector const& x )
 
   else {
     for( int i=0; i < 3; ++i) {
-      e_( i, j ) = x(i);
+      e_[i][j] = x[i];
     }
   }  
 
@@ -194,7 +194,7 @@ int Frame::setOrigin ( Vector const& x )
   else {
     e_ = e_.inverse();
     for( int j=0; j<3; ++j) {
-      e_( i, j ) = x(j);
+      e_[i][j] = x[j];
     }
     e_ = e_.inverse();
   }  
@@ -230,10 +230,10 @@ bool Frame::isOrthonormal() const
   for( int i=0; i<3; ++i) {
     for( int j=0; j<3; ++j) {
       if( i == j ) {
-        if ( std::abs( u(i,j) - 1.0 ) > 1.0e-9 ) { return false; }
+        if ( std::abs( u[i][j] - 1.0 ) > 1.0e-9 ) { return false; }
       }
       else {
-        if( std::abs( u(i,j) > 1.0e-12  )) { return false; }
+        if( std::abs( u[i][j] > 1.0e-12  )) { return false; }
       }
     }
   }
@@ -265,7 +265,7 @@ Vector Frame::getAxis( int j ) const
   }
 
   else {
-    for( int i=0; i<3; ++i) ret(i) = e_(i,j);
+    for( int i=0; i<3; ++i) ret[i] = e_[i][j];
   }
 
   return ret;
@@ -277,7 +277,7 @@ Vector Frame::getAxis( int j ) const
 Vector Frame::getxAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i < 3; ++i) ret(i) = e_(i,0);
+  for( int i = 0; i < 3; ++i) ret[i] = e_[i][0];
   return ret;
 }
 
@@ -287,7 +287,7 @@ Vector Frame::getxAxis() const
 Vector Frame::getyAxis() const
 {
   Vector ret(3);
-  for( int i = 0; i<3; ++i) ret(i) = e_(i,1);
+  for( int i = 0; i<3; ++i) ret[i] = e_[i][1];
   return ret;
 }
 
@@ -297,7 +297,7 @@ Vector Frame::getyAxis() const
 Vector Frame::getzAxis() const
 {
   Vector ret(3);
-  for( int i=0; i< 3; ++i) ret(i) = e_(i,2);
+  for( int i=0; i< 3; ++i) ret[i] = e_[i][2];
   return ret;
 }
 
@@ -319,7 +319,7 @@ Vector Frame::getDualAxis( int i ) const
 
   else {
     w = e_.inverse();
-    for( int j=0; j<3; ++j) ret(j) = w(i,j);
+    for( int j=0; j<3; ++j) ret[j] = w[i][j];
   }
 
   return ret;
@@ -349,13 +349,13 @@ int Frame::rotate( double theta,
     for( int i=0; i<3; ++i ) {
 
       for( int k=0; k<3; ++k) {
-        w(k) = e_(k,i);
+        w[k] = e_[k][i];
       }
 
       u.Rotate( w, theta );
 
       for( int k =0; k<3; ++k) {
-        e_(k,i) = w(k);
+        e_[k][i] = w[k];
       }
 
     }
@@ -365,7 +365,7 @@ int Frame::rotate( double theta,
   // errors from building up.
   Matrix corrector = (-0.5)*((e_.transpose())*(e_));
   for( int i=0; i<3; ++i) {
-    corrector(i,i) = corrector(i,i) + 1.5;
+    corrector[i][i] = corrector[i][i] + 1.5;
   }
   e_ = e_*corrector;
 
@@ -405,13 +405,13 @@ int Frame::rotate( double theta,
 
 void Frame::reset()
 {
-  o_(0) = 0.0;
-  o_(1) = 0.0;
-  o_(2) = 0.0;
+  o_[0] = 0.0;
+  o_[1] = 0.0;
+  o_[2] = 0.0;
 
   for( int i=0; i<3; ++i) {
     for( int j=0; j< 3; ++j ) {
-       e_(i,j) = ( i == j) ? 1.0 : 0.0;
+       e_[i][j] = ( i == j) ? 1.0 : 0.0;
     }
   }
 }
@@ -433,7 +433,7 @@ Frame Frame::relativeTo( Frame const& f ) const
   // errors from building up.
   Matrix corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
   for( int i=0; i<3; ++i) {
-    corrector(i,i) = corrector(i,i) + 1.5;
+    corrector[i][i] = corrector[i][i] + 1.5;
   }
   ret.e_ = (ret.e_)*corrector;
 
@@ -457,7 +457,7 @@ Frame Frame::patchedOnto( Frame const& f ) const
 
   Matrix corrector = (-0.5)*((ret.e_.transpose())*(ret.e_));
   for( int i=0; i<3; ++i) {
-    corrector(i,i) = corrector(i,i) + 1.5;
+    corrector[i][i] = corrector[i][i] + 1.5;
   }
   ret.e_ = (ret.e_)*corrector;
 
@@ -542,14 +542,14 @@ Frame Frame::tween(   const Frame& one, const Frame& two
     for( int i=0; i<3; ++i) {
       for( int j=0; j< 3; ++j) {
         if( i == j ) {
-          if( 1.0e-8 < std::abs( 1.0 - std::abs(lambda(i,i)) ) ) {
+          if( 1.0e-8 < std::abs( 1.0 - std::abs(lambda[i][i]) ) ) {
             throw( GenericException( __FILE__, __LINE__
                    , "Frame::tween"
                    , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
 	  }
 	}
         else {
-          if( 1.0e-8 < std::abs(lambda(i,j)) ) {
+          if( 1.0e-8 < std::abs(lambda[i][j]) ) {
             throw( GenericException( __FILE__, __LINE__
                    , "Frame::tween"
                    , "Horrible! Inexplicable!! Rotation matrix failed test!!!") );
@@ -572,16 +572,16 @@ Frame Frame::tween(   const Frame& one, const Frame& two
   for( int i = 0; i < 3; ++i) {
     for( int j = 0; j < 3; ++j) {
       if( i == j ) {
-        if( std::abs(imag(lambda(i,i))) < 1.0e-9*std::abs(real(lambda(i,i))) ) {
-          lambda(i,i) = c_one;
+        if( std::abs(imag(lambda[i][i])) < 1.0e-9*std::abs(real(lambda[i][i])) ) {
+          lambda[i][i] = c_one;
 	}
         else {
-          theta = pct*atan2( imag(lambda(i,i)), real(lambda(i,i)) );
-          lambda(i,i) = std::complex<double>( cos(theta), sin(theta) );
+          theta = pct*atan2( imag(lambda[i][i]), real(lambda[i][i]) );
+          lambda[i][i] = std::complex<double>( cos(theta), sin(theta) );
 	}
       }
       else {
-        lambda(i,j) = c_zero;
+        lambda[i][j] = c_zero;
       }
     }
   }
@@ -631,10 +631,10 @@ ostream& operator<< ( ostream& os, const Frame& f )
      << endl;
      return os;
      */
-  os << f.o_(0)   << " " << f.o_(1)   << " " << f.o_(2)   << endl;
-  os << f.e_(0,0) << " " << f.e_(1,0) << " " << f.e_(2,0) << endl;
-  os << f.e_(0,1) << " " << f.e_(1,1) << " " << f.e_(2,1) << endl;
-  os << f.e_(0,2) << " " << f.e_(1,2) << " " << f.e_(2,2) << endl;
+  os << f.o_[0]    << " " << f.o_[1]    << " " << f.o_[2]    << endl;
+  os << f.e_[0][0] << " " << f.e_[1][0] << " " << f.e_[2][0] << endl;
+  os << f.e_[0][1] << " " << f.e_[1][1] << " " << f.e_[2][1] << endl;
+  os << f.e_[0][2] << " " << f.e_[1][2] << " " << f.e_[2][2] << endl;
   return os;
 }
 
@@ -643,10 +643,10 @@ ostream& operator<< ( ostream& os, const Frame& f )
 
 istream& operator>> ( istream& is, Frame& f )
 {
-  is >> f.o_(0)   >> f.o_(1)   >> f.o_(2);
-  is >> f.e_(0,0) >> f.e_(1,0) >> f.e_(2,0);
-  is >> f.e_(0,1) >> f.e_(1,1) >> f.e_(2,1);
-  is >> f.e_(0,2) >> f.e_(1,2) >> f.e_(2,2);
+  is >> f.o_[0]    >> f.o_[1]    >> f.o_[2];
+  is >> f.e_[0][0] >> f.e_[1][0] >> f.e_[2][0];
+  is >> f.e_[0][1] >> f.e_[1][1] >> f.e_[2][1];
+  is >> f.e_[0][2] >> f.e_[1][2] >> f.e_[2][2];
   return is;
 }
 
