@@ -7,7 +7,7 @@
 ******              of beamlines, storage rings, and                      ******
 ******              synchrotrons.                                         ******
 ******                                                                    ******
-******    File:      beamline_iterators.h                                 ******
+******    File:      beamline.tcc                                         ******
 ******                                                                    ******
 ******    Copyright (c) Universities Research Association, Inc./Fermilab  ******
 ******                  All Rights Reserved                               ******
@@ -32,15 +32,12 @@
 ****** -Refactored to take advantage of hierarchical information          ******
 ****** -misc fixes to improve interoperability of const and non-const     ******
 ******  iterator types                                                    ******
+******
 ********************************************************************************
 ********************************************************************************
 ********************************************************************************
 ********************************************************************************/
 
-// **** NOTE: this is a private include file meant to be included *only* from beamline.h ...  
-
-#ifdef  BEAMLINE_H
- 
 #ifndef BEAMLINE_ITERATORS_H
 #define BEAMLINE_ITERATORS_H
 
@@ -61,25 +58,23 @@
 //        in the nested iterator classes where the traits are instantiated.   
 //--------------------------------------------------------------------------------        
 
-    template<typename U, int Dummy>
-    struct iter_traits{ };
 
-    template<int Dummy>
-    struct iter_traits<ElmPtr, Dummy> {
-      typedef  std::list<ElmPtr>::iterator            list_iter_t;
-      typedef  iter<ElmPtr>                                iter_t;
-      typedef  ElmPtr                                      val_t;
-      typedef  beamline                                    bml_t;
-    };
+ template<int Dummy>
+ struct beamline::iter_traits<ElmPtr, Dummy> {
+    typedef  std::list<ElmPtr>::iterator            list_iter_t;
+    typedef  iter<ElmPtr>                                iter_t;
+    typedef  ElmPtr                                      val_t;
+    typedef  beamline                                    bml_t;
+  };
 
-    template<int Dummy>
-    struct iter_traits<ElmPtr const, Dummy> {
-      typedef  std::list<ElmPtr>::const_iterator        list_iter_t;
-      typedef  iter<ElmPtr const>                            iter_t;
-      typedef  ConstElmPtr                                    val_t;
-      typedef  beamline const                                 bml_t;
+  template<int Dummy>
+  struct beamline::iter_traits<ElmPtr const, Dummy> {
+  typedef  std::list<ElmPtr>::const_iterator        list_iter_t;
+    typedef  iter<ElmPtr const>                          iter_t;
+    typedef  ConstElmPtr                                  val_t;
+    typedef  beamline const                               bml_t;
 
-    };
+  };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //
@@ -88,8 +83,8 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  template <typename held_t>
- class iter: public boost::iterator_adaptor <    iter<held_t>, 
-                                                 typename iter_traits<held_t,0>::list_iter_t >  // Base
+ class beamline::iter: public boost::iterator_adaptor <    iter<held_t>, 
+                                                  typename iter_traits<held_t,0>::list_iter_t >  // Base
 {
     friend class beamline;
 
@@ -147,7 +142,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
     template <typename held_t>
-    class reverse_iter: public boost::reverse_iterator<iter<held_t> >  {
+    class beamline::reverse_iter: public boost::reverse_iterator<iter<held_t> >  {
 
     private:
 
@@ -181,7 +176,7 @@
 
    
   template <typename held_t>
-  class pre_order_iter: public boost::iterator_adaptor<  pre_order_iter<held_t>, // Derived
+  class beamline::pre_order_iter: public boost::iterator_adaptor<  pre_order_iter<held_t>, // Derived
                                                          iter<held_t>         >  // Base
 
   {
@@ -317,7 +312,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
     template <typename held_t>
-    class reverse_pre_order_iter: public boost::reverse_iterator<pre_order_iter<held_t> > {
+    class beamline::reverse_pre_order_iter: public boost::reverse_iterator<pre_order_iter<held_t> > {
 
     private:
 
@@ -331,8 +326,11 @@
                  : boost::reverse_iterator<pre_order_iter<held_t> >()    {}
 
       explicit reverse_pre_order_iter( pre_order_iter<held_t> it ) 
-                 : boost::reverse_iterator<pre_order_iter<held_t> >(it) {} 
+                 : boost::reverse_iterator<pre_order_iter<held_t> >(it)  {} 
  
+      reverse_pre_order_iter( reverse_pre_order_iter const& rit )
+                 : boost::reverse_iterator<pre_order_iter<held_t> >(rit)  {} 
+
       template <typename OtherType>
       reverse_pre_order_iter( reverse_pre_order_iter<OtherType> const& rit,
                     typename boost::enable_if<boost::is_convertible<OtherType*, held_t*>, enabler >::type = enabler() ) 
@@ -348,7 +346,7 @@
 
   
   template <typename held_t>
-  class post_order_iter: public boost::iterator_adaptor<  post_order_iter<held_t>, // Derived
+  class beamline::post_order_iter: public boost::iterator_adaptor<  post_order_iter<held_t>, // Derived
                                                           iter<held_t>           > // Base
 
    {
@@ -481,24 +479,36 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
     template <typename held_t>
-    class reverse_post_order_iter : public boost::reverse_iterator<beamline::post_order_iter<held_t> >  {
+    class beamline::reverse_post_order_iter : public boost::reverse_iterator<beamline::post_order_iter<held_t> >  {
 
-    public: 
+ 
+   private:
+ 
+     struct enabler {};  // empty private type (to avoid accidental misuse). Used in conjunction with 
+                        // boost::enable_if() below.  
+
+   public: 
 
       friend class boost::iterator_core_access;
 
       reverse_post_order_iter()
-                 : boost::reverse_iterator<beamline::post_order_iterator>()    {}
+                 : boost::reverse_iterator<post_order_iter<held_t> >()    {}
 
       reverse_post_order_iter( reverse_post_order_iter const& rit )
                  : boost::reverse_iterator<post_order_iter<held_t> >(rit) {} 
 
-      reverse_post_order_iter( post_order_iter<held_t> const& it )      
-                 : boost::reverse_iterator<post_order_iter<held_t> >(it) {} 
+      explicit reverse_post_order_iter( post_order_iter<held_t> const& it )      
+                  : boost::reverse_iterator<post_order_iter<held_t> >(it) {} 
 
+
+      template <typename OtherType>
+      reverse_post_order_iter( reverse_post_order_iter<OtherType> const& rit,
+                    typename boost::enable_if<boost::is_convertible<OtherType*, held_t*>, enabler >::type = enabler() ) 
+                   : reverse_post_order_iter(rit) {} 
 
     };
-   
+
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // 
 // beamline::deep_iterator
@@ -507,7 +517,7 @@
 
   
   template <typename held_t>
-  class deep_iter: public boost::iterator_adaptor<       deep_iter<held_t>,                // Derived
+  class beamline::deep_iter: public boost::iterator_adaptor<       deep_iter<held_t>,                // Derived
                                                          iter<held_t>   >                  // Base
 
   {
@@ -630,7 +640,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
     template <typename held_t>
-    class reverse_deep_iter: public boost::reverse_iterator<deep_iter<held_t> >  {
+    class beamline::reverse_deep_iter: public boost::reverse_iterator<deep_iter<held_t> >  {
 
     public: 
 
@@ -651,90 +661,6 @@
     };
 
 
-    //-------------------------------------------------------------------------------------------
-    // member functions for the beamline class used to set iterators.
-    //-------------------------------------------------------------------------------------------
-
-    beamline::const_iterator begin() const                           { return  const_iterator(  this,  theList_.begin() );         }
-    beamline::iterator       begin()                                 { return        iterator(  this,  theList_.begin() );         }       
-                     
-
-    beamline::const_iterator end()   const                           { return  const_iterator( this, theList_.end() );             }   
-    beamline::iterator end()                                         { return        iterator( this, theList_.end());              }   
-  
-
-    beamline::const_reverse_iterator rbegin() const                  { return   const_reverse_iterator(end());                     } 
-    beamline::reverse_iterator rbegin()                              { return         reverse_iterator(end());                     } 
-
-
-    beamline::const_reverse_iterator rend()   const                  { return  const_reverse_iterator( begin() );                  }   
-    beamline::reverse_iterator       rend()                          { return        reverse_iterator( begin() );                  }   
-   
-
-    beamline::const_pre_order_iterator pre_begin() const             { return  const_pre_order_iterator( begin() );                } 
-    beamline::pre_order_iterator       pre_begin()                   { return        pre_order_iterator( begin() );                } 
-
-
-    beamline::const_pre_order_iterator pre_end() const               { return  const_pre_order_iterator( end() );                  }   
-    beamline::pre_order_iterator       pre_end()                     { return        pre_order_iterator( end() );                  }   
- 
-
-    beamline::const_reverse_pre_order_iterator rpre_begin()  const   { return const_reverse_pre_order_iterator(  pre_end() );      } 
-    beamline::reverse_pre_order_iterator       rpre_begin()          { return       reverse_pre_order_iterator(  pre_end() );      } 
-
-
-    beamline::const_reverse_pre_order_iterator rpre_end() const      { return const_reverse_pre_order_iterator( pre_begin() );     }   
-    beamline::reverse_pre_order_iterator       rpre_end()            { return       reverse_pre_order_iterator( pre_begin() );     }   
-
-
-    beamline::const_post_order_iterator post_begin() const           { return  const_post_order_iterator( begin() );               } 
-    beamline::post_order_iterator       post_begin()                 { return        post_order_iterator( begin() );               } 
-
-
-    beamline::const_post_order_iterator post_end()  const            { return  const_post_order_iterator( end() );                 }    
-    beamline::post_order_iterator post_end()                         { return        post_order_iterator( end() );                 }
-
-
-    beamline::const_reverse_post_order_iterator rpost_begin() const  { return  const_reverse_post_order_iterator( post_end() );    }
-    beamline::reverse_post_order_iterator rpost_begin()              { return        reverse_post_order_iterator( post_end() );    }
-
-
-    beamline::const_reverse_post_order_iterator rpost_end() const    { return  const_reverse_post_order_iterator( post_begin() );  }
-    beamline::reverse_post_order_iterator rpost_end()                { return        reverse_post_order_iterator( post_begin() );  }
-
-
-    beamline::const_deep_iterator deep_begin() const                 { if ( begin() == end() ) return  const_deep_iterator( begin() ); 
-                                                                       const_iterator it = begin();
-                                                                       BmlPtr bml; 
-                                                                       while ( bml = boost::dynamic_pointer_cast<beamline>(*it) ) { it = bml->begin(); } 
-                                                                       return  const_deep_iterator(it );
-    }
-
-    beamline::deep_iterator       deep_begin()                       { if ( begin() == end() ) return   deep_iterator( begin() ); 
-                                                                       iterator it = begin();
-                                                                       BmlPtr bml; 
-                                                                       while ( bml = boost::dynamic_pointer_cast<beamline>(*it) ) { it = bml->begin(); } 
-                                                                       return  deep_iterator(it);
-								     }
-
-    beamline::const_deep_iterator deep_end() const                   { 
-                                                                       if ( begin() == end() ) return   const_deep_iterator( end() ); 
-                                                                       return   const_deep_iterator(  end() );                     
-                                                                     }
-
-    beamline::deep_iterator deep_end()                               { 
-                                                                       if ( begin() == end() ) return   deep_iterator( end() ); 
-                                                                       return   deep_iterator(  end() );                     
-                                                                     }
-
-
-    beamline::const_reverse_deep_iterator rdeep_begin() const        { return  const_reverse_deep_iterator( deep_end() );          } 
-    beamline::reverse_deep_iterator rdeep_begin()                    { return        reverse_deep_iterator( deep_end() );          }
-
-
-    beamline::const_reverse_deep_iterator rdeep_end() const          { return  const_reverse_deep_iterator( deep_begin() );        }   
-    beamline::reverse_deep_iterator rdeep_end()                      { return        reverse_deep_iterator( deep_begin() );        }   
-
 
 #endif // BEAMLINE_ITERATORS_H
-#endif // BEAMLINE_H
+
