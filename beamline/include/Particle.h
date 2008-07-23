@@ -227,8 +227,8 @@ class DLLEXPORT Proton : public Particle {
 public:
 
   Proton();
-  Proton( double const& energyGeV );
-  Proton( double const& energyGeV, Vector const& state );
+  Proton( double const& momentum);
+  Proton( double const& momentum, Vector const& state );
   Proton( Proton const& );
 
   explicit Proton( JetProton const& );
@@ -370,7 +370,7 @@ class particle_core_access
   inline double         Particle::Energy()                   const   { double p = Momentum(); 
                                                                        return sqrt( p*p + m_*m_ );       }
   inline double         Particle::KineticEnergy()            const   { return Energy() - m_;             }
-  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[ndpIndex] );       }
+  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[ndpIndex] );}
   inline double  const& Particle::Mass()                     const   { return m_;                        }
   inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
   inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
