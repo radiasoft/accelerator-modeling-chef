@@ -218,6 +218,7 @@ try
   : ident_( n ),      
     length_(l),     
     strength_(s),  
+    pscale_(1.0),  
     align_(0),   
     bml_(),      
     elm_(),    
@@ -254,6 +255,7 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
   :                  ident_(a.ident_),      
                     length_(a.length_),     
                   strength_(a.strength_),  
+                    pscale_(a.pscale_),  
                      align_(0),   
                        bml_(),      
                        elm_(),    
@@ -335,6 +337,7 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     ident_        = rhs.ident_;      
     length_       = rhs.length_;     
     strength_     = rhs.strength_;  
+    pscale_       = rhs.pscale_;  
     align_        = rhs.align_ ? new alignment(*rhs.align_) : 0;  
     bml_          = BmlPtr();      
     elm_          = ElmPtr();    
@@ -390,6 +393,7 @@ void bmlnElmnt::setLength( double const& length )
   }
 
 #if  0
+  FIXME !!!
   if( length_ == 0.0 ) {
     stringstream msg;  
     msg << "*** ERROR ***: The length of a thin element cannot be modified. \n"
@@ -413,6 +417,42 @@ void bmlnElmnt::setLength( double const& length )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void  bmlnElmnt::setStrengthScale( double const& value )
+{ 
+  if ( isBeamline() ) {
+
+    throw(   GenericException( __FILE__, __LINE__, 
+             "void bmlnElmnt::setLength( double const& x )",
+             "Resetting the strength scale of a beamline is not allowed." ) );
+   }
+
+  pscale_ = value;  
+
+  // Notify propagator of attribute change  
+
+  propagator_->setAttribute(*this, "STRENGTH_SCALE", value );
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  bmlnElmnt::strengthScale() const
+{ 
+  return pscale_;  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  bmlnElmnt::Strength() const
+{ 
+  return ( isMagnet() ? strength_*pscale_ : strength_ );  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void bmlnElmnt::setStrength( double const& s ) 
 {
 
@@ -423,7 +463,7 @@ void bmlnElmnt::setStrength( double const& s )
              "Resetting the strength of a beamline is not allowed." ) );
    }
 
-  strength_ = s; 
+  strength_ = s/pscale_; 
 
   // Notify propagator of attribute change  
 
@@ -463,10 +503,10 @@ bool bmlnElmnt::equivTo( bmlnElmnt const& x ) const
   }
 
   double maxLength   = std::max(length_,   x.length_  );
-  double maxStrength = std::max(strength_, x.strength_);
+  double maxStrength = std::max(pscale_*strength_, x.pscale_*x.strength_);
 
-  return ( ( std::abs( length_   - x.length_   ) < 1.0e-6 * maxLength   )  &&
-           ( std::abs( strength_ - x.strength_ ) < 1.0e-6 * maxStrength )     );
+  return ( ( std::abs( length_            - x.length_              ) < 1.0e-6 * maxLength   )  &&
+           ( std::abs( pscale_* strength_ - x.pscale_* x.strength_ ) < 1.0e-6 * maxStrength )     );
 }
 
 
