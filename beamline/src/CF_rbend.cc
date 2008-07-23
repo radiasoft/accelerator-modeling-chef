@@ -268,15 +268,15 @@ double CF_rbend::setExitAngle( double const& phi /* radians */ )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int CF_rbend::setDipoleField( double const& arg_x )
+int CF_rbend::setDipoleField( double const& value )
 {
  
-  strength_ = arg_x; 
+  setStrength( value );
  
   for ( beamline::iterator it  = bml_->begin(); 
 	                   it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<rbend>(*it) ) { 
-     (*it)->setStrength( arg_x );
+     (*it)->setStrength( value );
    }
   }
 
@@ -317,7 +317,7 @@ void CF_rbend::setOctupole( double const& value )
 
 double CF_rbend::getDipoleField() const
 {
-  return strength_;
+  return Strength();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -417,7 +417,7 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   a = CFRbendPtr( p_a = new CF_rbend(   ""
                                       , pc*length_
-                                      , strength_
+				      , Strength()
                                       , usFaceAngle_
                                       , 0.0           ));
   p_a->setEntryAngle( getEntryAngle() );
@@ -425,7 +425,7 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   b = CFRbendPtr ( p_b = new CF_rbend(   ""
                                        , (1.0 - pc)*length_
-                                       , strength_
+				       , Strength()
                                        , 0.0
                                        , dsFaceAngle_        ));
   p_b->nullEntryEdge();
@@ -535,7 +535,7 @@ void CF_rbend::peekAt( double& s, Particle const& prt )
       << setw(15) << ident_       
       << setw(15) << Type()      
       << setw(12) << length_      
-      << setw(12) << strength_    
+      << setw(12) << Strength()    
       << setw(12) << ((this->getQuadrupole())/length_)
       << setw(12) << (2.0*(this->getSextupole())/length_)
       << setw(12) << (6.0*(this->getOctupole())/length_)
@@ -619,7 +619,7 @@ bool CF_rbend::isMagnet() const
 
 double CF_rbend::OrbitLength( Particle const& p )
 {
-  double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / strength_;
+  double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / Strength();
   return tworho * asin( length_ / tworho );
 }
 
