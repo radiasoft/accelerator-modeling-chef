@@ -130,9 +130,6 @@ public:
 
   // Assignment _____________________________
 
-  void        Set                   ( T const* );
-  T const&    operator()            ( int )       const; // return component
-  T&          operator()            ( int );              // set    component
   T const&    operator[]            ( int idx)    const { return theVector_[idx]; }
   T&          operator[]            ( int idx)          { return theVector_[idx]; }
 
@@ -170,10 +167,6 @@ public:
 
   bool          operator==     ( TVector const& ) const;
   bool          operator!=     ( TVector const& ) const;
-  bool          operator<      ( TVector const& ) const;
-  bool          operator<=     ( TVector const& ) const;
-  bool          operator>      ( TVector const& ) const;
-  bool          operator>=     ( TVector const& ) const;
   bool          IsNull         () const;
   bool          IsUnit         () const;
 
@@ -218,16 +211,16 @@ double  TVector<double>::operator* ( TVector<double> const& x ) const;
 template <>  
 std::complex<double> TVector<std::complex<double> >::operator* ( TVector<std::complex<double> > const& x ) const; 
 
-template<>
-bool TVector<double>::operator> ( TVector<double> const& x ) const;
+// template<>
+// bool TVector<double>::operator> ( TVector<double> const& x ) const;
 
 
 //--------------------------------------------------------------------------
 // These specializations are *not* implemented (it does not make much sense)
 //--------------------------------------------------------------------------
 
-template<>
-bool TVector<std::complex<double> >::operator> ( TVector<std::complex<double> > const& x ) const;
+//template<>
+//bool TVector<std::complex<double> >::operator> ( TVector<std::complex<double> > const& x ) const;
 
 template<> 
 double TVector<double>::Norm () const;
