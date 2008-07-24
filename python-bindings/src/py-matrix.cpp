@@ -47,7 +47,7 @@ public:
 
   MatrixWrapper(PyObject* self) : m_self(self), TMatrix<T>()  {}
 
-  MatrixWrapper(PyObject* self, const char* flag, int dimension ): m_self(self), TMatrix<T>(flag, dimension) {  }// create an identity matrix or a symplectic matrix
+  //MatrixWrapper(PyObject* self, const char* flag, int dimension ): m_self(self), TMatrix<T>(flag, dimension) {  }// create an identity matrix or a symplectic matrix
 
   MatrixWrapper(PyObject* self, int rowcol) : m_self(self), TMatrix<T>(rowcol)  {}
 
@@ -62,8 +62,8 @@ public:
 
   MatrixWrapper(PyObject* self, TMatrix<T> const& matrix): m_self(self), TMatrix<T>(matrix) { }  
 
-  T    get(int i, int j)           { return (*this)(i,j) ; }
-  void set(int i, int j, T value ) { (*this)(i,j) = value; }
+  T    get(int i, int j)           { return (*this)[i][j] ; }
+  void set(int i, int j, T value ) { (*this)[i][j] = value; }
 
 };
 
@@ -75,11 +75,21 @@ void wrap_matrix () {
 
  class_<TMatrix<double>, MatrixWrapper<double> > Matrix_class_("Matrix", init<>() );
 
- Matrix_class_.def( init<const char*, int>() );
  Matrix_class_.def( init<int>() );
  Matrix_class_.def( init<int,int>() );
  Matrix_class_.def( init<int,int,double>() );
  // Matrix_class_.def( init<int,int, numarray::matrix>() );
+
+ Matrix_class_.def("Imatrix",  &Matrix::Imatrix);
+ Matrix_class_.staticmethod("Imatrix");
+ Matrix_class_.def("Jmatrix",  &Matrix::Jmatrix);
+ Matrix_class_.staticmethod("Jmatrix");
+ Matrix_class_.def("Smatrix",  &Matrix::Smatrix);
+ Matrix_class_.staticmethod("Smatrix");
+ Matrix_class_.def("Qmatrix",  &Matrix::Qmatrix);
+ Matrix_class_.staticmethod("Qmatrix");
+ Matrix_class_.def("Rmatrix",  &Matrix::Rmatrix);
+ Matrix_class_.staticmethod("Rmatrix");
 
  Matrix_class_.def("rows",           &MatrixWrapper<double>::rows         );
  Matrix_class_.def("cols",           &MatrixWrapper<double>::cols         );
@@ -151,11 +161,22 @@ void wrap_matrixc () {
  
 class_<MatrixC, MatrixWrapper<std::complex<double> > > Matrix_class_("MatrixC", init<>() );
 
- Matrix_class_.def( init<const char*, int>() );
+//Matrix_class_.def( init<const char*, int>() );
  Matrix_class_.def( init<int>() );
  Matrix_class_.def( init<int,int>() );
  Matrix_class_.def( init<int,int,std::complex<double> >() );
  // Matrix_class_.def( init<int,int, numarray::matrix>() );
+
+ Matrix_class_.def("Imatrix",  &MatrixC::Imatrix);
+ Matrix_class_.staticmethod("Imatrix");
+ Matrix_class_.def("Jmatrix",  &MatrixC::Jmatrix);
+ Matrix_class_.staticmethod("Jmatrix");
+ Matrix_class_.def("Smatrix",  &MatrixC::Smatrix);
+ Matrix_class_.staticmethod("Smatrix");
+ Matrix_class_.def("Qmatrix",  &MatrixC::Qmatrix);
+ Matrix_class_.staticmethod("Qmatrix");
+ Matrix_class_.def("Rmatrix",  &MatrixC::Rmatrix);
+ Matrix_class_.staticmethod("Rmatrix");
 
  Matrix_class_.def("rows",           &MatrixWrapper<std::complex<double> >::rows         );
  Matrix_class_.def("cols",           &MatrixWrapper<std::complex<double> >::cols         );
