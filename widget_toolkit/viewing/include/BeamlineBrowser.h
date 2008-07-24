@@ -68,21 +68,21 @@ class QBmlRoot;
 class QBml : public QListViewItem
 {
 public:
-  QBml( QPixmap*, QBmlRoot*,  const char*, const char* );
-  QBml( QPixmap*, QListView*, const char*, const char* );
+  QBml( QPixmap*, QBmlRoot*,  char const*, char const* );
+  QBml( QPixmap*, QListView*, char const*, char const* );
   QBml( QBml const& );
  ~QBml();
 
-  const QPixmap *pixmap( int i ) const;
-  void  setPixmap( QPixmap *p );
-  const QBmlRoot* bmlParent();
-  const QBmlRoot* topBmlParent();  // Does not return null pointer.
+  QPixmap const*  pixmap( int i ) const;
+  void            setPixmap( QPixmap *p );
+  QBmlRoot const* bmlParent();
+  QBmlRoot const* topBmlParent();  // Does not return null pointer.
 
   virtual QString fullName() const = 0;
 
 protected:
   QPixmap*  pix_;
-  QBmlRoot* p_;                   // the   QBmlRoot parent
+  QBmlRoot*   p_;                   // the   QBmlRoot parent
 };
 
 
@@ -189,8 +189,6 @@ struct infoWriter : public ConstBmlVisitor
   static QPixmap* dipoleSymbol;
   static QPixmap* elmntSymbol;
   
-  BmlContextPtr readMADFile( const char* fileName, const char* lineName, double brho );
-
   void displayBeamline( ConstBmlContextPtr );
   int removeBeamline( BmlContextPtr );   // eliminates the beamline as well
 
