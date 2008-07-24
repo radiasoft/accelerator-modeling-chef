@@ -126,7 +126,7 @@ void BendEliminator::visit( beamline const& x )
   // Create the new beamline
   string nuNam = x.Name() + string("_BendsMerged");
   bmlPtr_ = BmlPtr( new beamline( nuNam.c_str() ) );
-  bmlPtr_->setEnergy( x.Energy() );
+  bmlPtr_->setMomentum( x.Momentum() );
 
   // Process the argument
   for (beamline::const_deep_iterator it  = x.deep_begin();

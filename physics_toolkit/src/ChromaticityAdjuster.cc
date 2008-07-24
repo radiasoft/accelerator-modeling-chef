@@ -59,27 +59,27 @@
  *  February 1, 1999
  */
 
+#include <physics_toolkit/ChromaticityAdjuster.h>
+
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/sextupole.h>
-#include <physics_toolkit/ChromaticityAdjuster.h>
-#include <physics_toolkit/LattFuncSage.h>
 
 using namespace std;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ChromaticityAdjuster::ChromaticityAdjuster( BmlPtr x ) 
-: Sage( x ) {}  
+ChromaticityAdjuster::ChromaticityAdjuster( BmlPtr x, sqlite::connection& db ) 
+: Sage( x, db ) {}  
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ChromaticityAdjuster::ChromaticityAdjuster( beamline const& x ) 
-: Sage( x ) {}
+ChromaticityAdjuster::ChromaticityAdjuster( beamline const& x, sqlite::connection& db) 
+: Sage( x, db ) {}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -129,12 +129,12 @@ void ChromaticityAdjuster::addCorrector_private(  ElmPtr x, double a, double b )
   f_ = MatrixD(ncor,2);
 
   for( int i= 0;  i < ncor-1; ++i) {
-    f_(i,0) = old_f(i,0);
-    f_(i,1) = old_f(i,1);
+    f_[i][0] = old_f[i][0];
+    f_[i][1] = old_f[i][1];
   }
 
-  f_( ncor-1, 0 )    = a;
-  f_( ncor-1, 1 )    = b;
+  f_[ ncor-1][ 0 ]    = a;
+  f_[ ncor-1][ 1 ]    = b;
 
 }
 
@@ -185,11 +185,13 @@ void ChromaticityAdjuster::addCorrector( ThinSextupolePtr x, double a, double b 
 
 int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )
 {
+#if  0
+
   double delta_H = x;
   double delta_V = y;
 
-  myBeamlinePtr_->dataHook.eraseAll( "Ring" );
-  myBeamlinePtr_->eraseBarnacles( "Ring" );
+  bml_->dataHook.eraseAll( "Ring" );
+  bml_->eraseBarnacles( "Ring" );
 
   // 
 
@@ -198,9 +200,9 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
   JetParticle  jpr3(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( myBeamlinePtr_ );
+  LattFuncSage lfs( bml_ );
  
-  myBeamlinePtr_->propagate(jpr);
+  bml_->propagate(jpr);
 
 
   lfs.CourantSnyderLatticeFunctions( jpr);
@@ -274,6 +276,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     }
   }
  
+#endif
   return 0;
 }
 

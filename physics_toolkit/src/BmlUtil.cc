@@ -49,13 +49,26 @@
 #include <config.h>
 #endif
 
+#include <physics_toolkit/BmlUtil.h>
+
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/TMatrix.h>
 #include <mxyzptlk/Mapping.h>
 #include <beamline/beamline_elements.h>
-#include <beamline/BmlPtr.h> 
+#include <beamline/Particle.h>
+#include <beamline/beamline.h> 
 
-#include <physics_toolkit/BmlUtil.h>
+
+using namespace std;
+
+namespace {
+ Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
+}
 
 using namespace std;
 using namespace boost;
@@ -84,15 +97,6 @@ void BmlUtil::setOutputStream( ostream& w )
   outputStreamPtr_ = &w;
 }
 
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool BmlUtil::isKnown( const bmlnElmnt* x )
-{
-  return BmlUtil::isKnown( *x );
-}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -203,90 +207,7 @@ bool BmlUtil::isSpace( bmlnElmnt const&  x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void BmlUtil::normalize( MatrixC& B, Vector& normalizedPhase )
-{
-  // This code is lifted from emittanceDilution.cc,
-  // which lifted it from normalForm.cc
-
-  const std::complex<double> complex_0(0.0,0.0);
-  const std::complex<double> mi(0.,-1.);
-
-  // Normalizing the linear normal form coordinates
-
-  MatrixD  J( "J", 6 );
-  MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
-
-  for( int i = 0; i < 6; i++ ) {
-   Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
-   if( abs( ( (std::complex<double> ) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
-
-       /* CAUTION */   for( int j = 0; j < 6; j++ ) {
-       /* CAUTION */    if( j == i ) continue;
-       /* CAUTION */    else if( abs( Nx(i,j) ) > BmlUtil::mlt1 ) {
-       /* CAUTION */          ostringstream uic;
-       /* CAUTION */          uic << "Nondiagonal element in BJB^TJ: abs( Nx( "
-                                  << i << ", " << j << " ) ) = "
-                                  << std::abs(Nx(i,j));
-       /* CAUTION */          throw( GenericException( __FILE__, __LINE__,
-       /* CAUTION */                 "void BmlUtil::normalize( MatrixC&, Vector& )",
-       /* CAUTION */                 uic.str().c_str() ) );
-       /* CAUTION */    }
-       /* CAUTION */    else Nx(i,j) = complex_0;
-       /* CAUTION */   }
-  }
-
-  B = B*Nx;
-
-  // Try to get the phase correct ...
-  std::complex<double>  m0, cm0, m1, cm1;
-  m0  = B(0,0)/abs(B(0,0));
-  cm0 = conj(m0);
-  m1  = B(1,1)/abs(B(1,1));
-  cm1 = conj(m1);
-
-  double dummy = - atan2( m0.imag(), m0.real() )/M_TWOPI;
-  if( dummy < 0 ) {
-    normalizedPhase(0) = dummy + 1.0;
-  }
-  else {
-    normalizedPhase(0) = dummy;
-  }  
-  dummy = - atan2( m1.imag(), m1.real() )/M_TWOPI;
-  if( dummy < 0 ) {
-    normalizedPhase(1) = dummy + 1.0;
-  }
-  else {
-    normalizedPhase(1) = dummy;
-  }  
-
-  for( int i = 0; i < 6; i++ ) {
-    B(i,0) *= cm0;
-    B(i,3) *= m0;
-    B(i,1) *= cm1;
-    B(i,4) *= m1;
-  }
-  if( imag(B(3,0)) > 0.0 ) {
-    for( int i=0; i<6; ++i) {
-      m0 = B(i,0);       // m0 used as a dummy variable
-      B(i,0) = B(i,3);
-      B(i,3) = m0;
-    }
-  }
-  if( imag(B(4,1)) > 0.0 ) {
-    for( int i=0; i < 6; ++i ) {
-      m0 = B(i,1);       // m0 used as a dummy variable
-      B(i,1) = B(i,4);
-      B(i,4) = m0;
-    }
-  }
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
+int BmlUtil::makeCovariance( CSLattFuncs& w, Particle const& prtn,
                              double eps_1, double eps_2, double eps_3 )
 {
   // Some of this code has been lifted from the function
@@ -336,23 +257,26 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
 
   MatrixD aa(n,n);
 
-  aa(Particle::xIndex,   Particle::xIndex)       = I1;
-  aa(Particle::npxIndex, Particle::npxIndex)     = I1;
-  aa(Particle::yIndex,   Particle::yIndex)       = I2;
-  aa(Particle::npyIndex, Particle::npyIndex)     = I2;
+  aa[Particle::xIndex  ][ Particle::xIndex    ]   = I1;
+  aa[Particle::npxIndex][ Particle::npxIndex  ]   = I1;
+  aa[Particle::yIndex  ][ Particle::yIndex    ]   = I2;
+  aa[Particle::npyIndex][ Particle::npyIndex  ]   = I2;
 
   // Construct matrix of eigenvectors
 
-  MatrixC E("I",n);
-  E(Particle::xIndex ,  0) = sqrt( w.beta.hor / 2.0 );
-  E(Particle::npxIndex, 0) = - ( i + w.alpha.hor )/sqrt( 2.0*w.beta.hor );
-  E(Particle::yIndex ,  1) = sqrt( w.beta.ver / 2.0 );
-  E(Particle::npyIndex, 1) = - ( i + w.alpha.ver )/sqrt( 2.0*w.beta.ver );
+  MatrixC E = MatrixC::Imatrix(n);
+ 
+  CVLattFuncs lf(w);
+ 
+  E[ Particle::xIndex   ][0] =   sqrt( lf.beta.hor / 2.0 );
+  E[ Particle::npxIndex ][0] = - ( i + lf.alpha.hor )/sqrt( 2.0*lf.beta.hor );
+  E[ Particle::yIndex   ][1] =   sqrt( lf.beta.ver / 2.0 );
+  E[ Particle::npyIndex ][1] = - ( i + lf.alpha.ver )/sqrt( 2.0*lf.beta.ver );
 
-  for( int j = 0; j < 2; j++ ) {
+  for( int j=0; j < 2; ++j) {
     int m = j + (n/2);
-    for( int k = 0; k < n; k++ ) {
-      E(k,m) = conj(E(k,j));
+    for( int k=0; k < n; ++k) {
+      E[k][m] = conj(E[k][j]);
     }
   }
 
@@ -361,24 +285,15 @@ int BmlUtil::makeCovariance( CovarianceSage::Info& w, Particle const& prtn,
   //   at least, as I normalize on Oct.29, 2004.
   //   But that may change. Who knows? So I'll retain the line.
 
-  Vector dummy(3);
-  BmlUtil::normalize( E, dummy );
+  E = toNormalForm( E, Matrix::j_ordering); 
 
   // Finally, the actual calculation: one line ...
-  w.covariance = real(E*aa*E.dagger());
+
+  //***************** FIXME !!!! 
+
+  // w.covariance = real(E*aa*E.dagger());
 
   return 0;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
-                             const Particle& prtn,
-                             double eps_1, double eps_2, double eps_3 )
-{
-  return BmlUtil::makeCovariance( *wPtr, prtn, eps_1, eps_2, eps_3 );
 }
 
 
@@ -388,13 +303,11 @@ int BmlUtil::makeCovariance( CovarianceSage::Info* wPtr,
 BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
                                        std::list<ElmPtr>&         insertions,
                                        std::list<ElmPtr>&         targets,
-                                       ConstBmlPtr                linePtr )
+                                       beamline const&            bml )
 {
 
-  if( !linePtr ) { return BmlPtr(); }
-
   if( 0 == insertions.size() || 0 == targets.size() ) {
-    return  BmlPtr( linePtr->Clone() );
+    return  BmlPtr( bml.Clone() );
   }
 
   if( percent < 0.0 ) { percent = 0.0; }
@@ -406,7 +319,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
   // Begin ...
 
-  BmlPtr ret( new beamline( linePtr->Name().c_str() ) );
+  BmlPtr ret( new beamline( bml.Name() ) );
 
   ElmPtr spa;
   ElmPtr spb;
@@ -414,7 +327,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
   beamline::const_iterator it;
 
-  for ( it  = linePtr->begin(); it != linePtr->end(); ++it) {
+  for ( it  = bml.begin(); it != bml.end(); ++it) {
 
     if( insertions.empty() || targets.empty() ) break; 
 
@@ -426,7 +339,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
       insertions.push_front(ins);
       targets.push_front(trg);
-      ret->append( cloneLineAndInsert ( percent, insertions, targets,  dynamic_pointer_cast<const beamline>(*it) ) );
+      ret->append( cloneLineAndInsert ( percent, insertions, targets,  dynamic_cast<beamline const&>(**it) ) );
     }
 
     else {
@@ -458,13 +371,13 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
   }
   // If there are elements left over, handle them.
 
-  for (  ; it != linePtr->end(); ++it ) {
+  for (  ; it != bml.end(); ++it ) {
     ret->append( ElmPtr( (*it)->Clone() ) );
   }
 
   // Finished ...
 
-  ret->setEnergy( linePtr->Energy() );
+  ret->setMomentum( bml.Momentum() );
   return ret;
   }
 

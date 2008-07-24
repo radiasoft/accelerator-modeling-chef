@@ -49,10 +49,10 @@
 
 using namespace std;
 
-void BeamlineSpitout( int numspaces, beamline::const_iterator& it )
+void BeamlineSpitout( int numspaces, beamline const& bml, beamline::const_iterator& it )
 {
 
-    for ( ; it != it.end(); ++it ) 
+    for ( ; it != bml.end(); ++it ) 
     {
 
       for( int i = 0; i < numspaces; ++i ) {
@@ -63,7 +63,7 @@ void BeamlineSpitout( int numspaces, beamline::const_iterator& it )
       if( typeid(**it) == typeid(beamline) ) 
       {
         beamline::const_iterator newit = it;
-        BeamlineSpitout(numspaces+3, newit);
+        BeamlineSpitout(numspaces+3, bml, newit);
       }
     }
 }
