@@ -35,92 +35,26 @@
 #include <CurveData.h>
 #include <algorithm>
 #include <iostream>
-
+#include <boost/iterator/transform_iterator.hpp>
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CurveData::CurveData( boost::shared_array<double> x , boost::shared_array<double> y, int size, std::string label):
-  xarray_(x), yarray_(y), size_(size),  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
+CurveData::CurveData( int size, std::string label )
+: array_(), size_(size),  
+  xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
   connected_(true), label_(label)  
 {
-
-  xmin_ = *std::min_element( &xarray_[0], &xarray_[0] + size_);
-  xmax_ = *std::max_element( &xarray_[0], &xarray_[0] + size_);
-
-  ymin_ = *std::min_element( &yarray_[0], &yarray_[0] + size_);
-  ymax_ = *std::max_element( &yarray_[0], &yarray_[0] + size_);
-
-
+  array_ = boost::shared_array<Point> ( new Point[size] ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-CurveData::CurveData( double const* x , double const* y, 
-                                    int size, std::string label )
-: size_(size), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
-  connected_(true), label_(label)  
-
-{
-
-  xarray_ = boost::shared_array<double> ( new double[ size ] ); 
-  yarray_ = boost::shared_array<double> ( new double[ size ] ); 
-  
-  std::copy( x, x+size_, &xarray_[0] );
-  std::copy( y, y+size_, &yarray_[0] );
-
-  xmin_ = *std::min_element( &xarray_[0], &xarray_[0] + size_);
-  xmax_ = *std::max_element( &xarray_[0], &xarray_[0] + size_);
-
-  ymin_ = *std::min_element( &yarray_[0], &yarray_[0] + size_);
-  ymax_ = *std::max_element( &yarray_[0], &yarray_[0] + size_);
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-CurveData::CurveData( std::vector<double> const& x ,  std::vector<double> const& y, std::string label ):
-  xarray_(0), yarray_(0), size_(0), xaxis_(CurveData::xBottom), yaxis_(CurveData::yLeft), color_( Color(0,0,0) ), 
-  connected_(true), label_(label) 
-{
-
-  // copy the data 
-
-  size_ = std::min ( x.size(), y.size() );  
-
-  if ( size_ <= 0 ) return ; // this is an error condition FIXME !
- 
-  xarray_ = boost::shared_array<double>(  new double[ x.size() ] );
-  yarray_ = boost::shared_array<double>(  new double[ y.size() ] );
-
-  std::copy( &x[0], &x[0]+size_, &xarray_[0] );
-  std::copy( &y[0], &y[0]+size_, &yarray_[0] );
-
- // find and store min/max values
-
-   xmin_ = *std::min_element( x.begin(), x.end() );
-   xmax_ = *std::max_element( x.begin(), x.end() );
-
-   ymin_ = *std::min_element( y.begin(), y.end() );
-   ymax_ = *std::max_element( y.begin(), y.end() );
-
-
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 CurveData::CurveData(CurveData const& cd)           
-  :  QwtData(),    xarray_(cd.xarray_),  yarray_(cd.yarray_), size_(cd.size_),  
-                   xmin_(cd.xmin_),      xmax_(cd.xmax_), 
-                   ymin_(cd.ymin_),      ymax_(cd.ymax_), 
-                   xaxis_(cd.xaxis_),    yaxis_(cd.yaxis_),                  
-                   color_(cd.color_),    connected_(cd.connected_),
+  :  QwtData(),    array_(cd.array_),  size_(cd.size_),  
+                   xaxis_(cd.xaxis_),  yaxis_(cd.yaxis_),                  
+                   color_(cd.color_),  connected_(cd.connected_),
                    label_(cd.label_) 
 {}
  
@@ -131,15 +65,8 @@ CurveData&  CurveData::operator=( CurveData const& cd)
 {
   if ( &cd == this ) return *this;
   
-  xarray_ =  cd.xarray_;
-  yarray_ =  cd.yarray_;
+  array_  =  cd.array_;
   size_   =  cd.size_;
-
-
-  xmin_   =  cd.xmin_;
-  xmax_   =  cd.xmax_;
-  ymin_   =  cd.ymin_;
-  ymax_   =  cd.ymax_;
 
   xaxis_  =  cd.xaxis_;
   yaxis_  =  cd.yaxis_;
@@ -178,10 +105,42 @@ size_t CurveData::size () const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+CurveData::iterator CurveData::begin() 
+{
+  return &array_[0]; 
+}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CurveData::iterator      CurveData::end()
+{
+  return  &array_[0]+ size_;
+}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CurveData::const_iterator  CurveData::begin() const 
+{
+  return &array_[0]; 
+}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CurveData::const_iterator      CurveData::end() const
+{
+  return  &array_[0]+ size_;
+}  
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 double CurveData::x (size_t i) const
 {
-  return xarray_[i];
+  return array_[i].x;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -190,7 +149,7 @@ double CurveData::x (size_t i) const
 
 double CurveData::y (size_t i) const
 {
-  return yarray_[i];
+  return array_[i].y;
 }
 
 
@@ -226,7 +185,12 @@ CurveData::Axis CurveData::getYAxis() const
 
 double CurveData::xMin() const 
 {
-  return xmin_;
+  typedef boost::transform_iterator<CurveData::XValue, const_iterator> x_const_iterator;
+
+  x_const_iterator  ixbeg(begin(), XValue() );
+  x_const_iterator  ixend(end(),   XValue() );
+
+  return *std::min_element( ixbeg, ixend);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -234,7 +198,12 @@ double CurveData::xMin() const
 
 double CurveData::xMax() const
 {
-  return xmax_;
+  typedef boost::transform_iterator<CurveData::XValue, const_iterator> x_const_iterator;
+
+  x_const_iterator  ixbeg(begin(), XValue() );
+  x_const_iterator  ixend(end(),   XValue() );
+
+  return *std::max_element( ixbeg, ixend);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -242,7 +211,12 @@ double CurveData::xMax() const
 
 double CurveData::yMin() const
 {
-  return ymin_;
+  typedef boost::transform_iterator<CurveData::YValue, const_iterator> y_const_iterator;
+
+  y_const_iterator  iybeg(begin(), YValue() );
+  y_const_iterator  iyend(end(),   YValue());
+
+  return *std::min_element( iybeg, iyend);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -250,7 +224,12 @@ double CurveData::yMin() const
 
 double CurveData::yMax() const
 {
-  return ymax_;
+  typedef boost::transform_iterator<CurveData::YValue, const_iterator> y_const_iterator;
+
+  y_const_iterator  iybeg(begin(), YValue() );
+  y_const_iterator  iyend(end(),   YValue() );
+
+  return *std::max_element( iybeg, iyend);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

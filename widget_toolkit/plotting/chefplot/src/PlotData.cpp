@@ -32,6 +32,8 @@
 **************************************************************************
 *************************************************************************/
 
+#include <basic_toolkit/GenericException.h>
+#include <sqlite/query.hpp>
 #include <PlotData.h>
 #include <CurveData.h>
 #include <beamline.h>
@@ -42,13 +44,25 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+PlotData::PlotData( sqlite::connection& db)
+ : curves_(), 
+   label_top_("label_top"),   label_bottom_("label_bottom"),
+   label_left_("label_left"), label_right_("label_right"),
+   scalemag_top_(1.0),  scalemag_bottom_(1.0), 
+   scalemag_left_(1.0), scalemag_right_(1.0),
+   tunes_(), db_(&db), bml_()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 PlotData::PlotData()
  : curves_(), 
    label_top_("label_top"),   label_bottom_("label_bottom"),
    label_left_("label_left"), label_right_("label_right"),
    scalemag_top_(1.0),  scalemag_bottom_(1.0), 
    scalemag_left_(1.0), scalemag_right_(1.0),
-   tunes_(), bml_(), db_(0)
+   tunes_(), db_(0), bml_()
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -76,41 +90,30 @@ void PlotData::setTunes(double const& hor, double const& ver)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ConstBmlPtr PlotData::getBeamline() const 
+sqlite::connection& PlotData::getDb() const
 {
- return bml_;
+  return *db_;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sqlite::connection* PlotData::getDb() const
+ConstBmlPtr PlotData::getBeamline() const
 {
-  return db_;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void PlotData::setDb( sqlite::connection& db )
-{
-  db_     = &db;
-  bml_    = BmlPtr();  
+  return bml_;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void PlotData::setBeamline( ConstBmlPtr bml )
+void PlotData::setBeamline( BmlPtr bml)
 {
-  bml_    = bml;  
-  db_     = 0;
+  bml_ = bml;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void PlotData::addCurve(CurveData& cdata)
 {
@@ -130,7 +133,23 @@ CurveData const& PlotData::operator[](int i) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void PlotData::setXLabel( std::string label) 
+void PlotData::setTitle( std::string  const& label) 
+{
+  label_top_ = label; 
+}
+ 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::string const&  PlotData::getTitle() const
+{
+  return label_top_;
+}
+ 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void PlotData::setXLabel( std::string const& label) 
 {
   label_bottom_ = label; 
 }
@@ -138,7 +157,7 @@ void PlotData::setXLabel( std::string label)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void PlotData::setYLabel( CurveData::Axis id,  std::string label) 
+void PlotData::setYLabel( CurveData::Axis id,  std::string const& label) 
 {
 
   switch (id) {
@@ -159,7 +178,7 @@ void PlotData::setYLabel( CurveData::Axis id,  std::string label)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-std::string PlotData::getLabel( CurveData::Axis id) const 
+std::string const& PlotData::getLabel( CurveData::Axis id) const 
 {
 
   switch (id) {
@@ -173,7 +192,9 @@ std::string PlotData::getLabel( CurveData::Axis id) const
     case  CurveData::yRight :    return label_right_;  
                                  break;
 
-    default:                     return "";
+    default:                     
+      throw GenericException( __FILE__, __LINE__, "PlotData::getLabel( CurveData::Axis id) const",
+                                                   "Error: Invalid Axis id " );
                                  break;
   }
 
@@ -186,7 +207,7 @@ std::string PlotData::getLabel( CurveData::Axis id) const
 double PlotData::xMin( CurveData::Axis id ) const 
 {
 
-  std::vector<CurveIterator> id_curves; 
+  std::vector<iterator> id_curves; 
 
   for (std::vector<CurveData>::const_iterator it  = curves_.begin();  
                                               it != curves_.end(); ++it ) { 
@@ -198,8 +219,8 @@ double PlotData::xMin( CurveData::Axis id ) const
  
   double xmin =  curves_.front().xMin();
 
-  for (std::vector<CurveIterator>::const_iterator it  = id_curves.begin();  
-                                                  it != id_curves.end(); ++it ) { 
+  for (std::vector<iterator>::const_iterator it  = id_curves.begin();  
+                                             it != id_curves.end(); ++it ) { 
     xmin = std::min( xmin, (*it)->xMin() ); 
   }
 
@@ -213,7 +234,7 @@ double PlotData::xMin( CurveData::Axis id ) const
 double PlotData::xMax( CurveData::Axis id ) const 
 {
 
-  std::vector<CurveIterator> id_curves; 
+  std::vector<iterator> id_curves; 
 
   for (std::vector<CurveData>::const_iterator it  = curves_.begin();  
                                               it != curves_.end(); ++it ) { 
@@ -225,8 +246,8 @@ double PlotData::xMax( CurveData::Axis id ) const
  
   double xmax =  curves_.front().xMax();
 
-  for (std::vector<CurveIterator>::const_iterator it  = id_curves.begin();  
-                                                  it != id_curves.end(); ++it ) { 
+  for (std::vector<iterator>::const_iterator it  = id_curves.begin();  
+                                             it != id_curves.end(); ++it ) { 
     xmax = std::max( xmax, (*it)->xMax() ); 
   }
 
@@ -241,7 +262,7 @@ double PlotData::xMax( CurveData::Axis id ) const
 double PlotData::yMin( CurveData::Axis id ) const 
 {
 
-  std::vector<CurveIterator> id_curves; 
+  std::vector<iterator> id_curves; 
 
   for (std::vector<CurveData>::const_iterator it  = curves_.begin();  
                                               it != curves_.end(); ++it ) { 
@@ -253,8 +274,8 @@ double PlotData::yMin( CurveData::Axis id ) const
  
   double ymin =  curves_.front().yMin();
 
-  for (std::vector<CurveIterator>::const_iterator it  = id_curves.begin();  
-                                                  it != id_curves.end(); ++it ) { 
+  for (std::vector<iterator>::const_iterator it  = id_curves.begin();  
+                                             it != id_curves.end(); ++it ) { 
     ymin = std::min( ymin, (*it)->yMin() ); 
   }
 
@@ -271,7 +292,7 @@ double PlotData::yMin( CurveData::Axis id ) const
 double PlotData::yMax(CurveData::Axis id) const 
 {
 
-  std::vector<CurveIterator> id_curves; 
+  std::vector<iterator> id_curves; 
 
   for (std::vector<CurveData>::const_iterator it  = curves_.begin();  
                                               it != curves_.end(); ++it ) { 
@@ -283,8 +304,8 @@ double PlotData::yMax(CurveData::Axis id) const
  
   double ymax =  curves_.front().yMax();
 
-  for (std::vector<CurveIterator>::const_iterator it  = id_curves.begin();  
-                                                  it != id_curves.end(); ++it ) { 
+  for (std::vector<iterator>::const_iterator it  = id_curves.begin();  
+                                             it != id_curves.end(); ++it ) { 
     ymax = std::max( ymax, (*it)->yMax()); 
   }
 
@@ -345,4 +366,60 @@ double PlotData::getScaleMag( CurveData::Axis id) const
   }    
 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void PlotData::init( sqlite::connection& db, int npltattribs, char const* plot_attributes[],  
+                                             int ncrvs, CurveData::curve_attribute curve_attributes[],  char const* sql[] )
+{   
+
+  sqlite::query q1(db, sql[0]);
+
+  sqlite::result_type res1 = q1.emit_result();
+  int nelms =  res1 ? res1->get_int(0) : 0;
+
+
+  std::vector< boost::shared_ptr<CurveData> > curves( ncrvs );
+
+  for (int i=0; i<ncrvs; ++i ) { 
+      curves[i] = boost::shared_ptr<CurveData>(new CurveData( nelms, curve_attributes[i].label )); 
+      curves[i]->setAxes(  CurveData::xBottom, curve_attributes[i].yaxis );
+      curves[i]->setColor( curve_attributes[i].rgb  );
+  };
+
+  sqlite::query q2(db, sql[1] );
+  sqlite::result_type res2 = q2.emit_result(); 
+
+  std::vector<CurveData::iterator> itc(ncrvs);  
+
+  for ( int i=0; i<ncrvs; ++i ) {
+    itc[i] = curves[i]->begin();
+  };
+
+  if ( !res2 ) return;   // ERROR !!
+  
+  do { 
+      
+      double abscissa =  res2->get_double(0);  
+
+      for ( int i=0; i<ncrvs; ++i ) {
+         *(itc[i]++) = CurveData::Point( abscissa, res2->get_double(1+i));          
+      }
+
+  } while ( res2->next_row() );
+  
+
+  for (int i=0; i<ncrvs; ++i ) { 
+     addCurve( *curves[i] ); 
+  }
+
+  setXLabel( plot_attributes[1] );
+  setYLabel( CurveData::yLeft, plot_attributes[2]  );
+  setYLabel( CurveData::yRight, plot_attributes[3] );
+
+}
+
+
+
 
