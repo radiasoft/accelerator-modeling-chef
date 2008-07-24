@@ -81,9 +81,9 @@ indirect_reverse_deep_iterator      indirect_rdeep_begin( beamline& bml )  { ret
 indirect_reverse_deep_iterator        indirect_rdeep_end( beamline& bml )  { return bml.rdeep_end();   }
 
 
-void (beamline::*beamline_propagateParticle)     (Particle&      ) =  &beamline::propagate;
-void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) =  &beamline::propagate;
-void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) =  &beamline::propagate;
+void (beamline::*beamline_propagateParticle)     (Particle&      ) const =  &beamline::propagate;
+void (beamline::*beamline_propagateJetParticle)  (JetParticle&   ) const =  &beamline::propagate;
+void (beamline::*beamline_propagateParticleBunch)(ParticleBunch& ) const =  &beamline::propagate;
 
 void (beamline::*insert1) (  ElmPtr )                              =  &beamline::insert;
 void (beamline::*append1) (  ElmPtr )                              =  &beamline::append;
