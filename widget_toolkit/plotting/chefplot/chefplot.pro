@@ -64,6 +64,7 @@ IMAGES	= ./src/images/filenew \
 
 
 INCLUDEPATH += ../tunespace/include
+INCLUDEPATH += /usr/local/vsqlite++/include
 
 LIBS	   +=  -L$${FNAL_LIBDIR} -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -L$${GLIB_LIBDIR} -lglib-2.0
 
