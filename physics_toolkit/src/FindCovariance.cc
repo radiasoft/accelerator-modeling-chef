@@ -137,17 +137,17 @@ MatrixD FindCovariance( beamline             const&   line,
       BarnacleList::iterator bit = (*it)->dataHook.find("WIREData");
       double xsq = boost::any_cast<WIREData>(bit->info).hsigma;
 
-      yH( count, 0 ) = xsq*xsq;
-      AH( count, 0 ) =       M( 0, 0 ) * M( 0, 0 );
-      AH( count, 1 ) = 2.0 * M( 0, 0 ) * M( 0, 3 );
-      AH( count, 2 ) =       M( 0, 3 ) * M( 0, 3 );
+      yH[count][0] = xsq*xsq;
+      AH[count][0] =       M[0][0] * M[0][0];
+      AH[count][1] = 2.0 * M[0][0] * M[0][3];
+      AH[count][2] =       M[0][3] * M[0][3];
         
       double ysq = boost::any_cast<WIREData>(bit->info).vsigma;
 
-      yV( count, 0 ) = ysq*ysq;
-      AV( count, 0 ) =       M( 1, 1 ) * M( 1, 1 );
-      AV( count, 1 ) = 2.0 * M( 1, 1 ) * M( 1, 4 );
-      AV( count, 2 ) =       M( 1, 4 ) * M( 1, 4 );
+      yV[count][0] = ysq*ysq;
+      AV[count][0] =       M[1][1] * M[1][1];
+      AV[count][1] = 2.0 * M[1][1] * M[1][4];
+      AV[count][2] =       M[1][4] * M[1][4];
 
      ++count;
       
@@ -171,13 +171,13 @@ MatrixD FindCovariance( beamline             const&   line,
     xH = ( AH.transpose()*AH ).inverse() * AH.transpose() * yH;
     xV = ( AV.transpose()*AV ).inverse() * AV.transpose() * yV;
 
-    C( 0, 0 )             = xH( 0, 0 );
-    C( 0, 3 ) = C( 3, 0 ) = xH( 1, 0 );
-    C( 3, 3 )             = xH( 2, 0 );
+    C[0][0]              = xH[0][0];
+    C[0][3]  = C[3][0]   = xH[1][0];
+    C[3][3]              = xH[2][0];
 
-    C( 1, 1 )             = xV( 0, 0 );
-    C( 1, 4 ) = C( 4, 1 ) = xV( 1, 0 );
-    C( 4, 4 )             = xV( 2, 0 );
+    C[1][1]              = xV[0][0];
+    C[1][4]  = C[4][1]   = xV[1][0];
+    C[4][4]              = xV[2][0];
 
     return C;
 }
@@ -231,7 +231,7 @@ void TestCovariance( beamline const&     line,
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*xsq
              << "  Theory = " 
-             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 0, 0 ) )
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov[0][0] )
              << "  [mm]  Horizontal"
              << endl;
         
@@ -240,7 +240,7 @@ void TestCovariance( beamline const&     line,
              << "  Data = "   
              << setw(8) << setprecision(3) << 1000.0*ysq
              << "  Theory = " 
-             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 1, 1 ) )
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov[1][1]  )
              << "  [mm]  Vertical"
              << endl;
         
@@ -252,14 +252,14 @@ void TestCovariance( beamline const&     line,
         (*FNAL::pcout) << setw(12) << (*it)->Name()
              << "                 "
              << "  Theory = " 
-             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 0, 0 ) )
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov[0][0] )
              << "  [mm]  Horizontal"
              << endl;
         
         (*FNAL::pcout) << setw(12) << (*it)->Name()
              << "                 "
              << "  Theory = " 
-             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov( 1, 1 ) )
+             << setw(8) << setprecision(3) << 1000.0*sqrt( Cov[1][1]  )
              << "  [mm]  Vertical"
              << endl;
       }

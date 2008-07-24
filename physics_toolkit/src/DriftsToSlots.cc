@@ -307,7 +307,7 @@ beamline* DriftsToSlots( beamline const& argbml )
   for ( beamline::deep_iterator dit = original.deep_begin(); dit != original.deep_end(); ++dit )
   {
     q = *dit;
- 
+
     if( d2S_rbendLike( *q ) ) {
 
       if( prev_is_rbend_like ) {
@@ -540,9 +540,9 @@ beamline* DriftsToSlots( beamline const& argbml )
           else {
             arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
           }
-          fd(x) = 0.0;
-          fd(y) = 0.0;
-          fd(z) = elPtr->Length();
+          fd[x] = 0.0;
+          fd[y] = 0.0;
+          fd[z] = elPtr->Length();
           arcFrame.translate(fd);
           ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
         }
@@ -579,9 +579,9 @@ beamline* DriftsToSlots( beamline const& argbml )
           }
           rollAngle = a->Alignment().tilt;
           arcFrame.reset(); 
-          fd(x) = 0.0;
-          fd(y) = 0.0;
-          fd(z) = elPtr->Length();
+          fd[x] = 0.0;
+          fd[y] = 0.0;
+          fd[z] = elPtr->Length();
           arcFrame.translate(fd);
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
@@ -653,9 +653,9 @@ beamline* DriftsToSlots( beamline const& argbml )
             arcFrame.rotate( - entryAngle, arcFrame.getyAxis() );
           }
 
-          fd(x) = 0.0;
-          fd(y) = 0.0;
-          fd(z) = elPtr->Length();
+          fd[x] = 0.0;
+          fd[y] = 0.0;
+          fd[z] = elPtr->Length();
           arcFrame.translate(fd);
 
           if( d2S_rbendLike( *a) ) {
@@ -711,7 +711,7 @@ beamline* DriftsToSlots( beamline const& argbml )
  
 
   // Final manipulations
-  ret->setEnergy( original.Energy() );
+  ret->setMomentum( original.Momentum() );
   ret->rename( original.Name() );
   ret->setLineMode( original.getLineMode() );
 

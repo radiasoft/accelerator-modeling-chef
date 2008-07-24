@@ -52,7 +52,7 @@
 #include <beamline/JetParticle.h>
 #include <physics_toolkit/JacobianVisitor.h>
 
-const MatrixD identityMatrix("I",6);
+const MatrixD identityMatrix = Matrix::Imatrix(6);
 
 char const* LOCAL_JACOBIAN_STRING      = "Local_Jacobian";
 char const* CUMULATIVE_JACOBIAN_STRING = "Cumulative_Jacobian";
@@ -70,47 +70,47 @@ JacobianData::JacobianData() : jac(6,6,0.0) {}
 MatrixD JacobianData::RMatrix() {
   MatrixD retMat(6,6,0.0);
 
-  retMat(0,0) = jac(0,0);
-  retMat(0,1) = jac(0,3);
-  retMat(0,2) = jac(0,1);
-  retMat(0,3) = jac(0,4);
-  retMat(0,4) = jac(0,2);
-  retMat(0,5) = jac(0,5);
+  retMat[0][0] = jac[0][0];
+  retMat[0][1] = jac[0][3];
+  retMat[0][2] = jac[0][1];
+  retMat[0][3] = jac[0][4];
+  retMat[0][4] = jac[0][2];
+  retMat[0][5] = jac[0][5];
 
-  retMat(1,0) = jac(3,0);
-  retMat(1,1) = jac(3,3);
-  retMat(1,2) = jac(3,1);
-  retMat(1,3) = jac(3,4);
-  retMat(1,4) = jac(3,2);
-  retMat(1,5) = jac(3,5);
+  retMat[1][0] = jac[3][0];
+  retMat[1][1] = jac[3][3];
+  retMat[1][2] = jac[3][1];
+  retMat[1][3] = jac[3][4];
+  retMat[1][4] = jac[3][2];
+  retMat[1][5] = jac[3][5];
 
-  retMat(2,0) = jac(1,0);
-  retMat(2,1) = jac(1,3);
-  retMat(2,2) = jac(1,1);
-  retMat(2,3) = jac(1,4);
-  retMat(2,4) = jac(1,2);
-  retMat(2,5) = jac(1,5);
+  retMat[2][0] = jac[1][0];
+  retMat[2][1] = jac[1][3];
+  retMat[2][2] = jac[1][1];
+  retMat[2][3] = jac[1][4];
+  retMat[2][4] = jac[1][2];
+  retMat[2][5] = jac[1][5];
 
-  retMat(3,0) = jac(4,0);
-  retMat(3,1) = jac(4,3);
-  retMat(3,2) = jac(4,1);
-  retMat(3,3) = jac(4,4);
-  retMat(3,4) = jac(4,2);
-  retMat(3,5) = jac(4,5);
+  retMat[3][0] = jac[4][0];
+  retMat[3][1] = jac[4][3];
+  retMat[3][2] = jac[4][1];
+  retMat[3][3] = jac[4][4];
+  retMat[3][4] = jac[4][2];
+  retMat[3][5] = jac[4][5];
 
-  retMat(4,0) = jac(2,0);
-  retMat(4,1) = jac(2,3);
-  retMat(4,2) = jac(2,1);
-  retMat(4,3) = jac(2,4);
-  retMat(4,4) = jac(2,2);
-  retMat(4,5) = jac(2,5);
+  retMat[4][0] = jac[2][0];
+  retMat[4][1] = jac[2][3];
+  retMat[4][2] = jac[2][1];
+  retMat[4][3] = jac[2][4];
+  retMat[4][4] = jac[2][2];
+  retMat[4][5] = jac[2][5];
 
-  retMat(5,0) = jac(5,0);
-  retMat(5,1) = jac(5,3);
-  retMat(5,2) = jac(5,1);
-  retMat(5,3) = jac(5,4);
-  retMat(5,4) = jac(5,2);
-  retMat(5,5) = jac(5,5);
+  retMat[5][0] = jac[5][0];
+  retMat[5][1] = jac[5][3];
+  retMat[5][2] = jac[5][1];
+  retMat[5][3] = jac[5][4];
+  retMat[5][4] = jac[5][2];
+  retMat[5][5] = jac[5][5];
 
   return retMat;
 }

@@ -34,9 +34,6 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/bmlnElmnt.h>
@@ -113,7 +110,7 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
   jetparticle.setState( inState );
   p_be->propagate( jetparticle );
 
-  m =  jetparticle.State().Jacobian()( xp, x );
+  m =  jetparticle.State().Jacobian()[xp][x];
   if( fabs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
            "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
@@ -140,7 +137,7 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
     jetparticle.setState(inState);
 
     p_be->propagate( jetparticle );
-    m = ( jetparticle.State().Jacobian() )( xp, x );
+    m = ( jetparticle.State().Jacobian() )[xp][x];
     if( fabs(m) < 1.0e-12 ) {
       ostringstream uic;
       uic  << "Horrible, inexplicable error at step "
@@ -239,3 +236,4 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
 
   return ret;
 }
+
