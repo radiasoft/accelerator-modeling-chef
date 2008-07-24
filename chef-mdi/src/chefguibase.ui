@@ -74,22 +74,16 @@
         <action name="editAlignBendsAction"/>
     </item>
     <item text="Calculations" name="Calculations">
-        <action name="calculationsClosedOrbitAction"/>
+        <action name="calculationsReferenceOrbitAction"/>
         <action name="calculationsDispersionAction"/>
         <action name="calculationsLatticeFunctionsAction"/>
-        <item text="Lattice Functions" name="popupMenu_41" accel="">
-            <action name="calculationsLatticeFunctionsTwissAction"/>
-            <action name="calculationsLatticeFunctionsEdwardsTengAction"/>
-            <action name="calculationsLatticeFunctionsMomentsAction"/>
-            <action name="calculationsLatticeFunctionsEigenvaluesAction"/>
-        </item>
-        <action name="calculationsPushAction"/>
-        <item text="Push" name="popupMenu_46" accel="">
-            <action name="calculationsPropagateTwissAction"/>
-            <action name="calculationsPropagateMomentsAction"/>
-            <action name="calculationsPropagateDispersionAction"/>
+        <item text="Lattice Functions" name="popupMenu_43" accel="">
+            <action name="calculationsLatticeFunctionsUncoupledAction"/>
+            <action name="calculationsLatticeFunctionsCoupledAction"/>
         </item>
         <action name="calculationsEmittanceDilutionAction"/>
+        <action name="calculationsUncoupledDataAction"/>
+        <action name="calculationsCoupledDataAction"/>
     </item>
     <item text="Controls" name="Controls">
         <action name="controlsBuildHTuneCctAction"/>
@@ -103,7 +97,7 @@
     <item text="&amp;Tools" name="Tools">
         <action name="toolsGenerateBunchAction"/>
         <action name="toolsDisplayBunchAction"/>
-        <item text="Display Bunch" name="popupMenu_60" accel="">
+        <item text="Display Bunch" name="popupMenu_55" accel="">
             <action name="toolsDisplayBunchXvsYAction"/>
             <action name="toolsDisplayBunchYvsYPAction"/>
             <action name="toolsDisplayBunchx_vs_yAction"/>
@@ -534,7 +528,7 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsPropagateTwissAction</cstring>
+            <cstring>unnamed</cstring>
         </property>
         <property name="text">
             <string>Uncoupled Lattice Functions</string>
@@ -555,20 +549,6 @@
         </property>
         <property name="menuText">
             <string>Moments</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>calculationsPropagateDispersionAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset></iconset>
-        </property>
-        <property name="text">
-            <string>Dispersion</string>
-        </property>
-        <property name="menuText">
-            <string>Dispersion</string>
         </property>
     </action>
     <action>
@@ -701,48 +681,6 @@
         </property>
         <property name="menuText">
             <string>Emittance Dilution</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>calculationsLatticeFunctionsTwissAction</cstring>
-        </property>
-        <property name="text">
-            <string>Uncoupled</string>
-        </property>
-        <property name="menuText">
-            <string>Uncoupled</string>
-        </property>
-        <property name="toolTip">
-            <string>Uncoupled Lattice Functions</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>calculationsLatticeFunctionsEdwardsTengAction</cstring>
-        </property>
-        <property name="text">
-            <string>Factorization</string>
-        </property>
-        <property name="menuText">
-            <string>Factorization</string>
-        </property>
-        <property name="toolTip">
-            <string>Coupled LF Factorization Method</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>calculationsLatticeFunctionsMomentsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Moments</string>
-        </property>
-        <property name="menuText">
-            <string>Moments</string>
-        </property>
-        <property name="toolTip">
-            <string>Coupled LF Moments Method</string>
         </property>
     </action>
     <action>
@@ -1309,13 +1247,68 @@
     </action>
     <action>
         <property name="name">
-            <cstring>calculationsClosedOrbitAction</cstring>
+            <cstring>calculationsReferenceOrbitAction</cstring>
         </property>
         <property name="text">
-            <string>Closed Orbit</string>
+            <string>Reference Orbit</string>
         </property>
         <property name="menuText">
-            <string>Closed Orbit</string>
+            <string>Reference Orbit</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsPushCoupledLatticeFunctionsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Coupled Lattice Functions</string>
+        </property>
+        <property name="menuText">
+            <string>Coupled Lattice Functions</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsLatticeFunctionsUncoupledAction</cstring>
+        </property>
+        <property name="text">
+            <string>Uncoupled</string>
+        </property>
+        <property name="menuText">
+            <string>Uncoupled</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsLatticeFunctionsCoupledAction</cstring>
+        </property>
+        <property name="text">
+            <string>Coupled</string>
+        </property>
+        <property name="menuText">
+            <string>Coupled</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsUncoupledDataAction</cstring>
+        </property>
+        <property name="text">
+            <string>Uncoupled Data</string>
+        </property>
+        <property name="menuText">
+            <string>Uncoupled Data</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>calculationsCoupledDataAction</cstring>
+        </property>
+        <property name="text">
+            <string>Coupled Data</string>
+        </property>
+        <property name="menuText">
+            <string>Coupled Data</string>
         </property>
     </action>
 </actions>
@@ -1435,42 +1428,6 @@
         <slot>helpContents()</slot>
     </connection>
     <connection>
-        <sender>calculationsLatticeFunctionsTwissAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>twissDispatch()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsLatticeFunctionsMomentsAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>momentsDispatch()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsLatticeFunctionsEdwardsTengAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>periodicET()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsPropagateTwissAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>propagateTwiss()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsPropagateMomentsAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>propagateMoments()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsPropagateDispersionAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>propagateDispersion()</slot>
-    </connection>
-    <connection>
         <sender>controlsBuildHTuneCctAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1517,12 +1474,6 @@
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
         <slot>launchRayTrace()</slot>
-    </connection>
-    <connection>
-        <sender>calculationsDispersionAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>dispersionDispatch()</slot>
     </connection>
     <connection>
         <sender>calculationsEmittanceDilutionAction</sender>
@@ -1711,12 +1662,6 @@
         <slot>helpAbout()</slot>
     </connection>
     <connection>
-        <sender>calculationsLatticeFunctionsEigenvaluesAction</sender>
-        <signal>activated()</signal>
-        <receiver>CHEFGUIBase</receiver>
-        <slot>periodicLB()</slot>
-    </connection>
-    <connection>
         <sender>modeLineAction</sender>
         <signal>toggled(bool)</signal>
         <receiver>CHEFGUIBase</receiver>
@@ -1825,10 +1770,46 @@
         <slot>editSelectLine()</slot>
     </connection>
     <connection>
-        <sender>calculationsClosedOrbitAction</sender>
+        <sender>calculationsEmittanceDilutionAction</sender>
         <signal>activated()</signal>
         <receiver>CHEFGUIBase</receiver>
-        <slot>closedOrbit()</slot>
+        <slot>computeDispersion()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsLatticeFunctionsUncoupledAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>computeTwiss()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsLatticeFunctionsCoupledAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>computeCS4D()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsDispersionAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>computeDispersion()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsReferenceOrbitAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>computeReferenceOrbit()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsCoupledDataAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>showCS4DData()</slot>
+    </connection>
+    <connection>
+        <sender>calculationsUncoupledDataAction</sender>
+        <signal>activated()</signal>
+        <receiver>CHEFGUIBase</receiver>
+        <slot>showCS2DData()</slot>
     </connection>
 </connections>
 <slots>
@@ -1869,7 +1850,6 @@
     <slot>toolMisalign()</slot>
     <slot>makeFODO()</slot>
     <slot>makeSingSext()</slot>
-    <slot>periodicTwiss()</slot>
     <slot>periodicET()</slot>
     <slot>periodicMoments()</slot>
     <slot>launchTrack()</slot>
@@ -1901,7 +1881,6 @@
     <slot>devicesClearSelection()</slot>
     <slot>openScriptFile()</slot>
     <slot>helpAbout()</slot>
-    <slot>periodicLB()</slot>
     <slot>modeRing( bool )</slot>
     <slot>modeLine( bool )</slot>
     <slot>fileEditMAD8()</slot>
@@ -1912,22 +1891,24 @@
     <slot>editModeLine()</slot>
     <slot>editMode()</slot>
     <slot>propagateDispersion()</slot>
-    <slot>propagateTwiss()</slot>
     <slot>propagateMoments()</slot>
     <slot>pushParticles()</slot>
     <slot>editAddMarkers()</slot>
     <slot>editPartition()</slot>
     <slot>editRenameLine()</slot>
-    <slot>twissDispatch()</slot>
-    <slot>dispersionDispatch()</slot>
-    <slot>momentsDispatch()</slot>
     <slot>fileEditorSaveAs()</slot>
     <slot>fileEditorSave()</slot>
     <slot>databaseConnect()</slot>
     <slot>databaseRetrieve()</slot>
     <slot>toolsGenerateBunch()</slot>
     <slot>toolsDisplayBunch()</slot>
-    <slot>closedOrbit()</slot>
+    <slot>propagateLB()</slot>
+    <slot>computeDispersion()</slot>
+    <slot>computeReferenceOrbit()</slot>
+    <slot>computeCS4D()</slot>
+    <slot>computeTwiss()</slot>
+    <slot>showCS2DData()</slot>
+    <slot>showCS4DData()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
