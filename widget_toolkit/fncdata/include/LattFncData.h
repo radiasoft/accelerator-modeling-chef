@@ -38,17 +38,15 @@
 #ifndef LATTFNCDATA_H
 #define LATTFNCDATA_H
 
-#include <beamline.h>
-#include <LattFuncSage.h>
+#include <sqlite/connection.hpp>
 #include <PlotData.h>
+
 
 class LattFncData: public PlotData  
 {
  public:
-    LattFncData(   std::vector<LattFuncSage::lattFunc> const& twiss_vec
-                 , double const& horTune
-                 , double const& verTune
-                 , ConstBmlPtr bml = ConstBmlPtr() );
+    LattFncData(   sqlite::connection& db,
+                   double const& horTune, double const& verTune );
    ~LattFncData();
 };
 

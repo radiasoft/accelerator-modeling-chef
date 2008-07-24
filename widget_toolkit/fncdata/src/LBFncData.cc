@@ -5,7 +5,7 @@
 ******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
 ******             class libraries.                                  ****** 
 ******                                                               ****** 
-******  File:  CHEFGUI.cpp                                           ****** 
+******  File:  LBFncData.cpp                                         ****** 
 ******                                                               ******
 ******  Copyright (c) Universities Research Association, Inc.        ****** 
 ******                All Rights Reserved                            ****** 
@@ -31,73 +31,48 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
+#include<sqlite/query.hpp> 
 
-#include <LBFncData.h>
+#include<DataBrowser.h>   
+
+#include<LBFncData.h>   // WARNING qobject #defines emit ! 
+#include<LFDataTable.h> // WARNING qobject #defines emit ! 
 
 using namespace std;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-LBFncData::LBFncData(   std::vector<LBSage::Info> const&  lb_vec
-                      , double const& horTune
-                      , double const& verTune
-                      , ConstBmlPtr bml                           ) 
-: PlotData()
+LBFncData::LBFncData( sqlite::connection& db, double const& horTune, double const& verTune ) 
+: PlotData( db )
 {
-  setTunes( horTune, verTune );
 
-  std::vector<double>   azimuth;
+  setTunes( -1.0, -1.0);
+  // setTunes( horTune, verTune );
 
-  std::vector<double>   beta_1x;
-  std::vector<double>   beta_1y;
+  char const*      plot_attributes[]  = { "Generalized (4D) Courant-Snyder Lattice Functions", "Arc Length [m]", "Beta [m]",  "Beta [m]" }; 
 
-  std::vector<double>   beta_2x;
-  std::vector<double>   beta_2y;
-
-  for ( std::vector<LBSage::Info>::const_iterator it  = lb_vec.begin(); 
-                                                  it != lb_vec.end(); ++it ) {
-    azimuth.push_back( it->arcLength );
-
-    beta_1x.push_back( it->beta_1x   );
-    beta_1y.push_back( it->beta_1y   );
-
-    beta_2x.push_back( it->beta_2x   );
-    beta_2y.push_back( it->beta_2y   );
-  }
-
-  CurveData  c1x( azimuth, beta_1x,  "<hor|beta|hor>"   );
-  CurveData  c1y( azimuth, beta_1y,  "<ver|beta|hor>"   );
-  CurveData  c2x( azimuth, beta_2x,  "<hor|beta|ver>"   );
-  CurveData  c2y( azimuth, beta_2y,  "<ver|beta|ver>"   );
-
-  c1x.setAxes( CurveData::xBottom, CurveData::yLeft  );
-  c1x.setColor( CurveData::Color(0,0,0) );
-
-  c2x.setAxes( CurveData::xBottom, CurveData::yRight );
-  c2x.setColor(  CurveData::Color(255, 0, 0) );
-
-  c2y.setAxes( CurveData::xBottom, CurveData::yLeft  );
-  c2y.setColor(  CurveData::Color(255, 0, 0) );
-
-
-  c1y.setAxes( CurveData::xBottom, CurveData::yRight );
-  c1y.setColor( CurveData::Color(0,0,0) );
-
-  addCurve( c1x );
-  addCurve( c2x );
-  addCurve( c1y );
-  addCurve( c2y );
+  CurveData::curve_attribute  curve_attributes[] = 
+          { {"<hor|beta|hor> (beta_1x ) ",                CurveData::yLeft,   CurveData::Color(255,0,0)}, 
+	    {"<ver|beta|hor> (beta_1y ) ",                CurveData::yLeft,   CurveData::Color(0,0,0)  },
+            {"<hor|beta|ver> (beta_2x ) ",                CurveData::yRight,  CurveData::Color(0,0,0)  },
+            {"<ver|beta|ver> (beta_2y ) ",                CurveData::yRight,  CurveData::Color(255,0,0)}  };
   
+  char const*  sql[] =  
+   { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",
+     "SELECT arclength, beta1x, beta1y, beta2x, beta2y, alpha1x, alpha1y, psi1, alpha2x, alpha2y, psi2 "
+     "FROM REFERENCE_ORBIT, COURANT_SNYDER_4D WHERE (REFERENCE_ORBIT.iseq = COURANT_SNYDER_4D.iseq)" 
+   };
+ 
+  int ncrvs        = sizeof( curve_attributes ) / sizeof(CurveData::curve_attribute );
+  int npltattribs  = sizeof( plot_attributes )  / sizeof(char const *);
 
-  setXLabel( "Arc Length [m]" );
-  setYLabel(  CurveData::yLeft,  "Beta [m]" );
-  setYLabel(  CurveData::yRight, "Beta [m]" );
+  init( db, npltattribs, plot_attributes, ncrvs, curve_attributes, sql );
 
-  setBeamline( bml ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

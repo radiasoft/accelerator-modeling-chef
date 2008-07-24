@@ -36,20 +36,18 @@
 #ifndef MOMENTSFNCDATA_H
 #define MOMENTSFNCDATA_H
 
-#include <physics_toolkit/CovarianceSage.h>
+#include <sqlite/connection.hpp>
 #include <beamline/BmlPtr.h> 
+#include <beamline/LatticeFunctions.h> 
 #include <PlotData.h>
-#include <vector>
 
 
 class MomentsFncData : public PlotData {
     
  public:
 
-    MomentsFncData(   std::vector<CovarianceSage::Info> const& covar_vec
-                    , double const& horTune
-                    , double const& verTune
-                    , ConstBmlPtr bml = ConstBmlPtr()                    );
+  MomentsFncData( sqlite::connection& db, 
+                  double const& horTune, double const& verTune );
 
    ~MomentsFncData();
 };

@@ -35,6 +35,7 @@
 ***************************************************************************
 **************************************************************************/
 
+#include <sqlite/query.hpp>
 #include <MomentsFncData.h>
 
 using namespace std;
@@ -42,62 +43,34 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-MomentsFncData::MomentsFncData(   std::vector<CovarianceSage::Info> const& covar_vec
-                                , double const& horTune
-                                , double const& verTune
-                                , ConstBmlPtr bml                                     )
-: PlotData() 
+MomentsFncData::MomentsFncData(   sqlite::connection& db,
+                                  double const& horTune, double const& verTune )
+: PlotData( db) 
 {
   setTunes( horTune, verTune );
 
-  std::vector<double>    azimuth;
-  std::vector<double>    beta_H;
-  std::vector<double>    alpha_H;
-  std::vector<double>    beta_V;
-  std::vector<double>    alpha_V;
 
-  for (std::vector<CovarianceSage::Info>::const_iterator it  = covar_vec.begin(); 
-                                                         it != covar_vec.end(); ++it ) {
-    azimuth.push_back( it->arcLength );
+  char const*      plot_attributes[]  = { "Covariance",      "Arc Length [m]", "Beta [m]",  "Alpha" };        
 
-     beta_H.push_back( it->beta.hor  );
-     beta_V.push_back( it->beta.ver  );
+  CurveData::curve_attribute  curve_attributes[] = 
+             { {"Horizontal Beta",    CurveData::yLeft,   CurveData::Color(0,0,0)}, 
+	       {"Vertical Beta",      CurveData::yLeft,   CurveData::Color(0,0,0)},
+               {"Horizontal Alpha",   CurveData::yRight,  CurveData::Color(0,0,0)},
+               {"Vertical Alpha",     CurveData::yRight,  CurveData::Color(0,0,0)},
+             };
+  
+  char const*  sql[] =  
+   { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",
+     "SELECT arclength, beta_x, beta_y, alpha_x, alpha_y  FROM "
+     "REFERENCE_ORBIT, COVARIANCE WHERE (REFERENCE_ORBIT.iseq = COVARIANCE.iseq)" 
+   };
+ 
+  int ncrvs        = sizeof( curve_attributes ) / sizeof(CurveData::curve_attribute );
+  int npltattribs  = sizeof( plot_attributes )  / sizeof(char const *);
 
-    alpha_H.push_back( it->alpha.hor );
-    alpha_V.push_back( it->alpha.ver );
-  }
-
-  CurveData  c1(  azimuth, beta_H,  "Horizontal Beta"  );
-  CurveData  c2(  azimuth, beta_V,  "Vertical Beta"    );
-
-  CurveData  c3(  azimuth, alpha_H, "Horizontal Alpha" );
-  CurveData  c4(  azimuth, alpha_V, "Vertical Alpha"   );
-
-  c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
-  c1.setColor( CurveData::Color( 0, 0, 0));
-
-  c2.setAxes( CurveData::xBottom, CurveData::yLeft  );
-  c2.setColor( CurveData::Color( 255, 0, 0));
-
-  c3.setAxes( CurveData::xBottom, CurveData::yRight );
-  c3.setColor( CurveData::Color( 0, 0, 0));
-
-  c4.setAxes( CurveData::xBottom, CurveData::yRight );
-  c4.setColor( CurveData::Color(  255, 0, 0));
-
-  addCurve( c1 );
-  addCurve( c2 );
-  addCurve( c3 );
-  addCurve( c4 );
-
-  setXLabel( "Arc Length [m]"              );
-  setYLabel( CurveData::yLeft,  "Beta [m]" );
-  setYLabel( CurveData::yRight, "Alpha"    );
-
-  setBeamline( bml ); 
+  init( db, npltattribs, plot_attributes, ncrvs, curve_attributes, sql );
 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

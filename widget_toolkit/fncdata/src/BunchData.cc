@@ -49,21 +49,27 @@ BunchData::BunchData( ParticleBunch const& b)
     std::vector<double>    py;
     std::vector<double>    pz;
 
-    for ( ParticleBunch::const_iterator it  = b.begin();
+  int npts = b.size();
+  CurveData  c1( npts,  "x vs y"  );
+
+  CurveData::iterator  it1 = c1.begin();
+
+  for ( ParticleBunch::const_iterator it  = b.begin();
 	  it != b.end(); ++it ) {
      
      Vector const& state = it->State(); 
 
-      x.push_back( state[0] ); 
-      y.push_back( state[1] ); 
-      z.push_back( state[2] ); 
-     px.push_back( state[3] ); 
-     py.push_back( state[4] ); 
-     pz.push_back( state[5] ); 
+     double   x = state[0]; 
+     double   y = state[1]; 
+     double   z = state[2]; 
+     double npx = state[3]; 
+     double npy = state[4]; 
+     double npz = state[5]; 
 
-    }
+    *(it1++) = CurveData::Point(x,y);
 
-  CurveData  c1(  x,  y,  "x vs y"  );
+  }
+
 
   c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
   c1.setColor( CurveData::Color( 0, 0, 0));

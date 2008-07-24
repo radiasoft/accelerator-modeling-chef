@@ -38,17 +38,14 @@
 #ifndef LBFNCDATA_H
 #define LBFNCDATA_H
 
+#include <sqlite/connection.hpp>
 #include <beamline/BmlPtr.h>
-#include <physics_toolkit/LBSage.h>
 #include <PlotData.h>
 
 class LBFncData : public PlotData {
 
  public:
-    LBFncData(   std::vector<LBSage::Info> const& lb_vec
-               , double const& horTune
-               , double const& verTune
-               , ConstBmlPtr bml = ConstBmlPtr()         );
+    LBFncData( sqlite::connection& db, double const& horTune, double const& verTune );
    ~LBFncData();
 };
 

@@ -31,24 +31,23 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
 #ifndef DSPNFNDATA_H
 #define DSPNFNDATA_H
 
+#include <sqlite/connection.hpp>
 #include <beamline/BmlPtr.h>
-#include <DispersionSage.h>
 #include <PlotData.h>
-#include <vector>
 
 
-
-class DspnFncData : public PlotData
-{
+class DspnFncData : public PlotData {
 
  public:
 
-   DspnFncData( std::vector<DispersionSage::Info> const & disp_vec, ConstBmlPtr bml = ConstBmlPtr() );
+   DspnFncData( sqlite::connection& db );
   ~DspnFncData();
 
 };

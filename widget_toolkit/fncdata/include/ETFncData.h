@@ -38,19 +38,16 @@
 #ifndef ETFNCDATA_H
 #define ETFNCDATA_H
 
+#include <sqlite/connection.hpp>
 #include <beamline/BmlPtr.h>
-#include <physics_toolkit/EdwardsTengSage.h>
 #include <PlotData.h>
 
 
-class ETFncData: public PlotData 
-{
+class ETFncData: public PlotData {
  public:
-    ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
-               , double const& horTune
-               , double const& verTune
-               , ConstBmlPtr bml = ConstBmlPtr()                   );
-   ~ETFncData();
+
+  ETFncData( sqlite::connection& db, double const& horTune, double const& verTune );
+ ~ETFncData();
 
 };
 

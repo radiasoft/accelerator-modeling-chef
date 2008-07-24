@@ -31,8 +31,11 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.      ****** 
 ******  URA/FNAL reserves all rights.                                ****** 
 ******                                                               ******
+***************************************************************************
+***************************************************************************
 **************************************************************************/
 
+#include <sqlite/query.hpp>
 #include <ETFncData.h>
 
 using namespace std;
@@ -41,38 +44,51 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-ETFncData::ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
-                      , double const& horTune
-                      , double const& verTune
-                      , ConstBmlPtr bml                                  )
-: PlotData()
+ETFncData::ETFncData(   sqlite::connection& db, double const& horTune, double const& verTune )
+: PlotData( db )
 {
-   setTunes( horTune, verTune );
+  setTunes( horTune, verTune );
 
-   std::vector<double>      azimuth;
+  std::ostringstream sql;
 
-   std::vector<double>       beta_H;
-   std::vector<double>       beta_V;
+  sql << "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT" << ends;
 
-   std::vector<double>      alpha_H;
-   std::vector<double>      alpha_V;
+  sqlite::query q1(db,sql.str() );
 
-  for ( std::vector<EdwardsTengSage::Info>::const_iterator it  = et_vec.begin();  
-	                                                   it != et_vec.end();  ++it) {
+  sqlite::result_type res1 = q1.emit_result();
 
+  int nelms =  res1 ? res1->get_int(0) : 0;
 
-        azimuth.push_back(     it->arcLength      );
-         beta_H.push_back(     it->beta.hor       );
-        alpha_H.push_back(     it->alpha.hor      );
+  CurveData c1( nelms, "Horizontal Beta" );
+  CurveData c2( nelms, "Vertical Beta"   );
 
-         beta_V.push_back(     it->beta.ver       );
-        alpha_V.push_back(     it->alpha.ver      );
+  sql.str("");
 
-  }
+  sql << "SELECT arclength, beta_h, beta_v, alpha_h, alpha_v FROM "
+      << "REFERENCE_ORBIT, EDWARDS_TENG WHERE (REFERENCE_ORBIT.iseq = EDWARDS_TENG.iseq)" 
+      << ends;
 
+  sqlite::query q2(db,sql.str() ); 
+  sqlite::result_type res2 = q2.emit_result();
 
-  CurveData c1( azimuth,  beta_H, "Horizontal Beta" );
-  CurveData c2( azimuth,  beta_V, "Vertical Beta"   );
+  CurveData::iterator it1 = c1.begin();
+  CurveData::iterator it2 = c2.begin();
+
+  if (res2) { 
+    do { 
+
+      double azimuth = res2->get_double(0);
+      double betaH   = res2->get_double(1); // beta_x;
+      double  betaV  = res2->get_double(2); // beta_y;
+      double alphaH  = res2->get_double(3); // alpha_x;
+      double alphaV  = res2->get_double(4); // alpha_y;
+
+      *(it1++) = CurveData::Point(azimuth, betaH);
+      *(it2++) = CurveData::Point(azimuth, betaV);
+
+    } while ( res2->next_row() );
+  };
+
 
   c1.setAxes( CurveData::xBottom, CurveData::yLeft  );
   c1.setColor(  CurveData::Color( 0, 0, 0) ); //
@@ -85,8 +101,6 @@ ETFncData::ETFncData(   std::vector<EdwardsTengSage::Info> const& et_vec
 
   setXLabel( "Arc Length [m]"                    );
   setYLabel(  CurveData::yLeft, "Beta [m]"       );
-
-  setBeamline( bml ); 
 
 }
 

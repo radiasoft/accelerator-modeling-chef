@@ -33,7 +33,6 @@
 #define BUNCHDATA_H
 
 #include <beamline/BmlPtr.h>
-#include <DispersionSage.h>
 #include <PlotData.h>
 #include <vector>
 
