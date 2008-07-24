@@ -110,6 +110,12 @@ std::istream& streamIn(std::istream&, EnvPtr<T>& pje );
 
 //----------------------------------------------------------------------------------------------
 
+void createStandardEnvironments( int deg ); 
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 //----------------------------------------------------------------------------------------------
 // class TJetEnvironment
@@ -185,11 +191,11 @@ struct ScratchArea {
   // factory functions -------------------------------------------
 
   static void                       BeginEnvironment(int maxweight); 
-  static EnvPtr<T>   EndEnvironment(double* scale=0);
+  static EnvPtr<T>   EndEnvironment();
 
-  static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0 );
   static EnvPtr<T>   makeInverseJetEnvironment(TMapping<T> const& map); 
-  static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const&,  double* scale=0);
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const& );
 
   template<typename U>
   static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const& );
@@ -238,7 +244,6 @@ struct ScratchArea {
    int             dof()         const { return   dof_;         }
    const T*        refPoint()    const { return   refPoint_;    }
    int             maxWeight()   const { return   maxWeight_;   }
-   const double*   scale()       const { return   scale_;        }
    const T*        getRefPoint() const { return   refPoint_; } 
  
    std::vector<T>&            monomial()        const { return   scratch_->monomial_;    }
@@ -282,9 +287,6 @@ struct ScratchArea {
   int                dof_;                 // The number of degrees of freedom = SpaceDim / 2.
   T*                 refPoint_;            // Reference point in phase space about which 
                                            //   derivatives are taken.
-  double*            scale_;               // An array containing numbers which scale the
-                                           //   problem's variables.  Each entry is a "typical
-                                           //   size" for the variable of the same index.
   int                maxWeight_;           // Maximum acceptable weight of a variable,
                                            //   equivalent to the maximum order of derivatives
                                            //   to be carried through calculations.
@@ -313,7 +315,7 @@ struct ScratchArea {
 
   ScratchArea<T>*  buildScratchPads(int maxweight, int numvar);
 
-  TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
+  TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0 );
 
   TJetEnvironment(TJetEnvironment const&);
 
