@@ -66,18 +66,13 @@
 #include<beamline/LatticeFunctions.h>
 
 class Particle;
+class beamline;
 
 class BmlUtil {
 
  public: 
 
-  static void normalize( MatrixC& B, Vector& normalizedPhase );
-  // On input: the columns of E contain eigenvectors of
-  //   a one-turn matrix. 
-  // On output: each column has been normalized
-  //   for physical interpretation.
-
-  static int makeCovariance( LattFuncs & info,  
+  static int makeCovariance( CSLattFuncs & info,  
                              Particle const&, 
                              double eps1, double eps2, double eps3);
 
@@ -98,7 +93,7 @@ class BmlUtil {
   static BmlPtr    cloneLineAndInsert( double              percent,
                                        std::list<ElmPtr>&  insertions,
                                        std::list<ElmPtr>&  targets,
-                                       ConstBmlPtr  linePtr );
+                                       beamline const& beamline);
   // Creates a new beamline and returns its address. The
   //   invoking program takes responsibility for deleting the
   //   created beamline. It also takes the responsibility of 
@@ -140,8 +135,7 @@ class BmlUtil {
   //   which acts like empty space: e.g. drifts, Slots, markers.
 
 
-  static bool isKnown( const bmlnElmnt* );
-  static bool isKnown( const bmlnElmnt& );
+  static bool isKnown( bmlnElmnt const& );
   // Returns true if the argument's type is recognized.
 
 
