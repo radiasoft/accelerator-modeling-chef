@@ -30,13 +30,15 @@ HEADERS += ./include/MomentsFncData.h \
            ./include/LBFncData.h \
            ./include/LattFncData.h \
            ./include/BunchData.h \
-           ./include/LFDataTable.h
+           ./include/RefOrbitData.h \
+           ./include/DataBrowser.h
 
 SOURCES += ./src/MomentsFncData.cc \
            ./src/DspnFncData.cc \
            ./src/ETFncData.cc \
            ./src/LBFncData.cc \
            ./src/LattFncData.cc \
+           ./src/RefOrbitData.cc \
            ./src/BunchData.cc \
-           ./src/LFDataTable.cc 
+           ./src/DataBrowser.cc 
 
