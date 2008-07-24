@@ -67,66 +67,35 @@
 
 #define MLT1  1.0e-6
 
-
 using namespace std;
 
+namespace {
 
-bool sh0( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) + 1 ) return false;
- if( index(1) != index(4) )     return false;
- if( index(2) != index(5) )     return false;
+std::complex<double> const complex_0 (0.0, 0.0);
+std::complex<double> const complex_1 (1.0, 0.0); // -i 
+std::complex<double> const mi( 0., -1. );        // -i
+
+template < unsigned int idx>
+bool sh( IntArray const& index, std::complex<double> const& value) {
+
+ int k = ( idx < 3 ) ? 1 : -1; 
+
+ for (int i=0; i<3; ++i ) {
+   if( index[i] !=  index[3+i] + (i == idx) ? k : 0  )return false;
+ }
  return true;
 }
 
-bool sh1( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) )     return false;
- if( index(1) != index(4) + 1 ) return false;
- if( index(2) != index(5) )     return false;
- return true;
-}
+} // anonymous namespace
 
-bool sh2( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) )     return false;
- if( index(1) != index(4) )     return false;
- if( index(2) != index(5) + 1 ) return false;
- return true;
-}
-
-bool sh3( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) - 1 ) return false;
- if( index(1) != index(4) )     return false;
- if( index(2) != index(5) )     return false;
- return true;
-}
-
-bool sh4( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) )     return false;
- if( index(1) != index(4) - 1 ) return false;
- if( index(2) != index(5) )     return false;
- return true;
-}
-
-bool sh5( const IntArray& index, const std::complex<double>& /* value */ ) {
- if( index(0) != index(3) )     return false;
- if( index(1) != index(4) )     return false;
- if( index(2) != index(5) - 1 ) return false;
- return true;
-}
 
 // ===============================================================
 
-void normalForm( const Mapping& theMapping, /* input */
-                 int            maxOrder,   /* input */
-                 MatrixC*       Bptr,
-                 CLieOperator*  N,
-                 CLieOperator*  T ) 
+void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOperator*  N, CLieOperator*  T ) 
 {
- const std::complex<double> complex_0 (0.0, 0.0);
- const std::complex<double> complex_1 (1.0, 0.0);
- const std::complex<double> mi( 0., -1. );
 
- bool (*shear[])( const IntArray&, const std::complex<double>& ) 
-    = { sh0, sh1, sh2, sh3, sh4, sh5 };
+ bool (*shear[])( IntArray const&, const std::complex<double>& ) 
+    = { sh<0>, sh<1>, sh<2>, sh<3>, sh<4>, sh<5> };
 
 
       /* CAUTION */  // A little test
@@ -143,11 +112,11 @@ void normalForm( const Mapping& theMapping, /* input */
 
  // Normalizing the linear normal form coordinates
 
- MatrixD  J( "J", 6 );
+ MatrixD  J = Matrix::Jmatrix(6 );
  MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
 
  for( int i=0; i < 6; ++i) {
-  Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
+  Nx[i][i]  = 1.0 / sqrt( abs( Nx[i][i] ) );  
                                        // ??? "abs" should not be necessary,
                                        // ??? but Holt is finding some
                                        // ??? counterexamples.(!!??)
@@ -155,20 +124,20 @@ void normalForm( const Mapping& theMapping, /* input */
                                        // ??? In principle, could get divide
                                        // ??? by zero here.
 
-  if( abs( ( (std::complex<double>) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+  if( abs( ( (std::complex<double>) 1.0 ) - Nx[i][i] ) < 1.0e-10 ) Nx[i][i] = 1.0;
 
       /* CAUTION */   for( int j = 0; j < 6; j++ ) {
       /* CAUTION */    if( j == i ) continue;
-      /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
+      /* CAUTION */    else if( abs( Nx[i][j] ) > MLT1) {
       /* CAUTION */     ostringstream uic;
       /* CAUTION */     uic  << "Nondiagonal element in BJB^TJ; abs( Nx( " 
                              << i << ", " << j << " ) ) = " 
-                             << abs(Nx(i,j));
+                             << abs(Nx[i][j]);
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
       /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */            uic.str().c_str() ) );
       /* CAUTION */    }
-      /* CAUTION */    else Nx(i,j) = complex_0;
+      /* CAUTION */    else Nx[i][j] = complex_0;
       /* CAUTION */   }
  }
 
@@ -176,30 +145,29 @@ void normalForm( const Mapping& theMapping, /* input */
 
  // Try to get the phase correct ...
 
- std::complex<double> m0, cm0, m1, cm1;
- m0  = B(0,0)/abs(B(0,0));
- cm0 = conj(m0);
- m1  = B(1,1)/abs(B(1,1));
- cm1 = conj(m1);
+ std::complex<double> m0  = B[0][0]/abs(B[0][0]);
+ std::complex<double> cm0 = conj(m0);
+ std::complex<double> m1  = B[1][1]/abs(B[1][1]);
+ std::complex<double> cm1 = conj(m1);
 
  for( int i=0; i < 6; ++i) {
-   B(i,0) *= cm0;
-   B(i,3) *= m0;
-   B(i,1) *= cm1;
-   B(i,4) *= m1;
+   B[i][0] *= cm0;
+   B[i][3] *= m0;
+   B[i][1] *= cm1;
+   B[i][4] *= m1;
  }
- if( imag(B(3,0)) > 0.0 ) {
+ if( imag(B[3][0]) > 0.0 ) {
    for( int i=0; i < 6; ++i) {
-     m0 = B(i,0);
-     B(i,0) = B(i,3);
-     B(i,3) = m0;
+     m0 = B[i][0];
+     B[i][0] = B[i][3];
+     B[i][3] = m0;
    }
  }
- if( imag(B(4,1)) > 0.0 ) {
+ if( imag(B[4][1]) > 0.0 ) {
    for( int i = 0; i < 6; ++i) {
-     m0 = B(i,1);
-     B(i,1) = B(i,4);
-     B(i,4) = m0;
+     m0 = B[i][1];
+     B[i][1] = B[i][4];
+     B[i][4] = m0;
    }
  }
 
@@ -216,7 +184,7 @@ void normalForm( const Mapping& theMapping, /* input */
  MatrixC lambda(1,D.cols());
 
  for( int i = 0; i < D.cols(); i++ ) {
-   lambda(i) = D(i,i);
+   lambda(i) = D[i][i];
  }
       /* CAUTION */  for( int i = 0; i < 6; i++ ) {
       /* CAUTION */   if( fabs( abs(lambda(i)) - 1.0 ) > MLT1 ) {
@@ -232,32 +200,32 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */  
       /* CAUTION */  // A little checking and cleaning.
       /* CAUTION */  for( int i = 0; i < 6; i++ ) {
-      /* CAUTION */   if( fabs( abs(Dinv(i,i)) - 1.0 ) > MLT1 ) {
+      /* CAUTION */   if( fabs( abs(Dinv[i][i]) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | Dinv( " 
                             << i << ", " << i << " ) | = " 
-                            << std::abs(Dinv(i,i));
+                            << std::abs(Dinv[i][i]);
       /* CAUTION */    throw( GenericException( __FILE__, __LINE__, 
       /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
       /* CAUTION */   for( int j=0; j < 6; ++j) {
       /* CAUTION */    if( j == i ) continue;
-      /* CAUTION */    else if( abs( Dinv(i,j) ) > MLT1) {
+      /* CAUTION */    else if( abs( Dinv[i][j] ) > MLT1) {
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
       /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */            "Impossible error has occurred!" ) );
       /* CAUTION */    }
-      /* CAUTION */    else Dinv(i,j) = complex_0;
+      /* CAUTION */    else Dinv[i][j] = complex_0;
       /* CAUTION */   }
       /* CAUTION */  }
       /* CAUTION */ 
       /* CAUTION */  for( int i = 0; i < 6; i++ ) {
-      /* CAUTION */   if( fabs( abs(D(i,i)) - 1.0 ) > MLT1 ) {
+      /* CAUTION */   if( fabs( abs(D[i][i]) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | D( " 
                             << i << ", " << i << " ) | = " 
-                            << std::abs(D(i,i));
+                            << std::abs(D[i][i]);
       /* CAUTION */    throw( GenericException( __FILE__, __LINE__, 
       /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */           uic.str().c_str() ) );
@@ -265,12 +233,12 @@ void normalForm( const Mapping& theMapping, /* input */
       /* CAUTION */ 
       /* CAUTION */   for( int j=0; j < 6; ++j) {
       /* CAUTION */    if( j == i ) continue;
-      /* CAUTION */    else if( abs( D(i,j) ) > MLT1) {
+      /* CAUTION */    else if( abs( D[i][j] ) > MLT1) {
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
       /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */            "An impossible error has occurred!" ) );
       /* CAUTION */    }
-      /* CAUTION */    else D(i,j) = complex_0;
+      /* CAUTION */    else D[i][j] =  complex_0;
       /* CAUTION */   }
       /* CAUTION */  }
 
@@ -279,29 +247,23 @@ void normalForm( const Mapping& theMapping, /* input */
 
  MappingC CL1 = theMapping;
 
- MappingC id( "ident" );
+ MappingC const id( "ident" );
  MappingC calN = Binv*CL1( B*(Dinv*id) );
  MappingC mapT;
 
  // And the rest ...
-
- std::complex<double>  factor, denom, temp;
- int                   l, ll;
- const JLCterm*        q;
- MappingC              reg;
- MappingC              doc;
-
  
- for( int k = 0; k <= maxOrder - 2; k++ ) {
-  reg = id;
-  ll = 0;
+ for( int k = 0; k <= maxOrder - 2; ++k) {
+  MappingC reg = id;
+  int ll   = 0;
   while( ll < k ) reg = N[ll++].expMap( -complex_1, reg );
+
   reg = calN( reg );
   // -------------
   reg = reg.filter( k+2, k+2 );
   N[k] = reg.filter( shear );
 
-  doc = N[k] - reg;
+  MappingC doc = N[k] - reg;
 
   for( int i=0; i< 6; ++i ) {
 
@@ -311,30 +273,29 @@ void normalForm( const Mapping& theMapping, /* input */
    T[k](i).clear();
    #endif
 
-   for ( JetC::iterator it = doc(i).begin() ; it != doc(i).end(); ++it ) {
-    factor = 1.0;
+   for ( JetC::iterator it = doc[i].begin() ; it != doc[i].end(); ++it ) {
+     std::complex<double> factor = 1.0;
 
     for( int j=0; j < 6; ++j) {
-     temp = complex_1 / lambda(j);
-     IntArray exponents =  it->exponents( doc(i).Env() ) ;
 
-     for( int l=0;  l < exponents(j); ++l) {
+     IntArray exponents        =  it->exponents( doc[i].Env() ) ;
+     std::complex<double> temp = complex_1 / lambda(j);
+
+     for( int l=0;  l < exponents[j]; ++l) {
       factor *= temp;
      }
-     // REMOVE: factor *= pow( complex_1 / lambda(j), it->exponents()(j) );
-     // REMOVE: factor *= pow( 1.0 / lambda(j), it->exponents()(j) );
     }
     factor *= lambda(i);
 
     // Either absorption or resonance subtraction ... 
-    denom = factor - complex_1;
+
+    std::complex<double> denom = factor - complex_1;
+
     if( abs( denom ) <= 1.0e-7 ) {
-      //N[k](i).addTerm( JLCterm( it->exponents(), - it->coefficient(), CL1.Env() ) );
-      N[k](i).addTerm( JLCterm( - it->coefficient(), it->offset_, it->weight_ ) );
+      N[k][i].addTerm( JLCterm( - it->coefficient(),    it->offset_, it->weight_ ) );
     }
     else {
-      //T[k](i).addTerm( JLCterm( it->exponents(), it->coefficient()/denom, CL1.Env() ) );
-      T[k](i).addTerm( JLCterm( it->coefficient()/denom, it->offset_, it->weight_ ) );
+      T[k][i].addTerm( JLCterm( it->coefficient()/denom, it->offset_, it->weight_ ) );
     }
    }
   }
