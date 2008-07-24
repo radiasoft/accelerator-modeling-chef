@@ -5,7 +5,7 @@
 ******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
-******  File:      py-particle.cpp
+******  File:      py-jetparticle.cpp
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -43,9 +43,6 @@ namespace {
 Vector  const& (   Particle::*State_ptr)()    const      = &Particle::State;
 Mapping const& (JetParticle::*JetState_ptr)() const      = &JetParticle::State;
 
-void createStandardEnvironments_arg_1(int order) { return JetParticle::createStandardEnvironments( order ); }
-void createStandardEnvironments_arg_0()          { return JetParticle::createStandardEnvironments();        }
-
 } // anonymous namespace
 
 //------------------------------------------------------------------------------
@@ -70,8 +67,6 @@ void wrap_jetparticle () {
   JetParticle_.staticmethod("npyIndex");  
   JetParticle_.def( "ndpIndex", &JetParticle::ndpIndex);
   JetParticle_.staticmethod("ndpIndex");  
-  JetParticle_.def("createStandardEnvironments", &JetParticle::createStandardEnvironments);
-  JetParticle_.staticmethod("createStandardEnvironments");  
 
   JetParticle_.def("SetReferenceEnergy", &JetParticle::SetReferenceEnergy);
   JetParticle_.def("State",    JetState_ptr,  return_value_policy<copy_const_reference>() );
@@ -91,6 +86,7 @@ void wrap_jetparticle () {
   JetParticle_.def("set_ndp",             &JetParticle::set_ndp);
 
   JetParticle_.def("Energy",             &JetParticle::Energy);
+  JetParticle_.def("KineticEnergy",      &JetParticle::KineticEnergy);
   JetParticle_.def("Momentum",           &JetParticle::Momentum);
   JetParticle_.def("NormalizedMomentum", &JetParticle::NormalizedMomentum);
   JetParticle_.def("Mass",               &JetParticle::Mass,              return_value_policy<copy_const_reference>() );
@@ -99,8 +95,8 @@ void wrap_jetparticle () {
   JetParticle_.def("ReferenceGamma",     &JetParticle::ReferenceGamma,    return_value_policy<copy_const_reference>() );
   JetParticle_.def("Gamma",              &JetParticle::Gamma);
   JetParticle_.def("ReferenceMomentum",  &JetParticle::ReferenceMomentum, return_value_policy<copy_const_reference>() );
-  JetParticle_.def("PNI2",               &JetParticle::PNI2,              return_value_policy<copy_const_reference>() );
-  JetParticle_.def("ReferenceEnergy",    &JetParticle::ReferenceEnergy,   return_value_policy<copy_const_reference>() );
+  JetParticle_.def("pn",                 &JetParticle::pn);
+  JetParticle_.def("ReferenceEnergy",    &JetParticle::ReferenceEnergy);
   JetParticle_.def("Charge",             &JetParticle::Charge,            return_value_policy<copy_const_reference>() );
   
            //JetVector VectorBeta() const;
