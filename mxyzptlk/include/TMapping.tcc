@@ -257,7 +257,7 @@ TMatrix<T> TMapping<T>::jacobian() const
  for( int j=0; j<nv; ++j) {
   d[j] = 1;
   for( int i=0; i<dim; ++i)  {
-      M( i, j ) = (this->comp_)[i].derivative( d );
+      M[i][j] = (this->comp_)[i].derivative( d );
   }
   d[j] = 0;
  }
@@ -330,7 +330,7 @@ TMapping<T> TMapping<T>::inverse() const
  // ... Temporarily zero out the reference point 
 
  EnvPtr<T> tmp_pje_inv_zeroed( 
-                         TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0, 0  )); 
+                         TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0 )); 
 
  z.myEnv_ = tmp_pje_inv_zeroed;
 
