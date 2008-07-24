@@ -42,49 +42,7 @@
 //----------------------------------------------------------------
 // local class and functions
 //----------------------------------------------------------------
-namespace { 
 
-#if  0
-boost::python::list getTwissArray_wrap(BeamlineContext& obj)
-{
-
-  std::vector<LattFuncs> twiss_array = obj.getTwissArray();
-  boost::python::list twiss_list;
-  for ( std::vector<LattFuncs>::iterator it  = twiss_array.begin(); 
-	it != twiss_array.end(); ++it) {
-        twiss_list.append( *it );
-  }   
-  return  twiss_list;
-}     
-                                          
-boost::python::list getETArray_wrap( BeamlineContext& obj )         
-{
-  boost::python::list et_list;
-  return  et_list;
-}
-
-boost::python::list getLBArray_wrap( BeamlineContext& obj )         
-{
-  boost::python::list lb_list;
-  return  lb_list;
-}
-                                          
-boost::python::list getCovarianceArray_wrap( BeamlineContext& obj )              
-{
-  boost::python::list covariance_list;
-  return  covariance_list;
-}
-                                           
-
-boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
-{
-  boost::python::list dispersion_list;
-  return  dispersion_list;
-}
-#endif
-
-
-} // anonymous namespace
 
 //----------------------------------------------------------------
 // end local class and functions
@@ -94,57 +52,7 @@ void wrap_beamlinecontext() {
 
 using namespace boost::python;
 
- class_<BeamlineContext, boost::noncopyable> ( "BeamlineContext", init<Particle const&, boost::shared_ptr<beamline> >() );
+ class_<BeamlineContext, bases<beamline>, boost::noncopyable> ( "BeamlineContext", init<Particle const&, beamline const& >() );
 
 }
 
-#if 0
-
- .def( "writeTree",                      &BeamlineContext::writeTree )
- .def( "name",                           &BeamlineContext::name)                             // const char* name() const;
- .def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, const Particle& ) const;
- .def( "sumLengths",                     &BeamlineContext::sumLengths)                       // double sumLengths() const;
- .def( "setLength",                      &BeamlineContext::setLength )                       // int setLength   ( bmlnElmnt*, double );
- .def( "setStrength",                    &BeamlineContext::setStrength )                     // int setStrength ( bmlnElmnt*, double );
-
- .def( "setAvgInvariantEmittance",       &BeamlineContext::setAvgInvariantEmittance )        // void setAvgInvariantEmittance( double, double );
- .def( "getEnergy",                      &BeamlineContext::getEnergy)                        // double getEnergy() const;
- .def( "countHowManyDeeply",             &BeamlineContext::countHowManyDeeply)               // int countHowManyDeeply() const;
- .def( "getHorizontalFracTune",          &BeamlineContext::getHorizontalFracTune)            // double getHorizontalFracTune();
- .def( "getVerticalFracTune",            &BeamlineContext::getVerticalFracTune)
- .def( "getHorizontalEigenTune",         &BeamlineContext::getHorizontalEigenTune)             //double getHorizontalEigenTune()
- .def( "getVerticalEigenTune",           &BeamlineContext::getVerticalEigenTune)               // double getVerticalEigenTune()
-
-.def("changeTunesBy",                    &BeamlineContext::changeTunesBy)                       // int changeTunesBy( double, double );
-
-.def("isRing",                           &BeamlineContext::isRing)
-.def("isTreatedAsRing",                  &BeamlineContext::isTreatedAsRing)
-.def("handleAsRing",                     &BeamlineContext::handleAsRing)
-.def("handleAsLine",                     &BeamlineContext::handleAsLine)
-;
-
-}
-
-//.def( "accept",                       &BeamlineContext::accept )                    //  ( ConstBmlVisitor& ) const;
-//.def  "accept",                       &BeamlineContext::accept )                    //  ( BmlVisitor& ) 
-//.def("setAlignment",                  &BeamlineContext::setAlignment )                    // int setAlignment( bmlnElmnt*, const alignmentData& );
-//.def("setAlignment",                  &BeamlineContext::setAlignment)                     //int setAlignment( beamline::Criterion&, const alignmentData& );
-//.def( "processElements",                &BeamlineContext::processElements)                  // int processElements( beamline::Action& ); 
-//.def("getAlignmentData",              &BeamlineContext::getAlignmentData)                 // alignmentData getAlignmentData( const bmlnElmnt* ) const;
-//.def("getOneTurnMap",                 &BeamlineContext::getOneTurnMap )                   // Mapping getOneTurnMap();
-//.def("equilibriumCovariance",         &BeamlineContext::equilibriumCovariance, 
-//                                          return_value_policy<reference_existing_object>() )   // MatrixD equilibriumCovariance();
-//.def("equilibriumCovariance",         &BeamlineContext::equilibriumCovariance, 
-//                                          return_value_policy<reference_existing_object>() )   // MatrixD equilibriumCovariance( double, double );
-// .def("addHTuneCorrector",               &BeamlineContext::addHTuneCorrector)                   // int addHTuneCorrector( const bmlnElmnt* );
-// .def("addVTuneCorrector",               &BeamlineContext::addVTuneCorrector)                   // int addVTuneCorrector( const bmlnElmnt* );
-
-#if 0
-.def("getTwissArray",                    &getTwissArray_wrap       )
-.def("getETArray",                       &getETArray_wrap          )  
-.def("getCovarianceArray",               &getCovarianceArray_wrap  ) 
-.def("getDispersionArray",               &getDispersionArray_wrap  )
-#endif
-
-
-#endif
