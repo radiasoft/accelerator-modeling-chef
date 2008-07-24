@@ -56,10 +56,10 @@ InitCondDialogCovariance::InitCondDialogCovariance(QWidget* parent, const char* 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFuncs InitCondDialogCovariance::getInitCond() const
+CSLattFuncs InitCondDialogCovariance::getInitCond() const
 {
 
-  LattFuncs info;
+  CSLattFuncs info;
 
   // FIXME !
 #if 0
@@ -84,7 +84,7 @@ LattFuncs InitCondDialogCovariance::getInitCond() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void InitCondDialogCovariance:: setInitCond( LattFuncs const& info) 
+void InitCondDialogCovariance:: setInitCond( CSLattFuncs const& info) 
 {
  
   // FIXME !

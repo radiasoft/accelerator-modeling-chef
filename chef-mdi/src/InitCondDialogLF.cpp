@@ -58,7 +58,7 @@ InitCondDialogLF::InitCondDialogLF(QWidget* parent, const char* name, WFlags f)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFuncs InitCondDialogLF::getInitCond() const
+CSLattFuncs InitCondDialogLF::getInitCond() const
 {
 
   CSLattFuncs lf;
@@ -83,26 +83,24 @@ LattFuncs InitCondDialogLF::getInitCond() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void InitCondDialogLF:: setInitCond( LattFuncs const& lf) 
+void InitCondDialogLF:: setInitCond( CSLattFuncs const& lf) 
 {
-
-  CSLattFuncs const& cslf = boost::get< CSLattFuncs const&>(lf);
 
   QString s("%1"); 
 
-  hBetaLineEdit->setText(  s.arg(cslf.beta.hor) );
-  vBetaLineEdit->setText(  s.arg(cslf.beta.ver) );
-  hAlphaLineEdit->setText( s.arg(cslf.alpha.hor) );
-  vAlphaLineEdit->setText( s.arg(cslf.alpha.ver) );
+  hBetaLineEdit->setText(  s.arg(lf.beta.hor) );
+  vBetaLineEdit->setText(  s.arg(lf.beta.ver) );
+  hAlphaLineEdit->setText( s.arg(lf.alpha.hor) );
+  vAlphaLineEdit->setText( s.arg(lf.alpha.ver) );
 						       
-  hEtaLineEdit->setText( s.arg(cslf.dispersion.x) );
-  vEtaLineEdit->setText( s.arg(cslf.dispersion.y) );
+  hEtaLineEdit->setText( s.arg(lf.dispersion.x) );
+  vEtaLineEdit->setText( s.arg(lf.dispersion.y) );
 				
-  hEtaPrimeLineEdit->setText( s.arg(cslf.dispersion.xp) );
-  vEtaPrimeLineEdit->setText( s.arg(cslf.dispersion.yp) );
+  hEtaPrimeLineEdit->setText( s.arg(lf.dispersion.xp) );
+  vEtaPrimeLineEdit->setText( s.arg(lf.dispersion.yp) );
 						       
-  hPsiLineEdit->setText( s.arg( cslf.psi.hor ) );
-  vPsiLineEdit->setText( s.arg( cslf.psi.ver ) );
+  hPsiLineEdit->setText( s.arg( lf.psi.hor ) );
+  vPsiLineEdit->setText( s.arg( lf.psi.ver ) );
 
 }
 
@@ -141,14 +139,14 @@ InitCondDialogLF::ULFMode()
  hAlphaLineEdit->setEnabled( true);
  vAlphaLineEdit->setEnabled( true);
 
- hEtaLineEdit->setEnabled(false);
- vEtaLineEdit->setEnabled(false);
+ hEtaLineEdit->setEnabled(true);
+ vEtaLineEdit->setEnabled(true);
 
- hEtaPrimeLineEdit->setEnabled(false);
- vEtaPrimeLineEdit->setEnabled(false );
+ hEtaPrimeLineEdit->setEnabled(true);
+ vEtaPrimeLineEdit->setEnabled(true);
 
- hPsiLineEdit->setEnabled(false);
- vPsiLineEdit->setEnabled(false);
+ hPsiLineEdit->setEnabled(true);
+ vPsiLineEdit->setEnabled(true);
 
 }
 
