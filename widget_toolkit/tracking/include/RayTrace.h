@@ -97,7 +97,7 @@ public:
   int run();
 
   std::list<Ray*>     _history;
-  LattFuncs*          _p_info;
+  CSLattFuncs*        _p_info;
 
   void      setBeamline( const beamline* );
   void      _process ( RayDrawSpace*, double, double );

@@ -268,7 +268,7 @@ public:
   int run();
 
   std::list<Orbit*>       orbits_;
-  LattFuncs*              _p_info;
+  CSLattFuncs*             _p_info;
 
   void setState( const Vector& );
 
