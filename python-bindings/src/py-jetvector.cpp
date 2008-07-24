@@ -33,21 +33,15 @@ using namespace boost::python;
 
 namespace {
 
- 
-template<typename T>
-class JetVectorWrapper: public TJetVector<T> {
- 
- private:
-  
-   PyObject* m_self;
+void SetComponent( JetVector& v, int i, Jet const& value) 
+{
+  v[i] = value;
+}    
 
- public:
-
-  JetVectorWrapper( PyObject* self): m_self(self), TJetVector<T>() {}
-  JetVectorWrapper( PyObject* self, TJetVector<T> const& v ): m_self(self), TJetVector<T>( v) {} 
-
-
-};
+void SetComponentC( JetCVector& v, int i, JetC const& value) 
+{
+  v[i] = value;
+}    
 
 
 void       (JetVector::*Rotate_1_ptr   )(JetVector&, double     )  const  =  &JetVector::Rotate;
@@ -76,13 +70,13 @@ JetCVector (JetCVector::*filterC_1_ptr    )(int, int                )   const  =
 
 void wrap_mxyzptlk_jetvector() {
 
-  class_<JetVector, JetVectorWrapper<double> > JetVector_class_ ("JetVector", init<>() );
+  class_<JetVector> JetVector_class_ ("JetVector", init<>() );
 
   JetVector_class_.def( "Dim",           &JetVector::Dim          );
   JetVector_class_.def( "Env",           &JetVector::Env          );
   JetVector_class_.def( "AccuWgt",       &JetVector::AccuWgt      );
   JetVector_class_.def( "Weight",        &JetVector::Weight       );
-  JetVector_class_.def( "SetComponent",  &JetVector::SetComponent );
+  JetVector_class_.def( "SetComponent",  &SetComponent            );
   JetVector_class_.def( "filter",        filter_1_ptr             );
   JetVector_class_.def( "peekAt",        peekAt_ptr               ); 
   JetVector_class_.def( "printCoeffs",   printCoeffs_ptr          );
@@ -133,13 +127,13 @@ void wrap_mxyzptlk_jetvector() {
 
 void wrap_mxyzptlk_jetvectorc() {
 
-  class_<JetCVector, JetVectorWrapper<std::complex<double> > >JetCVector_class_("JetCVector", init<>() );
+  class_<JetCVector>  JetCVector_class_("JetCVector", init<>() );
 
   JetCVector_class_.def( "Dim",           &JetCVector::Dim          );
   JetCVector_class_.def( "Env",           &JetCVector::Env          );
   JetCVector_class_.def( "AccuWgt",       &JetCVector::AccuWgt      );
   JetCVector_class_.def( "Weight",        &JetCVector::Weight       );
-  JetCVector_class_.def( "SetComponent",  &JetCVector::SetComponent );
+  JetCVector_class_.def( "SetComponent",  &SetComponentC            );
   JetCVector_class_.def( "filter",        filterC_1_ptr             );
   JetCVector_class_.def( "peekAt",        peekAtC_ptr               ); 
   JetCVector_class_.def( "printCoeffs",   printCoeffsC_ptr          );
