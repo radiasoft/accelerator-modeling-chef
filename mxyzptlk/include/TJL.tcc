@@ -64,7 +64,9 @@
 ****** - added get/setTermCoefficient() to get/set specific monomial coefficient
 ******
 ******  Mar 2008 ostiguy@fnal
-******  - Jet composition and evaluation code refactored and optimized. 
+******  - composition and evaluation code refactored and optimized. 
+******  - more optimizations in pow(), sqrt(), sin() and cos() to 
+******    eliminate superfluous deep copies.   
 ******
 **************************************************************************
 *************************************************************************/
@@ -94,7 +96,6 @@ using FNAL::pcout;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //  static data members
 //------------------------------------------------------------------------
-
 
 
 template<typename T>
@@ -237,8 +238,6 @@ const char* TJL<T>::BadReference::what() const throw()
 //      Implementation of Class TJL
 // 
 // 
-
-
 
 
 //    Constructors and destructors    |||||||||||||||||||||||||||
@@ -716,21 +715,6 @@ void TJL<T>::peekAt() const {
    (*pcout) << "Index:  " << ( myEnv_->exponents(p->offset_) ) << std::endl;
 
  }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-void TJL<T>::scaleBy( T y ) 
-{ 
-
- const_iterator pend = end();
- for ( iterator p = begin(); p != pend; ++p ) {
-   p->value_ *= y;               
- }
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1431,19 +1415,45 @@ TJL<T>& TJL<T>::operator=( const TJL<T>& x )  {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template <typename T>
+JLPtr<T>&  operator*=(JLPtr<T> & lhs, T const& rhs  )  
+{
+
+ typename TJL<T>::const_iterator pend = lhs->end();
+ for ( typename TJL<T>::iterator p = lhs->begin(); p != pend; ++p ) {
+   p->value_ *= rhs;               
+ }
+
+ return lhs;
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
-TJL<T>& TJL<T>::operator+=( T const& x ) {   
+JLPtr<T>& operator+=( JLPtr<T>& lhs, T const& x ) {   
 
-  jltermStore_->value_ += x; 
+  lhs->jltermStore_->value_ += x; 
 
-  return *this;
+  return lhs;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+JLPtr<T>& operator-=( JLPtr<T>& lhs, T const& x ) 
+{   
+  lhs->jltermStore_->value_ -= x; 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::sin() const
+JLPtr<T>  TJL<T>::sin() const
 { 
 
  JLPtr<T> epsilon = clone(); // deep copy 
@@ -1458,7 +1468,10 @@ JLPtr<T> TJL<T>::sin() const
    // at this point, epsilon is a pure differential    
    // ---------------------------------------------
 
-     return  ( epsCos(epsilon)*sn + epsSin(epsilon)*cs);
+   JLPtr<T> eps_c = epsCos( epsilon ); 
+   JLPtr<T> eps_s = epsSin( epsilon ); 
+
+    return  ( (eps_c *= sn) + (eps_s *=cs) );
   
  }
 
@@ -1474,7 +1487,7 @@ JLPtr<T> TJL<T>::sin() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::cos() const
+JLPtr<T>  TJL<T>::cos() const
 { 
 
  JLPtr<T> epsilon = clone(); // deep copy 
@@ -1488,8 +1501,11 @@ JLPtr<T> TJL<T>::cos() const
    // ---------------------------------------------
    // at this point, epsilon is a pure differential    
    // ---------------------------------------------
-   
-     return  (epsCos( epsilon )*cs - epsSin( epsilon )*sn );
+      
+   JLPtr<T> eps_c = epsCos( epsilon ); 
+   JLPtr<T> eps_s = epsSin( epsilon ); 
+
+   return  (  (eps_c *= cs) - (eps_s *= sn) );
  }
 
  else {                               
@@ -1514,18 +1530,18 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
 
 
  JLPtr<T> term =  epsilon*epsq;                // term = 1/6 * epsilon*epsq
- term->scaleBy(1.0/6.0);
+ term *= T(1.0/6.0);
  
  double n = 3.0;
- double n1,n2;
 
   int nsteps = 0;
   while( term->getCount() > 0 ) {
 
     z    = z +term;                              // z += term;
     term *= epsq;                                // term->multiply(epsq);
-    n1 = ++n; n2 = ++n;
-    term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;
+    double n1 = ++n;
+    double n2 = ++n;
+    term +=  T(1.0/(n1*n2));                      // term = ( ( term*epsq ) / ++n ) / ++n;
     ++nsteps;
   }
  
@@ -1550,17 +1566,17 @@ JLPtr<T> TJL<T>::epsCos( JLPtr<T> const& epsilon )
  epsq->Negate();                                // epsq = -epsilon*epsilon
 
  JLPtr<T> term(epsq->clone());
- term->scaleBy(0.5);                            // term = epsq/2.0
+ term *= T(0.5);                                // term = epsq/2.0
 
  double n = 2.0;
- double n1, n2;
  
   int nsteps =0;
   while( term->getCount() > 0 ) {
     z     = z +term;                                // z += term;
-    term *= epsq;                                // term->multiply(epsq);
-    n1    = ++n; n2 = ++n;
-    term->scaleBy( 1.0/static_cast<T>(n1*n2) );  // term = ( ( term*epsq ) / ++n ) / ++n;  
+    term *= epsq;                                   // term->multiply(epsq);
+    double n1  = ++n; 
+    double n2 = ++n;
+    term *= 1.0/static_cast<T>(n1*n2);              // term = ( ( term*epsq ) / ++n ) / ++n;  
     ++nsteps;
   }
  
@@ -1580,7 +1596,7 @@ template<typename T>
 JLPtr<T> TJL<T>::sqrt() const 
 {
 
- if( getCount() == 0 ) {
+   if( getCount() == 0 ) {
 
    // * the code below should be replaced by a more permanent 
    // * solution; possibly a function that clears the scratchpads for all
@@ -1607,24 +1623,20 @@ JLPtr<T> TJL<T>::sqrt() const
  }
  
 
- if( standardPart() !=  T() )   // non-zero standard part
- {
-   T factor = std::sqrt( standardPart() );
-   if( getCount() == 1 )           // ... operand may have no derivatives
-   {
-     return JLPtr<T>( makeTJL(myEnv_, factor)); 
+ if( standardPart() !=  T() ) {   // non-zero standard part
+   if( getCount() == 1 ) {          // ... operand may have no derivatives
+     return JLPtr<T>( makeTJL(myEnv_, std::sqrt(standardPart()) )); 
    }
-   else                       // ... normal case
-   {
-     JLPtr<T> epsilon = clone(); // deep copy 
-     epsilon->setStandardPart( T() );                     
-     epsilon->scaleBy( 1.0/standardPart() );
-     return ( epsSqrt(epsilon)*factor );   
-     }
- }
- else                                 // nilpotent argument
- {
-   
+
+   JLPtr<T> epsilon = clone(); // deep copy 
+   T factor = standardPart();
+   epsilon->setStandardPart( T() );                     
+   epsilon *=  T(1.0)/factor;
+   epsilon  =  epsPow( epsilon, 0.5);
+   epsilon *=  T(std::pow(factor,0.5));
+   return epsilon;
+  }
+ else { // nilpotent argument
    throw( GenericException( __FILE__, __LINE__, 
           "TJL<T> sqrt() ",
           "Argument's standard part vanishes; it is nilpotent." ) );
@@ -1632,62 +1644,26 @@ JLPtr<T> TJL<T>::sqrt() const
  }
 }
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::epsSqrt( JLPtr<T> const& epsilon ) 
-{  
+JLPtr<T>  TJL<T>::exp() const
+{
+  JLPtr<T> epsilon = clone(); // deep copy 
 
- // This function is identical to epsPow
- // with the substitution  s = 1/2
+  T factor = T();
 
- JLPtr<T>      z(makeTJL(epsilon->myEnv_,(T) 1.0)); // z = 1.0 
- JLPtr<T>      term(makeTJL(*epsilon));             // deep copy;  term = epsilon 
- 
- double f    = 1.0 / 2.0;
- double n    = 1.0;
-
- term->scaleBy(f);                      // term = f*epsilon;
- 
- int nsteps = 0;
- while( term->getCount() > 0 ) {
-
-   z    = z + term;
-   term *= epsilon;                    // term->multiply(epsilon);
-
-
-   term->scaleBy( T(--f) / static_cast<T>(++n) );    // term *= ( ((T) (--f)) * epsilon ) / ++n;
-
-   if (++nsteps > mx_maxiter_ ) break;         
- }
-
- if ( nsteps > mx_maxiter_ ) (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsSqrt " << std::endl 
-                                       << "*** WARNING ***  Results may not be accurate."                          << std::endl;
-
- z->accuWgt_ = epsilon->accuWgt_;
-
- return z;
-}
- 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
- template<typename T>
- JLPtr<T> TJL<T>::exp() const
- {
- 
- T factor = T();
- JLPtr<T> epsilon = clone();  //deep copy
-
- if( standardPart() !=  T() ) {                   // x has non-zero standard part
-   factor = std::exp( standardPart() );
-   epsilon->setStandardPart( T() );               // zero out the standard part off epsilon
-   return ( epsExp( epsilon )*factor );
-   }
- else {                               // x is already a pure infinitesimal
-   return epsExp( epsilon );
-   }
+  if( standardPart() !=  T() ) {                   // x has non-zero standard part
+    factor = std::exp( standardPart() );
+    epsilon->setStandardPart( T() );               // zero out the standard part off epsilon
+    JLPtr<T> res = epsExp( epsilon );
+    res *= factor;
+    return res;
+    }
+  else {                               // x is already a pure infinitesimal
+    return epsExp( epsilon );
+  }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1705,11 +1681,9 @@ JLPtr<T>  TJL<T>::epsExp( JLPtr<T> const& epsilon )
  
  int nsteps = 0;
  while( term->getCount() > 0 ) {
-   z  = z +term;                                             // z += term;
+   z  = z +term;                                          // z += term;
    term *= epsilon;  
-   term->scaleBy(1.0/static_cast<T>(++n));                // term = ( term*epsilon ) / ++n;
-   if (++nsteps > epsilon->accuWgt_) break;               // this should not be necessary
-                                                          // unless the scratchpad is poluted.   
+   term *= T (1.0/(++n));                                 // term = ( term*epsilon ) / ++n;
  }
   
  z->accuWgt_ = epsilon->accuWgt_;
@@ -1721,111 +1695,87 @@ JLPtr<T>  TJL<T>::epsExp( JLPtr<T> const& epsilon )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::pow(const double& s )  const
+JLPtr<T> TJL<T>::pow( JLPtr<T>& x, int n ) // arg is not modified
+{
+  if ( n > 0 ) { 
+     if( n%2 == 0 ) { 
+        if( n == 0 ) { return JLPtr<T>( makeTJL( x->myEnv_, ((T) 1.0))); }  
+        JLPtr<T> result  = TJL<T>::pow(x, n/2 );
+        return ( result*result );
+     }
+     else{
+        if( n == 1 )  return x;
+        JLPtr<T> result  = x->clone();
+        return (result * TJL<T>::pow(x, n-1) );
+     } 
+ }
+ else { // exponent is negative
+   JLPtr<T> xr = ( makeTJL( x->myEnv_, ((T) 1.0) ))/ x;
+   return TJL<T>::pow( xr, -n);
+ }
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+JLPtr<T> TJL<T>::pow( JLPtr<T>& x, double const& s)  
 {
 
- if( getCount() == 0 ) return clone(); // deepcopy  pow(0, s) = 0  
+ if( x->getCount() == 0 ) 
+       return JLPtr<T>( makeTJL( x->myEnv_,0.0 ) );  //  pow(0, s) = 0  
  
- int u = 0;
 
- if(  standardPart()  !=  T()   ) // x has non-zero standard part
- {
-
-   if( getCount() == 0 ) {             // x may have no derivatives
-     return JLPtr<T>( makeTJL( myEnv_, std::pow( standardPart(),s ) ) );
+ if( x->standardPart()  !=  double()   ) {        // has non-zero standard part
+   if(x->getCount() == 1 ) {              // may have no derivatives
+     return JLPtr<T>( makeTJL( x->myEnv_, std::pow( x->standardPart(),s )) );
    }
 
-   JLPtr<T> z( clone() );   //   deep copy
-
-   z->setStandardPart( T() );   //  zero the standard part off z 
-
-   z->scaleBy( 1.0/ standardPart() );
-   z = epsPow( z, s );
-   z->scaleBy( std::pow( standardPart(), s ) );
-   return z;
+   JLPtr<T> epsilon = x->clone();     //  deep copy
+   double factor = std::abs( x->standardPart());
+   epsilon->setStandardPart( double() );   
+   epsilon *= T(1.0/factor);
+   epsilon  = epsPow( epsilon, s );
+   epsilon *= T(std::pow(factor,s) );
+   return epsilon;
+ }
+ else {                                // x is pure infinitesimal
+   int ni = nearestInteger( s );
+   if( s != T(ni) ) {
+       throw( GenericException( __FILE__, __LINE__, 
+              "TJet<T> pow( Jet<T> const&, const double& )",
+              "Cannot use infinitesimal as base with non-integer exponent." ) );
    }
- else                                 // x is pure infinitesimal
-   {
-   u = nearestInteger( s );
-   if( s != (T) u ) {
-     throw( GenericException( __FILE__, __LINE__, 
-            "TJet<T> pow( const TJet<T>&, const double& )",
-            "Cannot use infinitesimal as base with non-integer _exponent." ) );
-   }
-
-   JLPtr<T> z(makeTJL(myEnv_, ((T) 1.0))); // z = 1.0;
-
-   if ( u == 0 ) {
-     return z;
-   }
-   if ( u > 0 ) {
-     JLPtr<T> x = clone();      // x, deepcopy;
-     while( u-- > 0 )   z *= x;
-     return z;
-     }
-   else {
-     JLPtr<T> x = clone();               //  x, deepcopy;
-     while( u++ < 0 )   z *= x;
-     JLPtr<T> tmp(makeTJL(myEnv_, ((T) 1.0))); // tmp = 1.0;
-     z = tmp/z;                                //  z = 1.0/z;
-     return z;
-     }
-   }
+   return pow(x, -ni);  
+ }
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-JLPtr<T> TJL<T>::pow(int n ) const
-{
-
-  if( n == 0 ) 
-     return JLPtr<T>(makeTJL( myEnv_, ((T) 1.0)));    // z = 1
-  else if( n > 0 ) {
-     JLPtr<T> z = clone();              // z =  x
-     JLPtr<T> x = clone();              // z =  x
-     for( int i = 2; i <= n; ++i ) z *= x;
-     return z;
-  }
-  else { // exponent is negative
-
-    JLPtr<T> xr( makeTJL( myEnv_, ((T) 1.0) ));
-    JLPtr<T> x = clone();                                       // deep copy of argument; this step is not really necessary
-                                                                // and should be eliminated
-    xr =  xr/x;                                                 // xr  = 1/x 
-    x  = xr;                                                    // deep copy 
-    for( int i = -2; i >= n; i-- ) x *= xr;
-    return x;
-  }
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-JLPtr<T> TJL<T>::epsPow( JLPtr<T> const& epsilon, const double& s ) 
+JLPtr<T> TJL<T>::epsPow( JLPtr<T> const& epsilon, double const& s ) 
 { 
- JLPtr<T> z( makeTJL(epsilon->myEnv_, ((T) 1.0)) ); // z = 1.0;
- JLPtr<T> term;
+ JLPtr<T> z( makeTJL(epsilon->myEnv_, T(1.0) )); // z = 1.0;
+ JLPtr<T> term = epsilon->clone();
 
  double f = s;
  double n = 1.0;
 
- term  = epsilon;
- term->scaleBy(s);                   //term = s*epsilon;
+ term *= T(f);                       //term = s*epsilon;
  
- z->myEnv_ = epsilon->myEnv_;
- 
- int ncount = 0;
+ int nsteps = 0;
  while( term->getCount() > 0 ) {
    z    =  z +term;                                     
-   term *= epsilon;                                  // term = ( ((T) (--f)) * term * epsilon ) / ++n;
-   term->scaleBy(((T) (--f))/ static_cast<T>(++n) );
-   if (++ncount > epsilon->accuWgt_ ) break;
-   }
+   term *= epsilon;                                  
+   term *= T(--f)/ static_cast<T>(++n);
+   ++nsteps;   
+ }
  
+ if ( nsteps > mx_maxiter_ ) (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsPow " << std::endl 
+                                       << "*** WARNING ***  Results may not be accurate."                         << std::endl;
+
  z->accuWgt_ = epsilon->accuWgt_;
 
  return z;
@@ -1854,7 +1804,7 @@ JLPtr<T> TJL<T>::log() const
 
    
    //---------------------------------------------------------------
-   // We use here the formulae 
+   // We use the formulae 
    //
    //  ln( s + e )   = ln s + ln( 1 + e/s ), and
    //
@@ -1863,7 +1813,7 @@ JLPtr<T> TJL<T>::log() const
 
    JLPtr<T> z( clone() );
    z->setStandardPart( T() );         //   zero out the standard part 
-   z->scaleBy(  -1.0/standardPart() );
+   z *=   -1.0/standardPart();
 
    JLPtr<T> u(z->clone() );  // initial value : -e/s                                        
    JLPtr<T> w(z->clone() );  // initial value : -e/s
@@ -1959,13 +1909,13 @@ JLPtr<T> TJL<T>::asin() const
  // Initial Newton's step 	 
  
  JLPtr<T> z = clone();          // deep copy	        
- JLPtr<T> dz;
  JLPtr<T> x = clone();           
 
    std::vector<TJLterm<T> >& tjlmml =  myEnv_->TJLmml(); 
 	 
  // Iterated Newton's steps
 
+ JLPtr<T> dz;
  int upperBound = 8; 	 
  int       iter = 0;	   
  bool converged = false; 	 
@@ -1975,7 +1925,7 @@ JLPtr<T> TJL<T>::asin() const
 
       // These two lines are the heart of the calculation: 	 
 
-       dz  = ( z->sin() - x ) / z->cos(); 	 
+        dz  = ( z->sin() - x ) / z->cos(); 	 
         z  = z - dz; 	 
      }
 	 
@@ -2335,34 +2285,30 @@ JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator-(JLPtr<T> const &x) {
-
+JLPtr<T>   operator-(JLPtr<T> const &x) 
+{
  JLPtr<T> z( x->clone() );
  z->Negate();
  return z;
-
 }
  
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator*(JLPtr<T> const & x,  T const& y  ){  
-
-  JLPtr<T> z (x->clone() );
-  z->scaleBy( y );  
-  return z;
-
+JLPtr<T>   operator*(JLPtr<T> const & lhs,  T const& rhs  )
+{  
+  JLPtr<T> z (lhs->clone() );
+  return ( z *= rhs );  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator*( T const & x,             JLPtr<T> const& y  ){  
-
-  return y*x;
-
+JLPtr<T>   operator*( T const & lhs,             JLPtr<T> const& rhs  )
+{  
+  return rhs * lhs;
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2680,7 +2626,7 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  T   u0  = uArg->standardPart();
  // int wgt = uArg->weight_; // not used for the moment
 
- u->scaleBy( T(1.0)/ u0 );
+ u *=  T(1.0)/ u0;
 
  //  -------------------
  //  Recursive algorithm
@@ -2707,9 +2653,9 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  
  // Correct normalization of the answer ..
 
- v->scaleBy( ((T) 1.0)/ u0); 
+ v *=  T(1.0)/ u0; 
  
- // Determine the maximum weight computed accurately. // IS THIS NEEDED HERE ??? FIXME !
+ // Determine the maximum weight computed accurately. // IS THIS NEEDED ??? FIXME !
  // -------------------------------------------------
 
  v->lowWgt_  = std::min(  wArg->lowWgt_,  uArg->lowWgt_);
@@ -2727,9 +2673,7 @@ template <typename T>
 JLPtr<T>   operator/( JLPtr<T> const & x,  T const& y  ){  
 
   JLPtr<T> z (x->clone() );
-  z->scaleBy( ((T) 1.0) / y );  
-  return z;
-
+  return ( z *=  T(1.0) / y);  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2742,17 +2686,20 @@ void TJL<T>::transferFromScratchPad() {
 
   appendLinearTerms(  myEnv_->numVar() );                      
 
-  typename std::vector<TJLterm<T> >::iterator scpad_begin =   myEnv_->TJLmml().begin();
-  typename std::vector<TJLterm<T> >::iterator scpad_end   =   myEnv_->TJLmml().end();
+  typedef typename std::vector<TJLterm<T> >::iterator                 scpad_iterator;
+  typedef typename std::vector<TJLterm<T> >::reverse_iterator reverse_scpad_iterator;
+  
+  scpad_iterator scpad_begin =   myEnv_->TJLmml().begin();
+  scpad_iterator scpad_end   =   myEnv_->TJLmml().end();
 
-  typename std::vector<TJLterm<T> >::reverse_iterator scpad_rbegin =   myEnv_->TJLmml().rbegin();
-  typename std::vector<TJLterm<T> >::reverse_iterator scpad_rend   =   myEnv_->TJLmml().rend();
+  reverse_scpad_iterator scpad_rbegin =   myEnv_->TJLmml().rbegin();
+  reverse_scpad_iterator scpad_rend   =   myEnv_->TJLmml().rend();
   
  // *Unconditionally* append the std part and the linear terms
  
   int i = 0;
 
-  typename std::vector<TJLterm<T> >::iterator it = scpad_begin;
+  scpad_iterator it = scpad_begin;
   for( ;  i <myEnv_->numVar()+1 ; ++it, ++i) {
 
      jltermStore_[i].value_ = it->value_;

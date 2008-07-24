@@ -87,7 +87,6 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-
 // ***************************************************************
 // ***************************************************************
 // ***************************************************************
@@ -106,14 +105,14 @@ TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : jl_( jl)
 
 
 template<typename T>
-TJet<T>::TJet( EnvPtr<T> const& pje ) :  jl_(   tjl_t::makeTJL( pje ) ){}
+TJet<T>::TJet( EnvPtr<T> const& pje ) : jl_(   TJet<T>::tjl_t::makeTJL( pje ) ){}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
-TJet<T>::TJet( T x, EnvPtr<T> const& pje ): jl_(  tjl_t::makeTJL( pje,x ) ){}
+TJet<T>::TJet( T x, EnvPtr<T> const& pje ): jl_( TJet<T>::tjl_t::makeTJL( pje,x ) ){}
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -473,37 +472,34 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator+=( TJet<T> const& y ) 
+TJet<T>& TJet<T>::operator+=( TJet<T> const& rhs ) 
 {
 
-//  if (jl_.count() > 1 ) jl_ = jl_->clone();
-//  jl_ += y.jl_; 
+  // in-place addition not implemented (yet) for jl
+  // if (jl_.count() > 1 ) jl_ = jl_->clone();
+  // jl_ += jl_.rhs; 
 
-// At the moment, there is no in-place add operator defined for TJL<T>
+   jl_ = jl_ + rhs.jl_; 
 
-     jl_  = jl_ + y.jl_;
 
-  return *this;
- 
-}
+   return *this;
+ }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
-TJet<T>& TJet<T>::operator-=( TJet<T> const& y ) 
+TJet<T>& TJet<T>::operator-=( TJet<T> const& rhs ) 
 {
 
-//    if (jl_.count() > 1 ) jl_ = jl_->clone();
-//    jl_ +=( -y.jl_ );
+ // in-place subtraction not implemented (yet)
+ // if (jl_.count() > 1 ) jl_ = jl_->clone();
+ // jl_ += rhs.jl_ ;
 
-// At the moment, there is no in-place add operator defined for TJL<T>
+  jl_ = jl_ - rhs.jl_ ;
 
-     jl_  = jl_ - y.jl_;
-
-    return *this; 
-
+  return *this; 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -542,8 +538,8 @@ template<typename T>
 TJet<T>& TJet<T>::operator/=( const T& y ) 
 {
  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->scaleBy( ((T) 1.0)/ y);
-  return *this;
+ jl_ *=  ( T(1.0)/ y );
+ return *this;
 
 }
 
@@ -630,11 +626,11 @@ bool operator!=( const T& x, TJet<T> const& y )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator+=( const T& x ) 
+TJet<T>& TJet<T>::operator+=( T const& x ) 
 {   
 
  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->operator+=(x);
+ jl_+= x;
 
  return *this;
 }
@@ -643,11 +639,12 @@ TJet<T>& TJet<T>::operator+=( const T& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator-=( const T& x ) 
+TJet<T>& TJet<T>::operator-=( T const& x ) 
 {
 
  if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_->operator+=(-x);
+ jl_ -=(x);
+
  return *this;
 
 }
@@ -656,12 +653,13 @@ TJet<T>& TJet<T>::operator-=( const T& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJet<T>& TJet<T>::operator*=( const T& x ) 
+TJet<T>& TJet<T>::operator*=( T const& x ) 
 {
 
  if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_->scaleBy(x); 
+ jl_ *= x; 
  return *this;
+
 }
 
 
@@ -722,31 +720,7 @@ template<typename T>
 TJet<T> operator-( TJet<T> const& x) // Unary form of minus 
 {
   typename TJet<T>::jl_t jl( (x.jl_)->clone() );
-  jl->Negate();
-  return TJet<T>( jl );
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::Negate()    // ??? What is this for ???
-{
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->Negate();
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::Mult( const T& x ) // ??? What is this for ???
-{
-
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_->scaleBy(x);
+  return TJet<T>( -jl );
 
 }
 
@@ -765,7 +739,6 @@ TJet<T> operator-( TJet<T> const& x, TJet<T> const& y )
 template<typename T>
 TJet<T> operator*( TJet<T> const& x, TJet<T> const& y ) 
 {
-
  return TJet<T>( x.jl_ * y.jl_ );
 }
 
@@ -776,11 +749,7 @@ TJet<T> operator*( TJet<T> const& x, TJet<T> const& y )
 template<typename T>
 TJet<T> operator*( TJet<T> const& x, const T& y ) 
 {
-
-
  return TJet<T>( x.jl_* y );
-
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -789,9 +758,7 @@ TJet<T> operator*( TJet<T> const& x, const T& y )
 template<typename T>
 TJet<T> operator*( const T& x, TJet<T> const& y ) 
 {  
- 
- return operator*( y, x);
-
+ return (y*x);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -917,7 +884,7 @@ template<typename T>
 TJet<T> acos( TJet<T> const& x ) 
 {
   // Returns answer in (0,pi) if asin returns (-pi/2,pi/2).
-  return ( ((T) M_PI_2) - asin(x) );
+  return ( T(M_PI_2) - asin(x) );
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -935,9 +902,7 @@ TJet<T> asin( TJet<T> const& x )
 template<typename T>
 TJet<T> atan( TJet<T> const& x ) 
 {   
- 
  return TJet<T>(x.jl_->atan() );
-
 }
  
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -957,7 +922,8 @@ template<typename T>
 TJet<T> cosh( TJet<T> const& x ) 
 { 
  TJet<T> z = exp(x);
- z = ( z + ( 1.0 / z ) ) / 2.0;
+ z += ( T(1.0) / z );
+ z /= T (2.0);
  return z;
 }
 
@@ -967,7 +933,7 @@ TJet<T> cosh( TJet<T> const& x )
 template<typename T>
 TJet<T> exp( TJet<T> const& x ) 
 { 
- return   TJet<T>( x->exp() ); // x->exp() returns a new instance
+ return  TJet<T>( x->exp() ); // x->exp() returns a new instance
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -985,8 +951,8 @@ TJet<T> log ( TJet<T> const& x )
 template<typename T>
 TJet<T> log10( TJet<T> const& x ) 
 {
- static const T logE = 0.4342944819032518276511289;
- return  logE*log(x);
+ static const T log10E = log10(exp(1.0)); // 0.4342944819032518276511289;
+ return  log10E*log(x);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -995,7 +961,7 @@ TJet<T> log10( TJet<T> const& x )
 template<typename T>
 TJet<T> pow( TJet<T> const& x, const double& s ) 
 { 
- return TJet<T>( x->pow(s)); // pow(s) creates a new JL
+  return TJet<T>( x.jl_->pow( x.jl_, s) ); // pow(s) returns a copy 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1005,16 +971,16 @@ TJet<T> pow( TJet<T> const& x, const double& s )
 template<typename T>
 TJet<T> pow( TJet<T> const& x, int n ) 
 { 
- return TJet<T>( x->pow(n)); // pow(h) creates a new JL
+ return TJet<T>( x.jl_->pow( x.jl_, n) );  // pow(n) returns a cloned jl.   
 }
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T> sin( TJet<T> const& x ) 
 { 
-  return TJet<T> ( x.jl_->sin() ); // Note:: TJL<T>::sin() clones its argument 
+ return TJet<T>( x.jl_->sin() ); // Note:: TJL<T>::cos() does not affect its argument 
+                                 // and returns a cloned jl.   
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1023,9 +989,10 @@ TJet<T> sin( TJet<T> const& x )
 template<typename T>
 TJet<T> sinh( TJet<T> const& x ) 
 {
- TJet<T> z;
- z = exp(x);
- return ( z - (1.0/z))/2.0;
+ TJet<T> z = exp(x);
+ z  -= T(1.0)/z;
+ z  /= T(2.0);
+ return z;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1035,7 +1002,7 @@ template<typename T>
 TJet<T> sqrt( TJet<T> const& x ) 
 {
   return TJet<T>( x.jl_->sqrt() ); // sqrt returns a copy 
-  }
+}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

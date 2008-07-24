@@ -136,13 +136,25 @@ std::istream& operator>>( std::istream& is, TJL<T>& x );
 template <typename T>
 JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  );  
 
+template <typename T>
+JLPtr<T>& operator+=( JLPtr<T>&, T const& ); 
+
+// template <typename T>
+// NOT IMPLEMENTED JLPtr<T>& operator+=( JLPtr<T>&, JLPtr<T>&  );
+
 //..............................................................................................................................
 
 template <typename T>
-JLPtr<T>   operator-(JLPtr<T> const &x);  
+JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  );  
 
 template <typename T>
-JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  );  
+JLPtr<T>   operator-(JLPtr<T> const &x);  // unary minus 
+
+template <typename T>
+JLPtr<T>& operator-=( JLPtr<T>&, T const& ); 
+
+// template <typename T>
+// NOT IMPLEMENTED JLPtr<T>& operator-=( JLPtr<T>&, JLPtr<T>&  );
 
 // ..........................................................................
 
@@ -150,13 +162,16 @@ template <typename T>
 JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  );  
 
 template <typename T>
-JLPtr<T>   operator*(JLPtr<T> const & x,  T const& y  );  
+JLPtr<T>   operator*(JLPtr<T> const & x,  T const& y         );  
 
 template <typename T>
-JLPtr<T>   operator*(T const &       x,  JLPtr<T> const& y  );  
+JLPtr<T>   operator*(T const &       x,  JLPtr<T> const& y   );  
 
 template <typename T>
 JLPtr<T>&  operator*=(JLPtr<T> &      x,  JLPtr<T> const& y  );  
+
+template <typename T>
+JLPtr<T>&  operator*=(JLPtr<T> &      x,  T const& y         );  
 
 // ..........................................................................
 
@@ -248,18 +263,31 @@ friend class TJL;
   void writeToFile( std::ofstream& ) const;
 
   void getReference( T* ) const;
-  void   scaleBy( T );
+
+  //static JLPtr<T> scaleBy( JLPtr<T>, T );
 
   TJL& Negate(); // in-place negation 
 
   friend JLPtr<T>  
          operator+<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
 
+  friend JLPtr<T>& 
+         operator+=<>( JLPtr<T>&, T const& ); 
+
+  //friend JLPtr<T>& 
+  // NOT IMPLEMENTED       operator+=<>( JLPtr<T>&, JLPtr<T>&  );
+
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x );  
 
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
+
+  friend JLPtr<T>& 
+         operator-=<>( JLPtr<T>&, T const& ); 
+
+  // friend JLPtr<T>& 
+  // NOT IMPLEMENTED      operator-=<>( JLPtr<T>&, JLPtr<T>&  );
 
   friend JLPtr<T>  
          operator*<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
@@ -271,7 +299,10 @@ friend class TJL;
          operator*<>(T const & x,         JLPtr<T> const& y  );  
 
   friend JLPtr<T>& 
-        operator*= <>(JLPtr<T>& x,        JLPtr<T> const& y  );  
+         operator*= <>(JLPtr<T>& x,        JLPtr<T> const& y  );  
+
+  friend JLPtr<T>& 
+         operator*= <>(JLPtr<T>& x,       T const& y  );  
 
   friend JLPtr<T>  
          operator/<>( JLPtr<T> const & x, JLPtr<T> const& y  );  
@@ -291,15 +322,18 @@ friend class TJL;
   friend   bool operator!=<>( TJL<T>   const& x, T       const& y ); 
   friend   bool operator!=<>( T        const& x, TJL<T>  const& y ); 
 
-  JLPtr<T> sin()              const;
-  JLPtr<T> cos()              const;
-  JLPtr<T> asin()             const;
-  JLPtr<T> acos()             const;
-  JLPtr<T> atan()             const;
-  JLPtr<T> sqrt()             const;
-  JLPtr<T> exp()              const;
-  JLPtr<T> pow(int)           const;
-  JLPtr<T> pow(double const&) const;
+  JLPtr<T> sqrt() const;
+  JLPtr<T> exp()  const;
+  JLPtr<T> sin()  const;
+  JLPtr<T> cos()  const;
+
+  JLPtr<T> asin() const;
+  JLPtr<T> acos() const;
+  JLPtr<T> atan() const;
+
+  static JLPtr<T> pow( JLPtr<T>&, int );
+  static JLPtr<T> pow( JLPtr<T>&, double const&);
+
   JLPtr<T> log()              const;
   JLPtr<T> D( IntArray const& n ) const; 
 
@@ -322,9 +356,6 @@ friend class TJL;
 
   TJL& operator=( TJL const& );
   TJL& operator=( T   const& );
-
-  TJL& operator+=( T   const& );
-
 
   friend   std::ostream& operator<< <T>( std::ostream& os,  TJL<T> const& x ); 
   friend   std::istream& operator>><T>(  std::istream& is,  TJL<T>      & x ); 
@@ -481,9 +512,8 @@ friend class TJL;
 
   static JLPtr<T> epsSin(  JLPtr<T> const& epsilon );
   static JLPtr<T> epsCos(  JLPtr<T> const& epsilon );
-  static JLPtr<T> epsSqrt( JLPtr<T> const& epsilon ); 
   static JLPtr<T> epsExp(  JLPtr<T> const& epsilon ); 
-  static JLPtr<T> epsPow(  JLPtr<T> const& epsilon, const double& s ); 
+  static JLPtr<T> epsPow(  JLPtr<T> const& epsilon, double const& s ); 
 
   TJLterm<T>* storePtr();                        // returns a ptr to the next available block in the JLterm store;
   void growStore( );                             // grows the size of the store to twice its current size 
@@ -511,7 +541,6 @@ TJL<std::complex<double> >::TJL( TJL<double> const& );
 template<> 
 template<> 
 JLPtr<std::complex<double> >  TJL<std::complex<double> >::makeTJL( TJL<double> const& );
-
 
 //-------------------------------------------------------------------------------------
 // Inline functions 
