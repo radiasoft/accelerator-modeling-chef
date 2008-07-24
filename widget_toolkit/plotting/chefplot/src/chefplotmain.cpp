@@ -271,6 +271,7 @@ void CHEFPlotMain::showTunes()
 void CHEFPlotMain::showdata() 
 {
 
+#if 0
   QWidget* parent = ( !parentWidget()) ? 0 : parentWidget()->parentWidget();
   
   DataDisplay* dd =  new DataDisplay(parent, "DataDisplay", Qt::WDestructiveClose, chefplot_->getBeamline() ); 
@@ -367,6 +368,7 @@ void CHEFPlotMain::showdata()
 
 
   dd->show();
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
