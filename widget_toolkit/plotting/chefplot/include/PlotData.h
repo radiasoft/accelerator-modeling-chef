@@ -19,7 +19,6 @@
 ****                                                                         ****
 *********************************************************************************
 *********************************************************************************
-*********************************************************************************
 ********************************************************************************/
 
 #ifndef PLOTDATA_H
@@ -36,8 +35,7 @@ class PlotData {
 
   public:
 
-    typedef std::vector<CurveData>::const_iterator CurveIterator; 
-
+    typedef std::vector<CurveData>::const_iterator iterator; 
 
     struct Tunes {
       Tunes():                                       htune(0.0), vtune(0.0), set(false) {}
@@ -47,55 +45,66 @@ class PlotData {
       bool   set;
     };
 
-    PlotData();
+    PlotData( sqlite::connection& db );
+    PlotData( );
 
     virtual ~PlotData();
     
-    void             addCurve( CurveData& cv);
+    sqlite::connection& getDb() const;
 
-    void                setDb( sqlite::connection& db );
-    sqlite::connection* getDb() const;
+    ConstBmlPtr         getBeamline() const;
+    void                setBeamline( BmlPtr bml);
 
-    void             setBeamline(ConstBmlPtr bml );
-    ConstBmlPtr      getBeamline() const;
+    void                addCurve( CurveData& cv);
+
+
+    void                setTitle(  std::string const& label               );
+    std::string const&  getTitle() const;
+
+    void                setXLabel( std::string const& label               );
+    void                setYLabel( CurveData::Axis id, std::string const& );
+    std::string const&  getLabel(CurveData::Axis id)  const;
+
+    void                setScaleMag(CurveData::Axis id, double lmag); 
+    double              getScaleMag(CurveData::Axis id) const;
+
     
-    void             setXLabel( std::string  label             );
-    void             setYLabel( CurveData::Axis id, std::string);
+    int                 nCurves() const;
 
-    void             setScaleMag(CurveData::Axis id, double lmag); 
-    double           getScaleMag(CurveData::Axis id) const;
+    double              xMin(CurveData::Axis id = CurveData::xBottom)    const;
+    double              xMax(CurveData::Axis id = CurveData::xBottom)    const;
+    double              yMin(CurveData::Axis id = CurveData::yLeft  )    const;
+    double              yMax(CurveData::Axis id = CurveData::yLeft  )    const;
 
-    std::string      getLabel(CurveData::Axis id)  const;
-    
-    int              nCurves() const;
-
-    double           xMin(CurveData::Axis id = CurveData::xBottom)    const;
-    double           xMax(CurveData::Axis id = CurveData::xBottom)    const;
-    double           yMin(CurveData::Axis id = CurveData::yLeft  )    const;
-    double           yMax(CurveData::Axis id = CurveData::yLeft  )    const;
-
-    Tunes const&     getTunes() const;
-    void             setTunes(double const& nu1, double const& nu2);
+    Tunes const&        getTunes() const;
+    void                setTunes(double const& nu1, double const& nu2);
 
     CurveData const& operator[](int i) const;
     
   private:
     
-    std::vector<CurveData> curves_;   
+    std::vector<CurveData>         curves_;   
 
-    std::string            label_top_;
-    std::string            label_bottom_;
-    std::string            label_left_;
-    std::string            label_right_;
+    std::string                    label_top_;
+    std::string                    label_bottom_;
+    std::string                    label_left_;
+    std::string                    label_right_;
         
-    double                 scalemag_top_;
-    double                 scalemag_bottom_;
-    double                 scalemag_left_;
-    double                 scalemag_right_;
+    double                         scalemag_top_;
+    double                         scalemag_bottom_;
+    double                         scalemag_left_;
+    double                         scalemag_right_;
     
     Tunes                          tunes_;
-    ConstBmlPtr                    bml_;
+
     mutable sqlite::connection*    db_;
+    BmlPtr                         bml_; 
+
+ protected:
+
+   void init( sqlite::connection& db, int npltattribs, char const* plot_attributes[],  
+	      int ncrvs, CurveData::curve_attribute curve_attributes[],  char const* sql[] );
+
 
 };
 

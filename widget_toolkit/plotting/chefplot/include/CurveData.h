@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <boost/shared_array.hpp>
+#include <functional>
 
 class CurveData : public QwtData {
  
@@ -43,25 +44,49 @@ class CurveData : public QwtData {
 
   struct Color {
     Color(int red, int green, int blue): r(red), g(green), b(blue) {}
+    Color( Color const& o) : r(o.r), g(o.g), b(o.b) {}
     int r;
     int g;
     int b;
   };
 
 
-  CurveData(boost::shared_array<double> x, boost::shared_array<double> y, int size, std::string label); 
+  struct Point {
+    Point()                    : x(0.0), y(0.0)  {} 
+    Point( double X, double Y ): x(X),   y(Y)    {} 
+    Point( Point const& p)     : x(p.x), y(p.y)  {} 
+    double x;
+    double y;
+  };
+ 
+  
+  struct curve_attribute {
 
-  CurveData(std::vector<double>  const& x,  std::vector<double> const& y, std::string label);      
+   char const*      label;
+   CurveData::Axis  yaxis;
+   CurveData::Color rgb; 
+  };
 
-  CurveData(  double const*,  double const*,  int size, std::string label);      
 
+  struct XValue: public std::unary_function< Point const&, double const&> {
+    double const& operator()( Point const& p) const { return  p.x; } 
+  };
+
+  struct YValue: public std::unary_function< Point const&, double const&> {
+    double const& operator()( Point const& p) const{ return p.y; } 
+  };
+  
+  typedef Point*             iterator;
+  typedef Point const* const_iterator;
+
+  CurveData( int size, std::string label);      
   CurveData(CurveData const&);                                
 
-  CurveData* copy()               const;
-
  ~CurveData();  
-  
+
   CurveData&  operator=( CurveData const& cd); 
+
+  CurveData* copy() const;
 
   size_t             size ()         const;
   double             x (size_t i)    const;
@@ -87,16 +112,17 @@ class CurveData : public QwtData {
   void               setConnected(bool set);
   bool               isConnected() const;
 
+  iterator   begin();  
+  iterator     end();  
+
+  const_iterator   begin() const;  
+  const_iterator     end() const;  
+
  private:
 
-  boost::shared_array<double>   xarray_;
-  boost::shared_array<double>   yarray_;
+  boost::shared_array<Point>   array_;  // Copying the curve does not copy the data
 
   int          size_;
-  double       xmin_;
-  double       xmax_;
-  double       ymin_;
-  double       ymax_;
 
   Axis         xaxis_;
   Axis         yaxis_;
