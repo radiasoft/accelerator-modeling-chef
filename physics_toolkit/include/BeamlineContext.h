@@ -48,13 +48,13 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
-#include <basic_toolkit/complexAddon.h>
 #include <mxyzptlk/Mapping.h>
 #include <beamline/ElmPtr.h>
 #include <beamline/BmlPtr.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/LatticeFunctions.h>
+#include <beamline/beamline.h>
 
 #include <sqlite/connection.hpp>
 
@@ -64,7 +64,6 @@ typedef TBunch<Particle> ParticleBunch;
 
 class beamline;
 class alignmentData;
-class ClosedOrbitSage;
 class ChromaticityAdjuster;
 class TuneAdjuster;
 class ConstBmlVisitor;
@@ -87,30 +86,42 @@ typedef boost::shared_ptr<BeamlineContext>            BmlContextPtr;
 typedef boost::shared_ptr<BeamlineContext const>  ConstBmlContextPtr;
 
 
-class BeamlineContext {
+class BeamlineContext: public beamline {
 
-  public:
+ public: 
 
-    BeamlineContext( Particle const&, BmlPtr bml, std::string const& dbname ="");
+    BeamlineContext( Particle const&, beamline const& bml );
    ~BeamlineContext();
  
     sqlite::connection& dbConnection() const;    
 
-    void accept( ConstBmlVisitor& ) const;
-    void accept(      BmlVisitor& );
+    void                  setInitial( CSLattFuncs const& );
+    CSLattFuncs const&    getInitial( );
 
-    void                  setInitial( LattFuncs const& );
-    LattFuncs const&      getInitial( );
+    void handleAsRing();
+    void handleAsLine();
+    bool isTreatedAsRing() const;
+    bool isTreatedAsLine() const;
+    bool isRing() const; 
 
     void writeTree();
 
-    void   computeClosedOrbit( );
-    void    computeDispersion( );  
-    void computeCourantSnyder( );
-    void   computeEdwardsTeng( );
-    void    computeCovariance( );
-    void    computeEigenmodes( );
     void    computeEigenTunes( );
+
+    void    periodicReferenceOrbit( );
+    void    periodicDispersion( );  
+    void    periodicCourantSnyder2D( );
+    void    periodicCourantSnyder4D();
+    void    periodicEdwardsTeng( );
+    void    periodicCovariance( );
+
+    void    propagateReferenceOrbit( );
+    void    propagateDispersion( );  
+    void    propagateCourantSnyder2D( );
+    void    propagateCourantSnyder4D();
+    void    propagateEdwardsTeng( );
+    void    propagateCovariance( );
+
 
     double  getHTune();
     double  getVTune();
@@ -121,11 +132,6 @@ class BeamlineContext {
     Particle const& getParticle();
     void            setParticle(Particle const& );
 
-    bool isRing() const;
-    bool isTreatedAsRing() const;
-
-    void handleAsRing();
-    void handleAsLine();
 
     Mapping const& getOneTurnMap();  // Side effect: calculates closed orbit if not
     bool           onTransClosedOrbit( Particle const& ) const;
@@ -136,20 +142,15 @@ class BeamlineContext {
 
    // Beamline methods
 
-    std::string name() const;
-
-    void rename( const char* );
-    void peekAt( double& s, Particle const& ) const;
 
     double sumLengths() const;
 
-    int setLength   ( ElmPtr, double );
-    int setStrength ( ElmPtr, double );
-    int setAlignment( ElmPtr, alignmentData const& );
+    int setElmLength   ( ElmPtr, double );
+    int setElmStrength ( ElmPtr, double );
+    int setElmAlignment( ElmPtr, alignmentData const& );
 
-    // I really want to get rid of AlignmentData altogether!
 
-    int setAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion);
+    int setElmAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion);
 
     int replaceElement( ElmPtr oldelm, ElmPtr newelm); // 0 everything went as planned
                                                        // 1 first argument was not found
@@ -157,11 +158,7 @@ class BeamlineContext {
 
     int processElements( boost::function<bool(bmlnElmnt &)> action ); // Returns number of elements processed.
 
-    double getMomentum() const;
-
-    int           countHowManyDeeply()       const;
-    alignmentData getAlignmentData( ElmPtr ) const;
-
+    alignmentData getElmAlignmentData( ElmPtr ) const;
 
     void addHTuneCorrector( QuadrupolePtr );
     void addHTuneCorrector( ThinQuadPtr );
@@ -183,11 +180,6 @@ class BeamlineContext {
 
     int changeChromaticityBy( double, double );
 
-    // Iterator functions
-
-    ConstBmlPtr cheatBmlPtr() const;
-
-
     // !!! Eventually, these three should become private !!!
 
     // Status flags
@@ -195,27 +187,28 @@ class BeamlineContext {
     static const int NO_TUNE_ADJUSTER;
     static const int NO_CHROMATICITY_ADJUSTER;
 
+    void                 clear();
+
   private:
     
-    void                 clear() const;
 
-    bool       closed_orbit_ok() const; 
+    bool              is_linac() const;
+    bool    reference_orbit_ok() const; 
     bool         dispersion_ok() const;  
-    bool     courant_snyder_ok() const;
+    bool   courant_snyder2d_ok() const;
+    bool   courant_snyder4d_ok() const;
     bool       edwards_teng_ok() const;
     bool         covariance_ok() const;
-    bool         eigenmodes_ok() const;
+    bool       eigenvectors_ok() const;
 
-    BeamlineContext( BeamlineContext const&); // forbidden
 
-    BmlPtr                bml_;
 
     ChromaticityAdjuster* p_ca_;
     TuneAdjuster*         p_ta_;
 
     // Initial conditions
 
-    LattFuncs             initialLattFunc_;
+    CSLattFuncs           initialLattFunc_;
     bool                  initial_lattfunc_set_;
 
     double                dpp_;  // value of dp/p used for dispersion calculation. default = 0.0001
@@ -223,7 +216,7 @@ class BeamlineContext {
     double                eps2_;
 
 
-    JetParticle           oneturnjp_; 
+    JetParticle           refjp_;  // reference jet particle (for a ring, 1-turn map;  for a line, identity map) 
 
     //   Used for computing equilibrium covariance  matrix.
     //   Default values: eps_1_ = 40, eps_2_ = 40.
@@ -239,22 +232,25 @@ class BeamlineContext {
  public:
 
 
-    Particle*             particle_;    // we use a ptr here in order to preserve info about the actual particle type     
-                                        // BAD !!! public beacsue of RayTrace::_pushParticle()':
-    ParticleBunch*        particleBunchPtr_;   // BAD!!!! Needed because of DistributionWidget  
+    Particle*             particle_;            // we use a ptr here in order to preserve info about the actual particle type     
+                                                // BAD !!! public because of RayTrace::_pushParticle()':
+    ParticleBunch*        particleBunchPtr_;    // BAD!!!! Needed because of DistributionWidget  
 
     //   ****************************FIXME !**************************************************************
 
  private:
 
-
-            std::string               dbname_;
-    mutable sqlite::connection        db_;
+            std::string                          dbname_;
+    mutable boost::shared_ptr<sqlite::connection>    db_;
 
     static const double small_x_err;   // [m]   = 1.0e-9 
     static const double small_y_err;   // [m]   = 1.0e-9 
     static const double small_npx_err; // [rad] = 1.0e-9 
     static const double small_npy_err; // [rad] = 1.0e-9 
+
+
+    BeamlineContext( BeamlineContext const& ); // forbidden
+
 };
 
 #endif // BEAMLINECONTEXT_H
