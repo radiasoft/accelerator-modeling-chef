@@ -68,9 +68,9 @@ class bmlfactory {
     virtual double      getMomentum()                   const=0;
     virtual double      getBrho()                       const=0;
 
-    virtual bool        variableIsDefined(const char* varname) const=0;
-    virtual double      getVariableValue (const char* varname) const=0;   
-    virtual LattFuncs   getInitialValues()                     const=0;   
+    virtual bool          variableIsDefined(const char* varname) const=0;
+    virtual double        getVariableValue (const char* varname) const=0;   
+    virtual CSLattFuncs   getInitialValues()                     const=0;   
 
   protected:
 
