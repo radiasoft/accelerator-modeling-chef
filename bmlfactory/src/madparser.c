@@ -25,7 +25,7 @@
 ******  Authors:   Dmitri Mokhov, Oleg Krivosheev                  
 ******             and Jean-Francois Ostiguy
 ******                                                   
-******  Contacta:  Leo Michelotti or Jean-Francois Ostiguy            
+******  Contact:   Leo Michelotti or Jean-Francois Ostiguy            
 ******                                                                
 ******             Email: michelotti@fnal.gov                         
 ******                    ostiguy@fnal.gov                            
@@ -1155,27 +1155,3 @@ madparser_set_bml_ref_energy(madparser* mp, beam_line* bml) {
  
 }
 
-
-#if 0
-   case EK: 
- 
-   _ek        = value;
-   _et        = m_p + _ek;
-   _gamma     = _et/m_p;
-   _momentum  = sqrt((_et*_et)-(m_p*m_p));
-   _brho      = _momentum/PH_CNV_brho_to_p;
-  
-   break;
-
- case BRHO:
-
-   _brho      =  value;
-   _momentum  =  _brho*PH_CNV_brho_to_p;
-   _et        =  sqrt( (_momentum*_momentum)+(m_p*m_p) );
-   _ek        =  _et - m_p;
-   _gamma     =  _et/m_p;
-
-   break;
-
- }
-#endif
