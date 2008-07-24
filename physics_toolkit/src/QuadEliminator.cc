@@ -94,7 +94,7 @@ void QuadEliminator::visit( beamline const& x )
   string nuNam = x.Name() + string("_QuadMerged");
 
   bmlPtr_ = BmlPtr( new beamline( nuNam.c_str() ) );
-  bmlPtr_->setEnergy( x.Energy() );
+  bmlPtr_->setMomentum( x.Momentum() );
 
 
   // Process the argument
