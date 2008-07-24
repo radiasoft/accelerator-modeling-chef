@@ -40,23 +40,20 @@ void wrap_kick () {
 
 
 class_<hkick, bases<bmlnElmnt>, HKickPtr >("hkick")
-  .def(init<char const*>())
-  .def(init<char const*,double const&>())
-  .def(init<char const*,double const&, double const&>())
-  .def( "Type", &hkick::Type);
+  .def(init<std::string const&>())
+  .def(init<std::string const&,double const&>())
+  .def(init<std::string const&,double const&, double const&>());
 
 
 class_<vkick, bases<bmlnElmnt>, VKickPtr >("vkick")
-  .def(init<char const*>())
-  .def(init<char const*,double const&>())
-  .def(init<char const*,double const&, double const&>())
-  .def( "Type", &vkick::Type);
+  .def(init<std::string const&>())
+  .def(init<std::string const&,double const&>())
+  .def(init<std::string const&,double const&, double const&>());
 
 
 class_<kick,bases<bmlnElmnt>, KickPtr >("kick")
-  .def(init<char const*>())
-  .def(init<char const*,double const&, double const&, double const&>())
-  .def(init<char const*,double const&, double const&, double const&>())
-  .def( "Type", &kick::Type);
+  .def(init<std::string const&>())
+  .def(init<std::string const&,double const&, double const&, double const&>())
+  .def(init<std::string const&,double const&, double const&, double const&>());
 
 }
