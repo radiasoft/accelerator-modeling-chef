@@ -994,16 +994,17 @@ void XsifParserDriver::command_BETA0( xsif_yy::location const& yyloc,std::map<st
   initial_values_.alpha.ver        = alfy;
   initial_values_.psi.hor          = mux;
   initial_values_.psi.ver          = muy;
-};
+
+  std::cout << "setting initial values :" <<  betx << std::endl;
+
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  //------------------------------------------------------------------------------------------- 
  // The class Ordering below defines a function object needed for std::equal_range(). 
- // For some reason g++ 4.1 will accept a local class definition, but equal_range
- // does not seem to be able to search the local namespace for operator(). As a workaround,
- // we define Ordering in the anonymous namespace. 
+ // We define Ordering in the anonymous namespace. 
  // ---------------------------------------------------------------------------------------- 
 
 
@@ -1524,7 +1525,7 @@ ElmPtr  q;
 
 beamline*  temp  = new beamline( label.c_str() ); 
 
-temp->setMomentum( BRHO ); /// FIXME !!!! TOTAL ENERGY DEPENDS ON PARTICLE TYPE. USING BRHRO  
+temp->setMomentum( BRHO*PH_CNV_brho_to_p ); 
 
 double   kl[21]; { for (int i=0; i<21; ++i)   kl[i] = 0.0; } 
 double tilt[21]; { for (int i=0; i<21; ++i) tilt[i] = 0.0; }
