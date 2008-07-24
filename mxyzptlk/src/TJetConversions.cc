@@ -54,27 +54,20 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>
 #include <basic_toolkit/MathConstants.h>
-#include <basic_toolkit/complexAddon.h>
-
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/VectorD.h>
 
 #include <mxyzptlk/TJet.h>
 
-#ifdef CHECKOUT
-#undef CHECKOUT 
-#endif
-#define CHECKOUT(test,fcn,message)    \
-  if( test ) {                        \
-    throw( GenericException(          \
-             __FILE__, __LINE__,      \
-             fcn, message        ) ); \
-  }
-
 using namespace std;
 
 using FNAL::pcout;
 using FNAL::pcerr;
+
+
+static   const std::complex<double> complex_i (0.0, 1.0);
+static   const std::complex<double> complex_1 (1.0, 0.0);
+static   const std::complex<double> complex_0 (0.0, 0.0);  
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -82,9 +75,7 @@ using FNAL::pcerr;
 
 TJet<double> real(  TJet<complex<double> > const& z ) 
 {
-
   return TJet<double>( real(z.jl_) );    
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -92,9 +83,7 @@ TJet<double> real(  TJet<complex<double> > const& z )
 
 TJet<double> imag( TJet<complex<double> > const& z ) 
 {
-
   return TJet<double>( imag(z.jl_) );    
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -127,27 +116,18 @@ TJet<double> fabs( TJet<double> const& x )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<double> erf( const TJet<double>& z ) 
+TJet<double> erf( TJet<double> const& z ) 
 {
   EnvPtr<double> pje = z.Env();
 
-  TJet<double> series    ( pje );
-  TJet<double> oldseries ( pje );
-  TJet<double> arg       ( pje );
-  TJet<double> term      ( pje );
+  TJet<double>     series =   TJet<double> (1.0, pje);
+  TJet<double>  oldseries =   TJet<double>(0.0, pje);
+  TJet<double>        arg = - z*z;
+  double              den =   1.0;
+  TJet<double>       term =   TJet<double>(1.0, pje);
+  double           fctr_x =   0.0;
 
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = 1.0;
-  oldseries     = 0.0;
-  arg           = - z*z;
-  den           = 1.0;
-  term          = 1.0;
-  fctr_x        = 0.0;
-
-  counter = 0;
+ int  counter = 0;
   while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
     oldseries = series;
     den      += 2.0;
@@ -162,7 +142,7 @@ TJet<double> erf( const TJet<double>& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > erf( const TJet<complex<double> >& z ) 
+TJet<complex<double> > erf( TJet<complex<double> > const& z ) 
 {
   EnvPtr<complex<double> > pje = z.Env();
 
@@ -205,7 +185,7 @@ TJet<complex<double> > erf( const TJet<complex<double> >& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > w( const TJet<complex<double> >& z ) 
+TJet<complex<double> > w( TJet<complex<double> >const& z ) 
 {
   const complex<double>  mi( 0., -1. );
   double x;
@@ -249,7 +229,7 @@ TJet<complex<double> > w( const TJet<complex<double> >& z )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-TJet<complex<double> > operator+( const TJet<double>& x, const TJet<complex<double> >& y ) 
+TJet<complex<double> > operator+( TJet<double> const& x, TJet<complex<double> >const& y ) 
 {
   return TJet<std::complex<double> >(x) + y;
 
@@ -258,7 +238,7 @@ TJet<complex<double> > operator+( const TJet<double>& x, const TJet<complex<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator+( const TJet<complex<double> >& x, const TJet<double>& y ) 
+TJet<complex<double> > operator+( TJet<complex<double> >const& x, TJet<double> const& y ) 
 {
   return  x + TJet<std::complex<double> >(y);
 }
@@ -266,7 +246,7 @@ TJet<complex<double> > operator+( const TJet<complex<double> >& x, const TJet<do
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator+( const double& x, const TJet<complex<double> >& y ) 
+TJet<complex<double> > operator+( double const&  x, TJet<complex<double> >const& y ) 
 {
   return std::complex<double>(x,0.0) + y;
 }
@@ -274,7 +254,7 @@ TJet<complex<double> > operator+( const double& x, const TJet<complex<double> >&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator+( const TJet<complex<double> >& x, const double& y ) 
+TJet<complex<double> > operator+( TJet<complex<double> >const& x, double const& y ) 
 {
   return x + complex<double>(y,0.0);
 }
@@ -282,7 +262,7 @@ TJet<complex<double> > operator+( const TJet<complex<double> >& x, const double&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator+(const std::complex<double>& x,  const TJet<double>& y ) 
+TJet<complex<double> > operator+( std::complex<double>const& x,  TJet<double>const& y ) 
 {
   return ( x + TJet<std::complex<double> >(y) );
 
@@ -291,7 +271,7 @@ TJet<complex<double> > operator+(const std::complex<double>& x,  const TJet<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator+(  const TJet<double>& x, const std::complex<double>& y) 
+TJet<complex<double> > operator+( TJet<double> const& x, std::complex<double> const& y) 
 {
   return ( TJet<std::complex<double> >(x) + y );
 
@@ -300,7 +280,7 @@ TJet<complex<double> > operator+(  const TJet<double>& x, const std::complex<dou
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator-( const TJet<double>& x, const TJet<complex<double> >& y ) 
+TJet<complex<double> > operator-( TJet<double>const& x, TJet<complex<double> >const& y ) 
 {
   return TJet<complex<double> >(x) - y;
 }
@@ -308,7 +288,7 @@ TJet<complex<double> > operator-( const TJet<double>& x, const TJet<complex<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator-( const TJet<complex<double> >& x, const TJet<double>& y ) 
+TJet<complex<double> > operator-( TJet<complex<double> >const& x, TJet<double> const& y ) 
 {
   return x - TJet<complex<double> >(y);
 }
@@ -324,7 +304,7 @@ TJet<complex<double> > operator-( const double& x, const TJet<complex<double> >&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator-( const TJet<complex<double> >& x, const double& y ) 
+TJet<complex<double> > operator-( TJet<complex<double> >const& x, double const& y ) 
 {
   return x - complex<double> (y,0.0);
 }
@@ -332,7 +312,7 @@ TJet<complex<double> > operator-( const TJet<complex<double> >& x, const double&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator-( const std::complex<double>& x, const TJet<double>& y ) 
+TJet<complex<double> > operator-( std::complex<double> const& x, TJet<double> const& y ) 
 {
   return x - TJet<complex<double> >(y);
 }
@@ -340,7 +320,7 @@ TJet<complex<double> > operator-( const std::complex<double>& x, const TJet<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator-( const TJet<double>& x,   const std::complex<double>& y)
+TJet<complex<double> > operator-( TJet<double> const& x,   std::complex<double> const& y)
 {
   return TJet<complex<double> >(x) - y;
 }
@@ -348,7 +328,7 @@ TJet<complex<double> > operator-( const TJet<double>& x,   const std::complex<do
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const TJet<double>& x, const TJet<complex<double> >& y ) 
+TJet<complex<double> > operator*( TJet<double> const& x, TJet<complex<double> >const& y ) 
 {
   return TJet<complex<double> >(x)*y;
 }
@@ -356,7 +336,7 @@ TJet<complex<double> > operator*( const TJet<double>& x, const TJet<complex<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const TJet<complex<double> >& x, const TJet<double>& y ) 
+TJet<complex<double> > operator*( TJet<complex<double> >const& x, TJet<double> const& y ) 
 {
   return x*TJet<complex<double> >(y);
 }
@@ -364,7 +344,7 @@ TJet<complex<double> > operator*( const TJet<complex<double> >& x, const TJet<do
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const complex<double>& y, const TJet<double>& x ) 
+TJet<complex<double> > operator*( complex<double> const& y, TJet<double> const& x ) 
 {  
 
   
@@ -379,7 +359,7 @@ TJet<complex<double> > operator*( const complex<double>& y, const TJet<double>& 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const TJet<double>& x, const complex<double> & y ) 
+TJet<complex<double> > operator*( TJet<double> const& x, complex<double> const& y ) 
 {  
   return TJet<complex<double> >(x)*y;
 }
@@ -387,7 +367,7 @@ TJet<complex<double> > operator*( const TJet<double>& x, const complex<double> &
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const double& y, const TJet<complex<double> >& x ) 
+TJet<complex<double> > operator*( double const& y, TJet<complex<double> > const& x ) 
 {  
   return (complex<double>(y) * x);
 }
@@ -396,7 +376,7 @@ TJet<complex<double> > operator*( const double& y, const TJet<complex<double> >&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator*( const TJet<complex<double> >& x, const double& y ) 
+TJet<complex<double> > operator*( TJet<complex<double> >const& x, double const& y ) 
 {  
   return ( x * complex<double>(y) );
 }
@@ -404,7 +384,7 @@ TJet<complex<double> > operator*( const TJet<complex<double> >& x, const double&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/( const TJet<double>& x, const TJet<complex<double> >& y ) 
+TJet<complex<double> > operator/( TJet<double> const& x, TJet<complex<double> >const& y ) 
 {
 
   return TJet<complex<double> >(x)/y;
@@ -414,7 +394,7 @@ TJet<complex<double> > operator/( const TJet<double>& x, const TJet<complex<doub
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/( const TJet<complex<double> >& x, const TJet<double>& y ) 
+TJet<complex<double> > operator/( TJet<complex<double> >const& x, TJet<double> const& y ) 
 {
   return x/TJet<complex<double> >(y);
 }
@@ -422,7 +402,7 @@ TJet<complex<double> > operator/( const TJet<complex<double> >& x, const TJet<do
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/( const complex<double> & x, const TJet<double>& y ) 
+TJet<complex<double> > operator/( complex<double> const& x, TJet<double> const& y ) 
 {
   return x/TJet<complex<double> >(y);
 }
@@ -430,7 +410,7 @@ TJet<complex<double> > operator/( const complex<double> & x, const TJet<double>&
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/( const TJet<double>& y, const complex<double> & x ) 
+TJet<complex<double> > operator/( TJet<double> const& y, complex<double> const& x ) 
 {
   return TJet<complex<double> >(y)/x;
 }
@@ -438,7 +418,7 @@ TJet<complex<double> > operator/( const TJet<double>& y, const complex<double> &
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/(const TJet<complex<double> >& x, const double& y)
+TJet<complex<double> > operator/( TJet<complex<double> >const& x, double const& y)
 {
   return x/complex<double> (y);
 }
@@ -446,7 +426,7 @@ TJet<complex<double> > operator/(const TJet<complex<double> >& x, const double& 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TJet<complex<double> > operator/(const double& x, const TJet<complex<double> >& y)
+TJet<complex<double> > operator/( double const& x, TJet<complex<double> >const& y)
 {
   return complex<double> (x)/y;
 }
