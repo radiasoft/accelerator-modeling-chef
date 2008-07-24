@@ -4,6 +4,7 @@
 #          amundson@fnal.gov 
 #---------------------------------------------------------------------
 
+ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES         = libpybasic_toolkit.la  libpymxyzptlk.la libpybeamline.la libpybmlfactory.la libpyphysics_toolkit.la libpurepybasic_toolkit.la  libpurepymxyzptlk.la libpurepybeamline.la libpurepybmlfactory.la libpurepyphysics_toolkit.la
 
@@ -76,7 +77,7 @@ libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
-CPPFLAGS   =     $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC) $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src 
+CPPFLAGS   =     -I/usr/local/vsqlite++/include $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC) $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src 
 
 install-exec-hook:
 	for lib in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit ;\
