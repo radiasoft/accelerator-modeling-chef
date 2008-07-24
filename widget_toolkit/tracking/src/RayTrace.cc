@@ -444,7 +444,7 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 
       q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
 
-      if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
+      if(q) { glVertex3f( q->s, (q->z)[0], 0.0 ); }
 
       else {
         ostringstream uic;
@@ -472,7 +472,7 @@ void RayDrawSpace::drawH_ViewRect( RayDrawSpace* x )
 
       q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
 
-      if(q) { glVertex3f( q->s, (q->z)(0), 0.0 ); }
+      if(q) { glVertex3f( q->s, (q->z)[0], 0.0 ); }
       else {
         ostringstream uic;
         uic << "An impossibility has occurred\nin file "
@@ -528,7 +528,7 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 
       q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
 
-      if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
+      if(q) { glVertex3f( q->s, (q->z)[1], 0.0 ); }
       else {
         ostringstream uic;
         uic << "An impossibility has occurred\nin file "
@@ -555,7 +555,7 @@ void RayDrawSpace::drawV_ViewRect( RayDrawSpace* x )
 
       q = (it != x->_topRayTrace->_history.end()) ? *(it++) : 0;
 
-      if(q) { glVertex3f( q->s, (q->z)(1), 0.0 ); }
+      if(q) { glVertex3f( q->s, (q->z)[1], 0.0 ); }
       else {
         ostringstream uic;
         uic << "An impossibility has occurred\nin file "
@@ -624,7 +624,7 @@ RayTrace::RayTrace( Particle const& prt, BmlPtr x,
            "null argument passed to constructor." ) );
   }
 
-  _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x ));
+  _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, *x ));
   _finishConstructor();
 }
 
@@ -632,13 +632,13 @@ RayTrace::RayTrace( Particle const& prt, BmlPtr x,
 void RayTrace::_finishConstructor()
 {
   // Initialize the QtMonitors
-  _n_monitor = QtMonitor::setAzimuth( *_bmlConPtr->cheatBmlPtr() );
+  _n_monitor = QtMonitor::setAzimuth( *_bmlConPtr );
   if( 0 == _n_monitor ) {
     (*pcerr) << "\n*** WARNING *** "
              << "\n*** WARNING *** " << __FILE__ << ", Line " << __LINE__
              << "\n*** WARNING *** RayTrace::_finishConstructor()"
              << "\n*** WARNING *** No QtMonitors in beamline "
-             << _bmlConPtr->name()
+             << _bmlConPtr->Name()
              << "\n*** WARNING *** \n"
              << endl;
   }
@@ -650,8 +650,8 @@ void RayTrace::_finishConstructor()
 
   // Connect QtMonitor signals to the _appendToHistory slot
   
-  for (beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr() )->deep_begin();
-                               it != boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr() )->deep_end(); ++it ) {
+  for (beamline::deep_iterator it  = _bmlConPtr->deep_begin();
+                               it != _bmlConPtr->deep_end(); ++it ) {
     if( typeid(**it) ==  typeid(QtMonitor) ) {
       QObject::connect( dynamic_cast<const QtMonitor*>((*it).get()),    
                           SIGNAL(ping(double,const Vector&)),
@@ -1145,7 +1145,6 @@ void RayTrace::_pushBunch()
 
 void RayTrace::_pushParticle()
 {
-  BmlPtr bmlPtr = boost::const_pointer_cast<beamline>(_bmlConPtr->cheatBmlPtr());
 
   Particle* particle = _bmlConPtr->particle_;
 
@@ -1165,8 +1164,8 @@ void RayTrace::_pushParticle()
       // ??? diverges.
 
       for( int i = 0; i < _number; i++ ) {
-        for ( beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(bmlPtr)->deep_begin();
-                                      it != boost::const_pointer_cast<beamline>(bmlPtr)->deep_end(); ++it ) {
+        for ( beamline::deep_iterator it  =  _bmlConPtr->deep_begin();
+                                      it !=  _bmlConPtr->deep_end(); ++it ) {
       	  (*it)->propagate( *particle );
       	  if(    (0.1 < std::abs(particle->get_x())) 
       	      || (0.1 < std::abs(particle->get_y())) ) {
@@ -1209,8 +1208,8 @@ void RayTrace::_pushParticle()
       // ??? the program from hanging if the orbit 
       // ??? diverges.
 
-       for (beamline::deep_iterator it  = boost::const_pointer_cast<beamline>(bmlPtr)->deep_begin();
-                                   it != boost::const_pointer_cast<beamline>(bmlPtr)->deep_end(); ++it ) {
+       for (beamline::deep_iterator it  = _bmlConPtr->deep_begin();
+                                    it != _bmlConPtr->deep_end(); ++it ) {
         (*it)->propagate( *particle );
         if(    (0.1 < std::abs(particle->get_x())) 
             || (0.1 < std::abs(particle->get_y())) ) {

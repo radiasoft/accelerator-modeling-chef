@@ -63,8 +63,8 @@ TuneDiagram::TuneDiagram( QWidget* parent, const char* nnn, WFlags fff )
 , chalkBoardPtr_(0)
 , imagoPtr_(0)
 {
-  tunes_(0) = 0.5; 
-  tunes_(1) = 0.5; 
+  tunes_[0] = 0.5; 
+  tunes_[1] = 0.5; 
 
   finishConstructor();
 }
@@ -115,20 +115,20 @@ void TuneDiagram::finishConstructor()
   chalkBoardPtr_ = new ChalkBoard( this );
   imagoPtr_      = new QPixmap;
 
-  tunes_(0) = fabs(tunes_(0));
-  tunes_(1) = fabs(tunes_(1));
+  tunes_[0] = fabs(tunes_[0]);
+  tunes_[1] = fabs(tunes_[1]);
 
-  nx_lo_    = int(tunes_(0));
-  ny_lo_    = int(tunes_(1));
+  nx_lo_    = int(tunes_[0]);
+  ny_lo_    = int(tunes_[1]);
   nx_hi_    = nx_lo_ + 1;
   ny_hi_    = ny_lo_ + 1;
 
   ostringstream uic;
   uic << "    "
       << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_[0]))/1000.0)
       << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_[1]))/1000.0)
       << "\n    ";
   tuneLabelPtr_->setTextFormat( Qt::PlainText );
   tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
@@ -151,9 +151,9 @@ void TuneDiagram::draw()
   ostringstream uic;
   uic << "    "
       << "\nHorizontal tune = " 
-      << (double(nearestInteger(1000.0*tunes_(0)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_[0]))/1000.0)
       << "    Vertical tune   = "
-      << (double(nearestInteger(1000.0*tunes_(1)))/1000.0)
+      << (double(nearestInteger(1000.0*tunes_[1]))/1000.0)
       << "\n    ";
   tuneLabelPtr_->setTextFormat( Qt::PlainText );
   tuneLabelPtr_->setAlignment( Qt::AlignHCenter );
@@ -278,7 +278,7 @@ void TuneDiagram::draw()
   QBrush redBrush;
   redBrush.setColor( Qt::red );
   redBrush.setStyle( Qt::SolidPattern );
-  mark( tunes_(0), tunes_(1), &redBrush );
+  mark( tunes_[0], tunes_[1], &redBrush );
 
 
   // -----------------
@@ -287,7 +287,7 @@ void TuneDiagram::draw()
   QPainter localPainter(chalkBoardPtr_);
   {
   ostringstream uic;
-  uic << int(tunes_(0));
+  uic << int(tunes_[0]);
 
   blackPen.setColor(Qt::black);
   blackPen.setWidth(1);
@@ -306,7 +306,7 @@ void TuneDiagram::draw()
 
   {
   ostringstream uic;
-  uic << int(tunes_(1));
+  uic << int(tunes_[1]);
 
   localPainter.begin(chalkBoardPtr_);
   blackPen.setColor(Qt::black);
@@ -326,7 +326,7 @@ void TuneDiagram::draw()
 
   {
   ostringstream uic;
-  uic << (int(tunes_(0)) + 1);
+  uic << (int(tunes_[0]) + 1);
 
   localPainter.begin(chalkBoardPtr_);
   localPainter.setPen( blackPen );
@@ -343,7 +343,7 @@ void TuneDiagram::draw()
 
   {
   ostringstream uic;
-  uic << (int(tunes_(1)) + 1);
+  uic << (int(tunes_[1]) + 1);
 
   localPainter.begin(chalkBoardPtr_);
   localPainter.setPen( blackPen );
@@ -473,6 +473,6 @@ void TuneDiagram::ChalkBoard::paintEvent( QPaintEvent* x )
 
 void TuneDiagram::setTunes( double nu_x, double nu_y )
 {
-  tunes_(0) = nu_x;
-  tunes_(1) = nu_y;
+  tunes_[0] = nu_x;
+  tunes_[1] = nu_y;
 }

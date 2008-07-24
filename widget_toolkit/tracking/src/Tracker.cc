@@ -182,8 +182,8 @@ OrbitTransformer::OrbitTransformer()
 
 void RectH::toDynamics( Vector const& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::xIndex);
-  *yPtr = state(Particle::npxIndex);
+  *xPtr = state[Particle::xIndex];
+  *yPtr = state[Particle::npxIndex];
   *zPtr = 0.0;
 }
 
@@ -196,8 +196,8 @@ void RectH::toState( double a, double b, Particle& ptr ) const
 
 void RectV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::yIndex);
-  *yPtr = state(Particle::npyIndex);
+  *xPtr = state[Particle::yIndex];
+  *yPtr = state[Particle::npyIndex];
   *zPtr = 0.0;
 }
 
@@ -211,9 +211,9 @@ void RectV::toState( double a, double b, Particle& ptr ) const
 
 void NormH::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::xIndex);
-  *yPtr = _alpha*state(Particle::xIndex) + _beta*state(Particle::npxIndex);
-  *zPtr = state(Particle::yIndex);  // Somewhat arbitrary. Fix this.
+  *xPtr = state[Particle::xIndex];
+  *yPtr = _alpha*state[Particle::xIndex] + _beta*state[Particle::npxIndex];
+  *zPtr = state[Particle::yIndex];  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -226,9 +226,9 @@ void NormH::toState( double a, double b, Particle& ptr ) const
 
 void NormV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* zPtr ) const
 {
-  *xPtr = state(Particle::yIndex);
-  *yPtr = _alpha*state(Particle::yIndex) + _beta*state(Particle::npyIndex);
-  *zPtr = state(Particle::xIndex);  // Somewhat arbitrary. Fix this.
+  *xPtr = state[Particle::yIndex];
+  *yPtr = _alpha*state[Particle::yIndex] + _beta*state[Particle::npyIndex];
+  *zPtr = state[Particle::xIndex];  // Somewhat arbitrary. Fix this.
 }
 
 
@@ -282,13 +282,13 @@ void IHIV::toDynamics( const Vector& state, double* xPtr, double* yPtr, double* 
   double u, v;
 
   // Horizontal
-  u = state(Particle::xIndex) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::npxIndex) - _xp_o );
+  u = state[Particle::xIndex] - _x_o;
+  v = _alphaH*u + _betaH*( state[Particle::npxIndex] - _xp_o );
   *xPtr = ( u*u + v*v )/( 2.0*_betaH );
   
   // Vertical
-  u = state(Particle::yIndex) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::npyIndex) - _yp_o );
+  u = state[Particle::yIndex] - _y_o;
+  v = _alphaV*u + _betaV*( state[Particle::npyIndex] - _yp_o );
   *yPtr = ( u*u + v*v )/( 2.0*_betaV );
 
   *zPtr = 0.0;
@@ -366,14 +366,14 @@ void PhiHPhiV::toDynamics( const Vector& state, double* xPtr, double* yPtr, doub
   double u, v, phiH, phiV;
 
   // Horizontal
-  u = state(Particle::xIndex) - _x_o;
-  v = _alphaH*u + _betaH*( state(Particle::npxIndex) - _xp_o );
+  u = state[Particle::xIndex] - _x_o;
+  v = _alphaH*u + _betaH*( state[Particle::npxIndex] - _xp_o );
   phiH = atan2(u,v);
   if( phiH > M_PI ) phiH -= M_TWOPI;
   
   // Vertical
-  u = state(Particle::yIndex) - _y_o;
-  v = _alphaV*u + _betaV*( state(Particle::npyIndex) - _yp_o );
+  u = state[Particle::yIndex] - _y_o;
+  v = _alphaV*u + _betaV*( state[Particle::npyIndex] - _yp_o );
   phiV = atan2(u,v);
   if( phiV > M_PI ) phiV -= M_TWOPI;
   
@@ -463,12 +463,12 @@ void OrbitTransformer::copyCenterFrom( const OrbitTransformer& u )
 void OrbitTransformer::set_center( const Vector& u )
 {
   if( 6 == u.Dim() ) {
-    _x_o   = u( Particle::xIndex);
-    _xp_o  = u( Particle::npxIndex);
-    _y_o   = u( Particle::yIndex);
-    _yp_o  = u( Particle::npyIndex);
-    _cdt_o = u( Particle::cdtIndex);
-    _dpp_o = u( Particle::ndpIndex);
+    _x_o   = u[ Particle::xIndex  ];
+    _xp_o  = u[ Particle::npxIndex];
+    _y_o   = u[ Particle::yIndex  ];
+    _yp_o  = u[ Particle::npyIndex];
+    _cdt_o = u[ Particle::cdtIndex];
+    _dpp_o = u[ Particle::ndpIndex];
   }
   else {
     ostringstream uic;
@@ -497,12 +497,12 @@ void OrbitTransformer::set_center( const Particle& u )
 Vector OrbitTransformer::get_center() const
 {
   Vector u(6);
-  u( Particle::xIndex)   = _x_o  ;
-  u( Particle::npxIndex) = _xp_o ;
-  u( Particle::yIndex)   = _y_o  ;
-  u( Particle::npyIndex) = _yp_o ;
-  u( Particle::cdtIndex) = _cdt_o;
-  u( Particle::ndpIndex) = _dpp_o;
+  u[ Particle::xIndex  ] = _x_o  ;
+  u[ Particle::npxIndex] = _xp_o ;
+  u[ Particle::yIndex  ] = _y_o  ;
+  u[ Particle::npyIndex] = _yp_o ;
+  u[ Particle::cdtIndex] = _cdt_o;
+  u[ Particle::ndpIndex] = _dpp_o;
   return u;
 }
 
@@ -828,7 +828,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         double alphaH, betaH, alphaV, betaV;
         double u, v;
 
-        CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*(_topTracker->_p_info));
+        CSLattFuncs const& lf = *(_topTracker->_p_info);
         alphaH = lf.alpha.hor;
         betaH  = lf.beta.hor;
         alphaV = lf.alpha.ver;
@@ -854,17 +854,17 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
             vec = *oit;
             // Horizontal
 
-            u = (*vec)(0);
-            v = alphaH*u + betaH*(*vec)(3);
-            z(0) = atan2(u,v);
-            if( z(0) > M_PI ) z(0) -= M_TWOPI;
+            u = (*vec)[0];
+            v = alphaH*u + betaH*(*vec)[3];
+            z[0] = atan2(u,v);
+            if( z[0] > M_PI ) z[0] -= M_TWOPI;
             // Vertical
-            u = (*vec)(1);
-            v = alphaV*u + betaV*(*vec)(4);
-            z(1) = atan2(u,v);
-            if( z(1) > M_PI ) z(1) -= M_TWOPI;
+            u = (*vec)[1];
+            v = alphaV*u + betaV*(*vec)[4];
+            z[1] = atan2(u,v);
+            if( z[1] > M_PI ) z[1] -= M_TWOPI;
 
-            z(2) = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
+            z[2] = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
   
             newOrbitPtr->add( z );
           }
@@ -907,9 +907,9 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
             if( _xLo < a && a < _xHi && 
                 _yLo < b && b < _yHi    ) 
             {
-              z(0) = a - xc;
-              z(1) = b - yc;
-              z(2) = c;
+              z[0] = a - xc;
+              z[1] = b - yc;
+              z[2] = c;
 
               if( !newOrbitPtr ) 
               {
@@ -1123,7 +1123,7 @@ Tracker::Tracker( const Particle& prt, BmlPtr x,
   else {
     // *** _myWheel.setIncrement( 252.0 );  // = 7*36, will provide ten colors
     _myWheel.setIncrement( 195.0 ); 
-    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x) );
+    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, *x) );
     _finishConstructor();
   }
 }
@@ -1428,7 +1428,7 @@ void Tracker::_view_norm()
   Particle psave( _bmlConPtr->getParticle() );
 
   try {
-    _p_info = new LattFuncs( _bmlConPtr->getInitial() );
+    _p_info = new CSLattFuncs( _bmlConPtr->getInitial() );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -1440,7 +1440,7 @@ void Tracker::_view_norm()
     return;
   }
 
-  CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*_p_info);
+  CSLattFuncs const& lf = (*_p_info);
   _p_leftWindow->storeCurrentContext();
   _p_leftWindow->setNormContext();
   if( 0 == _p_leftWindow->getTransformer() ) {
@@ -1481,7 +1481,7 @@ void Tracker::_view_actang()
   if( _p_info ) { delete _p_info; _p_info = 0; }
 
   try {
-    _p_info = new LattFuncs( _bmlConPtr->getInitial() );
+    _p_info = new CSLattFuncs( _bmlConPtr->getInitial() );
   }
   catch( const std::exception& ge ) {
     if( _p_info ) { delete _p_info; _p_info = 0; }
@@ -1493,7 +1493,7 @@ void Tracker::_view_actang()
     return;
   }
 
-  CSLattFuncs const& lf = boost::get<CSLattFuncs const&>(*_p_info);
+  CSLattFuncs const& lf = (*_p_info);
   double a1 = lf.alpha.hor;
   double b1 = lf.beta.hor;
   double a2 = lf.alpha.ver;
@@ -1798,7 +1798,6 @@ void Tracker::_tool_pdicOrb()
   
     Vector z(w);
   
-    ConstBmlPtr bmlPtr = _bmlConPtr->cheatBmlPtr();
     Jet__environment_ptr storedEnv = Jet__environment::getLastEnv();
     // REMOVE: double energy = dummyPtr->Energy();
 
@@ -1806,16 +1805,9 @@ void Tracker::_tool_pdicOrb()
     try 
     { for( unsigned int iterCount = 0; iterCount < ul; iterCount++ ) {
         Jet__environment::BeginEnvironment( order );
-          coord  x(w(0)),  y(w(1)),  q(0.0),
-                px(w(3)), py(w(4)), qq(0.0);
+          coord  x(w[0]),  y(w[1]),  q(0.0),
+                px(w[3]), py(w[4]), qq(0.0);
         Jet__environment::EndEnvironment();
-  
-        #if 0
-        WHY IS THIS HERE???
-        Jet xsq;
-        Jet x1 = x;   // ??? This is most unfortunate.    ???
-        xsq = x1*x1;  // ??? Why do we have to define x1? ???
-        #endif
   
         dummyPtr->State() = w;
         jpPtr = new JetParticle(*dummyPtr);
@@ -1823,9 +1815,9 @@ void Tracker::_tool_pdicOrb()
         cout << "Begin n-th Henon iterate for n = "
              << iterate
              << endl;
-        for( unsigned int i = 0; i < iterate; i++ ) {
+        for( unsigned int i = 0;  i< iterate; i++ ) {
           cout << "No." << (i+1) << endl;
-          boost::const_pointer_cast<beamline>(bmlPtr)->propagate( *jpPtr );
+          _bmlConPtr->propagate( *jpPtr );
         }
         cout << "End n-th Henon iterate" << endl;
   
@@ -1837,23 +1829,23 @@ void Tracker::_tool_pdicOrb()
         M = stuff.Jacobian();
         for( int i = 0; i < 4; i++ ) {
           for( int j = 0; j < 4; j++ ) {
-            N(i,j) = M( k[i], k[j] );
+            N[i][j] = M[k[i]][ k[j] ];
           }
         }
-        for( int i = 0; i < 4; i++ ) { N( i, i ) -= 1.0; }
+        for( int i = 0; i < 4; i++ ) { N[i][i] -= 1.0; }
 
         N = N.inverse();
 
         for( int i = 0; i < 4; i++ ) {
           for( int j = 0; j < 4; j++ ) {
-            M( k[i], k[j] ) = N(i,j);
+            M[k[i]][ k[j] ] = N[i][j];
           }
         }
         for( int i = 0; i < 6; i++ ) {
-          M(i,2) = 0.0;
-          M(2,i) = 0.0;
-          M(i,5) = 0.0;
-          M(5,i) = 0.0;
+          M[i][2] = 0.0;
+          M[2][i] = 0.0;
+          M[i][5] = 0.0;
+          M[5][i] = 0.0;
         }
 
         Vector z(w);
@@ -1883,7 +1875,7 @@ void Tracker::_tool_pdicOrb()
     cout << "\nTest the results: " << endl;
     for( int j = 0; j < 10; j++ ) {
       for( unsigned int i = 0; i < iterate; i++ ) {
-        boost::const_pointer_cast<beamline>(bmlPtr)->propagate(*dummyPtr);
+        _bmlConPtr->propagate(*dummyPtr);
       }
       cout << dummyPtr->State() << endl;
     }
@@ -2027,7 +2019,7 @@ void Tracker::setState( const Vector& s )
 
 void Tracker::_iterate()
 {
-  ConstBmlPtr bmlPtr = _bmlConPtr->cheatBmlPtr();
+
   Particle* particle = _bmlConPtr->particle_;
 
   // ??? WARNING: TWO VERY DANGEROUS LINES! ???
@@ -2035,7 +2027,7 @@ void Tracker::_iterate()
   if( _isIterating ) 
   {
     for( int i = 0; i < _number; i++ ) {
-      boost::const_pointer_cast<beamline>(bmlPtr)->propagate( *particle );
+      _bmlConPtr->propagate( *particle );
       _p_currOrb->add( particle->State() );
       // REMOVE: history_.add( particle->State() );
     }
