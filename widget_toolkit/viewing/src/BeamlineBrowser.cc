@@ -384,11 +384,11 @@ QPixmap* BeamlineBrowser::elmntSymbol     = 0;
 // *
 // *****************************************************************************
 
-QBml::QBml( QPixmap* px, QBmlRoot* rt, const char* s1, const char* s2 )
+QBml::QBml( QPixmap* px, QBmlRoot* rt, char const* s1, char const* s2 )
 : QListViewItem( rt, s1, s2 ), pix_(px), p_(rt)
 {}
 
-QBml::QBml( QPixmap* px, QListView* parent, const char* s1, const char* s2 )
+QBml::QBml( QPixmap* px, QListView* parent, char const* s1, char const* s2 )
 : QListViewItem( parent, s1, s2 ), pix_(px), p_(0)
 {}
 
@@ -484,7 +484,7 @@ QString QBmlElmt::fullName() const
 // *****************************************************************************
 
 QBmlRoot::QBmlRoot( QListView* parent, BmlContextPtr q, double& s )
-: QBml( 0, parent, q->name().c_str(), "beamline" ), 
+: QBml( 0, parent, q->Name().c_str(), "beamline" ), 
    myBmlCon_(q)
 {
     QString str;
@@ -499,11 +499,12 @@ QBmlRoot::QBmlRoot( QListView* parent, Particle const& particle, BmlPtr q, doubl
 : QBml( 0, parent, q->Name().c_str(), q->Type() ), 
    myBeamline_()
 {
-    QString str;
-    str.setNum( ((double) s) );
-    this->setText( 2, str );
+  // QString str;
+  // str.setNum( ((double) s) );
 
-    myBmlCon_ = BmlContextPtr(new BeamlineContext( particle, q) );
+    setText( 2, QString().setNum(s) );
+
+    myBmlCon_ = BmlContextPtr(new BeamlineContext( particle, *q) );
 }
 
 
@@ -570,7 +571,7 @@ QString QBmlRoot::fullName() const
 {
     QString s;
     if( !p_ ) 
-    { s = myBmlCon_->name();
+    { s = myBmlCon_->Name();
     }
     else 
     { s = myBeamline_->Name();
@@ -1022,39 +1023,8 @@ void BeamlineBrowser::resetPixmap( ConstBmlContextPtr bcPtr )
 // Readers
 // 
 
-BmlContextPtr BeamlineBrowser::readMADFile( const char* fileName, 
-                                               const char* lineName, 
-                                               double      brho )
-{
-  MAD8Factory bf( fileName, brho );
-  BmlPtr pBml = bf.create_beamline( lineName ); 
 
-  BmlContextPtr www;
-  if( 0 == strcmp( "PROTON", bf.getParticleType() ) ) {
-    www = BmlContextPtr( new BeamlineContext( Proton(pBml->Momentum()), pBml ) );
-  }
-  else if( 0 == strcmp( "POSITRON", bf.getParticleType() ) ) {
-    www =  BmlContextPtr( new BeamlineContext( Positron(pBml->Momentum()), pBml) );
-  }
-  else {
-    ostringstream uic;
-    uic << "Particle type "
-        << bf.getParticleType()
-        << " not recognized.";
-    QMessageBox::critical( 0, "CHEF: ERROR", uic.str().c_str() );
-    throw GenericException( __FILE__, __LINE__, 
-          "BeamlineBrowser::readMADFile",
-          uic.str().c_str() ) ;
-  }
-
-  displayBeamline( www );
-  emit sig_newContext( www );
-  return www;
-}
-
-
-
-void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
+void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr ) 
 {
   if( !ptr ) {
     ostringstream uic;
@@ -1074,6 +1044,7 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
   QString str1, str2;
 
   QBmlRoot* root = new QBmlRoot( this, boost::const_pointer_cast<BeamlineContext>(ptr), s );
+
   if( ptr->isTreatedAsRing() ) {
     root->setPixmap( BeamlineBrowser::bmrBlackSymbol ); 
   }
@@ -1084,9 +1055,9 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
 
   str2.setNum(s);
 
-  beamline::const_reverse_iterator rbi = ptr->cheatBmlPtr()->rbegin();
+  beamline::const_reverse_iterator rbi = ptr->rbegin();
 
-  displayLine( root, boost::const_pointer_cast<beamline>(ptr->cheatBmlPtr()), rbi, s );
+  displayLine( root, boost::const_pointer_cast<BeamlineContext>(ptr), rbi, s );
 
   str1.setNum( s );
   root->setText( 2, str1 + "-" + str2 );
@@ -1437,46 +1408,46 @@ void BeamlineBrowser::infoWriter::visit( Slot const& x )
          qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
          qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
 
-         xstr.setNum( (x.getInFrame().getOrigin())(0) );
-         ystr.setNum( (x.getInFrame().getOrigin())(1) );
-         zstr.setNum( (x.getInFrame().getOrigin())(2) );
+         xstr.setNum( (x.getInFrame().getOrigin())[0] );
+         ystr.setNum( (x.getInFrame().getOrigin())[1] );
+         zstr.setNum( (x.getInFrame().getOrigin())[2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 1 );
-         xstr.setNum( (x.getOutFrame().getOrigin())(0) );
-         ystr.setNum( (x.getOutFrame().getOrigin())(1) );
-         zstr.setNum( (x.getOutFrame().getOrigin())(2) );
+         xstr.setNum( (x.getOutFrame().getOrigin())[0] );
+         ystr.setNum( (x.getOutFrame().getOrigin())[1] );
+         zstr.setNum( (x.getOutFrame().getOrigin())[2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 2 );
 
-         xstr.setNum( (x.getInFrame().getxAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getxAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getxAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getxAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getxAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 1 );
-         xstr.setNum( (x.getInFrame().getyAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getyAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getyAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getyAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getyAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 1 );
-         xstr.setNum( (x.getInFrame().getzAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getzAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getzAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getzAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getzAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 1 );
     
-         xstr.setNum( (x.getOutFrame().getxAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getxAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getxAxis()) [0] );
+         ystr.setNum( (x.getOutFrame().getxAxis()) [1] );
+         zstr.setNum( (x.getOutFrame().getxAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 2 );
-         xstr.setNum( (x.getOutFrame().getyAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getyAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getyAxis()) [0] );
+         ystr.setNum( (x.getOutFrame().getyAxis()) [1] );
+         zstr.setNum( (x.getOutFrame().getyAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 2 );
-         xstr.setNum( (x.getOutFrame().getzAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getzAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getzAxis()) [0] );
+         ystr.setNum( (x.getOutFrame().getzAxis()) [1] );
+         zstr.setNum( (x.getOutFrame().getzAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 2 );
     

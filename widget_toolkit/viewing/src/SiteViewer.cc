@@ -102,7 +102,7 @@ SiteViewer::SiteViewer( const Particle& prt, BmlPtr x, QWidget* parent, const ch
                               "Must specify a beamline first." );
   }
   else {
-    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, x) );
+    _bmlConPtr = BmlContextPtr( new BeamlineContext( prt, *x) );
     _finishConstructor();
   }
 }
@@ -129,7 +129,7 @@ void SiteViewer::_finishConstructor()
   Vector r(3);
   int i = 0;
 
-  for ( beamline::const_deep_iterator dbi = _bmlConPtr->cheatBmlPtr()->deep_begin();  dbi != _bmlConPtr->cheatBmlPtr()->deep_end(); ++dbi)
+  for ( beamline::const_deep_iterator dbi = _bmlConPtr->deep_begin();  dbi != _bmlConPtr->deep_end(); ++dbi)
   {
    q = *dbi;
     _element[i] = q.get();
@@ -141,9 +141,9 @@ void SiteViewer::_finishConstructor()
     // _y[i] = r(2);
     // _z[i] = r(1);
 
-    _x[i] = r(0);
-    _y[i] = r(2);
-    _z[i] = - r(1);
+    _x[i] = r[0];
+    _y[i] = r[2];
+    _z[i] = - r[1];
 
     if( _x[i] < _xmin ) _xmin = _x[i];
     if( _x[i] > _xmax ) _xmax = _x[i];
@@ -236,7 +236,7 @@ bool SiteViewer::filter( const bmlnElmnt* x ) const
 void SiteViewer::_fileSite()
 {
   QString fileName = QFileDialog::getSaveFileName(
-    QString(_bmlConPtr->name()) + QString("_site.txt"),
+    QString(_bmlConPtr->Name()) + QString("_site.txt"),
     QString("Text Files (*.txt)"),
     0,
     0,
