@@ -43,21 +43,20 @@
 
 using namespace std;
 
-QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initial) 
+QWidget* CommandPropagateDispersion::operator()( QWidget* parent, BmlContextPtr bml, CSLattFuncs const& initial) 
 
 {
 
-    context->setInitial( initial );
+    bml->setInitial( initial );
+    bml->propagateDispersion();
 
-    context->computeDispersion();
-
-    DspnFncData dfd( context->dbConnection(), context->cheatBmlPtr() );
+    DspnFncData dfd( bml->dbConnection() );
 
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "DspnplotWidget", Qt::WDestructiveClose );
  
     string  theCaption("CHEF: Dispersion: " );
     
-    theCaption += string( context->name() );
+    theCaption += string( bml->Name() );
     
     plotWidget->setCaption( theCaption );
     plotWidget->setGeometry(0,0, parent->width(), parent->height() );

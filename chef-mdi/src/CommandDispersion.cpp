@@ -48,20 +48,20 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandDispersion::operator()( QWidget* parent, BmlContextPtr const& bml ) 
+QWidget* CommandDispersion::operator()( QWidget* parent, BmlContextPtr bml ) 
 { 
 
    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-   string caption = "CHEF:  Dispersion (uncoupled): " + string( bml->name() );
+   string caption = "CHEF:  Dispersion (uncoupled): " + string( bml->Name() );
 
    plot->setCaption( caption.c_str() );
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
-   bml->computeDispersion();
+   bml->periodicDispersion();
 
-   DspnFncData data ( bml->dbConnection(), bml->cheatBmlPtr() );
+   DspnFncData data ( bml->dbConnection() );
    plot->addData( data );
 
    return plot;

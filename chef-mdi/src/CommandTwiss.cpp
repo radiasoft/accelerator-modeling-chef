@@ -36,13 +36,9 @@
 #include <CommandTwiss.h>
 
 #include<string>
-#include<vector>
-#include<beamline/ParticleBunch.h>
 #include<physics_toolkit/BeamlineContext.h>
 #include<CHEFPlotMain.h>
 #include<LattFncData.h>
-#include<LFDataTable.h>
-#include<qwidget.h>
 
 using namespace std;
 
@@ -50,40 +46,27 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandTwiss::operator()( QWidget* parent, BmlContextPtr const& context ) 
+void CommandComputePeriodicTwiss::operator()( BmlContextPtr bml ) 
+{ 
+   bml->periodicCourantSnyder2D();
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CommandPlotTwiss::operator()( QWidget* parent, sqlite::connection& db ) 
 { 
    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-   string caption = "CHEF:  Twiss Functions (uncoupled): " + string( context->name() );
+   string caption = "CHEF:  Twiss Functions (uncoupled): ";
 
    plot->setCaption( caption.c_str() );
    plot->setGeometry(0,0, parent->width(), parent->height() );
    plot->setAutoClear(true);
 
-   context->computeCourantSnyder();
-
-   if( context->isTreatedAsRing() ) {
-
-     LattFncData data(   context->dbConnection()
-
-                       , context->getHTune()
-                       , context->getVTune()
-                       , context->cheatBmlPtr()           );
-     plot->addData(data);
-   }
-   else {
-     LattFncData data(   context->dbConnection()
-                       , -1.0
-                       , -1.0
-                       , context->cheatBmlPtr()           );
-     plot->addData(data);
-   }
-
-
-   //   ( new LFDataTable( context->dbConnection(), parent, "Twiss Functions (uncoupled)" ) )->show();
-
-   return plot;
-
+   LattFncData data(  db, -1.0, -1.0);
+   plot->addData(data);
+   plot->show();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

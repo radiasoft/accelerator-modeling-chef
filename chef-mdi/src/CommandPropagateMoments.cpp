@@ -46,7 +46,7 @@
 
 using namespace std;
 
-QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initial )
+QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr context, CSLattFuncs const& initial )
 {
 
 #if 0
@@ -77,24 +77,22 @@ QWidget* CommandPropagateMoments::operator()( QWidget* parent, BmlContextPtr& co
     CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "MMplotWidget", Qt::WDestructiveClose );
 
     if( context->isTreatedAsRing() ) {
-      context->computeCovariance();
+      context->periodicCovariance();
       MomentsFncData data(   context->dbConnection()
                            , context->getHTune()
-                           , context->getVTune()
-                           , context->cheatBmlPtr()            );
+                           , context->getVTune() );
       plotWidget->addData( data );
     }
     else {
-      context->computeCovariance();
+      context->propagateCovariance();
       MomentsFncData data(   context->dbConnection()
                            , -1.0
-                           , -1.0
-                           , context->cheatBmlPtr()            );
+                           , -1.0 );
       plotWidget->addData( data );
     }
 
     string theCaption("CHEF: Lattice Functions (covariance): " );
-    theCaption += string( context->name() );
+    theCaption += string( context->Name() );
     plotWidget->setCaption( theCaption );
 
     plotWidget->setGeometry(0,0, parent->width(), parent->height() );

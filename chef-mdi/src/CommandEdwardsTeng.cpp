@@ -50,22 +50,21 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandEdwardsTeng::operator()( QWidget* parent, BmlContextPtr const& context ) 
+QWidget* CommandEdwardsTeng::operator()( QWidget* parent, BmlContextPtr context ) 
 { 
   if( context->isTreatedAsRing() ) {
     CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-    string caption = "CHEF: Lattice Functions (Factorization): " + string( context->name() );
+    string caption = "CHEF: Lattice Functions (Factorization): " + string( context->Name() );
 
     plot->setCaption( caption.c_str() );
     plot->setGeometry(0,0, parent->width(), parent->height() );
     plot->setAutoClear(true);
 
-    context->computeEdwardsTeng();
+    context->periodicEdwardsTeng();
     ETFncData data(   context->dbConnection()
                     , context->getHTune()
-                    , context->getVTune()
-                    , context->cheatBmlPtr()             );
+                    , context->getVTune() );
     plot->addData(data);
     return plot;
   }

@@ -5,7 +5,7 @@
 ******  CHEF:      An application layered on the Beamline/mxyzptlk   ****** 
 ******             class libraries.                                  ****** 
 ******                                                               ****** 
-******  File:      CommandPropagateTwiss.cpp                         ****** 
+******  File:      CommandComputePropagateTwiss.cpp                  ****** 
 ******                                                               ******
 ******  Copyright (c) Universities Research Association, Inc.        ****** 
 ******                All Rights Reserved                            ****** 
@@ -43,35 +43,9 @@
 
 using namespace std;
 
-QWidget* CommandPropagateTwiss::operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initialConditions ) 
+void CommandComputePropagateTwiss::operator()( BmlContextPtr bml, CSLattFuncs initial ) 
 {
-    context->setInitial( initialConditions );
+    bml->setInitial( initial );
+    bml->propagateCourantSnyder2D();
 
-    CHEFPlotMain* plotWidget = new CHEFPlotMain( parent, "PlotWidget", Qt::WDestructiveClose );
-
-    context->computeCourantSnyder();
-    
-    if( context->isTreatedAsRing() ) {
-      LattFncData lfd(   context->dbConnection()
-                       , context->getHTune()
-                       , context->getVTune()
-                       , context->cheatBmlPtr()            );
-      plotWidget->addData( lfd  );
-    }
-    else {
-      LattFncData lfd(   context->dbConnection()
-                       , -1.0
-                       , -1.0
-                       , context->cheatBmlPtr()            );
-      plotWidget->addData( lfd  );
-    }
-
-    string theCaption("CHEF: Uncoupled Lattice Functions: ");
-    theCaption += string( context->name() );
-    plotWidget->setCaption( theCaption.c_str() );
-
-    plotWidget->setGeometry(0,0, parent->width(), parent->height() );
-    plotWidget->show();
-
-    return plotWidget;
 }

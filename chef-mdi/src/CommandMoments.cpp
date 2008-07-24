@@ -50,23 +50,22 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandMoments::operator()( QWidget* parent, BmlContextPtr const& context ) 
+QWidget* CommandMoments::operator()( QWidget* parent, BmlContextPtr context ) 
 { 
   if( context->isTreatedAsRing() ) {
     CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-    string caption = "CHEF:  Lattice Functions (Moments): " + string( context->name() );
+    string caption = "CHEF:  Lattice Functions (Moments): " + string( context->Name() );
 
     plot->setCaption( caption.c_str() );
     plot->setGeometry(0,0, parent->width(), parent->height() );
     plot->setAutoClear(true);
 
-      context->computeCovariance();
+      context->periodicCovariance();
 
       MomentsFncData data(   context->dbConnection()
                          , context->getHTune()
-                         , context->getVTune()
-                         , context->cheatBmlPtr()            );
+                         , context->getVTune() );
 
     plot->addData( data );
     return plot;

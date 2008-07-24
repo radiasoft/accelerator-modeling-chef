@@ -45,7 +45,7 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandPropagateBunch::operator()( QWidget* parent, BmlContextPtr const& bml ) 
+QWidget* CommandPropagateBunch::operator()( QWidget* parent, BmlContextPtr bml ) 
 { 
 
    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );

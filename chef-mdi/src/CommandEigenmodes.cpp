@@ -51,41 +51,26 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-QWidget* CommandEigenmodes::operator()( QWidget* parent, BmlContextPtr const& context ) 
+QWidget* CommandEigenmodes::operator()( QWidget* parent, BmlContextPtr bml ) 
 { 
-  if( context->isTreatedAsRing() ) {
-    CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-    string caption = "CHEF:  Lattice Functions (EigenModes): " + string( context->name() );
+  bml->periodicCourantSnyder4D();
 
-    plot->setCaption( caption.c_str() );
-    plot->setGeometry(0,0, parent->width(), parent->height() );
-    plot->setAutoClear(true);
-   
-    context->computeEigenmodes();
+  CHEFPlotMain* plot =  new CHEFPlotMain(  parent, "plotWidget", Qt::WDestructiveClose );
 
-    LBFncData data(   context->dbConnection(), 
-                      context->getHTune(),
-                      context->getVTune(), 
-                      context->cheatBmlPtr() );
-    plot->addData( data );
+  string caption = "CHEF:  Lattice Functions (EigenModes): " + string( bml->Name() );
 
-    return plot;
-  }
-  else {
-    ostringstream uic;
-    uic  <<   "Can only compute coupled lattice functions"
-            "\nfor a periodic structure.";
-    QMessageBox::critical(   parent
-                           , QString( "ERROR: NOT RING" )
-                           , QString( uic.str().c_str() )
-                           , QMessageBox::Ok
-                           , QMessageBox::NoButton
-                           , QMessageBox::NoButton        );
-    throw GenericException( __FILE__, __LINE__,
-                            "CommandEigenmodes::operator()(...)",
-                            uic.str().c_str() );
-  }
+  plot->setCaption( caption.c_str() );
+  plot->setGeometry(0,0, parent->width(), parent->height() );
+  plot->setAutoClear(true);
+
+
+  LBFncData data(   bml->dbConnection(), 
+                    bml->getHTune(),
+                    bml->getVTune() );
+  plot->addData( data );
+
+  return plot;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
