@@ -124,6 +124,7 @@ FPSolver::~FPSolver() {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+
 int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
 {
 
@@ -145,9 +146,9 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
   MatrixD M( 4, 4 );
   for( int i=0; i<4; ++i) 
     for( int j=0; j<4; ++j ) 
-      M( i, j ) = MM( l_[i], l_[j] );
+      M[i][j] = MM[l_[i]][l_[j]];
 
-  for( int i=0; i<4; ++i) M( i, i ) -= 1.0;
+  for( int i=0; i<4; ++i) M[i][i] -= 1.0;
   M = M.inverse();
   
   int iterCount = 0;
@@ -167,7 +168,7 @@ int FPSolver::operator()( Particle& p, const char*, FP_CRITFUNC Crit )
     }
       
     Vector eps(4);
-    for( int i=0; i<4; ++i) eps(i) = (zs[l_[i]] - p.State()[ l_[i] ]);
+    for( int i=0; i<4; ++i) eps[i] = (zs[l_[i]] - p.State()[ l_[i] ]);
 
     double epsnorm = 0.0;
     double zsnorm  = 0.0;
@@ -264,11 +265,11 @@ int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
 
    for( int i=0; i<4; ++i ) {
      for( int j=0; j<4; ++j) { 
-        M( i, j ) = MM( l_[i], l_[j] );
+        M[i][j] = MM[l_[i]][ l_[j]];
      }
    }
 
-   for( int i=0; i<4; ++i) { M( i, i ) -= 1.0; }
+   for( int i=0; i<4; ++i) { M[i][i] -= 1.0; }
    M = M.inverse();
 
    int iterCount = 0;
@@ -378,7 +379,7 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
   bmLine_->propagate( jp );
 
   MatrixD M = jp.State().Jacobian();
-  for( int i = 0; i < dimension_; i++ ) M( i, i ) -= 1.0;
+  for( int i=0; i<dimension_; i++ ) M[i][i] -= 1.0;
   M = M.inverse();
   
   int iterCount = 0;
@@ -400,12 +401,12 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
     // --- Set up the tests --------------------------
     jumpTest = zeroTest = 0;
     FORALL(i) {
-      if((  std::max(std::abs( z(i) ),std::abs( p.State()[i] )) > zeroScale_[i]  )) {
+      if((  std::max(std::abs( z[i] ),std::abs( p.State()[i] )) > zeroScale_[i]  )) {
         zeroTest = 1;
         jumpTest = jumpTest || 
           ( 
-            ( std::abs( eps(i) ) >
-            jumpScale_[i]*std::max(std::abs( z(i) ),std::abs( p.State()[i] )) )  
+            ( std::abs( eps[i] ) >
+            jumpScale_[i]*std::max(std::abs( z[i] ),std::abs( p.State()[i] )) )  
           );
       }
     }    
@@ -491,7 +492,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 
     FORALL(i) {
       y.setVariable( i, p.State().Env() );
-      w.SetComponent( i, y );
+      w[i] = y; 
     }
 
     p.State() = w;
@@ -506,12 +507,12 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
     FORALL(i) m[i] = 0;
     FORALL(i) FORALL(j) {
       m[j] = 1;
-      hessian(i,j) = w(i).derivative( m );
+      hessian[i][j] = w[i].derivative( m );
       m[j] = 0;                           
     }
 
     FORALL(i) {
-      hessian(i,i) -= 1.0;
+      hessian[i][i] -= 1.0;
       eps[i] = particleCoord[i] - u[i];
     }
 
@@ -535,7 +536,7 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
     // --- Iterative step ----------------------------------------------
     for( int i=0; i < dimension_; ++i ) {
       for( int j=0; j < dimension_; ++j ) 
-        zzhessian(i,j) = 0.0;
+        zzhessian[i][j] = 0.0;
     }
     zzeps = eps;
     zzx   = eps;
@@ -586,15 +587,6 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void FPSolver::eraseAll() {
- for (beamline::iterator it = bmLine_->begin();  it != bmLine_->end(); ++it ) {
-  (*it)->dataHook.eraseAll( "FPS_orbit" );
- }
-}
- 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
- //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double& FPSolver::JumpScale( int i ) { 
 
