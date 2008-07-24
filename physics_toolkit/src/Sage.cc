@@ -61,27 +61,34 @@
 #include <basic_toolkit/GenericException.h>
 #include <physics_toolkit/Sage.h>
 #include <beamline/FramePusher.h>  // Used by Sage::isRing functions
+#include <beamline/Particle.h>
 
 double Sage::defGapTol_   = 0.005;  // = 5 mm
 double Sage::defAngleTol_ = 0.001;  // = 1 mrad
 
 using namespace std;
 
+namespace {
+
+ Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
+
+} // anonymous namespace
+
+
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Sage::Sage( BmlPtr x)
-  :  myBeamlinePtr_(x),
-     nelms_(0), 
-     verbose_(false),
-     isRing_(Sage::isRing(*x)),
-     localData_(false),
-     errorStreamPtr_( &std::cerr ),
-     outputStreamPtr_( &std::cout ),
-     ringGapTolerance_(  defGapTol_ ),
-     ringAngleTolerance_( defAngleTol_)
+Sage::Sage( BmlPtr x , sqlite::connection& db)
+  :     bml_(x), nelms_(0), verbose_(false), isRing_(Sage::isRing(*x)),
+        ringGapTolerance_(  defGapTol_ ), ringAngleTolerance_( defAngleTol_), 
+        db_(db)
 {
-
 
   if( !x ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -90,50 +97,40 @@ Sage::Sage( BmlPtr x)
   }
 
 
-  if( beamline::unknown == myBeamlinePtr_->getLineMode() ) {
+  if( beamline::unknown == bml_->getLineMode() ) {
     if( isRing_ ) {
-      myBeamlinePtr_->setLineMode( beamline::ring );
+      bml_->setLineMode( beamline::ring );
     }
     else {
-      myBeamlinePtr_->setLineMode( beamline::line );
+      bml_->setLineMode( beamline::line );
     }
   }
 
-  nelms_ = myBeamlinePtr_->countHowManyDeeply();
+  nelms_ = bml_->countHowManyDeeply();
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Sage::Sage(beamline const& bml)
-  :  myBeamlinePtr_(),
-     nelms_(0), 
-     verbose_(false),
-     isRing_(Sage::isRing( bml ) ),
-     localData_(false),
-     errorStreamPtr_( &std::cerr ),
-     outputStreamPtr_( &std::cout ),
-     ringGapTolerance_(  defGapTol_ ),
-     ringAngleTolerance_( defAngleTol_)
+Sage::Sage(beamline const& bml, sqlite::connection& db )
+  :  bml_(), nelms_(0), verbose_(false), isRing_(Sage::isRing( bml ) ),
+     ringGapTolerance_(  defGapTol_ ), ringAngleTolerance_( defAngleTol_), db_(db)
 {
-
    
-  myBeamlinePtr_ = BmlPtr( bml.Clone() ); 
+  bml_ = BmlPtr( bml.Clone() ); 
 
-  if( beamline::unknown == myBeamlinePtr_->getLineMode() ) {
+  if( beamline::unknown == bml_->getLineMode() ) {
     if( isRing_ ) {
-      myBeamlinePtr_->setLineMode( beamline::ring );
+      bml_->setLineMode( beamline::ring );
     }
     else {
-      myBeamlinePtr_->setLineMode( beamline::line );
+      bml_->setLineMode( beamline::line );
     }
   }
 
-  nelms_ = myBeamlinePtr_->countHowManyDeeply();
+  nelms_ = bml_->countHowManyDeeply();
 }
-
- 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -159,39 +156,14 @@ void Sage::unset_verbose()
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Sage::setErrorStream( std::ostream* x )
-{
-  errorStreamPtr_ = x;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Sage::setOutputStream( std::ostream* x )
-{
-  outputStreamPtr_ = x;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void Sage::treatAsRing( bool x )
 {
   if(x) {
-    myBeamlinePtr_->setLineMode( beamline::ring );
+    bml_->setLineMode( beamline::ring );
   }
   else {
-    myBeamlinePtr_->setLineMode( beamline::line );
+    bml_->setLineMode( beamline::line );
   }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Sage::attachLocalData( bool x )
-{
-  localData_ = x;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -199,9 +171,8 @@ void Sage::attachLocalData( bool x )
 
 bool Sage::isTreatedAsRing() const
 {
-  return ( beamline::ring == myBeamlinePtr_->getLineMode() );
+  return ( beamline::ring == bml_->getLineMode() );
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -210,7 +181,6 @@ void Sage::setGapTolerance( double x )
 {
   ringGapTolerance_ = std::abs(x);
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -260,13 +230,13 @@ bool Sage::yes( ConstElmPtr )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-bool Sage::isRing( beamline const& bml, double gap_tol, double angle_tol )
+bool Sage::isRing( beamline const& bml, double const& gap_tol, double const& angle_tol )
 {
   // This test will return true for pathologically short lines
   //   like a beamline consisting of a single 1 mm drift.
 
-  gap_tol    = std::abs(gap_tol); 
-  angle_tol  = std::abs(angle_tol); 
+  const double gtol  = std::abs(gap_tol); 
+  const double atol  = std::abs(angle_tol); 
 
   // Paranoia in case of excessively stupid user.
 
@@ -278,7 +248,7 @@ bool Sage::isRing( beamline const& bml, double gap_tol, double angle_tol )
   Vector r = fp.getFrame().getOrigin();
 
   for( int i = 0; i < 3; ++i) {
-    if( gap_tol < std::abs(r(i)) ) { return false; }
+    if( gtol < std::abs(r[i]) ) { return false; }
   }
 
   // Check the angle of return
@@ -288,7 +258,7 @@ bool Sage::isRing( beamline const& bml, double gap_tol, double angle_tol )
   for( int i = 0; i < 3; ++i ) {
     for( int j = 0; j < 3; ++j ) {
       if( i != j ) {
-        if( angle_tol < std::abs(fv(i,j)) ) { return false; }
+        if( atol < std::abs(fv[i][j]) ) { return false; }
       }
     }
   }
@@ -301,7 +271,7 @@ bool Sage::isRing( beamline const& bml, double gap_tol, double angle_tol )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-bool Sage::isRing( BmlPtr bmlPtr, double gt, double at )
+bool Sage::isRing( BmlPtr bmlPtr, double const& gt, double const& at )
 {
   return Sage::isRing( *bmlPtr, gt, at );
 }
@@ -309,10 +279,53 @@ bool Sage::isRing( BmlPtr bmlPtr, double gt, double at )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-bool Sage::hasRing() const
+std::vector<double> Sage::compute_tunes( Matrix const& oneturn )
 {
-  return Sage::isRing( myBeamlinePtr_ );
+
+  std::vector<double> nu(3, 0.0); 
+
+  VectorC lambda = oneturn.eigenValues();
+
+  std::pair<std::complex<double>, std::complex<double> > lambda_x ( lambda[i_x  ], lambda[i_npx] );
+  std::pair<std::complex<double>, std::complex<double> > lambda_y ( lambda[i_y  ], lambda[i_npy] );
+  std::pair<std::complex<double>, std::complex<double> > lambda_s ( lambda[i_cdt], lambda[i_ndp] );
+
+ 
+  if(   ( (abs( lambda_x.first) - 1.0) > 1.0e-4 ) ||
+	( (abs( lambda_y.first) - 1.0) > 1.0e-4 )    )
+  {       
+    (*FNAL::pcerr) << "\n"
+         << "*** ERROR *** \n"
+         << "*** ERROR *** \n"
+         << "*** ERROR *** The lattice is linearly unstable transversly. \n"
+		   << "*** ERROR *** |lambda_x | = " << abs(lambda_x.first)
+                               << "  |lambda_y | = " << abs(lambda_y.first) 
+         << "\n"
+         << "*** ERROR *** \n"
+         << std::endl;
+   }
+
+  if( ( abs( lambda_x.first - conj( lambda_x.second ) ) > 1.0e-4 )  ||
+      ( abs( lambda_y.first - conj( lambda_y.second ) ) > 1.0e-4 )
+    ) {
+    (*FNAL::pcerr) << "\n"
+         << "*** ERROR *** EdwardsTengSage()                        \n"
+         << "*** ERROR *** Conjugacy condition has been violated\n"
+         << "*** ERROR *** The lattice may be linearly unstable.\n"
+         << "*** ERROR *** Eigenvalues =                        \n"
+         << "*** ERROR *** " << lambda << std::endl;
+  }
+
+  double ht = 0.0;
+  ht = ( (ht=arg(lambda_x.first)) > 0 ) ? (ht/ M_TWOPI) : (ht += M_TWOPI)/ M_TWOPI; 
+
+  double vt = 0.0;
+  vt = ( (vt=arg(lambda_y.first)) > 0 ) ? (vt/ M_TWOPI) : (vt += M_TWOPI)/ M_TWOPI; 
+
+  double lt = 0.0;
+  lt = ( (lt=arg(lambda_s.first)) > 0 ) ? (lt/ M_TWOPI) : (lt += M_TWOPI)/ M_TWOPI; 
+
+  nu[0] = ht; nu[1] = vt; nu[2] = lt;
+
+  return nu; 
 }
-
-
