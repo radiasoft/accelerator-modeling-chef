@@ -43,12 +43,6 @@
 ******  - automatic allocation of matrix factors parameters (with the right dimensions).
 ******  - added backsubstitution for SVD 
 ******
-******  February 7, 2008  michelotti@fnal.gov
-******
-******  - Fixed copy operation in void TML<double>::SVD (...) const.
-******    : this may be revisited again in the future.
-******    : for details, please read comment: "PROGRAMMING NOTE ON THE DOUBLE LOOP"
-******
 ******************************************************************************************
 ******************************************************************************************/
 
@@ -133,61 +127,16 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
   int n = ncols_;
 
  
-  if ((UPtr->nrows_ == nrows_) || (UPtr->ncols_ == ncols_) ) { 
-    for( int i = 0; i < nrows_; i++ ) {
-      for( int j = 0; j < ncols_; j++ ) { 
-        UPtr->mdata_[i][j] = mdata_[i][j];
-      }
-    }
-    // PROGRAMMING NOTE ON THE DOUBLE LOOP: 
-    //
-    // In versions of this file in the cvs branch StRel20070808-patches,
-    // this operation was done using memcpy: viz.,
-    // 
-    // memcpy ( UPtr->mdata_[0], mdata_[0], nrows_*ncols_*sizeof(double) );
-    // 
-    // It worked because mdata_ was (then) defined as a single block
-    // in the TML constructor.  In order to extend the TMatrix functionality
-    // to permit such classes as TMatrix<Jet> (for example), memcpy
-    // was replaced by std::copy
-    // 
-    // std::copy(  UPtr->mdata_[0],  UPtr->mdata_[nrows_*ncols_], mdata_[0] );
-    // 
-    // which, as it turns out is not quite correct for a few reasons.  The line
-    // 
-    // std::copy(  &(mdata_[0][0]),  &(mdata_[nrows_ - 1][ncols_ - 1]), &(UPtr->mdata_[0][0]) );
-    // 
-    // appears to work under "clean" circumstances but may fail in some cases.
-    // For example, the way that mdata_ is now constructed does not guarantee
-    // that all the numbers appear in a continuous block.  In addition, 
-    // this copies only the matrix elements, not the pointers mdata_[0..nrows_-1].
-    // 
-    // To avoid all these issues, this block is rewritten as a double
-    // loop over all indices - presumably less efficient, but
-    // more likely to work under all circumstances.  In the future, 
-    // it may be worth worth revisiting these lines of code: allocate 
-    // mdata_ in a (guaranteed) single block, and copy the row pointers too.
-    // In the meantime, this now seems to work.
-    // 
-    // My thanks to Jean-Francois Ostiguy for helping me unravel 
-    // core dumps and isolate this quickly.
-    // 
-    // - Leo Michelotti
-  }     
-  else {
-    UPtr = MLPtr<double>( new TML<double>( *this) );      // reallocates U and copy current matrix into it 
-  }
+  *UPtr = *this; // copy the contents of the current matrix in U
 
-  if ((VPtr->nrows_ != ncols_) || (VPtr->ncols_ != ncols_) ) {
-    VPtr = MLPtr<double>( new TML<double>( ncols_, ncols_ ));  
-  }
-
+   VPtr = MLPtr<double>( new TML<double>( ncols_, ncols_ ));  
+ 
   if ( W.Dim() != ncols_ ) W = Vector( ncols_ );
 
   TML<double> &U = *UPtr;
   TML<double> &V = *VPtr;
 
-  double*  rv1 = new double[n];
+  double rv1[n];
 
   for (i=0; i<n; ++i) {
     l=i+1;
@@ -212,7 +161,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
         for (k=i; k<m; ++k) U(k,i) *= scale;
       }
     }
-    W(i)=scale*g;
+    W[i]=scale*g;
     g=s=scale=0.0;
     if (i <m && i != n) {
       for (k=l; k<n; ++k) scale += std::abs(U(i,k));
@@ -235,7 +184,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
         for (k=l;k<n; ++k) U(i,k) *= scale;
       }
     }
-    anorm= std::max( anorm, ( std::abs(W(i)) + std::abs(rv1[i]) ));
+    anorm= std::max( anorm, ( std::abs(W[i]) + std::abs(rv1[i]) ));
   }
   for (i=n-1; i>=0; --i) {
     if (i < n) {
@@ -255,7 +204,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
   }
   for ( i=std::min(m,n)-1; i>=0; --i) {
     l=i+1;
-    g=W(i);
+    g=W[i];
     for (j=l; j<n; ++j) U(i,j) =0.0;
     if (g) {
       g=1.0/g;
@@ -279,7 +228,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
           flag=0;
           break;
         }
-        if (fabs(W(nm))+anorm == anorm) break;
+        if (fabs(W[nm])+anorm == anorm) break;
       }
       if (flag) {
         c=0.0;
@@ -287,9 +236,9 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
         for (i=l; i<=k; ++i) {
           f=s*rv1[i];
           if (fabs(f)+anorm != anorm) {
-            g=W(i);
+            g=W[i];
             h=PYTHAG(f,g);
-            W(i)=h;
+            W[i]=h;
             h=1.0/h;
             c=g*h;
             s=(-f*h);
@@ -302,10 +251,10 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
           }
         }
       }
-      z=W(k);
+      z=W[k];
       if (l == k) {
         if (z < 0.0) {
-          W(k) = -z;
+          W[k] = -z;
           for (j=0; j<n; ++j) V(j,k)=(-V(j,k));
         }
         break;
@@ -317,9 +266,9 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
                "No convergence in 30 SVDCMP iterations." );
       }
 
-      x  = W(l);
+      x  = W[l];
       nm = k-1;
-      y  = W(nm);
+      y  = W[nm];
       g  = rv1[nm];
       h  = rv1[k];
       f  = ((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y);
@@ -329,7 +278,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
       for (j=l;j<=nm; ++j) {
         i=j+1;
         g=rv1[i];
-        y=W(i);
+        y=W[i];
         h=s*g;
         g=c*g;
         z=PYTHAG(f,h);
@@ -347,7 +296,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
           V(jj,i)=z*c-x*s;
         }
         z=PYTHAG(f,h);
-        W(j)=z;
+        W[j]=z;
         if (z) {
           z=1.0/z;
           c=f*z;
@@ -364,12 +313,9 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
       }
       rv1[l]=0.0;
       rv1[k]=f;
-      W(k)=x;
+      W[k]=x;
     }
   }
-
-  delete [] rv1;
- 
 
 }
 
@@ -407,9 +353,9 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
   for( int row=0; row< n; ++row) {
       sum = 0.0;
       for(int i=0; i<m; ++i) {
-        sum += mdata[i][row] * rhs(i); // note transposed indices
+        sum += mdata[i][row] * rhs[i]; // note transposed indices
       }
-      xtmp(row) = sum;
+      xtmp[row] = sum;
   }
   
   
@@ -417,9 +363,9 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
 
      // determine maximum Singular Value
  
-    double wmax = W(0);
+    double wmax = W[0];
     for (int i=1; i<n; ++i) {
-      wmax = std::max( wmax,W(i));
+      wmax = std::max( wmax,W[i]);
     }
 
     // set the default threshold
@@ -428,10 +374,10 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
   }
      
   for (int i=0; i<n; ++i ) {
-   if ( std::abs(W(i)) > threshold ) 
-     xtmp(i) /= W(i); 
+   if ( std::abs(W[i]) > threshold ) 
+     xtmp[i] /= W[i]; 
    else 
-     xtmp(i) = 0.0; 
+     xtmp[i] = 0.0; 
   }
 
 
@@ -443,9 +389,9 @@ TML<double>::backSubstitute(     MLPtr<double> const& U,   TVector<double> const
 
     sum = 0.0;
     for(int i=0; i<n; ++i) {
-      sum += mdata[row][i] * xtmp(i); 
+      sum += mdata[row][i] * xtmp[i]; 
     }
-       x(row) = sum;
+       x[row] = sum;
   }
  
   return x;
