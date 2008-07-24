@@ -49,20 +49,6 @@ void local_JetNormalizedEField(const Jet& x, const Jet& y) {
 }
 
 
-void local_localPropagateBunch(ParticleBunch& pb) {
-     //localPropagateBunch 
-     
-}
-
-
-void local_localPropagateParticle(Particle& p) {
-     //localPropagateParticle
-}
-
-
-void local_localPropagateJetParticle(JetParticle& p){
-     //localPropagateJetParticle
-}
 
 } // anonymous namespace
 
@@ -76,14 +62,9 @@ using namespace boost::python;
 void wrap_bblens () {
 
  class_<BBLens, bases<bmlnElmnt>, BBLensPtr >("BBLens") 
-   .def(init<const char*, double const&, double const&, double const&,  double const*>())
-   .def("AdjustSigma",                   &BBLens::AdjustSigma)
+   .def(init<std::string const&, double const&, double const&, double const&,  double const*>())
    //  .def("NormalizedEField",          &local_NormalizedEField)
    //.def("JetNormalizedEField",         &local_JetNormalizedEField)
-   //.def("localPropagateBunch",         &BBLens::PropagateBunch)
-   //.def("localPropagateParticle",      &BBLens::PropagateParticle)
-   //.def("localPropagateJetParticle",   &BBLens::PropagateJetParticle)
-   .def("Type",                          &BBLens::Type)
    .def_readwrite("useRound",            &BBLens::useRound);
 
 }
