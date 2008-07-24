@@ -102,6 +102,8 @@ using namespace std;
 #include <bmlfactory/var_table.h>
 #include <bmlfactory/bel_inst_fns.h>
 
+#include <boost/algorithm/string.hpp>
+
 using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -239,15 +241,13 @@ MAD8Factory::create_beamline( std::string bmlname) {   // DEPRECATED
 
  if ( !bml )
  { 
-   ostringstream uic;
-   uic << "Unable to create beamline " << bmlname << ".";
-   throw GenericException( __FILE__, __LINE__, 
-                           "MAD8Factory::create_beamline( const char* bmlname)",
-                           uic.str().c_str() );
+   throw GenericException(__FILE__, __LINE__, 
+                                "MAD8Factory::create_beamline( const char* bmlname)",
+                                "Beamline not found");
  }  
  else
  {
-   return BmlPtr( bml->Clone() );   // ??? Why cloned ??? 
+    return BmlPtr( bml->Clone() );
  }
 }
 
@@ -261,13 +261,12 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 
  BmlPtr bml = create_beamline_private(bmlname.c_str(), brho);
  
- if ( bml) { return BmlPtr( bml->Clone() ); }   // ??? Why cloned ??? 
+ if ( bml) return BmlPtr( bml->Clone() );  
  
- ostringstream uic;
- uic << "Unable to create beamline " << bmlname << " with brho = " << brho << '.';
- throw GenericException( __FILE__, __LINE__, 
-                         "MAD8Factory::create_beamline( std::string bmlname, double brho )",
-                         uic.str().c_str() );
+ throw GenericException(__FILE__, __LINE__, 
+                                "MAD8Factory::create_beamline( const char* bmlname, brho)",
+                                "Beamline not found");
+   
 }
 
 
@@ -275,8 +274,7 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BmlPtr
-MAD8Factory::create_beamline_private( const char* bmlname) { 
+BmlPtr MAD8Factory::create_beamline_private( const char* bmlname) { 
  
   BRHO_ = madparser_get_brho( mp_ ); 
 
@@ -446,7 +444,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
           lbel = ElmPtr ( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle ) );
 	}
         else {
-          lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length, angle, e1, e2 ) );
+          lbel = ElmPtr( new rbend( strip_final_colon( bel->name_ ).c_str(), length, BRHO_*(2.0*sin(0.5*angle))/length,  angle, e1, e2 ) );
         }
       }
       else {
@@ -549,7 +547,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       ElmPtr q;
       BmlPtr temp( new beamline( strip_final_colon( bel->name_ ).c_str() ) );
 
-      temp->setEnergy( this->getEnergy() ); 
+      temp->setMomentum( this->getMomentum() ); 
 
       double k0l    = expr_evaluate( mp_,  bel->params_[BEL_MULTIPOLE_K0L], var_table_, bel_table_ );
       if( k0l != 0.0 ) {
@@ -789,8 +787,9 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double field  = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_E], var_table_, bel_table_ );
 
       double momentum = PH_CNV_brho_to_p*BRHO_;
-      double energy   = this->getEnergy();
-      double angle    = 0.001 * (field*length/momentum) * (energy/momentum);
+      // double energy   = this->Momentum();
+      // double angle    = 0.001 * (field*length/momentum) * (energy/momentum); // FIXME: SHOULD BE ENERGY KICK HERE
+      double angle    = 0.001 * (field*length/momentum);                        // FIXME: SHOULD BE ENERGY KICK HERE
 
       lbel = ElmPtr( new vkick( strip_final_colon( bel->name_ ).c_str(), length, angle*BRHO_ ) );
 
@@ -952,7 +951,7 @@ MAD8Factory::beam_line_instantiate( beam_line* bml ) {
     
   bml_map_[string(bml->name_)] = lbml;
 
-  lbml->setEnergy( this->getEnergy() ); 
+  lbml->setMomentum( this->getMomentum() ); 
 
   return lbml;
 }
@@ -1090,32 +1089,31 @@ MAD8Factory::getUseStatementBeamlineName() const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-double MAD8Factory::getEnergy() const
+double MAD8Factory::getMomentum() const
 {
+ 
+  using boost::algorithm::iequals;
+ 
   double ret = 0.0;
-  double momentum = (this->BRHO_)*PH_CNV_brho_to_p;
-  if( 0 == strcmp("PROTON",this->getParticleType()) ) {
-    ret = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
-  }
-  else if( 0 == strcmp("POSITRON",this->getParticleType()) ) {
-    ret = sqrt( momentum*momentum + PH_NORM_me*PH_NORM_me );
-  }
-  else {
-    (*pcerr) << "\n*** ERROR *** "
-                "\n*** ERROR *** MAD8Factory is not programmed to handle"
-                "\n*** ERROR *** particle type "
-             << this->getParticleType()
+  double momentum =  BRHO_*PH_CNV_brho_to_p;
+
+  if( iequals("PROTON",   getParticleType() )) { return momentum; }
+  if( iequals("POSITRON", getParticleType() )) { return momentum; }
+
+  (*pcerr) << "\n*** ERROR *** "
+              "\n*** ERROR *** MAD8Factory is not programmed to handle"
+              "\n*** ERROR *** particle type "
+             << getParticleType()
              << "\n*** ERROR *** "
              << endl;
+
     ostringstream uic;
     uic  <<   "MAD8Factory is not programmed to handle"
               "\nparticle type "
-         << this->getParticleType();
+         <<getParticleType();
     throw( GenericException( __FILE__, __LINE__, 
            "double MAD8Factory::getEnergy() const", 
-           uic.str().c_str() ) );
-  }
-  return ret;
+           uic.str()  ) );
 }
 
 
@@ -1131,16 +1129,15 @@ const char* MAD8Factory::getParticleType() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double 
-MAD8Factory::getBrho( ) const {
-
-  return madparser_get_brho( mp_ ); 
-
-}
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-LattFunc MAD8Factory::getInitialValues() const  
+double MAD8Factory::getBrho( ) const 
 {
-  return LattFunc(); // FIXME: NOT IMPLEMENTED !
+  return madparser_get_brho( mp_ ); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CSLattFuncs MAD8Factory::getInitialValues() const  
+{
+  return CSLattFuncs(); // FIXME: NOT IMPLEMENTED !
 }
