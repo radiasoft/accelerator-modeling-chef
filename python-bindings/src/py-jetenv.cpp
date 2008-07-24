@@ -1,5 +1,9 @@
 /***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+****************************************************************************
+****************************************************************************
+****************************************************************************
+******  
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-jetenv.cpp
@@ -19,6 +23,8 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
+****************************************************************************
 ****************************************************************************/
 
 #include <boost/python.hpp>
@@ -37,29 +43,8 @@ using namespace boost::python;
 //-----------------------------------------------------------------------------------------------
 // locally defined classes and functions 
 //-----------------------------------------------------------------------------------------------
+
 namespace { 
-
-void EndEnvironment_local( ) 
-{
-  // double* scale = new double[ Jet::_workEnv->numVar] 
-
-  //  For the moment, the signature of this function ignores the scale array. 
-  //  TO DO: an additional function that accepts a python array type as a argument
-  //  passing a null ptr implies default scaling 
-
-  Jet__environment::EndEnvironment();  
-}
-
-void EndEnvironmentC_local( ) 
-{
-  // double* scale = new double[JetC::_workEnv->numVar] 
-
-  //  for the moment, the signature of this function ignores the scale array. 
-  //  TO DO: an additional function that accepts a python array type as a argument
-  //  passing a null ptr implies default scaling 
-
-  JetC__environment::EndEnvironment(); 
-}
 
 
 EnvPtr<double> makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) 
@@ -124,9 +109,10 @@ EnvPtr<std::complex<double> > toCmplxEnvironment( EnvPtr<double> const& env) {
 void wrap_mxyzptlk_jetenv() {
 
   def("BeginEnvironment",  &Jet__environment::BeginEnvironment);
-  def("EndEnvironment",    &EndEnvironment_local);
+  def("EndEnvironment",    &Jet__environment::EndEnvironment);
   def("makeJetEnvironment",&makeJetEnvironment_3_local);      
   def("makeJetEnvironment",&makeJetEnvironment_4_local);      
+  def("createStandardEnvironments", &createStandardEnvironments);
 
   class_<EnvPtr<double> >  Jet__environmentClass_("Jet__environment", no_init); 
   Jet__environmentClass_.def("getLastEnv",        &getLastEnv_local ); 
@@ -141,7 +127,7 @@ void wrap_mxyzptlk_jetenv() {
 void wrap_mxyzptlk_jetcenv() {
 
  def("BeginEnvironmentC",  &JetC__environment::BeginEnvironment);
- def("EndEnvironmentC",    &EndEnvironmentC_local);
+ def("EndEnvironmentC",    &JetC__environment::EndEnvironment  );
  
  class_<EnvPtr<std::complex<double> > >  JetC__environmentClass_("JetC__environment", no_init);
  JetC__environmentClass_.def("getLastEnv",        &getLastEnvC_local ); 
