@@ -201,7 +201,7 @@ void XSIFFactory::dumpVariables() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LattFuncs XSIFFactory::getInitialValues()  const 
+CSLattFuncs XSIFFactory::getInitialValues()  const 
 {   
   return driver_.initial_values_;
 }
