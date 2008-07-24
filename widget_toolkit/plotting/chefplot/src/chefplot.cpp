@@ -126,7 +126,7 @@ void CHEFPlot::displayLattice( sqlite::connection& db)
 
   plot_->setGeometry(0, lego_height_,  width(), height()- lego_height_);
   lego_->setGeometry(plot_->canvas()->x(), 0,  plot_->canvas()->width(),  lego_height_);
-  lego_->setDb(db);
+  lego_->setBeamline(db);
   
 }
 
@@ -141,14 +141,6 @@ void CHEFPlot::displayLattice( ConstBmlPtr bml)
   lego_->setGeometry(plot_->canvas()->x(), 0,  plot_->canvas()->width(),  lego_height_);
   lego_->setBeamline(bml);
   
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-ConstBmlPtr CHEFPlot::getBeamline()
-{
-  return lego_->getBeamline();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -337,7 +329,7 @@ void CHEFPlot::zoomOff()
 void CHEFPlot::setData(PlotData const& pltdata) 
 {
    ConstBmlPtr bml        = pltdata.getBeamline(); 
-   sqlite::connection* db = pltdata.getDb(); 
+   sqlite::connection* db = &pltdata.getDb(); 
    
    if ( bml ) {
       displayLattice( bml );
