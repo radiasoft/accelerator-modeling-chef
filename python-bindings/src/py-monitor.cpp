@@ -45,10 +45,10 @@ struct monitorWrap: monitor {
   monitorWrap(PyObject* self, monitor const& elm)
      : monitor(elm),self_(self)  {}
 
-  monitorWrap(PyObject* self, const char* name)
+  monitorWrap(PyObject* self, std::string const& name)
      : self_(self), monitor(name) {}
 
-  monitorWrap(PyObject* self, const char* name, double length):
+  monitorWrap(PyObject* self, std::string const& name, double length):
        self_(self),monitor(name,length) {}
 
     bool on();  
@@ -78,21 +78,21 @@ return call_method<const char*>(self_, "version"); }
 void wrap_monitor () {
 
 class_<monitor, bases<bmlnElmnt>, boost::shared_ptr<monitorWrap> >("monitor", init<>() )
-  .def(init<const char*>() )
-  .def(init<const char*, double>() )
+  .def(init<std::string const&>() )
+  .def(init<std::string const&, double>() )
   .def("on",               &monitorWrap::on)  
   .def("off",              &monitorWrap::off) 
   .def("version",          &monitorWrap::version)
   .def("setDriftFraction", &monitor::setDriftFraction);
  
  class_<hmonitor, bases<monitor>, HMonitorPtr >("hmonitor", init<>() )
-    .def( init<const char*>() )
-    .def( init<const char*, double const&>() );
+    .def( init<std::string const&>() )
+    .def( init<std::string const&, double const&>() );
 
 
 class_<vmonitor, bases<monitor>, VMonitorPtr >("vmonitor", init<>() )
-  .def(init<const char*>() )
-  .def(init<const char*, double const&>() );
+  .def(init<std::string const&>() )
+  .def(init<std::string const&, double const&>() );
  
 
 }
