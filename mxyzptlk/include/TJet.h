@@ -509,10 +509,6 @@ public:
 
   friend double sobolev_norm<> ( TJet<T> const& );
 
-  // Utility arithmetic functions ...
-
-  void Negate();
-  void Mult( T const& );
 
   // Inversion ...
   TJet Inverse() const;        // Returns the inverse jet
