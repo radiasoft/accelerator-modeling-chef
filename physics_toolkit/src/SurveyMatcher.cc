@@ -48,10 +48,14 @@
 
 #include <iostream>
 
+#include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/SurveyMatcher.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/FramePusher.h>
+
+using FNAL::pcout;
+using FNAL::pcerr;
 
 using namespace std;
 
@@ -75,8 +79,8 @@ void SurveyMatcher::print( vector<Vector>& x ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-SurveyMatcher::SurveyMatcher( vector<Vector> const& v, BmlPtr b )
-:   Sage( b ), surveyData_(v)
+SurveyMatcher::SurveyMatcher( vector<Vector> const& v, BmlPtr b, sqlite::connection& db )
+:   Sage( b, db ), surveyData_(v)
 {
    finishConstructor();
 }
@@ -89,8 +93,8 @@ void SurveyMatcher::finishConstructor()
 {
   FramePusher fp;
 
-  for (beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
-                               it != myBeamlinePtr_->deep_end(); ++it ) {       
+  for (beamline::const_deep_iterator it  = bml_->deep_begin();
+                                     it != bml_->deep_end(); ++it ) {       
     (*it)->accept( fp );
     modelCoordinates_.push_back(fp.getFrame().getOrigin());
   }
@@ -121,7 +125,7 @@ SurveyMatcher::~SurveyMatcher()
 
 void SurveyMatcher::eraseAll()
 {
-  *outputStreamPtr_ << "ClosedOrbitSage::eraseAll() does nothing." << endl;
+  (*pcout) << "ClosedOrbitSage::eraseAll() does nothing." << endl;
 }
 
 
@@ -187,7 +191,7 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
   {
     for( int i = 0; i < 3; i++ ) {
       for( int j = 0; j < 3; j++ ) {
-        M(i,j) += (*curDatum)(i) * (*curDatum)(j);
+        M[i][j] += (*curDatum)[i] * (*curDatum)[j];
       }
     }
   }  
@@ -199,9 +203,9 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
   // Normalize
   lambda = e.transpose()*e;
   for( int j = 0; j < 3; j++ ) {
-    double denom = sqrt( lambda(j,j) );
+    double denom = sqrt( lambda[j][j] );
     for( int i = 0; i < 3; i++ ) {
-      e(i,j) /= denom;
+      e[i][j] /= denom;
     }
   }
 
@@ -209,20 +213,20 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
   // REMOVE? lambda = e.transpose() * M * e;
   // REMOVE: lambda = real( M.eigenVectors() );
 
-  double minLambda = lambda(0,0);
+  double minLambda = lambda[0][0];
   int index = 0;
   for( int i = 1; i < 3; i++ ) {
-    if( lambda(i,i) < minLambda ) {
+    if( lambda[i][i] < minLambda ) {
       index = i;
-      minLambda = lambda(i,i);
+      minLambda = lambda[i][i];
     }
   }
   
   if( index != Frame::zAxisIndex() ) {
     e.switch_columns( index, Frame::zAxisIndex() );
-    double temp = lambda( index, index );
-    lambda( index, index ) = lambda( Frame::zAxisIndex(), Frame::zAxisIndex() );
-    lambda( Frame::zAxisIndex(), Frame::zAxisIndex() ) = temp;
+    double temp = lambda[index][ index ];
+    lambda[index][index] = lambda[Frame::zAxisIndex()][Frame::zAxisIndex()];
+    lambda[Frame::zAxisIndex()][Frame::zAxisIndex()] = temp;
   }
 
   if( !(f.setOrthonormalAxes(e)) ) {
@@ -245,7 +249,7 @@ void SurveyMatcher::orientPlane( vector<Vector>& stuff, Frame& f )
   b = stuff[ stuff.size()/4 ];
   f.convertInPlace( a, c );
   f.convertInPlace( b, c );
-  if( 0 < (b^a)(2) ) {
+  if( 0 < (b^a)[2] ) {
     f.setAxis( Frame::yAxisIndex(), - f.getyAxis() );
     f.setAxis( Frame::zAxisIndex(), - f.getzAxis() );
   }
@@ -296,15 +300,15 @@ void SurveyMatcher::rotate()
 
     for( int i = 0; i < n; i++ ) {
       a =  modelCoordinates_[i];
-      a(2) = 0;
+      a[2] = 0;
       b = surveyData_[i];
-      b(2) = 0;
+      b[2] = 0;
       anorm = a.Norm();
       bnorm = b.Norm();
 
       if( (1.0e-6 < std::abs(anorm)) && (1.0e-6 < std::abs(bnorm)) ) {
         denom = anorm*bnorm;
-        sn    = (a^b)(2) / denom;
+        sn    = (a^b)[2] / denom;
         cs    = (a*b)    / denom;
         sum_sn += sn;
         sum_cs += cs;
@@ -335,9 +339,9 @@ void SurveyMatcher::rotate()
 
     if( 1.0e-10 < std::abs(phi) ) {
       Matrix R(3,3);
-      R(0,0) =   cos(phi);  R(0,1) = - sin(phi);
-      R(1,0) =   sin(phi);  R(1,1) =   cos(phi);
-      R(2,2) = 1.0;
+      R[0][0] =   cos(phi);  R[0][1] = - sin(phi);
+      R[1][0] =   sin(phi);  R[1][1] =   cos(phi);
+      R[2][2] = 1.0;
 
       vector<Vector> bufferData;
       for( int i = 0; i < n; ++i ) {
@@ -410,8 +414,8 @@ void SurveyMatcher::generateAlignments()
   modelCoordinates_.clear();
 
   int i = 0;
-  for (beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
-                               it != myBeamlinePtr_->deep_end(); ++it, ++i ) {       
+  for (beamline::deep_iterator it  = bml_->deep_begin();
+                               it != bml_->deep_end(); ++it, ++i ) {       
     (*it)->accept( fp );
     localFrame = fp.getFrame();
     r = localFrame.getOrigin();
@@ -430,8 +434,8 @@ alignment SurveyMatcher::getAlignment( int i ) const
   alignmentData ret;
   Vector dr(3);
   dr          = modelCoordinates_[i];
-  ret.xOffset = dr(0);
-  ret.yOffset = dr(1);
+  ret.xOffset = dr[0];
+  ret.yOffset = dr[1];
   ret.tilt    = 0.0;
   return alignment( ret );
 }

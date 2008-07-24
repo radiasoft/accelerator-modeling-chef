@@ -84,10 +84,10 @@ MatrixCalcVisitor::MatrixCalcVisitor( Particle const& x )
   psi_h_(),
   psi_v_()
 {
-  map_h_(0,0) = 1.0;    map_h_(0,1) = 0.0;
-  map_h_(1,0) = 0.0;    map_h_(1,1) = 1.0;
-  map_v_(0,0) = 1.0;    map_v_(0,1) = 0.0;
-  map_v_(1,0) = 0.0;    map_v_(1,1) = 1.0;
+  map_h_[0][0] = 1.0;    map_h_[0][1] = 0.0;
+  map_h_[1][0] = 0.0;    map_h_[1][1] = 1.0;
+  map_v_[0][0] = 1.0;    map_v_[0][1] = 0.0;
+  map_v_[1][0] = 0.0;    map_v_[1][1] = 1.0;
 }
 
 
@@ -128,10 +128,10 @@ void MatrixCalcVisitor::visit( beamline& x )
   {
     calcDone_ = 0;
 
-    map_h_(0,0) = 1.0;    map_h_(0,1) = 0.0;
-    map_h_(1,0) = 0.0;    map_h_(1,1) = 1.0;
-    map_v_(0,0) = 1.0;    map_v_(0,1) = 0.0;
-    map_v_(1,0) = 0.0;    map_v_(1,1) = 1.0;
+    map_h_[0][0] = 1.0;    map_h_[0][1] = 0.0;
+    map_h_[1][0] = 0.0;    map_h_[1][1] = 1.0;
+    map_v_[0][0] = 1.0;    map_v_[0][1] = 0.0;
+    map_v_[1][0] = 0.0;    map_v_[1][1] = 1.0;
 
 
     double s = 0.0;
@@ -183,18 +183,18 @@ void MatrixCalcVisitor::visit( bmlnElmnt& x )
 
   MatrixD mtrx_h(2,2);
 
-  mtrx_h(0,0) = 1.0;    
-  mtrx_h(0,1) = lng;
-  mtrx_h(1,1) = 1.0;
+  mtrx_h[0][0] = 1.0;    
+  mtrx_h[0][1] = lng;
+  mtrx_h[1][1] = 1.0;
 
   linearModel_h_.push_back(mtrx_h);
  
 
   MatrixD mtrx_v(2,2);
 
-  mtrx_v(0,0) = 1.0;
-  mtrx_v(0,1) = lng;
-  mtrx_v(1,1) = 1.0;
+  mtrx_v[0][0] = 1.0;
+  mtrx_v[0][1] = lng;
+  mtrx_v[1][1] = 1.0;
 
   linearModel_v_.push_back(mtrx_v);
 }
@@ -210,19 +210,19 @@ void MatrixCalcVisitor::visit( marker& x )
 
    MatrixD mtrx_h(2,2);
 
-   mtrx_h(0,0) = 1.0;    
-   mtrx_h(0,1) = 0.0;
-   mtrx_h(1,0) = 0.0;
-   mtrx_h(1,1) = 1.0;
+   mtrx_h[0][0] = 1.0;    
+   mtrx_h[0][1] = 0.0;
+   mtrx_h[1][0] = 0.0;
+   mtrx_h[1][1] = 1.0;
 
    linearModel_h_.push_back(mtrx_h);
 
    MatrixD mtrx_v(2,2);
 
-   mtrx_v(0,0) = 1.0;
-   mtrx_v(0,1) = 0.0;
-   mtrx_v(1,0) = 0.0;
-   mtrx_v(1,1) = 1.0;
+   mtrx_v[0][0] = 1.0;
+   mtrx_v[0][1] = 0.0;
+   mtrx_v[1][0] = 0.0;
+   mtrx_v[1][1] = 1.0;
 
    linearModel_v_.push_back(mtrx_v);
 }
@@ -237,17 +237,17 @@ void MatrixCalcVisitor::visit( drift& x )
 
   MatrixD mtrx_h(2,2);
 
-  mtrx_h(0,0) = 1.0;    
-  mtrx_h(0,1) = lng;
-  mtrx_h(1,1) = 1.0;
+  mtrx_h[0][0] = 1.0;    
+  mtrx_h[0][1] = lng;
+  mtrx_h[1][1] = 1.0;
 
   linearModel_h_.push_back(mtrx_h);
 
   MatrixD mtrx_v(2,2);
 
-  mtrx_v(0,0) = 1.0;
-  mtrx_v(0,1) = lng;
-  mtrx_v(1,1) = 1.0;
+  mtrx_v[0][0] = 1.0;
+  mtrx_v[0][1] = lng;
+  mtrx_v[1][1] = 1.0;
  
   linearModel_v_.push_back(mtrx_v);
 
@@ -269,18 +269,18 @@ void MatrixCalcVisitor::visit( sbend& x )
 
   MatrixD mtrx_h(2,2);
 
-  mtrx_h(0,0) = cs;
-  mtrx_h(0,1) = rho*sn;
-  mtrx_h(1,0) = - sn/rho;
-  mtrx_h(1,1) = cs;
+  mtrx_h[0][0] = cs;
+  mtrx_h[0][1] = rho*sn;
+  mtrx_h[1][0] = - sn/rho;
+  mtrx_h[1][1] = cs;
 
   linearModel_h_.push_back(mtrx_h);
 
   MatrixD mtrx_v(2,2);
 
-  mtrx_v(0,0) = 1.0;
-  mtrx_v(0,1) = lng;
-  mtrx_v(1,1) = 1.0;
+  mtrx_v[0][0] = 1.0;
+  mtrx_v[0][1] = lng;
+  mtrx_v[1][1] = 1.0;
 
   linearModel_v_.push_back(mtrx_v);
 }
@@ -325,26 +325,26 @@ void MatrixCalcVisitor::visit( quadrupole& x )
   MatrixD mtrx_v(2,2);
 
   if( x.Strength() > 0.0 ) {
-    mtrx_h(0,0) = cs;
-    mtrx_h(0,1) = sn/kappa;
-    mtrx_h(1,0) = - kappa*sn;
-    mtrx_h(1,1) = cs;
+    mtrx_h[0][0] = cs;
+    mtrx_h[0][1] = sn/kappa;
+    mtrx_h[1][0] = - kappa*sn;
+    mtrx_h[1][1] = cs;
 
-    mtrx_v(0,0) = csh;
-    mtrx_v(0,1) = snh/kappa;
-    mtrx_v(1,0) = - kappa*snh;
-    mtrx_v(1,1) = csh;
+    mtrx_v[0][0] = csh;
+    mtrx_v[0][1] = snh/kappa;
+    mtrx_v[1][0] = - kappa*snh;
+    mtrx_v[1][1] = csh;
   }
   else {
-    mtrx_h(0,0) = cs;
-    mtrx_h(0,1) = sn/kappa;
-    mtrx_h(1,0) = - kappa*sn;
-    mtrx_h(1,1) = cs;
+    mtrx_h[0][0] = cs;
+    mtrx_h[0][1] = sn/kappa;
+    mtrx_h[1][0] = - kappa*sn;
+    mtrx_h[1][1] = cs;
 
-    mtrx_v(0,0) = csh;
-    mtrx_v(0,1) = snh/kappa;
-    mtrx_v(1,0) = - kappa*snh;
-    mtrx_v(1,1) = csh;
+    mtrx_v[0][0] = csh;
+    mtrx_v[0][1] = snh/kappa;
+    mtrx_v[1][0] = - kappa*snh;
+    mtrx_v[1][1] = csh;
   }
 
   linearModel_h_.push_back(mtrx_h);
@@ -364,15 +364,15 @@ void MatrixCalcVisitor::visit( thinQuad& x )
   MatrixD  mtrx_h(2,2);
   MatrixD  mtrx_v(2,2);
 
-  mtrx_h(0,0) = 1.0;    
-  mtrx_h(1,0) = - kappa;
-  mtrx_h(1,1) = 1.0;
+  mtrx_h[0][0] = 1.0;    
+  mtrx_h[1][0] = - kappa;
+  mtrx_h[1][1] = 1.0;
 
   linearModel_h_.push_back(mtrx_h);
 
-  mtrx_v(0,0) = 1.0;
-  mtrx_v(1,0) = kappa;
-  mtrx_v(1,1) = 1.0;
+  mtrx_v[0][0] = 1.0;
+  mtrx_v[1][0] = kappa;
+  mtrx_v[1][1] = 1.0;
 
   linearModel_v_.push_back(mtrx_v);
 
@@ -452,9 +452,9 @@ int MatrixCalcVisitor::doCalc()
   double alpha_x, beta_x;
 
   double sn;
-  double cs = ( map_h_( i_x, i_x ) + map_h_( i_px, i_px ) )/2.0;
+  double cs = ( map_h_[i_x][ i_x ] + map_h_[i_px][ i_px ] )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( map_h_( i_x, i_px ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( map_h_[i_x][ i_px ] > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                             sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -480,15 +480,15 @@ int MatrixCalcVisitor::doCalc()
     return MatrixCalcVisitor::INTEGER_TUNE;
   }
 
-  beta_x  = map_h_( i_x, i_px ) / sn;
-  alpha_x = ( map_h_( i_x, i_x ) - map_h_( i_px, i_px ) ) / ( 2.0*sn );
+  beta_x  = map_h_[i_x][ i_px ] / sn;
+  alpha_x = ( map_h_[i_x][i_x] - map_h_[i_px][i_px] ) / ( 2.0*sn );
 
 
   // ... then vertical.
   double alpha_y, beta_y;
-  cs = ( map_v_( i_y, i_y ) + map_v_( i_py, i_py ) )/2.0;
+  cs = ( map_v_[i_y][ i_y ] + map_v_[i_py][ i_py] )/2.0;
   if( fabs( cs ) <= 1.0 ) {
-    if( map_v_( i_y, i_py ) > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
+    if( map_v_[i_y][i_py] > 0.0 )  sn =   sqrt( 1.0 - cs*cs );
     else                           sn = - sqrt( 1.0 - cs*cs );
   }
   else {
@@ -514,8 +514,8 @@ int MatrixCalcVisitor::doCalc()
     return MatrixCalcVisitor::INTEGER_TUNE;
   }
 
-  beta_y  = map_v_( i_y, i_py ) / sn;
-  alpha_y = ( map_v_( i_y, i_y ) - map_v_( i_py, i_py ) ) / ( 2.0*sn );
+  beta_y  = map_v_[i_y][i_py] / sn;
+  alpha_y = ( map_v_[i_y][ i_y ] - map_v_[i_py][ i_py ] ) / ( 2.0*sn );
 
 
   // Set up the "proton" states ...
@@ -525,10 +525,10 @@ int MatrixCalcVisitor::doCalc()
   double  dum;
   std::complex<double> ci( 0., 1.0 );
 
-  w_x( i_x,  0 ) = dum = sqrt( beta_x );
-  w_x( i_px, 0 ) = ( ci - alpha_x ) / dum;
-  w_y( i_y,  0 ) = dum = sqrt( beta_y );
-  w_y( i_py, 0 ) = ( ci - alpha_y ) / dum;
+  w_x[ i_x  ][0] = dum = sqrt( beta_x );
+  w_x[ i_px ][0] = ( ci - alpha_x ) / dum;
+  w_y[ i_y  ][0] = dum = sqrt( beta_y );
+  w_y[ i_py ][0] = ( ci - alpha_y ) / dum;
 
   MatrixC outState_x(2,1), outState_y(2,1);
   std::complex<double> phase;
@@ -551,19 +551,19 @@ int MatrixCalcVisitor::doCalc()
     outState_x = w_x;
     outState_y = w_y;
 
-    phase = w_x(i_x,0) / abs( w_x(i_x,0) );
+    phase = w_x[i_x][0] / abs( w_x[i_x][0] );
     outState_x = outState_x/phase;
-    if(   fabs( imag( outState_x(i_px,0) )*real( outState_x(i_x,0) ) - 1.0 )
+    if(   fabs( imag( outState_x[i_px][0] )*real( outState_x[i_x][0] ) - 1.0 )
         > 0.01 )
     {
   	(*pcerr) << "*** ERROR *** Phase error in horizontal plane at index " 
              << jc
              << endl;
-  	(*pcerr) << "*** ERROR *** imag( outState_x(i_px,0) ) = " 
-             << imag( outState_x(i_px,0) ) 
+  	(*pcerr) << "*** ERROR *** imag( outState_x[i_px][0] ) = " 
+             << imag( outState_x[i_px][0] ) 
              << endl;
-  	(*pcerr) << "*** ERROR *** outState_x(i_px,0) = " 
-             << outState_x(i_px,0)
+  	(*pcerr) << "*** ERROR *** outState_x[i_px][0] = " 
+             << outState_x[i_px][0]
              << endl;
 
   	return MatrixCalcVisitor::PHASE_ERROR;
@@ -571,19 +571,19 @@ int MatrixCalcVisitor::doCalc()
     dpsi_x = atan2( imag(phase), real(phase) );
     while( dpsi_x < psi_x ) dpsi_x += M_TWOPI;
   
-    phase = outState_y(i_y,0) / abs( outState_y(i_y,0) );
+    phase = outState_y[i_y][0] / abs( outState_y[i_y][0] );
     outState_y = outState_y/phase;
-    if(   fabs( imag( outState_y(i_py,0) )*real( outState_y(i_y,0) ) - 1.0 )
+    if(   fabs( imag( outState_y[i_py][0] )*real( outState_y[i_y][0] ) - 1.0 )
         > 0.01 )
     {
   	(*pcerr) << "*** ERROR *** Phase error in vertical plane at index " 
              << jc
              << endl;
-  	(*pcerr) << "*** ERROR *** imag( outState_y(i_py,0) ) = " 
-             << imag( outState_y(i_py,0) ) 
+  	(*pcerr) << "*** ERROR *** imag( outState_y[i_py][0] ) = " 
+             << imag( outState_y[i_py][0] ) 
              << endl;
-  	(*pcerr) << "*** ERROR *** outState_y(i_py,0) = " 
-             << outState_y(i_py,0)
+  	(*pcerr) << "*** ERROR *** outState_y[i_py][0] = " 
+             << outState_y[i_py][0]
              << endl;
 
  	return MatrixCalcVisitor::PHASE_ERROR;
@@ -593,13 +593,13 @@ int MatrixCalcVisitor::doCalc()
   
 
     // Calculate lattice functions ...
-    beta_x   =   real( outState_x(i_x,0)  );
-    alpha_x  = - real( outState_x(i_px,0) );
+    beta_x   =   real( outState_x[i_x ][0]  );
+    alpha_x  = - real( outState_x[i_px][0] );
     alpha_x *= beta_x;
     beta_x  *= beta_x;
   
-    beta_y  =   real( outState_y(i_y,0) );
-    alpha_y = - real( outState_y(i_py,0) );
+    beta_y  =   real( outState_y[i_y ][0] );
+    alpha_y = - real( outState_y[i_py][0] );
 
     alpha_y *= beta_y;
     beta_y  *= beta_y;

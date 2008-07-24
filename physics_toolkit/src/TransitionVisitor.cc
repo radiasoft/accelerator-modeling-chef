@@ -53,11 +53,11 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/TransitionVisitor.h>
+#include <beamline/beamline.h>
 #include <beamline/rbend.h>
 #include <beamline/sbend.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
-#include <physics_toolkit/LattFuncSage.h>
 #include <typeinfo>
 
 using namespace std;
@@ -111,10 +111,10 @@ TransitionVisitor::TransitionVisitor()
   b_(1,4),
   f_(4,1)
 {
-   coeff_(0,0) = 1.0;
-   coeff_(1,1) = 1.0;
-   coeff_(2,0) = 1.0;
-   coeff_(3,1) = 1.0;
+   coeff_[0][0] = 1.0;
+   coeff_[1][1] = 1.0;
+   coeff_[2][0] = 1.0;
+   coeff_[3][1] = 1.0;
 }
 
 
@@ -162,10 +162,10 @@ TransitionVisitor::TransitionVisitor( const Particle& x )
   b_(1,4),
   f_(4,1)
 {
-  coeff_(0,0) = 1.0;
-  coeff_(1,1) = 1.0;
-  coeff_(2,0) = 1.0;
-  coeff_(3,1) = 1.0;
+  coeff_[0][0] = 1.0;
+  coeff_[1][1] = 1.0;
+  coeff_[2][0] = 1.0;
+  coeff_[3][1] = 1.0;
 }
 
 
@@ -273,10 +273,10 @@ void TransitionVisitor::visit_bend( bmlnElmnt& x )
       return;
     }
 
-    LattFuncSage::lattFunc lf = boost::any_cast<LattFuncSage::lattFunc>( it->info );
+    CSLattFuncs lf = boost::any_cast<CSLattFuncs>( it->info );
     
-    if( fabs(lf.dispersion.ver) > 1.0e-9 || 
-        fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
+    if( abs(lf.dispersion.y  ) > 1.0e-9 || 
+        abs(lf.dispersion.yp ) > 1.0e-9    ) 
     {
       errorCode_ = VERDISP;
       return;
@@ -284,26 +284,26 @@ void TransitionVisitor::visit_bend( bmlnElmnt& x )
 
     // The calculation
     double lng = x.OrbitLength( *(particlePtr_) );
-    coeff_(2,1) = lng;
-    coeff_(2,2) = lng*lng;
-    coeff_(2,3) = coeff_(2,2)*lng;
-    coeff_(3,2) = 2.0*lng;
-    coeff_(3,3) = 3.0*lng*lng;
+    coeff_[2][1] = lng;
+    coeff_[2][2] = lng*lng;
+    coeff_[2][3] = coeff_[2][2]*lng;
+    coeff_[3][2] = 2.0*lng;
+    coeff_[3][3] = 3.0*lng*lng;
   
     double temp;
-    temp  = lng; b_(0,0) = temp;
-    temp *= lng; b_(0,1) = temp/2.0;
-    temp *= lng; b_(0,2) = temp/3.0;
-    temp *= lng; b_(0,3) = temp/4.0;
+    temp  = lng; b_[0][0] = temp;
+    temp *= lng; b_[0][1] = temp/2.0;
+    temp *= lng; b_[0][2] = temp/3.0;
+    temp *= lng; b_[0][3] = temp/4.0;
 
     double str  = x.Strength();
     double brho = particlePtr_->ReferenceBRho();
-    f_(0,0) = str * D_/brho;
-    f_(1,0) = str * Dprime_/brho;
-    f_(2,0) = str * (lf.dispersion.hor)/brho;
-    f_(3,0) = str * (lf.dPrime.hor)/brho;
+    f_[0][0] = str * D_/brho;
+    f_[1][0] = str * Dprime_/brho;
+    f_[2][0] = str * (lf.dispersion.x)/brho;
+    f_[3][0] = str * (lf.dispersion.xp)/brho;
 
-    alpha_ += ( b_* coeff_.inverse()*f_ )(0,0);  // inefficient use of inverse()
+    alpha_ += ( b_* coeff_.inverse()*f_ )[0][0];  // inefficient use of inverse()
 
     s_ += lng;
     set_prev(x);
@@ -355,17 +355,17 @@ void TransitionVisitor::set_prev( bmlnElmnt const& x )
   // Filters
 
   BarnacleList::const_iterator it = const_cast<bmlnElmnt&>(x).dataHook.find("Twiss");  
- 
+
   if( it == x.dataHook.end() ) {
     errorCode_ = NOLATTFUNC;
     return;
   }
   
- LattFuncSage::lattFunc lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+  CSLattFuncs lf = boost::any_cast<CSLattFuncs>(it->info);
 
 
-  if( fabs(lf.dispersion.ver) > 1.0e-9 || 
-      fabs(lf.dPrime.ver    ) > 1.0e-9    ) 
+  if( abs( lf.dispersion.y  ) > 1.0e-9 || 
+      abs( lf.dispersion.yp ) > 1.0e-9    ) 
   {
     errorCode_ = VERDISP;
     return;
@@ -373,8 +373,8 @@ void TransitionVisitor::set_prev( bmlnElmnt const& x )
 
 
   // Body
-  D_      = lf.dispersion.hor;
-  Dprime_ = lf.dPrime.hor;
+  D_      = lf.dispersion.x;
+  Dprime_ = lf.dispersion.xp;
 }
 
 
