@@ -197,7 +197,7 @@ void editDialog::visit( rbend& x )
       double newStrength = (qle2->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->reset();
+        _contextPtr->clear();
       }
     }
   }
@@ -266,7 +266,7 @@ void editDialog::visit( quadrupole& x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->reset();
+        _contextPtr->clear();
      }
     }
     if( st2 != qle2->text() ) {
@@ -274,7 +274,7 @@ void editDialog::visit( quadrupole& x )
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         x.setAlignment( ad );
-        _contextPtr->reset();
+        _contextPtr->clear();
       }
     }
   }
@@ -362,7 +362,7 @@ void editDialog::visit( drift& x )
       if( !ok ) { newLength = x.Length(); }
 
       Vector origin(3);
-      origin( Particle::cdtIndex ) = newLength; 
+      origin[Particle::cdtIndex]  = newLength; 
       // This is a phenomenally stupid and convoluted
       // way to do this.
       Frame outFrame;
@@ -386,7 +386,7 @@ void editDialog::visit( drift& x )
         double newLength = (qle2->text()).toDouble( &ok );
         if( ok ) {
           x.setLength(newLength);
-          _contextPtr->reset();
+          _contextPtr->clear();
         }
       }
     }
@@ -418,46 +418,46 @@ void editDialog::visit( Slot& x )
          qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
          qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
 
-         xstr.setNum( (x.getInFrame().getOrigin())(0) );
-         ystr.setNum( (x.getInFrame().getOrigin())(1) );
-         zstr.setNum( (x.getInFrame().getOrigin())(2) );
+         xstr.setNum( (x.getInFrame().getOrigin())[0] );
+         ystr.setNum( (x.getInFrame().getOrigin())[1] );
+         zstr.setNum( (x.getInFrame().getOrigin())[2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 1 );
-         xstr.setNum( (x.getOutFrame().getOrigin())(0) );
-         ystr.setNum( (x.getOutFrame().getOrigin())(1) );
-         zstr.setNum( (x.getOutFrame().getOrigin())(2) );
+         xstr.setNum( (x.getOutFrame().getOrigin())[0] );
+         ystr.setNum( (x.getOutFrame().getOrigin())[1] );
+         zstr.setNum( (x.getOutFrame().getOrigin())[2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 1, 2 );
 
-         xstr.setNum( (x.getInFrame().getxAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getxAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getxAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getxAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getxAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 1 );
-         xstr.setNum( (x.getInFrame().getyAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getyAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getyAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getyAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getyAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 1 );
-         xstr.setNum( (x.getInFrame().getzAxis()) (0) );
-         ystr.setNum( (x.getInFrame().getzAxis()) (1) );
-         zstr.setNum( (x.getInFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getInFrame().getzAxis()) [0] );
+         ystr.setNum( (x.getInFrame().getzAxis()) [1] );
+         zstr.setNum( (x.getInFrame().getzAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 1 );
         
-         xstr.setNum( (x.getOutFrame().getxAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getxAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getxAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getxAxis()) [0] );
+         ystr.setNum( (x.getOutFrame().getxAxis()) [1] );
+         zstr.setNum( (x.getOutFrame().getxAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 2, 2 );
-         xstr.setNum( (x.getOutFrame().getyAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getyAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getyAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getyAxis())[0] );
+         ystr.setNum( (x.getOutFrame().getyAxis())[1] );
+         zstr.setNum( (x.getOutFrame().getyAxis())[2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 3, 2 );
-         xstr.setNum( (x.getOutFrame().getzAxis()) (0) );
-         ystr.setNum( (x.getOutFrame().getzAxis()) (1) );
-         zstr.setNum( (x.getOutFrame().getzAxis()) (2) );
+         xstr.setNum( (x.getOutFrame().getzAxis()) [0] );
+         ystr.setNum( (x.getOutFrame().getzAxis()) [1] );
+         zstr.setNum( (x.getOutFrame().getzAxis()) [2] );
          qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
                          , 4, 2 );
 
@@ -507,11 +507,11 @@ void editDialog::visit( Slot& x )
 
 
       Particle* particlePtr = (_contextPtr->getParticle()).Clone();
-      *particlePtr = _contextPtr->getReferenceParticle();
+      // **** FIXME *particlePtr = _contextPtr->getReferenceParticle();
 
-      beamline::const_deep_iterator dbi  = _contextPtr->cheatBmlPtr()->deep_begin();
+      beamline::const_deep_iterator dbi  = _contextPtr->deep_begin();
       ElmPtr q;
-      for ( ; dbi != _contextPtr->cheatBmlPtr()->deep_end(); ++dbi) {
+      for ( ; dbi != _contextPtr->deep_end(); ++dbi) {
        q = *dbi;
 
        if( q.get() == &x ) {   
@@ -591,7 +591,7 @@ void editDialog::visit( thinQuad& x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->reset();
+        _contextPtr->clear();
       }
     }
 
@@ -600,7 +600,7 @@ void editDialog::visit( thinQuad& x )
       ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         x.setAlignment( ad );
-        _contextPtr->reset();
+        _contextPtr->clear();
       }
     }
   }
