@@ -38,17 +38,17 @@ using namespace boost::python;
 
 namespace {
 
-void   (bmlnElmnt::*propagate_particle     )  (      Particle&   ) = &bmlnElmnt::propagate;
-void   (bmlnElmnt::*propagate_jetparticle  )  (   JetParticle&   ) = &bmlnElmnt::propagate;
-void   (bmlnElmnt::*propagate_bunch        )  ( ParticleBunch&   ) = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_particle     )  (      Particle&   ) const = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_jetparticle  )  (   JetParticle&   ) const = &bmlnElmnt::propagate;
+void   (bmlnElmnt::*propagate_bunch        )  ( ParticleBunch&   ) const = &bmlnElmnt::propagate;
 
 void   (bmlnElmnt::* setStrength1)               (double const&  )        =  &bmlnElmnt::setStrength;
 void   (bmlnElmnt::* enterLocalFrame_particle)   (     Particle& )  const =  &bmlnElmnt::enterLocalFrame; 
 void   (bmlnElmnt::* enterLocalFrame_jetparticle)(  JetParticle& )  const =  &bmlnElmnt::enterLocalFrame; 
 void   (bmlnElmnt::* leaveLocalFrame_particle)   (     Particle& )  const =  &bmlnElmnt::leaveLocalFrame; 
 void   (bmlnElmnt::* leaveLocalFrame_jetparticle)(  JetParticle& )  const =  &bmlnElmnt::leaveLocalFrame; 
-void   (bmlnElmnt::* localPropagate_particle)    (     Particle& )        =  &bmlnElmnt::localPropagate; 
-void   (bmlnElmnt::* localPropagate_jetparticle) (  JetParticle& )        =  &bmlnElmnt::localPropagate; 
+void   (bmlnElmnt::* localPropagate_particle)    (     Particle& )  const =  &bmlnElmnt::localPropagate; 
+void   (bmlnElmnt::* localPropagate_jetparticle) (  JetParticle& )  const =  &bmlnElmnt::localPropagate; 
 void   (bmlnElmnt::* setReferenceTime_double   ) ( double const& )        =  &bmlnElmnt::setReferenceTime;
 
 }
@@ -61,18 +61,14 @@ void wrap_bmlnelmnt() {
     .def("propagate",                     propagate_bunch         )
     .def("getTag",                        &bmlnElmnt::getTag      )
     .def("setTag",                        &bmlnElmnt::setTag      )
-    .def("setShunt",                      &bmlnElmnt::setShunt    )
-    .def("getShunt",                      &bmlnElmnt::getShunt, return_value_policy<copy_const_reference>() )        
      /****  virtual functions ***/ 
     .def("setLength",                     &bmlnElmnt::setLength   )
     .def("Strength",                      &bmlnElmnt::Strength    )
     .def("setStrength",                   &bmlnElmnt::setStrength )
-    .def("setCurrent",                    &bmlnElmnt::setCurrent  )
-    .def("Name",                          &bmlnElmnt::Name        )
+    .def("Name",                          &bmlnElmnt::Name,     return_value_policy<copy_const_reference>() )
     .def("rename",                        &bmlnElmnt::rename      )
     .def("getReferenceTime",              &bmlnElmnt::getReferenceTime)
     .def("setReferenceTime",              setReferenceTime_double )
-    .def("Current",                       &bmlnElmnt::Current     )
     .def("Type",                          &bmlnElmnt::Type        )
     .def("OrbitLength",                   &bmlnElmnt::OrbitLength )
     .def("Split",                         &bmlnElmnt::Split       )
