@@ -67,7 +67,7 @@ void wrap_cf_sbend () {
   .def("getQuadrupole",           &CF_sbend::getQuadrupole   ) 
   .def("getSextupole",            &CF_sbend::getSextupole    )  
   .def("getOctupole",             &CF_sbend::getOctupole     )
-  .def("getDipoleField",          &CF_sbend::getDipoleField,   return_value_policy<copy_const_reference>() ) 
+  .def("getDipoleField",          &CF_sbend::getDipoleField  ) 
   .def("getBendAngle",            &CF_sbend::getBendAngle,     return_value_policy<copy_const_reference>() )
   .def("setEntryAngle",           setEntryAngleDouble_Ptr    )
   .def("setExitAngle",            setExitAngleDouble_Ptr     )
