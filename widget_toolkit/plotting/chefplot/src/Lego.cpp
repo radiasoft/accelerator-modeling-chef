@@ -32,8 +32,10 @@
 **************************************************************************
 *************************************************************************/
 
-#include "/usr/local/vsqlite++/include/sqlite/connection.hpp"
-#include "/usr/local/vsqlite++/include/sqlite/query.hpp"
+#include <sqlite/connection.hpp>
+#include <sqlite/result.hpp>
+#include <sqlite/execute.hpp>
+#include <sqlite/query.hpp>
 
 #include <Lego.h>
 #include <beamline/beamline.h>
@@ -49,7 +51,7 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LegoPlot::LegoPlot(QWidget * parent, const char * name, WFlags f ): 
-  QWidget(parent,name,f),  db_(0), bml_(), painter_(0),  pixmap_(0)
+  QWidget(parent,name,f), painter_(0),  pixmap_(0)
 {
  
    pixmap_  = new QPixmap(2048, height()); // the width cannot be changed during a paint event
@@ -72,10 +74,29 @@ LegoPlot::~LegoPlot()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LegoPlot::setDb( sqlite::connection& db) 
+void LegoPlot::setBeamline( sqlite::connection& db) 
 {
-  db_  = &db; 
-  bml_ = BmlPtr();
+
+  std::ostringstream sql;
+  sql << "SELECT type, length, strength FROM ELEMENTS"
+         << std::ends;
+
+  sqlite::query q(db, sql.str() );
+  sqlite::result_type res = q.emit_result(); 
+
+  if ( !res ) return;
+  
+  bmldata_.clear();
+
+  do { 
+       std::string elmtype =  res->get_string(0); 
+       double length       =  res->get_double(1);
+       double strength     =  res->get_double(2);
+
+       bmldata_.push_back( ElmData(elmtype, length, (strength > 0.0) ));     
+ 
+   } while ( res->next_row() );
+  
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -83,21 +104,24 @@ void LegoPlot::setDb( sqlite::connection& db)
 
 void LegoPlot::setBeamline( ConstBmlPtr bml) 
 {
-     bml_ = bml;
-     db_  = 0; 
+
+  if ( !bml  ) return;
+  bmldata_.clear();
+  
+  for (beamline::const_deep_iterator it  = bml->deep_begin();
+	                             it != bml->deep_end(); ++it) {
+       
+       ElmPtr elm = *it;
+
+       std::string  elmtype = elm->Type();
+       double        length = elm->Length();
+       bool        polarity = ( elm->Strength() > 0.0 );
+
+       bmldata_.push_back( ElmData(elmtype, length, polarity ));
+  }
 }
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-ConstBmlPtr LegoPlot::getBeamline() 
-{
-    return bml_;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void LegoPlot::setView(double x, double w, int loffset, int roffset) 
 {
@@ -137,8 +161,6 @@ void  LegoPlot::resizeEvent ( QResizeEvent *event )
 void LegoPlot::paintEvent ( QPaintEvent *event )
 {
 
-  if( (!bml_) && (!db_) ) return;
-
   QRect legorect  = rect();
 
   pixmap_->fill( ); // should get background color here instead of assuming default
@@ -147,23 +169,13 @@ void LegoPlot::paintEvent ( QPaintEvent *event )
   painter_->setWindow(painter_->viewport());
   scale_ = double( ( roffset_ -loffset_ ) / w_ );
 
-  std::ostringstream sql;
-     sql << "SELECT type, length, strength FROM ELEMENTS"
-         << std::ends;
+  double s =0.0;  
+  for ( std::vector<ElmData>::iterator it =   bmldata_.begin();
+                                       it !=  bmldata_.end(); ++it ) {
 
-  sqlite::query q(*db_, sql.str());
-  sqlite::result_type res = q.emit_result(); 
-
-     if ( !res ) return;
-
-     double s   = 0;
-     do { 
-
-       std::string elmtype =  res->get_string(0); 
-       double len          =  res->get_double(1);
-       double strength     =  res->get_double(2);
-
-       bool   neg_strength = (strength < 0.0); 
+       std::string elmtype =  it->type;
+       double len          =  it->length;
+       bool  polarity      =  it->polarity;
     
        if ( (s+len) < x0_   ) { s += len; continue; }
 
@@ -178,62 +190,22 @@ void LegoPlot::paintEvent ( QPaintEvent *event )
        } else  if ( elmtype == "CF_rbend" )    {
             drawBend(len, s);
        } else if ( elmtype == "quadrupole")    {
-            drawQuad(len, s, neg_strength  );
+            drawQuad(len, s, polarity  );
        } else if ( elmtype == "thinQuad"     ) {
-            drawQuad(len, s,  neg_strength);
+            drawQuad(len, s,  polarity);
        } else if ( elmtype == "sextupole"    ) {
-            drawSext(len, s, neg_strength );
+            drawSext(len, s, polarity );
        } else if ( elmtype == "thinSextupole") {
-            drawSext(len, s,  neg_strength   );
+            drawSext(len, s,  polarity   );
        } else {
             drawDrift(len, s);
        };
  
        s += len;
  
-      } while ( res->next_row() );
+  }
 
-#if  0  
-============================
-      double s   = 0;
-      for (beamline::const_deep_iterator it    = bml_->deep_begin();
-	                                 it   != bml_->deep_end(); ++it) {
-       
-       ElmPtr elm = *it;
-
-       std::string elmtype = elm->Type();
-       double len          = elm->Length();
-    
-       if ( (s+len) < x0_   ) continue;
-       if ( s > (x0_ + w_ ) ) break;
-
-       if ( elmtype == "sbend"            )  { 
-             drawBend(len, s);
-       } else if ( elmtype == "rbend"     ) {
-             drawBend(len, s);
-       } else if ( elmtype == "CF_sbend"  ) {
-             drawBend(len, s);
-       } else  if ( elmtype == "CF_rbend" ) {
-             drawBend(len, s);
-       } else if ( elmtype == "quadrupole") {
-             drawQuad(len, s,  (elm->Strength()<0)  );
-       } else if ( elmtype ==  "thinQuad" ) {
-             drawQuad(len, s,  (elm->Strength()<0) );
-       } else if ( elmtype ==  "sextupole") {
-             drawSext(len, s,  (elm->Strength()<0)  );
-       } else if ( elmtype ==  "thinSextupole") ) {
-              drawSext(len, s, (elm->Strength()<0) );
-       } else {
-              drawDrift(len, s);
-       };
- 
-       s += len;
-       
-     }
-=========================================
-#endif
-
-        bitBlt(this, 0, 0, pixmap_, 0, 0, legorect.width(), legorect.height());
+  bitBlt(this, 0, 0, pixmap_, 0, 0, legorect.width(), legorect.height());
      
 
 }
@@ -284,11 +256,10 @@ void LegoPlot::drawBend( double l, double  s )
 void LegoPlot::drawQuad( double l, double  s, bool focusing  ) 
 {
 
-  int is, il, joff;
-  is =   int( ceil( (s - x0_)* scale_ ) ) + loffset_;
-  il =   int( ceil( l* scale_ )         );
-  il =   std::max(3,il);
-  joff  =   painter_->viewport().height()/2;
+  int is =   int( ceil( (s - x0_)* scale_ ) ) + loffset_;
+  int il =   int( ceil( l* scale_ )         );
+      il =   std::max(3,il);
+  int joff  =   painter_->viewport().height()/2;
   
  painter_->setPen(QPen(black, 1,  SolidLine));
  painter_->setBrush(QBrush(red, SolidPattern));
@@ -307,20 +278,21 @@ void LegoPlot::drawQuad( double l, double  s, bool focusing  )
 
 void LegoPlot::drawSext( double l, double  s,  bool focusing ) 
 {
-
-  int is, il, joff;
-  is =   int( ceil( (s - x0_)* scale_ ) ) + loffset_;
-  il =   int( ceil( l* scale_ )         );
-  il =   std::max(3,il);
-  joff  =   painter_->viewport().height()/2;
+  int    is =   int( ceil( (s - x0_)* scale_ ) ) + loffset_;
+  int    il =   int( ceil( l* scale_ )         );
+         il =   std::max(3,il);
+  int joff  =   painter_->viewport().height()/2;
 
  painter_->setPen(QPen(black, 1,  SolidLine));
  painter_->setBrush(QBrush(blue, SolidPattern));
+
  if (!focusing) {
     painter_->drawRect(is, -10+joff, il,  10);
  } else {
-   painter_->drawRect(is,  0+joff,  il,  10); 
+    painter_->drawRect(is,  0+joff,  il,  10); 
  };
  
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

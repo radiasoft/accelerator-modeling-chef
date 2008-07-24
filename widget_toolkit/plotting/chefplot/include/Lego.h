@@ -25,6 +25,7 @@
 #include <sqlite/connection.hpp>
 #include <qwidget.h>
 #include <beamline/beamline.h>
+#include <vector>
 
 class  QPainter;
 class  QPixmap;
@@ -38,32 +39,38 @@ class LegoPlot: public QWidget {
      LegoPlot(QWidget* parent=0, const char* name=0, WFlags f=0 );
     ~LegoPlot();
   
-     void        setBeamline(  ConstBmlPtr bml);
-     void        setDb( sqlite::connection& db);
-
-     ConstBmlPtr getBeamline();
+     void        setBeamline( ConstBmlPtr bml);
+     void        setBeamline( sqlite::connection& db);
 
      void setView(double x, double w, int loffset, int roffset);
-     void enableBeamlineDisplay(bool enabled);
   
   protected:
   
      void paintEvent ( QPaintEvent  * );
      void resizeEvent( QResizeEvent * );
   
-     void drawDrift(double l, double  s);
-     void  drawQuad(double l, double  s, bool focusing );
-     void  drawBend(double l, double  s);
-     void  drawSext(double l, double  s, bool focusing );
-
   private:
 
-    sqlite::connection*       db_;  // connection to beamline database     
-    ConstBmlPtr               bml_;  // a displayed beamline
+     void   drawDrift(double l, double  s);
+     void   drawQuad(double l, double  s, bool focusing );
+     void   drawBend(double l, double  s);
+     void   drawSext(double l, double  s, bool focusing );
+
+   
+    struct ElmData {
+      ElmData( std::string const& t, double const& l, bool p): type(t),length(l), polarity(p) {} 
+      ElmData( ElmData const& o) : type(o.type), length(o.length), polarity(o.polarity) {}
+      std::string      type;
+      double     length; 
+      bool       polarity; 
+    };
+ 
+    std::vector<ElmData>  bmldata_;
 
     QPainter*             painter_;
     QPixmap*               pixmap_;
 
+   
     double                     x0_;  // the beamline display origin in physical coordinates
     double                     w_;  // the beamline display extent in physical coordinates
     double                 scale_;        
