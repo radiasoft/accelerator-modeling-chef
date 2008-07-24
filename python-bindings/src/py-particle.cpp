@@ -40,7 +40,7 @@ using namespace boost::python;
 
 namespace {
 
-Vector const& (Particle::*State_void)()       const      = &Particle::State;
+Vector const& (Particle::*State_ptr)()       const      = &Particle::State;
 
 } // anonymous namespace
 
@@ -69,8 +69,9 @@ void wrap_particle () {
   .def ("set_npx",             &Particle::set_npx)
   .def ("set_npy",             &Particle::set_npy)
   .def ("set_ndp",             &Particle::set_ndp)
-  .def("State",                State_void, return_value_policy<copy_const_reference>() )
+  .def("State",                State_ptr, return_value_policy<copy_const_reference>() )
   .def("Energy",               &Particle::Energy)
+  .def("KineticEnergy",        &Particle::KineticEnergy)
   .def("Momentum",             &Particle::Momentum)
   .def("NormalizedMomentum",   &Particle::NormalizedMomentum)
   .def("Gamma",                &Particle::Gamma)
@@ -79,10 +80,8 @@ void wrap_particle () {
   .def("ReferenceBRho",        &Particle::ReferenceBRho,    return_value_policy<copy_const_reference>() )
   .def("ReferenceBeta",        &Particle::ReferenceBeta,    return_value_policy<copy_const_reference>() )
   .def("ReferenceMomentum",    &Particle::ReferenceMomentum,return_value_policy<copy_const_reference>() )
-
-  .def("PNI2",                 &Particle::PNI2,             return_value_policy<copy_const_reference>() )
-
-  .def("ReferenceEnergy",      &Particle::ReferenceEnergy,  return_value_policy<copy_const_reference>() )
+  .def("pn",                   &Particle::pn)
+  .def("ReferenceEnergy",      &Particle::ReferenceEnergy )
   .def("Charge",               &Particle::Charge,           return_value_policy<copy_const_reference>() )
   .def("BRho",                 &Particle::BRho);
 
