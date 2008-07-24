@@ -25,11 +25,15 @@
 ******* is protected under the U.S. and Foreign Copyright Laws. 
 ******* URA/FNAL reserves all rights.
 *******                                                                
+**************************************************************************
+**************************************************************************
 **************************************************************************/
+
 #include <BmlSelectionDialog.h>
 
 #include <basic_toolkit/PhysicsConstants.h>
 #include <basic_toolkit/GenericException.h>
+#include <beamline/Particle.h>
 #include <bmlfactory/bmlfactory.h>
 
 #include <qlistbox.h>
@@ -46,7 +50,7 @@
 using namespace std;
 
 BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags f):
-  BmlSelectionDialogBase(parent,name,f), mass_(0)
+  BmlSelectionDialogBase(parent,name,f), pparticle_(0)
 {
 
   beamlines_listBox->clear();
@@ -71,13 +75,31 @@ BmlSelectionDialog::BmlSelectionDialog(QWidget* parent, const char* name, WFlags
   v->setBottom(0.0);
 
   lineEditMomentum->setValidator( v );
-  lineEditET->setValidator( v );
-  lineEditEK->setValidator( v );
-  lineEditGamma->setValidator( v );
-  lineEditBrho->setValidator( v );
+        lineEditET->setValidator( v );
+        lineEditEK->setValidator( v );
+     lineEditGamma->setValidator( v );
+      lineEditBrho->setValidator( v );
 
 } 
   
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BmlSelectionDialog::~BmlSelectionDialog()
+{
+  delete pparticle_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BmlSelectionDialog::getBRHO()
+{
+  return pparticle_->ReferenceBRho();
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 BmlSelectionDialog::setList( std::list<std::string> const& bmllist, const char* use_name) {
@@ -107,26 +129,25 @@ BmlSelectionDialog::setList( std::list<std::string> const& bmllist, const char* 
 
   beamlines_textLabel->setText( QString("A total of %1 beamlines are defined in this file.\n Select one or more from the list below.").arg( bmllist.size() ) );
 
-
-
-
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-BmlSelectionDialog::setBeamParameters( bmlfactory const& bf) 
+void BmlSelectionDialog::setBeamParameters( bmlfactory const& bf) 
 {
 
   enum particle_type { proton=0, antiproton=1, positron=2, electron=3, muon=4, antimuon=5, unknown=255 } ptype = unknown;
 
   string pname =  string( bf.getParticleType() );
 
-  if ( pname == string("PROTON")     ) { mass_ = PH_NORM_mp;  ptype = proton;     }
-  if ( pname == string("ANTIPROTON") ) { mass_ = PH_NORM_mp;  ptype = antiproton; }
-  if ( pname == string("POSITRON")   ) { mass_ = PH_NORM_me;  ptype = positron;   }
-  if ( pname == string("ELECTRON")   ) { mass_ = PH_NORM_me;  ptype = electron;   } 
-  if ( pname == string("MUON")       ) { mass_ = PH_NORM_mmu; ptype = muon;       }
-  if ( pname == string("ANTIMUON")   ) { mass_ = PH_NORM_mmu; ptype = antimuon;   }
+
+  if      ( pname == string("PROTON")     ) { ptype = proton;     pparticle_ = new Proton();     }
+  else if ( pname == string("ANTIPROTON") ) { ptype = antiproton; pparticle_ = new AntiProton(); }
+  else if ( pname == string("POSITRON")   ) { ptype = positron;   pparticle_ = new Positron();   }
+  else if ( pname == string("ELECTRON")   ) { ptype = electron;   pparticle_ = new Electron();   } 
+  else if ( pname == string("MUON")       ) { ptype = muon;       pparticle_ = new Muon();       }
+  else if ( pname == string("ANTIMUON")   ) { ptype = antimuon;   pparticle_ = new AntiMuon();   }
   
   if (ptype == unknown ) {
     ostringstream uic;
@@ -140,7 +161,16 @@ BmlSelectionDialog::setBeamParameters( bmlfactory const& bf)
 
   dynamic_cast<QCheckBox*>(buttonGroupParticle->find(ptype))->setChecked(true);  
 
+  pparticle_->SetReferenceMomentum(  bf.getMomentum() );
 
+  std::cout << " Momentum = " <<  bf.getMomentum() << std::endl;
+
+  checkBoxMomentum->setChecked(true);
+
+  refreshBeamParameters();
+
+
+#if 0
   typedef  void (BmlSelectionDialog::* checkfptrtype)(bool);
 
   bool defined = false;
@@ -160,54 +190,22 @@ BmlSelectionDialog::setBeamParameters( bmlfactory const& bf)
                                  {0,                0,            0               }
                                };
 
-  const varstructtype* vp = &vars[0];
+  varstructtype const* vp = &vars[0];
 
-#if 0
-  while ( vp->name ) 
-  {
-    vp->cb->setChecked(false);
 
-    if (bf.variableIsDefined( vp->name ) ) // THIS NEEDS TO GO AWAY !
-      {
-        computeBeamParameters( bf.getVariableValue(vp->name), vp->type );
-        vp->cb->setChecked(true);
-        defined = true; 
-     }
-    
-    vp++;
-  };
-#endif
-  
-  computeBeamParameters( bf.getBrho(), BRHO );
   vp[1].cb->setChecked(true);
   defined = true; 
-
-
-  if (!defined) {
-
-    checkBoxMomentum->setChecked(true);
-    computeBeamParameters(0.0, MOMENTUM);
-  };
-     
   
-  QString     brho_str("0.0");
-  QString momentum_str("0.0");
-  QString       et_str("0.0");
-  QString       ek_str("0.0");
-  QString     gamma_str("0.0");
-
-  lineEditBrho->setText( brho_str.setNum(brho_) );
-  lineEditMomentum->setText( momentum_str.setNum(momentum_) );
-  lineEditET->setText( et_str.setNum(et_) );
-  lineEditEK->setText( ek_str.setNum(ek_) );
-  lineEditGamma->setText( gamma_str.setNum(gamma_) );
+#endif
+  
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-std::list<string>
-BmlSelectionDialog::getSelected( ) {
+std::list<string> BmlSelectionDialog::getSelected( ) 
+{
   
   list<string> bmllist;
 
@@ -225,82 +223,23 @@ BmlSelectionDialog::getSelected( ) {
 }
 
 
-void 
-BmlSelectionDialog::computeBeamParameters( double value, int datatype)
-{
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- switch (datatype) 
- {
-
- case MOMENTUM:
-
-    momentum_  = value;
-    et_        = std::sqrt( ( momentum_* momentum_)+( mass_* mass_) );
-    ek_        = et_ -  mass_;
-    gamma_     = et_ / mass_;
-    brho_      = momentum_ / PH_CNV_brho_to_p;
-
-    break;
-
- case ET:
-  
-   et_        = value;
-   ek_        = et_ - mass_;
-   gamma_     = et_/mass_;
-   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
-   brho_      = momentum_/PH_CNV_brho_to_p;
-
-   break;
-  
- case EK: 
- 
-   ek_        = value;
-   et_        = mass_ + ek_;
-   gamma_     = et_ / mass_;
-   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
-   brho_      = momentum_/PH_CNV_brho_to_p;
-  
-   break;
-
- case GAMMA: 
- 
-   gamma_     = value;
-   et_        = gamma_*mass_;
-   ek_        = et_ - mass_;
-   momentum_  = std::sqrt((et_*et_)-(mass_*mass_));
-   brho_      = momentum_/PH_CNV_brho_to_p;
-
-   break;
-   
- case BRHO:
-
-   brho_      =  value;
-   momentum_  =  brho_*PH_CNV_brho_to_p;
-   et_        =  std::sqrt( (momentum_*momentum_)+(mass_*mass_) );
-   ek_        =  et_ - mass_;
-   gamma_     =  et_/mass_;
-
-   break;
-
- }
-}
-
-
-void 
-BmlSelectionDialog::momentumCheck(bool set) 
+void BmlSelectionDialog::momentumCheck(bool set) 
 {
 
   if ( !set ) return;
 
   lineEditMomentum->setEnabled(true);
-  lineEditET->setEnabled(false);
-  lineEditEK->setEnabled(false);
-  lineEditGamma->setEnabled(false);
-  lineEditBrho->setEnabled(false);
-
+        lineEditET->setEnabled(false);
+        lineEditEK->setEnabled(false);
+     lineEditGamma->setEnabled(false);
+      lineEditBrho->setEnabled(false);
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- 
 void BmlSelectionDialog::ETCheck(bool set) 
 {
   if ( !set ) return;
@@ -310,12 +249,12 @@ void BmlSelectionDialog::ETCheck(bool set)
   lineEditEK->setEnabled(false);
   lineEditGamma->setEnabled(false);
   lineEditBrho->setEnabled(false);
-
-
 }
 
-void 
-BmlSelectionDialog::EKCheck(bool set) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlSelectionDialog::EKCheck(bool set) 
 {
 
   if ( !set  ) return;
@@ -328,116 +267,95 @@ BmlSelectionDialog::EKCheck(bool set)
 
 }
 
-void 
-BmlSelectionDialog::GammaCheck(bool set) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlSelectionDialog::GammaCheck(bool set) 
 {
 
   if ( !set ) return;
 
   lineEditMomentum->setEnabled(false);
-  lineEditET->setEnabled(false);
-  lineEditEK->setEnabled(false);
-  lineEditGamma->setEnabled(true);
-  lineEditBrho->setEnabled(false);
-
+        lineEditET->setEnabled(false);
+        lineEditEK->setEnabled(false);
+     lineEditGamma->setEnabled(true);
+      lineEditBrho->setEnabled(false);
 }
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-BmlSelectionDialog::BrhoCheck(bool set) 
+void BmlSelectionDialog::BrhoCheck(bool set) 
 {
 
   if ( !set ) return;
 
   lineEditMomentum->setEnabled(false);
-  lineEditET->setEnabled(false);
-  lineEditEK->setEnabled(false);
-  lineEditGamma->setEnabled(false);
-  lineEditBrho->setEnabled(true);
-
+        lineEditET->setEnabled(false);
+        lineEditEK->setEnabled(false);
+     lineEditGamma->setEnabled(false);
+      lineEditBrho->setEnabled(true);
 }
 
-void 
-BmlSelectionDialog::momentumChanged()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlSelectionDialog::momentumChanged()
 {
-
-  QString s = lineEditMomentum->text();
-
-  double momentum = s.toDouble();
-  computeBeamParameters( momentum, MOMENTUM);
   refreshBeamParameters();
-
-
 }
 
-void 
-BmlSelectionDialog::ETChanged()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  BmlSelectionDialog::ETChanged()
 {
-
-  QString s = lineEditET->text();
-
-  double et = s.toDouble();
-  computeBeamParameters( et, ET);
   refreshBeamParameters();
-
 }
 
-void 
-BmlSelectionDialog::EKChanged()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlSelectionDialog::EKChanged()
 {
-
-  QString s = lineEditEK->text();
-
-  double ek = s.toDouble();
-  computeBeamParameters( ek, EK);
   refreshBeamParameters();
-
-
 }
 
-void 
-BmlSelectionDialog::GammaChanged()
-{
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  QString s = lineEditGamma->text();
-  double gamma = s.toDouble();
-  computeBeamParameters( gamma, GAMMA);
+void BmlSelectionDialog::GammaChanged()
+{
   refreshBeamParameters();
-
 }
 
-void 
-BmlSelectionDialog::BrhoChanged()
-{
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  QString s = lineEditBrho->text();
-  double brho = s.toDouble();
-  computeBeamParameters( brho, BRHO);
+void BmlSelectionDialog::BrhoChanged()
+{
   refreshBeamParameters();
-
 }
 
-void 
-BmlSelectionDialog::refreshBeamParameters()
-{
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  QString brho_str;
-  QString momentum_str;
-  QString et_str;
-  QString ek_str;
-  QString gamma_str;
+void BmlSelectionDialog::refreshBeamParameters()
+{
   
-  lineEditBrho->setText( brho_str.setNum(brho_) );
-  lineEditMomentum->setText( momentum_str.setNum(momentum_) );
-  lineEditET->setText( et_str.setNum(et_) );
-  lineEditEK->setText( ek_str.setNum(ek_) );
-  lineEditGamma->setText( gamma_str.setNum(gamma_) );
+      lineEditBrho->setText(  QString().setNum( pparticle_->ReferenceBRho()     ) );
+  lineEditMomentum->setText(  QString().setNum( pparticle_->ReferenceMomentum() ) );
+        lineEditET->setText(  QString().setNum( pparticle_->ReferenceEnergy()   ) );
+        lineEditEK->setText(  QString().setNum( pparticle_->KineticEnergy()     ) );
+     lineEditGamma->setText(  QString().setNum( pparticle_->ReferenceGamma()    ) );
 
-  return;
+return;
 
 }
 
-void 
-BmlSelectionDialog::updateBeamParameters()
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BmlSelectionDialog::updateBeamParameters()
 {
 
   QButton* b = buttonGroupReference->selected();
@@ -447,43 +365,29 @@ BmlSelectionDialog::updateBeamParameters()
   
   QString button_name(b->name());
 
-  if ( button_name ==  QString("checkBoxMomentum"))
-  {
-    momentumChanged(); 
-  } 
-  else if ( button_name ==  QString("checkBoxET") )
-  {
-    ETChanged(); 
-  }
-  else if ( button_name ==  QString("checkBoxEK") )
-  {
-    EKChanged(); 
-  }
-  else if ( button_name ==  QString("checkBoxGamma")) 
-  {
-    GammaChanged(); 
-  }
-  else if ( button_name ==  QString("checkBoxBrho") )
-  {
-    BrhoChanged(); 
-  
-  }
+  if      ( button_name ==  QString("checkBoxMomentum"))  { momentumChanged(); } 
+  else if ( button_name ==  QString("checkBoxET")      )  { ETChanged();       }
+  else if ( button_name ==  QString("checkBoxEK")      )  { EKChanged();       }
+  else if ( button_name ==  QString("checkBoxGamma")   )  { GammaChanged();    }
+  else if ( button_name ==  QString("checkBoxBrho")    )  { BrhoChanged();     }
   else
   {
    throw GenericException(__FILE__,__LINE__, "BmlSelectionDialog::updateBeamParameters()", 
                                 "Invalid Reference parameter type.");
   }
-
-  //showPage->();
-
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void 
-BmlSelectionDialog::cancel( ){
+void BmlSelectionDialog::cancel( )
+{
    beamlines_listBox->clear();
    hide();
 }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void 
 BmlSelectionDialog::particleCheck( int id) {
