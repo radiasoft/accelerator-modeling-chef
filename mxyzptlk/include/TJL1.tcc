@@ -772,7 +772,7 @@ T TJL1<T>::operator()( const Vector& x ) const
   int n = x.Dim();
   T newarg [n];
   for( int i = 0; i < n; ++i ) {
-    newarg[i] = x(i);
+    newarg[i] = x[i];
   }
   return this->operator()( newarg );
 }
