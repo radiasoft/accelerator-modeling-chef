@@ -69,9 +69,9 @@ void CHEFGUI::makeFODO()
   const double l = 10.0;  /*[m]*/                 // length of drift
   const double E = 100.0 - PH_NORM_mp; /*[Gev]*/  // proton's kinetic energy (arbitrary)
 
-  double energy = E + PH_NORM_mp;
-  Proton pr( energy );
-  double momentum = pr.Momentum();
+  double energy   = E + PH_NORM_mp;
+  double momentum = sqrt( E*E- PH_NORM_mp*PH_NORM_mp);
+  Proton pr( momentum );
 
   drift    O ( "O",   l/2.0 );
   thinQuad F ( "F",    pr.ReferenceBRho() / f );
@@ -95,10 +95,10 @@ void CHEFGUI::makeFODO()
    
   bmlPtr->setMomentum(momentum);
   
-  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(energy), bmlPtr) );
-  contextList_.push_front( p_currBmlCon_ );
+  bmlc_ = BmlContextPtr( new BeamlineContext( Proton(momentum), *bmlPtr) );
+  contextList_.push_front( bmlc_ );
 
-  p_currBmlCon_->handleAsRing();
+  bmlc_->handleAsRing();
 
   emit new_beamline();
 }
@@ -111,11 +111,11 @@ void CHEFGUI::makeSingSext()
   const double f =  7.0;  /*[m]*/                 // focal length of thin quads
   const double l = 10.0;  /*[m]*/                 // length of drift
   const double E = 100.0 - PH_NORM_mp; /*[Gev]*/  // proton's kinetic energy (arbitrary)
-
   double energy   = E + PH_NORM_mp;
-  Proton pr( energy );
 
-  double momentum = pr.Momentum();
+  double momentum = sqrt( E*E- PH_NORM_mp*PH_NORM_mp);
+
+  Proton pr( momentum );
 
   drift         O ( "O",   l/2.0 );
   thinQuad      F ( "F",    pr.ReferenceBRho() / f );
@@ -139,10 +139,10 @@ void CHEFGUI::makeSingSext()
    
   bmlPtr->setMomentum( momentum );
   
-  p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(energy), bmlPtr) );
-  contextList_.push_front( p_currBmlCon_ );
+  bmlc_ = BmlContextPtr( new BeamlineContext( Proton(momentum), *bmlPtr) );
+  contextList_.push_front( bmlc_ );
 
-  p_currBmlCon_->handleAsRing();
+  bmlc_->handleAsRing();
 
   emit new_beamline();
 }
