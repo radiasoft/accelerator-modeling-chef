@@ -1,0 +1,251 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>DialogInitialStateBase</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>DialogInitialStateBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>576</width>
+            <height>259</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Initial Phase Space State</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton_ok</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>180</x>
+                <y>210</y>
+                <width>98</width>
+                <height>32</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>OK</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton_cancel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>320</x>
+                <y>210</y>
+                <width>98</width>
+                <height>32</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Cancel</string>
+        </property>
+    </widget>
+    <widget class="QButtonGroup">
+        <property name="name">
+            <cstring>buttonGroup_state</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>70</x>
+                <y>40</y>
+                <width>460</width>
+                <height>150</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>State</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_npx</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>360</x>
+                    <y>30</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>px/p0 ~ x'</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_ndp</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>110</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_y</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>70</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_x</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>30</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string></string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_npx</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>230</x>
+                    <y>30</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_npy</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>230</x>
+                    <y>70</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_cdt</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>230</x>
+                    <y>110</y>
+                    <width>106</width>
+                    <height>23</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_cdt</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>360</x>
+                    <y>110</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="focusPolicy">
+                <enum>WheelFocus</enum>
+            </property>
+            <property name="text">
+                <string>cdt</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_npy</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>360</x>
+                    <y>70</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="backgroundOrigin">
+                <enum>AncestorOrigin</enum>
+            </property>
+            <property name="text">
+                <string>py/p0 ~ y'</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_x</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>150</x>
+                    <y>30</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>x [m]</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_ndp</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>150</x>
+                    <y>110</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>dp/p</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel_y</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>150</x>
+                    <y>70</y>
+                    <width>67</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>y [m]</string>
+            </property>
+        </widget>
+    </widget>
+</widget>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
