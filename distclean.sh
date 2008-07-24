@@ -16,6 +16,7 @@ find . -name core             -exec \rm     {}  \; -print
 
 find . -name autom4te\.cache  -exec \rm -rf {}  \; -print 
 find . -name aclocal\.m4      -exec \rm     {}  \; -print 
+find . -name m4               -exec \rm -rf {}  \; -print
 find . -name ltmain\.sh       -exec \rm     {}  \; -print 
 find . -name config\.guess    -exec \rm     {}  \; -print 
 find . -name config\.sub      -exec \rm     {}  \; -print 
