@@ -38,13 +38,24 @@
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
 #include <boost/scoped_array.hpp>
+#include <mxyzptlk/TJet.h>
 
-#include <mxyzptlk/TJLterm.h>
-#include <mxyzptlk/TJL.h>
+
+// #include <mxyzptlk/TJLterm.h>
+// #include <mxyzptlk/TJL.h>
 
 using FNAL::pcout;
 using FNAL::pcerr;
 
+void createStandardEnvironments( int deg )
+{
+  // Create an initial Jet environment 
+  TJetEnvironment<double>::BeginEnvironment( deg );
+
+  Tcoord<double> x(0.0),  y(0.0),  z(0.0),
+                px(0.0), py(0.0), pz(0.0);
+  TJetEnvironment<std::complex<double> >::setLastEnv( TJetEnvironment<double>::EndEnvironment() ); // implicit conversion
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -57,7 +68,6 @@ TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> 
  spaceDim_(x.spaceDim_),                          // phase space dimensions
       dof_(x.dof_),                               // degrees of freedom                             
  refPoint_(new std::complex<double>[x.numVar_]),  // reference point (set to zero by default)
-    scale_(new double[x.numVar_]),                // scale (set to 1.0e-3 by default) should be a Vector
 maxWeight_(x.maxWeight_),                         // maximum weight (polynomial order)
     pbok_(x.pbok_),                               // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
                                                   // pbok_ was used as a flag to detect the presence of parameters 
@@ -70,7 +80,6 @@ maxWeight_(x.maxWeight_),                         // maximum weight (polynomial 
     
   for (int i=0; i< numVar_; ++i) {   
         refPoint_[i]   = std::complex<double>(x.refPoint_[i], 0.0);
-           scale_[i]   = x.scale_[i];
   }
 }
 #endif
@@ -84,12 +93,9 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
 
 
  boost::scoped_array<std::complex<double> >    tmp_refpoints( new std::complex<double>[env->numVar()]); 
- boost::scoped_array<double>                   tmp_scale(new double[env->numVar()]);    
  
  for (int i=0; i< env->numVar(); ++i) {
      tmp_refpoints[i] = std::complex<double>(env->refPoint()[i], 0.0);
-     tmp_scale[i]     = env->scale()[i];
-
  }
 
  std::list<EnvPtr<std::complex<double> > >::iterator env_iter;
@@ -102,7 +108,6 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
  EnvPtr<std::complex<double> > tmppje;
 
  bool refpoints_are_equivalent = false;
- bool scales_are_equivalent    = false;
 
  for( env_iter  =  TJetEnvironment<std::complex<double> >::environments_.begin(); 
       env_iter !=  TJetEnvironment<std::complex<double> >::environments_.end(); 
@@ -121,16 +126,6 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
  
    if ( !refpoints_are_equivalent )   continue; 
 
-#if 0
-===============================================================
-    scales_are_equivalent = true;
-    for (int i=0; i<nvar; ++i ) {
-      scales_are_equivalent = scales_are_equivalent && ( tmppje->scale()[i] == tmp_scale[i] );
-    }
-    if ( ! scales_are_equivalent )              continue; 
-==================================================================
-#endif
-  
     // -----------------------------------------------------------
     // if we got here, a suitable environment already exists
     // -----------------------------------------------------------
@@ -146,7 +141,7 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
      //       the environment list_. When that happens, the custom deleter (dispose()) removes the env from the list.   
   
      EnvPtr<std::complex<double> > newpje( new TJetEnvironment<std::complex<double> >( env->maxWeight(), env->numVar(), env->spaceDim(), 
-                                                                tmp_refpoints.get(), tmp_scale.get()) );
+                                                                tmp_refpoints.get() ) );
   
 
      TJetEnvironment<std::complex<double> >::environments_.push_back( newpje );
@@ -162,15 +157,15 @@ EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEn
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-EnvPtr<double> TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v , double* scale) {
+EnvPtr<double> TJetEnvironment<double>::makeJetEnvironment(int maxweight, const Vector& v ) {
  
  boost::scoped_array<double> refpoints( new double[ v.Dim() ]);
 
  for (int i=0; i<v.Dim(); ++i) {
-     refpoints[i] = v(i); 
+     refpoints[i] = v[i]; 
  }
 
- return EnvPtr<double>( TJetEnvironment<double>::makeJetEnvironment(maxweight, v.Dim(), v.Dim(), refpoints.get(), scale) );
+ return EnvPtr<double>( TJetEnvironment<double>::makeJetEnvironment(maxweight, v.Dim(), v.Dim(), refpoints.get() ) );
  
 }
 
@@ -197,7 +192,7 @@ EnvPtr<double>  TJetEnvironment<double>::getApproxJetEnvironment(int maxweight, 
     // *** CHANGE *** The tolerance criterion should be user-determined.
     // *** CHANGE ***
     // tolerance(i) = std::max( 1.0e-6, std::abs(0.001*refpoints(i)));
-    tolerance(i) =  std::abs(0.001*refpoints(i));
+    tolerance[i] =  std::abs(0.001*refpoints[i]);
   }
 
   std::list<EnvPtr<double> >::iterator env_iter;
@@ -227,12 +222,9 @@ EnvPtr<double>
 TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::complex<double> > const& env) {
 
  boost::scoped_array<double>                tmp_refpoints(new double[env->numVar()]); 
- boost::scoped_array<double>                tmp_scale(new double[env->numVar()]);    
  
  for (int i=0; i< env->numVar(); ++i) {
      tmp_refpoints[i] = std::real( env->refPoint()[i] );
-     tmp_scale[i]     = env->scale()[i];
-
  }
 
  std::list<EnvPtr<double> >::iterator env_iter;
@@ -245,7 +237,6 @@ TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::compl
  EnvPtr<double> tmppje;
 
  bool refpoints_are_equivalent = false;
- bool scales_are_equivalent    = false;
 
  for( env_iter  = TJetEnvironment<double>::environments_.begin(); 
       env_iter != TJetEnvironment<double>::environments_.end(); 
@@ -263,16 +254,6 @@ TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::compl
     }
     if ( !refpoints_are_equivalent )   continue; 
 
-#if 0
-===============================================================
-    scales_are_equivalent = true;
-    for (int i=0; i<nvar; ++i ) {
-      scales_are_equivalent = scales_are_equivalent && ( tmppje->scale()[i] == tmp_scale[i] );
-    }
-    if ( ! scales_are_equivalent )              continue; 
-==================================================================
-#endif
-  
     // -----------------------------------------------------------
     // if we got here, a suitable environment already exists
     // -----------------------------------------------------------
@@ -294,7 +275,7 @@ TJetEnvironment<std::complex<double> >::makeRealJetEnvironment(EnvPtr<std::compl
      //         with an initial ref count of 0.
 
      EnvPtr<double> newpje( new TJetEnvironment<double>( env->maxWeight(), env->numVar(), env->spaceDim(), 
-                                                                tmp_refpoints.get(), tmp_scale.get()), false);
+                                                                tmp_refpoints.get() ), false);
   
      pje.swap( newpje );
 
