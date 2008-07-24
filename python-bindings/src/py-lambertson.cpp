@@ -40,12 +40,10 @@ using namespace boost::python;
 void wrap_lambertson () {
   
 class_<thinLamb,bases<bmlnElmnt>, ThinLambPtr >("thinLamb", init<>() )
-  .def(init<char const*>() )
-  .def(init<char const*, double const&, BmlPtr&, double*>() )
-  .def(init<double const&, BmlPtr&, double*>() )
+  .def(init<std::string const&>() )
   .def("setSeptum",   &thinLamb::setSeptum ) 
-  .def("setBeamline", &thinLamb::setBeamline ) 
-  .def("setRefState", &thinLamb::setRefState )
-  .def("getRefState", &thinLamb::getRefState );
+  .def("setBeamline", &thinLamb::setBeamline ); 
+  //  .def("setRefState", &thinLamb::setRefState )
+  //.def("getRefState", &thinLamb::getRefState );
 }
 
