@@ -52,7 +52,6 @@ class CHEFPlot: public QWidget {
 
     void              displayLattice(sqlite::connection& db);
     void              displayLattice(ConstBmlPtr bml);
-    ConstBmlPtr       getBeamline();
 
     void              setData(PlotData const& cpdata);
     void              clear();
@@ -99,4 +98,4 @@ class CHEFPlot: public QWidget {
  
 };
 
-#endif
+#endif // CHEFPLOT_H
