@@ -82,21 +82,22 @@
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <physics_toolkit/LattFuncSage.h>
+
+#include <sqlite/connection.hpp>
 
 using namespace std;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TuneAdjuster::TuneAdjuster( BmlPtr x ) 
-: Sage( x ), f_(), c_(2,1) { }
+TuneAdjuster::TuneAdjuster( BmlPtr x, sqlite::connection& db ) 
+: Sage( x, db ), f_(), c_(2,1) { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-TuneAdjuster::TuneAdjuster( beamline const& x ) 
-  : Sage( x ), f_(), c_(2,1) { } 
+TuneAdjuster::TuneAdjuster( beamline const& x,  sqlite::connection& db ) 
+  : Sage( x,db ), f_(), c_(2,1) { } 
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -155,8 +156,8 @@ bool TuneAdjuster::slotFound() {
 
   bool found = false;
 
-  for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();  
-                                it != myBeamlinePtr_->deep_end(); ++it ) {
+  for ( beamline::deep_iterator it  = bml_->deep_begin();  
+                                it != bml_->deep_end(); ++it ) {
 
 
     if( strstr( "CF_rbend|rbend|Slot", (*it)->Type() ) ) {
@@ -182,12 +183,12 @@ void TuneAdjuster::addCorrector_private(  ElmPtr x, double a, double b )
   f_ = MatrixD(ncor, 2 );
 
   for( int i=0;  i < ncor-1; ++i) {
-    f_(i,0) = old_f(i,0);
-    f_(i,1) = old_f(i,1);
+    f_[i][0] = old_f[i][0];
+    f_[i][1] = old_f[i][1];
   }
 
-  f_( ncor-1, 0 )    = a;
-  f_( ncor-1, 1 )    = b;
+  f_[ncor-1][ 0  ]   = a;
+  f_[ ncor-1][ 1 ]    = b;
 
 }
 
@@ -239,19 +240,25 @@ void TuneAdjuster::addCorrector( ThinQuadPtr x, double a, double b )
 
 int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 {
+
+  // ***********FIXME**********
+
+#if 0 
+
   double delta_H = x;
   double delta_V = y;
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
 
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( myBeamlinePtr_ );
-  lfs.attachLocalData( true );
 
-  myBeamlinePtr_->propagate( jpr );
+  sqlite::connection db( "./" + bml_->Name() + ".db" ); 
+  LattFuncSage lfs( bml_, db);
+
+  bml_->propagate( jpr );
 
   lfs.CourantSnyderLatticeFunctions( jpr );
 
@@ -261,7 +268,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
   MatrixD delta_nu  (2,1);
 
 
-  LattFuncSage::lattFunc lf;
+  CSLattFuncs lf;
 
   for( int j=0; j < N; ++j) {
  
@@ -273,7 +280,7 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
              "No lattice functions." ) );
     }
 
-    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+    lf = boost::any_cast<CSLattFuncs>(it->info);
 
     beta(0,j) =   lf.beta.hor;
     beta(1,j) = - lf.beta.ver;
@@ -307,10 +314,12 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 
   // Clean up ...
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
 
+#endif
   return 0;
+
 }
 
 
@@ -320,16 +329,22 @@ int TuneAdjuster::changeTunesBy ( double x, double y, JetParticle const& jp )
 int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp )
 {
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+
+  // ***********FIXME**********
+
+#if 0 
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
 
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( myBeamlinePtr_ );
-  lfs.attachLocalData( true );
+
+  sqlite::connection db( "./" + bml_->Name() + ".db" ); 
+  LattFuncSage lfs( bml_, db );
  
-  myBeamlinePtr_->propagate( jpr );
+  bml_->propagate( jpr );
+
 
   lfs.CourantSnyderLatticeFunctions( jpr );
 
@@ -342,7 +357,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
   // w = f*c
   // delta strength_k = w_k
  
-  LattFuncSage::lattFunc lf;
+  CSLattFuncs lf;
 
   for( int j=0; j < N; ++j) 
   {
@@ -356,7 +371,7 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
              "No lattice functions." ) );
     }
 
-    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+    lf = boost::any_cast<CSLattFuncs>(it->info);
 
     beta(0,j) = lf.beta.hor;
 
@@ -390,9 +405,10 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
 
   // Clean up ...
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
 
+#endif
   return 0;
 }
 
@@ -403,16 +419,23 @@ int TuneAdjuster::changeHorizontalTuneBy ( double delta_H, JetParticle const& jp
 int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
 {
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+  // *** FIXME **** 
 
+#if 0 
+
+
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
+
+  
   JetParticle jpr(jp);
 
   // Calculate current lattice functions
-  LattFuncSage lfs( myBeamlinePtr_ );
-  lfs.attachLocalData( true );
+
+  sqlite::connection db( "./" + bml_->Name() + ".db" ); 
+  LattFuncSage lfs( bml_, db );
  
-  myBeamlinePtr_->propagate( jpr );
+  bml_->propagate( jpr );
 
   lfs.CourantSnyderLatticeFunctions( jpr );
   
@@ -425,7 +448,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
   // w = f*c
   // delta strength_k = w_k
  
-  LattFuncSage::lattFunc lf;
+  CSLattFuncs lf;
 
   for( int j=0; j < N; ++j) 
   {
@@ -439,7 +462,7 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
              "No lattice functions." ) );
     }
     
-    lf = boost::any_cast<LattFuncSage::lattFunc>(it->info);
+    lf = boost::any_cast<CSLattFuncs>(it->info);
     beta(0,j) = lf.beta.ver;
   }
   
@@ -449,8 +472,8 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
   double c = (beta*f)(0,0);
   c = (4.0*M_PI*brho)*( delta_V/c );
   MatrixD w = c*f;
- 
-  int j=0;
+  
+  int j=0;  
   for( std::vector<ElmPtr>::iterator it = correctors_.begin(); 
                                      it != correctors_.end(); ++it, ++j) {
  
@@ -469,8 +492,10 @@ int TuneAdjuster::changeVerticalTuneBy ( double delta_V, JetParticle const& jp )
 
   // Clean up ...
 
-  myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
-  myBeamlinePtr_->eraseBarnacles( "Twiss" );
+  bml_->dataHook.eraseAll( "Tunes" );
+  bml_->eraseBarnacles( "Twiss" );
+
+#endif
 
   return 0;
 }
