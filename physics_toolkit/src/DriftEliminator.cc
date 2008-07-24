@@ -98,7 +98,7 @@ void DriftEliminator::visit( beamline const& x )
   string nuName =  x.Name()+ string("_Condensed");
 
   bmlPtr_ = BmlPtr( new beamline( nuName.c_str()  ) );
-  bmlPtr_->setEnergy( x.Energy() );
+  bmlPtr_->setMomentum( x.Momentum() );
 
 
   // Process the argument
