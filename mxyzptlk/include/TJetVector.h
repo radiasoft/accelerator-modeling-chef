@@ -166,9 +166,6 @@ public:
 
  ~TJetVector();
 
-  // Assignment ...
-  void             SetComponent    ( int idx, TJet<T> const& );
-
   TJet<T> const&   operator[]      ( int idx) const { return comp_[idx]; } 
   TJet<T>&         operator[]      ( int idx)       { return comp_[idx]; }  
 
