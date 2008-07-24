@@ -30,6 +30,7 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/LatticeFunctions.h>
 #include <iostream>
+#include <iomanip>
 #include <boost/any.hpp>
 
 using namespace boost::python;
