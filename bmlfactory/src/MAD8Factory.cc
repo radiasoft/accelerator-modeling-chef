@@ -165,9 +165,15 @@ MAD8Factory::MAD8Factory( std::string fname, const char* stringbuffer)
       if (bel_arr_) free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
       if (bml_arr_) free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
 
-    throw e;
-  }
+    throw e;  
 
+  }  
+
+  /******************************************************************************/
+  /* NOTE: this form of the constructor assumes that brho is set by the parser. */
+  /******************************************************************************/
+
+  BRHO_ = madparser_get_brho( mp_ );
 }
 
 
@@ -1093,7 +1099,9 @@ MAD8Factory::getUseStatementBeamlineName() const {
 double MAD8Factory::getEnergy() const
 {
   double ret = 0.0;
+
   double momentum = (this->BRHO_)*PH_CNV_brho_to_p;
+
   if( 0 == strcmp("PROTON",this->getParticleType()) ) {
     ret = sqrt( momentum*momentum + PH_NORM_mp*PH_NORM_mp );
   }
@@ -1134,7 +1142,7 @@ const char* MAD8Factory::getParticleType() const
 double 
 MAD8Factory::getBrho( ) const {
 
-  return madparser_get_brho( mp_ ); 
+  return BRHO_;
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
