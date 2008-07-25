@@ -138,6 +138,7 @@ MAD8Factory::MAD8Factory( std::string fname, double BRHO, const char* stringbuff
      throw e;
   }
 
+
 }
 
 
@@ -169,7 +170,12 @@ MAD8Factory::MAD8Factory( std::string fname, const char* stringbuffer)
 
     throw e;
   }
+  
+  /******************************************************************************/
+  /* NOTE: this form of the constructor assumes that brho is set by the parser. */
+  /******************************************************************************/
 
+  BRHO_ = madparser_get_brho( mp_ );
 }
 
 
@@ -209,6 +215,7 @@ MAD8Factory::bmlfactory_init( const char* stringbuffer)
     bml_remove_forward( &bml_arr_, bml_arr_size_, madparser_bml_table( mp_ ) ); // When removing forward references, line order isn't preserved
   }
   
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -274,12 +281,9 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BmlPtr MAD8Factory::create_beamline_private( const char* bmlname) { 
- 
-  BRHO_ = madparser_get_brho( mp_ ); 
-
-  return create_beamline_private( bmlname, BRHO_); 
-
+BmlPtr MAD8Factory::create_beamline_private( const char* bmlname) 
+{ 
+   return create_beamline_private( bmlname, BRHO_); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -289,7 +293,6 @@ BmlPtr
 MAD8Factory::create_beamline_private( const char* bmlname, double brho ) 
 {
   BRHO_ = brho;
-
   BmlPtr bml_ptr;  
 
   int i=0;
@@ -1094,8 +1097,7 @@ double MAD8Factory::getMomentum() const
  
   using boost::algorithm::iequals;
  
-  double ret = 0.0;
-  double momentum =  BRHO_*PH_CNV_brho_to_p;
+  double momentum =  BRHO_ * PH_CNV_brho_to_p;
 
   if( iequals("PROTON",   getParticleType() )) { return momentum; }
   if( iequals("POSITRON", getParticleType() )) { return momentum; }
@@ -1131,7 +1133,7 @@ const char* MAD8Factory::getParticleType() const
 
 double MAD8Factory::getBrho( ) const 
 {
-  return madparser_get_brho( mp_ ); 
+  return BRHO_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
