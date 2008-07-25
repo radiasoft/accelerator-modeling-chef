@@ -1679,12 +1679,11 @@ template<typename T>
 JLPtr<T> TJL<T>::epsPow( JLPtr<T> const& epsilon, const double& s ) 
 { 
  JLPtr<T> z( makeTJL(epsilon->myEnv_, ((T) 1.0)) ); // z = 1.0;
- JLPtr<T> term;
+ JLPtr<T> term = epsilon->clone();
 
  double f = s;
  double n = 1.0;
 
- term  = epsilon;
  term->scaleBy(s);                   //term = s*epsilon;
  
  z->myEnv_ = epsilon->myEnv_;
