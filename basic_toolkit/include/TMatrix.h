@@ -44,7 +44,7 @@
 ******     on the stack and objects allocated from the free store.
 ****** 
 ******  Nov 2007   ostiguy@fnal.gov
-******   - added support for matrix[i][j] element access
+******   - added support for matrix[i][j] element access syntax
 ******                                                             
 **************************************************************************
 **************************************************************************
@@ -87,9 +87,8 @@ template<typename T> TMatrix<T>  operator*(T          const&, TMatrix<T> const&)
 TMatrix<std::complex<double> >  operator*( TMatrix<std::complex<double> > const& x, TMatrix<double>                const& y);
 TMatrix<std::complex<double> >  operator*( TMatrix<double>                const& y, TMatrix<std::complex<double> > const& x);
 
-template<typename T> TMatrix<T> operator*(TMatrix<T>  const&,  TVector<T> const&); // right multiply
+template<typename T> TVector<T> operator*(TMatrix<T>  const&,  TVector<T> const&); // right multiply
 template<typename T> TMatrix<T> operator*(TVector<T>  const&,  TMatrix<T> const&);  // left multiply
-
 
 template<typename T> TMatrix<T> operator/(TMatrix<T> const&,     T          const&);
 template<typename T> TMatrix<T> operator/(T          const&,     TMatrix<T> const&);
@@ -134,6 +133,7 @@ public:
 
   TMatrix();
   explicit TMatrix(int);
+
   TMatrix(int rows, int columns);
   TMatrix(int rows, int columns, T  initval);
   TMatrix(int rows, int columns, T* initval);
@@ -227,10 +227,10 @@ public:
   friend TMatrix<std::complex<double> > operator*(TMatrix<double>                const&,  TMatrix<std::complex<double> > const&); 
   friend TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,  TMatrix<double>                const&); 
 
-  friend TMatrix operator*<>(TMatrix     const&,   T          const&);
-  friend TMatrix operator*<>(T           const&,   TMatrix    const&);
-  friend TMatrix operator*<>(TMatrix     const&,   TVector<T> const&);
-  friend TMatrix operator*<>(TVector<T>  const&,   TMatrix    const&);
+  friend TMatrix    operator*<>(TMatrix     const&,   T          const&);
+  friend TMatrix    operator*<>(T           const&,   TMatrix    const&);
+  friend TVector<T> operator*<>(TMatrix     const&,   TVector<T> const&);
+  friend TMatrix    operator*<>(TVector<T>  const&,   TMatrix    const&);
 
   friend TMatrix operator/<>(TMatrix const&,   T       const&);
   friend TMatrix operator/<>(T       const&,   TMatrix const&);

@@ -76,11 +76,6 @@ extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
 using FNAL::pcout;
 using FNAL::pcerr;
 
-
-static const int PHASESPACE = 6;
-#define M_SMALL  1.0e-30
-
-
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -554,11 +549,9 @@ TMatrix<T> operator*(TMatrix<T> const& x, TMatrix<T> const& y)
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T> 
-TMatrix<T> operator*(TMatrix<T>  const& x,  TVector<T> const& v) // right multiply
+TVector<T> operator*(TMatrix<T>  const& x,  TVector<T> const& v) // right multiply
 {
-   TMatrix<T> res; 
-   res.ml_ = multiply<T>(x.ml_, v);
-   return res;
+   return  multiply<T>(x.ml_, v);
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -76,10 +76,10 @@ template<typename T> MLPtr<T> add(MLPtr<T> const& x, const T& y);
 template<typename T> MLPtr<T> subtract(MLPtr<T> const& x, MLPtr<T> const& y); 
 
 
-template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x,                   const T& y); 
-template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x, MLPtr<T>          const& y);
-template<typename T> MLPtr<T> multiply(  MLPtr<T>    const& x, TVector<T>  const& y);
-template<typename T> MLPtr<T> multiply(  TVector<T>  const& x, MLPtr<T>          const& y);
+template<typename T> MLPtr<T>   multiply(  MLPtr<T>    const& x, T            const& y); 
+template<typename T> MLPtr<T>   multiply(  MLPtr<T>    const& x, MLPtr<T>     const& y);
+template<typename T> TVector<T> multiply(  MLPtr<T>    const& x, TVector<T>   const& y);
+template<typename T> MLPtr<T>   multiply(  TVector<T>  const& x, MLPtr<T>     const& y);
 
 template<typename T> MLPtr<T> divide (MLPtr<T> const& x,   T        const& y); 
 template<typename T> MLPtr<T> divide (T        const& y,   MLPtr<T> const& x  ); 
@@ -240,8 +240,8 @@ public:
   friend MLPtr<T> multiply<T>( MLPtr<T> const& x, const T& y); 
   friend MLPtr<T> multiply<T>( MLPtr<T> const& x, MLPtr<T> const& y);
 
-  friend MLPtr<T> multiply<T>( MLPtr<T>   const& x, TVector<T>   const& y);
-  friend MLPtr<T> multiply<T>( TVector<T> const& x, MLPtr<T>     const& y);
+  friend TVector<T> multiply<T>( MLPtr<T>   const& x, TVector<T>   const& y);
+  friend MLPtr<T>   multiply<T>( TVector<T> const& x, MLPtr<T>     const& y);
   
   
   friend MLPtr<T> divide<T>( MLPtr<T>  const&  x, T        const& y); 

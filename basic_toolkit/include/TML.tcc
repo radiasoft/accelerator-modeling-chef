@@ -428,8 +428,6 @@ T& TML<T>::operator()(int const& i)
 template<typename T>
 T TML<T>::operator()(int const& i) const 
 {
-  // This body must stay in synch with
-  // T& TMatrix<T>::operator()(int i)
   if( nrows_ == 1 ) {
     if( i >= 0 && i < ncols_ ) {
       return mdata_[0][i];
@@ -617,10 +615,10 @@ MLPtr<T> multiply(MLPtr<T> const& x, MLPtr<T> const& y)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector multiply
+TVector<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector multiply
 
 
-  MLPtr<T> z( new TML<T>( x->nrows_, 1 , T()) );
+  TVector<T> z(  x->nrows_ );
 
   if ( x->ncols_ != y.Dim() ) {
     throw( typename TML<T>::Incompatible( x->nrows_, x->ncols_, y.Dim(), 1,
@@ -634,11 +632,9 @@ MLPtr<T> multiply( MLPtr<T> const& x, TVector<T> const& y){ // right vector mult
       for(int i=0; i<x->ncols_; ++i) {
         sum += x->mdata_[row][i] * y[i];
       }
-      z->mdata_[row][0] = sum;
+      z[row] = sum;
   }
   return z;
-
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
