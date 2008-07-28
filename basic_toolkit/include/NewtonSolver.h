@@ -2,11 +2,9 @@
 **************************************************************************
 **************************************************************************
 ******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
+******  BASIC TOOLKIT
 ******                                    
-******  File:      NewtonSolver.cc
+******  File:      NewtonSolver.h
 ******                                                                
 ******  Copyright (c) Fermi Research Alliance LLC 
 ******                All Rights Reserved
