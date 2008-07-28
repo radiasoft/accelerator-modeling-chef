@@ -269,7 +269,7 @@ template TMatrix<double> operator-(         double const&, TMatrix<double> const
 template TMatrix<double> operator*(TMatrix<double> const&, TMatrix<double> const&); 
 template TMatrix<double> operator*(TMatrix<double> const&,          double const&);
 template TMatrix<double> operator*(         double const&, TMatrix<double> const&);
-template TMatrix<double> operator*(TMatrix<double> const&, TVector<double> const&);
+template TVector<double> operator*(TMatrix<double> const&, TVector<double> const&);
 
 
 template TMatrix<double> operator/<double>(const TMatrix<double>&, const double&);
@@ -318,7 +318,7 @@ template TMatrix<std::complex<double> > operator-(std::complex<double>  const&, 
 template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& ); 
 template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
 template TMatrix<std::complex<double> > operator*(std::complex<double> const& ,                TMatrix<std::complex<double> > const& );
-template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TVector<std::complex<double> > const&);
+template TVector<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TVector<std::complex<double> > const&);
 
 
 template TMatrix<std::complex<double> > operator/(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
@@ -369,7 +369,7 @@ template
 MLPtr<double> multiply<double>(  MLPtr<double> const&,  double const& );  
 
 template
-MLPtr<double> 
+TVector<double> 
 multiply<double>(MLPtr<double> const&, TVector<double> const&);
 
 
@@ -400,7 +400,7 @@ template MLPtr<std::complex<double> >
 multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
 
 template
-MLPtr<std::complex<double> > 
+TVector<std::complex<double> > 
 multiply<std::complex<double> >(MLPtr<std::complex<double> > const&, TVector<std::complex<double> > const&);
 
 
