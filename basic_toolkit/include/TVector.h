@@ -74,6 +74,9 @@ TVector<T> operator*( T          const&, TVector<T> const& );
 template<typename T>
 TVector<T> operator*( TVector<T> const&,       T const&);
 
+template<typename T>
+TMatrix<T> operator%( TVector<T> const&,       TVector<T> const&); // outer product 
+
 
 template<typename T>
 class DLLEXPORT TVector {

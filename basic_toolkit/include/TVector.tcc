@@ -31,17 +31,16 @@
 ******
 ******  Dec 2005   Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov
-******
-******  Mar 2006   
+******  - misc optimizations
+******  Mar 2006  ostiguy@fnal.gov 
 ******  - templated version
-******
 ******  Oct 2006   ostiguy@fnal.gov
 ******  - new implementation based on std::vector<>
-******
 ******  Mar 2007 ostiguy@fnal.gov 
 ******  - exposed iterator interface
-******                                                                        
-******                                                                
+******  Aug 2008 ostiguy@fnal.gov
+******  - added support for outer product operator
+******                                                               
 **************************************************************************
 *************************************************************************/
 #ifndef TVECTOR_TCC
@@ -607,5 +606,29 @@ typename TVector<T>::const_reverse_iterator TVector<T>::rend()  const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+TMatrix<T> operator%( TVector<T> const& lhs,       TVector<T> const& rhs) 
+{
+  //-----------------------
+  // vector outer product 
+  //-----------------------
+
+  typedef typename TVector<T>::const_iterator const_iterator; 
+
+  TMatrix<T> mtrx( lhs.Dim(), rhs.Dim() );
+ 
+  int i=-1, j=-1;
+
+  for ( const_iterator itl = lhs.begin(); itl != lhs.end(); ++itl ) {   
+    for ( const_iterator itr = rhs.begin(); itr != rhs.end(); ++itr ) {    
+      mtrx[++i][++j] = (*itl)*(*itr); 
+    }
+  }
+  
+  return mtrx;
+
+}
 
 #endif // TVECTOR_TCC
