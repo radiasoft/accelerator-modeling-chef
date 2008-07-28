@@ -18,8 +18,8 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******  Author:   Jean-Francois Ostiguy 
-******            ostiguy@fnal.gov                                      
 ******            Fermilab                                           
+******            ostiguy@fnal.gov                                      
 ******
 ******************************************************************************
 ******************************************************************************
@@ -37,6 +37,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/Particle.h>
 #include <beamline/Alignment.h>
 #include <beamline/beamline.h>
 #include <beamline/bmlnElmnt.h>
@@ -837,50 +838,31 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
   bool   bunched  = eval( string("BUNCHED"),    attributes, value) ? any_cast<bool>   (value): false;
   bool   radiate  = eval( string("RADIATE"),    attributes, value) ? any_cast<bool>   (value): false;
  
-  enum  particle_type { proton, antiproton, electron, positron, muon, antimuon } ptype;
-  double mass =   PH_NORM_mp; 
+  std::auto_ptr<Particle> p = std::auto_ptr<Particle>(new Proton(0.0));  
 
-  if ( iequals( pname, "PROTON"    )  ) { m_particle_type_name = pname; ptype = proton;        mass = PH_NORM_mp;  }  
-  if ( iequals( pname, "ANTIPROTON")  ) { m_particle_type_name = pname; ptype = antiproton;    mass = PH_NORM_mp;  }
-  if ( iequals( pname, "ELECTRON"  )  ) { m_particle_type_name = pname; ptype = electron;      mass = PH_NORM_me;  }
-  if ( iequals( pname, "POSITRON"  )  ) { m_particle_type_name = pname; ptype = positron;      mass = PH_NORM_me;  }
-  if ( iequals( pname, "MUON"      )  ) { m_particle_type_name = pname; ptype = muon;          mass = PH_NORM_mmu; }
-  if ( iequals( pname, "ANTIMUON"  )  ) { m_particle_type_name = pname; ptype = antimuon;      mass = PH_NORM_mmu; }
+  if ( iequals( pname, "PROTON"    )  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new Proton(0.0)    );  }  
+  if ( iequals( pname, "ANTIPROTON")  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new AntiProton(0.0));  }  
+  if ( iequals( pname, "ELECTRON"  )  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new Electron(0.0)  );  }  
+  if ( iequals( pname, "POSITRON"  )  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new Positron(0.0)  );  }  
+  if ( iequals( pname, "MUON"      )  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new Muon(0.0)      );  }  
+  if ( iequals( pname, "ANTIMUON"  )  ) { m_particle_type_name = pname;  p = std::auto_ptr<Particle>(new AntiMuon(0.0)  );  }  
 
-  double energy   = (energy_defined = eval( string("ENERGY"),     attributes, value) ) ? any_cast<double>(value) : mass; 
+  double energy   = (energy_defined = eval( string("ENERGY"),     attributes, value) ) ? any_cast<double>(value) : 0.0; 
 
   if ( !energy_defined ) {
-         energy   = (energy_defined = eval( string("E"),          attributes, value) ) ? any_cast<double>(value) : mass; 
+         energy   = (energy_defined = eval( string("E"),          attributes, value) ) ? any_cast<double>(value) : 0.0; 
   }
 
   double pc       = (pc_defined     = eval( string("PC"),         attributes, value) ) ? any_cast<double>(value) : 0.0; 
   double gamma    = (gamma_defined  = eval( string("GAMMA"),      attributes, value) ) ? any_cast<double>(value) : 1.0; 
 
-
-  double  ek = 0.0; 
-
-
-  if ( energy_defined ) {
-   ek        = energy - mass;
-   gamma     = energy/mass;
-   pc        = std::sqrt((energy*energy)-(mass*mass));
-  }
-  
-  if ( gamma_defined ) {
-     energy    = gamma*mass;
-     ek        = energy - mass;
-     pc        = std::sqrt((energy*energy)-(mass*mass));
-  }
-
-  if ( pc_defined    ) {
-    energy    = std::sqrt(pc*pc + mass*mass);
-    ek        = energy - mass;
-    gamma     = energy/mass;
-  }
+  if ( energy_defined ) { p->SetReferenceEnergy( energy );                        }
+  if ( gamma_defined )  { p->SetReferenceEnergy( p->ReferenceEnergy()*gamma );    } 
+  if ( pc_defined    )  { p->SetReferenceMomentum(pc);                            }
 
   
-   m_BRHO          = pc/PH_CNV_brho_to_p;
-   m_momentum      = pc;
+   m_BRHO          = p->ReferenceBRho();
+   m_momentum      = p->ReferenceMomentum();
 
    Expression exp; exp.insert(ExprData(m_BRHO));
 
