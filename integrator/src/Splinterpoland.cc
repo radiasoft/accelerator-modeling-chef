@@ -49,11 +49,11 @@ void Splinterpoland::_build()
   _A = new MatrixD( _n, _n );
 
   for( i = 0; i < _n; i++ ) {
-    (*_A)(i,i) = 2.0;
+    (*_A)[i][i] = 2.0;
   }
 
-  (*_A)(0,1)       = 1.0;   // arbitrary; should be < 2
-  (*_A)(_n-1,_n-2) = 1.0;   // arbitrary; should be < 2
+  (*_A)[0][1]       = 1.0;   // arbitrary; should be < 2
+  (*_A)[_n-1][_n-2] = 1.0;   // arbitrary; should be < 2
 
   dy = ( _nodes[1]._y - _nodes[0]._y );
   h  = ( _nodes[1]._x - _nodes[0]._x );
@@ -68,7 +68,7 @@ void Splinterpoland::_build()
     _wipeClean();
     exit(-12);
   }
-  (*_d)(0,0) =   6.0*( (dy/h) - _spl )/h;
+  (*_d)[0][0] =   6.0*( (dy/h) - _spl )/h;
 
   dy = ( _nodes[_n-1]._y - _nodes[_n-2]._y );
   h  = ( _nodes[_n-1]._x - _nodes[_n-2]._x );
@@ -83,7 +83,7 @@ void Splinterpoland::_build()
     _wipeClean();
     exit(-13);
   }
-  (*_d)(_n-1,0) = - 6.0*( (dy/h) - _spr )/h;
+  (*_d)[_n-1][0] = - 6.0*( (dy/h) - _spr )/h;
 
   for( i = 1; i <= _n-2; i++ ) {
     hl = _nodes[i]._x   - _nodes[i-1]._x;
@@ -105,10 +105,10 @@ void Splinterpoland::_build()
     y  = _nodes[i  ]._y;
     yr = _nodes[i+1]._y;
      
-    (*_A)(i,i-1) = hl/( hl + hr );
-    (*_A)(i,i+1) = hr/( hl + hr );
+    (*_A)[i][i-1] = hl/( hl + hr );
+    (*_A)[i][i+1] = hr/( hl + hr );
 
-    (*_d)(i,0) = 6.0*( (yr - y)/hr - (y - yl)/hl ) / ( hl + hr );
+    (*_d)[i][0] = 6.0*( (yr - y)/hr - (y - yl)/hl ) / ( hl + hr );
   }
   
 
@@ -148,8 +148,8 @@ double Splinterpoland::operator()( const double& x )
   yl = _nodes[im]._y;
   yr = _nodes[i]._y;
 
-  ml = (*_M)(im,0)*h*h/6.0;
-  mr = (*_M)(i,0)*h*h/6.0;
+  ml = (*_M)[im][0]*h*h/6.0;
+  mr = (*_M)[i] [0]*h*h/6.0;
 
   // double ret =   ml*q*q*q 
   //              + mr*p*p*p 
@@ -195,8 +195,8 @@ double Splinterpoland::derivative( const double& x )
   yl = _nodes[im]._y;
   yr = _nodes[i]._y;
 
-  ml = (*_M)(im,0);
-  mr = (*_M)(i,0);
+  ml = (*_M)[im][0];
+  mr = (*_M)[i ][0];
 
   ret  = mr*p*p - ml*q*q + 2.0*( yr - yl );
   ret /= (2.0*h);
