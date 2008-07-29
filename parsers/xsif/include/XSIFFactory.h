@@ -60,14 +60,14 @@ class XSIFFactory: public bmlfactory {
     bool    variableIsDefined(const char* varname) const;
     double   getVariableValue(const char* varname) const;   
 
-    LattFuncs getInitialValues()              const;   
+    CSLattFuncs getInitialValues()            const;   
 
     void dumpVariables() const;
    
 
   private:
  
-    LattFuncs         initial_values_;
+    CSLattFuncs       initial_values_;
     XsifParserDriver  driver_;
 
 };
