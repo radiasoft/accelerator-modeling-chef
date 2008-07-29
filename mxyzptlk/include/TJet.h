@@ -393,7 +393,6 @@ public:
 
   bool isNilpotent() const;
 
-  void peekAt()      const;
   void printCoeffs() const;
   int  termCount()   const;  // Returns number of monomial terms
 

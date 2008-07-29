@@ -240,7 +240,7 @@ public:
   TVector<T>  getReference() const;
 
   // Utilities ..
-  void        peekAt           () const;
+
   void        printCoeffs      () const;
   TJet<T> Norm             () const;
   TJetVector  Unit             () const;           // returns unit vector

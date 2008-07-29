@@ -725,21 +725,6 @@ bool TJetVector<T>::IsNilpotent() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJetVector<T>::peekAt() const
-{
-  (*pcout) << "\n\nBegin TJetVector<T>::peekAt() ......\n";
-  for ( int i = 0; i < comp_.size(); i++ ) {
-   (*pcout) << "TJetVector<T>::peekAt(): Component " << i << endl;
-    comp_[i].peekAt();
-  }
-  (*pcout) << "End TJetVector<T>::peekAt() ......\n" << endl;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 TJet<T> TJetVector<T>::Norm () const
 {
   TJet<T> x( myEnv_ );
