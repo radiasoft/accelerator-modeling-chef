@@ -39,7 +39,6 @@
 #include<vector>
 #include<basic_toolkit/GenericException.h>
 #include<physics_toolkit/BeamlineContext.h>
-#include<physics_toolkit/LBSage.h>
 #include<CHEFPlotMain.h>
 #include<LBFncData.h>
 #include<qwidget.h>
