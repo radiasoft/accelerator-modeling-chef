@@ -43,7 +43,6 @@
 #include <beamline/JetParticle.h>
 #include <beamline/LatticeFunctions.h>
 #include <physics_toolkit/BmlUtil.h>
-#include <physics_toolkit/FPSolver.h>
 #include <list>
 
 #include <physics_toolkit/Sage.h> // REMOVE needed for fpsolver.
