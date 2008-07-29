@@ -163,41 +163,10 @@ void BmlSelectionDialog::setBeamParameters( bmlfactory const& bf)
 
   pparticle_->SetReferenceMomentum(  bf.getMomentum() );
 
-  std::cout << " Momentum = " <<  bf.getMomentum() << std::endl;
-
   checkBoxMomentum->setChecked(true);
 
   refreshBeamParameters();
 
-
-#if 0
-  typedef  void (BmlSelectionDialog::* checkfptrtype)(bool);
-
-  bool defined = false;
-
-  struct varstructtype{
-    const       char* name;
-    int         type;
-    QCheckBox*  cb;
-  };
-
-
-  const varstructtype vars[] = { {"MOMENTUM",       MOMENTUM,     checkBoxMomentum}, 
-                                 {"TOTAL_ENERGY",   ET,           checkBoxET      },  
-                                 {"KINETIC_ENERGY", EK,           checkBoxEK      },  
-                                 {"GAMMA",          GAMMA,        checkBoxGamma   }, 
-                                 {"BRHRO",          BRHO,         checkBoxBrho    },  
-                                 {0,                0,            0               }
-                               };
-
-  varstructtype const* vp = &vars[0];
-
-
-  vp[1].cb->setChecked(true);
-  defined = true; 
-  
-#endif
-  
 
 }
 
