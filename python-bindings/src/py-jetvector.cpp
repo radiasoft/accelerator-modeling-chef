@@ -46,7 +46,6 @@ void SetComponentC( JetCVector& v, int i, JetC const& value)
 
 void       (JetVector::*Rotate_1_ptr   )(JetVector&, double     )  const  =  &JetVector::Rotate;
 void       (JetVector::*Rotate_2_ptr   )(JetVector&, const Jet& )  const  =  &JetVector::Rotate;
-void       (JetVector::*peekAt_ptr     )()                         const  =  &JetVector::peekAt; 
 void       (JetVector::*printCoeffs_ptr)()                         const  =  &JetVector::printCoeffs;
 Jet        (JetVector::*Norm_ptr       )()                         const  =  &JetVector::Norm; 
 JetVector  (JetVector::*Unit_ptr       )()                         const  =  &JetVector::Unit;
@@ -54,7 +53,6 @@ JetVector  (JetVector::*filter_1_ptr   )(int, int                ) const   = &Je
 
 void       (JetCVector::*RotateC_1_ptr    )(JetCVector&, double       ) const  = &JetCVector::Rotate;
 void       (JetCVector::*RotateC_2_ptr    )(JetCVector&, const JetC&  ) const  = &JetCVector::Rotate;
-void       (JetCVector::*peekAtC_ptr      )()                           const  = &JetCVector::peekAt; 
 void       (JetCVector::*printCoeffsC_ptr )()                           const  = &JetCVector::printCoeffs;
 JetC       (JetCVector::*NormC_ptr        )()                           const  = &JetCVector::Norm; 
 JetCVector (JetCVector::*UnitC_ptr        )()                           const  = &JetCVector::Unit;
@@ -78,7 +76,6 @@ void wrap_mxyzptlk_jetvector() {
   JetVector_class_.def( "Weight",        &JetVector::Weight       );
   JetVector_class_.def( "SetComponent",  &SetComponent            );
   JetVector_class_.def( "filter",        filter_1_ptr             );
-  JetVector_class_.def( "peekAt",        peekAt_ptr               ); 
   JetVector_class_.def( "printCoeffs",   printCoeffs_ptr          );
   JetVector_class_.def( "Norm",          Norm_ptr                 );
   JetVector_class_.def( "Unit",          Unit_ptr                 );
@@ -135,7 +132,6 @@ void wrap_mxyzptlk_jetvectorc() {
   JetCVector_class_.def( "Weight",        &JetCVector::Weight       );
   JetCVector_class_.def( "SetComponent",  &SetComponentC            );
   JetCVector_class_.def( "filter",        filterC_1_ptr             );
-  JetCVector_class_.def( "peekAt",        peekAtC_ptr               ); 
   JetCVector_class_.def( "printCoeffs",   printCoeffsC_ptr          );
   JetCVector_class_.def( "Norm",          NormC_ptr                 );
   JetCVector_class_.def( "Unit",          UnitC_ptr                 );
