@@ -641,8 +641,3 @@
 
 
     };
-
-
-
-#endif // BEAMLINE_ITERATORS_H
-#endif // BEAMLINE_H
