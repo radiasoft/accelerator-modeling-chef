@@ -73,6 +73,8 @@
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
 
+#include <boost/function.hpp>
+
 using namespace std;
 using std::ostringstream;
 
@@ -244,6 +246,8 @@ template TVector<double>::TVector( TVector<double>::iterator,
 
 //template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
 //                                         TVector<std::complex<double> >::iterator);
+
+template TMatrix<double> operator%( TVector<double> const&,       TVector<double> const&); // outer product 
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
@@ -473,13 +477,35 @@ template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
 
 
-
 // ----------------------------------------------------------------------------
 // Misc Instantiations related to STL
 // ----------------------------------------------------------------------------
 
 template class
 std::list<int>;
+
+// ----------------------------------------------------------------------------
+// Instantiations related to NewtonSolver, QuasiNewtonSolver 
+// ----------------------------------------------------------------------------
+
+template 
+class boost::function<Vector  ( Vector const&) >;
+
+template 
+class boost::function<double  ( Vector const&) >;
+
+template 
+class boost::function<Matrix  ( Vector const&) >; 
+
+
+template 
+boost::function<double( TVector<double> const&) > const* 
+boost::addressof( boost::function<double(TVector<double> const& ) > const& );
+
+template
+boost::function<TVector<double>(TVector<double> const&) > const* 
+boost::addressof( boost::function< TVector<double>(TVector<double> const& )> const& );
+
 
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
