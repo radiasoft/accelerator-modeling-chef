@@ -39,9 +39,8 @@
 ******  
 ******  Sept 2005   ostiguy@fnal.gov
 ******
-****** - new code based on a single template parameter
-******   rather than two. Mixed mode handled
-******   using implicit conversion.
+****** - new code based on a single template parameter rather than 
+******   two. Mixed mode handled using implicit conversion.
 ****** - centralized environment management
 ******
 ******  Nov 2005     ostiguy@fnal.gov                                           
@@ -61,10 +60,10 @@
 ****** Mar 2007   ostiguy@fnal.gov
 ******
 ****** - Introduced new compact monomial indexing scheme based on monomial 
-******   ordering to replace previous scheme based explicitly on monomial exponents.
+******   ordering to replace previous scheme explicitly based on monomial exponents.
 ****** - monomial multiplication now handled via a lookup-table.
 ****** - added STL compatible monomial term iterators   
-****** - eliminated dependence on class Cascade     
+****** - eliminated dependence on (obsolete) class Cascade     
 ******      
 **************************************************************************
 *************************************************************************/
@@ -533,6 +532,13 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
       }
    }
 
+  //-----------------------------------------------------------------------------------------
+  // NOTE:  the call to offsetIndex(exponents) involves a reverse lexicographic search 
+  //        within a pre-sorted table. 
+  //        This operation is somewhat slow, and dominates the time needed to fill the 
+  //        multiplication table. The latter needs to be filled once, when the 
+  //        environment is set up.      
+  //-----------------------------------------------------------------------------------------
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
