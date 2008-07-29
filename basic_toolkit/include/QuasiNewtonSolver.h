@@ -33,6 +33,7 @@
 #include <boost/function.hpp>
 #include <basic_toolkit/Matrix.h>
 #include <basic_toolkit/VectorD.h>
+#include <basic_toolkit/LineSearch.h>
 
 class QuasiNewtonSolver: boost::noncopyable {
 
@@ -48,9 +49,13 @@ class QuasiNewtonSolver: boost::noncopyable {
  
  private:
 
+  bool converged() const;  
+  
   boost::function<double( Vector const& ) >  f_;             // objective function    
   boost::function<Vector( Vector const& ) >  gradf_;            
   boost::function<double( Vector const& ) >  norm_;          // a function object to compute the vector norm  
+  Matrix                                     H_;             // inverse Hessian approximate  
+  LineSearch                                 linesearch_;     
 
 }; 
 
