@@ -1122,19 +1122,9 @@ typename TJet<T>::const_reverse_iterator  TJet<T>::rend()   const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJet<T>::peekAt() const 
-{
- jl_->peekAt( );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 void TJet<T>::printCoeffs() const 
 {
-
  jl_->printCoeffs();
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

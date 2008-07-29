@@ -68,6 +68,9 @@
 ******  - more optimizations in pow(), sqrt(), sin() and cos() to 
 ******    eliminate superfluous deep copies.   
 ******
+******  Aug 2008 ostiguy@fnal
+******  - added new code for in-place add/subtract. 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -686,42 +689,6 @@ void TJL<T>::writeToFile( std::ofstream& outStr ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::peekAt() const {
-
- (*pcout) << "\nCount  = "
-      << getCount()
-      << " Weight = "
-      << weight_
-      << " Max accurate weight = "
-      << accuWgt_
-      << std::endl;
- (*pcout) << "Reference point: ";
-
- for( int i= 0; i < getEnv()->numVar(); ++i) 
-    (*pcout) << std::setprecision(12) << getEnv()->getRefPoint()[i] << "  ";
-
- (*pcout) << std::endl;
-
- for ( TJLterm<T> const* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) { 
-
-   (*pcout) << "Weight: "
-        << p->weight_
-        << "   Value: "
-        << p -> value_
-        << " || ";
-   (*pcout) << "Address: "
-        << (int) p            << "  "
-        << std::endl;
-   (*pcout) << "Index:  " << ( myEnv_->exponents(p->offset_) ) << std::endl;
-
- }
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
 TJL<T>& TJL<T>::Negate( ) {
 
  const_iterator pend = end();
@@ -730,7 +697,6 @@ TJL<T>& TJL<T>::Negate( ) {
  }
 
  return *this;
-
 }
 
 
@@ -1523,9 +1489,9 @@ template<typename T>
 JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon ) 
 { 
  
+ JLPtr<T> z( epsilon->clone() );               //    z = epsilon -- deep copy 
  JLPtr<T> epsq = epsilon*epsilon;
  epsq->Negate();                               //   epsq = -epsilon*epsilon 
- JLPtr<T> z( epsilon->clone() );               //    z = epsilon -- deep copy 
 
 
 
@@ -1541,15 +1507,17 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
     term *= epsq;                                // term->multiply(epsq);
     double n1 = ++n;
     double n2 = ++n;
-    term +=  T(1.0/(n1*n2));                      // term = ( ( term*epsq ) / ++n ) / ++n;
-    ++nsteps;
-  }
- 
- if ( nsteps > mx_maxiter_ ) (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsSin " << std::endl 
-                                       << "*** WARNING ***  Results may not be accurate."                         << std::endl;
- z->accuWgt_ = epsilon->accuWgt_;
+    term *=  T(1.0/(n1*n2));                      // term = ( ( term*epsq ) / ++n ) / ++n;
 
- return z;
+    ++nsteps;
+
+    if ( nsteps > mx_maxiter_ ) { (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsSin " << std::endl 
+                                            << "*** WARNING ***  Results may not be accurate."                         << std::endl;
+                                   break;
+    }
+  } 
+  z->accuWgt_ = epsilon->accuWgt_;
+  return z;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1575,16 +1543,16 @@ JLPtr<T> TJL<T>::epsCos( JLPtr<T> const& epsilon )
     z     = z +term;                                // z += term;
     term *= epsq;                                   // term->multiply(epsq);
     double n1  = ++n; 
-    double n2 = ++n;
+    double n2  = ++n;
     term *= 1.0/static_cast<T>(n1*n2);              // term = ( ( term*epsq ) / ++n ) / ++n;  
     ++nsteps;
-  }
+    if ( nsteps > mx_maxiter_ )  (*pcerr) << "*** WARNING **** More than " << mx_maxiter_<< "iterations in epsCos " << std::endl  
+                                          << "*** WARNING **** Results may not be accurate." << std::endl; 
+ }
  
  z->accuWgt_ = epsilon->accuWgt_;
 
- if ( nsteps > mx_maxiter_ )  (*pcerr) << "*** WARNING **** More than " << mx_maxiter_<< "iterations in epsCos " << std::endl  
-                                       << "*** WARNING **** Results may not be accurate." << std::endl; 
-
+ 
 
  return z;
 }
@@ -2258,28 +2226,141 @@ JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  )
   return z;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+template <void T_function(T&, T const&)>
+JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  )
+
+{
+
+// Check for consistency and set reference point of the sum.
+
+  if( x->myEnv_ != y->myEnv_ ) {
+
+   throw( GenericException( __FILE__, __LINE__, 
+           "TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y)"
+           "Inconsistent environments." ) );
+  }
+
+
+ //  -----------------------------------------------------------------
+ //  Loop over the terms and accumulate monomials in the scratch pad.
+ //  Use direct sequential access to access terms since order is
+ //  irrelevant in this context.
+ //  ------------------------------------------------------------------ 
+ 
+
+  TJLterm<T> * const       xstart    = x->jltermStore_; 
+  TJLterm<T> * const       xend      = x->jltermStoreCurrentPtr_; 
+  TJLterm<T> const * const ystart    = y->jltermStore_;
+  TJLterm<T> const * const yend      = y->jltermStoreCurrentPtr_;
+
+  int nlinear = x->myEnv_->numVar() + 1;  // the number of linear terms always present.
+ 
+
+  TJLterm<T> const* py = ystart;
+  TJLterm<T>      * px = xstart;
+
+ int indy = 0;
+ std::vector<TJLterm<T> >& tjlmml =  x->myEnv_->TJLmml(); 
+ 
+ //------------------------
+ // transfer to scratchpad
+ //------------------------
+
+ for (TJLterm<T> const* p = xstart; p < xend; ++p) { 
+    tjlmml[p->offset_].value_ = p->value_; 	 
+ } 	 
+ 
+
+ for (int i=0; i<nlinear; ++i, ++px, ++py ) {
+    T_function( tjlmml[px->offset_].value_, py->value_);
+ }
+
+ 
+ while(  (px < xend) && (py < yend)  ) {
+
+     if ( px->offset_  ==  py->offset_) { 
+          T_function(  tjlmml[px->offset_].value_, py->value_);  
+          ++px;  ++py;
+          continue; 
+     }
+            
+     if ( px->offset_  >   py->offset_)  { 
+          T_function(  tjlmml[py->offset_].value_, py->value_);    
+          ++py; 
+          continue; 
+     }   
+
+     if ( px->offset_  <   py->offset_) {
+         ++px;
+         continue; 
+     }
+  }   
+
+  while  ( py<yend ) 
+  {
+       T_function(  tjlmml[py->offset_].value_, py->value_); 
+       ++py; 
+  }   
+
+  int accuWgt = x->accuWgt_;
+  int weight  = x->weight_;
+  int lowWgt  = x->lowWgt_;
+ 
+  x->transferFromScratchPad();   
+
+  x->accuWgt_ = std::min(accuWgt,     y->accuWgt_ );
+  x->weight_  = std::max(weight,      y->weight_  );
+  x->lowWgt_  = std::min(lowWgt,      y->lowWgt_  );   
+
+  return x;
+}
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  ){  
+JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  )
+{  
+  // JLPtr<T> z = x->clone();
+  // return TJL<T>::template inplace_add<TJL<T>::op_add >(z,y); 
 
   return TJL<T>::template add<TJL<T>::op_add >(x,y); 
-
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  ){
-  
- return   TJL<T>::template add<TJL<T>::op_sub>(x,y); 
+JLPtr<T>&   operator+=(JLPtr<T>& x, JLPtr<T> const& y  )
+{  
+  return TJL<T>::template inplace_add<TJL<T>::op_add >(x,y); 
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+JLPtr<T>   operator-(JLPtr<T> const & x,  JLPtr<T> const& y  )
+{
+  // JLPtr<T> z = x->clone();
+  // return   TJL<T>::template inplace_add<TJL<T>::op_sub>(z,y); 
+  return   TJL<T>::template add<TJL<T>::op_sub>(x,y); 
 }
   
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+JLPtr<T>&   operator-=(JLPtr<T>& x, JLPtr<T> const& y  )
+{  
+  return TJL<T>::template inplace_add<TJL<T>::op_sub >(x,y); 
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2343,8 +2424,6 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
  // Is the max accurate weight == 1 ?  If so, no sparsity. perform the multiplication directly 
  //-------------------------------------------------------------------------------
 
-#if 0 
-========================================
  if ( pje->maxWeight() == 1 ) {
 
     T result;
@@ -2372,7 +2451,6 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 
    return z;
  }
- #endif
  
  //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.
@@ -2461,8 +2539,6 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
      x->accuWgt_ = testWeight;
 
 
-#if 0 
-====================================================================================
  // -------------------------------------------------
  // Is this first order ?
  // -------------------------------------------------
@@ -2486,7 +2562,7 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
      result  = ( std_x * py->value_ ) + ( std_y * px->value_ ); 
 
-     if( std::abs( result ) < MX_ABS_SMALL )   result = T();
+     if( std::abs( result ) < TJL<T>::mx_small_ )   result = T();
 
      px->value_ = result;
     
@@ -2495,8 +2571,6 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
    return x;
  }
-==========================================================================================
-#endif
 
  //  -----------------------------------------------------------------
  //  Loop over the terms and accumulate monomials in the scrach pad.
@@ -2572,7 +2646,6 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  }
  
 
-#if  0
  // ------------------------------------------
  // Is this a first order calculation ?
  // ------------------------------------------
@@ -2602,7 +2675,6 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
    return z;
 
  }
-#endif 
 
  //-------------------------------------------------------------------
  // Initialize local variables and set the environment of the answer.

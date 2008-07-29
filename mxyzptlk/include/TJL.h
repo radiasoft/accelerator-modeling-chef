@@ -139,8 +139,8 @@ JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  );
 template <typename T>
 JLPtr<T>& operator+=( JLPtr<T>&, T const& ); 
 
-// template <typename T>
-// NOT IMPLEMENTED JLPtr<T>& operator+=( JLPtr<T>&, JLPtr<T>&  );
+template <typename T>
+JLPtr<T>& operator+=( JLPtr<T>&, JLPtr<T> const&  );
 
 //..............................................................................................................................
 
@@ -153,8 +153,8 @@ JLPtr<T>   operator-(JLPtr<T> const &x);  // unary minus
 template <typename T>
 JLPtr<T>& operator-=( JLPtr<T>&, T const& ); 
 
-// template <typename T>
-// NOT IMPLEMENTED JLPtr<T>& operator-=( JLPtr<T>&, JLPtr<T>&  );
+template <typename T>
+JLPtr<T>& operator-=( JLPtr<T>&, JLPtr<T> const&  );
 
 // ..........................................................................
 
@@ -243,8 +243,6 @@ friend class TJL;
   double    maxAbs() const;                
 
   void printCoeffs() const;               // prints term coefficients 
-  void peekAt() const;                     
-
 
   TJLterm<T>  firstTerm() const;    
                                           // Returns a TJLterm<T> equivalent 
@@ -274,8 +272,8 @@ friend class TJL;
   friend JLPtr<T>& 
          operator+=<>( JLPtr<T>&, T const& ); 
 
-  //friend JLPtr<T>& 
-  // NOT IMPLEMENTED       operator+=<>( JLPtr<T>&, JLPtr<T>&  );
+  friend JLPtr<T>& 
+         operator+=<>( JLPtr<T>&, JLPtr<T> const&  );
 
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x );  
@@ -286,8 +284,8 @@ friend class TJL;
   friend JLPtr<T>& 
          operator-=<>( JLPtr<T>&, T const& ); 
 
-  // friend JLPtr<T>& 
-  // NOT IMPLEMENTED      operator-=<>( JLPtr<T>&, JLPtr<T>&  );
+  friend JLPtr<T>& 
+         operator-=<>( JLPtr<T>&, JLPtr<T> const&  );
 
   friend JLPtr<T>  
          operator*<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
@@ -524,8 +522,10 @@ friend class TJL;
   static void op_sub( T& x, T const& y) { x -= y; } 
 
   template< void T_function( T&, T const&) >
-  static JLPtr<T>          add(  JLPtr<T> const&, JLPtr<T> const&); 
+  static JLPtr<T>           add(  JLPtr<T> const&, JLPtr<T> const&); 
 
+  template< void T_function( T&, T const&) >
+  static JLPtr<T>&  inplace_add(JLPtr<T>& x, JLPtr<T> const& y  );
 
 
 };
