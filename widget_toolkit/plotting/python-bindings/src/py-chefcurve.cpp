@@ -1,5 +1,8 @@
-/***************************************************************************                                                               
-******  Boost.python Python bindings for mxyzpltk/beamline libraries 
+/***************************************************************************
+****************************************************************************
+****************************************************************************
+******  
+******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
 ******  File:      py-chefcurve.cpp
@@ -15,18 +18,30 @@
 ******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
-******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
+******                                                                
+******             Fermi National Laboratory
+******                    Batavia, IL
 ******
+**************************************************************************** 
+**************************************************************************** 
 ****************************************************************************/
+
 #include <iostream>
 #include <boost/python.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/tuple.hpp>
 #include <qnamespace.h>
+
+#if 1
 #include <numarray/numarray.h>
 #include <numarray/libnumarray.h>
+#endif
+
+#if 0
+#include "/usr/lib/python2.5/site-packages/numpy/numarray/numpy/libnumarray.h"
+#endif
+
 #include <string>
 #include <CurveData.h>
 #include "py-exception.h"
@@ -35,37 +50,18 @@ using namespace boost::python;
 
 namespace {
 
-class CurveDataWrap: public CurveData 
+static CurveData* makeCurveData ( numeric::array& x, numeric::array& y, const char* name )
 {
 
-public:
+ unsigned int size = std::min( x.nelements(), y.nelements() );
+  
+ CurveData* cd = new CurveData( size, name );
 
-   CurveDataWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name);
-   CurveDataWrap(PyObject* self,  CurveData const&);
-
-   void setData( numeric::array& x, numeric::array& y, std::string label);
-
-
-private:
-
-    PyObject* self_; 
-};
-   
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
- CurveDataWrap::CurveDataWrap(PyObject* self,  CurveData const& data)
-  : CurveData(data), self_(self) 
- {}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-CurveDataWrap::CurveDataWrap(PyObject* self,  numeric::array& x, numeric::array& y, const char* name)
-   :   CurveData ( reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( x.ptr())->data ), 
-                   reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( y.ptr())->data ), 
-                   std::min( x.nelements(), y.nelements() ), name ), self_(self)
-{
+ double* xa = reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( x.ptr())->data ); 
+ double* ya = reinterpret_cast<double*>( reinterpret_cast<PyArrayObject*>( y.ptr())->data ); 
+  
+ CurveData::iterator it = cd->begin();
+ for (unsigned int i=0; i< cd->size(); ++i ) { *(it++) = CurveData::Point( *(xa++), *(ya++) ); }  
 
 #if 0 
   std::cout << "x.typecode()  = " << x.typecode()  << std::endl;
@@ -79,28 +75,7 @@ CurveDataWrap::CurveDataWrap(PyObject* self,  numeric::array& x, numeric::array&
   if ( std::string( extract<const char*>( ( x.type()).attr("name") ) ) != std::string( "Float64") ) 
     throw PyBindingsException("Plot data array must be of type Float64");  
 
- }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  CurveDataWrap::setData( numeric::array& x,   numeric::array& y,  std::string label)
-{
-
-  if ( !  x.is_c_array() ) 
-    throw PyBindingsException("Plot underlying data array must be a c-array.");  
-
-  if ( std::string( extract<const char*>( ( x.type()).attr("name") ) ) != std::string( "Float64") ) 
-    throw PyBindingsException("Plot data array must be of type Float64.");  
-
-
-  PyArrayObject* x_paobj = reinterpret_cast<PyArrayObject*>( x.ptr() );
-  PyArrayObject* y_paobj = reinterpret_cast<PyArrayObject*>( y.ptr() );
-
-  double *xdata = reinterpret_cast<double*>( x_paobj ->data );
-  double *ydata = reinterpret_cast<double*>( y_paobj ->data );
-
-  CurveData( xdata, ydata, std::min( x.nelements(), y.nelements() ) ,  label);  
+ return cd;
 
 }
 
@@ -113,9 +88,12 @@ void  CurveDataWrap::setData( numeric::array& x,   numeric::array& y,  std::stri
 void  wrap_CurveData() 
 {
 
-  class_ <CurveData, CurveDataWrap >("CurveData", init<numeric::array&, numeric::array&, const char*>() );
+  class_ <CurveData>("CurveData", no_init )
+  .def("__init__", make_constructor( makeCurveData ));
 
 }
+
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
