@@ -85,7 +85,6 @@ template<typename T> MLPtr<T> divide (MLPtr<T> const& x,   T        const& y);
 template<typename T> MLPtr<T> divide (T        const& y,   MLPtr<T> const& x  ); 
 template<typename T> MLPtr<T> divide (MLPtr<T> const& y,   MLPtr<T> const& x);
 
-
 MLPtr<double> real_part( MLPtr<std::complex<double> > const& x );
 MLPtr<double> imag_part( MLPtr<std::complex<double> > const& x );
 
@@ -232,6 +231,12 @@ public:
   T& operator()(int const& i); 
   T  operator()(int const& i) const; 
 
+  TML<T>& operator+=( MLPtr<T> const&);
+  TML<T>& operator-=( MLPtr<T> const&);
+
+  TML<T>& operator+=( T const&);
+  TML<T>& operator-=( T const&);
+
   friend MLPtr<T> add<T>(MLPtr<T> const& x, MLPtr<T> const& y); 
   friend MLPtr<T> add<T>(MLPtr<T> const& x, const T& y);
  
@@ -256,9 +261,7 @@ public:
   friend std::ostream& operator<< <T>(std::ostream& os, const TML<T>& x);
 
   TML<T>& operator=(TML<T> const&);
-  TML<T>& operator+=(T const&);
-  TML<T>& operator-=(T const&);
-
+ 
   bool operator==(TML<T> const&);
   bool operator==(T      const&);
 

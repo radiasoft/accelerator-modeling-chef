@@ -203,6 +203,9 @@ public:
   T&        operator()(int const& row);
   T const&  operator()(int const& row) const;
 
+  TMatrix& operator+=( TMatrix<T> const&);
+  TMatrix& operator-=( TMatrix<T> const&);
+
   TMatrix& operator+=( T const&);
   TMatrix& operator-=( T const&);
 

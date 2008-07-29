@@ -58,7 +58,10 @@
 ****** - eliminated unsafe calls to memcpy
 ****** - fixed memory leak in destructor
 ****** - fixed bug in copy constructor and operator=  
-******  
+****** 
+****** Aug 2008 ostiguy@fnal
+****** - added implmenetations for operator+=() and operator-=() 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -760,27 +763,9 @@ template<typename T>
 void TML<T>::switch_rows(int row1, int row2) 
 {
 
-  // mdata_ is an array of **T;  data is stored row-wise.
+  // mdata_ is an array of T**;  data is stored row-wise.
 
   std::swap( mdata_[row1], mdata_[row2] ); 
-
-#if 0 
-
-  MLPtr<T> temp( new TML<T>(1,ncols_, T()) );
-
-  for(int col=0; col < ncols_; ++col) {
-    // temporarily store row 1:
-    temp->mdata_[0][col] = mdata_[row1][col];
-  }
-
-  for(int col=0; col < ncols_; ++col) {
-    mdata_[row1][col] = mdata_[row2][col];    // move row2 to row1
-  }
-
-  for(int col=0; col < ncols_; ++col) {
-    mdata_[row2][col] = temp->mdata_[0][col]; // move temp to row2
-  }
-#endif
 
 }
 
@@ -1098,10 +1083,40 @@ TML<T>& TML<T>::operator+=( const T& x)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+TML<T>&  TML<T>::operator+=( MLPtr<T> const& rhs)
+{
+
+  T**               lrowptr; 
+  T const * const * rrowptr; 
+
+  for ( lrowptr = &mdata_[0], rrowptr = &(rhs->mdata_[0]); lrowptr != &mdata_[0] + nrows_; ++lrowptr, ++rrowptr ) {
+    std::transform( *lrowptr, (*lrowptr)+ncols_, *rrowptr, *lrowptr, std::plus<T>());
+  }
+  return *this;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TML<T>&  TML<T>::operator-=( MLPtr<T> const& rhs)
+{
+  T**               lrowptr;
+  T const * const * rrowptr;
+
+  for ( lrowptr = &mdata_[0], rrowptr = &(rhs->mdata_[0]); lrowptr != &mdata_[0] + nrows_; ++lrowptr, ++rrowptr ) {
+    std::transform( *lrowptr, (*lrowptr)+ncols_, *rrowptr, *lrowptr, std::minus<T>());
+  }
+  return *this;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 template<typename T>
-bool operator==(const TML<T>& x, const TML<T>& y) 
+bool operator==( TML<T> const& x, TML<T> const& y) 
 {
   if((x->nrows_ != y->nrows_) || (x->ncols_ != y->ncols_)) { return false; }
   for(int i=0;  i< x->nrows_; ++i) {
