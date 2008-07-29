@@ -8,7 +8,6 @@
 ******
 ******  File:      BmlUtil.cc
 ******             Source code for Beamline utility methods.
-******  Version:   2.0
 ******
 ******  Copyright (c) 2003  Universities Research Association, Inc.
 ******                All Rights Reserved
@@ -102,55 +101,6 @@ void BmlUtil::setOutputStream( ostream& w )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool BmlUtil::isKnown( bmlnElmnt const& x )
-{
-  if ( typeid(x) == typeid(drift)         )   { return true; }
-  if ( typeid(x) == typeid(marker)        )   { return true; }
-  if ( typeid(x) == typeid(sbend)         )   { return true; }
-  if ( typeid(x) == typeid(rbend)         )   { return true; }
-  if ( typeid(x) == typeid(thinQuad)      )   { return true; }
-  if ( typeid(x) == typeid(quadrupole)    )   { return true; }
-  if ( typeid(x) == typeid(Slot)          )   { return true; }
-  if ( typeid(x) == typeid(srot)          )   { return true; }
-  if ( typeid(x) == typeid(BBLens)        )   { return true; }
-  if ( typeid(x) == typeid(beamline)      )   { return true; }
-  if ( typeid(x) == typeid(CF_rbend)      )   { return true; }
-  if ( typeid(x) == typeid(CF_sbend)      )   { return true; }
-  if ( typeid(x) == typeid(combinedFunction) ){ return true; }
-  if ( typeid(x) == typeid(thinDecapole)  )   { return true; }
-  //if ( typeid(x) == typeid(ElSeparator)   )   { return true; }
-  if ( typeid(x) == typeid(hkick)         )   { return true; }
-  if ( typeid(x) == typeid(vkick)         )   { return true; }
-  if ( typeid(x) == typeid(kick)          )   { return true; }
-  if ( typeid(x) == typeid(thinLamb)      )   { return true; }
-  if ( typeid(x) == typeid(monitor)       )   { return true; }
-  if ( typeid(x) == typeid(hmonitor)      )   { return true; }
-  if ( typeid(x) == typeid(vmonitor)      )   { return true; }
-  if ( typeid(x) == typeid(octupole)      )   { return true; }
-  if ( typeid(x) == typeid(thinOctupole)  )   { return true; }
-  if ( typeid(x) == typeid(Pinger)        )   { return true; }
-  if ( typeid(x) == typeid(HPinger)       )   { return true; }
-  if ( typeid(x) == typeid(VPinger)       )   { return true; }
-  if ( typeid(x) == typeid(rfcavity)      )   { return true; }
-  if ( typeid(x) == typeid(LinacCavity)   )   { return true; }
-  if ( typeid(x) == typeid(thinrfcavity)  )   { return true; }
-  if ( typeid(x) == typeid(sector)        )   { return true; }
-  if ( typeid(x) == typeid(thinSeptum)    )   { return true; }
-  if ( typeid(x) == typeid(sextupole)     )   { return true; }
-  if ( typeid(x) == typeid(thinSextupole) )   { return true; }
-  if ( typeid(x) == typeid(thin12pole)    )   { return true; }
-  if ( typeid(x) == typeid(thin14pole)    )   { return true; }
-  if ( typeid(x) == typeid(thin16pole)    )   { return true; }
-  if ( typeid(x) == typeid(thin18pole)    )   { return true; }
-  if ( typeid(x) == typeid(thinMultipole) )   { return true; }
-
-  return false;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void BmlUtil::writeAsTransport( Mapping const& map )
 {
 
@@ -187,15 +137,6 @@ void BmlUtil::writeAsTransport( Mapping const& map )
 
 bool BmlUtil::isSpace( bmlnElmnt const&  x )
 {
-  if( !isKnown( x ) ) { 
-    ostringstream uic;
-    uic << "The type " << ( x.Type()) << " is not recognized.";
-    throw( GenericException( __FILE__, __LINE__,
-           "bool BmlUtil::isSpace( const bmlnElmnt* x )",
-           uic.str().c_str() ) );
-    
-  }
-
   return (    ( 0 == strcasecmp( "drift",  x.Type() ) )
            || ( 0 == strcasecmp( "marker", x.Type() ) ) 
            || ( 0 == strcasecmp( "Slot",   x.Type() ) )

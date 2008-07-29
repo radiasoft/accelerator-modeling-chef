@@ -134,11 +134,6 @@ class BmlUtil {
   // Returns true if the argument refers to an element
   //   which acts like empty space: e.g. drifts, Slots, markers.
 
-
-  static bool isKnown( bmlnElmnt const& );
-  // Returns true if the argument's type is recognized.
-
-
   // Message streams
   static void setErrorStream( std::ostream& );
   static void setOutputStream( std::ostream& );
