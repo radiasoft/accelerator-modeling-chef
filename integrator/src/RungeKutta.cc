@@ -119,7 +119,7 @@ Vector RungeKutta::rk4ASC( ODE& yPrime, Vector yInit, double t0, double t1,
         yTemp2 = rk4OneStep(yPrime, yTemp2, t+halfStepSize, halfStepSize);
         epsTemp = 0;
         for (i=0; i<dim; i++) {
-          epsTemp += fabs(yTemp1(i)-yTemp2(i));
+          epsTemp += fabs(yTemp1[i]-yTemp2[i]);
         }
         if (epsTemp>=eps) stepSize = halfStepSize;
       }
