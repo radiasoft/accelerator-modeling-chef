@@ -155,7 +155,7 @@ sector::sector( std::string const& n, Mapping const& m, double const& l, char mp
 {
  propagator_ = PropagatorPtr( new Propagator() );
  propagator_->setup(*this);
- if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); } 
+ if( mpt == 0 ) { mapMatrix_ = myMap_.jacobian(); } 
 }
 
 
@@ -178,7 +178,7 @@ sector::sector( std::string const& n, double const& l, char mpt )
  propagator_ = PropagatorPtr( new Propagator() );
  propagator_->setup(*this);
 
- if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); } 
+ if( mpt == 0 ) { mapMatrix_ = myMap_.jacobian(); } 
 }
 
 
@@ -255,7 +255,7 @@ Mapping const& sector::getMap() const
 
 Matrix sector::getMatrix() const
 {
-  return ( mapType_ == 0) ? mapMatrix_ : myMap_.Jacobian();
+  return ( mapType_ == 0) ? mapMatrix_ : myMap_.jacobian();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

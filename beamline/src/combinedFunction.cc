@@ -382,7 +382,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 
   double f, m, z;
 
-  m = ( jetparticle.State().Jacobian() )[x][x];
+  m = ( jetparticle.State().jacobian() )[x][x];
   m -= 1.0;
   if( std::abs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 

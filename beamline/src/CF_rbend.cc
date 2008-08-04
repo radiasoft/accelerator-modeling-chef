@@ -670,7 +670,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
   propagate(jetparticle);
 
-  double m = jetstate.Jacobian()[xp][x];
+  double m = jetstate.jacobian()[xp][x];
   if( fabs(m) < 1.0e-12 ) {
      throw( GenericException( __FILE__, __LINE__, 
            "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
@@ -703,7 +703,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
     jetparticle.setState(instate); 
     propagate( jetparticle );
  
-    m =  (jetstate.Jacobian())[xp][x];
+    m =  (jetstate.jacobian())[xp][x];
     if( fabs(m) < 1.0e-12 ) {
       throw( GenericException( __FILE__, __LINE__, 
              "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
