@@ -40,7 +40,7 @@
 ******  
 ****** - refactored code to usea single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
+******   implicit conversions.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
 ****** - implementation details completely moved to TJL   
@@ -57,6 +57,8 @@
 ******  - Map composition and evaluation code refactored. 
 ******  - Support for evaluation of complex maps                                                                   
 ******  - added (missing) implementation for in-place Map composition
+******  Aug 2008 ostiguy@fnal.gov
+****** - added templated constructor for initialization from a vector type
 ******
 **************************************************************************
 *************************************************************************/
@@ -75,24 +77,23 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
  public: 
 
+  TMapping(        EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+
   TMapping( int n, EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
 
-  TMapping(        EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+  TMapping( TMapping const& );
 
   template<typename U>
   TMapping( TMapping<U> const& );
 
-  TMapping( TMapping const& );
-
-  TMapping( typename TJetVector<T>::const_iterator itstart,  typename TJetVector<T>::const_iterator itend);
+  template<typename iterator_t>
+  TMapping( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); 
 
   TMapping( TJetVector<T> const& );
 
   explicit TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
 
-  explicit TMapping( TVector<T> const&,   EnvPtr<T>  const& env = TJetEnvironment<T>::getLastEnv());
-
-  ~TMapping();
+ ~TMapping();
 
   TMapping& operator= ( TMapping const& );
 
@@ -104,10 +105,8 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
   TMapping& operator*=( TMapping const& );
 
-  TMatrix<T> Jacobian() const; // Retained for backwards compatability
   TMatrix<T> jacobian() const;
 
-  TMapping Inverse() const;  // retained for backwards compatability
   TMapping inverse() const;
 
  private:
@@ -125,19 +124,6 @@ class DLLEXPORT TMapping: public TJetVector<T> {
  template<>
  TMapping<std::complex<double> >::TMapping( TMapping<double> const& );
 
-//-------------------------------------------------------------------------------
-// Inline methods
-//-------------------------------------------------------------------------------
-
-
-template<typename T>
-inline TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
-{  
-   if ( &x == this ) return *this;
-
-   TJetVector<T>::operator=(x);  
-   return *this;
-}
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES 
 #include <mxyzptlk/TMapping.tcc>
