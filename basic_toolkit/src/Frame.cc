@@ -352,7 +352,7 @@ int Frame::rotate( double theta,
         w[k] = e_[k][i];
       }
 
-      u.Rotate( w, theta );
+      w = u.Rotate( w, theta );
 
       for( int k =0; k<3; ++k) {
         e_[k][i] = w[k];
@@ -371,7 +371,7 @@ int Frame::rotate( double theta,
 
   // Origin is rotated by default ...
   if( rotateOrigin ) {
-    u.Rotate( o_, theta );
+    o_ = u.Rotate( o_, theta );
   }
 
   return ret;
@@ -380,7 +380,7 @@ int Frame::rotate( double theta,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
- int Frame::translate ( const Vector& x )
+ int Frame::translate ( Vector const& x )
 {
    int ret = 0;
 
