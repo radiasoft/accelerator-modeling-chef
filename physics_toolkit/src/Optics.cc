@@ -203,8 +203,8 @@ static Matrix invjacobian ( JetParticle const& jp0, beamline const& bml, Vector 
 
   JetParticle jp = jp0;
 
-  jp.State() = JetVector(v, jp.State().Env());
-
+  jp.State() = Mapping("I", jp.State().Env() );
+    
   bml.propagate(jp);
 
   M = jp.State().jacobian();
@@ -408,7 +408,7 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
 Vector tunes( sqlite::connection& db, JetParticle const& oneturnjp)
 {
 
-  MatrixD mtrx = oneturnjp.State().Jacobian();
+  MatrixD mtrx = oneturnjp.State().jacobian();
 
   TVector<std::complex<double> > eigenvalues   = mtrx.Matrix::eigenValues();
   TMatrix<std::complex<double> > eigenvectors  = mtrx.Matrix::eigenVectors();
@@ -493,7 +493,7 @@ Vector periodicDispersion( sqlite::connection& db, JetParticle const& jp_arg )
 
   JetParticle jp(jp_arg);
 
-  MatrixD mtrx  = jp.State().Jacobian();
+  MatrixD mtrx  = jp.State().jacobian();
   
   // zero out row/col corresponding to cdt coordinate. 
 
@@ -602,7 +602,7 @@ Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle co
    
   double const dpp = 0.001;
 
-  Matrix oneturnmtrx = oneturnjp.State().Jacobian();
+  Matrix oneturnmtrx = oneturnjp.State().jacobian();
 
   Particle p_off(oneturnjp);
 
@@ -620,7 +620,7 @@ Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle co
 
   bml.propagate(jp_off);
 
-  MatrixD oneturnmtrx_off  = jp_off.State().Jacobian();
+  MatrixD oneturnmtrx_off  = jp_off.State().jacobian();
 
   Vector nu     = Optics::tunes( db, oneturnjp );
   Vector nu_off = Optics::tunes( db, jp_off    );
@@ -735,7 +735,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
     (*it) -> propagate( jp);
 
-    MatrixD  mtrx = jp.State().Jacobian();
+    MatrixD  mtrx = jp.State().jacobian();
  
     Vector eta    = mtrx*eta0;
  
@@ -839,7 +839,7 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
   JetParticle  jparticle(jp);
   Particle      particle(jp);
 
-  MatrixD mtrx = jp.State().Jacobian();
+  MatrixD mtrx = jp.State().jacobian();
 
   Vector nu = tunes( db, jp); 
 
@@ -888,7 +888,7 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
 MatrixC periodicEigenVectors( sqlite::connection& db, JetParticle const& oneturnjp )
 {
 
-  MatrixD mtrx = oneturnjp.State().Jacobian();
+  MatrixD mtrx = oneturnjp.State().jacobian();
   
   //-------------------------------------------------
   // For a 4D solution with no dispersive effects 
@@ -980,7 +980,7 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
 
     be->propagate( jpart );
   
-    Matrix mtrx = jpart.State().Jacobian();
+    Matrix mtrx = jpart.State().jacobian();
 
     MatrixC EN  = mtrx*EV0;          // propagate eigenvectors
     Vector eta  = mtrx*eta0;         // propagate dispersion               
@@ -1044,8 +1044,8 @@ MatrixD periodicCovariance( sqlite::connection& db, JetParticle& jp, double eps1
   double const I3 = ( std::abs( eps3 )/betaGamma ) * mm_mr / 2.0; // WRONG UNITS ... FIXME !
 
 
-  TVector<std::complex<double> > eigenvalues   = jp.State().Jacobian().Matrix::eigenValues();
-  MatrixC                        EV            = jp.State().Jacobian().Matrix::eigenVectors();
+  TVector<std::complex<double> > eigenvalues   = jp.State().jacobian().Matrix::eigenValues();
+  MatrixC                        EV            = jp.State().jacobian().Matrix::eigenVectors();
 
   orderColumns( eigenvalues,  EV ); 
   EV = toNormalForm( EV, Matrix::j_ordering);
@@ -1128,7 +1128,7 @@ void propagateCovariance( sqlite::connection& db, beamline const& bml, JetPartic
  
     (*it)->propagate( jp );
   
-    Matrix M     =  jp.State().Jacobian();
+    Matrix M     =  jp.State().jacobian();
     Matrix lcov  =  M * cov * M.transpose();
 
 
@@ -1201,7 +1201,7 @@ ETLattFuncs periodicETLatticeFunctions( sqlite::connection& db, beamline const& 
  double csH = cos( M_TWOPI*nu[0]);
  double csV = cos( M_TWOPI*nu[1]);
 
- Matrix mtrx = jp.State().Jacobian();
+ Matrix mtrx = jp.State().jacobian();
 
  M[0][0] = mtrx[i_x  ][i_x   ];     n[0][0] = mtrx[i_x  ][i_y  ];
  M[0][1] = mtrx[i_x  ][i_npx ];     n[0][1] = mtrx[i_x  ][i_npy];
