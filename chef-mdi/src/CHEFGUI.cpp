@@ -50,7 +50,8 @@
 #include <sstream>
 #include <fstream>
 #include <ostream>
-#include <istream>#include <streambuf>
+#include <istream>
+#include <streambuf>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/bind.hpp>
@@ -162,25 +163,15 @@ CHEFGUI::CHEFGUI(QWidget* parent, char const* name, WFlags f)
   p_clickedQBml_  = 0;
 
   //==================================================================================
-  // **** This does not belong here ... 
-  //==================================================================================
   // Create an initial Jet environment
-
-  Jet__environment::BeginEnvironment( 1 );
-
-  x_    = new coord(0.0);
-  y_    = new coord(0.0);
-  cdt_  = new coord(0.0);
-  npx_  = new coord(0.0);
-  npy_  = new coord(0.0);
-  ndp_  = new coord(0.0);
-
-  env_      = Jet__environment::EndEnvironment();
-  JetC__environment::setLastEnv( env_ );      // implicit conversion
-  envc_     =  JetC__environment::getLastEnv();    
-
   //==================================================================================
 
+   env_  =                TJetEnvironment<double>::makeJetEnvironment(1, 6, 6);
+   envc_ = TJetEnvironment<std::complex<double> >::makeJetEnvironment(1, 6, 6);  
+   
+    Jet__environment::setLastEnv( env_ );
+   JetC__environment::setLastEnv( envc_ );
+  
   // Make connections
 
   connect( this, SIGNAL(new_beamline()    ),
@@ -402,13 +393,6 @@ CHEFGUI::~CHEFGUI()
 
     //if (messages_stdout_) delete messages_stdout_;
     //if (messages_stderr_) delete messages_stderr_;
-
-     delete x_;  
-     delete y_;  
-     delete cdt_;
-     delete npx_;
-     delete npy_;
-     delete ndp_;
 
 }
 
