@@ -140,9 +140,6 @@ struct ScratchArea {
     std::vector<std::vector<int> >     multTable_;      // monomial multiplication table 
     std::vector<int>                   weight_offsets_; // Offsets of the weights groups within the scratchpad     
 
-    const IntArray                     allZeroes_;      // An integer array containing zeroes.  Used to 
-                                                        // filter the standard part of a variable.
-
    ScratchArea( TJetEnvironment<U>* pje, int weight, int numvar);
   ~ScratchArea();
  
@@ -190,10 +187,11 @@ struct ScratchArea {
 
   // factory functions -------------------------------------------
 
-  static void                       BeginEnvironment(int maxweight); 
+  static void        BeginEnvironment(int maxweight); 
   static EnvPtr<T>   EndEnvironment();
 
   static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0 );
+
   static EnvPtr<T>   makeInverseJetEnvironment(TMapping<T> const& map); 
   static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const& );
 
@@ -244,7 +242,6 @@ struct ScratchArea {
    int             dof()         const { return   dof_;         }
    const T*        refPoint()    const { return   refPoint_;    }
    int             maxWeight()   const { return   maxWeight_;   }
-   const T*        getRefPoint() const { return   refPoint_; } 
  
    std::vector<T>&            monomial()        const { return   scratch_->monomial_;    }
    std::vector<TJLterm<T> >&  TJLmml()          const { return   scratch_->TJLmml_;      }
@@ -257,13 +254,14 @@ struct ScratchArea {
    int             weight( int const& offset )       const;
    IntArray        exponents( int const& offset )    const  { return scratch_->index_table_[offset]; }
 
-   const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
    int             maxTerms()  const                         { return scratch_->maxTerms_;}
 
    static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
    static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
 
+
    static void       pushEnv( EnvPtr<T> const& );
+
    static EnvPtr<T>  topEnv ();
    static void       popEnv();
 
