@@ -170,7 +170,7 @@ void JacobianVisitor::visit(bmlnElmnt& be) {
     be.propagate(particle_);
 
     Mapping map = particle_.State();
-    cumulativeMatrix_ = map.Jacobian();
+    cumulativeMatrix_ = map.jacobian();
     JacobianData matBarn(cumulativeMatrix_);
     be.dataHook.append( Barnacle(whichJacobian_,  JacobianData(cumulativeMatrix_) ) );
 
