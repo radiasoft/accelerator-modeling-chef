@@ -1,4 +1,6 @@
 /***************************************************************************                                                               
+***************************************************************************                                                               
+***************************************************************************                                                               
 ******  Boost.python Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                   
@@ -19,6 +21,8 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+****************************************************************************
+****************************************************************************
 ****************************************************************************/
 
 #include <boost/python.hpp>
@@ -44,19 +48,21 @@ void SetComponentC( JetCVector& v, int i, JetC const& value)
 }    
 
 
-void       (JetVector::*Rotate_1_ptr   )(JetVector&, double     )  const  =  &JetVector::Rotate;
-void       (JetVector::*Rotate_2_ptr   )(JetVector&, const Jet& )  const  =  &JetVector::Rotate;
-void       (JetVector::*printCoeffs_ptr)()                         const  =  &JetVector::printCoeffs;
-Jet        (JetVector::*Norm_ptr       )()                         const  =  &JetVector::Norm; 
-JetVector  (JetVector::*Unit_ptr       )()                         const  =  &JetVector::Unit;
-JetVector  (JetVector::*filter_1_ptr   )(int, int                ) const   = &JetVector::filter;
+JetVector        (JetVector::*Rotate_1_ptr   )(JetVector const&, double     )  const  =  &JetVector::Rotate;
+JetVector        (JetVector::*Rotate_2_ptr   )(JetVector const&, Jet const& )  const  =  &JetVector::Rotate;
+void             (JetVector::*printCoeffs_ptr)()                         const  =  &JetVector::printCoeffs;
+Jet              (JetVector::*Norm_ptr       )()                         const  =  &JetVector::Norm; 
+JetVector const  (JetVector::*Unit_ptr       )()                         const  =  &JetVector::Unit;
+JetVector        (JetVector::*filter_1_ptr   )(int, int                ) const   = &JetVector::filter;
 
-void       (JetCVector::*RotateC_1_ptr    )(JetCVector&, double       ) const  = &JetCVector::Rotate;
-void       (JetCVector::*RotateC_2_ptr    )(JetCVector&, const JetC&  ) const  = &JetCVector::Rotate;
-void       (JetCVector::*printCoeffsC_ptr )()                           const  = &JetCVector::printCoeffs;
-JetC       (JetCVector::*NormC_ptr        )()                           const  = &JetCVector::Norm; 
-JetCVector (JetCVector::*UnitC_ptr        )()                           const  = &JetCVector::Unit;
-JetCVector (JetCVector::*filterC_1_ptr    )(int, int                )   const  = &JetCVector::filter;
+// not implemented 
+// JetCVector       (JetCVector::*RotateC_1_ptr    )(JetCVector const&, double       ) const  = &JetCVector::Rotate;
+// JetCVector       (JetCVector::*RotateC_2_ptr    )(JetCVector const&, JetC const&  ) const  = &JetCVector::Rotate;
+
+void             (JetCVector::*printCoeffsC_ptr )()                           const  = &JetCVector::printCoeffs;
+JetC             (JetCVector::*NormC_ptr        )()                           const  = &JetCVector::Norm; 
+JetCVector const (JetCVector::*UnitC_ptr        )()                           const  = &JetCVector::Unit;
+JetCVector       (JetCVector::*filterC_1_ptr    )(int, int                )   const  = &JetCVector::filter;
 
 } // anonymous namespace
 
@@ -135,8 +141,6 @@ void wrap_mxyzptlk_jetvectorc() {
   JetCVector_class_.def( "printCoeffs",   printCoeffsC_ptr          );
   JetCVector_class_.def( "Norm",          NormC_ptr                 );
   JetCVector_class_.def( "Unit",          UnitC_ptr                 );
-  JetCVector_class_.def( "Rotate",        RotateC_1_ptr             );
-  JetCVector_class_.def( "Rotate",        RotateC_2_ptr             );
   JetCVector_class_.def( "IsNull",        &JetCVector::IsNull       );
   JetCVector_class_.def( "IsUnit",        &JetCVector::IsUnit       );
   JetCVector_class_.def( "IsNilpotent",   &JetCVector::IsNilpotent  );
