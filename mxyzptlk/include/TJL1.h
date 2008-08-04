@@ -225,9 +225,9 @@ class TJL1: public ReferenceCounter<TJL1<T> > {
   JL1Ptr<T> D( const int* n ) const; 
  
 
-  void setVariable( T const&, const int& );
-  void setVariable( T const& x, const int& j, EnvPtr<T> const& pje );
-  void setVariable( const int&, EnvPtr<T> const& pje );               
+  void setVariable( int const& j, T const& x );
+  void setVariable( int const& j, T const& x, EnvPtr<T> pje );
+  void setVariable( int const& j,             EnvPtr<T> pje );               
 
   T standardPart() const;
   void setStandardPart( T const& std) { terms_[0] = std; } 

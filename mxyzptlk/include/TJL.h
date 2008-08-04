@@ -312,7 +312,6 @@ friend class TJL;
   friend JLPtr<double> real( JLPtr<std::complex<double> > const& z ); 
   friend JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
 
-
   friend   bool operator==<>( TJL<T>   const& x, TJL<T>  const& y ); 
   friend   bool operator==<>( TJL<T>   const& x, T       const& y ); 
   friend   bool operator==<>( T        const& y, TJL<T>  const& x );
@@ -336,9 +335,9 @@ friend class TJL;
   JLPtr<T> D( IntArray const& n ) const; 
 
 
-  void setVariable( T   const&,   int const& );
-  void setVariable( T   const& x, int const& j,  EnvPtr<T> const& pje );
-  void setVariable( int const&,   EnvPtr<T> const& pje );               
+  void setVariable(  int const&,  T const& );
+  void setVariable(  int const&,  T const& x,  EnvPtr<T> pje );
+  void setVariable(  int const&,               EnvPtr<T> pje );               
 
   T const& standardPart()                 const  { return jltermStore_[0].value_; }
   void     setStandardPart( T const& std)        { jltermStore_[0].value_ = std;  } 

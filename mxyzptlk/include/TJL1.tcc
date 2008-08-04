@@ -373,7 +373,7 @@ void TJL1<T>::peekAt() const {
  (*pcout) << "Reference point: ";
 
  for( int i=0; myEnv_->numVar(); ++i ) 
-    (*pcout) << std::setprecision(12) << getEnv()->getRefPoint()[i] << "  ";
+    (*pcout) << std::setprecision(12) << getEnv()->refPoint()[i] << "  ";
  (*pcout) << std::endl;
 
 }
@@ -408,14 +408,14 @@ TJL1<T>& TJL1<T>::Negate( )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL1<T>::setVariable(  T const& x,  int const& j, EnvPtr<T> const& pje)
+void TJL1<T>::setVariable(  int const& j, T const& x, EnvPtr<T> pje)
 {
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
 
  if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T>::setVariable( const T&, const int&, TJetEnvironment<T>* )", 
+     "void TJL1<T>::setVariable( int const&, T const&, EnvPtr )", 
      "Index out of range") );
  }
  
@@ -430,7 +430,7 @@ void TJL1<T>::setVariable(  T const& x,  int const& j, EnvPtr<T> const& pje)
 
  if ( !myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
-          "TJL1<T>::setVariable(  const T& x, const int& j, EnvPtr<T> const& pje)" ,
+          "TJL1<T>::setVariable( int const& j, T const& x, EnvPtr<T> pje)",
           "Null Environment." ) );
  };
 
@@ -443,14 +443,14 @@ void TJL1<T>::setVariable(  T const& x,  int const& j, EnvPtr<T> const& pje)
 
 
 template<typename T>
-void TJL1<T>::setVariable(  const T& x, const int& j )
+void TJL1<T>::setVariable(  int const& j, T const& x )
 {
  
 // this member function is meant to be called **ONLY** when a coordinate is instantiated
 
  if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T>::setVariable( const T&, const int&, TJetEnvironment<T>* )", 
+     "void TJL1<T>::setVariable( int const&, T const& )", 
      "Index out of range") );
  }
  
@@ -462,7 +462,7 @@ void TJL1<T>::setVariable(  const T& x, const int& j )
 
  if ( ! myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
-          "TJL1<T>::setVariable(  const T& x, const int& j )" ,
+          "TJL1<T>::setVariable( int const& j, T const& x)",
           "Null Environment." ) );
  };
 
@@ -474,18 +474,18 @@ void TJL1<T>::setVariable(  const T& x, const int& j )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
 template<typename T>
-void TJL1<T>::setVariable( const int& j,  EnvPtr<T> const& theEnv ) 
+void TJL1<T>::setVariable( int const& j,  EnvPtr<T> theEnv ) 
 {
 
  if( !myEnv_ ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL1<T>::setVariable( const int&, TJetEnvironment<T>* )", 
+     "void TJL1<T>::setVariable( int const&, EnvPtr<T> )", 
      "Private data myEnv_ is null: object has no environment assigned.") );
  }
 
  if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
    throw( GenericException( __FILE__, __LINE__, 
-     "void TJL1<T>::setVariable( const int&, TJetEnvironment<T>* )", 
+     "void TJL1<T>::setVariable( int const&, EnvPtr<T> )", 
      "Index out of range") );
 
  }
@@ -501,7 +501,7 @@ void TJL1<T>::setVariable( const int& j,  EnvPtr<T> const& theEnv )
 
  if ( ! myEnv_ ) {
  throw( GenericException( __FILE__, __LINE__, 
-          "TJL1<T>::setVariable(  const T& x, EnvPtr<T> const& theEnv )" ,
+          "void TJL1<T>::setVariable( int const&, EnvPtr<T> )", 
           "Null Environment." ) );
  };
 
@@ -723,7 +723,7 @@ JL1Ptr<T> TJL1<T>::compose( JL1Ptr<T> const y[ ]) const
             "Inconsistent environments." ));
    }
 
-   u[i] = y[i] + JL1Ptr<T>( makeTJL( y[0]->myEnv_, -myEnv_->getRefPoint()[i]));   // u[i] = y[i] - myEnv_->getRefPoint()[i];
+   u[i] = y[i] + JL1Ptr<T>( makeTJL( y[0]->myEnv_, -myEnv_->refPoint()[i]));   // u[i] = y[i] - myEnv_->refPoint()[i];
  }
 
  JL1Ptr<T> z( makeTJL(y[0]->myEnv_) );
@@ -1151,11 +1151,11 @@ void TJL1<T>::printCoeffs() const {
       << ", Weight = " <<      weight_ 
       << ", Max accurate weight = " << accuWgt_ << std::endl;
  (*pcout) << "Reference point: " 
-      << myEnv_->getRefPoint()[0];
+      << myEnv_->refPoint()[0];
 
  for( int i=0; i < count_-1; i++ ) {
    (*pcout) << ", ";
-   (*pcout) << myEnv_->getRefPoint()[i];
+   (*pcout) << myEnv_->refPoint()[i];
  }
 
  (*pcout) << std::endl;
