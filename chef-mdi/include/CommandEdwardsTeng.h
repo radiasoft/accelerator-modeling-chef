@@ -39,7 +39,7 @@ class CommandEdwardsTeng {
 
  public:
     
-  QWidget*  operator()(QWidget* parent, BmlContextPtr const& bml );  
+  QWidget*  operator()(QWidget* parent, BmlContextPtr bml );  
 
 };
 

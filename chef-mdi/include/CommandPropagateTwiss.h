@@ -35,14 +35,13 @@
 #include <beamline/LatticeFunctions.h>
 
 
-class QWidget;
-union LattFunc;
+struct CSLattFuncs;
 
-class CommandPropagateTwiss {
+class CommandComputePropagateTwiss {
 
  public:
     
-  QWidget*  operator()( QWidget* parent, BmlContextPtr& context, LattFuncs const& initialConditions ); 
+  void operator()( BmlContextPtr context, CSLattFuncs initial ); 
 
 };
 

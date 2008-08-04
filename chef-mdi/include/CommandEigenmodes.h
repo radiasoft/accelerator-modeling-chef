@@ -41,7 +41,7 @@ class CommandEigenmodes {
 
  public:
     
-  QWidget*  operator()(QWidget* parent, BmlContextPtr const& bml );  
+  QWidget*  operator()(QWidget* parent, BmlContextPtr bml );  
 
 };
 
