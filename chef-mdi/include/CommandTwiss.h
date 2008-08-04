@@ -35,12 +35,21 @@
 
 class QWidget;
 
+namespace sqlite { class connection; }
 
-class CommandTwiss {
+class CommandComputePeriodicTwiss {
 
  public:
     
-  QWidget*  operator()(QWidget* parent, BmlContextPtr const& bml );  
+  void operator()( BmlContextPtr bml );  
+
+};
+
+class CommandPlotTwiss {
+
+ public:
+    
+  void operator()(QWidget* parent, sqlite::connection& db );  
 
 };
 
