@@ -187,10 +187,10 @@ public:
   TVector      Abs              () const;
   double       Norm             () const;
   TVector      Unit             () const;           // returns unit vector
-  void         Rotate           ( TVector& v, double const&  theta ) const;
-                                                   // rotates v through 
-                                                   // an angle theta using
-                                                   // *this as the axis
+  TVector      Rotate           ( TVector const& v,  double const&  theta ) const;
+                                                      // rotates v through 
+                                                      // an angle theta using
+                                                      // *this as the axis
 
   friend std::ostream& operator<< <T>(std::ostream& , TVector<T> const& );
 

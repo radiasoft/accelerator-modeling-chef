@@ -394,9 +394,6 @@ bool TVector<T>::IsNull() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-// Utilities ..
-
 template<typename T>
 TVector<T> TVector<T>::Abs() const
 {
@@ -446,7 +443,7 @@ bool TVector<T>::IsUnit() const
 
 
 template<typename T>
-void TVector<T>::Rotate ( TVector& v, double const& theta ) const
+TVector<T> TVector<T>::Rotate ( TVector<T> const& v, double const& theta ) const
 {
 
   TVector<T> e  = Unit();
@@ -454,17 +451,9 @@ void TVector<T>::Rotate ( TVector& v, double const& theta ) const
   T c = cos( theta );
   T s = sin( theta );
 
-  TVector<T> u =   ( c*v )
-                 + ( s*( e^v) )
-                 + ( ( ( 1.0 - c )*(e*v) )*e );
+  return    ( c*v )+ ( s*( e^v) )
+                   + ( ( ( 1.0 - c )*(e*v) )*e );
  
-  iterator itu  = u.begin(); 
-  iterator itv =  v.begin(); 
-
-  for ( ; itu !=  u.end(); ++itu, ++itv ) {
-    (*itv) = (*itu);
-  }
-
 }
 
 
