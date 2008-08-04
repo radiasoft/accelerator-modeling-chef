@@ -148,17 +148,14 @@ public:
   const_reverse_iterator  rend()   const;
 
 
-  TJetVector( int n ,  EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) );
+  TJetVector( EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() );
 
-  TJetVector( EnvPtr<T>  const& env  = (TJetEnvironment<T>::getLastEnv()) ); // dimension set to numVar 
+  TJetVector( int n,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() );
 
-  explicit TJetVector( TVector<T> const&,               EnvPtr<T>  const& env    = (TJetEnvironment<T>::getLastEnv()) );
+  template<typename iterator_t>
+  TJetVector( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); 
 
   TJetVector( TJetVector const& );
-
-  TJetVector( const_iterator itstart, const_iterator itend ); 
-
-  TJetVector( TJetVector<T> const&, int i1, int i2 ); // subrange
 
   template<typename U>
   TJetVector(TJetVector<U> const&);
@@ -241,14 +238,17 @@ public:
 
   // Utilities ..
 
-  void        printCoeffs      () const;
-  TJet<T> Norm             () const;
-  TJetVector  Unit             () const;           // returns unit vector
-  void        Rotate           ( TJetVector& v,    double         theta ) const;
-  void        Rotate           ( TJetVector& v,    TJet<T> const& theta ) const;
-                                                   // rotates v through 
-                                                   // an angle theta using
-                                                   // *this as the axis
+  void              resize(int n );
+  void              printCoeffs      () const;
+  TJet<T>           Norm             () const;
+  TJetVector const  Unit             () const;  // returns a unit vector
+   
+
+  // rotates v through an angle theta using *this as the axis
+
+  TJetVector   Rotate( TJetVector const& v,    double         theta ) const;
+  TJetVector   Rotate( TJetVector const& v,    TJet<T> const& theta ) const;
+
 
   friend std::ostream& operator<<<>( std::ostream&, TJetVector  const& );
   friend std::istream& operator>><>( std::istream&, TJetVector&        );
@@ -315,16 +315,10 @@ TJetVector<T> operator*( Vector const& x,   TJet<T>      const& y )
              TJetVector<std::complex<double> >::operator*      ( TJetVector<std::complex<double> > const& ) const;
 
  template<>
- void         TJetVector<double>::Rotate( TJetVector<double>& v, double              theta ) const;
+ TJetVector<double> TJetVector<double>::Rotate(  TJetVector<double> const&, double              theta ) const;
 
  template<>
- void         TJetVector<double>::Rotate( TJetVector<double>& v, TJet<double> const& theta ) const;
-
- template<>
- void         TJetVector<std::complex<double> >::Rotate( TJetVector<std::complex<double> >& v, double theta ) const;
-
- template<>
- void         TJetVector<std::complex<double> >::Rotate( TJetVector<std::complex<double> >& v, const TJet<std::complex<double> >& theta ) const;
+ TJetVector<double> TJetVector<double>::Rotate(  TJetVector<double> const&, TJet<double> const& theta ) const;
 
 
  template<> 
@@ -341,6 +335,14 @@ TJetVector<T> operator*( Vector const& x,   TJet<T>      const& y )
  template<> bool TJetVector<std::complex<double> >::operator<= ( TJetVector<std::complex<double> > const& ) const;
  template<> bool TJetVector<std::complex<double> >::operator>  ( TJetVector<std::complex<double> > const& ) const;
  template<> bool TJetVector<std::complex<double> >::operator>= ( TJetVector<std::complex<double> > const& ) const;
+
+ template<>
+ TJetVector<std::complex<double> > 
+ TJetVector<std::complex<double> >::Rotate(  TJetVector<std::complex<double> > const&, double              theta ) const;
+
+ template<>
+ TJetVector<std::complex<double> > 
+ TJetVector<std::complex<double> >::Rotate(  TJetVector<std::complex<double> > const&, TJet<std::complex<double> > const& theta ) const;
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES

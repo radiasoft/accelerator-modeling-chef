@@ -88,12 +88,7 @@ using namespace std;
 template<typename T>
 TJetVector<T>::TJetVector( EnvPtr<T> const& pje )
 : myEnv_(pje)
-{
-  
-  if (!pje) return; // empty vector is OK.
-  comp_.resize( pje->numVar(), TJet<T>(T(), pje) ); 
-
-}
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -102,23 +97,8 @@ template<typename T>
 TJetVector<T>::TJetVector( int n, EnvPtr<T> const& pje )
 : myEnv_(pje)
 {
+  if ( n == 0 ) return; // empty vector is OK.
   comp_.resize( n, TJet<T>(T(), pje) ); 
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJetVector<T>::TJetVector( TVector<T> const& x , EnvPtr<T>  const& env)
-:  myEnv_(env)
-
-{
-  comp_.resize(x.Dim()); 
-
-  int i=0;
-  for ( typename vector<TJet<T> >::iterator it = comp_.begin(); it != comp_.end(); ++it, ++i) {
-    it->setVariable(x[i], i, myEnv_ ); 
-  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -133,16 +113,9 @@ TJetVector<T>::TJetVector( TJetVector<T> const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T>::TJetVector( const_iterator itstart,  const_iterator itend)
- : myEnv_(itstart->Env()), comp_(itstart,itend) 
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJetVector<T>::TJetVector( TJetVector<T> const& x,  int i1, int i2 )
- : myEnv_(x.myEnv_), comp_( x.comp_.begin()+ i1,  x.comp_.begin() + i2 ) 
+template<typename iterator_t>
+TJetVector<T>::TJetVector( iterator_t itstart,  iterator_t itend,  EnvPtr<T> const& pje )
+ : myEnv_(pje), comp_(itstart, itend ) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -152,11 +125,8 @@ template<typename T>
 TJetVector<T>::~TJetVector()
 { }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// Algebraic functions ...
 
 template<typename T>
 TJetVector<T>& TJetVector<T>::operator= ( TJetVector<T> const& x ) {
@@ -169,6 +139,14 @@ TJetVector<T>& TJetVector<T>::operator= ( TJetVector<T> const& x ) {
   return *this;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJetVector<T>::resize(int n )
+{
+  comp_.resize(n);
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -524,7 +502,7 @@ TJet<T> TJetVector<T>::operator* ( Vector const& y ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TJetVector<T>::operator^ ( const TJetVector<T>& x ) const
+TJetVector<T> TJetVector<T>::operator^ ( TJetVector<T> const& x ) const
 {
 
   TJetVector<T> z( myEnv_ );
@@ -737,12 +715,11 @@ TJet<T> TJetVector<T>::Norm () const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TJetVector<T>::Unit () const
+TJetVector<T> const TJetVector<T>::Unit () const
 {
-  TJet<T> x( myEnv_ );
-  x = Norm();
+  TJet<T> x = Norm();
   TJetVector<T> z( *this );
-  for ( int i = 0; i < comp_.size(); ++i) z.comp_[i] /= x;
+  for ( int i=0; i<comp_.size(); ++i) z.comp_[i] /= x;
   return z;
 }
 
@@ -799,12 +776,13 @@ istream& operator>>( istream& is, TJetVector<T>& v )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( const IntArray&, const T& ) ) const
+TJetVector<T> TJetVector<T>::filter( bool (*f[]) ( IntArray const&, const T& ) ) const
 {
- TJetVector<T> z( TVector<T>(comp_.size()), myEnv_ );
+ TJetVector<T> z( myEnv_ );
 
- for( int i=0; i<comp_.size();  i++ ) {
-    z.comp_[i] = comp_[i].filter( f[i] );
+ int i=0;
+ for( const_iterator it=begin(); it != end(); ++it, ++i ) {
+    z.comp_.push_back( it->filter( f[i] ) );
  }
 
  return z;
@@ -816,10 +794,10 @@ template<typename T>
 TJetVector<T> TJetVector<T>::filter( int lower, int upper ) const
 {
 
- TJetVector<T> z( TVector<T>(comp_.size()), myEnv_ );
+ TJetVector<T> z( myEnv_ );
 
- for( int i=0; i < comp_.size(); ++i ) {
-   z.comp_[i] = comp_[i].filter( lower, upper );
+ for( const_iterator it=begin(); it != end(); ++it ) {
+   z.comp_.push_back( it->filter( lower, upper ) );
  }
 
  return z;
@@ -916,7 +894,7 @@ TVector<T> TJetVector<T>::getReference() const
  TVector<T> r( myEnv_->numVar() );
 
  for( int i= 0; i < myEnv_->numVar(); ++i) { 
-   r[i] = myEnv_->getRefPoint()[i];
+   r[i] = myEnv_->refPoint()[i];
  }
 
  return r;
