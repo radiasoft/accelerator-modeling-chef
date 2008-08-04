@@ -112,55 +112,27 @@ const char* IntArray::GenericException::what() const throw()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-IntArray::IntArray( int n, int const* const x )
+IntArray::IntArray( int n )
   : weight_(0), weight_is_valid_(false)
  {
 
-  if ( n <=0 ) return;
+  if ( n <=0 ) return; // an empty IntArray
   
   comp_.resize(n);
 
-  if (x) 
-      { std::copy( x, x+n, begin() ); }
-  else
-      { std::fill(begin(), end(), exponent_t() ); }
+  // initialize to 0
+
+  std::fill(begin(), end(), exponent_t() ); 
 
   Sum(); // this sets weight_ and   weight_is_valid to true;     
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-IntArray::IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 )
-  : weight_(0), weight_is_valid_(false)
-{
-  comp_.resize( it2 - it1 );
-  std::copy( it1, it2, begin() ); 
-  Sum(); // this sets weight_ and   weight_is_valid to true;     
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// Assignment ...
 
 void IntArray::push_back( exponent_t const& value)
 {
   comp_.push_back(value);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void IntArray::Set( int const* x, int n)
-{
-
-  comp_.resize( n );
-  std::copy( x, x + n, begin() ); 
-
-  Sum(); // this sets weight_ and   weight_is_valid to true;     
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -373,6 +345,14 @@ std::istream& operator>>( std::istream& is, IntArray& x )
 
   return is;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+void IntArray::resize( int newsize)
+{
+  comp_.resize( newsize); 
+  weight_is_valid_ = false;
+} 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

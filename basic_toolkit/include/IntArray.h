@@ -54,7 +54,7 @@
 ******   
 ******  Feb 2007 ostiguy@fnal.gov
 ******  
-****** - refactored to use STL iterators/algorithms
+****** - refactored; new implementation based on STL iterators/algorithms
 ******
 *************************************************************************
 *************************************************************************
@@ -91,9 +91,14 @@ public:
   typedef   std::vector<exponent_t >::const_reverse_iterator const_reverse_iterator;
    
 
-  IntArray( int  dim=0, int const* const components = 0 );
-  IntArray( IntArray::const_iterator it1, IntArray::const_iterator it2 );
+  IntArray( int dim=0 );
+
+  template< typename const_iterator_t>
+  IntArray( const_iterator_t it1, const_iterator_t it2 );
+
   IntArray( IntArray const& x);
+
+  void resize( int newsize); 
 
   iterator begin();                
   iterator end();
@@ -111,11 +116,14 @@ public:
 
   void push_back( exponent_t const& value); 
 
-  void     Set              ( int const* , int  n);
+  template<typename const_iterator_t>
+  void     Set              ( const_iterator_t it1, const_iterator_t it2);
+
   void     Set              ( int  );
 
   exponent_t const&   operator[]  (  int i )  const;
   exponent_t&         operator[]  (  int i );  
+
 
 
   // Functions ...
@@ -229,5 +237,10 @@ inline   IntArray::exponent_t&       IntArray::operator[]  ( int  i )
   return comp_[i]; 
 }    
 
+
+
+#ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
+#include <basic_toolkit/IntArray.tcc>
+#endif
 
 #endif // INTARRAY_H
