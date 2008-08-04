@@ -54,15 +54,16 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
-******  Dec 2006 ostiguy@fnal
+******  Dec 2006 ostiguy@fnal.gov
 ******
 ******  - New TJetVector base class implementation. See  TJetVector.h for details. 
 ****** 
-******  Mar 2008 ostiguy@fnal
+******  Mar 2008 ostiguy@fnal.gov
 ******  - Map composition and evaluation code refactored. 
-******  - Support for evaluation of complex maps                                                                   
+******  - Support for evaluation of complex maps
 ******  - added (missing) implementation for in-place Map composition
-******
+******  Aug 2008 ostiguy@fnal.gov
+******  - intialization optimizations in inverse()
 **************************************************************************
 *************************************************************************/
 
@@ -87,7 +88,13 @@ static const int maxiter = 100;
 template<typename T>
 TMapping<T>::TMapping( int n, EnvPtr<T> const& pje )
 : TJetVector<T>(n, pje)
-{ }
+{ 
+  if( n%2 != 0  ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "TMapping<T>::TMapping<T>( int n, EnvPtr<T> const& pj ) ",
+          "phase space dimension n must be even ") );
+ } 
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -109,24 +116,23 @@ TMapping<T>::TMapping( TMapping<T> const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( typename TJetVector<T>::const_iterator itstart,  typename TJetVector<T>::const_iterator itend)
- : TJetVector<T>(itstart, itend) 
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 TMapping<T>::TMapping( TJetVector<T> const& x ) 
 : TJetVector<T>( x ) 
-{}  // there should be a check here to make sure dims make sense
+{
+   if( this->Dim()% 2 != 0 ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "TMapping<T>::TMapping<T>( TJetVector<T> const& x ) ",
+          "phase space dimension n must be even ") );
+ } 
+}
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( TVector<T> const& x,   EnvPtr<T>  const& env ) 
-: TJetVector<T>( x, env ) 
+template<typename iterator_t>
+TMapping<T>::TMapping( iterator_t itstart, iterator_t itend, EnvPtr<T>  const& env ) 
+: TJetVector<T>( itstart, itend, env ) 
 {}
 
 
@@ -134,18 +140,27 @@ TMapping<T>::TMapping( TVector<T> const& x,   EnvPtr<T>  const& env )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  ) 
-: TJetVector<T>( TVector<T>(pje->spaceDim()), pje )
+TMapping<T>::TMapping( char const*, EnvPtr<T> const& pje  ) 
+: TJetVector<T>( pje ? pje->spaceDim():0, pje )
 {
  
+ if( !pje ) {
+   throw( GenericException(__FILE__, __LINE__, 
+          "TMapping<T>::TMapping<T>( char const*, TJetEnvironment<T>* ) ",
+          "Environment is null ") );
+ }
+
  if( pje->spaceDim() == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
           "TMapping<T>::TMapping<T>( char*, TJetEnvironment<T>* ) ",
           "Phase space has dimension 0." ) );
  }
  
- int s  = pje->spaceDim();
- for( int i=0; i<s; ++i) (this->comp_)[i].setVariable( i, pje );
+ int i=0;
+ for( typename TMapping<T>::iterator it  = this->begin(); 
+                                     it != this->end(); ++it, ++i) {
+     it->setVariable( i, T(), pje );
+ } 
 
 }
 
@@ -155,6 +170,18 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
 template<typename T>
 TMapping<T>::~TMapping<T>() 
 {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+TMapping<T>& TMapping<T>::operator=( TMapping<T> const& x )
+{  
+   if ( &x == this ) return *this;
+
+   TJetVector<T>::operator=(x);  
+   return *this;
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -249,7 +276,7 @@ template<typename T>
 TMatrix<T> TMapping<T>::jacobian() const 
 {
  int           nv = (this->myEnv_)->numVar();   
- IntArray      d(nv, 0);
+ IntArray      d(nv);
 
  int dim =     this->comp_.size();
  TMatrix<T>    M( dim, nv,  T() );
@@ -263,15 +290,6 @@ TMatrix<T> TMapping<T>::jacobian() const
  }
 
  return M;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TMatrix<T> TMapping<T>::Jacobian() const 
-{
-  return jacobian();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -298,7 +316,7 @@ TMapping<T> TMapping<T>::inverse() const
  ref_pt_is_zero = true;       // true if ref point is the origin.
 
  for( int i=0; i < (this->comp_.size()); ++i ) 
-   if( (this->myEnv_)->getRefPoint()[i] != 0.0 ) {
+   if( (this->myEnv_)->refPoint()[i] != 0.0 ) {
      ref_pt_is_zero = false;
      break;
  }
@@ -377,7 +395,7 @@ TMapping<T> TMapping<T>::inverse() const
  // ... Add the correct reference point and return ...
 
   for( int j=0; j< z.comp_.size(); j++ ) 
-     z.comp_[j].addTerm( TJLterm<T>( z.myEnv_->allZeroes(), (this->myEnv_)->getRefPoint()[j], z.myEnv_ ) );
+     z.comp_[j].addTerm( TJLterm<T>( IntArray( z.myEnv_->spaceDim() ), (this->myEnv_)->refPoint()[j], z.myEnv_ ) );
 
   return z;
 }
@@ -389,24 +407,19 @@ template<typename T>
 TMapping<T> TMapping<T>::epsInverse( EnvPtr<T> const& pje) const 
 {
 
- TMapping<T>  z( (this->comp_.size()), pje ); // the second argument creates an "empty mapping"
  TMapping<T>  id( "ident", pje );
  TMapping<T>  v( (this->comp_.size()), pje );
 
- TMatrix<T> M( (this->comp_.size()), (this->comp_.size()), 0.0 );
+ TMatrix<T> M = jacobian().inverse();
 
-
- if( (this->comp_.size()) == this->myEnv_->numVar() ) 
-    M = Jacobian().inverse();
- else{                                            
-    M = Jacobian().Square().inverse();
+ if( (this->comp_.size()) != this->myEnv_->numVar() ) 
+ {                                            
+    M = jacobian().Square().inverse();
     (*pcout) << " TMapping<T>::epsInverse() Warning: Jacobian Matrix is not square. This should not be called ! " << std::endl;
  }
 
 
- z = M*id;
-
-
+ TMapping<T>  z = M*id;
  v = ( operator()(z) - id );
 
 
@@ -415,7 +428,7 @@ TMapping<T> TMapping<T>::epsInverse( EnvPtr<T> const& pje) const
                // This assumes linear is handled well enough
                // by the TMatrix<T> routine.  
   z = z - M*v;
-  v = ( operator()(z) - id );
+  v = ( (*this)(z) - id );
  }
 
  if( i >= maxiter ) {
@@ -433,13 +446,3 @@ TMapping<T> TMapping<T>::epsInverse( EnvPtr<T> const& pje) const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TMapping<T> TMapping<T>::Inverse() const 
-{
- return inverse();
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
