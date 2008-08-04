@@ -50,8 +50,8 @@ Q_OBJECT
 
  public slots:
 
-   LattFuncs getInitCond() const;
-   void      setInitCond(  LattFuncs const& lf );
+   CSLattFuncs getInitCond() const;
+   void        setInitCond(  CSLattFuncs const& lf );
   
 };
 
@@ -67,8 +67,8 @@ class InitCondDialogCovariance: public InitCondDialogCovarianceBase {
 
  public slots:
 
-   LattFuncs  getInitCond()  const;
-   void       setInitCond( LattFuncs const& info);
+   CSLattFuncs  getInitCond()  const;
+   void       setInitCond( CSLattFuncs const& info);
 
 };
 
