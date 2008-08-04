@@ -51,7 +51,9 @@
 ******
 ******  - New TJetVector base class implementation. See  TJetVector.h for details. 
 ****** 
-******                                                        
+******  Aug 2008 ostiguy@fnal.gov
+****** - eliminated SetVariable(...)   member functions. 
+****** - eliminated SetComponent( ...) member functions                                                        
 **************************************************************************
 *************************************************************************/
 
@@ -122,7 +124,7 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
  int s = pje->spaceDim();
  
  int n        = pje->numVar();
- IntArray ndx(n,0);
+ IntArray ndx(n);
 
  if( s == 0 ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -165,7 +167,6 @@ template<typename T>
 TLieOperator<T>::TLieOperator( char*, EnvPtr<T> const pje  ) 
 : TJetVector<T>( pje->spaceDim(), pje )
 { 
- int i;
  
  if( !pje ) {
    throw( GenericException(__FILE__, __LINE__, 
@@ -179,77 +180,18 @@ TLieOperator<T>::TLieOperator( char*, EnvPtr<T> const pje  )
    }
  TLieOperator<T>::myEnv_ = pje;
 
- for( i = 0; i < pje->spaceDim(); i++ ) 
-  TLieOperator<T>::comp_[i].setVariable( i, pje );
+ for( int i=0; i< pje->spaceDim(); ++i) 
+  TLieOperator<T>::comp_[i].setVariable( i, T(), pje );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::~TLieOperator() 
-{
-}
+{}
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TLieOperator<T>::setVariable( const TJet<T>& x, int j ) 
-{
- if( TLieOperator<T>::myEnv_ != x.Env() ) {
-   throw( GenericException(__FILE__, __LINE__, 
-          "void TLieOperator<T>::setVariable( const TJet<T>&, int ) ",
-          "Inconsistent environments." ) );
- }
- if( j < 0 || TLieOperator<T>::myEnv_->spaceDim() <= j ) {
-   ostringstream uic;
-   uic  << "Argument j = " << j
-        << ": it should be within [ 0, "
-        << TLieOperator<T>::myEnv_->spaceDim()
-        << " ].";
-   throw( GenericException( __FILE__, __LINE__, 
-          "void TLieOperator<T>::setVariable( const TJet<T>& x, int j ) ",
-          uic.str().c_str() ) );
- }
- 
- TLieOperator<T>::comp_[j] = x;
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0 
-template<typename T>
-void TLieOperator<T>::setVariable( const T& x, int j ) 
-{
-
- if( (j < 0) || (TLieOperator<T>::comp_->size() <= j ) ) {
-   ostringstream uic;
-   uic  << "Argument j = " << j
-        << ": it should be within [ 0, "
-        << TLieOperator<T>::comp_->size()
-        << " ].";
-   throw( GenericException( __FILE__, __LINE__, 
-          "void TLieOperator<T>::setVariable( const T& x, const int& j )",
-          uic.str().c_str() ) );
- }
- 
- TLieOperator<T>::myEnv_->resetRefPoint(j,x);  // WARNING: The environment is altered!
- TLieOperator<T>::comp_[j].Reconstruct( TLieOperator<T>::myEnv_ );
- 
- int n = TLieOperator<T>::myEnv_->numVar();
- 
- IntArray ndx;
-
- // NOTE: TJet<>::operator->() is overloaded and returns the TJL<>* _jl; 
- 
- TLieOperator<T>::comp_[j].addTerm( TJLterm<T>( ndx, x, TLieOperator<T>::myEnv_ ) );
- ndx(j) = 1;
- TLieOperator<T>::comp_[j].addTerm( TJLterm<T>( ndx, ((T) 1.0), TLieOperator<T>::myEnv_ ) );
-
- for( int i = 0; i < TLieOperator<T>::comp_->size(); i++ ) TLieOperator<T>::comp_[i].setEnvTo(TLieOperator<T>::myEnv_ );
-}
-
-#endif
 
 //     Operators   |||||||||||||||||||||||||||||||||||||||||||||
 
