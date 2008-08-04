@@ -142,9 +142,9 @@ gamma_(u.gamma_),
 {
    int dim =  u.state_.Dim();       
  
-   for ( int i = 0; i < dim; ++i ) { 
+   for ( int i=0; i<dim; ++i ) { 
      Jet component;
-     component.setVariable( u.state_[i] ,i,  pje);
+     component.setVariable( i, u.state_[i],  pje);
      state_[i] = component;   
    }
 
