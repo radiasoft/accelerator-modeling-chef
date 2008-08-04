@@ -49,43 +49,18 @@ using FNAL::pcerr;
 
 void createStandardEnvironments( int deg )
 {
-  // Create an initial Jet environment 
-  TJetEnvironment<double>::BeginEnvironment( deg );
+   EnvPtr<double> env  = 
+   TJetEnvironment<double>::makeJetEnvironment(deg, 6, 6);
 
-  Tcoord<double> x(0.0),  y(0.0),  z(0.0),
-                px(0.0), py(0.0), pz(0.0);
-  TJetEnvironment<std::complex<double> >::setLastEnv( TJetEnvironment<double>::EndEnvironment() ); // implicit conversion
+   EnvPtr<std::complex<double> > envc = 
+   TJetEnvironment<std::complex<double> >::makeJetEnvironment(deg, 6, 6);  
+
+   TJetEnvironment<double>::setLastEnv( env );
+   TJetEnvironment<std::complex<double> >::setLastEnv( envc );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0
-template<>
-template<>
-TJetEnvironment<std::complex<double> >::TJetEnvironment(TJetEnvironment<double> const& x):
-   numVar_(x.numVar_),                            // number of variables
- spaceDim_(x.spaceDim_),                          // phase space dimensions
-      dof_(x.dof_),                               // degrees of freedom                             
- refPoint_(new std::complex<double>[x.numVar_]),  // reference point (set to zero by default)
-maxWeight_(x.maxWeight_),                         // maximum weight (polynomial order)
-    pbok_(x.pbok_),                               // THIS IS HERE FOR COMPATIBILITY WITH EARLIER VERSIONS
-                                                  // pbok_ was used as a flag to detect the presence of parameters 
-                                                  // poisson bracket OK is true only when phase space dimension is even; 
-                                                  // Consider simply checking the space dimensions before taking a PB ? 
-
- scratch_( buildScratchPads( maxWeight_, numVar_) ) 
- {
-
-    
-  for (int i=0; i< numVar_; ++i) {   
-        refPoint_[i]   = std::complex<double>(x.refPoint_[i], 0.0);
-  }
-}
-#endif
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template<>
 template<>
