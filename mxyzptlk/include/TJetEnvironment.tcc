@@ -271,41 +271,6 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment()
   return pje;
 }
 
-#if 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-template<typename T>
-void TJet<T>::EnlargeEnvironment( const TJetEnvironment<T>* pje )
-{
-  // Like TJet<T>::BeginEnvironment
-
-  if( _workEnv != 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void TJet<T>::EnlargeEnvironment( TJetEnvironment<T>* )",
-           "Close open environment before invoking this function." ) );
-  }
-
-  _workEnv             = new TJetEnvironment<T>( );
-  _workEnv->_maxWeight = pje->_maxWeight;
-  TJetEnvironment<T>::_currentIndex        = 0;  
-
-  // Creating new coordinates ...
-  Tcoord<T>* p_coord;
-
-  for( int i=0; i<pje->_numVar; i++ ) {
-    p_coord = new Tcoord<T>( pje->_refPoint[i] );
-    // _currentIndex is automatically increased by coord::coord
-  }
-
-  // Like TJet<T>::Parameters()
-
-  if( pje->_pbok ) {
-    _workEnv->_pbok     = pje->_pbok;
-    _workEnv->_spaceDim = pje->_spaceDim;
-  }
-}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#endif
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -436,8 +401,7 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
   maxTerms_( bcfRec( w + n, n ) ),                      // no of monomials in a polynomial of order w in n variables
   monomial_( maxTerms_),
   TJLmonomial_(maxTerms_ ),
-  TJLmml_( maxTerms_ ),                                 // the actual scratchpad 
-  allZeroes_(n)
+  TJLmml_( maxTerms_ )                                  // the actual scratchpad 
 {
 
  //-----------------------------------------------------------------------------------------------------------
@@ -713,7 +677,6 @@ EnvPtr<T> TJetEnvironment<T>::makeInverseJetEnvironment( TMapping<T> const& map 
  
 
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
