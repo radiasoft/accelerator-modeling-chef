@@ -45,14 +45,18 @@
 #ifndef CHEFGUI_H
 #define CHEFGUI_H
 
+namespace sqlite { class connection; }
 
 #include <ostream>
 #include <chefguibase.h>
 
 #include <basic_toolkit/GenericException.h>
 
-#include <mxyzptlk/Jet__environment.h>
+#include <mxyzptlk/TJet.h>
+#include <mxyzptlk/EnvPtr.h>
 #include <mxyzptlk/Mapping.h>
+#include <mxyzptlk/Jet__environment.h>
+#include <mxyzptlk/JetC__environment.h>
 
 #include <beamline/FramePusher.h>
 #include <beamline/bmlnElmnt.h>
@@ -70,7 +74,6 @@
 #include <QtMonitor.h>
 #include <QueryDialog.h>
 #include <AlignVisitor.h>
-#include <complexAddon.h>
 #include <InitCondDialogLF.h>
 #include <messages.h>
 #include <DbConnectDialog.h>
@@ -156,18 +159,14 @@ public slots:
 
 private:
 
+  Jet__environment_ptr             env_;
+  JetC__environment_ptr            envc_;
+
   int                              id_FileWriteTree_;
   int                              id_analMenu_;
   int                              id_ctrlMenu_;
   int                              id_EditSelectMenu_;
   int                              id_FilePrint_;
-
-  coord*                           x_; 
-  coord*                           y_; 
-  coord*                           z_; 
-  coord*                           px_;
-  coord*                           py_;
-  coord*                           pz_;
 
   std::auto_ptr<ParticleBunch>     bunch_;                        
 
@@ -184,8 +183,6 @@ private:
   RayTrace*                        tracer_;
   SiteViewer*                      viewer_;
 
-
-  //// argPtr*                          toolArgs_[CHEF_numargs];
 
   Messages<0>*                     messages_stdout_;
   Messages<1>*                     messages_stdwar_;
@@ -223,12 +220,10 @@ private:
 
   std::list<BmlContextPtr>         contextList_;
 
-  BmlContextPtr                    p_currBmlCon_;   // Currently selected beamline context
+  BmlContextPtr                    bmlc_;           // Currently selected beamline context
   QBmlRoot*                        p_currQBmlRoot_; // ... and its widget
   QBml*                            p_clickedQBml_;  // ... and its QBml
 
-  EnvPtr<double>                   p_JetEnv_;
-  EnvPtr<std::complex<double> >    p_JetCEnv_;
 
   Options                          userOptions_;
 
@@ -283,17 +278,17 @@ private slots:
   void makeFODO();
   void makeSingSext();
 
-  void closedOrbit();
+  void showCS2DData();
+  void showCS4DData();
 
-  void periodicTwiss();
-  void periodicET();
+  void computeReferenceOrbit();
+  void computeDispersion();
+  void computeTwiss();
+  void computeCS4D();
+
   void periodicMoments();
-  void periodicLB();
-  void periodicDispersion();
-
-  void propagateDispersion();
   void propagateMoments();
-  void propagateTwiss();
+  void periodicET();
 
   void pushParticles();
   void launchTrack();
@@ -316,7 +311,6 @@ private slots:
   void set_p_clickedQBml( QBml* );
   void do_nothing();
 
-                                             // BEGIN CHEFGUI SPECIFIC CODE
   void editRenameLine();
 
   void openDeviceFile(); 
@@ -327,10 +321,6 @@ private slots:
   void fileEditorSave();
   void databaseConnect();
   void databaseRetrieve();
-
-  void twissDispatch();
-  void momentsDispatch();
-  void dispersionDispatch();
 
   void windowsCascade();
   void windowsMinimizeAll();
@@ -369,18 +359,24 @@ signals:
 
  private:
 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeTwiss_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&,  LattFuncs const&)>              command_propagateTwiss_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr) >                                  command_computeReferenceOrbit_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr,  CSLattFuncs const&)>              command_propagateReferenceOrbit_; 
 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeMoments_; 
-  //boost::function<QWidget*( QWidget*, BmlContextPtr& , LattFuncsconst&)>             command_propagateMoments_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&,   LattFuncs const&)>             command_propagateMoments_; 
+  boost::function< void( BmlContextPtr) >                                               command_computePeriodicTwiss_; 
+  boost::function< void( BmlContextPtr,  CSLattFuncs )>                                 command_computePropagateTwiss_; 
+  boost::function< void( QWidget*, sqlite::connection& )>                               command_plotTwiss_; 
 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEdwardsTeng_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeEigenmodes_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr) >                                  command_computeMoments_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr,  CSLattFuncs const&)>              command_propagateMoments_; 
 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&) >                                command_computeDispersion_; 
-  boost::function<QWidget*( QWidget*, BmlContextPtr&, LattFuncs const&) >              command_propagateDispersion_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr) >                                  command_computeEigenmodes_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr,  CSLattFuncs const&) >             command_propagateEigenmodes_; 
+
+  boost::function<QWidget*( QWidget*, BmlContextPtr) >                                  command_computeDispersion_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr,  CSLattFuncs const&) >             command_propagateDispersion_; 
+
+  boost::function<QWidget*( QWidget*, BmlContextPtr) >                                  command_computeEdwardsTeng_; 
+  boost::function<QWidget*( QWidget*, BmlContextPtr,  CSLattFuncs const&)>              command_propagateEdwardsTeng_; 
 
 
 };
