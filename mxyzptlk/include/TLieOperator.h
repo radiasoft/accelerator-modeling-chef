@@ -95,15 +95,7 @@ public:
 
   // Member functions (public)
 
-  void SetComponent( int  index,  TJet<T> const&  component );
-  void setComponent( int  index,  TJet<T> const&  component );
-  void setVariable( TJet<T> const&, int );
-  void setVariable( T       const&, int );   // WARNING: this version alters the environment!!
-
   TLieOperator& operator=( TJetVector<T> const& );
-
-  void peekAt();
-  void peekAt( char* );
 
   // Friendly operators ...........................
   friend std::ostream& operator<<<>( std::ostream&, TLieOperator const& );
@@ -147,18 +139,6 @@ template<typename T>
 inline TJetVector<T> TLieOperator<T>::expMap( TJetVector<T> const& x )
 { 
   return this->expMap( 1.0, x  ); 
-}
-
-template<typename T>
-inline void TLieOperator<T>::setComponent( int i, TJet<T> const& x )
-{ 
- this->setVariable( x, i ); 
-}
-
-template<typename T>
-inline void TLieOperator<T>::SetComponent( int i, TJet<T> const& x )
-{ 
- this->setVariable( x, i ); 
 }
 
 
