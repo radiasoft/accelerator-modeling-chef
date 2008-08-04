@@ -64,6 +64,7 @@
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/IntArray.h>
 
+#include <basic_toolkit/IntArray.tcc>
 #include <basic_toolkit/TMatrix.tcc>
 #include <basic_toolkit/TML.tcc>
 #include <basic_toolkit/TVector.tcc>
@@ -506,6 +507,22 @@ template
 boost::function<TVector<double>(TVector<double> const&) > const* 
 boost::addressof( boost::function< TVector<double>(TVector<double> const& )> const& );
 
+
+// ----------------------------------------------------------------------------
+// Instantiations related to NewtonSolver, QuasiNewtonSolver 
+// ----------------------------------------------------------------------------
+
+template
+IntArray::IntArray( int* it1, int* it2 );
+
+template
+IntArray::IntArray( int const* it1, int const* it2 );
+
+template
+void  IntArray::Set( int* it1, int* it2);
+
+template
+void  IntArray::Set( int const* it1, int const* it2);
 
 
 #endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
