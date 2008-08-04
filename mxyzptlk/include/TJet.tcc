@@ -59,6 +59,8 @@
 ******  
 ******  Mar 2008 ostiguy@fnal
 ******  - Jet composition and evaluation code refactored and optimized. 
+****** Aug 2008 ostiguy@fnal.gov 
+******* - proxy class-based coefficient access using [] syntax
 ******
 **************************************************************************
 *************************************************************************/
@@ -87,18 +89,39 @@ using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//            Implementation of the class TJet<T>
-// 
-//
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+class TJet<T>::coeff_proxy {  
+
+public: 
+
+   coeff_proxy( JLPtr<T> jl, IntArray const& index ) : jl_(jl), index_(index) {}
+
+   operator T const () const { 
+           return jl_->getTermCoefficient( index_);
+   }
+
+   coeff_proxy& operator=( T const& value ) 
+   { 
+       jl_->setTermCoefficient(value, index_ );
+       return *this;
+   }
+
+private:
+   
+    JLPtr<T>     jl_; 
+    IntArray  index_;
+};
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T>::TJet( typename TJet<T>::jl_t const& jl) : jl_( jl) 
 {}
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -204,12 +227,10 @@ void TJet<T>::getReference( T* r ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJet<T>::setVariable( const T& x,
-                               int const& j, 
-                               EnvPtr<T> const& pje )
+void TJet<T>::setVariable(  int const& j, T const& x, EnvPtr<T> pje )
 {
   if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->setVariable( x, j, pje );  
+  jl_->setVariable( j, x, pje );  
 
 }
 
@@ -218,11 +239,10 @@ void TJet<T>::setVariable( const T& x,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJet<T>::setVariable( const T& x,
-                               int const& j )
+void TJet<T>::setVariable( int const& j, T const& x )
 {
    if (jl_.count() > 1 ) jl_ = jl_->clone();
-   jl_->setVariable( x, j);   // DANGER !! Alters the environment!
+   jl_->setVariable( j, x );   // DANGER !! Alters the environment!
 }
 
 
@@ -231,11 +251,11 @@ void TJet<T>::setVariable( const T& x,
 
 
 template<typename T>
-void TJet<T>::setVariable( int const& j, EnvPtr<T> const& pje ) 
+void TJet<T>::setVariable( int const& j, EnvPtr<T> pje ) 
 {
 
     if (jl_.count() > 1 ) jl_ = jl_->clone();
-    jl_->setVariable( j, pje );
+    jl_->setVariable( j, pje);
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -304,9 +324,7 @@ void TJet<T>::addTerm( TJLterm<T> const& a)
 template<typename T>
 T TJet<T>::getTermCoefficient(IntArray const& exp) const
 {
-
   return jl_->getTermCoefficient(exp);
-
 } 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -401,7 +419,7 @@ void Tcoord<T>::instantiate( int index, EnvPtr<T> const& pje) {
 
  this->index_ = index;
  this->jl_    = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
- this->jl_->setVariable( refpt_, index );  
+ this->jl_->setVariable( index, refpt_);  
 
 } 
 
@@ -454,7 +472,7 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 
   this->index_ = index;
   this->jl_   = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
-  this->jl_->setVariable( refpt_, index );  
+  this->jl_->setVariable( index, refpt_ );  
 } 
 
 //
@@ -474,15 +492,12 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 template<typename T>
 TJet<T>& TJet<T>::operator+=( TJet<T> const& rhs ) 
 {
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_ += rhs.jl_; 
 
-  // in-place addition not implemented (yet) for jl
-  // if (jl_.count() > 1 ) jl_ = jl_->clone();
-  // jl_ += jl_.rhs; 
+  //jl_ = jl_ + rhs.jl_; 
 
-   jl_ = jl_ + rhs.jl_; 
-
-
-   return *this;
+  return *this;
  }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -492,12 +507,10 @@ TJet<T>& TJet<T>::operator+=( TJet<T> const& rhs )
 template<typename T>
 TJet<T>& TJet<T>::operator-=( TJet<T> const& rhs ) 
 {
+ if (jl_.count() > 1 ) jl_ = jl_->clone();
+ jl_ -= rhs.jl_ ;
 
- // in-place subtraction not implemented (yet)
- // if (jl_.count() > 1 ) jl_ = jl_->clone();
- // jl_ += rhs.jl_ ;
-
-  jl_ = jl_ - rhs.jl_ ;
+ //jl_ = jl_ - rhs.jl_ ;
 
   return *this; 
 }
@@ -545,90 +558,65 @@ TJet<T>& TJet<T>::operator/=( const T& y )
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-template<typename T> 
-bool operator==( TJet<T> const& x, TJet<T> const& y ) 
-{
-
- return *(x.jl_) == *(y.jl_);
-
-}
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-bool operator==( TJet<T> const& x, const T& y)
+bool operator==( TJet<T> const& lhs, TJet<T> const& rhs ) 
 {
-
- return *(x.jl_) == y;
-
+ return *lhs.jl_ == *rhs.jl_;
 }
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-bool operator==( const T& x, TJet<T> const& y)
+bool operator==( TJet<T> const& lhs, T const& rhs)
 {
-
- return *(y.jl_) == x;
-
-}
-#if 0 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-bool TJet<T>::operator==( TJet<T> const& y ) const
-{
- return *(this->jl_) == *(y.jl_);
+ return  *(lhs.jl_) == rhs;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-bool TJet<T>::operator==( const T& y ) const
+template<typename T> 
+bool operator==( T const& lhs, TJet<T> const& rhs)
 {
- return *(this->jl_) == y;
+  return  *(rhs.jl_) == lhs;
 }
-
-#endif
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-template<typename T>
-bool operator!=( TJet<T> const& x, TJet<T> const& y ) 
+template<typename T> 
+bool operator!=( TJet<T> const& lhs, TJet<T> const& rhs ) 
 {
- return !( x == y );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool operator!=( TJet<T> const& x, const T& y ) 
-{
- return !( x == y );
+ return !( lhs==rhs );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-bool operator!=( const T& x, TJet<T> const& y ) 
+template<typename T> 
+bool operator!=( TJet<T> const& lhs, T const& rhs)
 {
- return !( x == y );
+ return !( lhs==rhs );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T> 
+bool operator!=( T const& lhs, TJet<T> const& rhs)
+{
+ return !( rhs==lhs);
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 TJet<T>& TJet<T>::operator+=( T const& x ) 
 {   
-
  if (jl_.count() > 1 ) jl_ = jl_->clone();
  jl_+= x;
 
@@ -641,12 +629,10 @@ TJet<T>& TJet<T>::operator+=( T const& x )
 template<typename T>
 TJet<T>& TJet<T>::operator-=( T const& x ) 
 {
-
  if (jl_.count() > 1 ) jl_ = jl_->clone();
  jl_ -=(x);
 
  return *this;
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -845,8 +831,8 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
  EnvPtr<T> theEnv(x.Env());
  TJet<T>   z (theEnv);
 
- IntArray m( theEnv->numVar(), 0);
- IntArray n( theEnv->numVar(), 0);
+ IntArray m( theEnv->numVar() );
+ IntArray n( theEnv->numVar() );
 
  if( theEnv->spaceDim()%2 != 0 ) {
    throw( GenericException( __FILE__, __LINE__, 
@@ -1256,4 +1242,38 @@ double sobolev_norm ( TJet<T> const& arg)
 {
   return arg.jl_->maxAbs();
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  
+template<typename T>
+TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )
+{
+  TJet<T> jet(env);
+  jet.setVariable( index, env ); 
+  return jet;
+}   
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::coeff_proxy const 
+TJet<T>::operator[]( IntArray const& index ) const
+{
+   return coeff_proxy( this->jl_, index);
+}   
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+typename TJet<T>::coeff_proxy 
+TJet<T>::operator[]( IntArray const& index)
+{
+  return  coeff_proxy( this->jl_, index );   
+}    
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

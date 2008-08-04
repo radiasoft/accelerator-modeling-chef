@@ -184,22 +184,22 @@ TJet<std::complex<double> > operator/( TJet<std::complex<double> > const& x,    
 TJet<std::complex<double> > operator/( double                      const& x,      TJet<std::complex<double> > const& y );
 
 template<typename T> 
-bool operator==( TJet<T> const&, TJet<T> const& );
+bool operator==( TJet<T> const&,   TJet<T> const& );
 
 template<typename T> 
-bool operator==( TJet<T> const&, T const& );
+bool operator==( TJet<T> const&,          T const& );
 
 template<typename T> 
-bool operator==( T  const&, TJet<T> const& );
+bool operator==( T       const&,    TJet<T> const& );
 
 template<typename T> 
-bool operator!=( TJet<T> const& x, TJet<T> const& y ); 
+bool operator!=( TJet<T> const& x,  TJet<T> const& y ); 
 
 template<typename T> 
-bool operator!=( TJet<T> const& x, T const& y );
+bool operator!=( TJet<T> const& x,        T const& y );
 
 template<typename T> 
-bool operator!=( T  const& x, TJet<T>  const& y ); 
+bool operator!=( T       const& x, TJet<T>  const& y ); 
 
 template<typename T> 
 TJet<T> operator^(    TJet<T>  const&,  TJet<T>   const& );
@@ -272,10 +272,10 @@ template<typename T>
 JL1Ptr<T> makeJL( EnvPtr<T> const& pje,  T value = T());
 
 template<typename T>
-JLPtr<T> makeJL( const IntArray&, T const&, EnvPtr<T> const& pje );
+JLPtr<T> makeJL(  IntArray  const&, T const&, EnvPtr<T> const& pje );
 
 template<typename T>
-JL1Ptr<T> makeJL( const IntArray&, T const&, EnvPtr<T> const& pje );
+JL1Ptr<T> makeJL( IntArray  const&, T const&, EnvPtr<T> const& pje );
 
 
 // ==============================================================================
@@ -353,19 +353,23 @@ private:
      JLPtr<T> const operator()( TJet<T> const& o) const { return o.jl_; }
   };
 
+  class coeff_proxy; 
+
 public:
 
   // Constructors and destructors_____________________________________
 
-  TJet( EnvPtr<T> const&     env     = TJetEnvironment<T>::getLastEnv() );
+  TJet( EnvPtr<T>    const&  env     = TJetEnvironment<T>::getLastEnv() );
   TJet( T, EnvPtr<T> const&  env     = TJetEnvironment<T>::getLastEnv() );
 
-  TJet( TJet<T> const& );
+  TJet( TJet const& );
 
   explicit TJet( TJet<T> const& ,  EnvPtr<T> const&  env); // converter 
 
   template<typename U>
   TJet( TJet<U> const& );
+  
+  static TJet<T> makeCoordinate( EnvPtr<T> env, int index );   
 
   virtual ~TJet();
 
@@ -388,8 +392,8 @@ public:
   T         getTermCoefficient(IntArray const& exp) const; 
   void      setTermCoefficient(T const& value, IntArray const& exp); 
 
-  // T const& operator[]( IntArray const& );   
-  // T &      operator[]( IntArray const& );   
+  coeff_proxy const  operator[]( IntArray const& ) const;   
+  coeff_proxy        operator[]( IntArray const& );   
 
   bool isNilpotent() const;
 
@@ -407,11 +411,10 @@ public:
   int  getWeight()  const;
   int  getAccuWgt() const;
 
-  void setVariable( T   const&,  int const&, EnvPtr<T> const& pje);
-  void setVariable( int const&,              EnvPtr<T> const& pje );
-  void setVariable( T   const&,  int const& );
-  void setVariable( int const& );
-
+  void setVariable(  int const&, T   const&, EnvPtr<T> pje);
+  void setVariable(  int const&, T   const&);
+  void setVariable(  int const&,             EnvPtr<T> pje );
+  void setVariable(  int const& );
 
   void     setStandardPart( T const& std ); 
   T const& standardPart() const            { return jl_->standardPart();    }
@@ -445,6 +448,10 @@ public:
   friend bool operator==<>( TJet const&, TJet const& );
   friend bool operator==<>( TJet const&, T const& );
   friend bool operator==<>( T    const&, TJet const& );
+
+  friend bool operator!=<>( TJet const&, TJet const& );
+  friend bool operator!=<>( TJet const&, T const& );
+  friend bool operator!=<>( T    const&, TJet const& );
 
   TJet& operator=( TJet const& );
   TJet& operator=( T    const& );
