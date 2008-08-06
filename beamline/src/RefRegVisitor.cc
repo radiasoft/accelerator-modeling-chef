@@ -42,9 +42,12 @@
 ****** -RefRegVisitor now makes no implicit assumptions about flat beamlines.
 ******  
 ****** May 2007 ostiguy@fnal.gov
-******
-****** - registration process now done in a single loop.
-******
+******  - registration process now done in a single loop.
+****** Aug 2008 ostiguy@fnal.gov 
+****** - use BRho (rather than KE ) to compute magnet strengths scaling
+****** - code now works for _all_ particle species
+****** - visitor can now safely be called an arbitary no times on the same 
+******   beamline.    
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -97,7 +100,7 @@ RefRegVisitor::RefRegVisitor( Particle const& p )
    : BmlVisitor(), 
             particle_(p),
  revolutionFrequency_(-1.0),
-     initialMomentum_( p.ReferenceMomentum() ),
+     initialBRho_( p.ReferenceBRho() ),
             errorCode_(OKAY)
 {}
 
@@ -109,7 +112,7 @@ RefRegVisitor::RefRegVisitor( RefRegVisitor const& x )
   :        BmlVisitor(),
            particle_(x.particle_),
    revolutionFrequency_(x.revolutionFrequency_),
-       initialMomentum_(x.initialMomentum_),
+       initialBRho_(x.initialBRho_),
              errorCode_(OKAY)
 {}
 
@@ -176,10 +179,10 @@ void RefRegVisitor::visit( beamline& x )
      for (beamline::deep_iterator it  = x.deep_begin();
                                   it != x.deep_end(); ++it) {
     
-        double momentum = particle_.ReferenceMomentum();
+        double brho = particle_.ReferenceBRho();
        
-        if(   (initialMomentum_ != momentum) && ( (*it)->isMagnet() ) && ( !getInnerFlag())  )  { 
-             (*it)->setStrengthScale( momentum/initialMomentum_ );
+        if(   (initialBRho_ != brho ) && ( (*it)->isMagnet() ) && ( !getInnerFlag())  )  { 
+             (*it)->setStrengthScale( brho/ initialBRho_ );
 	}
 
         (*it)->accept(*this);
