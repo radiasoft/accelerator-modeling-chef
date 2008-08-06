@@ -1791,7 +1791,7 @@ void BeamlineBrowser::infoWriter::visit( marker const& x )
 void BeamlineBrowser::infoWriter::visit( sector const& x )
 {
   Mapping theMap( x.getMap() );
-  MatrixD M( theMap.Jacobian() );
+  MatrixD M( theMap.jacobian() );
 
   ostringstream zlorfik;
   zlorfik << M;

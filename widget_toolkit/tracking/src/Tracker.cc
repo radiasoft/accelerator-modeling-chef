@@ -1826,7 +1826,7 @@ void Tracker::_tool_pdicOrb()
         MatrixD M(6,6), N(4,4);
         int k [] = { 0, 1, 3, 4 };
 
-        M = stuff.Jacobian();
+        M = stuff.jacobian();
         for( int i = 0; i < 4; i++ ) {
           for( int j = 0; j < 4; j++ ) {
             N[i][j] = M[k[i]][ k[j] ];

@@ -107,7 +107,7 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
 
  // Establishing linear normal form coordinates
 
- MatrixD  A = theMapping.Jacobian();
+ MatrixD  A = theMapping.jacobian();
  MatrixC  B = A.eigenVectors();
 
  // Normalizing the linear normal form coordinates
