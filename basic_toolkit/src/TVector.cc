@@ -34,15 +34,19 @@
 ******
 ******  - templated version
 ****** 
-******  October 2006
-******   
+******  Oct 2006 ostiguy@fnal.gov
 ******  - new implementation based on std::vector<> 
-******                                                              
+******  Aug 2008 ostiguy@fnal.gov
+******  - added real() and imag()
+******  
+******                                                                
 **************************************************************************
 *************************************************************************/
 
 #include <basic_toolkit/TVector.h>
 #include <basic_toolkit/GenericException.h>
+#include <boost/function.hpp>
+#include <complex>
 #include <numeric>
 #include <functional>
 #include <complex>
@@ -92,3 +96,26 @@ double TVector<std::complex<double> >::Norm () const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+static double Real( std::complex<double> const& value) { return value.real(); }
+static double Imag( std::complex<double> const& value) { return value.imag(); }
+
+TVector<double> real( TVector<std::complex<double> > const& v)
+{
+  TVector<double> result( v.Dim() );
+  boost::function< double( std::complex<double> const& ) > fReal = &Real;
+  std::transform( v.begin(), v.end(),  result.begin(),  fReal);
+  return result;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+TVector<double> imag( TVector<std::complex<double> > const& v)
+{
+  TVector<double> result( v.Dim() );
+  boost::function< double( std::complex<double> const& ) > fImag = &Imag;
+  std::transform( v.begin(), v.end(),  result.begin(), fImag );
+  return result; 
+}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
