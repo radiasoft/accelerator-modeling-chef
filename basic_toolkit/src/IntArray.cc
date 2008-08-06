@@ -3,7 +3,6 @@
 **************************************************************************
 ******                                                                
 ******  BASIC TOOLKIT:  Low level utility C++ classes.
-******  Version:   4.1                    
 ******                                    
 ******  File:      IntArray.cc
 ******                                                                
@@ -165,7 +164,7 @@ IntArray& IntArray::operator= ( IntArray const& x )
 
 IntArray IntArray::operator+( IntArray const& y) const 
 {
-  IntArray result( Dim(), (exponent_t()) );
+  IntArray result( Dim() );
 
   std::transform( begin(), end(), y.begin(), result.begin(), std::plus<exponent_t>());
 
@@ -180,7 +179,7 @@ IntArray IntArray::operator+( IntArray const& y) const
 
 IntArray  IntArray::operator*  ( IntArray const& rhs) const
 {
-  IntArray result( Dim(), (exponent_t()) );
+  IntArray result( Dim() );
   transform( begin(), end(), rhs.begin(), result.begin(), std::multiplies<exponent_t>() );
 
   result.weight_is_valid_ = false;  
