@@ -91,7 +91,7 @@ class DLLEXPORT RefRegVisitor : public BmlVisitor
 
   Particle      particle_;
   double        revolutionFrequency_;
-  double  const initialMomentum_;
+  double  const initialBRho_;
   int           errorCode_;
 
 };
