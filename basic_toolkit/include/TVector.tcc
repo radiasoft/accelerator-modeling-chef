@@ -35,7 +35,7 @@
 ******  Mar 2006  ostiguy@fnal.gov 
 ******  - templated version
 ******  Oct 2006   ostiguy@fnal.gov
-******  - new implementation based on std::vector<>
+******  - completely new implementation based on std::vector<>
 ******  Mar 2007 ostiguy@fnal.gov 
 ******  - exposed iterator interface
 ******  Aug 2008 ostiguy@fnal.gov
@@ -43,9 +43,6 @@
 ******                                                               
 **************************************************************************
 *************************************************************************/
-#ifndef TVECTOR_TCC
-#define TVECTOR_TCC
-
 
 #include <stdlib.h>
 
@@ -105,6 +102,14 @@ template<typename T>
 TVector<T>::TVector( TVector const& x )
  : theVector_( x.theVector_), ofPtr_( x.ofPtr_ ) 
 { }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T> 
+TVector<T>::TVector( int dimension, T value )
+ : theVector_( dimension, value ), ofPtr_(0) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -327,59 +332,6 @@ bool TVector<T>::operator!= ( TVector<T> const& x ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if  0
-template<typename T>
-bool TVector<T>::operator< ( TVector<T> const& x ) const
-{
-  const_iterator it  =   begin(); 
-  const_iterator itx = x.begin(); 
-
-  for (; it != end() ; ++it, ++itx ) { 
-    if ( !( (*it) < (*itx) ) ) return false;
-  }
-  return true;
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool TVector<T>::operator<= (  TVector<T> const& x ) const
-{
-
-  const_iterator it  =   begin(); 
-  const_iterator itx = x.begin(); 
-
-  for (; it != end() ; ++it, ++itx ) { 
-    if ( (*it) > (*itx) ) return false;
-  }
-  return true;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-bool TVector<T>::operator>= ( TVector<T> const& x ) const
-{
-
-  const_iterator it  =   begin(); 
-  const_iterator itx = x.begin(); 
-
-  for (; it != end() ; ++it, ++itx ) { 
-    if ( (*it) < (*itx) ) return false;
-  }
-  return true;
-
-
-}
-
-#endif
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 bool TVector<T>::IsNull() const
 {
@@ -395,12 +347,12 @@ bool TVector<T>::IsNull() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TVector<T>::Abs() const
+TVector<double> TVector<T>::Abs() const
 {
-  TVector<T> z( Dim() );
+ TVector<double> z( Dim() );
 
-  const_iterator it  =  begin(); 
-       iterator itz  = z.begin(); 
+ TVector<double>::iterator itz  = z.begin(); 
+             const_iterator it  =  begin(); 
 
   for ( ; it !=  end(); ++it, ++itz ) {
     (*itz) = std::abs(*it);
@@ -511,9 +463,7 @@ ostream& operator<<( std::ostream & os, TVector<T> const& v )
 template <typename T>
 typename TVector<T>::iterator TVector<T>::begin()
 {
-
  return theVector_.begin();
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -531,9 +481,7 @@ typename TVector<T>::const_iterator TVector<T>::begin()  const
 template <typename T>
 typename TVector<T>::iterator  TVector<T>::end()
 {
-
     return theVector_.end();
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -542,9 +490,7 @@ typename TVector<T>::iterator  TVector<T>::end()
 template <typename T>
 typename TVector<T>::const_iterator TVector<T>::end() const
 {
-
-    return theVector_.end();
-
+  return theVector_.end();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -553,9 +499,7 @@ typename TVector<T>::const_iterator TVector<T>::end() const
 template <typename T>
 typename TVector<T>::reverse_iterator TVector<T>::rbegin()
 {
-
    return theVector_.rbegin();  
-
 }
 
 
@@ -565,10 +509,7 @@ typename TVector<T>::reverse_iterator TVector<T>::rbegin()
 template <typename T>
 typename TVector<T>::const_reverse_iterator TVector<T>::rbegin() const
 {
-
-   return theVector_.rbegin(); 
-
-
+  return theVector_.rbegin(); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -577,10 +518,7 @@ typename TVector<T>::const_reverse_iterator TVector<T>::rbegin() const
 template <typename T>
 typename TVector<T>::reverse_iterator TVector<T>::rend() 
 {
-
    return theVector_.rend(); 
-
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -590,7 +528,6 @@ template <typename T>
 typename TVector<T>::const_reverse_iterator TVector<T>::rend()  const
 {
     return theVector_.rend(); 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -620,4 +557,3 @@ TMatrix<T> operator%( TVector<T> const& lhs,       TVector<T> const& rhs)
 
 }
 
-#endif // TVECTOR_TCC
