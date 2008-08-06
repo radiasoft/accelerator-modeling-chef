@@ -77,6 +77,8 @@ TVector<T> operator*( TVector<T> const&,       T const&);
 template<typename T>
 TMatrix<T> operator%( TVector<T> const&,       TVector<T> const&); // outer product 
 
+TVector<double> real( TVector<std::complex<double> > const& );
+TVector<double> imag( TVector<std::complex<double> > const& );
 
 template<typename T>
 class DLLEXPORT TVector {
@@ -115,12 +117,13 @@ public:
   reverse_iterator        rend();
   const_reverse_iterator  rend()   const;
 
-  // Constructors and the destructor __________________________
 
   TVector( int  dimension= 3,  T const* components=0, OutputFormat* ofmt=0 );
 
+  explicit TVector( int dimension,  T value );
+
   template <typename Iterator_t>
-  TVector( Iterator_t first,  Iterator_t last);
+  explicit TVector( Iterator_t first,  Iterator_t last);
 
   TVector( TVector    const& );
   TVector( TMatrix<T> const& m); // implicit conversion
@@ -184,10 +187,10 @@ public:
   void          setOutputFormat  ( OutputFormat* x      ) { ofPtr_ = x; }
   OutputFormat* getOutputFormat()                         { return ofPtr_; }
 
-  TVector      Abs              () const;
-  double       Norm             () const;
-  TVector      Unit             () const;           // returns unit vector
-  TVector      Rotate           ( TVector const& v,  double const&  theta ) const;
+  TVector<double>      Abs              () const;
+  double               Norm             () const;
+  TVector              Unit             () const;           // returns unit vector
+  TVector              Rotate           ( TVector const& v,  double const&  theta ) const;
                                                       // rotates v through 
                                                       // an angle theta using
                                                       // *this as the axis
