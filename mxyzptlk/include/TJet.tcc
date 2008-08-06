@@ -840,17 +840,17 @@ TJet<T> operator^( TJet<T> const& x, TJet<T> const& y )
           "Environment not correct for performing bracket." ) );
   }
 
-   
- for( int i=0; i< theEnv->dof(); ++i) {
+ int const dof =  theEnv->spaceDim()/2; 
+ for( int i=0; i< dof ; ++i) {
 
     m[ i ] = 1;
-    n[ i + theEnv->dof() ] = 1;
+    n[ i + dof ] = 1;
 
  
     z += ( ( x.D(m) * y.D(n) ) - ( x.D(n) * y.D(m) ) );
  
     m[ i ] = 0;
-    n[ i + theEnv->dof() ] = 0;
+    n[ i + dof ] = 0;
  }
 
  return z;
