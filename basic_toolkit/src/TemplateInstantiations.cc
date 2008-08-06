@@ -26,7 +26,7 @@
 ******  Revision (Sep 2005):
 ******
 ******             Jean-Francois Ostiguy
-******             ostiguy@fnal.gov                                                   
+******             ostiguy@fnal.gov
 ******             
 ******             - segregated explicit template instantiations
 ******             - new template Vector class
@@ -34,11 +34,11 @@
 ****** Mar 2007 ostiguy@fnal.gov
 ******
 ******  - eliminated need for instantiating dependant classes, in particular
-******    private classes used by the STL implementation.  
+******    private classes used by the STL implementation.
 ******                                                                
 **************************************************************************
+**************************************************************************
 *************************************************************************/
-#ifdef BASICTOOLKIT_EXPLICIT_TEMPLATES
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -53,6 +53,8 @@
 #include <functional>
 #include <algorithm>
 #include <list>
+#include <boost/typeof/typeof.hpp>
+#include <boost/function.hpp>
 
 #include <basic_toolkit/TMatrix.h>
 #include <basic_toolkit/MathConstants.h>
@@ -74,7 +76,6 @@
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
 
-#include <boost/function.hpp>
 
 using namespace std;
 using std::ostringstream;
@@ -86,7 +87,6 @@ const double limit = double(1e-14);
 // ----------------------------------------------------------------------------
 // Instantiations related to specialized allocator
 // ----------------------------------------------------------------------------
-
 template 
 class boost::pool<>;
 
@@ -208,7 +208,7 @@ double* std::fill_n<double*, int, int>(double*, int, int const&);
 
 
 // ----------------------------------------------------------------------------
-// Instantiations related to Vector Class
+// Instantiations related to TVector 
 // ----------------------------------------------------------------------------
 
 template class TVector<double>;
@@ -236,8 +236,6 @@ template complex<double> std::inner_product(TVector<complex<double> >::const_ite
                                             complex<double>, 
                                             std::plus<std::complex<double> >, TVector<complex<double> >::op_mult ); 
 
-//template TVector<double>::TVector( std::vector<double>::iterator,                 
-//                                   std::vector<double>::iterator);
 
 template TVector<std::complex<double> >::TVector( std::vector<std::complex<double> >::iterator,  
                                                   std::vector<std::complex<double> >::iterator);
@@ -245,10 +243,34 @@ template TVector<std::complex<double> >::TVector( std::vector<std::complex<doubl
 template TVector<double>::TVector( TVector<double>::iterator,   
                                    TVector<double>::iterator);
 
-//template TVector<std::complex<double> >::TVector( TVector<std::complex<double> >::iterator,   
-//                                         TVector<std::complex<double> >::iterator);
+template TVector<std::complex<double> >::TVector(  TVector<std::complex<double> >::const_iterator,  
+                                                   TVector<std::complex<double> >::const_iterator);
+
+template TVector<double>::TVector( double*, double* );
+
+template TVector<double>::TVector( double const*, double const* );
+
+template TVector<std::complex<double> >::TVector( std::complex<double>*,  
+                                                  std::complex<double>* );
+
+template TVector<std::complex<double> >::TVector( std::complex<double> const*,  
+                                                  std::complex<double> const* );
+
+
+template 
+TVector<double>::iterator
+std::transform( TVector<std::complex<double> >::const_iterator, 
+                TVector<std::complex<double> >::const_iterator, 
+                TVector<double>::iterator, 
+                boost::function<double(std::complex<double> const&)> ); 
+
 
 template TMatrix<double> operator%( TVector<double> const&,       TVector<double> const&); // outer product 
+
+template TVector<double>::iterator                std::copy( double const*, double const*, TVector<double>::iterator );   
+template TVector<std::complex<double> >::iterator std::copy( std::complex<double> const*, 
+                                                             std::complex<double> const*, TVector<std::complex<double> >::iterator );   
+
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Matrix Class
@@ -353,6 +375,26 @@ template std::ostream& operator<< (std::ostream&, TML<std::complex<double> > con
 
 template bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&);
 
+template
+double* 
+std::transform( double const*,  double const*,  
+                double const*,  double*,  std::plus<double> );
+
+template
+std::complex<double> * 
+std::transform( std::complex<double>  const*, std::complex<double>  const*, 
+                std::complex<double> const*,  std::complex<double> *,  std::plus<std::complex<double> > );
+
+template
+double* 
+std::transform(  double const*, double const*, 
+                 double const*,  double*, std::minus<double> );
+
+template
+std::complex<double> * 
+std::transform(  std::complex<double>  const*, std::complex<double>  const*, 
+                 std::complex<double>  const*, std::complex<double> *, std::minus<std::complex<double> > );
+
 
 //template std::ostream& operator<< <std::complex<double> >(ostream&, MLPtr<std::complex<double> >const&);
 
@@ -444,6 +486,12 @@ template class FFTFunctor<std::complex<double>,       double,               fft_
 template class FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >;
 template class FFTFunctor<std::complex<double>, std::complex<double>, fft_backward >;
 
+template class FFTFunctorImpl<std::complex<double>, std::complex<double>, (transform_type)-1>;
+template class FFTFunctorImpl<double,               std::complex<double>, (transform_type)-1>;
+template class FFTFunctorImpl<std::complex<double>, double,               (transform_type) 1>;
+template class FFTFunctorImpl<std::complex<double>, std::complex<double>, (transform_type) 1>;
+
+
 template
 FFTFunctor<double, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<double, std::complex<double>, fft_forward>&);
 
@@ -474,16 +522,12 @@ boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> co
 template class ConvolutionFunctor<double>;
 template class ConvolutionFunctor<std::complex<double> >;
 
+template class ConvolutionFunctorImpl<double>;
+template class ConvolutionFunctorImpl<std::complex<double> >;
+
 template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
 
-
-// ----------------------------------------------------------------------------
-// Misc Instantiations related to STL
-// ----------------------------------------------------------------------------
-
-template class
-std::list<int>;
 
 // ----------------------------------------------------------------------------
 // Instantiations related to NewtonSolver, QuasiNewtonSolver 
@@ -524,5 +568,115 @@ void  IntArray::Set( int* it1, int* it2);
 template
 void  IntArray::Set( int const* it1, int const* it2);
 
+// ----------------------------------------------------------------------------
+// Misc Instantiations related to STL
+// ----------------------------------------------------------------------------
 
-#endif //BASICTOOLKIT_EXPLICIT_TEMPLATES
+template class
+std::list<int>;
+
+
+template
+double*
+std::copy( double const*, double const*, double* );
+
+//template
+//class std::binder2nd<std::divides<std::complex<double> > >; 
+
+template
+TVector<double>::iterator 
+std::transform(  TVector<double>::iterator, 
+                 TVector<double>::iterator,  
+                 TVector<double>::iterator, 
+                 std::negate<double> ); 
+template
+TVector<std::complex<double> >::iterator 
+std::transform(  TVector<std::complex<double> >::iterator, 
+                 TVector<std::complex<double> >::iterator,  
+                 TVector<std::complex<double> >::iterator, 
+                 std::negate<std::complex<double> > ); 
+template
+TVector<double>::iterator 
+std::transform(  TVector<double>::iterator, 
+                 TVector<double>::iterator,  
+                 TVector<double>::iterator, 
+                 std::binder2nd< std::divides<double> > ); 
+template
+TVector<std::complex<double> >::iterator 
+std::transform(  TVector<std::complex<double> >::iterator, 
+                 TVector<std::complex<double> >::iterator,  
+                 TVector<std::complex<double> >::iterator, 
+                 std::binder2nd< std::divides<std::complex<double> > > ); 
+template
+TVector<double>::iterator 
+std::transform(  TVector<double>::iterator, 
+                 TVector<double>::iterator,  
+                 TVector<double>::iterator, 
+                 std::binder2nd< std::multiplies<double> > ); 
+template
+TVector<std::complex<double> >::iterator 
+std::transform(  TVector<std::complex<double> >::iterator, 
+                 TVector<std::complex<double> >::iterator,  
+                 TVector<std::complex<double> >::iterator, 
+                 std::binder2nd< std::multiplies<std::complex<double> > > ); 
+
+template
+IntArray::iterator
+std::copy( IntArray::const_iterator, 
+           IntArray::const_iterator, IntArray::iterator ); 
+
+template
+IntArray::iterator
+std::copy( IntArray::iterator, 
+           IntArray::iterator, IntArray::iterator ); 
+
+template
+TVector<double>::iterator
+std::copy( TVector<double>::const_iterator,  
+           TVector<double>::const_iterator,  
+           TVector<double>::iterator);   
+
+template
+TVector<std::complex<double> >::iterator
+std::copy( TVector<std::complex<double> >::const_iterator,  
+           TVector<std::complex<double> >::const_iterator,  
+           TVector<std::complex<double> >::iterator);   
+
+template
+TVector<double>::iterator
+std::transform( TVector<double>::const_iterator,  
+                TVector<double>::const_iterator, 
+                TVector<double>::const_iterator, 
+                TVector<double>::iterator, std::plus<double> ); 
+
+template
+TVector<double>::iterator
+std::transform( TVector<double>::const_iterator,  
+                TVector<double>::const_iterator, 
+                TVector<double>::const_iterator, 
+                TVector<double>::iterator, std::minus<double> ); 
+
+template
+TVector<std::complex<double> >::iterator
+std::transform( TVector<std::complex<double> >::const_iterator,  
+                TVector<std::complex<double> >::const_iterator, 
+                TVector<std::complex<double> >::const_iterator, 
+                TVector<std::complex<double> >::iterator, 
+                std::plus<std::complex<double> > ); 
+template
+ TVector<std::complex<double> >::iterator
+std::transform( TVector<std::complex<double> >::const_iterator,  
+                TVector<std::complex<double> >::const_iterator, 
+                TVector<std::complex<double> >::const_iterator, 
+                TVector<std::complex<double> >::iterator, 
+                std::minus<std::complex<double> > ); 
+
+
+
+// FIX ME !!!!!!!!!!!!!!!!                                                   
+
+template void std::__uninitialized_fill_n_aux(std::complex<double>*, unsigned int, std::complex<double> const&, std::__false_type);
+template class std::_List_base<int, std::allocator<int> >;
+template int* std::fill_n<int*, unsigned int, int>(int*, unsigned int, int const&);
+
+
