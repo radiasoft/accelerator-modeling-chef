@@ -40,7 +40,7 @@ class BBLens::Propagator : public BasePropagator {
 
  public:
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator* Clone() const;
 
   void       setup( bmlnElmnt& elm);
 

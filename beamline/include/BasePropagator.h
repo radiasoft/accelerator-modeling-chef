@@ -110,7 +110,8 @@ class BasePropagator {
 
    BasePropagator& operator=( BasePropagator const& o); 
 
-   virtual BasePropagator* Clone() const                                 = 0;
+   virtual  BasePropagator* Clone() const    = 0;
+   virtual ~BasePropagator();
 
    virtual void  setup( bmlnElmnt& );
   
@@ -122,7 +123,6 @@ class BasePropagator {
    virtual void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
 
 };
-
 
 #endif // BASEPROPAGATOR_H
 

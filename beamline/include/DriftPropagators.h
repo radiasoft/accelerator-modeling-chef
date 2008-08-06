@@ -40,7 +40,7 @@ class drift::Propagator : public BasePropagator {
 
  public:
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator* Clone() const;
 
   void  operator()( bmlnElmnt const& elm,    Particle& p);
   void  operator()( bmlnElmnt const& elm, JetParticle& p);
@@ -48,7 +48,7 @@ class drift::Propagator : public BasePropagator {
 
 class MADDriftPropagator : public BasePropagator {
 
-  MADDriftPropagator* Clone() const { return new MADDriftPropagator(*this); }
+  MADDriftPropagator* Clone() const;
 
   void  operator()( bmlnElmnt const& elm,    Particle& p);
   void  operator()( bmlnElmnt const& elm, JetParticle& p);

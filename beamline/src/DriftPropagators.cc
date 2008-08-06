@@ -110,6 +110,13 @@ template void mad_propagate( drift const& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+drift::Propagator* drift::Propagator::Clone() const
+{
+  return new Propagator(*this); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void drift::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
@@ -130,6 +137,14 @@ void drift::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p )
 
 // ****   MAD style optical propagator ***** 
 
+
+MADDriftPropagator* MADDriftPropagator::Clone() const
+{
+  return new MADDriftPropagator(*this); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void MADDriftPropagator::operator()( bmlnElmnt const& elm, Particle& p )  
 {
