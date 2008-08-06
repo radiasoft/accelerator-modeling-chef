@@ -122,8 +122,7 @@ void createStandardEnvironments( int deg );
 //----------------------------------------------------------------------------------------------
 
 template<typename T>
-class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> >
-{
+class DLLEXPORT TJetEnvironment: public ReferenceCounter<TJetEnvironment<T> > {
 
  public:
  
@@ -190,90 +189,66 @@ struct ScratchArea {
   static void        BeginEnvironment(int maxweight); 
   static EnvPtr<T>   EndEnvironment();
 
-  static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0 );
-
-  static EnvPtr<T>   makeInverseJetEnvironment(TMapping<T> const& map); 
-  static EnvPtr<T>   makeJetEnvironment(int maxweight, Vector const& );
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, TVector<T> const& = TVector<T>() );
+  static EnvPtr<T>   makeJetEnvironment(int maxweight, TVector<double> const& );
 
   template<typename U>
   static EnvPtr<T>   makeJetEnvironment( EnvPtr<U> const& );
 
+  static EnvPtr<T>   makeInverseJetEnvironment(TMapping<T> const& map); 
+
   template<typename U>
   static EnvPtr<double>   makeRealJetEnvironment( EnvPtr<U> const& );
 
-
-  static EnvPtr<double>  getApproxJetEnvironment(int maxweight, const Vector& refpoints);
+  static EnvPtr<double>   getApproxJetEnvironment(int maxweight, Vector const& refpoints);
 
   void dispose();
 
-  friend void EnvTerminate();
   
   TJetEnvironment& operator=( TJetEnvironment<T> const& rhs);
               
-   // operators -------------------------------------------
+  template <typename U>
+  bool operator==( TJetEnvironment<U> const& ) const;
 
-
-  bool operator==( TJetEnvironment<T> const& ) const;
   bool operator!=( TJetEnvironment<T> const& ) const;
 
-  bool approxEq( TJetEnvironment<T> const&, Vector const& tolerance ) const;
-  bool approxEq( TJetEnvironment<T> const&, double const* tolerance ) const;
-
-     // Second argument is a "tolerance" Vector. There is
-     //   no default: the invoking program must declare
-     //   its tolerance.
-     // The function returns "true" if the reference points
-     //   match within the tolerance. 
-     // The second version is riskier. There is no guarantee
-     //   that the array of doubles will not be overrun.
-
-   bool hasReferencePoint( Vector const& ) const;
-   bool hasReferencePoint( double const* ) const;
-   bool hasApproxReferencePoint( Vector const&, Vector const& tolerance ) const;
-   bool hasApproxReferencePoint( double const*, Vector const& tolerance ) const;
-   bool hasApproxReferencePoint( Vector const&, double const* tolerance ) const;
-   bool hasApproxReferencePoint( double const*, double const* tolerance ) const;
-
-   // queries --------------------------------------------------------
+  bool is_equivalent(  TJetEnvironment<T> const&, TVector<double> const& tol ) const;
 
 
-   int             numVar()      const { return   numVar_;      }
-   int             spaceDim()    const { return   spaceDim_;    }
-   int             dof()         const { return   dof_;         }
-   const T*        refPoint()    const { return   refPoint_;    }
-   int             maxWeight()   const { return   maxWeight_;   }
+
+  int               numVar()      const { return   numVar_;      }
+  int               spaceDim()    const { return   spaceDim_;    }
+  TVector<T> const& refPoint()    const { return   refPoint_;    }
+  int               maxWeight()   const { return   maxWeight_;   }
  
-   std::vector<T>&            monomial()        const { return   scratch_->monomial_;    }
-   std::vector<TJLterm<T> >&  TJLmml()          const { return   scratch_->TJLmml_;      }
-   std::vector<JLPtr<T> >&    TJLmonomial()     const { return   scratch_->TJLmonomial_; }
+  std::vector<T>&            monomial()        const { return   scratch_->monomial_;    }
+  std::vector<TJLterm<T> >&  TJLmml()          const { return   scratch_->TJLmml_;      }
+  std::vector<JLPtr<T> >&    TJLmonomial()     const { return   scratch_->TJLmonomial_; }
 
-   int             multOffset    (int const& lhs, int const& rhs)  const   { return  scratch_->multOffset(lhs, rhs); }
-
-
-   int             offsetIndex( IntArray const& exp) const; 
-   int             weight( int const& offset )       const;
-   IntArray        exponents( int const& offset )    const  { return scratch_->index_table_[offset]; }
-
-   int             maxTerms()  const                         { return scratch_->maxTerms_;}
-
-   static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
-   static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
+  int             multOffset    (int const& lhs, int const& rhs)  const   { return  scratch_->multOffset(lhs, rhs); }
 
 
-   static void       pushEnv( EnvPtr<T> const& );
+  int           offsetIndex( IntArray const& exp) const; 
+  int                weight( int const& offset )  const;
+  IntArray const& exponents( int const& offset )  const  { return scratch_->index_table_[offset]; }
 
-   static EnvPtr<T>  topEnv ();
-   static void       popEnv();
+  int             maxTerms()  const                      { return scratch_->maxTerms_;}
 
-  
-   // debugging 
+  static EnvPtr<T> const& getLastEnv()                   { return  lastEnv_; }
+  static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)     { lastEnv_ = pje;  return pje;} 
 
-   void debug()              const                        { scratch_->debug(); }
 
-   // Streams --------------------------------------------------------- 
+  static void             pushEnv( EnvPtr<T> const& );
 
-   friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
-   friend std::istream& streamIn<>(std::istream&, EnvPtr<T>& pje );
+  static EnvPtr<T>        topEnv ();
+  static void             popEnv();
+
+
+  void debug()              const                        { scratch_->debug(); }
+
+
+  friend std::ostream& operator<< <>( std::ostream&, const TJetEnvironment& );
+  friend std::istream& streamIn<>(std::istream&, EnvPtr<T>& pje );
 
  private:
 
@@ -282,38 +257,29 @@ struct ScratchArea {
   int                numVar_;              // Number of scalar variables associated with 
                                            //   the JLC variable.
   int                spaceDim_;            // This is, if you will, the dimension of phase space.
-  int                dof_;                 // The number of degrees of freedom = SpaceDim / 2.
-  T*                 refPoint_;            // Reference point in phase space about which 
+  TVector<T>         refPoint_;            // Reference point in phase space about which 
                                            //   derivatives are taken.
   int                maxWeight_;           // Maximum acceptable weight of a variable,
                                            //   equivalent to the maximum order of derivatives
                                            //   to be carried through calculations.
 
-  bool               pbok_;                // Taking Poisson brackets is OK: the dimension of 
-                                           //   phase space is even.
-
   ScratchArea<T>*    scratch_;             // shared pointer to a common scratch area. Scratch is 
                                            // unique for (maxweight, nvar) 
 
 
- // Static data members ------------------------------------------------
- 
   static std::deque<Tcoord<T>*>&        coordinates_;    // used only during new environment creation 
   static std::deque<Tparam<T>*>&        parameters_;     // used only during new environment creation
   static std::list<ScratchArea<T>* >&   scratch_areas_;  // list of existing scratch areas 
   static std::list<EnvPtr<T> >&         environments_;   // list of existing environments
   static std::stack<EnvPtr<T> >         envstack_;       // env stack 
 
-                                                               // Note: there is a list for every typename parameter T
   static int   tmp_maxWeight_; // used by Begin/EndEnvironment() 
-
-
-// Private Member  functions -------------------------------------
-
 
   ScratchArea<T>*  buildScratchPads(int maxweight, int numvar);
 
-  TJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0 );
+  TJetEnvironment(int maxweight, int nvar, int spacedim );
+
+  TJetEnvironment(int maxweight, int nvar, int spacedim, TVector<T> const& = TVector<T>() );
 
   TJetEnvironment(TJetEnvironment const&);
 
@@ -327,6 +293,14 @@ struct ScratchArea {
 template<>
 template<>
 EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const&);
+
+template <>
+template <>
+bool  TJetEnvironment<std::complex<double> >::operator==( TJetEnvironment<double> const& ) const;
+
+template <>
+template <>
+bool  TJetEnvironment<double>::operator==( TJetEnvironment<std::complex<double> > const& ) const;
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -348,7 +322,6 @@ template <typename T>
 inline int      TJetEnvironment<T>::weight( int const& offset )       const  
 { 
    return scratch_->index_table_[offset].Weight(); 
-
 }
 
 
