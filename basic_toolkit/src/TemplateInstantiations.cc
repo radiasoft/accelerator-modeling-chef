@@ -433,26 +433,45 @@ template class FFTFunctor<std::complex<double>, std::complex<double>, fft_forwar
 template class FFTFunctor<std::complex<double>, std::complex<double>, fft_backward >;
 
 template
-FFTFunctor<double, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<double, std::complex<double>, fft_forward>&);
+FFTFunctor<double, std::complex<double>, fft_forward>*  
+boost::addressof(FFTFunctor<double, std::complex<double>, fft_forward>&);
 
 template
-FFTFunctor<std::complex<double>, double, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, double, fft_backward>&);
+FFTFunctor<std::complex<double>, double, fft_backward>* 
+boost::addressof(FFTFunctor<std::complex<double>, double, fft_backward>&);
 
 template
-FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>&);
-
-template
-FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>& );
-
-template
-FFTFunctor<std::complex<double>, std::complex<double>, fft_forward> const* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>,  fft_forward> const& );
+FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>*  
+boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_forward>&);
 
 template 
-FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const* boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const& );
+FFTFunctor<std::complex<double>, double,              fft_forward > const* 
+boost::addressof(FFTFunctor<std::complex<double>, double, fft_forward> const&);
+
+template
+FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>* 
+boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>& );
+
+template
+FFTFunctor<std::complex<double>, std::complex<double>, fft_forward> const* 
+boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>,  fft_forward> const& );
+
+template 
+FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const* 
+boost::addressof(FFTFunctor<std::complex<double>, std::complex<double>, fft_backward> const& );
 
 
+template 
+FFTFunctor<double, std::complex<double>,  fft_backward> const* 
+boost::addressof(FFTFunctor<double, std::complex<double>,  fft_backward > const&);
 
+template 
+FFTFunctor<std::complex<double>, double, (transform_type)1> const* 
+boost::addressof(FFTFunctor<std::complex<double>, double, (transform_type)1> const&);
 
+template 
+FFTFunctor<double, std::complex<double>, (transform_type)-1> const* 
+boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> const&);
 
 template class ConvolutionFunctor<double>;
 template class ConvolutionFunctor<std::complex<double> >;
