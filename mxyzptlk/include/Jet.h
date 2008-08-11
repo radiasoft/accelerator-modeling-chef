@@ -51,7 +51,7 @@
 typedef TJL<double>                    JL;
 typedef TJL<std::complex<double> >     JLC;
 
-#include <mxyzptlk/Jetfwd.h>
+#include <mxyzptlk/JetFwd.h>
 
 
 #endif // JET_H
