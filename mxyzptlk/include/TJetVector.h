@@ -225,7 +225,7 @@ public:
 
   // Functions related to differentiation
   void weightedDerivative( IntArray const&, T* );
-  void derivative( IntArray const&,  T* );
+  void         derivative( IntArray const&, T* );
   
 
   // Queries ...
@@ -233,6 +233,7 @@ public:
   EnvPtr<T>   Env()          const;
   TVector<T>  standardPart() const;
   TVector<T>  getReference() const;
+  int         maxAccuWgt()   const; 
 
   // Utilities ..
 

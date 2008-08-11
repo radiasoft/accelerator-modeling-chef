@@ -846,17 +846,42 @@ TVector<T> TJetVector<T>::standardPart() const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T> TJetVector<T>::getReference() const 
+int TJetVector<T>::maxAccuWgt() const 
 {
+ // returns the _maximum_ accurate weight 
 
- TVector<T> r( myEnv_->numVar() );
-
- for( int i= 0; i < myEnv_->numVar(); ++i) { 
-   r[i] = myEnv_->refPoint()[i];
+ int aw = 0;
+ for ( const_iterator it=begin(); it!=end(); ++it ) {
+   aw = std::max( aw, it->getAccuWgt() ); 
  }
-
- return r;
+ return aw;
 }
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJetVector<T>::printCoeffs() const
+{
+  (*pcout) << "\n\nBegin TJetVector<double>::printCoeffs() ......\n"
+       << "Dimension: " << comp_.size() 
+       << ", Weight = " << myEnv_->maxWeight()
+	   << ", Max accurate weight = " << maxAccuWgt() 
+       << std::endl;
+  (*pcout) << "TJetVector<T> reference point: " 
+       << std::endl;
+  for( int i=0; i<myEnv_->numVar(); ++i) 
+    (*pcout) << std::setw(20) << setprecision(12) 
+         << myEnv_->refPoint()[i]
+         << "\n" << std::endl;
+
+  for ( int i=0; i<comp_.size(); ++i) {
+    (*pcout) << "TJetVector<T>::printCoeffs(): Component " << i << std::endl;
+    comp_[i].printCoeffs();
+  }
+  (*pcout) << "End TJetVector<T>::printCoeffs() ......\n" << std::endl;
+}
+
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
