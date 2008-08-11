@@ -95,65 +95,6 @@ TJetVector<complex<double> > operator*( const double& c, const TJetVector<comple
 
 
 template<>
-void TJetVector<double>::printCoeffs() const
-{
-  int i;
-  (*pcout) << "\n\nBegin TJetVector<double>::printCoeffs() ......\n"
-       << "Dimension: " << comp_.size() 
-       << ", Weight = " << myEnv_->maxWeight()
-	   << ", Max accurate weight = " << begin()->getAccuWgt() // FIXME !!!
-       << std::endl;
-  (*pcout) << "JetVector reference point: " 
-       << std::endl;
-  for( i = 0; i < myEnv_->numVar(); i++ ) 
-    (*pcout) << std::setw(20) << setprecision(12) 
-         << myEnv_->refPoint()[i]
-         << "\n" << std::endl;
-
-  for ( i = 0; i < comp_.size(); i++ ) {
-    (*pcout) << "TJetVector<double>::printCoeffs(): Component " << i << std::endl;
-    comp_[i].printCoeffs();
-  }
-  (*pcout) << "End TJetVector<double>::printCoeffs() ......\n" << std::endl;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<>
-void TJetVector<complex<double> >::printCoeffs() const
-{
-  int i;
-  (*pcout) << "\n\nBegin TJetVector<complex<double> >::printCoeffs() ......\n"
-       << "Dimension: " << comp_.size() 
-       << ", Weight = " << myEnv_->maxWeight()
-	   << ", Max accurate weight = " << begin()->getAccuWgt()   // FIXME !!
-       << std::endl;
-  (*pcout) << "TJetVector<complex<double> > reference point: " 
-       << std::endl;
-  for( i = 0; i < myEnv_->numVar(); i++ ) 
-    (*pcout) << std::setw(20) << setprecision(12) 
-         << real( myEnv_->refPoint()[i] )
-         << " + i"
-         << std::setw(20) << setprecision(12) 
-         << imag( myEnv_->refPoint()[i] )
-         << "\n" << std::endl;
-
-  for ( i = 0; i < comp_.size(); i++ ) {
-    (*pcout) << "TJetVector<complex<double> >::printCoeffs(): Component " << i << std::endl;
-    comp_[i].printCoeffs();
-  }
-  (*pcout) << "End TJetVector<complex<double> >::printCoeffs() ......\n" << std::endl;
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<>
  TJetVector<double> TJetVector<double>::Rotate ( TJetVector<double> const& v, double theta ) const
 {
 
