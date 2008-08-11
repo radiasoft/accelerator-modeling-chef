@@ -159,7 +159,7 @@ TMapping<T>::TMapping( char const*, EnvPtr<T> const& pje  )
  int i=0;
  for( typename TMapping<T>::iterator it  = this->begin(); 
                                      it != this->end(); ++it, ++i) {
-     it->setVariable( i, T(), pje );
+       *it = TJet<T>::makeCoordinate( pje, i ); 
  } 
 
 }
