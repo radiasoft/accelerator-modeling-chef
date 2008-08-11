@@ -132,7 +132,7 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
           "Phase space has dimension zero." ) );
  }
  
- if( 2*(s/2) != s ) {
+ if(  s%2 != 0 ) {
    ostringstream uic;
    uic  << "Phase space has odd dimension = " << s;
    throw( GenericException( __FILE__, __LINE__, 
@@ -153,12 +153,6 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
   TLieOperator<T>::comp_[i] = - x.D( ndx );
   ndx[i - s/2] = 0;
  }
-
- for( int i=s; i< n; ++i) {
-  TLieOperator<T>::comp_[i].setEnvTo( pje );
-  TLieOperator<T>::comp_[i] = T();
- }
-
 }
 
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
