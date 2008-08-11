@@ -148,7 +148,7 @@ protected:
 
 public:
 
-  JetParticle( Particle const& u , EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  JetParticle( Particle const& u , EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
   JetParticle( JetParticle const& );
 
   JetParticle& operator=(JetParticle const&);
@@ -238,7 +238,7 @@ struct DLLEXPORT  JetProton : public JetParticle {
   JetProton( double    const&    momentum );
   JetProton( JetProton const& );
 
-  explicit JetProton( Proton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  explicit JetProton( Proton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
 
   JetProton& operator=(JetProton const&);
 
@@ -252,7 +252,7 @@ struct DLLEXPORT  JetAntiProton : public JetParticle {
   JetAntiProton( double        const& momentum  );
   JetAntiProton( JetAntiProton const& );
 
-  explicit JetAntiProton( AntiProton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  explicit JetAntiProton( AntiProton const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
 
   JetAntiProton& operator=(JetAntiProton const&);
 
@@ -266,7 +266,7 @@ struct DLLEXPORT  JetElectron : public JetParticle {
   JetElectron( double      const& momentum );
   JetElectron( JetElectron const& );
 
-  explicit JetElectron( Electron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv());
+  explicit JetElectron( Electron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv());
 
   JetElectron& operator=(JetElectron const&);
 
@@ -280,7 +280,7 @@ struct DLLEXPORT  JetPositron : public JetParticle {
   JetPositron( double      const& momentum );
   JetPositron( JetPositron const& );
 
-  explicit JetPositron( Positron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  explicit JetPositron( Positron const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
 
   JetPositron& operator=(JetPositron const&);
 
@@ -294,7 +294,7 @@ struct DLLEXPORT  JetMuon : public JetParticle {
   JetMuon( double  const& momentum);
   JetMuon( JetMuon const& );
 
-  explicit JetMuon( Muon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  explicit JetMuon( Muon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
 
   JetMuon& operator=(JetMuon const&);
 
@@ -310,7 +310,7 @@ struct DLLEXPORT  JetAntiMuon : public JetParticle {
   JetAntiMuon( JetAntiMuon const& );
 
 
-  explicit JetAntiMuon( AntiMuon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::getLastEnv()); 
+  explicit JetAntiMuon( AntiMuon const& p, EnvPtr<double> const& pje = TJetEnvironment<double>::topEnv()); 
 
   JetAntiMuon& operator=(JetAntiMuon const&);
 
