@@ -826,49 +826,7 @@ void TJetVector<T>::derivative( IntArray const& m, T* x )
 
 
 
-// Query functions |||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-int TJetVector<T>::AccuWgt() const
-{
-  int accuWgt = myEnv_->maxWeight();
-  for( int i = 0; i < comp_.size(); i++ ) {
-   if( myEnv_ != comp_[i].Env() ) {
-     (*pcerr) << "\n\n"
- 	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** TJetVector<T>::AccuWgt()             \n"
- 	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** Inconsistent environments at      \n"
- 	  << "*** WARNING *** index " << i << "                 \n"
- 	  << "*** WARNING ***                                   \n"
- 	  << endl;
-   }
-   if( accuWgt > comp_[i].getAccuWgt() ) accuWgt = comp_[i].getAccuWgt();
-  }
-  return accuWgt;
-}
-
-template<typename T>
-int TJetVector<T>::Weight()  const
-{
-  int weight = -1;
-  for( int i = 0; i < comp_.size(); i++ ) {
-   if( myEnv_ != comp_[i].Env() ) {
-     (*pcerr) << "\n\n"
- 	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** TJetVector<T>::Weight()               \n"
- 	  << "*** WARNING ***                                   \n"
- 	  << "*** WARNING *** Inconsistent environments at      \n"
- 	  << "*** WARNING *** index " << i << "                 \n"
- 	  << "*** WARNING ***                                   \n"
- 	  << endl;
-   }
-   if( weight  < comp_[i].getWeight()  ) weight  = comp_[i].getWeight();
-  }
-  return weight;
-}
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
