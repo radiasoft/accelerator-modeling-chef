@@ -158,7 +158,7 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
 //    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TLieOperator<T>::TLieOperator( char*, EnvPtr<T> const pje  ) 
+TLieOperator<T>::TLieOperator( char const*, EnvPtr<T> const pje  ) 
 : TJetVector<T>( pje->spaceDim(), pje )
 { 
  
@@ -175,7 +175,7 @@ TLieOperator<T>::TLieOperator( char*, EnvPtr<T> const pje  )
  TLieOperator<T>::myEnv_ = pje;
 
  for( int i=0; i< pje->spaceDim(); ++i) 
-  TLieOperator<T>::comp_[i].setVariable( i, T(), pje );
+    TJetVector<T>::comp_[i] = TJet<T>::makeCoordinate( pje, i );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -352,14 +352,11 @@ template<typename T>
 TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x ) 
 {
 
- TJetVector<T> z( x );
+ TJetVector<T> z( x.Dim() );
 
- // Copy constructor used only for formal initialization
- // of attributes.  The initial value of z's components
- // are not relevant.                             - lpjm
- 
- for(  int i=0;  i < x.Dim(); ++i) {
-  z[i] = expMap( t, x[i] );
+ typename TJetVector<T>::const_iterator itx =x.begin(); 
+ for(  typename TJetVector<T>::iterator itz=z.begin() ; itz <z.end(); ++itz, ++itx ) {
+  (*itz) = expMap( t, (*itx) );
  }
  return z;
 }
@@ -369,14 +366,14 @@ TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x )
 template<typename T>
 TJetVector<T> TLieOperator<T>::expMap( TJet<T> const& t, TJetVector<T> const& x ) 
 {
-  TJetVector<T> z( x ); // used only for formal initialization of attributes.  
-                       // The initial value not relevant.  - lpjm
+ TJetVector<T> z( x.Dim() );
 
- for(  int i = 0; i < x.Dim(); ++i) {
-  z[i] = expMap( t, x[i] );
+ typename TJetVector<T>::const_iterator itx =x.begin(); 
+ for(  typename TJetVector<T>::iterator itz=z.begin() ; itz <z.end(); ++itz, ++itx ) {
+  (*itz) = expMap( t, (*itx) );
  }
-
  return z;
+
 }
 
 
