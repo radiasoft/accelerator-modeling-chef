@@ -492,10 +492,10 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 template<typename T>
 TJet<T>& TJet<T>::operator+=( TJet<T> const& rhs ) 
 {
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_ += rhs.jl_; 
+  //if (jl_.count() > 1 ) jl_ = jl_->clone();
+  //jl_ += rhs.jl_; 
 
-  //jl_ = jl_ + rhs.jl_; 
+  jl_ = jl_ + rhs.jl_; 
 
   return *this;
  }
@@ -507,10 +507,10 @@ TJet<T>& TJet<T>::operator+=( TJet<T> const& rhs )
 template<typename T>
 TJet<T>& TJet<T>::operator-=( TJet<T> const& rhs ) 
 {
- if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_ -= rhs.jl_ ;
+ //if (jl_.count() > 1 ) jl_ = jl_->clone();
+ //jl_ -= rhs.jl_ ;
 
- //jl_ = jl_ - rhs.jl_ ;
+ jl_ = jl_ - rhs.jl_ ;
 
   return *this; 
 }
@@ -1249,8 +1249,30 @@ double sobolev_norm ( TJet<T> const& arg)
 template<typename T>
 TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )
 {
+  if ( (index >= env->spaceDim()) || (index < 0) ) {
+    throw GenericException( __FILE__, __LINE__, 
+           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
+           "index not within declared range for coordinates");
+  }
+
   TJet<T> jet(env);
-  jet.setVariable( index, env ); 
+  jet.setVariable( index, env->refPoint()[index], env ); 
+  return jet;
+}   
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  
+template<typename T>
+TJet<T> TJet<T>::makeParameter( EnvPtr<T> env, int index )
+{
+  if ( (index < env->spaceDim() ) || ( index >= env->numVar()) || (index<0) ) {
+    throw GenericException( __FILE__, __LINE__, 
+           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
+           "index not within declared range for parameters");
+  }
+
+  TJet<T> jet(env);
+  jet.setVariable( index, env->refPoint()[index], env ); 
   return jet;
 }   
 

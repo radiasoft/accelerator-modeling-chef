@@ -359,6 +359,9 @@ public:
 
   // Constructors and destructors_____________________________________
 
+  static TJet<T> makeCoordinate( EnvPtr<T> env, int index );   
+  static TJet<T>  makeParameter( EnvPtr<T> env, int index );
+
   TJet( EnvPtr<T>    const&  env     = TJetEnvironment<T>::getLastEnv() );
   TJet( T, EnvPtr<T> const&  env     = TJetEnvironment<T>::getLastEnv() );
 
@@ -369,7 +372,6 @@ public:
   template<typename U>
   TJet( TJet<U> const& );
   
-  static TJet<T> makeCoordinate( EnvPtr<T> env, int index );   
 
   virtual ~TJet();
 
