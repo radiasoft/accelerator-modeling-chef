@@ -18,10 +18,10 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
+******  Author:    Jean-Francois Ostiguy
+******             ostiguy@fnal.gov                         
 ******                                                                
 ******             Fermi National Laboratory, Batavia, IL   60510                                
-******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************
 ****************************************************************************
@@ -47,13 +47,13 @@ using namespace boost::python;
 namespace { 
 
 
-EnvPtr<double> makeJetEnvironment_3_local(int maxweight, int nvar, int spacedim ) 
+EnvPtr<double> makeJetEnvironment_3(int maxweight, int nvar, int spacedim ) 
 {
  
        return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim);
 }
 
-EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim, numeric::array& refpt ) 
+EnvPtr<double> makeJetEnvironment_4(int maxweight, int nvar, int spacedim, numeric::array& refpt ) 
 {
  
   if ( !   refpt.is_c_array() ) 
@@ -67,31 +67,10 @@ EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim,
 }
 
 
-EnvPtr<std::complex<double> > makeJetCEnvironment_3_local(int maxweight, int nvar, int spacedim ) 
+EnvPtr<std::complex<double> > makeJetCEnvironment_3(int maxweight, int nvar, int spacedim ) 
 {
  
        return JetC__environment::makeJetEnvironment(maxweight, nvar, spacedim);
-}
-
-
-EnvPtr<std::complex<double> > getLastEnvC_local() 
-{
-  return JetC__environment::getLastEnv(); 
-}
-
-EnvPtr<double>  getLastEnv_local() 
-{
-  return Jet__environment::getLastEnv(); 
-}
-
-void setLastEnvC_local( EnvPtr<std::complex<double> > const& env) 
-{
-  JetC__environment::setLastEnv(env); 
-}
-
-void setLastEnv_local(  EnvPtr<double> const& env  ) 
-{
-  Jet__environment::setLastEnv(env); 
 }
 
 
@@ -111,17 +90,19 @@ void wrap_mxyzptlk_jetenv() {
 
   def("BeginEnvironment",  &Jet__environment::BeginEnvironment);
   def("EndEnvironment",    &Jet__environment::EndEnvironment);
-  def("makeJetEnvironment",&makeJetEnvironment_3_local);      
-  def("makeJetEnvironment",&makeJetEnvironment_4_local);      
+  def("makeJetEnvironment",&makeJetEnvironment_3 );      
+  def("makeJetEnvironment",&makeJetEnvironment_4 );      
   def("createStandardEnvironments", &createStandardEnvironments);
 
   class_<EnvPtr<double> >  Jet__environmentClass_("Jet__environment", no_init); 
-  Jet__environmentClass_.def("getLastEnv",        &getLastEnv_local ); 
-  Jet__environmentClass_.staticmethod("getLastEnv");
-  Jet__environmentClass_.def("setLastEnv",        &setLastEnv_local );
-  Jet__environmentClass_.staticmethod("setLastEnv");
+  Jet__environmentClass_.def("popEnv",        &Jet__environment::popEnv  ); 
+  Jet__environmentClass_.staticmethod("popEnv");
+  Jet__environmentClass_.def("topEnv",        &Jet__environment::topEnv  ); 
+  Jet__environmentClass_.staticmethod("topEnv");
+  Jet__environmentClass_.def("pushEnv",       &Jet__environment::pushEnv );
+  Jet__environmentClass_.staticmethod("pushEnv");
   Jet__environmentClass_.def( self_ns::str(self));
-  def("makeJetEnvironment", &makeJetEnvironment_3_local);      
+  def("makeJetEnvironment", &makeJetEnvironment_3);      
 
 }
 
@@ -131,13 +112,15 @@ void wrap_mxyzptlk_jetcenv() {
  def("EndEnvironmentC",    &JetC__environment::EndEnvironment  );
  
  class_<EnvPtr<std::complex<double> > >  JetC__environmentClass_("JetC__environment", no_init);
- JetC__environmentClass_.def("getLastEnv",        &getLastEnvC_local ); 
- JetC__environmentClass_.staticmethod("getLastEnv");
- JetC__environmentClass_.def("setLastEnv",        &setLastEnvC_local );
- JetC__environmentClass_.staticmethod("setLastEnv");
+ JetC__environmentClass_.def("popEnv",        &JetC__environment::popEnv ); 
+ JetC__environmentClass_.staticmethod("popEnv");
+ JetC__environmentClass_.def("topEnv",        &JetC__environment::topEnv ); 
+ JetC__environmentClass_.staticmethod("topEnv");
+ JetC__environmentClass_.def("pushEnv",       &JetC__environment::pushEnv );
+ JetC__environmentClass_.staticmethod("pushEnv");
  JetC__environmentClass_.def( self_ns::str(self));
 
- def("makeJetCEnvironment", &makeJetCEnvironment_3_local);      
+ def("makeJetCEnvironment", &makeJetCEnvironment_3 );      
 
  def("toCmplxEnvironment",&toCmplxEnvironment);      
 
