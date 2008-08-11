@@ -54,8 +54,8 @@ void createStandardEnvironments( int deg )
    EnvPtr<std::complex<double> > envc = 
    TJetEnvironment<std::complex<double> >::makeJetEnvironment(deg, 6, 6);  
 
-   TJetEnvironment<double>::setLastEnv( env );
-   TJetEnvironment<std::complex<double> >::setLastEnv( envc );
+   TJetEnvironment<double>::pushEnv( env );
+   TJetEnvironment<std::complex<double> >::pushEnv( envc );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -65,7 +65,9 @@ template<>
 template<>
 EnvPtr<std::complex<double> >  TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double> const& env) {
 
- if  ( *TJetEnvironment<std::complex<double> >::getLastEnv() ==  *env ) return TJetEnvironment<std::complex<double> >::getLastEnv();
+ if  ( *TJetEnvironment<std::complex<double> >::topEnv() ==  *env ) { 
+  return TJetEnvironment<std::complex<double> >::topEnv();
+ }
 
  TVector<std::complex<double> >  tmp_refpoints(env->numVar() ); 
  TVector<std::complex<double> >::iterator itc  =  tmp_refpoints.begin();
