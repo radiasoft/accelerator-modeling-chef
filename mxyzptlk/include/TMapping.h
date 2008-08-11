@@ -77,9 +77,9 @@ class DLLEXPORT TMapping: public TJetVector<T> {
 
  public: 
 
-  TMapping(        EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+  TMapping(        EnvPtr<T> const&  env        = TJetEnvironment<T>::topEnv() );
 
-  TMapping( int n, EnvPtr<T> const&  env        = TJetEnvironment<T>::getLastEnv() );
+  TMapping( int n, EnvPtr<T> const&  env        = TJetEnvironment<T>::topEnv() );
 
   TMapping( TMapping const& );
 
@@ -87,11 +87,11 @@ class DLLEXPORT TMapping: public TJetVector<T> {
   TMapping( TMapping<U> const& );
 
   template<typename iterator_t>
-  TMapping( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); 
+  TMapping( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::topEnv() ); 
 
   TMapping( TJetVector<T> const& );
 
-  explicit TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); // Produces the identity.
+  explicit TMapping( const char* id, EnvPtr<T> const& env = TJetEnvironment<T>::topEnv() ); // Produces the identity.
 
  ~TMapping();
 

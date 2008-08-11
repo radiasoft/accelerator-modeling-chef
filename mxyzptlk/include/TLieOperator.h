@@ -86,10 +86,10 @@ public:
 
   // Constructors and destructors_____________________________________
 
-  TLieOperator( EnvPtr<T> const env = (TJetEnvironment<T>::getLastEnv()) );
+  TLieOperator( EnvPtr<T> const env = (TJetEnvironment<T>::topEnv()) );
   TLieOperator( TLieOperator const& );
   TLieOperator( TJet<T>      const& );      // Creates a Hamiltonian vector field.
-  TLieOperator( char*, EnvPtr<T> const env = (TJetEnvironment<T>::getLastEnv) ); 
+  TLieOperator( char const*, EnvPtr<T> const env = TJetEnvironment<T>::topEnv  ); 
                                             // Creates the identity function.  
   ~TLieOperator();
 

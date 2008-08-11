@@ -148,12 +148,12 @@ public:
   const_reverse_iterator  rend()   const;
 
 
-  TJetVector( EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() );
+  TJetVector( EnvPtr<T> const& env = TJetEnvironment<T>::topEnv() );
 
-  TJetVector( int n,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() );
+  TJetVector( int n,  EnvPtr<T> const& env = TJetEnvironment<T>::topEnv() );
 
   template<typename iterator_t>
-  TJetVector( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::getLastEnv() ); 
+  TJetVector( iterator_t itstart, iterator_t itend,  EnvPtr<T> const& env = TJetEnvironment<T>::topEnv() ); 
 
   TJetVector( TJetVector const& );
 
@@ -231,8 +231,6 @@ public:
   // Queries ...
   int         Dim()          const;
   EnvPtr<T>   Env()          const;
-  int         AccuWgt()      const;
-  int         Weight()       const;
   TVector<T>  standardPart() const;
   TVector<T>  getReference() const;
 
