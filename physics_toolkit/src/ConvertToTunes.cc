@@ -271,9 +271,8 @@ int filterTransverseTunes(  MatrixD const& mtrx,  Vector& nu )
 int ConvertNtoTunes( MappingC&  nu,  CLieOperator& N )
 {
 
-  const std::complex<double> complex_0(0.0, 0.0);
-  const std::complex<double> c_zero = std::complex<double>( 0.0, 0.0 );
-  const std::complex<double> c_i    = std::complex<double>( 0.0, 1.0 );
+  static std::complex<double> const c_zero = std::complex<double>( 0.0, 0.0 );
+  static std::complex<double> const c_i    = std::complex<double>( 0.0, 1.0 );
 
   int returnValue = 0;
 
@@ -294,11 +293,11 @@ int ConvertNtoTunes( MappingC&  nu,  CLieOperator& N )
 
   // Construct the Mapping .......................
 
-  JetC y( thisEnv );    // Specifying environment is not 
-                        // really necessary here.
+  JetC y( thisEnv ); 
+
   for( int i=0; i < N.Dim(); ++i) {
     y = N[i];
-    nu[i] = complex_0;
+    nu[i] = c_zero;
 
     for ( JetC::iterator it= y.begin(); it != y.end(); ++it ) { 
       v = it->coefficient();
