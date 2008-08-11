@@ -4,7 +4,7 @@
 ******                                                                
 ******  Mxyzptlk:  A C++ implementation of differential algebra.      
 ******                                    
-******  File:      TJL.cc
+******  File:      TJL.tcc
 ******                                                               
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -83,12 +83,12 @@
 #include <fstream>
 #include <limits>
 #include <algorithm>
+#include <iterator>
 #include <mxyzptlk/TJetEnvironment.h>
 #include <mxyzptlk/TJetVector.h>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
-#include <boost/scoped_ptr.hpp>
 
 #include <cstring> // for memmove
 
@@ -710,70 +710,6 @@ void TJL<T>::setVariable( int const& j, T const& x, EnvPtr<T> pje)
 
 
 template<typename T>
-void TJL<T>::setVariable( int const& j, const T& x )
-{
- 
-// this member function is meant to be called **ONLY** when a coordinate is instantiated
-
- if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
-   throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T>::setVariable( int const& j, const T& x )", 
-     "Index out of range") );
- }
- 
- clear(); 
- accuWgt_ =  myEnv_->maxWeight();
- weight_  =  0;
-
- appendLinearTerms(  myEnv_->numVar() );
- setStandardPart(x);
- jltermStore_[j+1].value_ =  T(1.0);
-
- lowWgt_ = ( standardPart() != T() ) ? 0 : 1;
-
- }
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
- 
-template<typename T>
-void TJL<T>::setVariable( int const& j, EnvPtr<T> theEnv ) 
-{
-
- if( myEnv_ == 0 ) {
-   throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T>::setVariable(  int const& j, EnvPtr<T> theEnv )", 
-     "Private data myEnv_ is null: object has no environment assigned.") );
- }
-
- if( ( j < 0 ) || ( j >= myEnv_->numVar() ) ) {
-   throw( GenericException( __FILE__, __LINE__, 
-     "void TJL<T>::setVariable(  int const& j, EnvPtr<T> theEnv )", 
-     "Index out of range") );
-
- }
-
- myEnv_ = theEnv;
- 
- clear();
- accuWgt_  =  theEnv->maxWeight();
- weight_   =  0;
-
- T x = theEnv->refPoint()[j];  
- 
- appendLinearTerms(  myEnv_->numVar() );
- setStandardPart(x);
- jltermStore_[j+1].value_ =  T(1.0);
-
- lowWgt_ = ( standardPart() != T() ) ? 0 : 1;
-
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
- 
-template<typename T>
 void TJL<T>::clear() 
 {
  accuWgt_ = 0;
@@ -811,13 +747,12 @@ T TJL<T>::derivative( IntArray const& ind ) const
  T d = weightedDerivative( ind );
  if ( d == T() ) return 0.0;
  
- double n;
  double multiplier = 1.0;
 
  for ( int i=0; i < myEnv_->numVar(); ++i ) {
-   n = ind[i];
+   double n = ind[i];
    while(n)  multiplier *= n--;
-   }
+ }
  
  return multiplier*d;
 }
@@ -852,32 +787,32 @@ T TJL<T>::evaluate( const_iterator_t itb, const_iterator_t ite) const
  // Get the next set of exponents of weight w.
  //---------------------------------------------
 
-   int const maxterms = bcfRec( weight_ + myEnv_->numVar(), myEnv_->numVar() );
-   int idx            = 0; 
-
-   while( ++idx < maxterms ) {
+ int const maxterms = bcfRec( weight_ + myEnv_->numVar(), myEnv_->numVar() );
  
-     IntArray exponents = myEnv_->exponents(idx);
+ for ( int idx=1; idx<maxterms; ++idx) {
 
-     int* p = std::find_if( &exponents[0], &exponents[ myEnv_->numVar() ], std::bind2nd( std::not_equal_to<int>(),0 ) ); 
+   IntArray exponents = myEnv_->exponents(idx);
 
+   IntArray::iterator p = std::find_if( exponents.begin(), exponents.end(), std::bind2nd( std::not_equal_to<int>(),0 ) ); 
+   int i =  std::distance(exponents.begin(),p);
  
-     // The value of the _monomial associated with this composition
-     // is obtained by multiplying a factor into a previously
-     // computed monomial.
+   // The value of the _monomial associated with this composition
+   // is obtained by multiplying a factor into a previously
+   // computed monomial.
 
-     --(*p);
+   //--(*p);
 
-     T term = monomial[ myEnv_->offsetIndex( exponents ) ];
+   --exponents[i];
+   T term = monomial[ myEnv_->offsetIndex( exponents ) ];
+   ++exponents[i];
 
-     ++(*p);
+   //++(*p);
 
-     monomial[ myEnv_->offsetIndex( exponents ) ] = term * u[*p];
+   monomial[ myEnv_->offsetIndex( exponents ) ] = term * u[i];
  
-   } // while
-
+ }
  
- // Monomials have been now stored at this point.
+ // Monomials have been now be evaluated.
  // Now traverse the JL variable and evaluate.
  
  T v = T();
@@ -935,30 +870,32 @@ JLPtr<T> TJL<T>::compose(  const_iterator_t itb, const_iterator_t ite ) const //
  // For all weights higher than 0 ...
  // Get the next set of exponents of weight w.
 
-   int const maxterms = bcfRec( weight_ + myEnv_->numVar(), myEnv_->numVar() );
+ int const maxterms = bcfRec( weight_ + myEnv_->numVar(), myEnv_->numVar() );
 
-   for ( int idx=1; idx<maxterms; ++idx) {
+ for ( int idx=1; idx<maxterms; ++idx) {
+
+   IntArray exponents = myEnv_->exponents(idx);
+
+   // Find the first non-zero exponent.
+
+   IntArray::iterator p = std::find_if( exponents.begin(), exponents.end(), std::bind2nd( std::not_equal_to<int>(),0 ) ); 
+   int i =  std::distance( exponents.begin(), p );
  
-     IntArray exponents = myEnv_->exponents(idx);
+   // The value of the monomial associated with this composition
+   // is obtained by multiplying a factor into a previously
+   // computed monomial.
 
-     // Find the first non-zero exponent.
+   // --(*p); // decrease the exponent    
 
-     int* p = std::find_if( &exponents[0], &exponents[ myEnv_->numVar() ], std::bind2nd( std::not_equal_to<int>(),0 ) ); 
- 
-     // The value of the monomial associated with this composition
-     // is obtained by multiplying a factor into a previously
-     // computed monomial.
+   --exponents[i];
+   JLPtr<T> term = tjlmonomial[ myEnv_->offsetIndex( exponents ) ];
+   ++exponents[i];
 
-     --(*p); // decrease the exponent    
-
-     JLPtr<T> term = tjlmonomial[ myEnv_->offsetIndex( exponents ) ];
-
-     ++(*p);
+   // ++(*p);
     
-     tjlmonomial[ myEnv_->offsetIndex( exponents )] = u[*p]*term; 
-
-   } // End while loop.
-
+   tjlmonomial[ myEnv_->offsetIndex( exponents )] = u[i]*term; 
+   
+ } 
  
  // -----------------------------------------------
  // Monomials have been stored.
@@ -1123,11 +1060,8 @@ JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//      Operators for class JL
+//------------------------------------------------------------------
+//      Operators for class TJL
 //------------------------------------------------------------------
 
 template<typename T>
@@ -1238,7 +1172,6 @@ bool operator!=(  T const& lhs, TJL<T> const& rhs )
 template<typename T>
 TJL<T>& TJL<T>::operator=( T const& x ) 
 {
- 
  clear();
 
  appendLinearTerms( myEnv_->numVar() ); 
@@ -1430,7 +1363,7 @@ JLPtr<T>  TJL<T>::cos() const
    return  (  (eps_c *= cs) - (eps_s *= sn) );
  }
  else {                               
-   return epsCos( epsilon ); // x is pure infinitesimal
+   return epsCos( epsilon ); // epsilon is pure infinitesimal
  }
 
 }
@@ -1462,9 +1395,12 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
 
     ++nsteps;
 
-    if ( nsteps > mx_maxiter_ ) { (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsSin " << std::endl 
-                                            << "*** WARNING ***  Results may not be accurate."                         << std::endl;
-                                   break;
+    if ( nsteps > mx_maxiter_ ) { 
+              (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ 
+                        << "iterations in epsSin " << std::endl 
+                        << "*** WARNING ***  Results may not be accurate."
+                         << std::endl;
+              break;
     }
   } 
   z->accuWgt_ = epsilon->accuWgt_;
@@ -1496,8 +1432,13 @@ JLPtr<T> TJL<T>::epsCos( JLPtr<T> const& epsilon )
     double n2  = ++n;
     term *= 1.0/static_cast<T>(n1*n2);              // term = ( ( term*epsq ) / ++n ) / ++n;  
     ++nsteps;
-    if ( nsteps > mx_maxiter_ )  (*pcerr) << "*** WARNING **** More than " << mx_maxiter_<< "iterations in epsCos " << std::endl  
-                                          << "*** WARNING **** Results may not be accurate." << std::endl; 
+    if ( nsteps > mx_maxiter_ )  { 
+            (*pcerr) << "*** WARNING **** More than " << mx_maxiter_
+                     << "iterations in epsCos " << std::endl  
+                     << "*** WARNING **** Results may not be accurate." 
+                     << std::endl; 
+            break;
+    }   
  }
  
  z->accuWgt_ = epsilon->accuWgt_;
@@ -1687,11 +1628,16 @@ JLPtr<T> TJL<T>::epsPow( JLPtr<T> const& epsilon, double const& s )
    term *= epsilon;                                  
    term *= T(--f)/ static_cast<T>(++n);
    ++nsteps;   
+   if ( nsteps > mx_maxiter_ ) { 
+       (*pcerr)  << "*** WARNING *** More than " << mx_maxiter_ 
+                 << "iterations in epsPow " 
+                 << std::endl 
+                 << "*** WARNING ***  Results may not be accurate."
+                 << std::endl;
+       break;          
+   } 
  }
  
- if ( nsteps > mx_maxiter_ ) (*pcerr)  << "*** WARNING **** More than " << mx_maxiter_ << "iterations in epsPow " << std::endl 
-                                       << "*** WARNING ***  Results may not be accurate."                         << std::endl;
-
  z->accuWgt_ = epsilon->accuWgt_;
 
  return z;
@@ -1918,19 +1864,17 @@ JLPtr<T> TJL<T>::atan() const
   z = z - dz;
   c = z->cos();                                       // c = cos( z );
   dz = c*( z->sin() - x*c );
- 
+  if( iter >= mx_maxiter_ ) {
+    (*pcerr) <<  "*** WARNING ***                         \n" 
+             <<  "*** WARNING *** JLPtr<T>& atan()            \n" 
+             <<  "*** WARNING *** Over " 
+             << mx_maxiter_  << " iterations used;    \n"
+             <<  "*** WARNING *** result may be incorrect.    \n" 
+             <<  "*** WARNING ***                             \n" 
+             << std::endl;
+     break;
+  }
  }
-
- if( iter >= mx_maxiter_ ) {
-  (*pcerr) <<  "*** WARNING ***                         \n" 
-       <<  "*** WARNING *** JLPtr<T>& atan()            \n" 
-       <<  "*** WARNING *** Over " 
-                << mx_maxiter_  << " iterations used;    \n"
-       <<  "*** WARNING *** result may be incorrect.    \n" 
-       <<  "*** WARNING ***                             \n" 
-       << std::endl;
- }
-
  return z;
 }
  
@@ -2016,7 +1960,7 @@ JLPtr<T> TJL<T>::D( IntArray const& n ) const
 
  for(  TJLterm<T>* p= jltermStore_;  p<jltermStoreCurrentPtr_; ++p  ) {
  
-   boost::scoped_ptr<TJLterm<T> > q( new TJLterm<T>( *p ) );
+   TJLterm<T> q( *p );
    IntArray exponents( myEnv_->exponents( p->offset_) );  
  
    doit = true;
@@ -2041,15 +1985,15 @@ JLPtr<T> TJL<T>::D( IntArray const& n ) const
      // -- Make final changes in private data of the TJLterm<T> and
      //    absorb it into the answer.
 
-     (q->value_)   *= f;              
-     (q->weight_)  -= w;              
-     (q->offset_)   = myEnv_->offsetIndex(exponents); 
+     (q.value_)   *= f;              
+     (q.weight_)  -= w;              
+     (q.offset_)   = myEnv_->offsetIndex(exponents); 
    
-     if ( q->weight_ < 2 ) {
-      z->jltermStore_[q->offset_].value_ = q->value_;  
+     if ( q.weight_ < 2 ) {
+      z->jltermStore_[q.offset_].value_ = q.value_;  
      }
        else {  
-      z->append( *q );
+      z->append( q );
 
      } //  if (q->weight_ < 2 )
    } //  if( doit )
