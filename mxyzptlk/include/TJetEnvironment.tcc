@@ -116,8 +116,8 @@ using FNAL::pcerr;
 //  Static variables
 //--------------------------------------------------------------------------------- 
 
-template<typename T> 
-EnvPtr<T>                                     TJetEnvironment<T>::lastEnv_; // defaults to a null pointer
+//template<typename T> 
+//EnvPtr<T>                                     TJetEnvironment<T>::lastEnv_; // defaults to a null pointer
 
 template<typename T> 
 std::stack<EnvPtr<T> > TJetEnvironment<T>::envstack_;
@@ -268,7 +268,7 @@ EnvPtr<T> TJetEnvironment<T>::EndEnvironment()
   // !TJetEnvironment<T>::coordinates_.empty()
   //----------------------------------------------------------------------.
    
-  TJetEnvironment<T>::setLastEnv( pje );  
+  // TJetEnvironment<T>::setLastEnv( pje );  
 
   return pje;
 }
@@ -432,8 +432,9 @@ TJetEnvironment<T>::ScratchArea<U>::ScratchArea(TJetEnvironment<U>* pje, int w, 
  index_table_.resize(maxTerms_);
 
  new ( &TJLmml_[0] ) TJLterm<U>( startValue, 0, 0 );
+
  weight_offsets_[0] = 0; 
- index_table_[0]    = exponents;
+    index_table_[0] = exponents;
 
  int i = 1;
  for( int wd = 1; wd <= maxWeight_; ++wd ) {

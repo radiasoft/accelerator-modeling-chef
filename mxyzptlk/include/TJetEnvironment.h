@@ -230,17 +230,15 @@ struct ScratchArea {
 
   int           offsetIndex( IntArray const& exp) const; 
   int                weight( int const& offset )  const;
+  int         weight_offset( int const& weight )  const;  
   IntArray const& exponents( int const& offset )  const  { return scratch_->index_table_[offset]; }
 
   int             maxTerms()  const                      { return scratch_->maxTerms_;}
 
-  static EnvPtr<T> const& getLastEnv()                   { return  lastEnv_; }
-  static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)     { lastEnv_ = pje;  return pje;} 
-
-
-  static void             pushEnv( EnvPtr<T> const& );
 
   static EnvPtr<T>        topEnv ();
+
+  static void             pushEnv( EnvPtr<T> const& );
   static void             popEnv();
 
 
@@ -322,6 +320,15 @@ template <typename T>
 inline int      TJetEnvironment<T>::weight( int const& offset )       const  
 { 
    return scratch_->index_table_[offset].Weight(); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+inline int      TJetEnvironment<T>::weight_offset( int const& weight )       const  
+{ 
+   return scratch_->weight_offsets_[weight]; 
 }
 
 
