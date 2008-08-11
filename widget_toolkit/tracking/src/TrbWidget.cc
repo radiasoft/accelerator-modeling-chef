@@ -383,7 +383,8 @@ TrbWidget::TrbWidget( list<Orbit*>& theOrbits )
 
 TrbWidget::~TrbWidget()
 {
-  for ( std::list<Orbit*>::iterator it = _myOrbits.begin();   it != _myOrbits.end(); ++it ){
+  for ( std::list<Orbit*>::iterator it = _myOrbits.begin();
+        it != _myOrbits.end(); ++it ){
     delete (*it);
   }
 }
