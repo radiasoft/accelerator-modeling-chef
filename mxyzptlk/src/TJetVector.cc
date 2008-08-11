@@ -100,8 +100,8 @@ void TJetVector<double>::printCoeffs() const
   int i;
   (*pcout) << "\n\nBegin TJetVector<double>::printCoeffs() ......\n"
        << "Dimension: " << comp_.size() 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
+       << ", Weight = " << myEnv_->maxWeight()
+	   << ", Max accurate weight = " << begin()->getAccuWgt() // FIXME !!!
        << std::endl;
   (*pcout) << "JetVector reference point: " 
        << std::endl;
@@ -128,8 +128,8 @@ void TJetVector<complex<double> >::printCoeffs() const
   int i;
   (*pcout) << "\n\nBegin TJetVector<complex<double> >::printCoeffs() ......\n"
        << "Dimension: " << comp_.size() 
-       << ", Weight = " << Weight()
-       << ", Max accurate weight = " << AccuWgt() 
+       << ", Weight = " << myEnv_->maxWeight()
+	   << ", Max accurate weight = " << begin()->getAccuWgt()   // FIXME !!
        << std::endl;
   (*pcout) << "TJetVector<complex<double> > reference point: " 
        << std::endl;
