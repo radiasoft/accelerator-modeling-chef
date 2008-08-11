@@ -105,9 +105,7 @@ Orbit::~Orbit()
        it != history_.end(); ++it ) {
     delete (*it);
   }
-
   history_.clear();
-
 }
 
 
@@ -840,17 +838,14 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
 
- 
         if ( _topTracker->orbits_.empty() ) return;
 
         for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
-	                                 it != _topTracker->orbits_.end(); ++it )
+                                          it != _topTracker->orbits_.end(); ++it )
         {
           orbitPtr = *it;
-
-            for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
-	                                       oit  != orbitPtr->history_.end(); ++oit ) {
-
+          for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
+                                             oit  != orbitPtr->history_.end(); ++oit ) {
             vec = *oit;
             // Horizontal
 
@@ -866,10 +861,22 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
 
             z[2] = 1000.0*sqrt( u*u + v*v );  // ??? Temporary kludge ???
   
-            newOrbitPtr->add( z );
+            if( !newOrbitPtr ) 
+            {
+              newOrbitPtr = new Orbit( z );
+              newOrbitPtr->setColor( orbitPtr->Red(), 
+                                     orbitPtr->Green(), 
+                                     orbitPtr->Blue()   );
+            }
+            else 
+            {
+              newOrbitPtr->add( z );
+            }
+
           }
 
           orbits3D.push_back( newOrbitPtr );
+          newOrbitPtr = 0;
         }
 
         TrbWidget* trbPtr = new TrbWidget( orbits3D );
@@ -882,26 +889,27 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
       else if( (typeid(*_transformPtr) == typeid(NormH)) ||
                (typeid(*_transformPtr) == typeid(NormV))    )
       {
-        list<Orbit*> orbits3D;
-        Vector z(3);
         double a, b, c;
         double xc = ( _xLo + _xHi )/2.0;
         double yc = ( _yLo + _yHi )/2.0;
-        const Vector* vec = 0;
 
+        list<Orbit*> orbits3D;
+        Vector z(3);
+        const Vector* vec = 0;
         Orbit* orbitPtr = 0;
         Orbit* newOrbitPtr = 0;
 
-       for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
-	     it != _topTracker->orbits_.end(); ++it )
-       {
+        if ( _topTracker->orbits_.empty() ) return;
+
+        for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
+              it != _topTracker->orbits_.end(); ++it )
+        {
 
           orbitPtr = *it;
        
           for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
-		                             oit  != orbitPtr->history_.end(); ++oit ) {
-
-             vec = *oit;
+                                             oit  != orbitPtr->history_.end(); ++oit ) {
+            vec = *oit;
             _transformPtr->toDynamics( *vec, &a, &b, &c );
 
             if( _xLo < a && a < _xHi && 
