@@ -35,13 +35,13 @@
 ******                ostiguy@fnal.gov
 ******
 ******  - Efficiency improvements.
-******  - New memory management scheme.
+******  - New memory allocation and management scheme.
 ******
 ******  Sept-Dec 2005  ostiguy@fnal.gov
 ******  
-****** - refactored code to use single class template parameter
+****** - refactored code to use a single class template parameter
 ******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion.
+******   implicit conversions.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
 ****** - all implementation details now completely moved to TJL   
@@ -50,21 +50,26 @@
 ******   (default for mxyzptlk = explicit)
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******
-****** Sep 2006 
-******
-****** - eliminated dlist representation for (non-zero) monomials.   
-****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
-******
+****** Sep 2006  ostiguy@fnal.gov  
+****** - eliminated dlist representation for polynomials.   
+****** - eliminated archaic "Reconstruct" members. Use placement 
+******   new syntax instead. 
 ****** Mar 2007 ostiguy@fnal.gov  
-******
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
 ******   to replace previous scheme based explicitly on monomial exponents tuples.
 ****** - monomial multiplication handled via a lookup-table.
-****** - added STL compatible monomial term iterators   
-****** 
-******  Mar 2008 ostiguy@fnal
+****** - added STL-style iterators ( for monomials)    
+****** Mar 2008 ostiguy@fnal.gov
 ******  - Jet composition and evaluation code refactored and optimized. 
+****** Aug 2008  ostiguy@fnal.gov
+******  - added [] syntax for monomial coefficient access ( proxy class)
+******  - eliminated redundant inline members that merely dispatched 
+******    queries to environment.
+******  - added static factory functions to replace the (unsafe) 
+******    setVariable() interface.
+******  - added new Environment stack functions 
 ******
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 #ifndef TJET_H
@@ -86,8 +91,6 @@ class TJetVector;
 
 template<typename T> 
 class TLieOperator;
-
-
 
 TJet<double> fabs( TJet<double>                const& );
 
@@ -184,25 +187,25 @@ TJet<std::complex<double> > operator/( TJet<std::complex<double> > const& x,    
 TJet<std::complex<double> > operator/( double                      const& x,      TJet<std::complex<double> > const& y );
 
 template<typename T> 
-bool operator==( TJet<T> const&,   TJet<T> const& );
+bool operator==( TJet<T> const&,     TJet<T> const& );
 
 template<typename T> 
-bool operator==( TJet<T> const&,          T const& );
+bool operator==( TJet<T> const&,           T const& );
 
 template<typename T> 
-bool operator==( T       const&,    TJet<T> const& );
+bool operator==( T       const&,     TJet<T> const& );
 
 template<typename T> 
-bool operator!=( TJet<T> const& x,  TJet<T> const& y ); 
+bool operator!=( TJet<T> const&,     TJet<T> const& ); 
 
 template<typename T> 
-bool operator!=( TJet<T> const& x,        T const& y );
+bool operator!=( TJet<T> const&,           T const& );
 
 template<typename T> 
-bool operator!=( T       const& x, TJet<T>  const& y ); 
+bool operator!=( T       const&,   TJet<T>  const&  ); 
 
 template<typename T> 
-TJet<T> operator^(    TJet<T>  const&,  TJet<T>   const& );
+TJet<T> operator^(    TJet<T>    const&,   TJet<T>   const& );
 
 template<typename T> 
 TJLterm<T> operator*( TJLterm<T> const&,  TJLterm<T> const& );
@@ -303,6 +306,8 @@ class JLType<false, U, V> {
 template<typename T>
 class TJet: public gms::FastAllocator  {
 
+  class coeff_proxy; 
+
   public:
 
 #ifdef FIRST_ORDER_JETS  
@@ -326,35 +331,6 @@ class TJet: public gms::FastAllocator  {
   friend struct  JetToJL;       // an adaptable unary function used for transform_iterators   
 
 
-protected:
-
-  mutable jl_t   jl_; 
-
- private:
-
-  TJet  epsInverse() const;  // Calculates the inverse of
-                             // nilpotent Jets.
-
-  friend TJet<double > fabs( TJet<double> const& ); // ?????
-  friend TJet<double > real( TJet<std::complex<double> > const& );
-  friend TJet<double > imag( TJet<std::complex<double> > const& );
-
-  TJet( typename TJet::jl_t const& jl );
-
-protected:
-
-  typename TJet::jl_t & operator->() const { return jl_; }
-
-private:
-
-  struct  JetToJL {
-     typedef JLPtr<T>  result_type;
-
-     JLPtr<T> const operator()( TJet<T> const& o) const { return o.jl_; }
-  };
-
-  class coeff_proxy; 
-
 public:
 
   // Constructors and destructors_____________________________________
@@ -362,8 +338,8 @@ public:
   static TJet<T> makeCoordinate( EnvPtr<T> env, int index );   
   static TJet<T>  makeParameter( EnvPtr<T> env, int index );
 
-  TJet( EnvPtr<T>    const&  env     = TJetEnvironment<T>::getLastEnv() );
-  TJet( T, EnvPtr<T> const&  env     = TJetEnvironment<T>::getLastEnv() );
+  TJet( EnvPtr<T>    const&  env     = TJetEnvironment<T>::topEnv() );
+  TJet( T, EnvPtr<T> const&  env     = TJetEnvironment<T>::topEnv() );
 
   TJet( TJet const& );
 
@@ -405,23 +381,11 @@ public:
   void writeToFile( char*   /* Name of unopened file */ ) const;
   void writeToFile( std::ofstream& ) const;
 
-  void getReference( T* ) const;
-  int  getEnvNumVar()     const;
-  int  getEnvSpaceDim()   const;
-  int  getEnvMaxWeight()  const;
-
   int  getWeight()  const;
   int  getAccuWgt() const;
 
-  void setVariable(  int const&, T   const&, EnvPtr<T> pje);
-  void setVariable(  int const&, T   const&);
-  void setVariable(  int const&,             EnvPtr<T> pje );
-  void setVariable(  int const& );
-
   void     setStandardPart( T const& std ); 
   T const& standardPart() const            { return jl_->standardPart();    }
-
-  void     clear();
 
   T        weightedDerivative( IntArray const&  ) const;  
   T                derivative( IntArray const&  ) const; 
@@ -575,6 +539,34 @@ public:
 
   reverse_iterator       rend();
   const_reverse_iterator rend()   const;
+
+ private:
+
+  TJet  epsInverse() const;  // Calculates the inverse of
+                             // nilpotent Jets.
+
+  friend TJet<double > fabs( TJet<double> const& ); // ?????
+  friend TJet<double > real( TJet<std::complex<double> > const& );
+  friend TJet<double > imag( TJet<std::complex<double> > const& );
+
+  TJet( typename TJet::jl_t const& jl );
+
+protected:
+
+  typename TJet::jl_t & operator->() const { return jl_; }
+
+private:
+
+  struct  JetToJL {
+     typedef JLPtr<T>  result_type;
+
+     JLPtr<T> const operator()( TJet<T> const& o) const { return o.jl_; }
+  };
+
+protected:
+
+  mutable jl_t   jl_; 
+
 };
 
 //-------------------------------------------------------------------------------------
@@ -584,7 +576,6 @@ public:
 template<>
 template<>
 TJet<std::complex<double> >::TJet( TJet<double> const& );
-
 
 //------------------------------------------------------------------------------------
 // Tcoord and Tparam classes
@@ -658,23 +649,6 @@ inline int TJet<T>::termCount() const
   return jl_->getCount();
 }
 
-template<typename T>
-inline int TJet<T>::getEnvNumVar() const 
-{
-  return jl_->getEnv()->numVar();
-}
-
-template<typename T>
-inline int TJet<T>::getEnvSpaceDim() const 
-{
-  return jl_->getEnv()->spaceDim();
-}
-
-template<typename T>
-inline int TJet<T>::getEnvMaxWeight() const 
-{
-  return jl_->getEnv()->maxWeight();
-}
 
 template<typename T>
 inline int TJet<T>::getWeight() const 
@@ -688,14 +662,12 @@ inline int TJet<T>::getAccuWgt() const
   return jl_->getAccuWgt();
 }
 
+
 template<typename T>
 inline bool TJet<T>::isNilpotent() const 
 {
   return jl_->isNilpotent();
 }
-
-// ================================================================
-
 
 
 #ifndef MXYZPTLK_EXPLICIT_TEMPLATES

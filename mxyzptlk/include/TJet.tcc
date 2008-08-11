@@ -175,7 +175,38 @@ TJet<T>::TJet( TJet<T> const& arg,  EnvPtr<T> const&  env)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+template<typename T>
+TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )
+{
+  if ( (index >= env->spaceDim()) || (index < 0) ) {
+    throw GenericException( __FILE__, __LINE__, 
+           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
+           "index not within declared range for coordinates");
+  }
 
+  TJet<T> jet(env);
+  jet.jl_->setVariable( index, env->refPoint()[index], env ); 
+  return jet;
+}   
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  
+template<typename T>
+TJet<T> TJet<T>::makeParameter( EnvPtr<T> env, int index )
+{
+  if ( (index < env->spaceDim() ) || ( index >= env->numVar()) || (index<0) ) {
+    throw GenericException( __FILE__, __LINE__, 
+           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
+           "index not within declared range for parameters");
+  }
+
+  TJet<T> jet(env);
+  jet.jl_->setVariable( index, env->refPoint()[index], env ); 
+  return jet;
+}   
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TJet<T>::~TJet() 
@@ -213,66 +244,6 @@ void TJet<T>::setEnvTo( EnvPtr<T> const& pje )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>                                  
-void TJet<T>::getReference( T* r ) const
-{
-// get the reference point. The caller supplies 
-// the vector r which is is expected to 
-// have dimension numVar. 
-
- jl_->getReference( r );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::setVariable(  int const& j, T const& x, EnvPtr<T> pje )
-{
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->setVariable( j, x, pje );  
-
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::setVariable( int const& j, T const& x )
-{
-   if (jl_.count() > 1 ) jl_ = jl_->clone();
-   jl_->setVariable( j, x );   // DANGER !! Alters the environment!
-}
-
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template<typename T>
-void TJet<T>::setVariable( int const& j, EnvPtr<T> pje ) 
-{
-
-    if (jl_.count() > 1 ) jl_ = jl_->clone();
-    jl_->setVariable( j, pje);
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::setVariable( int const& j )
-{
-
- if (jl_.count() > 1 ) jl_ = jl_->clone();
- jl_->setVariable( j, jl_->getEnv() );
-
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 void  TJet<T>::setStandardPart( T const& std ) { 
 
@@ -287,14 +258,11 @@ void  TJet<T>::setStandardPart( T const& std ) {
 template<typename T>
 TJet<T>& TJet<T>::operator=( TJet const& x ) 
 {
-
   if (&x == this) return *this;
   
   jl_ = x.jl_;
   return *this;
-
 }
-
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -419,7 +387,7 @@ void Tcoord<T>::instantiate( int index, EnvPtr<T> const& pje) {
 
  this->index_ = index;
  this->jl_    = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
- this->jl_->setVariable( index, refpt_);  
+ this->jl_->setVariable( index, refpt_, pje);  
 
 } 
 
@@ -472,7 +440,7 @@ void Tparam<T>::instantiate( int index, EnvPtr<T> const& pje) {
 
   this->index_ = index;
   this->jl_   = typename TJet<T>::jl_t( TJet<T>::tjl_t::makeTJL( pje) );
-  this->jl_->setVariable( index, refpt_ );  
+  this->jl_->setVariable( index, refpt_, pje );  
 } 
 
 //
@@ -1135,16 +1103,6 @@ void TJet<T>::writeToFile( ofstream& outStr ) const
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJet<T>::clear() 
-{
- if (jl_.count() > 1) jl_ = jl_->clone();
- jl_->clear();
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 T TJet<T>::weightedDerivative( IntArray const& ind ) const 
 {
  return jl_->weightedDerivative( ind );
@@ -1246,39 +1204,6 @@ double sobolev_norm ( TJet<T> const& arg)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
   
-template<typename T>
-TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )
-{
-  if ( (index >= env->spaceDim()) || (index < 0) ) {
-    throw GenericException( __FILE__, __LINE__, 
-           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
-           "index not within declared range for coordinates");
-  }
-
-  TJet<T> jet(env);
-  jet.setVariable( index, env->refPoint()[index], env ); 
-  return jet;
-}   
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-template<typename T>
-TJet<T> TJet<T>::makeParameter( EnvPtr<T> env, int index )
-{
-  if ( (index < env->spaceDim() ) || ( index >= env->numVar()) || (index<0) ) {
-    throw GenericException( __FILE__, __LINE__, 
-           "TJet<T> TJet<T>::makeCoordinate( EnvPtr<T> env, int index )"
-           "index not within declared range for parameters");
-  }
-
-  TJet<T> jet(env);
-  jet.setVariable( index, env->refPoint()[index], env ); 
-  return jet;
-}   
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T>
 typename TJet<T>::coeff_proxy const 
 TJet<T>::operator[]( IntArray const& index ) const
