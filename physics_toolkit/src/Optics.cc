@@ -278,9 +278,8 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
 
   // TURN RF OFF **** FIXME     
 
-  Jet__environment::pushEnv( Jet__environment::getLastEnv() );
-  JetC__environment::pushEnv(JetC__environment::getLastEnv() );
-  Jet__environment::setLastEnv( jp.State().Env() );
+   Jet__environment::pushEnv( jp.State().Env() );
+  JetC__environment::pushEnv( jp.State().Env() );
 
 
   JetParticle jpco(jp);
@@ -307,9 +306,6 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
   RefRegVisitor(Particle(jpco)).visit( const_cast<beamline&>(bml) );
 
   // TURN RF ON  ****FIXME   
-
-    Jet__environment::setLastEnv(  Jet__environment::topEnv() );
-   JetC__environment::setLastEnv( JetC__environment::topEnv() );
 
     Jet__environment::popEnv();
    JetC__environment::popEnv();
@@ -486,10 +482,8 @@ Vector periodicDispersion( sqlite::connection& db, JetParticle const& jp_arg )
 {
 
 
-   Jet__environment::pushEnv(  Jet__environment::getLastEnv() );
-  JetC__environment::pushEnv( JetC__environment::getLastEnv() );
-
-  Jet__environment::setLastEnv( jp_arg.State().Env() );
+   Jet__environment::pushEnv( jp_arg.State().Env()  );
+  JetC__environment::pushEnv( jp_arg.State().Env()  );
 
   JetParticle jp(jp_arg);
 
@@ -512,9 +506,6 @@ Vector periodicDispersion( sqlite::connection& db, JetParticle const& jp_arg )
   eta[4] =  real( eigenvecs[i_npy][i_ndp] );
   eta[5] =  0.0;
 
-
-    Jet__environment::setLastEnv(  Jet__environment::topEnv() );
-   JetC__environment::setLastEnv( JetC__environment::topEnv() );
 
     Jet__environment::popEnv();
    JetC__environment::popEnv();
@@ -643,10 +634,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
   int ret = 0;
   int const N = jparg.State().Dim();
 
-  // Preserve the current Jet environment
 
-   Jet__environment::pushEnv(  Jet__environment::getLastEnv() );
-  JetC__environment::pushEnv( JetC__environment::getLastEnv() );
 
   //-------------------------------------
   // Create a new default Jet environment
@@ -659,7 +647,10 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
             coordinates[i] = boost::shared_ptr<coord>( new coord( jparg.State().Env()->refPoint()[i] ) ); 
       }
 
-  JetC__environment::setLastEnv( Jet__environment::EndEnvironment() ); // implicit conversion 
+  Jet__environment_ptr env = Jet__environment::EndEnvironment(); 
+
+   Jet__environment::pushEnv(env);
+  JetC__environment::pushEnv(env); // implicit conversion 
  
   
   Particle    p0(jparg);
@@ -805,9 +796,6 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
   // restore env before exiting ... 
   
-   Jet__environment::setLastEnv(  Jet__environment::topEnv() );
-   JetC__environment::setLastEnv( JetC__environment::topEnv() );
-
     Jet__environment::popEnv();
    JetC__environment::popEnv();
 
@@ -828,13 +816,9 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
   //  bml is an uncoupled ring.
   //---------------------------------------------------------------
 
-  // Preserve the current Jet environment
 
-   Jet__environment::pushEnv(  Jet__environment::getLastEnv() );
-  JetC__environment::pushEnv( JetC__environment::getLastEnv() );
-
-   Jet__environment::setLastEnv(  jp.State().Env() );
-  JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
+   Jet__environment::pushEnv(  jp.State().Env() );
+  JetC__environment::pushEnv(  jp.State().Env() ); // implicit conversion 
 
   JetParticle  jparticle(jp);
   Particle      particle(jp);
@@ -872,9 +856,6 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
   lf.dispersion.y    =  eta[i_y  ];
   lf.dispersion.yp   =  eta[i_npy];
 
-
-    Jet__environment::setLastEnv(  Jet__environment::topEnv() );
-   JetC__environment::setLastEnv( JetC__environment::topEnv() );
 
     Jet__environment::popEnv();
    JetC__environment::popEnv();
