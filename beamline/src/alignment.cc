@@ -5,7 +5,6 @@
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
 ******             synchrotrons.                      
-******  Version:   2.0                    
 ******                                    
 ******  File:      alignment.cc
 ******                                                                
@@ -53,7 +52,8 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData::alignmentData(): xOffset(0.0), yOffset(0.0), tilt(0.0) 
+alignmentData::alignmentData()
+ : xOffset(0.0), yOffset(0.0), tilt(0.0) 
 {}
 
 
