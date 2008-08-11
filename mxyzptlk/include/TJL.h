@@ -236,9 +236,9 @@ friend class TJL;
 
   JLPtr<T>  truncMult( JLPtr<T> const& v, const int& wl )  const; 
 
-  JLPtr<T>  filter( const int& wgtLo, const int& wgtHi )      const; 
+  JLPtr<T>  filter( int const& wgtLo, int const& wgtHi )      const; 
 
-  JLPtr<T>  filter( bool (*f) ( const IntArray&, const T& ) ) const; 
+  JLPtr<T>  filter( bool (*f) ( IntArray const&, T const& ) ) const; 
 
   double    maxAbs() const;                
 
@@ -262,62 +262,60 @@ friend class TJL;
 
   void getReference( T* ) const;
 
-  //static JLPtr<T> scaleBy( JLPtr<T>, T );
-
   TJL& Negate(); // in-place negation 
 
   friend JLPtr<T>  
-         operator+<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
+         operator+<>(  JLPtr<T> const& lhs,    JLPtr<T> const& rhs  );  
 
   friend JLPtr<T>& 
-         operator+=<>( JLPtr<T>&, T const& ); 
+         operator+=<>( JLPtr<T>&       lhs,           T const& rhs  ); 
 
   friend JLPtr<T>& 
-         operator+=<>( JLPtr<T>&, JLPtr<T> const&  );
+         operator+=<>( JLPtr<T>&       lhs,     JLPtr<T> const& rhs );
 
   friend JLPtr<T>  
          operator-<>(JLPtr<T> const & x );  
 
   friend JLPtr<T>  
-         operator-<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
+         operator-<>(JLPtr<T> const &  lhs,     JLPtr<T> const& rhs  );  
 
   friend JLPtr<T>& 
-         operator-=<>( JLPtr<T>&, T const& ); 
+         operator-=<>( JLPtr<T>&       lhs,            T const& rhs  ); 
 
   friend JLPtr<T>& 
-         operator-=<>( JLPtr<T>&, JLPtr<T> const&  );
+         operator-=<>( JLPtr<T>&       lhs,     JLPtr<T> const& rhs  );
 
   friend JLPtr<T>  
-         operator*<>(JLPtr<T> const & x, JLPtr<T> const& y  );  
+         operator*<>(JLPtr<T> const &  lhs,     JLPtr<T> const& rhs  );  
 
   friend JLPtr<T>   
-         operator*<>(JLPtr<T> const & x,  T const& y  );  
+         operator*<>(JLPtr<T> const &  lhs,            T const& rhs  );  
 
   friend JLPtr<T>   
-         operator*<>(T const & x,         JLPtr<T> const& y  );  
+         operator*<>(T const &         lhs,     JLPtr<T> const& rhs  );  
 
   friend JLPtr<T>& 
-         operator*= <>(JLPtr<T>& x,        JLPtr<T> const& y  );  
+         operator*= <>(JLPtr<T>&       lhs,     JLPtr<T> const& rhs  );  
 
   friend JLPtr<T>& 
-         operator*= <>(JLPtr<T>& x,       T const& y  );  
+         operator*= <>(JLPtr<T>&       lhs,            T const& rhs  );  
 
   friend JLPtr<T>  
-         operator/<>( JLPtr<T> const & x, JLPtr<T> const& y  );  
+         operator/<>( JLPtr<T> const&  lhs,     JLPtr<T> const& rhs  );  
   
   friend JLPtr<T>   
-         operator/<>( JLPtr<T> const & x,  T const& y  );  
+         operator/<>( JLPtr<T> const & lhs,            T const& rhs  );  
 
 
   friend JLPtr<double> real( JLPtr<std::complex<double> > const& z ); 
   friend JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
 
-  friend   bool operator==<>( TJL<T>   const& x, TJL<T>  const& y ); 
-  friend   bool operator==<>( TJL<T>   const& x, T       const& y ); 
-  friend   bool operator==<>( T        const& y, TJL<T>  const& x );
-  friend   bool operator!=<>( TJL<T>   const& x, TJL<T>  const& y ); 
-  friend   bool operator!=<>( TJL<T>   const& x, T       const& y ); 
-  friend   bool operator!=<>( T        const& x, TJL<T>  const& y ); 
+  friend   bool operator==<>( TJL<T>   const& lhs, TJL<T>  const& rhs ); 
+  friend   bool operator==<>( TJL<T>   const& lhs, T       const& rhs ); 
+  friend   bool operator==<>( T        const& lhs, TJL<T>  const& rhs );
+  friend   bool operator!=<>( TJL<T>   const& lhs, TJL<T>  const& rhs ); 
+  friend   bool operator!=<>( TJL<T>   const& lhs, T       const& rhs ); 
+  friend   bool operator!=<>( T        const& lhs, TJL<T>  const& rhs ); 
 
   JLPtr<T> sqrt() const;
   JLPtr<T> exp()  const;
@@ -334,10 +332,7 @@ friend class TJL;
   JLPtr<T> log()              const;
   JLPtr<T> D( IntArray const& n ) const; 
 
-
-  void setVariable(  int const&,  T const& );
   void setVariable(  int const&,  T const& x,  EnvPtr<T> pje );
-  void setVariable(  int const&,               EnvPtr<T> pje );               
 
   T const& standardPart()                 const  { return jltermStore_[0].value_; }
   void     setStandardPart( T const& std)        { jltermStore_[0].value_ = std;  } 
@@ -514,7 +509,7 @@ friend class TJL;
 
   TJLterm<T>* storePtr();                        // returns a ptr to the next available block in the JLterm store;
   void growStore( );                             // grows the size of the store to twice its current size 
-  void appendLinearTerms( int numvar );          // appends all linear monomial terms (_value set to 0)   
+  void appendLinearTerms( int numvar );          // appends all linear monomial terms ( value_ set to 0)   
   
   
   static void op_add( T& x, T const& y) { x += y; } 
