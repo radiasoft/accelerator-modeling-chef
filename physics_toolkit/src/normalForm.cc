@@ -37,16 +37,15 @@
 ****** Mar 2007       ostiguy@fnal.gov
 ****** -some efficiency improvements
 ****** -use new style Jet iterators.
-******
+****** Aug 2008       ostiguy@fnal
+****** - templated version of 
+**************************************************************************
 **************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
-
-#include <boost/shared_ptr.hpp>
-#include <vector>
 
 /*
 **
@@ -62,7 +61,7 @@
 */
 
 #include <basic_toolkit/GenericException.h>
-#include <mxyzptlk/mxyzptlk.h>
+#include <physics_toolkit/NormalForm.h>
 #include <basic_toolkit/Matrix.h>
 
 #define MLT1  1.0e-6
@@ -76,12 +75,12 @@ std::complex<double> const complex_1 (1.0, 0.0); // -i
 std::complex<double> const mi( 0., -1. );        // -i
 
 template < unsigned int idx>
-bool sh( IntArray const& index, std::complex<double> const& value) {
+bool sh( IntArray const& index, std::complex<double> const& value ) {
 
  int k = ( idx < 3 ) ? 1 : -1; 
 
  for (int i=0; i<3; ++i ) {
-   if( index[i] !=  index[3+i] + (i == idx) ? k : 0  )return false;
+   if( index[i] !=  index[3+i] + (i == idx) ? k : 0  ) return false;
  }
  return true;
 }
@@ -91,10 +90,11 @@ bool sh( IntArray const& index, std::complex<double> const& value) {
 
 // ===============================================================
 
-void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOperator*  N, CLieOperator*  T ) 
+void normalForm( Mapping const& theMapping, int maxOrder, MatrixC& B, 
+                                std::vector<CLieOperator>&  N, std::vector<CLieOperator>&  T ) 
 {
 
- bool (*shear[])( IntArray const&, const std::complex<double>& ) 
+ bool (*shear[])( IntArray const&, std::complex<double> const& value ) 
     = { sh<0>, sh<1>, sh<2>, sh<3>, sh<4>, sh<5> };
 
 
@@ -108,25 +108,22 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
  // Establishing linear normal form coordinates
 
  MatrixD  A = theMapping.jacobian();
- MatrixC  B = A.eigenVectors();
+          B = A.eigenVectors();
 
  // Normalizing the linear normal form coordinates
 
- MatrixD  J = Matrix::Jmatrix(6 );
- MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
+ static MatrixD const J = Matrix::Jmatrix(6 );
+
+ MatrixC             Nx = ( B.transpose() * J * B * J ) * mi;
 
  for( int i=0; i < 6; ++i) {
-  Nx[i][i]  = 1.0 / sqrt( abs( Nx[i][i] ) );  
-                                       // ??? "abs" should not be necessary,
-                                       // ??? but Holt is finding some
-                                       // ??? counterexamples.(!!??)
-                                       // ???
-                                       // ??? In principle, could get divide
-                                       // ??? by zero here.
+  Nx[i][i]  = 1.0 / sqrt( abs( Nx[i][i] ) );  // ??? "abs" should not be necessary,
+                                              // ??? In principle, could get divide
+                                              // ??? by zero here.
 
   if( abs( ( (std::complex<double>) 1.0 ) - Nx[i][i] ) < 1.0e-10 ) Nx[i][i] = 1.0;
 
-      /* CAUTION */   for( int j = 0; j < 6; j++ ) {
+      /* CAUTION */   for( int j=0; j<6; ++j) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Nx[i][j] ) > MLT1) {
       /* CAUTION */     ostringstream uic;
@@ -171,9 +168,6 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
    }
  }
 
- // Store the result
- *Bptr = B;
-
 
  // Some useful matrices
 
@@ -183,10 +177,10 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
 
  MatrixC lambda(1,D.cols());
 
- for( int i = 0; i < D.cols(); i++ ) {
+ for( int i=0; i< D.cols(); ++i) {
    lambda(i) = D[i][i];
  }
-      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
+      /* CAUTION */  for( int i=0; i<6; ++i) {
       /* CAUTION */   if( fabs( abs(lambda(i)) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic fixed points allowed:"
@@ -199,7 +193,7 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
       /* CAUTION */  }
       /* CAUTION */  
       /* CAUTION */  // A little checking and cleaning.
-      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
+      /* CAUTION */  for( int i=0; i<6; ++i) {
       /* CAUTION */   if( fabs( abs(Dinv[i][i]) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | Dinv( " 
@@ -209,7 +203,7 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
       /* CAUTION */           "void normalForm( const Mapping& theMapping, /* input */", 
       /* CAUTION */           uic.str().c_str() ) );
       /* CAUTION */   }
-      /* CAUTION */   for( int j=0; j < 6; ++j) {
+      /* CAUTION */   for( int j=0; j<6; ++j) {
       /* CAUTION */    if( j == i ) continue;
       /* CAUTION */    else if( abs( Dinv[i][j] ) > MLT1) {
       /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
@@ -220,8 +214,8 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
       /* CAUTION */   }
       /* CAUTION */  }
       /* CAUTION */ 
-      /* CAUTION */  for( int i = 0; i < 6; i++ ) {
-      /* CAUTION */   if( fabs( abs(D[i][i]) - 1.0 ) > MLT1 ) {
+      /* CAUTION */  for( int i = 0; i<6; ++i) {
+      /* CAUTION */   if(  abs( abs(D[i][i]) - 1.0 ) > MLT1 ) {
       /* CAUTION */    ostringstream uic;
       /* CAUTION */    uic  << "For now, only elliptic maps allowed: | D( " 
                             << i << ", " << i << " ) | = " 
@@ -245,15 +239,16 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
 
  // The original near-identity transformation
 
- MappingC CL1 = theMapping;
+ static MappingC const id( "I" );
 
- MappingC const id( "ident" );
+ MappingC CL1 = theMapping;
  MappingC calN = Binv*CL1( B*(Dinv*id) );
- MappingC mapT;
+ MappingC mapT(6);
 
  // And the rest ...
  
- for( int k = 0; k <= maxOrder - 2; ++k) {
+ for( int k=0; k <= maxOrder-2; ++k) {
+
   MappingC reg = id;
   int ll   = 0;
   while( ll < k ) reg = N[ll++].expMap( -complex_1, reg );
@@ -265,39 +260,36 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC* Bptr, CLieOpe
 
   MappingC doc = N[k] - reg;
 
-  for( int i=0; i< 6; ++i ) {
+  for( int i=0; i<6; ++i ) { 
+ 
+    T[k][i] = JetC( T[k][i].Env() ); // FIXME ! reference point ambiguity ?
+ 
+    for ( JetC::iterator it = doc[i].begin() ; it != doc[i].end(); ++it ) {
+    
+      std::complex<double> factor = 1.0;
 
-   #if 0
-   // Including this line causes an error.
-   // lpjm - 2006.08.06
-   T[k](i).clear();
-   #endif
+      for( int j=0; j<6; ++j) {
+        IntArray exponents        =  it->exponents( doc[i].Env() ) ;
+        std::complex<double> temp = complex_1 / lambda(j);
 
-   for ( JetC::iterator it = doc[i].begin() ; it != doc[i].end(); ++it ) {
-     std::complex<double> factor = 1.0;
+        for( int l=0;  l < exponents[j]; ++l) {
+          factor *= temp;
+        }
+      }
 
-    for( int j=0; j < 6; ++j) {
+      factor *= lambda(i);
 
-     IntArray exponents        =  it->exponents( doc[i].Env() ) ;
-     std::complex<double> temp = complex_1 / lambda(j);
+      // Either absorption or resonance subtraction ... 
 
-     for( int l=0;  l < exponents[j]; ++l) {
-      factor *= temp;
-     }
+      std::complex<double> denom = factor - complex_1;
+
+      if( abs( denom ) <= 1.0e-7 ) {
+        N[k][i].addTerm( JLCterm( - it->coefficient(),    it->offset_, it->weight_ ) );
+      }
+      else {
+        T[k][i].addTerm( JLCterm( it->coefficient()/denom, it->offset_, it->weight_ ) );
+      }
     }
-    factor *= lambda(i);
-
-    // Either absorption or resonance subtraction ... 
-
-    std::complex<double> denom = factor - complex_1;
-
-    if( abs( denom ) <= 1.0e-7 ) {
-      N[k][i].addTerm( JLCterm( - it->coefficient(),    it->offset_, it->weight_ ) );
-    }
-    else {
-      T[k][i].addTerm( JLCterm( it->coefficient()/denom, it->offset_, it->weight_ ) );
-    }
-   }
   }
 
   // Prepare for the next order
