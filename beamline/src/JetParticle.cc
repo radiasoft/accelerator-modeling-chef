@@ -91,7 +91,7 @@ gamma_(ReferenceEnergy()/m_),
  bRho_(p_ / (q_/PH_MKS_e * PH_CNV_brho_to_p ))      
 {                          
 
-  state_ = Mapping( "id", Jet__environment::getLastEnv() );    
+  state_ = Mapping( "id", Jet__environment::topEnv() );    
 
   if( momentum <= 0.0 ) {
   ostringstream uic;
@@ -143,12 +143,11 @@ gamma_(u.gamma_),
    int dim =  u.state_.Dim();       
  
    for ( int i=0; i<dim; ++i ) { 
-     Jet component;
-     component.setVariable( i, u.state_[i],  pje);
-     state_[i] = component;   
+     state_[i] = Jet::makeCoordinate( pje, i ); 
+     state_[i] += u.state_[i];   
    }
-
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -160,8 +159,8 @@ JetParticle::JetParticle(JetParticle const& u)
 gamma_(u.gamma_),     
  beta_(u.beta_),      
  bRho_(u.bRho_),      
-state_(u.state_) {}
-
+state_(u.state_) 
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -169,7 +168,6 @@ state_(u.state_) {}
 
 JetParticle& JetParticle::operator=(JetParticle const& u) 
 {
-
   if ( &u == this ) return *this;
  
   tag_   = u.tag_;
@@ -182,7 +180,6 @@ JetParticle& JetParticle::operator=(JetParticle const& u)
   state_ = u.state_;
 
   return *this;
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
