@@ -78,8 +78,8 @@ void wrap_mxyzptlk_jetvector() {
 
   JetVector_class_.def( "Dim",           &JetVector::Dim          );
   JetVector_class_.def( "Env",           &JetVector::Env          );
-  JetVector_class_.def( "AccuWgt",       &JetVector::AccuWgt      );
-  JetVector_class_.def( "Weight",        &JetVector::Weight       );
+  //JetVector_class_.def( "AccuWgt",       &JetVector::AccuWgt      );
+  //  JetVector_class_.def( "Weight",        &JetVector::Weight       );
   JetVector_class_.def( "SetComponent",  &SetComponent            );
   JetVector_class_.def( "filter",        filter_1_ptr             );
   JetVector_class_.def( "printCoeffs",   printCoeffs_ptr          );
@@ -134,8 +134,8 @@ void wrap_mxyzptlk_jetvectorc() {
 
   JetCVector_class_.def( "Dim",           &JetCVector::Dim          );
   JetCVector_class_.def( "Env",           &JetCVector::Env          );
-  JetCVector_class_.def( "AccuWgt",       &JetCVector::AccuWgt      );
-  JetCVector_class_.def( "Weight",        &JetCVector::Weight       );
+  // JetCVector_class_.def( "AccuWgt",       &JetCVector::AccuWgt      );
+  //  JetCVector_class_.def( "Weight",        &JetCVector::Weight       );
   JetCVector_class_.def( "SetComponent",  &SetComponentC            );
   JetCVector_class_.def( "filter",        filterC_1_ptr             );
   JetCVector_class_.def( "printCoeffs",   printCoeffsC_ptr          );
