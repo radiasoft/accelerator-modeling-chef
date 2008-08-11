@@ -65,7 +65,6 @@
 #include <gms/FastPODAllocator.h>
 #include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/IntArray.h>
-
 #include <basic_toolkit/IntArray.tcc>
 #include <basic_toolkit/TMatrix.tcc>
 #include <basic_toolkit/TML.tcc>
@@ -105,6 +104,7 @@ unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int)
 
 template class std::list<Barnacle>;
 
+template void std::_List_base<Barnacle, std::allocator<Barnacle> >::_M_clear();
 
 template BarnacleList::iterator
          std::remove_if(BarnacleList::iterator, BarnacleList::iterator, 
@@ -113,6 +113,18 @@ template BarnacleList::iterator
 // ----------------------------------------------------------------------------
 // Instantiations related to IntArray
 // ----------------------------------------------------------------------------
+
+template
+IntArray::IntArray( int* it1, int* it2 );
+
+template
+IntArray::IntArray( int const* it1, int const* it2 );
+
+template
+void  IntArray::Set( int* it1, int* it2);
+
+template
+void  IntArray::Set( int const* it1, int const* it2);
 
 template 
 class std::vector<IntArray::exponent_t>;
@@ -125,7 +137,6 @@ namespace {
  IntArray::const_reverse_iterator itdummy4;
 }
     
-
 template
 void std::fill( IntArray::iterator, IntArray::iterator, int const&); 
 
@@ -525,9 +536,17 @@ template class ConvolutionFunctor<std::complex<double> >;
 template class ConvolutionFunctorImpl<double>;
 template class ConvolutionFunctorImpl<std::complex<double> >;
 
+template 
+class FFTWAllocator<double>;
+
 template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
 
+template
+bool operator == ( FFTWAllocator<double> const&,   FFTWAllocator<std::complex<double> > const& ) throw();
+
+template
+bool operator == ( FFTWAllocator<std::complex<double> > const&,  FFTWAllocator<double> const& ) throw();
 
 // ----------------------------------------------------------------------------
 // Instantiations related to NewtonSolver, QuasiNewtonSolver 
@@ -551,22 +570,11 @@ template
 boost::function<TVector<double>(TVector<double> const&) > const* 
 boost::addressof( boost::function< TVector<double>(TVector<double> const& )> const& );
 
+template TMatrix<double> boost::function1<TMatrix<double>, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
+template double          boost::function1<double, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
+template TVector<double> boost::function1<TVector<double>, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
 
-// ----------------------------------------------------------------------------
-// Instantiations related to NewtonSolver, QuasiNewtonSolver 
-// ----------------------------------------------------------------------------
 
-template
-IntArray::IntArray( int* it1, int* it2 );
-
-template
-IntArray::IntArray( int const* it1, int const* it2 );
-
-template
-void  IntArray::Set( int* it1, int* it2);
-
-template
-void  IntArray::Set( int const* it1, int const* it2);
 
 // ----------------------------------------------------------------------------
 // Misc Instantiations related to STL
@@ -673,10 +681,21 @@ std::transform( TVector<std::complex<double> >::const_iterator,
 
 
 
+
 // FIX ME !!!!!!!!!!!!!!!!                                                   
 
 template void std::__uninitialized_fill_n_aux(std::complex<double>*, unsigned int, std::complex<double> const&, std::__false_type);
+
 template class std::_List_base<int, std::allocator<int> >;
+
 template int* std::fill_n<int*, unsigned int, int>(int*, unsigned int, int const&);
+
+template void std::_Destroy<double*, FFTWAllocator<double> >(double*, double*, FFTWAllocator<double>);
+
+template 
+void std::__uninitialized_fill_n_a<double*, unsigned int, double, FFTWAllocator<double> >(double*, unsigned int, double const&, FFTWAllocator<double>); 
+
+
+
 
 
