@@ -217,6 +217,12 @@ void std::fill<int*, int>(int*, int*, int const&);
 template
 double* std::fill_n<double*, int, int>(double*, int, int const&);
 
+template
+IntArray::iterator 
+std::find_if( IntArray::iterator, IntArray::iterator, std::binder2nd<std::not_equal_to<int> > ); 
+   
+template
+int std::distance( IntArray::iterator, IntArray::iterator );
 
 // ----------------------------------------------------------------------------
 // Instantiations related to TVector 
