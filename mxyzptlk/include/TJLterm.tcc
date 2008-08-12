@@ -55,6 +55,7 @@
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
 ******   to replace previous scheme based explicitly on monomial exponents tuples.
 ****** - monomial multiplication handled via a lookup-table.
+****** 
 **************************************************************************
 **************************************************************************
 **************************************************************************
@@ -70,21 +71,9 @@ using FNAL::pcout;
 //*** Static member variable instantiations for the TJLterm class
 //---------------------------------------------------------------
 //
-// NOTE::
-// 
-//  __gnu_cxx::hash_map is an extension to the STL. 
-//  There is equivalent functionality in tr1 ...
-//  boost::hash<TJLterm<T>*> is used to get a portable
-//  pointer hash fnct. 
 
 template <typename T>
 boost::pool<>&  TJLterm<T>::ordered_memPool_ = *( new boost::pool<>( sizeof(TJLterm<T>), 2048 ));
-
-template <typename T>
-__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLterm<T>::array_sizes_ = 
-* (new __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >()  );  
-
-
 
 
 // ***************************************************************
@@ -124,7 +113,6 @@ TJLterm<T>::TJLterm(  T const& x, int const& offset, int const& weight )
 template<typename T>
 TJLterm<T>* TJLterm<T>::array_allocate(int n) {
 
-
 // ----------------------------------------------------------------------
 // To use the system allocator instead of boost:pool to allocate JLterms
 // define JLTERM_ALLOCATOR_MALLOC. This is often useful for debugging.  
@@ -141,29 +129,20 @@ TJLterm<T>* TJLterm<T>::array_allocate(int n) {
      int * psize = (int *) p;
      *psize = n+1;
      ++p;
-//-------------------------------------------------------------------------------------
-// Alternately, one could save the array size in a hash table indexed with the pointer
-// allocated block.
-//------------------------------------------------------------------------------------
-
-/***********
-
-       TJLterm<T>* p = 
-       static_cast<TJLterm<T>*>(ordered_memPool_.ordered_malloc( n ));
-       array_sizes_[ p ] = n;
-
-************/ 
-
 #endif
 
     return p;
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 template<typename T>
-void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
+void TJLterm<T>::array_deallocate(TJLterm<T>* p) 
+{
 
 #ifdef JLTERM_ALLOCATOR_MALLOC
-    free(p)
+    free(p);
 #else 
 // --------------------------------------------------------------------------------------------------
 // This code deallocates an array of blocks assuming that the size has been stored in an extra block
@@ -171,19 +150,6 @@ void TJLterm<T>::array_deallocate(TJLterm<T>* p) {
       --p;
       int*  psize = (int *) p;
       ordered_memPool_.ordered_free( p, *psize ); 
-
-//-----------------------------------------------------------------------------------------------------
-// Alternately, one could retrieve the array size from a hash table indexed with the pointer to the
-// allocated block
-//------------------------------------------------------------------------------------------------------
-
-/***********
-
-     ordered_memPool_.ordered_free( p, array_sizes_[p] ); 
-     array_sizes_.erase(p );
-
-*************/
-
 #endif
 
 }
@@ -213,9 +179,7 @@ TJLterm<T>& TJLterm<T>::operator=( TJLterm<T> const& x )
 template<typename T>
 bool TJLterm<T>::operator<( TJLterm<T> const& rhs ) const 
 {
-
- return ( offset_ < rhs.offset_); 
-
+  return ( offset_ < rhs.offset_); 
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -247,9 +211,7 @@ bool operator!=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T>
 bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
-
  return (a.offset_ <= b.offset_); 
-
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -258,7 +220,6 @@ bool operator<=( TJLterm<T> const& a, TJLterm<T> const& b )
 template<typename T>
 bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b ) 
 {
-
    return a.offset_ == b.offset_;
 }
 
@@ -267,8 +228,8 @@ bool operator%=( TJLterm<T> const& a, TJLterm<T> const& b )
 
 
 template<typename T> 
-std::ostream& operator<<(std::ostream& os, TJLterm<T> const& term) {
-
+std::ostream& operator<<(std::ostream& os, TJLterm<T> const& term) 
+{
  os << " Offset: "  << term.offset_  
     << " Index:  "  << "FIX ME ! " 
     << " Weight: "  << term.weight_ 
@@ -311,7 +272,6 @@ TJLterm<T>::BadDimension::BadDimension( int i, int j,
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 template<typename T>
 const char* TJLterm<T>::BadDimension::what() const throw()
 {
@@ -319,15 +279,12 @@ const char* TJLterm<T>::BadDimension::what() const throw()
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-IntArray  TJLterm<T>::exponents( EnvPtr<T> const& env) const
+IntArray const&  TJLterm<T>::exponents( EnvPtr<T> const& env) const
 { 
- 
- 
   return env->exponents( offset_); 
-
 } 
 
 
