@@ -316,40 +316,13 @@ template TMatrix<double> operator*(         double const&, TMatrix<double> const
 template TVector<double> operator*(TMatrix<double> const&, TVector<double> const&);
 
 
-template TMatrix<double> operator/<double>(const TMatrix<double>&, const double&);
-template TMatrix<double> operator/<double>(const double&,          TMatrix<double> const &);
-template TMatrix<double> operator/<double>(TMatrix<double> const&, TMatrix<double> const&);
+template TMatrix<double> operator/<double>( TMatrix<double> const&, double          const&);
+template TMatrix<double> operator/<double>(  double         const&, TMatrix<double> const&);
+template TMatrix<double> operator/<double>(TMatrix<double>  const&, TMatrix<double> const&);
 
-
-#if 0
-==================integer form of Matrix is disabled ============================================
-                    
-
-template bool operator==( const TMatrix<int>&, const TMatrix<int>& );
-template bool operator==( const TMatrix<int>&, const int& );
-template bool operator==( const int&, const TMatrix<int>& );
-template std::ostream& operator<<(std::ostream&, const TMatrix<int>&);
-
-template TMatrix<int> operator+(const TMatrix<int>&, const TMatrix<int>&);
-template TMatrix<int> operator+(const TMatrix<int>&, const int&); 
-template TMatrix<int> operator+(const int&,          const TMatrix<int>&); 
-template TMatrix<int> operator-(const TMatrix<int>&); 
-template TMatrix<int> operator-(const TMatrix<int>&, const TMatrix<int>&); 
-template TMatrix<int> operator-(const TMatrix<int>&, const int&); 
-template TMatrix<int> operator-(const int&,          const TMatrix<int>&); 
-template TMatrix<int> operator*(const TMatrix<int>&, const TMatrix<int>&); 
-template TMatrix<int> operator*(const TMatrix<int>&, const int);
-template TMatrix<int> operator*(const int&,          const TMatrix<int>&);
-template TMatrix<int> operator/(TMatrix<int> const&, const int&);
-template TMatrix<int> operator/(const int&,          TMatrix<int> const&);
-template TMatrix<int> operator/(TMatrix<int> const&, TMatrix<int> const&);
-
-===================================================================================================
-#endif
-
-template bool operator==( const TMatrix<std::complex<double> >&, const TMatrix<std::complex<double> >& );
-template bool operator==( const TMatrix<std::complex<double> >&, const std::complex<double> & );
-template bool operator==( const std::complex<double> &, const TMatrix<std::complex<double> >& );
+template bool operator==( TMatrix<std::complex<double> > const&, TMatrix<std::complex<double> > const& );
+template bool operator==( TMatrix<std::complex<double> > const&, std::complex<double>           const& );
+template bool operator==( std::complex<double>           const&, TMatrix<std::complex<double> > const& );
 template std::ostream& operator<< <std::complex<double> >(std::ostream&, TMatrix<std::complex<double> >const&);
 
 template TMatrix<std::complex<double> > operator+(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& );
@@ -544,6 +517,8 @@ template class ConvolutionFunctorImpl<std::complex<double> >;
 
 template 
 class FFTWAllocator<double>;
+template 
+class FFTWAllocator<std::complex<double> >;
 
 template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;
@@ -684,24 +659,4 @@ std::transform( TVector<std::complex<double> >::const_iterator,
                 TVector<std::complex<double> >::const_iterator, 
                 TVector<std::complex<double> >::iterator, 
                 std::minus<std::complex<double> > ); 
-
-
-
-
-// FIX ME !!!!!!!!!!!!!!!!                                                   
-
-template void std::__uninitialized_fill_n_aux(std::complex<double>*, unsigned int, std::complex<double> const&, std::__false_type);
-
-template class std::_List_base<int, std::allocator<int> >;
-
-template int* std::fill_n<int*, unsigned int, int>(int*, unsigned int, int const&);
-
-template void std::_Destroy<double*, FFTWAllocator<double> >(double*, double*, FFTWAllocator<double>);
-
-template 
-void std::__uninitialized_fill_n_a<double*, unsigned int, double, FFTWAllocator<double> >(double*, unsigned int, double const&, FFTWAllocator<double>); 
-
-
-
-
 
