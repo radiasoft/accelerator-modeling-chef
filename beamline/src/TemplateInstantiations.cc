@@ -404,4 +404,19 @@ template class boost::function1<TVector<double>, TVector<double> const&, std::al
 template class boost::function1<Matrix, TVector<double> const&,          std::allocator<void> >;
 
 
+namespace { 
+ double OrbitLength( ElmPtr elm, Particle& p) { return elm->OrbitLength(p); } 
+ double Length( ElmPtr elm)                   { return elm->Length();       } 
+ Proton particle(100); 
+ Particle const& p = particle;
+ boost::function<double(boost::shared_ptr<bmlnElmnt> )> tmp1 = boost::bind<double>( ::OrbitLength, _1, p );  
+  // boost::function<double(boost::shared_ptr<bmlnElmnt> )> tmp2( &::Length );  
+}
+
+
+
+template 
+class boost::function1<double, boost::shared_ptr<bmlnElmnt>, std::allocator<void> >;
+
+
 #endif //BEAMLINE_EXPLICIT_TEMPLATES
