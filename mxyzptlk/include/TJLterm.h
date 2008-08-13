@@ -103,8 +103,7 @@ class DLLEXPORT TJLterm
 
   int      offset_;     //  The offset of this term in the scratchpad  
   T        value_;      //  The value associated with the JLterm.
-  int      weight_;     //  The sum of the values in index.  For the above example, 
-                        //  this would be 4.
+  int      weight_;     //  The sum of the momonial exponents 
 
   // Constructors and destructors
 
@@ -121,8 +120,8 @@ class DLLEXPORT TJLterm
 
   bool    operator<( TJLterm<T> const& rhs) const;
 
-  T         coefficient()                    const { return value_; }             
-  IntArray  exponents( EnvPtr<T> const& env) const;
+  T         const& coefficient()                    const { return value_; }             
+  IntArray  const& exponents( EnvPtr<T> const& env) const;
 
  // JLterm array allocation functions
 
