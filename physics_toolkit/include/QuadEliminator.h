@@ -37,7 +37,12 @@
 ****** - support for reference counted elements
 ****** - visitor takes advantage of dynamic typing
 ******                                                   
-******                                                                
+****** Aug 2008           ostiguy@fnal.gov
+****** - revised to conform to the conventional semantics 
+******   of the Visitor pattern. QuadEliminator now modifies the 
+******   beamline in-place rather than return a new one through
+******   a private member accessor.   
+******                                                           
 **************************************************************************
 *************************************************************************/
 
@@ -72,31 +77,22 @@ typedef boost::shared_ptr<beamline>  BmlPtr;
 
 
 
-class QuadEliminator : public ConstBmlVisitor {
+class QuadEliminator : public BmlVisitor {
 
  public:
+
    QuadEliminator();
   ~QuadEliminator();
 
-  void visit( beamline   const&  );
-  void visit( bmlnElmnt  const&  );
-  void visit( quadrupole const&  ); 
-
-  BmlPtr beamlinePtr();
-
-  // Invoking routine is responsible for
-  // using this beamline before the 
-  // QuadEliminator goes out of scope.
-
+  void visit( beamline&    );
+  void visit( bmlnElmnt&   );
+  void visit( quadrupole&  ); 
 
  private: 
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
   QuadEliminator( QuadEliminator const& ); // forbidden
 
-  BmlPtr        bmlPtr_;
+  BmlPtr            bml_;
   QuadrupolePtr quadPtr_;
 };
 

@@ -67,7 +67,7 @@ typedef boost::shared_ptr<beamline> BmlPtr;
 typedef boost::shared_ptr<drift>    DriftPtr;
 
 
-class DriftEliminator : public ConstBmlVisitor
+class DriftEliminator : public BmlVisitor
 {
 
  public:
@@ -76,25 +76,11 @@ class DriftEliminator : public ConstBmlVisitor
 
  ~DriftEliminator();
 
-  void visit(  beamline  const& );
-  void visit(  bmlnElmnt const& );
-
-  void visit(  monitor   const& ); 
-  void visit(  marker    const& ); 
-  void visit(  drift     const& ); 
-
-  void visit(  Slot      const& );
-
-  BmlPtr beamlinePtr();
+  void visit( beamline& );
 
  private: 
 
   DriftEliminator( DriftEliminator const& ); // forbidden
-
-  void       handlePassiveElement( bmlnElmnt const& );
-
-  BmlPtr     bmlPtr_;
-  DriftPtr   driftPtr_;
 
 };
 

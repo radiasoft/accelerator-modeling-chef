@@ -92,7 +92,9 @@ class BeamlineContext: public beamline {
 
     BeamlineContext( Particle const&, beamline const& bml );
    ~BeamlineContext();
- 
+
+    BeamlineContext* Clone() const;
+
     sqlite::connection& dbConnection() const;    
 
     void                  setInitial( CSLattFuncs const& );
@@ -106,22 +108,21 @@ class BeamlineContext: public beamline {
 
     void writeTree();
 
-    void    computeEigenTunes( );
+    void computeEigenTunes( );
 
-    void    periodicReferenceOrbit( );
-    void    periodicDispersion( );  
-    void    periodicCourantSnyder2D( );
-    void    periodicCourantSnyder4D();
-    void    periodicEdwardsTeng( );
-    void    periodicCovariance( );
+    void  periodicReferenceOrbit( );
+    void  periodicDispersion( );  
+    void  periodicCourantSnyder2D( );
+    void  periodicCourantSnyder4D();
+    void  periodicEdwardsTeng( );
+    void  periodicCovariance( );
 
-    void    propagateReferenceOrbit( );
-    void    propagateDispersion( );  
-    void    propagateCourantSnyder2D( );
-    void    propagateCourantSnyder4D();
-    void    propagateEdwardsTeng( );
-    void    propagateCovariance( );
-
+    void  propagateReferenceOrbit( );
+    void  propagateDispersion( );  
+    void  propagateCourantSnyder2D( );
+    void  propagateCourantSnyder4D();
+    void  propagateEdwardsTeng( );
+    void  propagateCovariance( );
 
     double  getHTune();
     double  getVTune();
@@ -136,8 +137,8 @@ class BeamlineContext: public beamline {
     Mapping const& getOneTurnMap();  // Side effect: calculates closed orbit if not
     bool           onTransClosedOrbit( Particle const& ) const;
 
-    Particle  getRefParticle() const;
-    bool      hasReferenceParticle() const;
+    Particle const& getRefParticle()       const;
+    bool            hasReferenceParticle() const;
 
 
    // Beamline methods
@@ -211,7 +212,6 @@ class BeamlineContext: public beamline {
     CSLattFuncs           initialLattFunc_;
     bool                  initial_lattfunc_set_;
 
-    double                dpp_;  // value of dp/p used for dispersion calculation. default = 0.0001
     double                eps1_; // invariant emittances in units of pi mm-mr.
     double                eps2_;
 
@@ -243,13 +243,8 @@ class BeamlineContext: public beamline {
             std::string                          dbname_;
     mutable boost::shared_ptr<sqlite::connection>    db_;
 
-    static const double small_x_err;   // [m]   = 1.0e-9 
-    static const double small_y_err;   // [m]   = 1.0e-9 
-    static const double small_npx_err; // [rad] = 1.0e-9 
-    static const double small_npy_err; // [rad] = 1.0e-9 
 
-
-    BeamlineContext( BeamlineContext const& ); // forbidden
+    BeamlineContext( BeamlineContext const& );
 
 };
 

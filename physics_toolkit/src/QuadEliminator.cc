@@ -5,7 +5,6 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.1
 ******                                    
 ******  File:      QuadEliminator.cc
 ******                                                                
@@ -40,6 +39,15 @@
 ******  - eliminated references to slist/dlist
 ******  - use new-style STL compatible beamline iterators
 ******
+****** Aug 2008           ostiguy@fnal.gov
+****** - revised to conform to the conventional semantics 
+******   of the Visitor pattern. QuadEliminator now modifies the 
+******   beamline in-place rather than return a new one through
+******   a private member accessor. 
+****** - uncessary cloning eliminated: beamline::append( x ) always
+******   _clones_ x if x is a reference or value type. Shared 
+******   semantics is obtained when x is an ElmPtr. 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -73,9 +81,8 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 QuadEliminator::QuadEliminator()
-: quadPtr_(), bmlPtr_()
+: bml_(), quadPtr_()
 {}
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -86,56 +93,51 @@ QuadEliminator::~QuadEliminator()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void QuadEliminator::visit( beamline const& x )
+void QuadEliminator::visit( beamline& x )
 {
 
-  // Create the new beamline
-
-  string nuNam = x.Name() + string("_QuadMerged");
-
-  bmlPtr_ = BmlPtr( new beamline( nuNam.c_str() ) );
-  bmlPtr_->setMomentum( x.Momentum() );
-
-
+  bml_ = BmlPtr( new beamline( x.Name()+ string("_QuadMerged") ));
+  bml_->setMomentum( x.Momentum() );
+  bml_->setLineMode( x.getLineMode() );
+  
   // Process the argument
- for (beamline::const_deep_iterator it  = x.deep_begin();
+
+  for (beamline::const_deep_iterator it  = x.deep_begin();
                                     it != x.deep_end(); ++it )  {
                                  
     (*it)->accept( *this );
   }
 
-
   // Append final quad, if it exists.
+
   if( quadPtr_ ) {
-    bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
+    bml_->append( quadPtr_ );
     quadPtr_ = QuadrupolePtr();
   }
 
+  x = *bml_; 
 }
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void QuadEliminator::visit( bmlnElmnt const& x )
+void QuadEliminator::visit( bmlnElmnt& x )
 {
-  if( bmlPtr_ )  {  // Not paranoia!
+  if( !bml_ ) return;
 
-    if( quadPtr_ ) {
+  if( quadPtr_ ) {
 
-      bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
+      bml_->append( quadPtr_ );
       quadPtr_ = QuadrupolePtr();
-    }
+   }
 
-    bmlPtr_->append( ElmPtr( x.Clone() ) ); 
-  }
+  bml_->append( x ); 
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void QuadEliminator::visit( quadrupole const& x )
+void QuadEliminator::visit( quadrupole& x )
 {
   if( !quadPtr_ ) {
     quadPtr_ = QuadrupolePtr( x.Clone() );
@@ -150,21 +152,13 @@ void QuadEliminator::visit( quadrupole const& x )
   }
 
   else {
-     bmlPtr_->append( QuadrupolePtr( quadPtr_->Clone() ) );
-     quadPtr_ = QuadrupolePtr( x.Clone()  );
+     bml_->append( quadPtr_  );
+     quadPtr_ = QuadrupolePtr( x.Clone() );
   }
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-BmlPtr QuadEliminator::beamlinePtr()
-{
-  return bmlPtr_;
-  // Invoking routine is responsible for
-  // using this beamline before the 
-  // QuadEliminator goes out of scope.
-}
 
 

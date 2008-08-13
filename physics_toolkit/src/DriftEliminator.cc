@@ -5,7 +5,6 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   1.0                    
 ******                                    
 ******  File:      DriftEliminator.cc
 ******                                                                
@@ -79,7 +78,6 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 DriftEliminator::DriftEliminator()
-  : bmlPtr_(), driftPtr_()
 {}
 
 
@@ -93,134 +91,34 @@ DriftEliminator::~DriftEliminator()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void DriftEliminator::visit( beamline const& x )
+void DriftEliminator::visit( beamline& x )
 {
-  string nuName =  x.Name()+ string("_Condensed");
 
-  bmlPtr_ = BmlPtr( new beamline( nuName.c_str()  ) );
-  bmlPtr_->setMomentum( x.Momentum() );
+  BmlPtr bml( new beamline( x.Name()+ string("_Condensed") ));
+  bml->setMomentum( x.Momentum() );
+  bml->setLineMode( x.getLineMode() );
+  
+  double length = 0.0; 
 
-
-  // Process the argument
-
-
-  for ( beamline::const_deep_iterator it= x.deep_begin(); it != x.deep_end(); ++it ) {
-    (*it)->accept( *this );
+  for ( beamline::const_deep_iterator it = x.deep_begin(); it != x.deep_end(); ++it ) {
+     
+    if ( !(*it)->isPassive() ) { 
+      if (length > 0.0 ) { bml->append( drift( "concat_drift", length ) ); length = 0.0; }
+      bml->append( *it);
+    }
+    else {
+      length += (*it)->Length();
+    }
   }
-
 
   // Append final drift, if it exists.
-  if(  driftPtr_ ) {
-    if( driftPtr_->Length() >0.0 ) {
-      bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
-    }
-    driftPtr_ = DriftPtr();
-  }
 
+  if (length > 0.0 ) { bml->append( drift( "concat_drift", length ) ); length = 0.0; }
+  x = *bml;
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void DriftEliminator::visit( bmlnElmnt const& x )
-{
-  if( !bmlPtr_ ) {  // Not paranoia!
-      return;
-  }
-
-  if( x.Strength() != 0.0  ) {
-      if( driftPtr_ ) {
-        if( driftPtr_->Length() > 0.0 ) {
-          bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
-	}
-        driftPtr_ = DriftPtr();
-      }
-      bmlPtr_->append( ElmPtr( x.Clone() ) ); 
-  }
-  else {
-      handlePassiveElement( x );
-  }
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void DriftEliminator::visit( Slot const& x )
-{
-  if(  !bmlPtr_ ) {  // Not paranoia!
-    return;
-  }
- 
-  if( driftPtr_ ) {
-      if( driftPtr_->Length() > 0.0 ) {
-        bmlPtr_->append( DriftPtr( driftPtr_->Clone() ) );
-      }
-      driftPtr_ = DriftPtr();
-  }
-  bmlPtr_->append( ElmPtr( x.Clone() ) ); 
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void DriftEliminator::handlePassiveElement( bmlnElmnt const& x )
-{
-  if( !driftPtr_ ) {
-    driftPtr_ = DriftPtr( new drift( (char*) "concat_drift", x.Length() ) );
-  }
-  else {
-    driftPtr_->setLength( x.Length() + driftPtr_->Length()  );
-  }
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void DriftEliminator::visit( monitor const& x )
-{
-  if( 0.0 == x.Strength() ) {
-    handlePassiveElement(x);
-  } 
-  else {
-    visit( static_cast<bmlnElmnt const&>(x) );
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void DriftEliminator::visit( marker const& x )
-{
-  // Do nothing
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void DriftEliminator::visit( drift const& x )
-{
-   handlePassiveElement(x);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-BmlPtr DriftEliminator::beamlinePtr()
-{
-  return bmlPtr_;
-
-}
-
-
 
 
