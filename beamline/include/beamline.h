@@ -62,6 +62,7 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/LatticeFunctions.h>
 
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
@@ -154,6 +155,7 @@ public:
    beamline const*  parent()  const  { return parent_; } 
    beamline*        parent()         { return parent_; }    
    
+   virtual void     reset()   const; 
 
    double getReferenceTime()                    const;     
    void   setReferenceTime( double   const& );               
@@ -281,6 +283,9 @@ public:
 
   const char*  Type()                           const;
   bool         isMagnet()                       const;
+  bool         isThin()                         const;
+  bool         isPassive()                      const;
+
   double       OrbitLength( Particle const& );
   bool         isFlat()                         const;
   LattRing     whatIsRing();
@@ -356,6 +361,8 @@ public:
           reverse_deep_iterator rdeep_end();                      
 
 private:
+
+  void  InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList, boost::function<double(ElmPtr)> LengthFunctor );
 
   iterator   moveRel(   int axis, double const& u,     iterator pos,             std::string invoker );
   iterator rotateRel(   int axis, double const& angle, iterator pos, double pct, std::string invoker );
