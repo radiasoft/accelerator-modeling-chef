@@ -162,7 +162,10 @@ class DLLEXPORT rbend : public bmlnElmnt
   bool hasStandardFaces() const;
 
   const char* Type() const;
-  bool isMagnet() const;
+
+  bool isMagnet()  const;
+  bool isThin()    const;
+  bool isPassive() const;
 
   double OrbitLength( Particle const& );
     // Computes arclength of orbit assuming a symmetric bend.

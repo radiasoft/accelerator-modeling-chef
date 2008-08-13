@@ -97,8 +97,10 @@ public:
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  const char* Type() const;
-  bool    isMagnet() const;
+  const char* Type()  const;
+  bool    isMagnet()  const;
+  bool    isThin()    const;
+  bool    isPassive() const;
  
   double getReferenceTime()              const;
 
@@ -175,8 +177,10 @@ public:
   void setRadialFrequencyRelativeTo( double const& );
   void                       setPhi( double const& );  // radians
 
-  char const* Type() const;
-  bool    isMagnet() const;
+  char const* Type()  const;
+  bool    isMagnet()  const;
+  bool    isThin()    const;
+  bool    isPassive() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

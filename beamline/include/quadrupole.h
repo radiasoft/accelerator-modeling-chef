@@ -94,7 +94,10 @@ public:
   void accept( ConstBmlVisitor& v ) const;
 
   char const* Type()     const;
-  bool        isMagnet() const;
+
+  bool        isMagnet()  const;
+  bool        isThin()    const;
+  bool        isPassive() const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
@@ -130,8 +133,12 @@ public:
   void accept( BmlVisitor& v );           
   void accept( ConstBmlVisitor& v ) const;
 
-  bool        isMagnet()   const;
   char const* Type()       const;
+
+  bool        isMagnet()   const;
+  bool        isThin()     const;
+  bool        isPassive()  const;
+
 
 };
 

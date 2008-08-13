@@ -109,7 +109,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   void peekAt( double& s, const Particle& );
 
   const char* Type() const;
-  bool isMagnet() const;
+  bool isMagnet()  const;
+  bool isThin()    const;
+  bool isPassive() const;
   
   double OrbitLength( Particle const& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;

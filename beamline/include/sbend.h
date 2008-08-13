@@ -108,7 +108,9 @@ class DLLEXPORT sbend : public bmlnElmnt {
   void accept( ConstBmlVisitor& v ) const;
 
   const char* Type() const;
-  bool isMagnet() const;
+  bool isMagnet()    const;
+  bool isThin()      const;
+  bool isPassive()   const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 

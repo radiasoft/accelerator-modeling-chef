@@ -70,6 +70,8 @@ public:
 
   const char* Type()       const;
   bool        isMagnet()   const;
+  bool        isThin()     const;
+  bool        isPassive()  const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

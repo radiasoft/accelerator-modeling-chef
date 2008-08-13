@@ -95,8 +95,10 @@ public:
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  bool    isMagnet() const;
-  const char* Type() const;
+  bool    isMagnet()  const;
+  bool    isThin()    const;
+  bool    isPassive() const;
+  const char* Type()  const;
 
 private:
  

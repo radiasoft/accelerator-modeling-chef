@@ -120,8 +120,7 @@
       template <typename OtherType>
       iter( iter<OtherType> const& other, 
         	      typename boost::enable_if<boost::is_convertible<OtherType*, held_t*>, enabler >::type = enabler() ) 
-            	      : iter::iterator_adaptor_( other.base() ), bml_(other.bml_){} 
-      
+            	      : iter::iterator_adaptor_( other.base() ), bml_(other.bml_){}
 
       iter begin() { return bml_->begin(); }  
       iter end()   { return bml_->end();   }  

@@ -98,10 +98,13 @@ public:
   void setFrequency( double (*)( double const& ) );
   void setFrequency( Jet    (*)( Jet    const& ) );
  
-  const char* Type()     const;
+  const char* Type()      const;
  
-  bool        isMagnet() const;
-  bool        isMatrix() const; 
+  bool        isMagnet()  const;
+  bool        isThin()    const;
+  bool        isPassive() const;
+
+  bool        isMatrix()  const; 
 
 private:
 

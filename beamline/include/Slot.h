@@ -96,6 +96,9 @@ class DLLEXPORT Slot : public bmlnElmnt {
    void Split( double const& s, ElmPtr&, ElmPtr& ) const;
 
    bool         isMagnet()  const;
+   bool         isThin()    const;
+   bool         isPassive() const;
+
    const char*  Type()      const;
 
    int  setInFrame( Frame const& );

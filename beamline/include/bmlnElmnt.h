@@ -205,8 +205,6 @@ public:
 
   bmlnElmnt& operator=( bmlnElmnt const& a );  
  
-  virtual bool     isBeamline() const;                   
-
   boost::any& operator[](std::string const& s);    // a type-safe facility to attach attributes of any type
   bool attributeExists(std::string const& s) const;     
   void attributeClear (std::string const& s);           
@@ -317,13 +315,15 @@ public:
   double               Length()                 const;
 
 
-  virtual bool equivTo( bmlnElmnt const& ) const;
-
-  virtual bool hasParallelFaces() const;
+    virtual bool hasParallelFaces() const;
   virtual bool hasStandardFaces() const;
 
+  virtual bool isBeamline() const;                   
   virtual bool isSimple()   const;
   virtual bool isMagnet()   const = 0;
+  virtual bool isPassive()  const = 0;                   
+  virtual bool isThin()     const = 0;                   
+
 
   std::string const&          Name()   const  { return ident_; }
   virtual char const*         Type()   const = 0;
@@ -343,6 +343,7 @@ private:
 protected:
 
   std::string                       ident_;              // Name identifier of the element.
+
   double                            length_;             // Length of object [ meters ]
   
   alignment*                        align_;

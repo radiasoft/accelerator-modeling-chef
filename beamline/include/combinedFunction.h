@@ -115,7 +115,9 @@ public:
   alignmentData getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }
 
   const char* Type() const;
-  bool isMagnet() const;
+  bool isMagnet()    const;
+  bool isThin()      const;
+  bool isPassive()   const;
 
 private:
 

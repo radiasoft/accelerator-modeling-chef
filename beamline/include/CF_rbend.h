@@ -116,7 +116,9 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   void peekAt( double& s, const Particle& );
 
   const char* Type() const;
-  bool isMagnet() const;
+  bool isMagnet()  const;
+  bool isThin()    const;
+  bool isPassive() const;
   
   double OrbitLength( const Particle& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;

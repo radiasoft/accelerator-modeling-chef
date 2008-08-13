@@ -383,10 +383,10 @@ void bmlnElmnt::setLength( double const& length )
    }
 
 
-   if( length <= 0 ) {
+   if( length < 0.0 ) {
     
     stringstream msg;  
-    msg << " ***ERROR***: Lengths must be nonzero and positive. You have entered length " << length 
+    msg << " ***ERROR***: Lengths must be positive. You have entered length " << length 
                <<  " for " << Type() << "  " << Name() << endl;
     throw(  GenericException( __FILE__, __LINE__, 
 					  "void bmlnElmnt::setLength( double const& length )", msg.str() ));
@@ -495,24 +495,6 @@ void bmlnElmnt::peekAt( double& s, Particle const& p ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::equivTo( bmlnElmnt const& x ) const 
-{
-
-  if( typeid(*this) !=  typeid(x) ) {
-    return false;
-  }
-
-  double maxLength   = std::max(length_,   x.length_  );
-  double maxStrength = std::max(pscale_*strength_, x.pscale_*x.strength_);
-
-  return ( ( std::abs( length_            - x.length_              ) < 1.0e-6 * maxLength   )  &&
-           ( std::abs( pscale_* strength_ - x.pscale_* x.strength_ ) < 1.0e-6 * maxStrength )     );
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 bool bmlnElmnt::hasParallelFaces() const
 {
   return true;
@@ -535,7 +517,6 @@ bool bmlnElmnt::isSimple() const
 {
   return ( (!bml_) && ( !elm_)  );
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
