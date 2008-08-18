@@ -46,7 +46,6 @@
 #include <vector>
 #include <deque>
 #include <list>
-#include <ext/hash_map>
 #include <algorithm>
 #include <istream>
 #include <boost/iterator/transform_iterator.hpp>

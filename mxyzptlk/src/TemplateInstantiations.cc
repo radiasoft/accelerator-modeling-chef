@@ -52,7 +52,6 @@
 #include <vector>
 #include <deque>
 #include <list>
-#include <ext/hash_map>
 #include <algorithm>
 #include <istream>
 
