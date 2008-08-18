@@ -38,7 +38,8 @@
 ****** -some efficiency improvements
 ****** -use new style Jet iterators.
 ****** Aug 2008       ostiguy@fnal
-****** - templated version of 
+****** - templated version of "shear" function 
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -71,7 +72,7 @@ using namespace std;
 namespace {
 
 std::complex<double> const complex_0 (0.0, 0.0);
-std::complex<double> const complex_1 (1.0, 0.0); // -i 
+std::complex<double> const complex_1 (1.0, 0.0);  
 std::complex<double> const mi( 0., -1. );        // -i
 
 template < unsigned int idx>
