@@ -68,6 +68,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <cstring> 
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/IntArray.h>
