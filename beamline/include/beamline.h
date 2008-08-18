@@ -86,7 +86,7 @@ public:
 
    struct Node;
  
-   enum LineMode { line, ring, unknown };
+   enum LineMode { line, ring };
 
    template<typename held_type>
    class iter;
@@ -286,7 +286,8 @@ public:
   bool         isThin()                         const;
   bool         isPassive()                      const;
 
-  double       OrbitLength( Particle const& );
+  double       OrbitLength( Particle const& )   const;
+  double       Length()                         const;
   bool         isFlat()                         const;
   LattRing     whatIsRing();
 
