@@ -206,15 +206,17 @@ public:
   bmlnElmnt& operator=( bmlnElmnt const& a );  
  
   boost::any& operator[](std::string const& s);    // a type-safe facility to attach attributes of any type
-  bool attributeExists(std::string const& s) const;     
-  void attributeClear (std::string const& s);           
-  void attributeClear ();                                
+
+  bool        attributeExists(std::string const& s) const;     
+  void        attributeClear (std::string const& s);           
+  void        attributeClear ();                                
 
   virtual void accept( BmlVisitor& ) = 0;
   virtual void accept( ConstBmlVisitor& ) const = 0;
 
   void acceptInner( BmlVisitor& );
   void acceptInner( ConstBmlVisitor& ) const;
+
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)
@@ -238,15 +240,16 @@ public:
   void    markPins(); // WRITE // Marks the current positions of the element as "original"
   void    loadPinnedCoordinates( Particle const &, Vector&, double=1.0 ) const; 
 
-    // Pinned coordinates of the particle are returned in the vector
-    //   argument.  
-    // 
-    // The third argument must be within [0,1]; it is internally
-    //   set to 1.0 otherwise.  It indicates the percentage of distance
-    //   from the upstream to downstream faces of the element at which 
-    //   the coordinates are to be calculated.
-    // 
-    // Default value: 1.0 -> return pinned coordinates at the downstream end.
+    
+  // Pinned coordinates of the particle are returned in the vector
+  //   argument.  
+  // 
+  // The third argument must be within [0,1]; it is internally
+  //   set to 1.0 otherwise.  It indicates the percentage of distance
+  //   from the upstream to downstream faces of the element at which 
+  //   the coordinates are to be calculated.
+  // 
+  // Default value: 1.0 -> return pinned coordinates at the downstream end.
 
   Frame const& getUpstreamPinnedFrame() const 
     { return pinnedFrames_.upStream(); }
@@ -265,11 +268,11 @@ public:
   virtual void localPropagate(    ParticleBunch& b ) const;
   virtual void localPropagate( JetParticleBunch& b ) const;
 
-  void enterLocalFrame( Particle&                ) const;
-  void enterLocalFrame( JetParticle&             ) const;
+  void enterLocalFrame( Particle&                )   const;
+  void enterLocalFrame( JetParticle&             )   const;
 
-  void leaveLocalFrame( Particle&                ) const;
-  void leaveLocalFrame( JetParticle&             ) const;
+  void leaveLocalFrame( Particle&                )   const;
+  void leaveLocalFrame( JetParticle&             )   const;
 
   // Editing functions
 
@@ -312,17 +315,17 @@ public:
 
   double               Strength()               const;
   double               strengthScale()          const;
-  double               Length()                 const;
+  virtual double       Length()                 const;
 
 
-    virtual bool hasParallelFaces() const;
+  virtual bool hasParallelFaces() const;
   virtual bool hasStandardFaces() const;
 
-  virtual bool isBeamline() const;                   
-  virtual bool isSimple()   const;
-  virtual bool isMagnet()   const = 0;
-  virtual bool isPassive()  const = 0;                   
-  virtual bool isThin()     const = 0;                   
+  virtual bool isBeamline()  const;                   
+  virtual bool   isSimple()  const;
+  virtual bool   isMagnet()  const = 0;
+  virtual bool  isPassive()  const = 0;                   
+  virtual bool     isThin()  const = 0;                   
 
 
   std::string const&          Name()   const  { return ident_; }
@@ -349,10 +352,9 @@ protected:
   alignment*                        align_;
   PinnedFrameSet                    pinnedFrames_;
 
-  mutable double                    ctRef_;            // (normalized) time required for
-                                                      // a reference particle to cross
-                                                      // the element. Established by a
-                                                      // RefRegVisitor.
+  mutable double                    ctRef_;              // (normalized) time required for
+                                                         // a reference particle to cross
+                                                         // the element. Usuallu established by a RefRegVisitor.
 
   std::map<std::string, boost::any>  attributes_;
 
