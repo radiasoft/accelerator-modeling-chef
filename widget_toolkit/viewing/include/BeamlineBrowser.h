@@ -34,6 +34,8 @@
 ******
 ****** - removed dependencies on dlist/slist
 ****** - support for reference-counted elements and beamlines 
+****** Aug 2008 ostiguy@fnal.gov
+****** - eliminated BeamlineContext dependencies
 ******                                                              
 **************************************************************************
 *************************************************************************/
@@ -93,8 +95,8 @@ public:
  ~QBmlElmt();
 
   double             Azimuth()         const     { return  azimuth_; }
-  ConstElmPtr        cheatElementPtr() const     { return  myElement_; }
-       ElmPtr        cheatElementPtr()           { return  myElement_; }
+  ConstElmPtr        elmPtr()          const     { return  myElement_; }
+       ElmPtr        elmPtr()                    { return  myElement_; }
   QString fullName() const;
 
   friend class BeamlineBrowser;
@@ -108,7 +110,7 @@ private:
 class QBmlRoot : public QBml
 {
 public:
-    QBmlRoot( QListView* parent, BmlContextPtr,           double& );
+    QBmlRoot( QListView* parent, BmlPtr,                  double& );
     QBmlRoot( QListView* parent, Particle const&, BmlPtr, double& );
     QBmlRoot( QBmlRoot*  parent, BmlPtr,                  double& );
    ~QBmlRoot();
@@ -123,12 +125,10 @@ public:
 
     friend class BeamlineBrowser;
 
-    // Must get rid of this eventually!!
-    inline ConstBmlContextPtr cheatContextPtr() const { return myBmlCon_; }
+    ConstBmlPtr bmlPtr() const; 
 
 private:
-    BmlContextPtr    myBmlCon_;      // if there is no QBmlRoot parent
-    BmlPtr           myBeamline_;    // if there is a  QBmlRoot parent
+    BmlPtr    bml_;      // if there is no QBmlRoot parent
 };
 
 
@@ -156,14 +156,14 @@ struct infoWriter : public ConstBmlVisitor
   void visit( sector     const& );
   void visit( monitor    const& );
 
-  BmlContextPtr     _contextPtr;
+  BmlPtr     bml_;
 };
 
 
   BeamlineBrowser( QWidget *parent = 0, const char *name = 0, bool sdo = FALSE );
  ~BeamlineBrowser();
   
-  ConstElmPtr  getSelectedElement( BmlContextPtr ) const;
+  ConstElmPtr  getSelectedElement( BmlPtr ) const;
 
   static const char* drift_xpm[19];
   static const char* slot_xpm[19];
@@ -189,23 +189,21 @@ struct infoWriter : public ConstBmlVisitor
   static QPixmap* dipoleSymbol;
   static QPixmap* elmntSymbol;
   
-  void displayBeamline( ConstBmlContextPtr );
-  int removeBeamline( BmlContextPtr );   // eliminates the beamline as well
+  void displayBeamline( ConstBmlPtr );
+  int        removeBeamline( BmlPtr );   // eliminates the beamline as well
 
-  int findElement( QBml*, const BoolNode&, std::list<ConstElmPtr>& );
-  int findElement( QBml*, const BoolNode*, std::list<ConstElmPtr>& );
+  int findElement( QBml*,  BoolNode const&, std::list<ConstElmPtr>& );
 
   std::list<ElmPtr> findAllSelected( QBmlRoot* ) const;
 
 public slots:
     void setDir( const QString & );
-    void resetPixmap( ConstBmlContextPtr );
+    void resetPixmap( ConstBmlPtr );
 
 signals:
     void folderSelected( const QString & );
-    void sig_bmlLeftClicked( BmlContextPtr, QBmlRoot* );
+    void sig_bmlLeftClicked( BmlPtr, QBmlRoot* );
     void sig_bmlLeftClicked( QBml* );
-    void sig_newContext( BmlContextPtr );
     void sig_browserIsEmpty();
     void sig_browserIsNotEmpty();
 

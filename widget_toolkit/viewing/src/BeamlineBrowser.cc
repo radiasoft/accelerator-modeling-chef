@@ -9,8 +9,8 @@
 ******  File:      BeamlineBrowser.cc
 ******  Version:   3.3
 ******                                                                
-******Copyright (c) Universities Research Association, Inc./ Fermilab    
-******                All Rights Reserved                             
+****** Copyright (c) Universities Research Association, Inc./ Fermilab    
+******                 All Rights Reserved                             
 ******
 ******  Software and documentation created under 
 ******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
@@ -30,8 +30,10 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ****** REVISION HISTORY
-****** Mar 2007     ostiguy@fnal
+****** Mar 2007     ostiguy@fnal.gov
 ****** - support for reference counted elements and beamlines
+****** Aug 2008     ostiguy@fnal.gov
+****** - eliminated all dependencies on BeamlineContext. 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -483,36 +485,30 @@ QString QBmlElmt::fullName() const
 // *
 // *****************************************************************************
 
-QBmlRoot::QBmlRoot( QListView* parent, BmlContextPtr q, double& s )
+QBmlRoot::QBmlRoot( QListView* parent, BmlPtr q, double& s )
 : QBml( 0, parent, q->Name().c_str(), "beamline" ), 
-   myBmlCon_(q)
+   bml_(q)
 {
     QString str;
     str.setNum( ((double) s) );
     this->setText( 2, str );
-
-    myBeamline_ = BmlPtr();
 }
 
 
 QBmlRoot::QBmlRoot( QListView* parent, Particle const& particle, BmlPtr q, double& s )
-: QBml( 0, parent, q->Name().c_str(), q->Type() ), 
-   myBeamline_()
+  : QBml( 0, parent, q->Name().c_str(), q->Type() ), bml_(q)
 {
   // QString str;
   // str.setNum( ((double) s) );
 
     setText( 2, QString().setNum(s) );
-
-    myBmlCon_ = BmlContextPtr(new BeamlineContext( particle, *q) );
 }
 
 
 QBmlRoot::QBmlRoot( QBmlRoot * parent, BmlPtr q, double& s )
 : 
    QBml( 0, parent, q->Name().c_str(), q->Type() ),
-   myBmlCon_(),
-   myBeamline_(q) 
+   bml_(q) 
 {
     QString str;
     str.setNum( ((double) s) );
@@ -531,9 +527,14 @@ QBmlRoot::~QBmlRoot()
   {}
 
 
+ConstBmlPtr QBmlRoot::bmlPtr() const
+{ 
+  return bml_; 
+}
+
 void QBmlRoot::setOpen( bool o )
 {
-  if( !myBmlCon_ ) {
+  if( !bml_ ) {
     if ( o ) {
       setPixmap( BeamlineBrowser::bmlOrangeSymbol );
     }
@@ -541,7 +542,7 @@ void QBmlRoot::setOpen( bool o )
       setPixmap( BeamlineBrowser::bmlBlackSymbol );
     }
   }
-  else if( myBmlCon_->isTreatedAsRing() ) {
+  else if(  bml_->getLineMode() == beamline::ring ) {
     if ( o ) {
       setPixmap( BeamlineBrowser::bmrOrangeSymbol );
     }
@@ -569,14 +570,7 @@ void QBmlRoot::setup()
 
 QString QBmlRoot::fullName() const
 {
-    QString s;
-    if( !p_ ) 
-    { s = myBmlCon_->Name();
-    }
-    else 
-    { s = myBeamline_->Name();
-    }
-    return s;
+  return  ( p_ ? QString( bml_->Name() ) : QString("") );
 }
 
 
@@ -674,8 +668,7 @@ BeamlineBrowser::~BeamlineBrowser()
 {
 }
 
-
-ConstElmPtr BeamlineBrowser::getSelectedElement( BmlContextPtr bcPtr ) const
+ConstElmPtr BeamlineBrowser::getSelectedElement( BmlPtr bcPtr ) const
 {
   if( !bcPtr ) {
     QMessageBox::information( 
@@ -687,10 +680,10 @@ ConstElmPtr BeamlineBrowser::getSelectedElement( BmlContextPtr bcPtr ) const
   }
 
   QBmlRoot* fc = dynamic_cast<QBmlRoot*>( firstChild() );
-  bool found = ( bcPtr == fc->myBmlCon_ );
+  bool found = ( bcPtr == fc->bml_ );
   while( !found ) {
     fc = dynamic_cast<QBmlRoot*>( fc->nextSibling() );
-    found = ( bcPtr == fc->myBmlCon_ );
+    found = ( bcPtr == fc->bml_ );
   }
 
   if( !found ) {
@@ -705,7 +698,7 @@ ConstElmPtr BeamlineBrowser::getSelectedElement( BmlContextPtr bcPtr ) const
   const QBmlElmt* qbePtr = fc->findSelectedElement();
   if( !qbePtr ) { return ConstElmPtr(); }
 
-  return qbePtr->cheatElementPtr();
+  return qbePtr->elmPtr();
 }
 
 
@@ -721,16 +714,13 @@ void BeamlineBrowser::slotFolderSelected( QListViewItem *i )
 void BeamlineBrowser::slotShowData( QBmlRoot* toproot, QBml* item )
 {
   infoWriter wr;
-  wr._contextPtr = toproot->myBmlCon_;
+  wr.bml_ = toproot->bml_;
 
   if( typeid(*item)==typeid(QBmlRoot) ) {
     
     if( !static_cast<QBmlRoot*>(item)->p_ ) 
     {
-         static_cast<QBmlRoot*>(item)->myBmlCon_->accept(wr);
-    }
-    else {
-         static_cast<QBmlRoot*>(item)->myBeamline_->accept(wr);
+      static_cast<QBmlRoot*>(item)->bml_->accept(wr);
     }
   }
 
@@ -904,8 +894,8 @@ void BeamlineBrowser::contentsMousePressEvent( QMouseEvent* e )
   else if( e->button() == Qt::LeftButton ) 
   { if( typeid(*j) == typeid(QBmlRoot) ) 
     { lastClickedRootPtr_ = dynamic_cast<QBmlRoot*>(j);
-      if( 0 != ( ((QBmlRoot*) j) -> myBmlCon_ ) ) {
-        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> myBmlCon_, ((QBmlRoot*) j) );
+      if( 0 != ( ((QBmlRoot*) j) -> bml_ ) ) {
+        emit sig_bmlLeftClicked( ((QBmlRoot*) j) -> bml_, ((QBmlRoot*) j) );
       }
     }
     emit sig_bmlLeftClicked( j );  // No longer necessary???
@@ -972,34 +962,34 @@ void BeamlineBrowser::setDir( const QString &s )
 }
 
 
-void BeamlineBrowser::resetPixmap( ConstBmlContextPtr bcPtr )
+void BeamlineBrowser::resetPixmap( ConstBmlPtr bcPtr )
 {
   if( !bcPtr ) {
     QMessageBox::information( 0, "CHEF: WARNING", 
-      "Null pointer passed to BeamlineContext::resetPixmap." 
+      "Null pointer passed to BeamlineBrowser::resetPixmap." 
       "\nNo action will be taken." );
     return;
   }
 
   QBmlRoot* ptrRoot = dynamic_cast<QBmlRoot*>( this->firstChild() );
-  bool found = ( bcPtr == ptrRoot->myBmlCon_ );
+  bool found = ( bcPtr == ptrRoot->bml_ );
   while( !found ) {
     ptrRoot = dynamic_cast<QBmlRoot*>( ptrRoot->nextSibling() );
-    found = ( bcPtr == ptrRoot->myBmlCon_ );
+    found = ( bcPtr == ptrRoot->bml_ );
   }
 
   if( !found ) {
     ostringstream uic;
     uic << "An impossibility has occurred!"
            "\nFile " << __FILE__ << " at line " << __LINE__
-        << "\ninside BeamlineContext::resetPixmap."
-        << "\nCould not find indicated BeamlineContext."
+        << "\ninside BeamlineBrowser::resetPixmap."
+        << "\nCould not find indicated Beamline"
            "\nNo action will be taken.";
     QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
     return;
   }
 
-  if( bcPtr->isTreatedAsRing() ) {
+  if( bcPtr->getLineMode() == beamline::ring )  {
     if( ptrRoot->isOpen() ) {
       ptrRoot->setPixmap( BeamlineBrowser::bmrOrangeSymbol );
     }
@@ -1024,7 +1014,7 @@ void BeamlineBrowser::resetPixmap( ConstBmlContextPtr bcPtr )
 // 
 
 
-void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr ) 
+void BeamlineBrowser::displayBeamline( ConstBmlPtr ptr ) 
 {
   if( !ptr ) {
     ostringstream uic;
@@ -1035,17 +1025,17 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
         << "\nException will be thrown.";
     QMessageBox::information( 0, "CHEF: ERROR", uic.str().c_str() );
     throw( GenericException( __FILE__, __LINE__, 
-           "void BeamlineBrowser::displayBeamline( const BeamlineContext* ptr )",
+           "void BeamlineBrowser::displayBeamline( ConstBmlPtr )",
            "Null pointer passed as argument." ) );
     return;
   }
 
-  double s = ptr->sumLengths();
+  double s = ptr->Length();
   QString str1, str2;
 
-  QBmlRoot* root = new QBmlRoot( this, boost::const_pointer_cast<BeamlineContext>(ptr), s );
+  QBmlRoot* root = new QBmlRoot( this, boost::const_pointer_cast<beamline>(ptr), s );
 
-  if( ptr->isTreatedAsRing() ) {
+  if( ptr->getLineMode() == beamline::ring )  {
     root->setPixmap( BeamlineBrowser::bmrBlackSymbol ); 
   }
   else {
@@ -1057,7 +1047,7 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
 
   beamline::const_reverse_iterator rbi = ptr->rbegin();
 
-  displayLine( root, boost::const_pointer_cast<BeamlineContext>(ptr), rbi, s );
+  displayLine( root,  boost::const_pointer_cast<beamline>(ptr), rbi, s );
 
   str1.setNum( s );
   root->setText( 2, str1 + "-" + str2 );
@@ -1066,15 +1056,15 @@ void BeamlineBrowser::displayBeamline( ConstBmlContextPtr ptr )
   this->setCurrentItem( root );
   this->ensureItemVisible( root );
 
-  if(  root->myBmlCon_ ) {
-    emit sig_bmlLeftClicked( root->myBmlCon_, root );
+  if(  root->bml_ ) {
+    emit sig_bmlLeftClicked( root->bml_, root );
   }
   else {
     ostringstream uic;
     uic << "File " << __FILE__ << ", line " << __LINE__ << ":"
            "\nBeamlineBrowser::displayBeamline"
            "\nAn impossibility has occurred:"
-           "\ncreation of a null BeamlineContext.";
+           "\ncreation of a null Beamline";
     QMessageBox::information( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
   }
   emit sig_bmlLeftClicked( root );  // No longer necessary???
@@ -1150,7 +1140,7 @@ void BeamlineBrowser::displayLine( QBmlRoot* root, BmlPtr bml, beamline::const_r
 }
 
 
-int BeamlineBrowser::removeBeamline( BmlContextPtr ptr )
+int BeamlineBrowser::removeBeamline( BmlPtr ptr )
 {
   if( !ptr ) { return 1; }
   if( typeid(*ptr) != typeid(BeamlineContext) ) { return 2; }
@@ -1162,7 +1152,7 @@ int BeamlineBrowser::removeBeamline( BmlContextPtr ptr )
   for ( std::list<QBmlRoot*>::iterator it = topLevelItems_.begin(); 
                                       it != topLevelItems_.end(); ++it) {
 
-    if( (*it)->myBmlCon_ == ptr ) { 
+    if( (*it)->bml_ == ptr ) { 
       w = (*it);   // Just paranoia
       notfound = false;
     }
@@ -1180,14 +1170,6 @@ int BeamlineBrowser::removeBeamline( BmlContextPtr ptr )
   return 0;
 }
 
-
-
-int BeamlineBrowser::findElement( QBml*                startpoint, 
-                                  const BoolNode*      queryPtr, 
-                                 std::list<ConstElmPtr>& foundElements )
-{
-  return this->findElement( startpoint, *queryPtr, foundElements );
-}
 
 
 int BeamlineBrowser::findElement( QBml*                startpoint, 
@@ -1223,7 +1205,7 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
 
     // Apply the test and, if passed, add element pointer to the list.
     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( qbmlPtr ) )) {
-      elementPtr = qbmlelmtPtr->cheatElementPtr();
+      elementPtr = qbmlelmtPtr->elmPtr();
       if( query.evaluate( elementPtr.get() ) ) {
         foundElements.push_back( elementPtr );
         qbmlPtr->setSelected(true);
@@ -1294,7 +1276,7 @@ std::list<ElmPtr> BeamlineBrowser::findAllSelected( QBmlRoot* startpoint ) const
     // Apply the test and, if passed, add element pointer to the list.
     if( qbmlPtr->isSelected() ) {
       if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>(qbmlPtr) ) ) {
-        ret.push_back( boost::const_pointer_cast<bmlnElmnt>(qbmlelmtPtr->cheatElementPtr()) );
+        ret.push_back( boost::const_pointer_cast<bmlnElmnt>(qbmlelmtPtr->elmPtr()) );
       }
     }
 
@@ -1589,7 +1571,7 @@ void BeamlineBrowser::infoWriter::visit( rbend const& x )
 
   // REMOVE: if( returnCode == QDialog::Accepted ) {
   // REMOVE:   editDialog edg;
-  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   edg.bml_ = bml_;
   // REMOVE:   ((rbend*) x)->accept(edg);
   // REMOVE: }
 
@@ -1709,7 +1691,7 @@ void BeamlineBrowser::infoWriter::visit( quadrupole const& x )
 
   // REMOVE: if( returnCode == QDialog::Accepted ) {
   // REMOVE:   editDialog edg;
-  // REMOVE:   edg._contextPtr = _contextPtr;
+  // REMOVE:   edg.bml_ = bml_;
   // REMOVE:   ((quadrupole*) x)->accept(edg);
   // REMOVE: }
 
