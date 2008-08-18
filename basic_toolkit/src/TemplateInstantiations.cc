@@ -40,9 +40,16 @@
 **************************************************************************
 *************************************************************************/
 
+// =================================================================================
+// If implicit template instantiations are desired, *do not* compile this file !
+// =================================================================================
+
+#ifdef BASICTOOLKIT_EXPLICIT_TEMPLATES 
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 
 #include <complex>
 #include <iostream>
@@ -64,8 +71,6 @@
 
 #include <gms/FastPODAllocator.h>
 #include <basic_toolkit/Barnacle.h>
-#include <basic_toolkit/IntArray.h>
-#include <basic_toolkit/IntArray.tcc>
 #include <basic_toolkit/TMatrix.tcc>
 #include <basic_toolkit/TML.tcc>
 #include <basic_toolkit/TVector.tcc>
@@ -104,125 +109,10 @@ unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int)
 
 template class std::list<Barnacle>;
 
-template void std::_List_base<Barnacle, std::allocator<Barnacle> >::_M_clear();
 
 template BarnacleList::iterator
          std::remove_if(BarnacleList::iterator, BarnacleList::iterator, 
 		        std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::string> >);
-
-// ----------------------------------------------------------------------------
-// Instantiations related to IntArray
-// ----------------------------------------------------------------------------
-
-template
-IntArray::IntArray( int* it1, int* it2 );
-
-template
-IntArray::IntArray( int const* it1, int const* it2 );
-
-template
-void  IntArray::Set( int* it1, int* it2);
-
-template
-void  IntArray::Set( int const* it1, int const* it2);
-
-template 
-class std::vector<IntArray::exponent_t>;
-
-namespace {
- 
- IntArray::iterator               itdummy1;
- IntArray::const_iterator         itdummy2;  
- IntArray::reverse_iterator       itdummy3;
- IntArray::const_reverse_iterator itdummy4;
-}
-    
-template
-void std::fill( IntArray::iterator, IntArray::iterator, int const&); 
-
-
-template
-int std::accumulate( IntArray::iterator, IntArray::iterator,  int);
-
-template
-int std::accumulate( IntArray::const_iterator, IntArray::const_iterator,  int);
-
-template 
-class std::plus<IntArray::exponent_t>;
-
-template 
-class std::less_equal<IntArray::exponent_t>;
-
-template
-class std::greater<IntArray::exponent_t>;
-
-template
-class std::greater_equal<IntArray::exponent_t>;
-
-template
-IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::plus<IntArray::exponent_t> );
-
-template
-IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::plus<IntArray::exponent_t> );
-
-template
-IntArray::iterator std::transform( IntArray::iterator, IntArray::iterator, IntArray::iterator, IntArray::iterator,  std::multiplies<IntArray::exponent_t> );
-
-template
-IntArray::iterator std::transform( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator, IntArray::iterator,  std::multiplies<IntArray::exponent_t> );
-
-
-template
-bool std::equal( IntArray::iterator, IntArray::iterator, IntArray::iterator);
-
-template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less<IntArray::exponent_t> );
-
-template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::less_equal<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::iterator, IntArray::iterator, IntArray::iterator,  IntArray::iterator, std::greater<IntArray::exponent_t>);
-
-template
-bool std::equal( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator);
-
-template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::less_equal<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_iterator, IntArray::const_iterator, IntArray::const_iterator,  IntArray::const_iterator, std::greater_equal<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less<IntArray::exponent_t> );
-
-template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::less_equal<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater<IntArray::exponent_t>);
-
-template
-bool std::lexicographical_compare( IntArray::const_reverse_iterator, IntArray::const_reverse_iterator, IntArray::const_reverse_iterator,  IntArray::const_reverse_iterator, std::greater_equal<IntArray::exponent_t>);
-
-template
-void std::fill<int*, int>(int*, int*, int const&);
-
-template
-double* std::fill_n<double*, int, int>(double*, int, int const&);
-
-template
-IntArray::iterator 
-std::find_if( IntArray::iterator, IntArray::iterator, std::binder2nd<std::not_equal_to<int> > ); 
-   
-template
-int std::distance( IntArray::iterator, IntArray::iterator );
 
 // ----------------------------------------------------------------------------
 // Instantiations related to TVector 
@@ -287,178 +177,6 @@ template TMatrix<double> operator%( TVector<double> const&,       TVector<double
 template TVector<double>::iterator                std::copy( double const*, double const*, TVector<double>::iterator );   
 template TVector<std::complex<double> >::iterator std::copy( std::complex<double> const*, 
                                                              std::complex<double> const*, TVector<std::complex<double> >::iterator );   
-
-
-// ----------------------------------------------------------------------------
-// Instantiations related to Matrix Class
-// ----------------------------------------------------------------------------
-
-template class TMatrix<double>;
-template class TMatrix<std::complex<double> >;
-//template class TMatrix<int>;  // This should not be used at all, 
-                                // but apparently it is ... 
-
-template bool operator==( const TMatrix<double>&, TMatrix<double> const& );
-template bool operator==( const TMatrix<double>&,          double const& );
-template bool operator==( double const&,          TMatrix<double> const& );
-template std::ostream& operator<<(std::ostream&,  TMatrix<double> const& );
-
-template TMatrix<double> operator+(TMatrix<double> const&, TMatrix<double> const&);
-template TMatrix<double> operator+(TMatrix<double> const&, double const&); 
-template TMatrix<double> operator+(         double const&, TMatrix<double> const&); 
-template TMatrix<double> operator-(TMatrix<double> const&); 
-template TMatrix<double> operator-(TMatrix<double> const&, TMatrix<double> const&); 
-template TMatrix<double> operator-(TMatrix<double> const&, double          const&); 
-template TMatrix<double> operator-(         double const&, TMatrix<double> const&); 
-template TMatrix<double> operator*(TMatrix<double> const&, TMatrix<double> const&); 
-template TMatrix<double> operator*(TMatrix<double> const&,          double const&);
-template TMatrix<double> operator*(         double const&, TMatrix<double> const&);
-template TVector<double> operator*(TMatrix<double> const&, TVector<double> const&);
-
-
-template TMatrix<double> operator/<double>( TMatrix<double> const&, double          const&);
-template TMatrix<double> operator/<double>(  double         const&, TMatrix<double> const&);
-template TMatrix<double> operator/<double>(TMatrix<double>  const&, TMatrix<double> const&);
-
-template bool operator==( TMatrix<std::complex<double> > const&, TMatrix<std::complex<double> > const& );
-template bool operator==( TMatrix<std::complex<double> > const&, std::complex<double>           const& );
-template bool operator==( std::complex<double>           const&, TMatrix<std::complex<double> > const& );
-template std::ostream& operator<< <std::complex<double> >(std::ostream&, TMatrix<std::complex<double> >const&);
-
-template TMatrix<std::complex<double> > operator+(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& );
-template TMatrix<std::complex<double> > operator+(TMatrix<std::complex<double> > const&,       std::complex<double>           const& ); 
-template TMatrix<std::complex<double> > operator+(std::complex<double>  const&,                TMatrix<std::complex<double> > const& ); 
-template TMatrix<std::complex<double> > operator-(TMatrix<std::complex<double> > const&); 
-template TMatrix<std::complex<double> > operator-(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& ); 
-template TMatrix<std::complex<double> > operator-(TMatrix<std::complex<double> > const&,       std::complex<double> const&           ); 
-template TMatrix<std::complex<double> > operator-(std::complex<double>  const&,                TMatrix<std::complex<double> > const& ); 
-template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& ); 
-template TMatrix<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
-template TMatrix<std::complex<double> > operator*(std::complex<double> const& ,                TMatrix<std::complex<double> > const& );
-template TVector<std::complex<double> > operator*(TMatrix<std::complex<double> > const&,       TVector<std::complex<double> > const&);
-
-
-template TMatrix<std::complex<double> > operator/(TMatrix<std::complex<double> > const&,       std::complex<double> const&           );
-template TMatrix<std::complex<double> > operator/(std::complex<double> const& ,                TMatrix<std::complex<double> > const& );
-template TMatrix<std::complex<double> > operator/(TMatrix<std::complex<double> > const&,       TMatrix<std::complex<double> > const& );
-
-template bool operator!=<std::complex<double> >(TMatrix<std::complex<double> > const&, TMatrix<std::complex<double> > const&);
-
-
-//----------------------------------------------------------------------------------------------------------------
-// Instantiations for class TML<T>
-//----------------------------------------------------------------------------------------------------------------
-
-template class TML<double>;
-template class TML<std::complex<double> >;
-
-//template class TML<int>;
-
-template MLPtr<std::complex<double> > Negate<std::complex<double> >(MLPtr<std::complex<double> > const&);
-template MLPtr<double> Negate<double>(MLPtr<double> const&);
-
-
-//template std::ostream& operator<< (std::ostream&, TML<int> const&);
-template std::ostream& operator<< (std::ostream&, TML<double> const&);
-template std::ostream& operator<< (std::ostream&, TML<std::complex<double> > const&);
-
-
-template bool operator!=<double>(TMatrix<double> const&, TMatrix<double> const&);
-
-template
-double* 
-std::transform( double const*,  double const*,  
-                double const*,  double*,  std::plus<double> );
-
-template
-std::complex<double> * 
-std::transform( std::complex<double>  const*, std::complex<double>  const*, 
-                std::complex<double> const*,  std::complex<double> *,  std::plus<std::complex<double> > );
-
-template
-double* 
-std::transform(  double const*, double const*, 
-                 double const*,  double*, std::minus<double> );
-
-template
-std::complex<double> * 
-std::transform(  std::complex<double>  const*, std::complex<double>  const*, 
-                 std::complex<double>  const*, std::complex<double> *, std::minus<std::complex<double> > );
-
-
-//template std::ostream& operator<< <std::complex<double> >(ostream&, MLPtr<std::complex<double> >const&);
-
-// ---------------------------------------------------------------------------------------
-
-template 
-MLPtr<double> add<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
-template 
-MLPtr<double> add<double>(  MLPtr<double> const&,  double const& );  
-
-template 
-MLPtr<double> subtract<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
-
-
-template 
-MLPtr<double> multiply<double>(  MLPtr<double> const&,  MLPtr<double> const& );  
-
-template 
-MLPtr<double> multiply<double>(  MLPtr<double> const&,  double const& );  
-
-template
-TVector<double> 
-multiply<double>(MLPtr<double> const&, TVector<double> const&);
-
-
-template 
-MLPtr<double> divide<double>  (  MLPtr<double> const&,  MLPtr<double> const& );  
-
-template 
-MLPtr<double> divide<double>  (  MLPtr<double> const&,  double const& );
-
-template 
-MLPtr<double> divide<double>  (  double const&,                MLPtr<double> const& );  
-
-// ---------------------------------------------------------------------------------------
-
-template MLPtr<std::complex<double> > 
-add<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
-
-template MLPtr<std::complex<double> > 
-add<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
-
-template MLPtr<std::complex<double> > 
-subtract<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
-
-template MLPtr<std::complex<double> > 
-multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
-
-template MLPtr<std::complex<double> > 
-multiply<std::complex<double> >(  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
-
-template
-TVector<std::complex<double> > 
-multiply<std::complex<double> >(MLPtr<std::complex<double> > const&, TVector<std::complex<double> > const&);
-
-
-template MLPtr<std::complex<double> > 
-divide<std::complex<double> >  (  MLPtr<std::complex<double> > const&,  MLPtr<std::complex<double> > const& );  
-
-template MLPtr<std::complex<double> > 
-divide<std::complex<double> >  (  MLPtr<std::complex<double> > const&,  std::complex<double> const& );  
-
-template MLPtr<std::complex<double> > 
-divide<std::complex<double> >  (  std::complex<double> const&,                MLPtr<std::complex<double> > const& );  
-
-
-//----------------------------------------------------------------------------------------------------------------
-// Instantiations for class MLPtr<T>
-//----------------------------------------------------------------------------------------------------------------
-
-template class MLPtr<double>;
-template class MLPtr<std::complex<double> >;
-
-template MLPtr<double>::operator MLPtr<std::complex<double> >() const;
 
 // ----------------------------------------------------------------------------
 // Instantiations related to class ConvolutionFunctor
@@ -561,13 +279,10 @@ template TVector<double> boost::function1<TVector<double>, TVector<double> const
 // Misc Instantiations related to STL
 // ----------------------------------------------------------------------------
 
-template class
-std::list<int>;
-
+template class std::list<int>;
 
 template
-double*
-std::copy( double const*, double const*, double* );
+double* std::copy( double const*, double const*, double* );
 
 //template
 //class std::binder2nd<std::divides<std::complex<double> > >; 
@@ -610,16 +325,6 @@ std::transform(  TVector<std::complex<double> >::iterator,
                  std::binder2nd< std::multiplies<std::complex<double> > > ); 
 
 template
-IntArray::iterator
-std::copy( IntArray::const_iterator, 
-           IntArray::const_iterator, IntArray::iterator ); 
-
-template
-IntArray::iterator
-std::copy( IntArray::iterator, 
-           IntArray::iterator, IntArray::iterator ); 
-
-template
 TVector<double>::iterator
 std::copy( TVector<double>::const_iterator,  
            TVector<double>::const_iterator,  
@@ -660,3 +365,4 @@ std::transform( TVector<std::complex<double> >::const_iterator,
                 TVector<std::complex<double> >::iterator, 
                 std::minus<std::complex<double> > ); 
 
+#endif
