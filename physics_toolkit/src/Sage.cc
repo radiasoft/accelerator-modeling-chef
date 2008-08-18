@@ -96,15 +96,9 @@ Sage::Sage( BmlPtr x , sqlite::connection& db)
            "Constructor invoked with null pointer." ) );
   }
 
-
-  if( beamline::unknown == bml_->getLineMode() ) {
-    if( isRing_ ) {
+   if( isRing_ ) {
       bml_->setLineMode( beamline::ring );
-    }
-    else {
-      bml_->setLineMode( beamline::line );
-    }
-  }
+   }
 
   nelms_ = bml_->countHowManyDeeply();
 }
@@ -120,13 +114,8 @@ Sage::Sage(beamline const& bml, sqlite::connection& db )
    
   bml_ = BmlPtr( bml.Clone() ); 
 
-  if( beamline::unknown == bml_->getLineMode() ) {
-    if( isRing_ ) {
+  if( isRing_ ) {
       bml_->setLineMode( beamline::ring );
-    }
-    else {
-      bml_->setLineMode( beamline::line );
-    }
   }
 
   nelms_ = bml_->countHowManyDeeply();
