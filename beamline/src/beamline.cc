@@ -92,7 +92,7 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline::beamline( std::string const& nm ) 
-: bmlnElmnt( nm ),  nominalMomentum_(NOTKNOWN), mode_(unknown), parent_(0), theList_()
+: bmlnElmnt( nm ),  nominalMomentum_(NOTKNOWN), mode_(line), parent_(0), theList_()
 {} 
 
 
@@ -238,10 +238,25 @@ double beamline::Momentum() const
    return nominalMomentum_; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beamline::Length() const
+{
+  double sum = 0.0;
+
+  for ( const_deep_iterator it  =  deep_begin(); 
+                            it !=  deep_end(); ++it ) {
+   sum += (*it)->Length(); 
+  }
+  return sum;
+}
+
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double beamline::OrbitLength( Particle const& x ) 
+double beamline::OrbitLength( Particle const& x ) const
 {
  double s = 0.0;
 
@@ -376,7 +391,7 @@ void beamline::insert( ElmPtr q ) {
 
   if (bml)  bml->parent_ = this; 
   
-  length_ += bml ? bml->Length() : q->Length();
+  length_ += bml ? bml->bmlnElmnt::Length() : q->Length();
 
 }  
 
@@ -407,7 +422,7 @@ void beamline::append( ElmPtr q ) {
  }
 
  if (bml)  bml->parent_ = this; 
- length_ += bml ? bml->Length() : q->Length();
+ length_ += bml ? bml->bmlnElmnt::Length() : q->Length();
 
 
 } 
