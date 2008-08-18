@@ -162,7 +162,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
      if ( convert_drifts_to_slots = d2S_rbendLike( **it ) ) break;
    }
 
-   // ***** if ( convert_drifts_to_slots ) { p_bml_ = BmlPtr( DriftsToSlots( *p_bml_ ) ); }       
+   // ***** if ( convert_drifts_to_slots ) { p_bml_ = BmlPtr( DriftsToSlots( *p_bml_ ) ); } ??? FIX ME ???
 
    //-------------------------------------------------------------------
    // Determine if the lattice contains LinacCavities.
@@ -203,7 +203,6 @@ BeamlineContext::~BeamlineContext()
 
 void BeamlineContext::reset()
 {
-
   deleteLFS();
   deleteETS();
   deleteCOVS();
@@ -798,13 +797,11 @@ ConstBmlPtr BeamlineContext::cheatBmlPtr() const
 
 void BeamlineContext::deleteLFS()
 {
-
-
   if( p_lfs_ ) { p_lfs_->eraseAll(); delete p_lfs_; p_lfs_ = 0; }
 
-  normalLattFuncsCalcd_ = false;
-  dispCalcd_            = false;
-  
+  normalLattFuncsCalcd_   = false;
+  tunes_computed_         = false;
+  eigentunes_computed_    = false;
 }
 
 
@@ -824,8 +821,10 @@ void BeamlineContext::createLFS()
 void BeamlineContext::deleteETS()
 {
   if( p_ets_ ) { p_ets_->eraseAll(); delete p_ets_; p_ets_ = 0; }
+
   edwardstengFuncsCalcd_ = false;
-  
+  tunes_computed_        = false;
+  eigentunes_computed_   = false;
 }
 
 
@@ -846,8 +845,10 @@ void BeamlineContext::deleteLBS()
 {
 
   if( p_lbs_ ) { p_lbs_->eraseAll(); delete p_lbs_; p_lbs_ = 0; }
-  LBFuncsCalcd_ = false;
-  
+
+  LBFuncsCalcd_          = false;
+  tunes_computed_        = false;
+  eigentunes_computed_   = false;
 }
 
 
@@ -867,8 +868,10 @@ void BeamlineContext:: createLBS()
 void BeamlineContext::deleteCOVS()
 {
   if( p_covs_ ) { p_covs_->eraseAll(); delete p_covs_;  p_covs_ = 0; }
-  momentsFuncsCalcd_ = false;
- 
+
+  momentsFuncsCalcd_     = false;
+  tunes_computed_        = false;
+  eigentunes_computed_   = false;
 }
 
 
@@ -888,8 +891,8 @@ void BeamlineContext::createCOVS()
 void BeamlineContext::deleteDSPS()
 {
   if( p_dsps_ ) { p_dsps_->eraseAll(); delete p_dsps_; p_dsps_ = 0; }
+
   dispersionFuncsCalcd_ = false;
- 
 }
 
 
@@ -1080,7 +1083,10 @@ void BeamlineContext::createClosedOrbit()
 void BeamlineContext::deleteClosedOrbit()
 {
   if( p_cos_  ) { delete p_cos_; p_cos_ = 0; }
+
   closed_orbit_computed_ = false;
+  tunes_computed_        = false;
+  eigentunes_computed_   = false;
 }
 
 
@@ -1636,11 +1642,23 @@ void BeamlineContext::addVTuneCorrector( ThinQuadPtr x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+int BeamlineContext::changeTunesTo( double nuh, double nuv )
+{
+  #if 0
+  return changeTunesBy(   nuh - getHorizontalEigenTune()
+                        , nuv - getVerticalEigenTune()  );
+  #endif
+  return changeTunesBy(   nuh - getHorizontalFracTune()
+                        , nuv - getVerticalFracTune()  );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
 {
   if( !p_ta_ ) return NO_TUNE_ADJUSTER;
  
-
   Particle  dummyParticle( *particle_);
   dummyParticle.setStateToZero();
   dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
@@ -1649,6 +1667,13 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
   p_ta_->changeTunesBy( dnuh, dnuv, jp );
 
   deleteLFS();
+  deleteETS();
+  deleteCOVS();
+  deleteLBS();
+  deleteDSPS();
+  deleteClosedOrbit();
+
+  particle_->setStateToZero();
 
   return OKAY;
 }

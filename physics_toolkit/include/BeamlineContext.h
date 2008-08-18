@@ -229,6 +229,7 @@ class BeamlineContext
     void addVTuneCorrector( ElmPtr );          // Used by  GUI. MUST go away ! 
  
     int changeTunesBy( double, double );
+    int changeTunesTo( double, double );
 
     void addHChromCorrector( SextupolePtr );
     void addHChromCorrector( ThinSextupolePtr );

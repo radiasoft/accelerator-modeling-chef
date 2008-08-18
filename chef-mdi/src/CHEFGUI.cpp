@@ -408,47 +408,51 @@ CHEFGUI::~CHEFGUI()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::readBmlFile( QString s) 
-{
-  BmlPtr bmlPtr = BmlPtr( new beamline );
+void CHEFGUI::readBmlFile( QString s) {
 
-  std::ifstream inputStream( s );
-  inputStream >> (*bmlPtr);
-  inputStream.close();
+ BmlPtr bmlPtr = BmlPtr( new beamline );
 
-  QDialog* wpu = new QDialog( 0, 0, true );
-  QVBox*   qvb = new QVBox( wpu );
+ std::ifstream inputStream( s );
+      inputStream >> (*bmlPtr);
+      inputStream.close();
 
-  new QLabel( "I regret you must specify\na particle species.", qvb );
-  QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
-  // QRadioButton* qrb_positron_ptr =
-  new QRadioButton( "positron", qvb );
+      QDialog* wpu = new QDialog( 0, 0, true );
+        QVBox* qvb = new QVBox( wpu );
 
-  QPushButton* okayBtn = new QPushButton( "OK", qvb );
-    connect( okayBtn, SIGNAL(pressed()),
-             wpu,     SLOT(accept()) );
+        new QLabel( "I regret you must specify\na particle species.", qvb );
+        QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
+        // QRadioButton* qrb_positron_ptr =
+        new QRadioButton( "positron", qvb );
 
-  qvb->setMargin(5);
-  qvb->setSpacing(3);
-  qvb->adjustSize();
+        QPushButton* okayBtn = new QPushButton( "OK", qvb );
+          connect( okayBtn, SIGNAL(pressed()),
+                   wpu,     SLOT(accept()) );
 
-  wpu->setCaption( "CHEF: Particle Choice" );
-  wpu->adjustSize();
+        qvb->setMargin(5);
+        qvb->setSpacing(3);
+        qvb->adjustSize();
 
-  wpu->exec();
+      wpu->setCaption( "CHEF: Particle Choice" );
+      wpu->adjustSize();
 
-  if( qrb_proton_ptr->isDown() ) {
-    p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
-  }
-  else {
-    p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
-  }
+      wpu->exec();
+
+      if( qrb_proton_ptr->isDown() ) {
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
+      }
+      else {
+        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
+      }
 
   delete wpu;
 
   contextList_.push_front( p_currBmlCon_ );
+
   emit new_beamline();
+   
+
   browser_->clearSelection();
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -480,12 +484,12 @@ void CHEFGUI::openFile()
                        bfp.reset(new XSIFFactory(s.ascii(), (char*)0 )); // cast needed to avoid ambiguity
                        break;
            case bml_format:  
-	               readBmlFile( s );
-	     return;
+                       readBmlFile( s );
+             return;
                        break;
            default:    
                        return; // unknown parser type 
-	}
+        }
     }
 
     catch (ParserException& e) {
@@ -518,8 +522,8 @@ void CHEFGUI::openFile()
     std::list<std::string>::reverse_iterator it;
     int nlines = 0;
     for ( it = beamline_list.rbegin(); it != beamline_list.rend(); it++) {
-    	    BmlPtr bmlPtr;
-    	    try {
+            BmlPtr bmlPtr;
+            try {
             bmlPtr = bfp->create_beamline( (*it).c_str() , brho);
           } 
           catch (ParserException& e) {
@@ -534,10 +538,10 @@ void CHEFGUI::openFile()
           const char* typeStringPtr = bfp->getParticleType();
           if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
             p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr) );
-    	    }
+            }
           else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
             p_currBmlCon_ = BmlContextPtr( new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
-    	    }
+            }
           else {
             QMessageBox mb(  QString("*** ERROR ***")
                            , QString( "Unrecognized or unspecified particle type."
@@ -548,7 +552,7 @@ void CHEFGUI::openFile()
                            , QMessageBox::NoButton );
             mb.show();
             while (mb.isVisible())  qApp->processEvents(); 
-    	    }
+            }
 
           contextList_.push_front( p_currBmlCon_ );
 
@@ -737,7 +741,7 @@ CHEFGUI::editParse()
     {
       if ( QString((w)->name()) == QString("MAD8 Editor") ) 
       { 
-	if ( (editor = dynamic_cast<CF_Editor*>(w)) ) parseEditorMAD8( editor );
+        if ( (editor = dynamic_cast<CF_Editor*>(w)) ) parseEditorMAD8( editor );
       }
       if ( QString((w)->name()) == QString("Python Editor") ) 
       { 
@@ -835,10 +839,10 @@ CHEFGUI::parseEditorMAD8( CF_Editor* editor )
         const char* typeStringPtr = bfp->getParticleType();
         if( 0 == strcmp( "PROTON", typeStringPtr ) ) {
           p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Proton(bmlPtr->Energy()), bmlPtr ));
-	}
+        }
         else if( 0 == strcmp( "POSITRON", typeStringPtr ) ) {
           p_currBmlCon_ = BmlContextPtr(new BeamlineContext( Positron(bmlPtr->Energy()), bmlPtr) );
-	}
+        }
         else {
           QMessageBox mb(  QString("*** ERROR ***")
                          , QString( "Unrecognized or unspecified particle type."
@@ -849,7 +853,7 @@ CHEFGUI::parseEditorMAD8( CF_Editor* editor )
                          , QMessageBox::NoButton );
           mb.show();
           while (mb.isVisible())  qApp->processEvents(); 
-	}
+        }
 
         contextList_.push_front( p_currBmlCon_ );
         browser_->displayBeamline( p_currBmlCon_ );
@@ -997,7 +1001,7 @@ void CHEFGUI::horTuneCtrl()
     return;
   }
 
-  ActionOnElm action = boost::bind( &CHEFGUI::buildHTuneCircuit, this, _1);		
+  ActionOnElm action = boost::bind( &CHEFGUI::buildHTuneCircuit, this, _1);             
 
   if( p_currBmlCon_->isTreatedAsRing() ) {
       testFC( action );
@@ -1021,7 +1025,7 @@ void CHEFGUI::verTuneCtrl()
     return;
   }
 
-  ActionOnElm action = boost::bind( &CHEFGUI::buildVTuneCircuit, this, _1);		
+  ActionOnElm action = boost::bind( &CHEFGUI::buildVTuneCircuit, this, _1);             
 
   if( p_currBmlCon_->isTreatedAsRing() ) {
      testFC(action);
@@ -1046,7 +1050,7 @@ void CHEFGUI::horChromCtrl()
     return;
   }
 
-  ActionOnElm action = boost::bind( &CHEFGUI::buildHChromCircuit, this, _1);		
+  ActionOnElm action = boost::bind( &CHEFGUI::buildHChromCircuit, this, _1);            
 
   if( p_currBmlCon_->isTreatedAsRing() ) {
      testFC(action);
@@ -1070,7 +1074,7 @@ void CHEFGUI::verChromCtrl()
     return;
   }
 
-  ActionOnElm action = boost::bind( &CHEFGUI::buildVChromCircuit, this, _1);		
+  ActionOnElm action = boost::bind( &CHEFGUI::buildVChromCircuit, this, _1);            
 
   if( p_currBmlCon_->isTreatedAsRing() ) {
       testFC( action );
@@ -1150,7 +1154,7 @@ void CHEFGUI::editNewOrder()
   // One quick test ...
   if( !p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "A single beamline element must be chosen first." );
+                          "A single beamline element must be chosen first." );
     return;
   }
 
@@ -1187,7 +1191,7 @@ void CHEFGUI::editNewOrder()
   int bmlLevel = bmlPtr->depth();
   if( bmlLevel != 0 ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "SORRY: Current implementation requires flat beamline." );
+                          "SORRY: Current implementation requires flat beamline." );
     return;
   }
 
@@ -1494,7 +1498,7 @@ void CHEFGUI::editEditElement()
   // One quick test ...
   if( 0 == p_clickedQBml_ ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "A single beamline element must be chosen first." );
+                          "A single beamline element must be chosen first." );
     return;
   }
 
@@ -1540,7 +1544,7 @@ void CHEFGUI::editEditElement()
   int bmlLevel = bmlPtr->depth();
   if( bmlLevel != 0 ) {
     QMessageBox::warning( 0, "CHEF: WARNING", 
-			  "SORRY: Current implementation requires flat beamline." );
+                          "SORRY: Current implementation requires flat beamline." );
     return;
   }
 
@@ -2859,16 +2863,25 @@ void CHEFGUI::tuneCtrl()
 
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
+      QButtonGroup* qbg =
+      new QButtonGroup( 2, Qt::Horizontal, QString("Mode"), qvb );
+        QRadioButton* absPtr  = new QRadioButton( "Absolute",   qbg );
+        QRadioButton* relPtr  = new QRadioButton( "Relative",   qbg );
+        relPtr->setChecked( true );
+      qbg->setExclusive( true );
+      qbg->setMargin(5);
+      qbg->adjustSize();
+      
       QHBox* qhb1 = new QHBox( qvb );
-      ///QLabel* qlbh = new QLabel( "Delta H tune", qhb1 );
-        QLineEdit* qleh = new QLineEdit( "0.0", qhb1 );
+      new QLabel( "Delta H tune  ", qhb1 );
+      QLineEdit* qleh = new QLineEdit( "0.0", qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
 
       QHBox* qhb2 = new QHBox( qvb );
-      ////QLabel* qlbv = new QLabel( "Delta V tune", qhb2 );
-        QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
+      new QLabel( "Delta V tune  ", qhb2 );
+      QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
       qhb2->adjustSize();
@@ -2897,8 +2910,22 @@ void CHEFGUI::tuneCtrl()
     double deltaNuH = (qleh->text()).toDouble( &okh);
     double deltaNuV = (qlev->text()).toDouble( &okv);
     if( okh && okv ) {
-      if( (0. != deltaNuH) || (0. != deltaNuV) ) {
-        if( 0 != (returnCode = p_currBmlCon_->changeTunesBy( deltaNuH, deltaNuV )) ) {
+      if( relPtr == qbg->selected() ){
+        if( (0. != deltaNuH) || (0. != deltaNuV) ) {
+          if( 0 != (returnCode = p_currBmlCon_->changeTunesBy( deltaNuH, deltaNuV )) ) {
+            (*pcerr) << "*** WARNING *** File "
+                 << __FILE__
+                 << ", Line "
+                 << __LINE__
+                 << ": Tune adjustment returned error condition "
+                 << returnCode
+                 << std::endl;
+            QMessageBox::critical( 0, "CHEF", "Tune adjustment error." );
+          }
+        }
+      }
+      else if( absPtr == qbg->selected() ){
+        if( 0 != (returnCode = p_currBmlCon_->changeTunesTo( deltaNuH, deltaNuV )) ) {
           (*pcerr) << "*** WARNING *** File "
                << __FILE__
                << ", Line "
@@ -2906,8 +2933,7 @@ void CHEFGUI::tuneCtrl()
                << ": Tune adjustment returned error condition "
                << returnCode
                << std::endl;
-          QMessageBox::information( 0, "CHEF",
-                      "Tune adjustment error." );
+          QMessageBox::critical( 0, "CHEF", "Tune adjustment error." );
         }
       }
     }
@@ -2993,7 +3019,7 @@ void CHEFGUI::chromCtrl()
           QMessageBox::information( 0, "CHEF: ERROR", e.what() );
           delete wpu;
           return;
-	}
+        }
       }
     }
   }
