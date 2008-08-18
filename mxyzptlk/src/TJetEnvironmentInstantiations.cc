@@ -47,7 +47,6 @@
 #include <vector>
 #include <deque>
 #include <list>
-#include <ext/hash_map>
 #include <algorithm>
 #include <istream>
 
@@ -65,11 +64,16 @@ template class TJetEnvironment<std::complex<double> >::ScratchArea<std::complex<
 template class EnvPtr<double>;
 template class EnvPtr<std::complex<double> >;
 
+template
+bool TJetEnvironment<double>::operator==(TJetEnvironment<double> const&) const;
+
+template
+bool TJetEnvironment<std::complex<double> >::operator==(TJetEnvironment<std::complex<double> > const&) const;
+
 
 // ============================================================================================
 // The friend function operators
 //=============================================================================================
-
 
 template
 std::ostream& operator<<(std::ostream&, TJetEnvironment<double > const&);
