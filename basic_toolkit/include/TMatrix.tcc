@@ -711,8 +711,8 @@ TMatrix<T> const TMatrix<T>::Smatrix(int n)
    TMatrix<T> S(n,n);
    for (int i=0; i<n; ++i) {  
      for (int j=0; j<n; ++j) {
-       if ( ((i%2)== 0) && ((j-i)==1) ) S[i][j] =  1; 
-       if ( ((i%2)!= 0) && ((i-j)==1) ) S[i][j] = -1; 
+       if ( ((i%2)== 0) && ((j-i)==1) ) S[i][j] = T( 1.0); 
+       if ( ((i%2)!= 0) && ((i-j)==1) ) S[i][j] = T(-1.0); 
      }
    } 
 
@@ -733,8 +733,8 @@ TMatrix<T> const TMatrix<T>::Jmatrix(int n)
    TMatrix<T> J(n,n);
    for (int i=0; i<n; ++i) {  
      for (int j=0; j<n; ++j) {
-       if (j == i+n/2)  J[i][j] =  1; 
-       if (i == j+n/2)  J[i][j] = -1; 
+       if (j == i+n/2)  J[i][j] =  T(  1.0 ); 
+       if (i == j+n/2)  J[i][j] =  T( -1.0 ); 
      }
    } 
 
