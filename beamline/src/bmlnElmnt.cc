@@ -210,11 +210,7 @@ bool bmlnElmnt::PinnedFrameSet::altered()  const
 //   class bmlnElmnt
 // **************************************************
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s) 
-try
   : ident_( n ),      
     length_(l),     
     strength_(s),  
@@ -237,15 +233,7 @@ try
     throw(  GenericException( __FILE__, __LINE__, 
            "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)", 
            uic.str().c_str() ) );
-    // P.S. bmlnElmnt::GenericException will be eliminated soon.
-    // -lpjm
   }
-}
-catch( GenericException const& ge )
-{
-  // This catch block is included only out of paranoia.
-  // Nothing needs to be done here.
-  throw ge;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -390,20 +378,18 @@ void bmlnElmnt::setLength( double const& length )
                <<  " for " << Type() << "  " << Name() << endl;
     throw(  GenericException( __FILE__, __LINE__, 
 					  "void bmlnElmnt::setLength( double const& length )", msg.str() ));
-  }
+   }
 
-#if  0
-  FIXME !!!
-  if( length_ == 0.0 ) {
+   if ( isThin() ) {  
+   
     stringstream msg;  
-    msg << "*** ERROR ***: The length of a thin element cannot be modified. \n"
-        << "You have entered length " << length 
-        << " for " << Type() << "  " << Name() 
-        << endl;
+     msg << "*** ERROR ***: The length of a thin element cannot be modified. \n"
+         << "You have entered length " << length 
+         << " for " << Type() << "  " << Name() 
+         << endl;
     throw(   GenericException( __FILE__, __LINE__, 
              "void bmlnElmnt::setLength( double const& length )", msg.str() ));
   }
-#endif
  
   length_ = length;
 
