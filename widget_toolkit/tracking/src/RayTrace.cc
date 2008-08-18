@@ -743,7 +743,7 @@ void RayTrace::_finishConstructor()
 
 
     // Scale the window displays.
-    double lng = _bmlConPtr->sumLengths();
+    double lng = _bmlConPtr->Length();
     double bff = 0.05*lng;
     _p_leftWindow ->setRange( -bff, lng+bff, -0.005, 0.005 );
     _p_rightWindow->setRange( -bff, lng+bff, -0.005, 0.005 );
