@@ -35,15 +35,18 @@
 ******   - refactored code to use single template parameter instead of two
 ******   - introduced implicit conversions 
 ******   - using boost::intrusive_pointer for reference counting
-******   - eliminated access to private implementation  ( class (TML) )
-******     from class TMatrix.
-******   - eliminated separate MatrixC class implementation 
-******     (used to inherit from Matrix<T1,T2>)
+******   - implemented proper separate and private implementation  
+******     ( class (TML) ) from class TMatrix.
+******   - eliminated distinct MatrixC class implementation 
+******     (which used to inherit from Matrix<T1,T2>)
 ******   - organized code to support both implicit and explicit 
-******     template instantiations
+******     template instantiations compilation models
 ******   - fixed incorrect complex version of eigenvalues/eigenvectors 
 ******   - separated eigenvalue/eigenvector reordering function 
 ****** 
+******  August 2008 ostiguy@fnal.gov
+******   - use value semantics, dynamic stack-based arrays. This is currently
+******     an extension, but will become part of the C++0x standard. 
 **************************************************************************
 *************************************************************************/
 #include <complex>
