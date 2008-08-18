@@ -90,6 +90,7 @@ namespace {
 } // namespace
 
 
+#if 0 
 enum tune_status { OK=0, TUNES_UNSTABLE, TUNES_NOTCONJUGATE, TUNES_EQUAL, TUNES_NOTSYMPLECTIC };
 
 int filterTransverseTunes(  MatrixD const& mtrx,  Vector& nu )
@@ -264,6 +265,8 @@ int filterTransverseTunes(  MatrixD const& mtrx,  Vector& nu )
  
   return 0;
 }
+
+#endif
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
