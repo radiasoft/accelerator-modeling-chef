@@ -2869,14 +2869,14 @@ void CHEFGUI::tuneCtrl()
       qbg->adjustSize();
       
       QHBox* qhb1 = new QHBox( qvb );
-      new QLabel( "Delta H tune  ", qhb1 );
+      new QLabel( "H  ", qhb1 );
       QLineEdit* qleh = new QLineEdit( "0.0", qhb1 );
       qhb1->setMargin(5);
       qhb1->setSpacing(3);
       qhb1->adjustSize();
 
       QHBox* qhb2 = new QHBox( qvb );
-      new QLabel( "Delta V tune  ", qhb2 );
+      new QLabel( "V  ", qhb2 );
       QLineEdit* qlev = new QLineEdit( "0.0", qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
