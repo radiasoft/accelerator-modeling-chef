@@ -36,12 +36,18 @@
 
 /*************************************************************************/
 /* Creation Date:  August 2004                                           */
+/*                                                                       */
 /* Revision Date:  July,  2005                                           */
 /*   - added five slots: editEditElement                                 */
 /*                       editFlatten                                     */
 /*                       editMisalign                                    */
 /*                       editNewOrder                                    */
 /*                       pushParticles                                   */
+/*   - LPJM                                                              */
+/*                                                                       */
+/* Revision Date:  August, 2008                                          */
+/*   - added to CHEFGUI::tuneCtrl: ability to change tune                */
+/*     absolutely as well as relatively.                                 */
 /*   - LPJM                                                              */
 /*                                                                       */
 /*************************************************************************/
