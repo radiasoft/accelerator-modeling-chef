@@ -779,25 +779,39 @@ void BeamlineContext::addVTuneCorrector( ThinQuadPtr x )
 }
 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int BeamlineContext::changeTunesTo( double nuh, double nuv )
+{
+  // return changeTunesBy(   nuh - getHorizontalFracTune()
+  //                       , nuv - getVerticalFracTune()  );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
 {
-  //if( !p_ta_ ) return NO_TUNE_ADJUSTER;
+  // if( !p_ta_ ) return NO_TUNE_ADJUSTER;
  
+  // Particle  dummyParticle( *particle_);
+  // dummyParticle.setStateToZero();
+  // dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
+  // JetParticle  jp(dummyParticle);
 
-  //Particle  dummyParticle( *particle_);
-  //dummyParticle.setStateToZero();
-  //dummyParticle.SetReferenceMomentum( Momentum() );
-  //JetParticle  jp(dummyParticle);
+  // p_ta_->changeTunesBy( dnuh, dnuv, jp );
 
-  //p_ta_->changeTunesBy( dnuh, dnuv, jp );
+  // deleteLFS();
+  // deleteETS();
+  // deleteCOVS();
+  // deleteLBS();
+  // deleteDSPS();
+  // deleteClosedOrbit();
 
-  //clear();
+  // particle_->setStateToZero();
 
-  //return OKAY;
+  // return OKAY;
 }
 
 
