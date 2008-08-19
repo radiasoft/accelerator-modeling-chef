@@ -408,51 +408,47 @@ CHEFGUI::~CHEFGUI()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CHEFGUI::readBmlFile( QString s) {
+void CHEFGUI::readBmlFile( QString s) 
+{
+  BmlPtr bmlPtr = BmlPtr( new beamline );
 
- BmlPtr bmlPtr = BmlPtr( new beamline );
+  std::ifstream inputStream( s );
+  inputStream >> (*bmlPtr);
+  inputStream.close();
 
- std::ifstream inputStream( s );
-      inputStream >> (*bmlPtr);
-      inputStream.close();
+  QDialog* wpu = new QDialog( 0, 0, true );
+  QVBox*   qvb = new QVBox( wpu );
 
-      QDialog* wpu = new QDialog( 0, 0, true );
-        QVBox* qvb = new QVBox( wpu );
+  new QLabel( "I regret you must specify\na particle species.", qvb );
+  QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
+  // QRadioButton* qrb_positron_ptr =
+  new QRadioButton( "positron", qvb );
 
-        new QLabel( "I regret you must specify\na particle species.", qvb );
-        QRadioButton* qrb_proton_ptr = new QRadioButton( "proton", qvb );
-        // QRadioButton* qrb_positron_ptr =
-        new QRadioButton( "positron", qvb );
+  QPushButton* okayBtn = new QPushButton( "OK", qvb );
+    connect( okayBtn, SIGNAL(pressed()),
+             wpu,     SLOT(accept()) );
 
-        QPushButton* okayBtn = new QPushButton( "OK", qvb );
-          connect( okayBtn, SIGNAL(pressed()),
-                   wpu,     SLOT(accept()) );
+  qvb->setMargin(5);
+  qvb->setSpacing(3);
+  qvb->adjustSize();
 
-        qvb->setMargin(5);
-        qvb->setSpacing(3);
-        qvb->adjustSize();
+  wpu->setCaption( "CHEF: Particle Choice" );
+  wpu->adjustSize();
 
-      wpu->setCaption( "CHEF: Particle Choice" );
-      wpu->adjustSize();
+  wpu->exec();
 
-      wpu->exec();
-
-      if( qrb_proton_ptr->isDown() ) {
-        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
-      }
-      else {
-        p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
-      }
+  if( qrb_proton_ptr->isDown() ) {
+    p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Proton(bmlPtr->Energy()), bmlPtr) );
+  }
+  else {
+    p_currBmlCon_ = BmlContextPtr( new BeamlineContext(Positron(bmlPtr->Energy()), bmlPtr) );
+  }
 
   delete wpu;
 
   contextList_.push_front( p_currBmlCon_ );
-
   emit new_beamline();
-   
-
   browser_->clearSelection();
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
