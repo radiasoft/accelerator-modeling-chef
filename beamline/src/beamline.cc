@@ -656,10 +656,10 @@ void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::putAbove( beamline::iterator it, ElmPtr elm ) 
+beamline::iterator beamline::putAbove( beamline::iterator it, ElmPtr elm ) 
 {
- // Insert y above (before; upstream of) iter in the beamline
- // UPON RETURN: iter points to the same element, i.e. the position downstream of the 
+ // Insert y above (before; upstream of) iterator it in the beamline
+ // UPON RETURN: it points to the same element, i.e. the position downstream of the 
  // inserted element.  
 
  std::list<ElmPtr>::iterator ite = it.base();
@@ -677,8 +677,8 @@ void beamline::putAbove( beamline::iterator it, ElmPtr elm )
  length_ += bml ? bml->Length() : elm->Length();
 
  if (bml)  bml->parent_ = this; 
-
-
+ 
+ return it;
 
 }
 
@@ -692,12 +692,6 @@ beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr elm)
  // Insert y below (after; downstream of) x in the beamline.
  // UPON RETURN: iter points to the newly inserted element's position. 
  //-------------------------------------------------------------------
-
- if ( iter == end() ) {
-   (*pcout) << "*** WARNING **** : attempt to insert an element downstream of a beamline's end." << std::endl;
-   (*pcout) << "                   beamline name :" << Name()  << std::endl;
-   return iter;
- }
 
  ++iter;
 

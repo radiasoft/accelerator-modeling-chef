@@ -161,7 +161,7 @@ public:
    void   setReferenceTime( double   const& );               
    void   setReferenceTime( Particle&       );             
 
-   void     putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
+   iterator putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
    iterator putBelow( iterator   it, ElmPtr y ); // Insert y below (after, downstream of) x
 
    iterator erase   ( iterator it );
@@ -234,7 +234,6 @@ public:
 
   void leaveLocalFrame( Particle&        ) const;   
   void leaveLocalFrame( JetParticle&     ) const;   
-
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const ;
