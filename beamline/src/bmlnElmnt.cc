@@ -223,7 +223,7 @@ bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s)
     attributes_(),
     tag_(), 
     pAperture_(0),
-    dataHook()
+    dataHook() 
 {
   if( length_ < 0 ) {
     ostringstream uic;
@@ -239,28 +239,28 @@ bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( bmlnElmnt const& a ) 
-  :                  ident_(a.ident_),      
-                    length_(a.length_),     
-                  strength_(a.strength_),  
-                    pscale_(a.pscale_),  
+bmlnElmnt::bmlnElmnt( bmlnElmnt const& o ) 
+  :                  ident_(o.ident_),      
+                    length_(o.length_),     
+                  strength_(o.strength_),  
+                    pscale_(o.pscale_),  
                      align_(0),   
                        bml_(),      
                        elm_(),    
-              pinnedFrames_(a.pinnedFrames_),
-                     ctRef_(a.ctRef_),
-                attributes_(a.attributes_),
-                       tag_(a.tag_),
+              pinnedFrames_(o.pinnedFrames_),
+                     ctRef_(o.ctRef_),
+                attributes_(o.attributes_),
+                       tag_(o.tag_),
                  pAperture_(0),
                    dataHook()
 {
 
-     pAperture_ = a.pAperture_ ? a.pAperture_->Clone() : 0;
-     align_ = a.align_     ? new alignment(*a.align_)  : 0;
+     pAperture_ = o.pAperture_ ? o.pAperture_->Clone() : 0;
+     align_ = o.align_     ? new alignment(*o.align_)  : 0;
 
-     propagator_ =  a.isBeamline() ? PropagatorPtr(): PropagatorPtr( a.propagator_->Clone() );
+     propagator_ =  o.isBeamline() ? PropagatorPtr(): PropagatorPtr( o.propagator_->Clone() );
 
-     init_internals(a.bml_, a.elm_); 
+     init_internals(o.bml_, o.elm_); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
