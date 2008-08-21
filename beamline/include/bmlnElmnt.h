@@ -354,7 +354,7 @@ protected:
 
   mutable double                    ctRef_;              // (normalized) time required for
                                                          // a reference particle to cross
-                                                         // the element. Usuallu established by a RefRegVisitor.
+                                                         // the element. Normally, established by a RefRegVisitor.
 
   std::map<std::string, boost::any>  attributes_;
 
