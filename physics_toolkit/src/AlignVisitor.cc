@@ -77,21 +77,22 @@ AlignVisitor::~AlignVisitor()
 
 void AlignVisitor::visit( bmlnElmnt& q )
 {
+   
+  // NOTE: The code below will not work when elements are 
+  //       "shared" that is, two or more shared_ptrs are
+  //       correspond to the same raw pointer. 
 
   if( queryPtr_ ) {
-    if( queryPtr_->evaluate( &q ) ) {
+    if( queryPtr_->evaluate( q ) ) {
        doAlign(q);
     }
   }
 
-  // NOTE: THIS FUNCTION IS BROKEN. IT WILL NOT WORK WITH SHARED ELEMENTS
+  if (toDoList_.empty() ) return; 
 
-  else if( currentPtr_ ) {
-    if( &q == &(*currentPtr_) ) {
+  if( &q == &(*toDoList_.front()) ) {
        doAlign(q);
-       currentPtr_ = toDoList_.front(); 
-       toDoList_.erase( toDoList_.begin() );
-    }
+       toDoList_.pop_front();
   }
 }
 

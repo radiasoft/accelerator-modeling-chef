@@ -71,7 +71,7 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::ModifierVisitor()
-: queryPtr_(0),  toDoList_(), currentPtr_()
+: queryPtr_(0),  toDoList_()
 {}
 
 
@@ -79,7 +79,7 @@ ModifierVisitor::ModifierVisitor()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::ModifierVisitor( BoolNode const& x )
-: queryPtr_(0), toDoList_(), currentPtr_()
+: queryPtr_(0), toDoList_()
 {
   queryPtr_ = x.Clone();
 }
@@ -89,7 +89,7 @@ ModifierVisitor::ModifierVisitor( BoolNode const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::ModifierVisitor( std::list<ElmPtr> const& x )
-: queryPtr_(0), toDoList_(x), currentPtr_()
+: queryPtr_(0), toDoList_(x)
 {
   // This list is assumed to be sorted.
   // Elements must appear
@@ -98,9 +98,6 @@ ModifierVisitor::ModifierVisitor( std::list<ElmPtr> const& x )
   // to be visited.
 
   if ( toDoList_.empty() ) return;
-
-  currentPtr_ = toDoList_.front();  
-  toDoList_.pop_front();
 }
 
 
@@ -108,7 +105,7 @@ ModifierVisitor::ModifierVisitor( std::list<ElmPtr> const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ModifierVisitor::ModifierVisitor( ElmPtr const& x )
-: queryPtr_(), toDoList_(), currentPtr_(x)
+: queryPtr_(0), toDoList_()
 {}
 
 

@@ -91,7 +91,6 @@ class ModifierVisitor : public virtual BmlVisitor
 
   BoolNode*               queryPtr_;     // owned
   std::list<ElmPtr>       toDoList_;     
-  ElmPtr                 currentPtr_;   // not owned
 };
 
 
