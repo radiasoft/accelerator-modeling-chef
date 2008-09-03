@@ -31,6 +31,7 @@
 ****** REVISION HISTORY
 ****** Mar 2007   ostiguy@fnal.gov
 ****** - support for reference-counted elements and beamlines 
+******
 **************************************************************************
 *************************************************************************/
 /* Creation Date:  July 26, 2005                                        */
@@ -51,7 +52,6 @@
 #include <iosetup.h>
 
 #include <GenericException.h>
-#include <physics_toolkit/BeamlineContext.h>
 #include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/Slot.h>
@@ -73,14 +73,14 @@ using FNAL::pcout;
 using std::ostringstream;
 using namespace std;
 
-void editDialog::visit( bmlnElmnt& x )
+void EditDialog::visit( bmlnElmnt& x )
 {
   QMessageBox::warning( 0, "BeamlineBrowser", 
                         "Sorry. You may not edit this element." );
 }
 
 
-void editDialog::visit( beamline& x )
+void EditDialog::visit( beamline& x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -128,7 +128,7 @@ void editDialog::visit( beamline& x )
 }
 
 
-void editDialog::visit( rbend& x )
+void EditDialog::visit( rbend& x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -197,7 +197,6 @@ void editDialog::visit( rbend& x )
       double newStrength = (qle2->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->clear();
       }
     }
   }
@@ -206,7 +205,7 @@ void editDialog::visit( rbend& x )
 }
 
 
-void editDialog::visit( quadrupole& x )
+void EditDialog::visit( quadrupole& x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -231,7 +230,7 @@ void editDialog::visit( quadrupole& x )
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
            QString st2;
            alignmentData ad(x.Alignment());
-           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           st2.setNum( 1000.*(ad.roll /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
          qgl->addWidget( qle2, 2, 2 );
       qwa->adjustSize();
@@ -266,15 +265,13 @@ void editDialog::visit( quadrupole& x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->clear();
      }
     }
     if( st2 != qle2->text() ) {
       bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
+      ad.roll /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         x.setAlignment( ad );
-        _contextPtr->clear();
       }
     }
   }
@@ -283,7 +280,7 @@ void editDialog::visit( quadrupole& x )
 }
 
 
-void editDialog::visit( drift& x )
+void EditDialog::visit( drift& x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -330,32 +327,6 @@ void editDialog::visit( drift& x )
 
   if( returnCode == QDialog::Accepted ) {
     if( qrb->isOn() ) {
-      #if 0
-      ostringstream uic;
-      uic  << "*** WARNING *** File "
-           << __FILE__ 
-           << ", Line "
-           << __LINE__
-           << "\n*** WARNING *** This part routine needs to be rewritten. "
-           << std::endl;
-      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
-      #endif
-
-      #if 1
-      // Drift will be converted to Slot
-      ostringstream uic;
-      uic  << "*** WARNING *** File "
-           << __FILE__ 
-           << ", Line "
-           << __LINE__
-           << "\n*** WARNING *** Am deleting "
-           << x.Type()
-           << " element "
-           << x.Name()
-           << "\n*** WARNING *** If the program aborts soon, this is"
-              "\n*** WARNING *** probably the reason."
-           << std::endl;
-      QMessageBox::warning( 0, "BeamlineBrowser: WARNING", uic.str().c_str() );
 
       bool ok;
       double newLength = (qle2->text()).toDouble( &ok );
@@ -367,18 +338,9 @@ void editDialog::visit( drift& x )
       // way to do this.
       Frame outFrame;
       outFrame.setOrigin( origin );
-      SlotPtr slotPtr = SlotPtr( new Slot( x.Name().c_str(), outFrame ) );
- 
-      //// ******** FIX ME ! _contextPtr->replaceElement( x, slotPtr );
 
-      // START HERE. The Browser should not be in the business of editing
-      // lines. This should be done within CHEF itself. How???
-
-      // WARNING: This routine will delete x.
-      // WARNING: Best of luck!
-      #endif
+      
     }
-
     else {
       // Drift remains a drift
       if( stl != qle2->text() ) {
@@ -386,7 +348,6 @@ void editDialog::visit( drift& x )
         double newLength = (qle2->text()).toDouble( &ok );
         if( ok ) {
           x.setLength(newLength);
-          _contextPtr->clear();
         }
       }
     }
@@ -396,7 +357,7 @@ void editDialog::visit( drift& x )
 }
 
 
-void editDialog::visit( Slot& x )
+void EditDialog::visit( Slot& x )
 {
 
   QDialog* wpu = new QDialog( 0, 0, true );
@@ -492,19 +453,9 @@ void editDialog::visit( Slot& x )
   //       the objects are deleted twice.
 
   if( returnCode == QDialog::Accepted ) {
-    if( qrb->isOn() ) {
-      if( !(_contextPtr->hasReferenceParticle()) ) {
-        delete wpu;
-        QMessageBox::critical( 
-                0, 
-                "CHEF ERROR",
-                "Reference particle must be established first."
-                );
-        throw( GenericException( __FILE__, __LINE__, 
-               "void editDialog::visit( Slot& x )", 
-               "Reference particle not established." ) );
-      }
 
+#if 0
+    if( qrb->isOn() ) {
 
       Particle* particlePtr = (_contextPtr->getParticle()).Clone();
       // **** FIXME *particlePtr = _contextPtr->getReferenceParticle();
@@ -532,12 +483,14 @@ void editDialog::visit( Slot& x )
         x.setOutFrame(f);
       }
     }
+#endif
   }
+
   delete wpu;
 }
 
 
-void editDialog::visit( thinQuad& x )
+void EditDialog::visit( thinQuad& x )
 {
   QDialog* wpu = new QDialog( 0, 0, true );
     QVBox* qvb = new QVBox( wpu );
@@ -556,7 +509,7 @@ void editDialog::visit( thinQuad& x )
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
            QString st2;
            alignmentData ad(x.Alignment());
-           st2.setNum( 1000.*(ad.tilt /*[rad]*/) );
+           st2.setNum( 1000.*(ad.roll /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
          qgl->addWidget( qle2, 1, 2 );
       qwa->adjustSize();
@@ -591,16 +544,14 @@ void editDialog::visit( thinQuad& x )
       double newStrength = (qle1->text()).toDouble( &ok );
       if( ok ) {
         x.setStrength(newStrength);
-        _contextPtr->clear();
       }
     }
 
     if( st2 != qle2->text() ) {
       bool ok;
-      ad.tilt /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
+      ad.roll /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
       if( ok ) {
         x.setAlignment( ad );
-        _contextPtr->clear();
       }
     }
   }
