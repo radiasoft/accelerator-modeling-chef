@@ -228,7 +228,7 @@ SiteViewer::~SiteViewer()
 
 bool SiteViewer::filter( const bmlnElmnt* x ) const
 {  
-  if( _filterPtr ) { return _filterPtr->evaluate(x); }
+  if( _filterPtr ) { return _filterPtr->evaluate(*x); }
   return false;
 }
 
@@ -242,13 +242,10 @@ void SiteViewer::_fileSite()
     0,
     QString("CHEF: Site Coordinate File") );
 
-  if( fileName.isNull() ) {
-    QMessageBox::information( 0, "CHEF::SiteViewer",
-                              "Sorry. It didn't work." );
+  if( fileName.isNull() ) { 
+    return;
   }
-
   else {
-    int i;
     ofstream outputFileStream( fileName );
     outputFileStream << setiosflags(ios::fixed);
     outputFileStream << setw(18) << "Element"
@@ -258,7 +255,7 @@ void SiteViewer::_fileSite()
                      << setw(18) << "y[m]"
                      << setw(18) << "z[m]"
                      << endl;
-    for( i = 0; i < (6*15); i++ ) {
+    for( int i = 0; i < (6*15); ++i ) {
       outputFileStream << "-";
     }
     outputFileStream << endl;
@@ -266,7 +263,7 @@ void SiteViewer::_fileSite()
     double az = 0.0;
     double xx = 0.0, yy = 0.0, zz = 0.0;
     double s;
-    for( i = 0; i < _n; i++ ) {
+    for( int i = 0; i < _n; i++ ) {
       s = 0.0;
       s += (_x[i] - xx)*(_x[i] - xx);
       s += (_y[i] - yy)*(_y[i] - yy);
@@ -291,7 +288,6 @@ void SiteViewer::_fileSite()
 
 void SiteViewer::_fileClose()
 {
-  // REMOVE: delete this;
   close();
 }
 
