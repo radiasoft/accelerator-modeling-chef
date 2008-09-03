@@ -37,14 +37,14 @@
 *************************************************************************
 *************************************************************************
 ************************************************************************/
-#ifndef EDIT_DIALOG_H
-#define EDIT_DIALOG_H
+#ifndef EDITDIALOG_H
+#define EDITDIALOG_H
 
 
 #include <beamline/BmlVisitor.h>
 #include <beamline/BmlPtr.h>
 
-struct editDialog : public BmlVisitor 
+struct EditDialog : public BmlVisitor 
 {
   void visit( bmlnElmnt&  );
   void visit( beamline&   );
@@ -53,8 +53,6 @@ struct editDialog : public BmlVisitor
   void visit( rbend&      );
   void visit( quadrupole& );
   void visit( thinQuad&   );
-
-  BmlContextPtr     _contextPtr;
 };
 
-#endif // EDIT_DIALOG_H
+#endif // EDITDIALOG_H

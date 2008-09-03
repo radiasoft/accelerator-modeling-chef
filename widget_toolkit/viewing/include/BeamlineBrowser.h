@@ -67,8 +67,8 @@ class BoolNode;
 class QBmlRoot;
 
 
-class QBml : public QListViewItem
-{
+class QBml : public QListViewItem {
+
 public:
   QBml( QPixmap*, QBmlRoot*,  char const*, char const* );
   QBml( QPixmap*, QListView*, char const*, char const* );
