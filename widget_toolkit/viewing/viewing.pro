@@ -20,12 +20,14 @@ LANGUAGE        = C++
 windows:CONFIG  += qt opengl x11 debug warn_on thread staticlib exceptions rtti
 unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
-HEADERS += ./include/BeamlineBrowser.h \
-           ./include/EditDialog.h \
-           ./include/SiteViewer.h
+HEADERS += ./include/EditDialog.h \
+           ./include/SiteViewer.h \ 
+           ./include/QElm.h \
+           ./include/BmlBrowser.h
 
-SOURCES += ./src/BeamlineBrowser.cc \
-           ./src/EditDialog.cc \
-           ./src/SiteViewer.cc
+SOURCES += ./src/EditDialog.cc \
+           ./src/SiteViewer.cc \
+           ./src/BmlBrowser.cc \
+           ./src/QElm.cc
 
 INCLUDEPATH += ../dialogs/include
