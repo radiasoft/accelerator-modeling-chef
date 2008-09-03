@@ -7,7 +7,6 @@
 ******             of BEAMLINE.                                    
 ******                                                                
 ******  File:      BeamlineBrowser.cc
-******  Version:   3.3
 ******                                                                
 ****** Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                 All Rights Reserved                             
@@ -459,7 +458,7 @@ const QBmlRoot* QBml::topBmlParent()
 // *****************************************************************************
 
 QBmlElmt::QBmlElmt( QBmlRoot* parent, ElmPtr const& q, double& s )
-: QBml( 0, parent, q->Name().c_str(), q->Type() ),
+: QBml( 0, parent, q->Name(), q->Type() ),
    myElement_(q),
    azimuth_(s) 
 {
@@ -486,7 +485,7 @@ QString QBmlElmt::fullName() const
 // *****************************************************************************
 
 QBmlRoot::QBmlRoot( QListView* parent, BmlPtr q, double& s )
-: QBml( 0, parent, q->Name().c_str(), "beamline" ), 
+: QBml( 0, parent, q->Name(), "beamline" ), 
    bml_(q)
 {
     QString str;
@@ -496,7 +495,7 @@ QBmlRoot::QBmlRoot( QListView* parent, BmlPtr q, double& s )
 
 
 QBmlRoot::QBmlRoot( QListView* parent, Particle const& particle, BmlPtr q, double& s )
-  : QBml( 0, parent, q->Name().c_str(), q->Type() ), bml_(q)
+  : QBml( 0, parent, q->Name(), q->Type() ), bml_(q)
 {
   // QString str;
   // str.setNum( ((double) s) );
@@ -507,7 +506,7 @@ QBmlRoot::QBmlRoot( QListView* parent, Particle const& particle, BmlPtr q, doubl
 
 QBmlRoot::QBmlRoot( QBmlRoot * parent, BmlPtr q, double& s )
 : 
-   QBml( 0, parent, q->Name().c_str(), q->Type() ),
+   QBml( 0, parent, q->Name(), q->Type() ),
    bml_(q) 
 {
     QString str;
@@ -1206,7 +1205,7 @@ int BeamlineBrowser::findElement( QBml*                startpoint,
     // Apply the test and, if passed, add element pointer to the list.
     if( 0 != ( qbmlelmtPtr = dynamic_cast<QBmlElmt*>( qbmlPtr ) )) {
       elementPtr = qbmlelmtPtr->elmPtr();
-      if( query.evaluate( elementPtr.get() ) ) {
+      if( query.evaluate( *elementPtr ) ) {
         foundElements.push_back( elementPtr );
         qbmlPtr->setSelected(true);
         this->ensureItemVisible( qbmlPtr );
@@ -1609,7 +1608,7 @@ void BeamlineBrowser::infoWriter::visit( CF_rbend const& x )
         new QLabel( QString("Roll angle [mrad]: "), qhb2 );
         alignmentData ad(x.Alignment());
         QString str;
-        str.setNum( 1000.*(ad.tilt /*[rad]*/) );
+        str.setNum( 1000.*(ad.roll /*[rad]*/) );
         new QLabel( str, qhb2 );
       qhb2->setMargin(5);
       qhb2->setSpacing(3);
@@ -1659,7 +1658,7 @@ void BeamlineBrowser::infoWriter::visit( quadrupole const& x )
       QHBox* qhb3 = new QHBox( qvb );
         new QLabel( QString("Roll angle [mrad]: "), qhb3 );
         alignmentData ad(x.Alignment());
-        theValue.setNum( 1000.*(ad.tilt /*[rad]*/) );
+        theValue.setNum( 1000.*(ad.roll /*[rad]*/) );
         new QLabel( theValue, qhb3 );
       qhb3->setMargin(5);
       qhb3->setSpacing(3);
@@ -1716,7 +1715,7 @@ void BeamlineBrowser::infoWriter::visit( thinQuad const& x )
 
          qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-           theValue.setNum( 1000.*(x.Alignment().tilt /*[rad]*/) );
+           theValue.setNum( 1000.*(x.Alignment().roll /*[rad]*/) );
          qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
       qwa->adjustSize();
 
