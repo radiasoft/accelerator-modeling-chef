@@ -420,7 +420,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_SBEND_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
         // Ignored parameters: K1, K2, K3, E1, E2, TILT, H1, H2, HGAP, FINT
       }
@@ -484,7 +484,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( tilt->dvalue_ != 0.0 || tilt->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_RBEND_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       // Ignored parameters: K1, K2, K3, E1, E2, H1, H2, HGAP, FINT
@@ -504,7 +504,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_QUADRUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_QUADRUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -522,7 +522,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_SEXTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_SEXTUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -540,7 +540,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_OCTUPOLE_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_OCTUPOLE_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -559,7 +559,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
           aligner.yOffset = 0.0;
-          aligner.tilt    = roll;
+          aligner.roll    = roll;
           q->setAlignment( aligner );
 	}
         temp->append( q );
@@ -572,7 +572,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
           aligner.yOffset = 0.0;
-          aligner.tilt    = roll;
+          aligner.roll    = roll;
           q->setAlignment( aligner );
 	}
         temp->append( q );
@@ -585,7 +585,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
           aligner.yOffset = 0.0;
-          aligner.tilt    = roll;
+          aligner.roll    = roll;
           q->setAlignment( aligner );
 	}
         temp->append( q );
@@ -598,7 +598,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         if( 0.0 != roll ) {
           aligner.xOffset = 0.0;
           aligner.yOffset = 0.0;
-          aligner.tilt    = roll;
+          aligner.roll    = roll;
           q->setAlignment( aligner );
 	}
         temp->append( q );
@@ -703,7 +703,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_HKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_HKICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -722,7 +722,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_VKICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_VKICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -742,7 +742,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->dvalue_ != 0.0 || ((expr_struct*)(bel->params_[BEL_KICKER_TILT]->data))->kind_ != NUMBER_EXPR ) {
         aligner.xOffset = 0.0;
         aligner.yOffset = 0.0;
-        aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
+        aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_KICKER_TILT], var_table_, bel_table_ );
         lbel->setAlignment( aligner );
       }
       break;
@@ -803,7 +803,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       //
       //  aligner.xOffset = 0.0;
       //  aligner.yOffset = 0.0;
-      //  aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+      //  aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
       //  lbel->setAlignment( aligner );
       // }
 
@@ -819,13 +819,13 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->kind_ != NUMBER_EXPR ) {    
            aligner.xOffset = 0.0;
            aligner.yOffset = 0.0;
-           aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
            lbel->setAlignment( aligner );
 
       } else if ( ((expr_struct*)(bel->params_[BEL_ELSEPARATOR_TILT]->data))->dvalue_ != 0.0 ) {
            aligner.xOffset = 0.0;
            aligner.yOffset = 0.0;
-           aligner.tilt    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
+           aligner.roll    = expr_evaluate( mp_,  bel->params_[BEL_ELSEPARATOR_TILT], var_table_, bel_table_ );
            lbel->setAlignment( aligner );
       }
 
@@ -1141,5 +1141,6 @@ double MAD8Factory::getBrho( ) const
 
 CSLattFuncs MAD8Factory::getInitialValues() const  
 {
-  return CSLattFuncs(); // FIXME: NOT IMPLEMENTED !
+  CSLattFuncs cs; // FIXME: NOT IMPLEMENTED !
+  return cs;
 }
