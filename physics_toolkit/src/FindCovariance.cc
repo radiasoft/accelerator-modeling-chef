@@ -81,6 +81,8 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0
+
 MatrixD FindCovariance( beamline             const&   line,       
                         std::list<ElmPtr>    const&   sampleSites,
                         JetParticle          const&   jparg ) 
@@ -182,7 +184,6 @@ MatrixD FindCovariance( beamline             const&   line,
     return C;
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -266,4 +267,4 @@ void TestCovariance( beamline const&     line,
    }
 }
 
-
+#endif
