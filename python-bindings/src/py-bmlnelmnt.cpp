@@ -65,13 +65,12 @@ void wrap_bmlnelmnt() {
     .def("setLength",                     &bmlnElmnt::setLength   )
     .def("Strength",                      &bmlnElmnt::Strength    )
     .def("setStrength",                   &bmlnElmnt::setStrength )
-    .def("Name",                          &bmlnElmnt::Name,     return_value_policy<copy_const_reference>() )
+    .def("Name",                          &bmlnElmnt::Name        )
     .def("rename",                        &bmlnElmnt::rename      )
     .def("getReferenceTime",              &bmlnElmnt::getReferenceTime)
     .def("setReferenceTime",              setReferenceTime_double )
     .def("Type",                          &bmlnElmnt::Type        )
     .def("OrbitLength",                   &bmlnElmnt::OrbitLength )
-    .def("Split",                         &bmlnElmnt::Split       )
-    .def_readwrite("dataHook",            &bmlnElmnt::dataHook);
+    .def("Split",                         &bmlnElmnt::Split       );
 }  
 
