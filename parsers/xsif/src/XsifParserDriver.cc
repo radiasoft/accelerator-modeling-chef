@@ -1195,7 +1195,7 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
 
   aligner.xOffset = 0.0;
   aligner.yOffset = 0.0;
-  aligner.tilt    = tilt;
+  aligner.roll    = tilt;
 
   if( simple) {
     elm =  new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
@@ -1305,7 +1305,7 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
 
   aligner.xOffset = 0.0;
   aligner.yOffset = 0.0;
-  aligner.tilt    = tilt;
+  aligner.roll    = tilt;
 
   if (tilt != 0.0 ) elm->setAlignment( aligner );
 
@@ -1372,7 +1372,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& 
   if ( tilt != 0.0  ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
 
@@ -1422,7 +1422,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
   if ( tilt != 0.0  ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
 
@@ -1473,7 +1473,7 @@ ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& B
   if ( tilt != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
 
@@ -1530,7 +1530,7 @@ if( kl[0] != 0.0 ) {
   if( tilt[0] != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt[0];
+    aligner.roll    = tilt[0];
     q->setAlignment( aligner );
   }
 
@@ -1542,7 +1542,7 @@ if( kl[1] != 0.0 ) {
   if( 0.0 != tilt[1] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt[1];
+    aligner.roll    = tilt[1];
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1553,7 +1553,7 @@ if( kl[2] != 0.0 ) {
   if( tilt[2] != 0.0 ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt[2];
+    aligner.roll    = tilt[2];
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1564,7 +1564,7 @@ if( kl[3] != 0.0 ) {
   if( 0.0 != tilt[3] ) {
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt[3];
+    aligner.roll    = tilt[3];
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1662,7 +1662,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
   {  
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
 
@@ -1706,7 +1706,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
   {  
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
   
@@ -1755,7 +1755,7 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   {  
     aligner.xOffset = 0.0;
     aligner.yOffset = 0.0;
-    aligner.tilt    = tilt;
+    aligner.roll    = tilt;
     elm->setAlignment( aligner );
   }
   
