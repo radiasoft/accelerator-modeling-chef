@@ -79,13 +79,9 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/Frame.h>
-#include <basic_toolkit/Barnacle.h>
 
 #include <beamline/ElmPtr.h>
 #include <beamline/BasePropagator.h>
-
-#define NOTKNOWN   -123456.789
-#define OSTREAM_DOUBLE_PREC setprecision(20)
 
 //------------------------------
 // Forward declarations
@@ -221,19 +217,19 @@ public:
   // Methods to set alignment without 
   // (a little overkill, but so what?)
 
-  virtual bool        alignRelX( double const&  meters );
-  virtual bool        alignRelY( double const&  meters );
-  virtual bool        alignAbsX( double const&  meters );
-  virtual bool        alignAbsY( double const&  meters );
-  virtual bool      alignRelXmm( double const&  mm     );
-  virtual bool      alignRelYmm( double const&  mm     );
-  virtual bool      alignAbsXmm( double const&  mm     );
-  virtual bool      alignAbsYmm( double const&  mm     );
-  virtual bool     alignRelRoll( double const& radians );
-  virtual bool     alignAbsRoll( double const& radians );
-  virtual bool alignRelRollmrad( double const& mrad    );
-  virtual bool alignAbsRollmrad( double const& mrad    );
-  virtual bool     setAlignment( alignmentData const& );
+  bool        alignRelX( double const&  meters );
+  bool        alignRelY( double const&  meters );
+  bool        alignAbsX( double const&  meters );
+  bool        alignAbsY( double const&  meters );
+  bool      alignRelXmm( double const&  mm     );
+  bool      alignRelYmm( double const&  mm     );
+  bool      alignAbsXmm( double const&  mm     );
+  bool      alignAbsYmm( double const&  mm     );
+  bool     alignRelRoll( double const& radians );
+  bool     alignAbsRoll( double const& radians );
+  bool alignRelRollmrad( double const& mrad    );
+  bool alignAbsRollmrad( double const& mrad    );
+  bool     setAlignment( alignmentData const& );
 
   bool    hasMoved()  const  { return ( pinnedFrames_.altered() || align_  ); }
   void    realign();  // Resets element to its original position.
@@ -263,10 +259,10 @@ public:
   void propagate(    ParticleBunch& b ) const;
   void propagate( JetParticleBunch& b ) const;
 
-  virtual void localPropagate(         Particle& p ) const;
-  virtual void localPropagate(      JetParticle& p ) const;
-  virtual void localPropagate(    ParticleBunch& b ) const;
-  virtual void localPropagate( JetParticleBunch& b ) const;
+  void localPropagate(         Particle& p ) const;
+  void localPropagate(      JetParticle& p ) const;
+  void localPropagate(    ParticleBunch& b ) const;
+  void localPropagate( JetParticleBunch& b ) const;
 
   void enterLocalFrame( Particle&                )   const;
   void enterLocalFrame( JetParticle&             )   const;
@@ -281,9 +277,6 @@ public:
                                    // pct from the in-face and returns
                                    // addresses to the two pieces
                                    // in the second and third arguments.
-
-  virtual void  peekAt( double& s, Particle const& ) const;
-
 
   // ... Tagging methods
 
@@ -309,13 +302,13 @@ public:
 
   // ... Query functions 
 
-  alignmentData        Alignment( void )        const;
-  Aperture*            getAperture();           // returns a clone of the aperture class
-  bool                 hasAperture()            const  { return  pAperture_; }
+  alignmentData       Alignment( void )        const;
+  Aperture*           getAperture();                  // returns a clone of the aperture class
+  bool                hasAperture()            const  { return  pAperture_; }
 
-  double               Strength()               const;
-  double               strengthScale()          const;
-  virtual double       Length()                 const;
+  double              Strength()               const;
+  double              strengthScale()          const;
+  virtual double      Length()                 const;
 
 
   virtual bool hasParallelFaces() const;
@@ -328,7 +321,7 @@ public:
   virtual bool     isThin()  const = 0;                   
 
 
-  std::string const&          Name()   const  { return ident_; }
+  char const*                 Name()   const;
   virtual char const*         Type()   const = 0;
 
 
@@ -358,7 +351,7 @@ protected:
 
   std::map<std::string, boost::any>  attributes_;
 
-  std::string                        tag_;
+  std::string                        tag_;             // FIXME !!! OBSOLETE
 
   Aperture*                          pAperture_;       // O.K.
 
@@ -380,10 +373,6 @@ private:
   friend  std::ostream& operator<<(std::ostream&, bmlnElmnt&);
 
   friend bmlnElmnt* read_istream(std::istream&);
-
-public:
-
-  BarnacleList dataHook;   // Carries data as service to application program.
 
 };
 
