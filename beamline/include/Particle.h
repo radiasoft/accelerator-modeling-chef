@@ -67,7 +67,6 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
-#include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/Matrix.h>
 #include <boost/shared_ptr.hpp>
 #include <gms/FastAllocator.h>
@@ -210,9 +209,6 @@ public:
   Vector        NormalizedVectorMomentum() const;
   double        BRho()                     const;
 
-  BarnacleList dataHook;   // Carries data as service to application program.
-
-  // Tagging methods
 
   std::string const&  getTag() const;                         
   void                setTag(std::string const& tag);     

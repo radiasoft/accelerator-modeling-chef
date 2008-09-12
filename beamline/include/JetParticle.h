@@ -69,7 +69,6 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
-#include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/Matrix.h>
 #include <mxyzptlk/Mapping.h>
 #include <mxyzptlk/Jet.h>
