@@ -83,16 +83,16 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void arm( int n )  const { counter_ = n; }
-  bool countdown()   const { counter_ = counter_ > -1 ? --counter_ : -1 ; return (counter_ == -1);} const
-  void disarm()      const { counter_ = -1; }
-  bool isArmed()     const { return ( counter_ >= 0 ); }
+  void arm( int n )  const;
+  bool countdown()   const; 
+  void disarm()      const; 
+  bool isArmed()     const; 
   
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
   
-  double const& getKickDirection() const          { return kick_direction_; }
-  void          setKickDirection(double const& k) { kick_direction_ = k; }
+  double const& getKickDirection() const;
+  void          setKickDirection(double const& k);
 
 protected:
 
