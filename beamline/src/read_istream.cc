@@ -349,7 +349,7 @@ bmlnElmnt* read_istream(istream& is)
       alignmentData align;
       align.xOffset = x;
       align.yOffset = y;
-      align.tilt    = t;
+      align.roll    = t;
       element->setAlignment(align);
     }
   }
@@ -407,7 +407,7 @@ istream& operator>>(istream& is, beamline& bl)
     alignmentData align;
     align.xOffset = x;
     align.yOffset = y;
-    align.tilt    = t;
+    align.roll    = t;
     bl.setAlignment(align);
   }
   return is;
