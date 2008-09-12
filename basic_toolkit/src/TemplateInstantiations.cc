@@ -70,7 +70,6 @@
 #endif
 
 #include <gms/FastPODAllocator.h>
-#include <basic_toolkit/Barnacle.h>
 #include <basic_toolkit/TMatrix.tcc>
 #include <basic_toolkit/TML.tcc>
 #include <basic_toolkit/TVector.tcc>
@@ -102,17 +101,6 @@ unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsign
 
 template
 unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int);
-
-// ----------------------------------------------------------------------------
-// Instantiations related to Barnacle
-// ----------------------------------------------------------------------------
-
-template class std::list<Barnacle>;
-
-
-template BarnacleList::iterator
-         std::remove_if(BarnacleList::iterator, BarnacleList::iterator, 
-		        std::binder2nd<std::const_mem_fun1_ref_t<bool, Barnacle, std::string> >);
 
 // ----------------------------------------------------------------------------
 // Instantiations related to TVector 
