@@ -79,6 +79,8 @@ class beamline: public bmlnElmnt {
 
 private:
 
+    class Propagator;
+  
     template<typename U, int Dummy>
     struct iter_traits{ };
 
@@ -224,10 +226,6 @@ public:
   iterator     roll( iterator pos, double const& angle, double const& rpos);
 
 
-  void localPropagate( Particle&         ) const;          
-  void localPropagate( ParticleBunch&    ) const;          
-  void localPropagate( JetParticle&      ) const;          
-  void localPropagate( JetParticleBunch& ) const;          
 
   void enterLocalFrame( Particle&        ) const;   
   void enterLocalFrame( JetParticle&     ) const;   
@@ -247,14 +245,7 @@ public:
   inline void setLineMode( beamline::LineMode x )
   { mode_ = x; }
 
-  //    mode_ doesn't affect behavior at the beamline level
-  //    but carries information for higher level code,
-  //    like dataHook_.
-
   void setMomentum( double const&  nominalMomentumGeV );
-
-  void eraseBarnacles( const char* = 0 );
-
 
   ElmPtr&        firstElement();
   ElmPtr const&  firstElement() const;
@@ -288,8 +279,6 @@ public:
   double       OrbitLength( Particle const& )   const;
   double       Length()                         const;
   bool         isFlat()                         const;
-  LattRing     whatIsRing();
-
 
 
   beamline flatten() const;     //   Produces a flattened version of itself.
