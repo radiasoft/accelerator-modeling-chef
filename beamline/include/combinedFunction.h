@@ -77,8 +77,6 @@ public:
 
   combinedFunction();
   combinedFunction( std::string const& name);
-  combinedFunction( std::string const& name, beamline const& );
-  combinedFunction( beamline const& );
 
   combinedFunction( combinedFunction const& );
   
@@ -92,11 +90,6 @@ public:
 
   double AdjustPosition( Particle    const& );
   double AdjustPosition( JetParticle const& );
-
-  void enterLocalFrame( Particle&    p ) const   { bmlnElmnt::enterLocalFrame( p ); }
-  void enterLocalFrame( JetParticle& p ) const   { bmlnElmnt::enterLocalFrame( p ); }
-  void leaveLocalFrame( Particle&    p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
-  void leaveLocalFrame( JetParticle& p ) const   { bmlnElmnt::leaveLocalFrame( p ); }
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
