@@ -44,16 +44,16 @@
 ******   implicit conversions.
 ****** - reference counting now based on using boost::intrusive pointer
 ****** - reference counted TJetEnvironment
-****** - all implementation details now completely moved to TJL   
+****** - all implementation dependent code properly moved to implementation class TJL   
 ****** - redesigned coordinate class Tcoord. New class Tparams for parameters
 ****** - header files support for both explicit and implicit template instantiations
 ******   (default for mxyzptlk = explicit)
-******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******   for _explicit_ instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******
 ****** Sep 2006  ostiguy@fnal.gov  
 ****** - eliminated dlist representation for polynomials.   
-****** - eliminated archaic "Reconstruct" members. Use placement 
-******   new syntax instead. 
+****** - eliminated archaic "Reconstruct" members: use placement 
+******   new syntax when needed. 
 ****** Mar 2007 ostiguy@fnal.gov  
 ****** - Introduced new compact monomial indexing scheme based on monomial ordering
 ******   to replace previous scheme based explicitly on monomial exponents tuples.
