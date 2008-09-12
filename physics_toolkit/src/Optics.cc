@@ -43,7 +43,7 @@
 #include <beamline/JetParticle.h>
 #include <beamline/LatticeFunctions.h>
 #include <physics_toolkit/BmlUtil.h>
-#include <list>
+#include <algorithm>
 
 #include <physics_toolkit/Sage.h> // REMOVE needed for fpsolver.
 
@@ -115,11 +115,10 @@ void initdb( sqlite::connection& db )
   sql.str("");
   sql << "CREATE TABLE " 
       << "ELEMENTS "
-      << "( iseq INTEGER PRIMARY KEY, object INTEGER, name TEXT, type TEXT, length REAL, strength REAL )"
+      << "( iseq INTEGER PRIMARY KEY, object INTEGER UNIQUE, name TEXT, type TEXT, length REAL, strength REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
-
 
   sql.str("");
   sql << "CREATE TABLE DISPERSION "
@@ -142,7 +141,6 @@ void initdb( sqlite::connection& db )
       << "( iseq INTEGER, component INTEGER,  e0_real REAL,   e0_imag REAL,  e1_real REAL,  e1_imag REAL,  e2_real REAL,   e2_imag REAL, "
       <<                                    " e3_real REAL,   e3_imag REAL,  e4_real REAL,  e4_imag REAL,  e5_real REAL,   e5_imag REAL  )"
       << ends;
-
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
@@ -151,7 +149,6 @@ void initdb( sqlite::connection& db )
       << " ( iseq INTEGER PRIMARY KEY, beta1x REAL,    alpha1x REAL,   beta1y     REAL, alpha1y    REAL,   psi1 REAL,"
       <<                              "beta2x REAL,    alpha2x REAL,   beta2y     REAL, alpha2y    REAL,   psi2 REAL )"
       << ends;
-
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
@@ -279,10 +276,10 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
   // TURN RF OFF **** FIXME     
 
    Jet__environment::pushEnv( jp.State().Env() );
-  JetC__environment::pushEnv( jp.State().Env() );
+   JetC__environment::pushEnv( jp.State().Env() );
 
 
-  JetParticle jpco(jp);
+   JetParticle jpco(jp);
 
 
    NewtonSolver newton ( boost::bind<Vector>( &map,      Particle(jpco), boost::cref(bml), _1 ),  
@@ -350,7 +347,7 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
   sql.str("");
   sql << "CREATE TABLE " 
       << "ELEMENTS "
-      << "( iseq INTEGER PRIMARY KEY, object INTEGER, name TEXT, type TEXT, length REAL, strength REAL )"
+      << "( iseq INTEGER PRIMARY KEY, object INTEGER UNIQUE, name TEXT, type TEXT, length REAL, strength REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
@@ -447,23 +444,23 @@ Vector tunes( sqlite::connection& db, JetParticle const& oneturnjp)
   	     << "*** ERROR *** " << hlambda << endl;
   }
 
+  // the eigenvalues are ordered *negative imaginary value first* 
+
    Vector tunes(3); 
- 
+
    tunes[0] =  arg( hlambda[0] )/M_TWOPI;  
    tunes[1] =  arg( vlambda[0] )/M_TWOPI;  
    tunes[2] =  arg( slambda[0] )/M_TWOPI;  
    
 
    for (int i=0; i<3; ++i) {
-     if ( tunes[i] < 0.0 ) { tunes[i] += 1.0; }  
+     if (  tunes[i] < 0.0  ) { tunes[i]  += 1.0; }  
    }
 
    std::stringstream sql;
    sql.str("");
-
-   sql.str("");
-   sql << "INSERT INTO PROPERTIES "  
-       << " ( fmuH, fmuV, fmuL )  VALUES ( ?,?,? ) " << std::ends; // fractional tunes
+   sql << "UPDATE PROPERTIES SET " 
+       << " fmuH=?, fmuV=?, fmuL=? " << std::ends; // fractional tunes
 
    sqlite::command cmd_props(db, sql.str());
 
@@ -588,7 +585,7 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle const& oneturnjp, std::vector<double> const& eta )
+Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle const& oneturnjp, Vector const& eta )
 {
    
   double const dpp = 0.001;
@@ -635,22 +632,17 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
   int const N = jparg.State().Dim();
 
 
-
   //-------------------------------------
   // Create a new default Jet environment
   //-------------------------------------- 
-
-  Jet__environment::BeginEnvironment( 1 );  
  
-      std::vector<boost::shared_ptr<coord> > coordinates(6);
-      for ( int i=0; i<N; ++i )  { 
-            coordinates[i] = boost::shared_ptr<coord>( new coord( jparg.State().Env()->refPoint()[i] ) ); 
-      }
-
-  Jet__environment_ptr env = Jet__environment::EndEnvironment(); 
-
-   Jet__environment::pushEnv(env);
-  JetC__environment::pushEnv(env); // implicit conversion 
+  Vector  rp = jparg.State().Env()->refPoint();
+   
+  EnvPtr<double>                 env  = TJetEnvironment<double>::makeJetEnvironment(1, 6, 6,  rp);
+  EnvPtr<std::complex<double> > envc  = env; // implicit conversion 
+   
+   Jet__environment::pushEnv(env );
+  JetC__environment::pushEnv(envc); 
  
   
   Particle    p0(jparg);
@@ -799,7 +791,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
     Jet__environment::popEnv();
    JetC__environment::popEnv();
 
-  
+
   return ret;
 }
 
@@ -907,7 +899,6 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
       << "( iseq INTEGER, component INTEGER,  e0_real REAL,   e0_imag REAL,  e1_real REAL,  e1_imag REAL,  e2_real REAL,   e2_imag REAL, "
       <<                                    " e3_real REAL,   e3_imag REAL,  e4_real REAL,  e4_imag REAL,  e5_real REAL,   e5_imag REAL  )"
       << ends;
-
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
@@ -919,8 +910,8 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
   sql.str("");
   sql << "INSERT INTO EIGENVECTORS "  
      << "( iseq,  component,  e0_real,   e0_imag,   e1_real,   e1_imag,  e2_real,  e2_imag, "
-     <<                     " e3_real,   e3_imag,   e4_real,   e4_imag,  e5_real,  e5_imag  )"
-      << " VALUES (?,?, ?,?, ?,?, ?,?, ?,?, ?,?, ?,? )"  
+     <<                    "  e3_real,   e3_imag,   e4_real,   e4_imag,  e5_real,  e5_imag  )"
+      << " VALUES (?,?, ?,?, ?,?, ?,?, ?,?, ?,?, ?,? )"
       << ends;
   sqlite::command cmd_insert_vectors(db, sql.str());
   
@@ -991,13 +982,10 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
         cmd_insert_vectors % iseq % i;
 
         for (int j=0 ; j<6; ++j ) { 
-
 	  std::complex<double> value =  EN[i][j]*sqrt(scale);
           cmd_insert_vectors % ( value.real()) % ( value.imag() );
         }
  
-       
-
       cmd_insert_vectors();
     }
 
@@ -1007,10 +995,10 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
 
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+#if 0
 MatrixD periodicCovariance( sqlite::connection& db, JetParticle& jp, double eps1=1.0, double eps2=1.0, double eps3=1.0 )
 {
 
@@ -1291,6 +1279,7 @@ void propagateETLatticeFunctions(sqlite::connection& db, beamline const& bml, Je
 
 }
 
+#endif
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1672,26 +1661,17 @@ MatrixC courantSnyder4DtoEV( CSLattFuncs4D const& lf )
   EV[5][5] = 1.0;
 
   return ( std::complex<double>(1.0/sqrt(2.0),0.0)*EV ); // Note normalization, which is different from 
-
-
-}                                                        // the one assumed in the Lbedev-Bogacz writup. 
+                                                         // the one assumed in the Lbedev-Bogacz writup. 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double getVTune( sqlite::connection& db )
 {
-
-  std::stringstream sql;
-  sql << "SELECT  imuV, fmuV FROM PROPERTIES "  
-      << std::ends;
-
-  sqlite::query q( db, sql.str()); 
-
+  sqlite::query q( db,"SELECT  imuV, fmuV FROM PROPERTIES;"); 
   sqlite::result_type res = q.emit_result(); 
- 
   if (!res)  return -1.000;  // error ! // ** read tunes from the database 
-  
   return res->get_double(1); // fractional part;
 }
 
@@ -1700,17 +1680,10 @@ double getVTune( sqlite::connection& db )
 
 double getHTune( sqlite::connection& db)
 {
-  std::stringstream sql;
-  sql << "SELECT  imuH, fmuH FROM PROPERTIES "  
-      << std::ends;
-
-  sqlite::query q( db, sql.str()); 
-
+  sqlite::query q( db,"SELECT  imuH, fmuH FROM PROPERTIES;" ); 
   sqlite::result_type res = q.emit_result(); 
- 
   if (!res)  return -1.000;  // error ! // ** read tunes from the database 
-  
-  return res->get_double(1); // fractional part;
+   return res->get_double(1); // fractional part;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1760,7 +1733,7 @@ void cleardb( sqlite::connection& db)
   sql << "DROP TABLE IF EXISTS COVARIANCE" <<std::ends; 
   sqlite::execute(db, sql.str(),true );
 
-  Optics::initdb( db);
+  initdb( db);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1833,6 +1806,375 @@ bool  courant_snyder4d_ok( sqlite::connection& db )
   return (!empty);
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   arclength (sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT arclength  FROM ELEMENT, REFERENCE_ORBIT "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( REFERENCE_ORBIT.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beta_x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_x  FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   beta_y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_y  FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  alpha_x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_x  FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  alpha_y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_y  FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  beta_1x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_1x  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+  return 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  beta_1y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_1y  FROM ELEMENT, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
 
-} // Optics namespace
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   alpha_1x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_1x  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double alpha_1y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_1y  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  beta_2x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_2x  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  beta_2y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT beta_2y  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  alpha_2x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_2x  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   alpha_2y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT alpha_2y  FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  eta_x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT eta_x  FROM ELEMENTS, DISPERSION "
+                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double   eta_y ( sqlite::connection& db, ElmPtr const& elm )
+{
+
+  static const std::string sql( "SELECT eta_y  FROM ELEMENTS, DISPERSION "
+                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  etap_x ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT etap_x  FROM ELEMENTS, DISPERSION "
+                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double  etap_y ( sqlite::connection& db, ElmPtr const& elm )
+{
+  static const std::string sql( "SELECT etap_y  FROM ELEMENTS, DISPERSION "
+                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  static sqlite::connection* dbp = 0;
+ 
+  static boost::shared_ptr<sqlite::query> q;
+
+  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+
+  (*q) % reinterpret_cast<int>(&elm); 
+
+  sqlite::result_type res = q->emit_result();
+
+  return (res) ? res->get_double(0) : 0.0;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+} // namespace Optics
