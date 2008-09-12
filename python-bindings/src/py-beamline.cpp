@@ -170,7 +170,6 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("propagateParticleBunch", beamline_propagateParticleBunch);
 
  beamline_.def("setMomentum",    &beamline::setMomentum);
- beamline_.def("eraseBarnacles", &beamline::eraseBarnacles);
 
 
   // QUERIES
