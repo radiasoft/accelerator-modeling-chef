@@ -38,6 +38,7 @@
 #include <config.h>
 #endif
 
+#if  0
 
 /*
  * File: TransitionVisitor.cc
@@ -432,3 +433,5 @@ const char* TransitionVisitor::getErrorMessage() const
 {
   return errorMessage_[ errorCode_ ];
 }
+
+#endif
