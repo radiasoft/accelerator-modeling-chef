@@ -57,7 +57,7 @@ Vector RungeKutta::rk4( ODE& yPrime, Vector yInit, double t0, double t1 ) {
 
   if ( yInit.Dim() != yPrime.getDim() ) {
     (*pcerr) << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
-    return 0;
+    return Vector();
   }
   else {
     int i;
@@ -88,7 +88,7 @@ Vector RungeKutta::rk4ASC( ODE& yPrime, Vector yInit, double t0, double t1,
 
   if ( yInit.Dim() != yPrime.getDim() ) {
     (*pcerr) << "Error in RungeKutta::rk4OneStep: Dimensions don't match." << endl;
-    return 0;
+    return Vector();
   }
   else {
     int dim;
@@ -146,6 +146,6 @@ Vector RungeKutta::integrate( int choice, ODE& yPrime, ODE& /* yMap2 */,
   }
   else{
     (*pcerr) << "RungeKutta::integrate: Invalid choice of integrator." << endl;
-    return 0;
+    return Vector();
   }
 }

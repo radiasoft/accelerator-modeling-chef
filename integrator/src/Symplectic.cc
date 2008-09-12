@@ -27,7 +27,7 @@ Vector Symplectic::symplectic2( ODE& yMap1, ODE& yMap2, Vector yInit,
 
   if ( yInit.Dim() != yMap1.getDim() ) {
     (*pcerr) << "Error in Symplectic::symplectic2: Dimensions don't match." << endl;
-    return 0;
+    return Vector();
   }
   else {
     int i;
@@ -60,7 +60,7 @@ Vector Symplectic::symplectic4( ODE& yMap1, ODE& yMap2, Vector yInit,
 
   if ( yInit.Dim() != yMap1.getDim() ) {
     (*pcerr) << "Error in Symplectic::symplectic4: Dimensions don't match." << endl;
-    return 0;
+    return Vector();
   }
   else {
     int i;
@@ -101,6 +101,6 @@ Vector Symplectic::integrate( int choice, ODE& yMap1, ODE& yMap2, Vector yInit,
   }
   else{
     (*pcerr) << "Symplectic::integrate: Invalid choice of integrator." << endl;
-    return 0;
+    return Vector();
   }
 }
