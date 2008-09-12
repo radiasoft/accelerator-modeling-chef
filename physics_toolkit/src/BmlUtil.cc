@@ -96,8 +96,6 @@ void BmlUtil::setOutputStream( ostream& w )
   outputStreamPtr_ = &w;
 }
 
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -247,7 +245,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
                                        beamline const&            bml )
 {
 
-  if( 0 == insertions.size() || 0 == targets.size() ) {
+  if( insertions.empty() || targets.empty() ) {
     return  BmlPtr( bml.Clone() );
   }
 
@@ -272,19 +270,16 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
     if( insertions.empty() || targets.empty() ) break; 
 
-    ElmPtr ins = insertions.front(); insertions.erase( insertions.begin() );
-    ElmPtr trg = targets.front();       targets.erase(    targets.begin() );
-
-
-    if( typeid(**it) == typeid(beamline) ) {
-
-      insertions.push_front(ins);
-      targets.push_front(trg);
+    if( (*it)->isBeamline() ) {
       ret->append( cloneLineAndInsert ( percent, insertions, targets,  dynamic_cast<beamline const&>(**it) ) );
     }
 
     else {
+
       // Here's where the real work is done.
+
+      ElmPtr ins = insertions.front(); insertions.pop_front();
+      ElmPtr trg = targets.front();       targets.pop_front();
 
       if( trg == (*it) ) {
         if( upstream ) {
