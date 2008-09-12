@@ -38,6 +38,7 @@
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Matrix.h>
 #include <beamline/LatticeFunctions.h>
+#include <beamline/ElmPtr.h>
 
 class JetParticle;
 class Particle;
@@ -74,7 +75,26 @@ namespace Optics {
   void              propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetParticle const& jp, MatrixC const& ev0, Vector const& eta0 );
 
 
-  Vector                     chromaticity( sqlite::connection& db, beamline const& bml, JetParticle const& jp,     std::vector<double> const& eta );
+  double            arclength( sqlite::connection& db, ElmPtr const& elm );
+  double               beta_x( sqlite::connection& db, ElmPtr const& elm );
+  double               beta_y( sqlite::connection& db, ElmPtr const& elm );
+  double              alpha_x( sqlite::connection& db, ElmPtr const& elm );
+  double              alpha_y( sqlite::connection& db, ElmPtr const& elm );
+  double              beta_1x( sqlite::connection& db, ElmPtr const& elm );
+  double              beta_1y( sqlite::connection& db, ElmPtr const& elm );
+  double             alpha_1x( sqlite::connection& db, ElmPtr const& elm );
+  double             alpha_1y( sqlite::connection& db, ElmPtr const& elm );
+  double              beta_2x( sqlite::connection& db, ElmPtr const& elm );
+  double              beta_2y( sqlite::connection& db, ElmPtr const& elm );
+  double             alpha_2x( sqlite::connection& db, ElmPtr const& elm );
+  double             alpha_2y( sqlite::connection& db, ElmPtr const& elm );
+  double                eta_x( sqlite::connection& db, ElmPtr const& elm );
+  double                eta_y( sqlite::connection& db, ElmPtr const& elm );
+  double               etap_x( sqlite::connection& db, ElmPtr const& elm );
+  double               etap_y( sqlite::connection& db, ElmPtr const& elm );
+
+
+  Vector                     chromaticity( sqlite::connection& db, beamline const& bml, JetParticle const& jp, Vector const& eta );
 
   MatrixC             courantSnyder4DtoEV( CSLattFuncs4D const& lf );
 
