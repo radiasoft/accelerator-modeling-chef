@@ -156,9 +156,9 @@ TJetVector<T> TJetVector<T>::operator+ ( TJetVector<T> const& x ) const
 {
   TJetVector<T> z(*this);
 
-  typename vector<TJet<T> >::const_iterator  itx  = x.comp_.begin(); 
+  const_iterator  itx  = x.comp_.begin(); 
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++itx) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++itx) {
     (*itz) +=  (*itx);
   }
 
@@ -177,7 +177,7 @@ TJetVector<T> TJetVector<T>::operator+ ( Vector const& y ) const
   TJetVector<T> z( *this );
 
   int i = 0;
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++i) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++i) {
     (*itz) += y[i];
   }
 
@@ -191,9 +191,9 @@ TJetVector<T> TJetVector<T>::operator+ ( Vector const& y ) const
 template<typename T>
 TJetVector<T> TJetVector<T>::operator+= ( TJetVector<T> const& x )
 {
-  typename vector<TJet<T> >::const_iterator  itx = x.comp_.begin(); 
+  const_iterator  itx = x.comp_.begin(); 
 
-  for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it, ++itx) {
+  for ( iterator  it = comp_.begin(); it != comp_.end(); ++it, ++itx) {
     (*it) += (*itx);
   }
 
@@ -209,7 +209,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator+= ( Vector const& x )
 {
   int i=0 ;
-  for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
+  for ( iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
     (*it) += x[i];
   }
 
@@ -225,9 +225,9 @@ TJetVector<T> TJetVector<T>::operator- ( TJetVector<T> const& x ) const
 {
   TJetVector<T> z(*this);
 
-  typename vector<TJet<T> >::const_iterator  itx = x.comp_.begin(); 
+  const_iterator  itx = x.comp_.begin(); 
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++itx) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++itx) {
     (*itz) -= (*itx);
   }
 
@@ -245,7 +245,7 @@ TJetVector<T> TJetVector<T>::operator- ( Vector const& y ) const
   TJetVector<T> z( *this );
 
   int i=0 ;
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++i) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz, ++i) {
     (*itz) -= y[i];
   }
 
@@ -257,11 +257,12 @@ TJetVector<T> TJetVector<T>::operator- ( Vector const& y ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
+
 TJetVector<T> operator- ( TJetVector<T> const& x ) // unary minus
 {
   TJetVector<T> z( x );
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+  for ( typename TJetVector<T>::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
     (*itz) = -(*itz);
   }
   return z;
@@ -275,9 +276,9 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator-= ( TJetVector<T> const& x )
 {
 
-  typename vector<TJet<T> >::const_iterator  itx = x.comp_.begin(); 
+  const_iterator  itx = x.comp_.begin(); 
 
-  for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it, ++itx) {
+  for ( iterator  it = comp_.begin(); it != comp_.end(); ++it, ++itx) {
     (*it) -= (*itx);
   }
 
@@ -293,7 +294,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator-= ( Vector const& x )
 {
   int i =0;
-  for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
+  for ( iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
     (*it) -= x[i];
   }
 
@@ -309,7 +310,7 @@ TJetVector<T> TJetVector<T>::operator* ( TJet<T> const& x ) const
 {
   TJetVector<T> z( *this );
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
     (*itz) *=  x;
   }
 
@@ -324,7 +325,7 @@ TJetVector<T> TJetVector<T>::operator* ( T  const& c ) const
 {
   TJetVector<T> z( *this );
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+  for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
     (*itz) *=  c;
   }
 
@@ -359,7 +360,8 @@ TJetVector<T> operator* (  TJet<T> const& c,  TJetVector<T> const& x )
 
   TJetVector<T> z( x );
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+  for ( typename TJetVector<T>::iterator  itz  = z.comp_.begin(); 
+                                          itz != z.comp_.end(); ++itz) {
     (*itz) *= c;
   }
 
@@ -374,7 +376,8 @@ TJetVector<T> operator* ( TJetVector<T> const& x , U const& c )
 {
   TJetVector<T> z( x );
 
-  for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+  for ( typename TJetVector<T>::iterator  itz  = z.comp_.begin(); 
+                                          itz != z.comp_.end(); ++itz) {
     (*itz) *= c;
   }
 
@@ -397,7 +400,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator*=( TJet<T> const& c ) 
 {
 
-  for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it) {
+  for ( iterator  it = comp_.begin(); it != comp_.end(); ++it) {
     (*it) *= c;
   }
 
@@ -412,7 +415,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator*=( T c ) 
 {
 
- for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it) {
+ for ( iterator  it = comp_.begin(); it != comp_.end(); ++it) {
     (*it) *= c;
  }
 
@@ -429,7 +432,7 @@ TJetVector<T> TJetVector<T>::operator/ ( TJet<T> const& c ) const
 
  TJetVector<T> z( *this );  
 
- for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+ for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
     (*itz) /= c;
  }
 
@@ -444,7 +447,7 @@ TJetVector<T> TJetVector<T>::operator/ ( T c ) const
 {
  TJetVector<T> z( *this );
 
- for ( typename vector<TJet<T> >::iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
+ for ( iterator  itz = z.comp_.begin(); itz != z.comp_.end(); ++itz) {
     (*itz) /= c;
  }
 
@@ -458,7 +461,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator/=( TJet<T> const& c ) 
 {
 
- for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it) {
+ for ( iterator  it = comp_.begin(); it != comp_.end(); ++it) {
     (*it) /= c;
  }
 
@@ -474,7 +477,7 @@ template<typename T>
 TJetVector<T> TJetVector<T>::operator/=( T c ) 
 {
 
- for ( typename vector<TJet<T> >::iterator  it = comp_.begin(); it != comp_.end(); ++it) {
+ for ( iterator  it = comp_.begin(); it != comp_.end(); ++it) {
     (*it) /= c;
  }
 
@@ -492,7 +495,7 @@ TJet<T> TJetVector<T>::operator* ( Vector const& y ) const
   TJet<T> u( myEnv_);
 
   int i=0;
-  for ( typename vector<TJet<T> >::const_iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
+  for ( const_iterator  it = comp_.begin(); it != comp_.end(); ++it, ++i) {
     u += ((*it) * y[i]); 
   }
   return u;
