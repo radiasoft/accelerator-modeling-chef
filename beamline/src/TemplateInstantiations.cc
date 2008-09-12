@@ -36,7 +36,6 @@
 #include <beamline/beamline.h>
 #include <beamline/beamline_elements.h>
 
-#include <basic_toolkit/Barnacle.h>
 #include <beamline/BBLens.tcc>
 #include <beamline/BendPropagators.h>
 #include <beamline/EdgePropagators.h>
@@ -49,6 +48,7 @@
 #include <beamline/BeamlineExpressionTree.h>
 #include <beamline/LinacCavityParts.h>
 #include <beamline/BeamlineExpressionTree.h>
+#include <beamline/BeamlinePropagators.h>
 #include <beamline/DriftPropagators.h>
 #include <beamline/QuadrupolePropagators.h>
 #include <beamline/SextupolePropagators.h>
@@ -278,7 +278,8 @@ template       boost::shared_ptr<WakeKick>::shared_ptr( WakeKick* );
 // BasePropagators
 //--------------------------------------------
 
-template boost::shared_ptr<          Slot::Propagator>::shared_ptr( Slot::Propagator*            );
+template boost::shared_ptr<beamline::Propagator       >::shared_ptr( beamline::Propagator*        );
+template boost::shared_ptr<Slot::Propagator           >::shared_ptr( Slot::Propagator*            );
 template boost::shared_ptr<kick::Propagator           >::shared_ptr( kick::Propagator*            );
 template boost::shared_ptr<sector::Propagator         >::shared_ptr( sector::Propagator*          );
 template boost::shared_ptr<vkick::Propagator          >::shared_ptr( vkick::Propagator*           );
