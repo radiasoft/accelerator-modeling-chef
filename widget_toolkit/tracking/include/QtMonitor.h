@@ -57,6 +57,8 @@ class QtMonitor : public QObject, public monitor {
 
 Q_OBJECT
 
+  class Propagator;
+
   public:
 
     QtMonitor( const char* = 0 );
@@ -67,13 +69,18 @@ Q_OBJECT
 
     // Returns number of QtMonitors in the beamline.
 
-    void localPropagate( Particle& );
-    QtMonitor* Clone() const { return new QtMonitor( *this ); }
+    QtMonitor* Clone() const;
+       
+    char const* Type() const;
+  
+    double const& getAzimuth() const;  
 
   signals:
-    void ping( double, const Vector& );
+
+    void ping( double, Vector const& );
 
   private:
+
     double  azimuth_;
 };
 
