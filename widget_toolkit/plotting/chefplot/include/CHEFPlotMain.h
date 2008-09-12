@@ -77,7 +77,7 @@ class CHEFPlotMain: public CHEFPlotMainBase {
   private:
 
   CHEFPlot*      chefplot_;
-  TuneDiagram*   tunediagram_;
+  //TuneDiagram*   tunediagram_;
   bool           auto_clear_;
 
 

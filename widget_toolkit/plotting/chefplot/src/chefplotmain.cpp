@@ -37,7 +37,7 @@
 #include <Plot.h>
 #include <PlotData.h> 
 #include <Lego.h>
-#include <TuneDiagram.h>
+// #include <TuneDiagram.h>
 #include <beamline/beamline.h>
 #include <qapplication.h>
 #include <qtoolbar.h>
@@ -72,8 +72,8 @@ CHEFPlotMain::CHEFPlotMain(QWidget * parent, const char* name, Qt::WFlags f)
   chefplot_    = new CHEFPlot(this);
   setCentralWidget(chefplot_);
 
-  tunediagram_ = new TuneDiagram( parent );
-  tunediagram_->hide();
+  //tunediagram_ = new TuneDiagram( parent );
+  //tunediagram_->hide();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -111,8 +111,8 @@ void CHEFPlotMain::addData(PlotData& pltdata)
 {
  if (auto_clear_) chefplot_->clear(); 
 
- tunediagram_->setTunes( pltdata.getTunes().htune, pltdata.getTunes().vtune );
- tunediagram_->draw();
+ //tunediagram_->setTunes( pltdata.getTunes().htune, pltdata.getTunes().vtune );
+ //tunediagram_->draw();
 
  chefplot_->setData(pltdata);
 
@@ -246,6 +246,7 @@ void CHEFPlotMain::setAutoClear( bool set)
 
 void CHEFPlotMain::showTunes() 
 {
+#if 0
   tunediagram_->setCaption( this->caption() );
 
   int x = ( qApp->mainWidget()->width()  - tunediagram_->width()  ) / 2;
@@ -261,6 +262,7 @@ void CHEFPlotMain::showTunes()
   // NOTE: See TrollTech's documentation on class QWorkspace.
 
   tunediagram_->show();
+#endif
 }
 
 
