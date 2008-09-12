@@ -348,7 +348,7 @@ TMapping<T> TMapping<T>::inverse() const
  // ... Temporarily zero out the reference point 
 
  EnvPtr<T> tmp_pje_inv_zeroed( 
-                         TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim(), 0 )); 
+                         TJetEnvironment<T>::makeJetEnvironment(pje_inv->maxWeight(), pje_inv->numVar(), pje_inv->spaceDim() )); 
 
  z.myEnv_ = tmp_pje_inv_zeroed;
 
