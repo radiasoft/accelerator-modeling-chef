@@ -446,10 +446,11 @@ void orderColumns( TVector<std::complex<double> >& eigenvalues,
 //    
 //  det A = lambda_0 * lamba_1 * ... * lambda_2n = 1 
 //  
-// The code reorders columns of the eigenvector and eigenvalue matrices. 
+// This function reorders columns of the eigenvector matrix and the 
+// corresponding entries in the eigenvalue vector. 
 // 
-// In the general, stable case where all eigenvalues are complex, the column ordering 
-// produced by the eigensolver would be as follows
+// In the general, assuming a stable cases where all eigenvalues are complex, 
+// the column ordering produced by the eigensolver would be as follows
 // 
 // 0:lambda_1 1:lambda_1* 2:lambda_2 3:lambda_2* 4:lambda_3 5:lambda_3*
 //
@@ -473,7 +474,7 @@ void orderColumns( TVector<std::complex<double> >& eigenvalues,
 // a_x, a_y, a_ct  a_x* a_y* a_ct* 
 //
 //------------------------------------------------------------------------------------------------------
-
+  
   std::list<int>    col_indices;
   std::vector<int>  sorted_indices(6);
 
@@ -487,7 +488,7 @@ void orderColumns( TVector<std::complex<double> >& eigenvalues,
 
   int i=-1;
 
-   // first, we order the complex eigenvalues ...
+   // first, we order the complex eigenvalues. *negative imaginary value first* ...
   
   while ( !col_indices.empty() ) {
 
@@ -538,6 +539,7 @@ void orderColumns( TVector<std::complex<double> >& eigenvalues,
     }
 
   }
+
   eigenvalues   = ordered_eigenvalues;      
   eigenvectors  = ordered_eigenvectors;
 
