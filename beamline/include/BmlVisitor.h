@@ -229,6 +229,8 @@ public:
 
   virtual void visit( rfcavity      const& x ); 
 
+  virtual void visit( LinacCavity   const& x ); 
+
   virtual void visit( Solenoid      const& x ); 
 
   virtual void visit( srot          const& x ); 
