@@ -47,10 +47,11 @@
 ****** - new typesafe propagator architecture
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified bmlnElmnt::setLength
-****** May 2008           michelotti@fnal.gov
+****** May 2008           ostiguy@fnal.gov
 ****** - attribute changes now dispatched to propagator
 ****** - added explicit implementation for assigment operator.
 ****** - eliminated obsolete attributes (IToField_, etc ) 
+****** - setLength(), setStrength() no longer virtual
 **************************************************************************
 *************************************************************************/
 
@@ -222,8 +223,7 @@ bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s)
     ctRef_(0.0),
     attributes_(),
     tag_(), 
-    pAperture_(0),
-    dataHook() 
+    pAperture_(0)
 {
   if( length_ < 0 ) {
     ostringstream uic;
@@ -251,14 +251,13 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& o )
                      ctRef_(o.ctRef_),
                 attributes_(o.attributes_),
                        tag_(o.tag_),
-                 pAperture_(0),
-                   dataHook()
+                 pAperture_(0)
 {
 
      pAperture_ = o.pAperture_ ? o.pAperture_->Clone() : 0;
      align_ = o.align_     ? new alignment(*o.align_)  : 0;
 
-     propagator_ =  o.isBeamline() ? PropagatorPtr(): PropagatorPtr( o.propagator_->Clone() );
+     propagator_ =  PropagatorPtr( o.propagator_->Clone() );
 
      init_internals(o.bml_, o.elm_); 
 }
@@ -334,8 +333,7 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     attributes_   = rhs.attributes_;
     tag_          = rhs.tag_;
     pAperture_    = rhs.pAperture_ ? rhs.pAperture_->Clone() : 0 ; 
-    dataHook      = rhs.dataHook;
-    propagator_   = isBeamline() ? PropagatorPtr() : PropagatorPtr(rhs.propagator_->Clone());
+    propagator_   = PropagatorPtr(rhs.propagator_->Clone());
 
     init_internals(rhs.bml_, rhs.elm_); 
 
@@ -348,8 +346,6 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bmlnElmnt::~bmlnElmnt() {
-
-  dataHook.clear();
 
   if(align_)     delete align_;
   if(pAperture_) delete pAperture_;
@@ -461,22 +457,10 @@ void bmlnElmnt::setStrength( double const& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::peekAt( double& s, Particle const& p ) const
-{ 
- (*pcout) << setw(12) << s;
-
- s += const_cast<bmlnElmnt*>(this)->OrbitLength( p );  // Kludge!!
-
- (*pcout) << setw(12) << s           
-                  << " : " 
-      << setw(10) << (int) this  
-      << setw(15) << ident_       
-      << setw(15) << Type()      
-      << setw(12) << length_      
-      << setw(12) << strength_    
-      << endl;
+char const* bmlnElmnt::Name()   const
+{
+  return ident_.c_str();
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -588,7 +572,6 @@ bool bmlnElmnt::alignAbsX( double const& u )
       align_ = new alignment(u, 0.0, 0.0);
     }
     else {
-      // This is stupid!
       alignmentData w(Alignment());
       w.xOffset = u;
       setAlignment( w );
@@ -621,7 +604,6 @@ bool bmlnElmnt::alignAbsY( double const& u )
       align_ = new alignment(0.0, u, 0.0);
     }
     else {
-      // This is stupid!
       alignmentData w(Alignment());
       w.yOffset = u;
       setAlignment( w );
@@ -692,7 +674,7 @@ bool bmlnElmnt::alignRelRoll( double const& u )
     else {
       // This is stupid!
       alignmentData w(Alignment());
-      w.tilt += u;
+      w.roll += u;
       setAlignment( w );
     }
   }
@@ -725,7 +707,7 @@ bool bmlnElmnt::alignAbsRoll( double const& u )
     else {
       // This is stupid!
       alignmentData w(Alignment());
-      w.tilt = u;
+      w.roll = u;
       setAlignment( w );
     }
   }
@@ -929,9 +911,9 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
   }
   else 
   {
-    if(    ( std::abs(a.tilt)                      < 1.0e-12 )
-        || ( std::abs( M_PI   - std::abs(a.tilt) ) < 1.0e-9  )
-        || ( std::abs( M_PI_2 - std::abs(a.tilt) ) < 1.0e-9  ) )
+    if(    ( std::abs(a.roll)                      < 1.0e-12 )
+        || ( std::abs( M_PI   - std::abs(a.roll) ) < 1.0e-9  )
+        || ( std::abs( M_PI_2 - std::abs(a.roll) ) < 1.0e-9  ) )
     {
       if( (a.xOffset == 0.0) || (a.yOffset == 0.0) ) {
         align_ = nuAlignPtr;
@@ -1169,14 +1151,14 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   
   //-----------------------------------------------------------------------------
   //  strength_  is changed only when it represents the  
-  //  *integrated* strength. This is the case for thin (length_ == 0.0 elements) 
+  //  *integrated* strength; this is the case for _thin_ elements.
   //-----------------------------------------------------------------------------
 
-  a->strength_ = (length_ == 0.0) ? strength_  : pc*strength_;
-  b->strength_ = (length_ == 0.0) ? strength_  : ( 1.0 - pc )*strength_;
+  a->strength_ = a->isThin() ? strength_  : pc*strength_;
+  b->strength_ = b->isThin() ? strength_  : ( 1.0 - pc )*strength_;
 
-  a->length_   = pc*length_;
-  b->length_   = ( 1.0 - pc )*length_;
+  a->length_   = a->isThin() ? 0.0 : pc*length_;
+  b->length_   = b->isThin() ? 0.0 : ( 1.0 - pc )*length_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1185,6 +1167,7 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
+#if 0
   if ( &b ) {
     os << OSTREAM_DOUBLE_PREC 
        << b.Type() 
@@ -1200,6 +1183,7 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
     os << (*b.align_) << "\n";
     b.writeTo(os); // Polymorphically call the appropriate writeTo().
   }
+#endif
   return os;
 }
 
