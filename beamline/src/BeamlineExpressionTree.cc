@@ -52,7 +52,7 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BoolEndNode::BoolEndNode( boost::function<bool( bmlnElmnt const* )>  discriminator )
+BoolEndNode::BoolEndNode( boost::function<bool( bmlnElmnt const& )>  discriminator )
  : discriminator_(discriminator) 
 {}
 
@@ -69,7 +69,7 @@ BoolEndNode::BoolEndNode( BoolEndNode const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-bool BoolEndNode::evaluate( bmlnElmnt const* x ) const
+bool BoolEndNode::evaluate( bmlnElmnt const& x ) const
 {
   return discriminator_(x);
 }
@@ -137,7 +137,7 @@ AndNode::~AndNode()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool AndNode::evaluate( bmlnElmnt const* x ) const
+bool AndNode::evaluate( bmlnElmnt const& x ) const
 {
   return ( left_->evaluate(x)  && right_->evaluate(x) );
 }
@@ -177,7 +177,7 @@ OrNode::~OrNode()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool OrNode::evaluate( const bmlnElmnt* x ) const
+bool OrNode::evaluate( bmlnElmnt const& x ) const
 {
   return ( left_->evaluate(x) || right_->evaluate(x) );
 }
@@ -220,7 +220,7 @@ NotNode::~NotNode()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool NotNode::evaluate( bmlnElmnt const* x ) const
+bool NotNode::evaluate( bmlnElmnt const& x ) const
 {
   return !left_->evaluate(x);
 }
@@ -246,8 +246,8 @@ void NotNode::writeTo( ostream& os ) const
 
 
 TypeIs::TypeIs( const char* x ): type_(x) {}
-bool TypeIs::operator()( bmlnElmnt const * x ) const   { return (  x->Type() ==  type_ ); }
-void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << type_ << " )"; }
+bool TypeIs::operator()( bmlnElmnt const& x ) const   { return (  x.Type() ==  type_ ); }
+void TypeIs::writeTo( ostream& os )           const  { os << "( Type = " << type_ << " )"; }
  
 
 
@@ -258,7 +258,7 @@ void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << ty
 // ... NameIs
 
  NameIs::NameIs( const char* x ) : name_(x) {}
- bool  NameIs::operator()( bmlnElmnt const* x ) const  { return x->Name() == name_ ;        }
+ bool  NameIs::operator()( bmlnElmnt const& x ) const  { return x.Name() == name_ ;        }
  void  NameIs::writeTo( ostream& os )           const  {os << "( Name = " << name_ << " )"; }
 
 
@@ -269,7 +269,7 @@ void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << ty
 
 
  LengthIs::LengthIs( double l ): length_(l) {}
- bool LengthIs::operator()( bmlnElmnt const* x ) const { return std::abs( x->Length() - length_ ) <= 0.001*length_; }
+ bool LengthIs::operator()( bmlnElmnt const& x ) const { return std::abs( x.Length() - length_ ) <= 0.001*length_; }
  void LengthIs::writeTo( ostream& os ) const { os << "( Length = " << length_ << os << " )";                        }
 
 
@@ -278,7 +278,7 @@ void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << ty
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  LengthLess::LengthLess( double l ): length_(l) {}
- bool LengthLess::operator()( const bmlnElmnt* x ) const { return ( x->Length() < length_ );        }
+ bool LengthLess::operator()( bmlnElmnt const& x ) const { return ( x.Length() < length_ );        }
  void LengthLess::writeTo( ostream& os )           const {  os << "( Length < " << length_ << " )"; }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -287,7 +287,7 @@ void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << ty
 // ... LengthMore
 
  LengthMore::LengthMore( double l ) : length_(l) {}
- bool LengthMore::operator()( const bmlnElmnt* x )   const { return ( x->Length() > length_ );       }
+ bool LengthMore::operator()( bmlnElmnt const& x )   const { return ( x.Length() > length_ );       }
  void LengthMore::writeTo( ostream& os ) const { os << "( Length > " << length_ << " )";             }
 
 
@@ -297,21 +297,21 @@ void TypeIs::writeTo( ostream& os )             const  { os << "( Type = " << ty
 // ... StrengthIs
 
  StrengthIs::StrengthIs( double s ) : strength_(s) {}
- bool  StrengthIs::operator()( const bmlnElmnt* x ) const { return ( std::abs( x->Strength() - strength_ ) <= 0.001*strength_ ); }
+ bool  StrengthIs::operator()( bmlnElmnt const& x ) const { return ( std::abs( x.Strength() - strength_ ) <= 0.001*strength_ ); }
  void  StrengthIs::writeTo( ostream& os )           const { os << "( Strength = " << strength_ << ")";                           }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  StrengthLess::StrengthLess( double s ) : strength_(s) {}
- bool StrengthLess::operator()(bmlnElmnt const* x ) const  { return (x->Strength() < strength_);           }
+ bool StrengthLess::operator()(bmlnElmnt const& x ) const  { return (x.Strength() < strength_);           }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
  StrengthMore::StrengthMore( double s ) : strength_(s) {}
- bool StrengthMore::operator()(bmlnElmnt const* x ) const  { return (x->Strength() > strength_);           }
+ bool StrengthMore::operator()(bmlnElmnt const& x ) const  { return (x.Strength() > strength_);           }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
