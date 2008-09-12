@@ -522,7 +522,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             delete ret; ret=0;;
             return original.Clone();
           }
-          rollAngle = c->Alignment().tilt;
+          rollAngle = c->Alignment().roll;
           arcFrame.reset();
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
@@ -544,7 +544,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           fd[y] = 0.0;
           fd[z] = elPtr->Length();
           arcFrame.translate(fd);
-          ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
+          ret->append( ElmPtr( new Slot(elPtr->Name(), arcFrame) ) );
         }
       }
   
@@ -577,7 +577,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             delete ret; ret=0;;
             return original.Clone();
           }
-          rollAngle = a->Alignment().tilt;
+          rollAngle = a->Alignment().roll;
           arcFrame.reset(); 
           fd[x] = 0.0;
           fd[y] = 0.0;
@@ -599,7 +599,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           else {
             arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
           }
-          ret->append( ElmPtr( new Slot(elPtr->Name().c_str(), arcFrame) ) );
+          ret->append( ElmPtr( new Slot(elPtr->Name(), arcFrame) ) );
         }
       }
   
@@ -634,7 +634,7 @@ beamline* DriftsToSlots( beamline const& argbml )
               return original.Clone();
             }
           }
-          rollAngle = c->Alignment().tilt;
+          rollAngle = c->Alignment().roll;
           arcFrame.reset();  
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
@@ -683,7 +683,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             }
           }
 
-          rollAngle = a->Alignment().tilt;
+          rollAngle = a->Alignment().roll;
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
             arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
@@ -700,7 +700,7 @@ beamline* DriftsToSlots( beamline const& argbml )
           else {
             arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );
           }
-          ret->append( ElmPtr(new Slot(elPtr->Name().c_str(), arcFrame)) );
+          ret->append( ElmPtr(new Slot(elPtr->Name(), arcFrame)) );
         }
       }
   

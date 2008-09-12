@@ -436,7 +436,7 @@ alignment SurveyMatcher::getAlignment( int i ) const
   dr          = modelCoordinates_[i];
   ret.xOffset = dr[0];
   ret.yOffset = dr[1];
-  ret.tilt    = 0.0;
+  ret.roll    = 0.0;
   return alignment( ret );
 }
 
