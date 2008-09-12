@@ -256,11 +256,8 @@ friend class TJL;
 
   void removeTerm( TJLterm<T> const& a);  // remove term a; 
  
-
   bool isNilpotent() const;
   void writeToFile( std::ofstream& ) const;
-
-  void getReference( T* ) const;
 
   TJL& Negate(); // in-place negation 
 

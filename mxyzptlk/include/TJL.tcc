@@ -66,7 +66,7 @@
 ******  Mar 2008 ostiguy@fnal
 ******  - composition and evaluation code refactored and optimized. 
 ******  - more optimizations in pow(), sqrt(), sin() and cos() to 
-******    eliminate superfluous deep copies.   
+******    eliminate some superfluous deep copies.   
 ******
 ******  Aug 2008 ostiguy@fnal
 ******  - added new code for in-place add/subtract. 
@@ -623,15 +623,6 @@ void TJL<T>::setTermCoefficient( T   const&   value, IntArray const& exp)
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-void TJL<T>::getReference( T* r ) const 
-{
- for( int i=0;  i < myEnv_->numVar(); ++i ) r[i] = myEnv_->refPoint()[i];
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 bool TJL<T>::isNilpotent() const 
 {
  return ( std::abs(standardPart()) <= mx_small_ ); 
@@ -800,13 +791,9 @@ T TJL<T>::evaluate( const_iterator_t itb, const_iterator_t ite) const
    // is obtained by multiplying a factor into a previously
    // computed monomial.
 
-   //--(*p);
-
    --exponents[i];
    T term = monomial[ myEnv_->offsetIndex( exponents ) ];
    ++exponents[i];
-
-   //++(*p);
 
    monomial[ myEnv_->offsetIndex( exponents ) ] = term * u[i];
  
@@ -885,14 +872,10 @@ JLPtr<T> TJL<T>::compose(  const_iterator_t itb, const_iterator_t ite ) const //
    // is obtained by multiplying a factor into a previously
    // computed monomial.
 
-   // --(*p); // decrease the exponent    
-
    --exponents[i];
    JLPtr<T> term = tjlmonomial[ myEnv_->offsetIndex( exponents ) ];
    ++exponents[i];
 
-   // ++(*p);
-    
    tjlmonomial[ myEnv_->offsetIndex( exponents )] = u[i]*term; 
    
  } 
@@ -909,8 +892,6 @@ JLPtr<T> TJL<T>::compose(  const_iterator_t itb, const_iterator_t ite ) const //
     z = z + ( tjlmonomial[ p->offset_ ] *  (p->value_) ); 
  } 
  
- // Finish...
-  
  return z;
 }
 
@@ -1313,7 +1294,7 @@ template<typename T>
 JLPtr<T>  TJL<T>::sin() const
 { 
 
- JLPtr<T> epsilon = clone(); // deep copy 
+ JLPtr<T> epsilon = clone(); 
 
 
  if( epsilon->standardPart() != T() ) {            // jet has non-zero standard part
@@ -1346,7 +1327,7 @@ JLPtr<T>  TJL<T>::sin() const
 template<typename T>
 JLPtr<T>  TJL<T>::cos() const
 { 
- JLPtr<T> epsilon = clone(); // deep copy 
+ JLPtr<T> epsilon = clone(); 
  
  if( epsilon ->standardPart() != T() ) {                // jet has non-zero standard part
    T cs = std::cos( epsilon ->standardPart() );
@@ -2437,9 +2418,9 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
  }
 
  //  -----------------------------------------------------------------
- //  Loop over the terms and accumulate monomials in the scrach pad.
+ //  Loop over the terms and accumulate monomials in the scratch pad.
  //  Use direct sequential access to access terms since order is
- //  irrelevant in this context.
+ //  immaterial here.
  //  ------------------------------------------------------------------ 
  
  EnvPtr<T> pje(x->myEnv_);
@@ -2539,7 +2520,6 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
 
  //-------------------------------------------------------------------
  // Initialize local variables and set the environment of the answer.
- // (These steps are not necessary, but they enforce a discipline.)
  //---------------------------------------------------------------------
 
  JLPtr<T>  v( TJL<T>::makeTJL(wArg->myEnv_) );
@@ -2571,9 +2551,10 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  v->setStandardPart( wArg->standardPart()); 
  
  wl = 0;
+
  while ( wl < mw ) {
 
-   wl++;
+ ++wl;
    vn  = u->truncMult( v, wl );
    vn  = vn->filter( wl, wl );
     w  = wArg->filter( wl, wl );
@@ -2594,7 +2575,6 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
  v->lowWgt_  = std::min(  wArg->lowWgt_,  uArg->lowWgt_);
  v->accuWgt_ = std::min(  wArg->accuWgt_, uArg->accuWgt_);
 
- // .. and return _value.
 
  return v;
 }
