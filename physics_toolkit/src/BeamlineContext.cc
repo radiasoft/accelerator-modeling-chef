@@ -43,7 +43,7 @@
 ****** - eliminated all references to beamline::Action functor. 
 ******
 ****** June 2008   ostiguy@fnal.gov
-****** - refactored implementation based on embedded database.  
+****** - refactored implementation taking advantage of embedded database.  
 ******
 **************************************************************************
 *************************************************************************/
@@ -53,6 +53,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdio>
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/dbutils.h>
@@ -64,11 +65,10 @@
 #include <beamline/ParticleBunch.h>
 #include <beamline/RefRegVisitor.h>
 #include <beamline/LinacCavity.h>
+#include <beamline/FramePusher.h>
 
 #include <physics_toolkit/BmlUtil.h>
 #include <physics_toolkit/BeamlineContext.h>
-#include <physics_toolkit/ChromaticityAdjuster.h>
-#include <physics_toolkit/TuneAdjuster.h>
 #include <physics_toolkit/Optics.h>
 
 #include <sstream>
@@ -86,22 +86,18 @@ using namespace boost;
 using FNAL::pcerr;
 using FNAL::pcout;
 
-const int BeamlineContext::OKAY                     = 0;
-const int BeamlineContext::NO_TUNE_ADJUSTER         = 1;
-const int BeamlineContext::NO_CHROMATICITY_ADJUSTER = 2;
 
-double const BeamlineContext::small_x_err   = 1.0e-9;
-double const BeamlineContext::small_y_err   = 1.0e-9;
-double const BeamlineContext::small_npx_err = 1.0e-9;
-double const BeamlineContext::small_npy_err = 1.0e-9;
+static double const small_x_err   = 1.0e-9;
+static double const small_y_err   = 1.0e-9;
+static double const small_npx_err = 1.0e-9;
+static double const small_npy_err = 1.0e-9;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
 :   beamline(*bml.Clone()), particle_(0) ,particleBunchPtr_(0) , 
-    p_ca_(0) , p_ta_(0) , 
-    initialLattFunc_() , dpp_(0.0001),
+    initialCSLattFuncs_() , 
     eps1_(40.0), eps2_(40.0), refjp_(p),
     dbname_ (),
     db_()
@@ -141,12 +137,21 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
    //-------------------------------------------------------------------
    // create and initialize the database
    //-------------------------------------------------------------------
-   
+
+   //-------------------------------------------------------------------
+   // need a good portable way to generate unique tmp file names
+   // on win32, it seems that the file may be created in the root directory
+   // which is not generally writable
+   // -----------------------------------------------------------------    
+#ifdef _WIN32
    std::ostringstream address; 
    address << std::hex << this;
-
    dbname_ =  "./" + Name()+ address.str() + ".db";  
-   db_     =  shared_ptr<sqlite::connection>( new  sqlite::connection(dbname_) );
+#else
+   dbname_ =   tempnam("/tmp", "chefdb" ); 
+   db_     =   shared_ptr<sqlite::connection>(new sqlite::connection(dbname_));
+#endif
+
    Optics::initdb( *db_ );
 
    if(  isRing() ) { handleAsRing(); }
@@ -160,9 +165,50 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+BeamlineContext::BeamlineContext( BeamlineContext const& o)
+:   beamline( *o.beamline::Clone()  ), 
+    particle_(o.particle_->Clone() ) ,
+    particleBunchPtr_(0) , 
+         initialCSLattFuncs_( o.initialCSLattFuncs_) , 
+    eps1_(o.eps1_), 
+    eps2_(o.eps2_), 
+    refjp_( o.refjp_ ),
+    dbname_ (),
+    db_()
+{
+   //-------------------------------------------------------------------
+   // create and initialize the database
+   //-------------------------------------------------------------------
+   
+#ifdef _WIN32
+   std::ostringstream address; 
+   address << std::hex << this;
+   dbname_ =  "./" + Name()+ address.str() + ".db";  
+   db_     =  shared_ptr<sqlite::connection>( new  sqlite::connection(dbname_) );
+#else
+   dbname_ =   tempnam("/tmp", "chefdb" ); 
+   db_     =   shared_ptr<sqlite::connection>(new sqlite::connection(dbname_));
+#endif
+
+   Optics::initdb( *db_ );
+
+   if(  isRing() ) { handleAsRing(); }
+   else            { handleAsLine(); }
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BeamlineContext* BeamlineContext::Clone() const
+{ 
+  return new BeamlineContext(*this);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 BeamlineContext::~BeamlineContext()
 {
-  if( particleBunchPtr_ ) { delete particleBunchPtr_; particleBunchPtr_ = 0; }
 
   boost::filesystem::path dbpathname(dbname_ ); 
   boost::filesystem::remove( dbpathname );
@@ -180,26 +226,43 @@ void BeamlineContext::setParticle( Particle const& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BeamlineContext::setInitial( CSLattFuncs const& u )
+char const*  BeamlineContext::dbname() const
+{ 
+  return dbname_.c_str();
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setInitialCS( CSLattFuncs const& u )
 {
-  initialLattFunc_       = u;
-  initial_lattfunc_set_  = true;
+  initialCSLattFuncs_       = u;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::setInitialCS4D( CSLattFuncs4D const& u )
+{
+  initialCS4DLattFuncs_       = u;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CSLattFuncs const& BeamlineContext::getInitialCS()
+{
+  if  ( !initialCSLattFuncs_.defined() ) { periodicCourantSnyder2D(); }
+  return initialCSLattFuncs_;
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CSLattFuncs const& BeamlineContext::getInitial()
+CSLattFuncs4D const& BeamlineContext::getInitialCS4D()
 {
-
- if( !initial_lattfunc_set_ ) { 
-    throw( GenericException( __FILE__, __LINE__, 
-             "BeamlineContext::getInitial( LattFuncSage::lattFunc* )",
-             "Initial conditions for uncoupled \n"
-             "lattice functions are not available." ) );
-  }
-  return initialLattFunc_;
+  return initialCS4DLattFuncs_;
 }
 
 
@@ -232,65 +295,6 @@ void BeamlineContext::writeTree()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::sumLengths() const
-{
-  double sum = 0.0;
-
-  for (beamline::const_deep_iterator it  =  deep_begin(); 
-                                     it !=  deep_end(); ++it ) {
-   sum += (*it)->Length(); 
-  }
-  return sum;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::setElmLength( ElmPtr w, double l )
-{
-  bool   found = false;
-
-  for ( beamline::deep_iterator it  =  deep_begin();
-	it != deep_end(); ++it ) {
-
-    if ( (*it) !=  w ) continue;
- 
-    if ( l != (*it)->Length() ) { (*it)->setLength(l); clear(); } // This is extreme.
-  }
-
-  return found ? 0 : 1; 
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::setElmStrength( ElmPtr w, double s )
-{
-
-  bool found  = false;
-  int  ret    = 0;
-
-
-  for ( beamline::deep_iterator it  = deep_begin();
-	it != deep_end(); ++it ) {
-
-    if( (*it) != w )  continue;
-
-    if( s != (*it)->Strength() ) { 
-        (*it)->setStrength(s);
-      }
-  }
-
-  return found ? ret : 1;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void BeamlineContext::setAvgInvariantEmittance( double x, double y )
 {
   // Note: it is assumed that x and y are
@@ -298,121 +302,6 @@ void BeamlineContext::setAvgInvariantEmittance( double x, double y )
 
    eps1_ = std::abs(x);
    eps2_ = std::abs(y);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::setElmAlignment( ElmPtr v, alignmentData const& u )
-{
-  static const int errCode_nullArg  = 1;
-  static const int errCode_notFound = 2;
-
-  if( !v ) { 
-     return errCode_nullArg; 
-  }
-
-  beamline::deep_iterator it; 
-  if( (it = std::find(deep_begin(), deep_end(), v )) == deep_end() ) { 
-   return errCode_notFound; 
-  }
-
-  v->setAlignment( u );
-
-  clear();
-
-  return 0;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::setElmAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion)
-{
-  int ret = 0;
-
-  for ( beamline::deep_iterator it  = deep_begin();
-	it != deep_end(); ++it ) {
-
-    if ( !criterion( **it )  ) continue;
-
-    ++ret;
-    (*it)->setAlignment( u );
-   
-  }
-
-  clear();
-
-  return ret;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::processElements( boost::function<bool(bmlnElmnt &)> action )
-{
-
-  int ret = 0;
-
-  for ( beamline::deep_iterator it  = deep_begin();
-	it != deep_end(); ++it ) {
-
-    if ( !action( **it) )   continue;
-    
-    ++ret;
-   
-  }
-
-   clear();
-
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::replaceElement( ElmPtr a, ElmPtr b )
-{
-  // Will replace the first argument with
-  // the second. Return values:
-  // 0 everything went as planned
-  // 1 first argument was not found
-
-  int ret = 0;
-
-  beamline::deep_iterator it = std::find( deep_begin(),  deep_end(), a );
-  
-  if( it == deep_end() ) { 
-    clear(); ret = 1; 
-  } 
-  else {
-    (*it) = b;
-  }
-
-  return ret;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignmentData BeamlineContext::getElmAlignmentData( ElmPtr v ) const
-{
-  static const alignment err1Ret(  137.,  137.,  137. );
-  static const alignment err2Ret( -137., -137., -137. );
-
-  if( !v  ) { return err1Ret.getAlignment(); }
-  
-  const_deep_iterator it = deep_begin(); 
-
-  if( (it = std::find(it,  deep_end(), v )) == deep_end() ) { 
-    return err2Ret.getAlignment(); 
-  }
-
-  return v->Alignment();
 }
 
 
@@ -440,13 +329,9 @@ bool BeamlineContext::onTransClosedOrbit( Particle const& p ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Particle BeamlineContext::getRefParticle() const
+Particle const& BeamlineContext::getRefParticle() const
 {
-
-  Particle p( *particle_);
-  // FIXME :: set the state of the particle !
-  return p;
-
+  return *particle_;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -488,10 +373,10 @@ void BeamlineContext::propagateReferenceOrbit()
 
    Vector& state = p.State();
 
-   state[0] =  initialLattFunc_.reference_orbit.x;
-   state[3] =  initialLattFunc_.reference_orbit.xp;
-   state[1] =  initialLattFunc_.reference_orbit.y;
-   state[4] =  initialLattFunc_.reference_orbit.yp;
+   state[0] =  initialCSLattFuncs_.reference_orbit.x;
+   state[3] =  initialCSLattFuncs_.reference_orbit.xp;
+   state[1] =  initialCSLattFuncs_.reference_orbit.y;
+   state[4] =  initialCSLattFuncs_.reference_orbit.yp;
 
    RefRegVisitor( ( Particle(p) ) ).visit(*this) ;
 
@@ -505,9 +390,21 @@ void BeamlineContext::propagateReferenceOrbit()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+Vector BeamlineContext::chromaticity() const
+{
+     Vector eta0 = Optics::periodicDispersion( (*db_), refjp_ );  
+     Vector chromas = Optics::chromaticity( (*db_), *this, refjp_, eta0 );
+
+  return chromas;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 double BeamlineContext::getHTune()
 {
+  computeEigenTunes();
   return Optics::getHTune( (*db_ ) );
 }
 
@@ -517,6 +414,7 @@ double BeamlineContext::getHTune()
 
 double BeamlineContext::getVTune()
 {
+  computeEigenTunes();
   return Optics::getVTune( (*db_ ) );
 }
 
@@ -535,7 +433,10 @@ void BeamlineContext::computeEigenTunes()
       throw ge;
     }
   }
-   
+ 
+  // FIXME: this should not be called if the tunes have already been computed.
+
+  Optics::tunes( (*db_), refjp_ );  
 
 }
 
@@ -551,7 +452,7 @@ void  BeamlineContext::periodicCourantSnyder2D()
   if ( courant_snyder2d_ok() ) return;
   
    if ( isTreatedAsRing() ){
-     CSLattFuncs lf = initialLattFunc_ = Optics::periodicCourantSnyder2D( (*db_), refjp_ );  
+     CSLattFuncs lf = initialCSLattFuncs_ = Optics::periodicCourantSnyder2D( (*db_), refjp_ );  
      Optics::propagateCourantSnyder2D( (*db_), *this, refjp_, lf );
    }  
    else {
@@ -569,7 +470,7 @@ void BeamlineContext::propagateCourantSnyder2D()
 {
  if ( !reference_orbit_ok() ) { propagateReferenceOrbit(); }
 
- Optics::propagateCourantSnyder2D( (*db_), *this, refjp_,  initialLattFunc_ );
+ Optics::propagateCourantSnyder2D( (*db_), *this, refjp_,  initialCSLattFuncs_ );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -651,11 +552,11 @@ void BeamlineContext::propagateCourantSnyder4D()
 
   try {
 
-    CSLattFuncs4D lf(initialLattFunc_);
+    CSLattFuncs4D lf(initialCSLattFuncs_);
 
     // if( !reference_orbit_ok() ) { periodicReferenceOrbit(); }
  
-    Optics::propagateCourantSnyder4D( (*db_), *this, refjp_, CSLattFuncs4D(initialLattFunc_) );
+    Optics::propagateCourantSnyder4D( (*db_), *this, refjp_, CSLattFuncs4D(initialCSLattFuncs_) );
 
   }// try
   
@@ -681,7 +582,7 @@ void  BeamlineContext::periodicDispersion()
    }  
    else {
 
-      Vector eta0 = initialLattFunc_.dispersion.eta;  
+      Vector eta0 = initialCSLattFuncs_.dispersion.eta;  
       Optics::propagateDispersion( (*db_), *this, refjp_, eta0 );
 
       // throw GenericException( __FILE__, __LINE__, 
@@ -699,7 +600,7 @@ void  BeamlineContext::propagateDispersion()
 {
      if ( !reference_orbit_ok() )  { propagateReferenceOrbit(); }
 
-     Vector eta0 = initialLattFunc_.dispersion.eta;  
+     Vector eta0 = initialCSLattFuncs_.dispersion.eta;  
      Optics::propagateDispersion( (*db_), *this, refjp_, eta0 );
 }
 
@@ -712,207 +613,6 @@ MatrixD BeamlineContext::equilibriumCovariance()
   return equilibriumCovariance();
 }
 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addHTuneCorrector( ElmPtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( *this, (*db_) );
-  //p_ta_->addCorrector( x, 1.0, 0.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addHTuneCorrector( QuadrupolePtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( bml_, (*db_) );
-    
-  //p_ta_->addCorrector( x, 1.0, 0.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addHTuneCorrector( ThinQuadPtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( bml_, (*db_) );
-    
-  //p_ta_->addCorrector( x, 1.0, 0.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addVTuneCorrector( ElmPtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( bml_, (*db_) );
-    
-  //p_ta_->addCorrector( x, 0.0, 1.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void BeamlineContext::addVTuneCorrector( QuadrupolePtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( bml_ , (*db_));
-    
-  //p_ta_->addCorrector( x, 0.0, 1.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addVTuneCorrector( ThinQuadPtr x ) 
-{
-  //if( !p_ta_ ) p_ta_ = new TuneAdjuster( bml_, (*db_) );
-    
-  //p_ta_->addCorrector( x, 0.0, 1.0 );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::changeTunesTo( double nuh, double nuv )
-{
-  // return changeTunesBy(   nuh - getHorizontalFracTune()
-  //                       , nuv - getVerticalFracTune()  );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
-{
-  // if( !p_ta_ ) return NO_TUNE_ADJUSTER;
- 
-  // Particle  dummyParticle( *particle_);
-  // dummyParticle.setStateToZero();
-  // dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
-  // JetParticle  jp(dummyParticle);
-
-  // p_ta_->changeTunesBy( dnuh, dnuv, jp );
-
-  // deleteLFS();
-  // deleteETS();
-  // deleteCOVS();
-  // deleteLBS();
-  // deleteDSPS();
-  // deleteClosedOrbit();
-
-  // particle_->setStateToZero();
-
-  // return OKAY;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addHChromCorrector( ElmPtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_) );
-    
-  // p_ca_->addCorrector( x, 1.0, 0.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void BeamlineContext::addHChromCorrector( SextupolePtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_) );
-    
-   //p_ca_->addCorrector( x, 1.0, 0.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void BeamlineContext::addHChromCorrector( ThinSextupolePtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_) );
-    
-  // p_ca_->addCorrector( x, 1.0, 0.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void BeamlineContext::addVChromCorrector( ElmPtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_));
-    
-  // p_ca_->addCorrector( x, 0.0, 1.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void BeamlineContext::addVChromCorrector( SextupolePtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_));
-    
-  // p_ca_->addCorrector( x, 0.0, 1.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-void BeamlineContext::addVChromCorrector( ThinSextupolePtr x ) 
-{
-  //if( !p_ca_ ) p_ca_ = new ChromaticityAdjuster( bml_, (*db_));
-    
-  // p_ca_->addCorrector( x, 0.0, 1.0 );
-   
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-int BeamlineContext::changeChromaticityBy( double dh, double dv )
-{
-  //if( ! p_ca_ ) return NO_CHROMATICITY_ADJUSTER;
- 
-
-  //Particle dummyParticle( *particle_);
-  //dummyParticle.setStateToZero();
-  //dummyParticle.SetReferenceMomentum( Momentum() );
-  //JetParticle  jp(dummyParticle);
-
-  //p_ca_->changeChromaticityBy( dh, dv, jp );
-
-  //clear();
-
-  //return OKAY;
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-sqlite::connection& BeamlineContext::dbConnection() const    
-{
-  return (*db_);
-}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1018,5 +718,173 @@ bool BeamlineContext::isTreatedAsLine() const
 
 bool BeamlineContext::isRing() const
 { 
- return Sage::isRing(*this);
+  // This test will return true for pathologically short lines
+  //   like a beamline consisting of a single 1 mm drift.
+
+  double const gtol  = std::abs(0.005); // = 5 mm  
+  double const atol  = std::abs(0.001); // = 1 mrad
+
+  FramePusher fp;
+  accept( fp );
+
+  // Check the point of return
+
+  Vector r = fp.getFrame().getOrigin();
+
+  for( int i = 0; i < 3; ++i) {
+    if( gtol < std::abs(r[i]) ) { return false; }
+  }
+
+  // Check the angle of return
+  //   Tolerance is hardwired to 1 milliradian
+  MatrixD fv = fp.getFrame().getAxes();
+
+  for( int i=0; i < 3; ++i ) {
+    for( int j=0; j < 3; ++j ) {
+      if( i != j ) {
+        if( atol < std::abs(fv[i][j]) ) { return false; }
+      }
+    }
+  }
+  
+  return true;
+
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::arclength ( ElmPtr const& elm ) const
+{
+  return Optics::arclength(*db_, elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_x ( ElmPtr const& elm ) const
+{
+  return Optics::beta_x(*db_,elm);
+}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_y ( ElmPtr const& elm ) const
+{  
+  return Optics::beta_y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_x ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_y ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_1x ( ElmPtr const& elm ) const
+{
+  return Optics::beta_1x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_1y ( ElmPtr const& elm ) const
+{
+  return Optics::beta_1y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_1x ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_1x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_1y ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_1y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_2x ( ElmPtr const& elm ) const
+{
+  return Optics::beta_2x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::beta_2y ( ElmPtr const& elm ) const
+{
+  return Optics::beta_2y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_2x ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_2x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::alpha_2y ( ElmPtr const& elm ) const
+{
+  return Optics::alpha_2y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::eta_x ( ElmPtr const& elm ) const
+{  
+  return Optics::eta_x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::eta_y ( ElmPtr const& elm ) const
+{
+  return Optics::eta_y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::etap_x ( ElmPtr const& elm ) const
+{
+   return Optics::etap_x(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BeamlineContext::etap_y ( ElmPtr const& elm ) const
+{     
+  return Optics::etap_y(*db_,elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -39,7 +39,8 @@
 ******
 ****** - support for reference counted beamlines/elements/BeamlineContext
 ****** - Particles/JetParticles members stored by value whenever possible
-******
+****** Aug 2008           ostiguy@fnal.gov
+****** - refactored version using embedded database. 
 **************************************************************************
 *************************************************************************/
 #ifndef BEAMLINECONTEXT_H
@@ -48,6 +49,7 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
+
 #include <mxyzptlk/Mapping.h>
 #include <beamline/ElmPtr.h>
 #include <beamline/BmlPtr.h>
@@ -95,16 +97,21 @@ class BeamlineContext: public beamline {
 
     BeamlineContext* Clone() const;
 
-    sqlite::connection& dbConnection() const;    
+    char const*  dbname() const;
 
-    void                  setInitial( CSLattFuncs const& );
-    CSLattFuncs const&    getInitial( );
+    void                  setInitialCS( CSLattFuncs const& );
+    CSLattFuncs const&    getInitialCS( );
+
+    void                  setInitialCS4D( CSLattFuncs4D const& );
+    CSLattFuncs4D const&  getInitialCS4D( );
 
     void handleAsRing();
     void handleAsLine();
     bool isTreatedAsRing() const;
     bool isTreatedAsLine() const;
     bool isRing() const; 
+   
+    void processElements( boost::function<void(ElmPtr)> action );
 
     void writeTree();
 
@@ -124,6 +131,25 @@ class BeamlineContext: public beamline {
     void  propagateEdwardsTeng( );
     void  propagateCovariance( );
 
+    double  arclength ( ElmPtr const& elm ) const;
+    double     beta_x ( ElmPtr const& elm ) const;
+    double     beta_y ( ElmPtr const& elm ) const;
+    double    alpha_x ( ElmPtr const& elm ) const;
+    double    alpha_y ( ElmPtr const& elm ) const;
+    double    beta_1x ( ElmPtr const& elm ) const;
+    double    beta_1y ( ElmPtr const& elm ) const;
+    double   alpha_1x ( ElmPtr const& elm ) const;
+    double   alpha_1y ( ElmPtr const& elm ) const;
+    double    beta_2x ( ElmPtr const& elm ) const;
+    double    beta_2y ( ElmPtr const& elm ) const;
+    double   alpha_2x ( ElmPtr const& elm ) const;
+    double   alpha_2y ( ElmPtr const& elm ) const;
+    double      eta_x ( ElmPtr const& elm ) const;
+    double      eta_y ( ElmPtr const& elm ) const;
+    double     etap_x ( ElmPtr const& elm ) const;
+    double     etap_y ( ElmPtr const& elm ) const;
+
+
     double  getHTune();
     double  getVTune();
 
@@ -141,55 +167,9 @@ class BeamlineContext: public beamline {
     bool            hasReferenceParticle() const;
 
 
-   // Beamline methods
+    Vector   chromaticity() const;
 
-
-    double sumLengths() const;
-
-    int setElmLength   ( ElmPtr, double );
-    int setElmStrength ( ElmPtr, double );
-    int setElmAlignment( ElmPtr, alignmentData const& );
-
-
-    int setElmAlignment( alignmentData const& u, boost::function<bool(bmlnElmnt const&)> criterion);
-
-    int replaceElement( ElmPtr oldelm, ElmPtr newelm); // 0 everything went as planned
-                                                       // 1 first argument was not found
-                                                       // 2 at least one argument was null
-
-    int processElements( boost::function<bool(bmlnElmnt &)> action ); // Returns number of elements processed.
-
-    alignmentData getElmAlignmentData( ElmPtr ) const;
-
-    void addHTuneCorrector( QuadrupolePtr );
-    void addHTuneCorrector( ThinQuadPtr );
-    void addHTuneCorrector( ElmPtr );          // Used by  GUI. MUST go away ! 
-
-    void addVTuneCorrector( QuadrupolePtr );
-    void addVTuneCorrector( ThinQuadPtr );
-    void addVTuneCorrector( ElmPtr );          // Used by  GUI. MUST go away ! 
- 
-    int changeTunesBy( double, double );
-    int changeTunesTo( double, double );
-
-    void addHChromCorrector( SextupolePtr );
-    void addHChromCorrector( ThinSextupolePtr );
-    void addHChromCorrector( ElmPtr );         // Used by  GUI. MUST go away ! 
-
-    void addVChromCorrector( SextupolePtr );
-    void addVChromCorrector( ThinSextupolePtr );
-    void addVChromCorrector( ElmPtr );         // Used by  GUI. MUST go away ! 
-
-    int changeChromaticityBy( double, double );
-
-    // !!! Eventually, these three should become private !!!
-
-    // Status flags
-    static const int OKAY;
-    static const int NO_TUNE_ADJUSTER;
-    static const int NO_CHROMATICITY_ADJUSTER;
-
-    void                 clear();
+    void     clear();
 
   private:
     
@@ -205,13 +185,8 @@ class BeamlineContext: public beamline {
 
 
 
-    ChromaticityAdjuster* p_ca_;
-    TuneAdjuster*         p_ta_;
-
-    // Initial conditions
-
-    CSLattFuncs           initialLattFunc_;
-    bool                  initial_lattfunc_set_;
+    CSLattFuncs           initialCSLattFuncs_;
+    CSLattFuncs4D         initialCS4DLattFuncs_;
 
     double                eps1_; // invariant emittances in units of pi mm-mr.
     double                eps2_;
@@ -243,7 +218,6 @@ class BeamlineContext: public beamline {
 
             std::string                          dbname_;
     mutable boost::shared_ptr<sqlite::connection>    db_;
-
 
     BeamlineContext( BeamlineContext const& );
 
