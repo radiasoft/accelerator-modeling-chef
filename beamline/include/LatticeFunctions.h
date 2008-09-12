@@ -55,6 +55,9 @@ struct LattRing  {
 
 struct reference_orbit_t {
 
+   reference_orbit_t(): x(0.0), xp(0.0), y(0.0), yp(0.0) {} 
+   reference_orbit_t(reference_orbit_t  const& o): x(o.x), xp(o.xp), y(o.y), yp(o.yp) {} 
+
    double x;
    double xp;
    double y;
@@ -83,25 +86,36 @@ struct dispersion_t {
 
 struct CSLattFuncs {
 
+  CSLattFuncs();  
+  CSLattFuncs( CSLattFuncs const& );  
+
   double arcLength;
 
   reference_orbit_t reference_orbit;
 
   dispersion_t   dispersion;
 
-  struct beta_t {
+  struct beta_t {  
+    beta_t():                 hor(0.0),   ver(0.0)   {}
+    beta_t( beta_t const& o): hor(o.hor), ver(o.ver) {}
     double hor;
     double ver;
   } beta;
   struct alpha_t {
+    alpha_t():                  hor(0.0),   ver(0.0)   {}
+    alpha_t( alpha_t const& o): hor(o.hor), ver(o.ver) {}
     double hor;
     double ver;
   } alpha;
   struct psi_t {
+    psi_t():                hor(0.0),   ver(0.0)   {}
+    psi_t( psi_t const& o): hor(o.hor), ver(o.ver) {}
     double hor;
     double ver;
   } psi;
 
+  bool defined() const;
+  
 }; // Courant-Snyder
 
 
@@ -119,7 +133,7 @@ struct CSLattFuncs {
 
 struct CSLattFuncs4D{
 
-  CSLattFuncs4D() {}
+  CSLattFuncs4D();
 
   explicit   CSLattFuncs4D( CSLattFuncs const& o);
 
@@ -148,6 +162,8 @@ struct CSLattFuncs4D{
 
   mode_t mode1;
   mode_t mode2;
+
+  bool defined() const;
 
 }; 
 
