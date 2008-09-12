@@ -222,6 +222,9 @@ void ConstBmlVisitor::visit( thinrfcavity const& x )
 void ConstBmlVisitor::visit( rfcavity const& x ) 
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
+void ConstBmlVisitor::visit( LinacCavity const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
+
 void ConstBmlVisitor::visit( Solenoid const& x ) 
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 

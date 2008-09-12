@@ -123,7 +123,7 @@ void FramePusher::visit( bmlnElmnt const& x )
 void FramePusher::visit( rbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().tilt;
+  double rollAngle = x.Alignment().roll;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -156,7 +156,7 @@ void FramePusher::visit( rbend const& x )
 void FramePusher::visit( CF_rbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().tilt;
+  double rollAngle = x.Alignment().roll;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -189,7 +189,7 @@ void FramePusher::visit( CF_rbend const& x )
 void FramePusher::visit( sbend const& x    )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().tilt;
+  double rollAngle = x.Alignment().roll;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -223,7 +223,7 @@ void FramePusher::visit( sbend const& x    )
 void FramePusher::visit( CF_sbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().tilt;
+  double rollAngle = x.Alignment().roll;
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );

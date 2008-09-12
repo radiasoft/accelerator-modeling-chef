@@ -482,6 +482,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 ostream& sbend::writeTo(ostream& os)
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC << angle_ << " "
      << OSTREAM_DOUBLE_PREC << usFaceAngle_ << " "
      << OSTREAM_DOUBLE_PREC << dsFaceAngle_ << endl;
@@ -489,6 +490,7 @@ ostream& sbend::writeTo(ostream& os)
      << OSTREAM_DOUBLE_PREC << dsAngle_ << endl;
 
   os << "\n";
+#endif
   return os;
 }
 

@@ -372,9 +372,12 @@ kick&  kick::operator=( kick const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ostream& kick::writeTo(ostream& os) {
+ostream& kick::writeTo(ostream& os) 
+{
+#if 0
 	os << OSTREAM_DOUBLE_PREC << Strength() << "  " << vh_ratio_*Strength();
 	os << "\n";
+#endif
 	return os;
 }
 

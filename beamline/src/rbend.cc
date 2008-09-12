@@ -596,12 +596,14 @@ bool rbend::hasStandardFaces() const
 
 ostream& rbend::writeTo(ostream& os)
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC << usFaceAngle_ << " "
      << OSTREAM_DOUBLE_PREC << dsFaceAngle_ << endl;
   os << OSTREAM_DOUBLE_PREC << usAngle_     << " "
      << OSTREAM_DOUBLE_PREC << dsAngle_     << endl;
 
   os << "\n";
+#endif
   return os;
 }
 

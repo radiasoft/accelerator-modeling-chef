@@ -102,30 +102,11 @@ combinedFunction::combinedFunction( std::string const& n ) : bmlnElmnt(n)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-combinedFunction::combinedFunction( std::string const& n, beamline const& b ) 
-: bmlnElmnt(n) 
-{
-  bml_ = BmlPtr( b.Clone() );
-  length_ = b.Length();
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-combinedFunction::combinedFunction( beamline const& b ) 
-: bmlnElmnt(b.Name().c_str())
-{
-  bml_ =  BmlPtr( b.Clone() );
-  length_ = b.Length();
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 combinedFunction::combinedFunction( combinedFunction const& x ) 
 : bmlnElmnt( x )
 {
-  bml_ =  BmlPtr(  x.bml_->Clone() );
+  // FIXME ! the state of internal multipoles needs to be preserved
+  //         as private element data 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

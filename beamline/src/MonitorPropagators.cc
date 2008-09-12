@@ -159,8 +159,6 @@ void propagate( Element_t const& elm, ParticleBunch& b )
 template<typename Element_t>
 void propagate( Element_t const& elm, JetParticleBunch& b ) 
 { 
-  // note: specialized versions for H and V monitors would be a tad more efficient
-
   double xpos = 0.0;
   double ypos = 0.0;
 

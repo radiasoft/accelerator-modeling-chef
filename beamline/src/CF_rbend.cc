@@ -548,9 +548,10 @@ void CF_rbend::peekAt( double& s, Particle const& prt )
 
 ostream& CF_rbend::writeTo( ostream& os )
 {
+#if 0
   int n = bml_->countHowMany();
 
-  if( 0 != n%12 ) {
+  if( n%12 ) {
     throw( GenericException( __FILE__, __LINE__, 
            "ostream& CF_rbend::writeTo( ostream& os )", 
            "Unexpected number of blocks." ) );
@@ -565,7 +566,9 @@ ostream& CF_rbend::writeTo( ostream& os )
   os << OSTREAM_DOUBLE_PREC << getSextupole() << " ";
   os << OSTREAM_DOUBLE_PREC << getOctupole() << " ";
   os << "\n";
+#endif
   return os;
+
 }
 
 

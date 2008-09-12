@@ -156,10 +156,12 @@ LinacCavity& LinacCavity::operator=(LinacCavity const& rhs)
 
 ostream& LinacCavity::writeTo(ostream& os) 
 {
-  os << OSTREAM_DOUBLE_PREC 
+#if 0  
+os << OSTREAM_DOUBLE_PREC 
      << " " << getRadialFrequency()/ MATH_TWOPI
      << " " << getPhi()
      << '\n';
+#endif
   return os;
 }
 

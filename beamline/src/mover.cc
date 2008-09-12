@@ -71,7 +71,7 @@ void mover::append( ElmPtr q ) {
 
    theList_.push_back(q);
 
-   if ( align_.xOffset == 0 && align_.yOffset == 0 && align_.tilt == 0 ) {
+   if ( align_.xOffset == 0 && align_.yOffset == 0 && align_.roll == 0 ) {
      align_ = q->Alignment();
    }
    

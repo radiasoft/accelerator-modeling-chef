@@ -30,6 +30,55 @@ dispersion_t& dispersion_t::operator=( dispersion_t const& rhs )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+CSLattFuncs::CSLattFuncs()
+  : arcLength(0.0), reference_orbit(), dispersion(), beta(), alpha(),  psi()  
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CSLattFuncs::CSLattFuncs( CSLattFuncs const& o)
+  : arcLength(o.arcLength), reference_orbit(o.reference_orbit), 
+    dispersion(o.dispersion), beta(o.beta), alpha(o.alpha),  psi(o.psi)  
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool CSLattFuncs::defined() const 
+{
+  return ( ( beta.hor  ==  alpha.hor == 0.0 ) ||
+           ( beta.ver  ==  alpha.ver == 0.0 ) ); 
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CSLattFuncs4D::CSLattFuncs4D()
+  : arcLength(0.0), reference_orbit(), dispersion() 
+{
+  mode1.beta.hor  = 0.0;
+  mode1.alpha.hor = 0.0;
+
+  mode1.beta.ver  = 0.0; 
+  mode1.alpha.ver = 0.0;
+
+  mode1.psi       = 0.0; 
+
+  mode2.beta.hor  = 0.0;
+  mode2.alpha.hor = 0.0;
+
+  mode2.beta.ver  = 0.0; 
+  mode2.alpha.ver = 0.0;
+
+  mode2.psi       = 0.0; 
+  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 //
 //  beta_1x = mode1.beta.hor
 //  beta_1y = mode1.beta.ver
@@ -63,6 +112,15 @@ CSLattFuncs4D::CSLattFuncs4D( CSLattFuncs const& o):
 
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool CSLattFuncs4D::defined() const
+{
+  return ( ( mode1.beta.hor  ==  mode1.alpha.hor ==  mode1.beta.ver == mode1.alpha.ver == 0.0 ) ||
+           ( mode2.beta.hor  ==  mode2.alpha.hor ==  mode2.beta.ver == mode2.alpha.ver == 0.0 ) ); 
+
+}
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

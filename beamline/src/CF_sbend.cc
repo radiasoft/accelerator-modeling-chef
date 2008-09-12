@@ -457,6 +457,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
 ostream& CF_sbend::writeTo( ostream& os )
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC << angle_       << " ";
   os << OSTREAM_DOUBLE_PREC << usFaceAngle_ << " "
      << OSTREAM_DOUBLE_PREC << dsFaceAngle_ << endl;
@@ -466,6 +467,7 @@ ostream& CF_sbend::writeTo( ostream& os )
   os << OSTREAM_DOUBLE_PREC << getSextupole()  << " ";
   os << OSTREAM_DOUBLE_PREC << getOctupole()   << " ";
   os << "\n";
+#endif
   return os;
 }
 

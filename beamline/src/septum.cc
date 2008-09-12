@@ -190,7 +190,9 @@ istream& thinSeptum::readFrom(istream& is)
 
 ostream& thinSeptum::writeTo(ostream& os) 
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC << strengthPos_ << " " << strengthNeg_ << " " << xWire_ << "\n";
+#endif
   return os;
 }
 

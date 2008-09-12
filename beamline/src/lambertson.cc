@@ -181,11 +181,13 @@ std::vector<double> const& thinLamb::getRefState( ) const
 
 ostream& thinLamb::writeTo(ostream& os) 
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC << xSeptum_;
   for ( int i = 0; i < 6; i++) {
     os  << " " << RefState_[i];
   }
   os << "\n";
+#endif
   return os;
 }
 

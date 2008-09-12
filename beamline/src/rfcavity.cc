@@ -168,6 +168,7 @@ void rfcavity::Split( double const&, ElmPtr& a, ElmPtr& b ) const
 
 ostream& rfcavity::writeTo(ostream& os) 
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC 
      << (w_rf_/MATH_TWOPI)
      << " " << phi_s_
@@ -175,6 +176,7 @@ ostream& rfcavity::writeTo(ostream& os)
      << " " << R_
      << " " << h_
      << '\n';
+#endif
   return os;
 }
 
@@ -495,6 +497,7 @@ thinrfcavity& thinrfcavity::operator=( thinrfcavity const& rhs)
 
 ostream& thinrfcavity::writeTo(ostream& os) 
 {
+#if 0
   os << OSTREAM_DOUBLE_PREC
      << w_rf_/MATH_TWOPI
      << " " <<  phi_s_
@@ -502,6 +505,7 @@ ostream& thinrfcavity::writeTo(ostream& os)
      << " " << R_
      << " " << h_
      << '\n';
+#endif
   return os;
 }
 

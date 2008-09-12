@@ -230,7 +230,7 @@ Vector BBLens::Beta() const
          << endl;
     firstCall = 0;
   }
-  return Vector( 3, answer );
+  return Vector( &answer[0], &answer[0]+3  );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
