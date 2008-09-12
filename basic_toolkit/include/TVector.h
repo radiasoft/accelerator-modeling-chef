@@ -118,9 +118,9 @@ public:
   const_reverse_iterator  rend()   const;
 
 
-  TVector( int  dimension= 3,  T const* components=0, OutputFormat* ofmt=0 );
+  TVector();
 
-  explicit TVector( int dimension,  T value );
+  explicit TVector( int dimension,  T value=T() );
 
   template <typename Iterator_t>
   explicit TVector( Iterator_t first,  Iterator_t last);

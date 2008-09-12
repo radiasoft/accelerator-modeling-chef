@@ -85,23 +85,10 @@ void TVector<T>::setDefaultFormat( OutputFormat const& x )
 //      Constructors and the destructor ...
 //
 
-template<typename T>
-TVector<T>::TVector( int n, T const* x, OutputFormat* fmtPtr )
-: theVector_(n,T()), ofPtr_(fmtPtr)
-{
-
-  if (!x) return; 
-  std::copy(x, x+n, theVector_.begin());   
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template<typename T> 
-TVector<T>::TVector( TVector const& x )
- : theVector_( x.theVector_), ofPtr_( x.ofPtr_ ) 
-{ }
+TVector<T>::TVector()
+ : theVector_(), ofPtr_(0) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -110,6 +97,14 @@ template<typename T>
 TVector<T>::TVector( int dimension, T value )
  : theVector_( dimension, value ), ofPtr_(0) 
 {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T> 
+TVector<T>::TVector( TVector const& x )
+ : theVector_( x.theVector_), ofPtr_( x.ofPtr_ ) 
+{ }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -124,7 +119,8 @@ TVector<T>::TVector( Iterator_t first,  Iterator_t last)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TVector<T>::TVector( TMatrix<T> const& x ): ofPtr_(0)
+TVector<T>::TVector( TMatrix<T> const& x )
+: ofPtr_(0)
 {
 
 
