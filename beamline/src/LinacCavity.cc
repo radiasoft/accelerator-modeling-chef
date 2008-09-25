@@ -95,7 +95,6 @@
 #include <beamline/WakeKick.h>
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/BmlVisitor.h>
-#include <beamline/RefRegVisitor.h>
 #include <beamline/marker.h>
 
 using namespace std;
@@ -209,6 +208,13 @@ bool    LinacCavity::isPassive() const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool    LinacCavity::isDriftSpace() const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void LinacCavity::accept( BmlVisitor& v ) 
 { 
@@ -310,18 +316,32 @@ bool LinacCavity::wakeOn() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const
+std::pair<ElmPtr,ElmPtr> LinacCavity::split( double const& pc ) const
 {
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void " << Type() << "::Split( double const&, ElmPtr&, ElmPtr& ) const"
+           << "\n*** WARNING ****: void " << Type() << "::split( double const& ) const"
               "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
               "\n*** WARNING ****: " 
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
   throw( GenericException( __FILE__, __LINE__, 
-         "void LinacCavity::Split( double const&, ElmPtr&, ElmPtr& ) const", 
+         " LinacCavity::split( double const& ) const", 
          uic.str().c_str() ) );
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
+{               
+  if ( !(bml_) ) {
+    bmlnElmnt::propagateReference( particle, initialBRho, scaling);
+    return;
+  }
+
+  bml_->propagateReference(particle, initialBRho, scaling );
+
+  return;
+}
