@@ -46,12 +46,12 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 
 template <typename T>
@@ -205,7 +205,7 @@ template double standardPart( Jet    const& );
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::setup( bmlnElmnt& arg) 
+void rbend::Propagator::setup( bmlnElmnt& arg                                ) 
 {
   
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
@@ -218,18 +218,19 @@ void rbend::Propagator::setup( bmlnElmnt& arg)
   double& usAngle_     = rbend::rbend_core_access::get_usAngle(elm); 
   double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(elm); 
 
-  
-
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
+  if ( elm.hasUpstreamEdge() ) {
+       EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
+       bml->append( uedge );
+  }
 
   BendPtr bend( new Bend( "RBEND_PRIVATE",  elm.Length(), elm.Strength(), elm.getBendAngle(),  usAngle_,  dsAngle_, 
                                                           usFaceAngle_,  dsFaceAngle_ , Bend::type_rbend)  );
-
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ));
-
-  bml->append( uedge );
   bml->append( bend  );
-  bml->append( dedge );
+
+  if (elm.hasDownstreamEdge() ) {
+     EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ));
+     bml->append( dedge );
+  }
 
 }
 

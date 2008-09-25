@@ -52,12 +52,12 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 template<typename Particle_t>
 void propagate( CF_rbend const& elm, Particle_t&  p)
@@ -121,14 +121,10 @@ void CF_rbend::Propagator::setup( bmlnElmnt& arg )
   rbend   separator( "",  frontLength, field,  0.0,    0.0,                      0.0                   );
   rbend        body( "",  sepLength,   field,  0.0,    0.0,                      0.0                   );
 
-     usbend.nullEntryEdge();
-     usbend.nullExitEdge();
-  separator.nullEntryEdge();
-  separator.nullExitEdge();
-     dsbend.nullEntryEdge();
-     dsbend.nullExitEdge();
-       body.nullEntryEdge();
-       body.nullExitEdge();
+     usbend.enableEdges(false, false);
+  separator.enableEdges(false, false);
+     dsbend.enableEdges(false, false);
+       body.enableEdges(false, false);
 
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
@@ -139,7 +135,7 @@ void CF_rbend::Propagator::setup( bmlnElmnt& arg )
   for( int i=0; i<n_; ++i) {
 
     if ( i == 0 ) { 
-      bml_->append( usedge );
+      if( elm.hasUpstreamEdge() ) { bml_->append( usedge ); }
       bml_->append( usbend );
     } 
     else {
@@ -160,7 +156,7 @@ void CF_rbend::Propagator::setup( bmlnElmnt& arg )
   
     if ( i == n_-1 ) { 
       bml_->append( dsbend );
-      bml_->append( dsedge );
+      if( elm.hasDownstreamEdge()) { bml_->append( dsedge ); }
     } 
     else {
       bml_->append( separator );

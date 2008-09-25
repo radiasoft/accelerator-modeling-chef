@@ -48,12 +48,12 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 template <typename T>
 inline double standardPart( T const& );
@@ -94,8 +94,6 @@ template < typename Element_t, typename Particle_t>
 void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
 {
 
-  static const int BMLN_dynDim = 6;
-
   typedef typename PropagatorTraits<Particle_t>::State_t     State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t Component_t;
 
@@ -114,6 +112,8 @@ void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double c
     state[i_cdt] +=  -length /(beta*gamma*gamma) * state[i_ndp];
     return 0;
   }  
+
+  static const int BMLN_dynDim = 6;
 
   double  matrix [ BMLN_dynDim ][BMLN_dynDim];
   
@@ -209,7 +209,7 @@ template double standardPart( Jet    const& value);
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::setup( bmlnElmnt& arg)
+void sbend::Propagator::setup( bmlnElmnt& arg )
 { 
   
   sbend& elm = static_cast<sbend&>(arg);
@@ -225,16 +225,18 @@ void sbend::Propagator::setup( bmlnElmnt& arg)
 
   double str = arg.Strength();
 
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * str ) );
+  if (elm.hasUpstreamEdge() ) {
+    EdgePtr uedge( new Edge("",  tan(usAngle_) * str ) );
+    bml->append( uedge );
+  }
 
   BendPtr  bend( new Bend( "", elm.Length(),  str, angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
-
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* str ) );
-
-
-  bml->append( uedge );
   bml->append( bend  );
-  bml->append( dedge );
+
+  if ( elm.hasDownstreamEdge() ) {
+    EdgePtr dedge( new Edge( "", -tan(dsAngle_)* str ) );
+    bml->append( dedge );
+  }
 
 }
 
