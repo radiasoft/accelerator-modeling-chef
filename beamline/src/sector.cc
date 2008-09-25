@@ -227,18 +227,18 @@ sector& sector::operator=( sector const& rhs)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sector::Split( double const&, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> sector::split( double const& pc) const
 {
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void " << Type() << "::Split( double const&, ElmPtr&, ElmPtr& ) const"
+           << "\n*** WARNING ****: void " << Type() << "::split( double const& ) const"
               "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
               "\n*** WARNING ****: " 
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
   throw( GenericException( __FILE__, __LINE__, 
-         "void sector::Split( double const&, ElmPtr&, ElmPtr& ) const", 
+         "void sector::split( double const& ) const", 
          uic.str().c_str() ) );
 }
 
@@ -345,6 +345,13 @@ bool  sector::isThin() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool  sector::isPassive() const 
+{
+  return false;  
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool  sector::isDriftSpace() const 
 {
   return false;  
 }

@@ -140,41 +140,6 @@ const char* sextupole::Type() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
-{
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
-           uic.str().c_str() ) );
-  }
-
-  // We assume "strength" means field, not field*length_.
-  SextupolePtr s_a( (Clone()) );
-  SextupolePtr s_b( (Clone()) );
-
-  s_a->setLength(       pc  *length_ );
-  s_b->setLength(  (1.0-pc )*length_ );
-
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
-
-  // Rename
-  s_a->rename( ident_ + string("_1") );
-  s_b->rename( ident_ + string("_2") );
-
-  a = s_a;
-  b = s_b;
-
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 bool sextupole::isMagnet() const
 {
   return true;
@@ -192,6 +157,14 @@ bool sextupole::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool sextupole::isPassive() const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool sextupole::isDriftSpace() const
 {
   return false;
 }
@@ -301,6 +274,14 @@ bool thinSextupole::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool thinSextupole::isPassive() const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool thinSextupole::isDriftSpace() const
 {
   return false;
 }
