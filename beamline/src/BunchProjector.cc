@@ -28,9 +28,11 @@
 **************************************************************************/
 
 #include <basic_toolkit/iosetup.h>
-#include <beamline/BunchProjector.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
+#include <beamline/BunchProjector.h>
 
 #include <algorithm>
 #include <boost/shared_ptr.hpp>

@@ -39,6 +39,7 @@
 #include <basic_toolkit/PhysicsConstants.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 #include <beamline/JetParticle.h>
 #include <beamline/BunchProjector.h>
 #include <beamline/WakeKickPropagator.h>
