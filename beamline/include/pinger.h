@@ -75,10 +75,11 @@ public:
 
   Pinger& operator=( Pinger const& rhs); 
 
-  const char* Type()      const;
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
+  const char* Type()         const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -118,9 +119,6 @@ class DLLEXPORT HPinger : public Pinger {
   HPinger& operator=( HPinger const& rhs); 
 
   const char* Type()      const;
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -144,7 +142,6 @@ class DLLEXPORT VPinger : public Pinger {
   VPinger& operator=( VPinger const& rhs); 
 
   const char* Type() const;
-  bool        isMagnet() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
