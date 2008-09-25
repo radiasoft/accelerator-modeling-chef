@@ -35,6 +35,11 @@
 template <typename T>
 class TVector;
 
+namespace std {
+  template <typename T>
+  class complex;
+}
+ 
 typedef class TVector<double>                  Vector;
 typedef class TVector<std::complex<double> >   VectorC;
 typedef class TVector<int>                     VectorI;
