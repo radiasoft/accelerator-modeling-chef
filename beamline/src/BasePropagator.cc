@@ -30,6 +30,7 @@
 *************************************************************************/
 
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 #include <beamline/BasePropagator.h>
 #include <beamline/bmlnElmnt.h>
 #include <iostream>
@@ -96,6 +97,55 @@ void   BasePropagator::setAttribute( bmlnElmnt& elm, std::string const& attribut
   // std::cout << "element   " << elm.Type() << "  " << elm.Name() << std::endl;   
   // std::cout << "attribute " << attribute << " has been modified." << std::endl;   
 } 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool BasePropagator::hasAperture() const
+{
+  return false;
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool BasePropagator::hasAlignment() const
+{
+  return false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BasePropagator::setAlignment( Vector const& translation, Vector const& rotation)
+{
+  /** do nothing **/ 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BasePropagator::setAperture( bmlnElmnt::aperture_t const, double const& hor, double const& ver )
+{
+  /** do nothing **/ 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+boost::tuple<bmlnElmnt::aperture_t, double, double>  BasePropagator::aperture()   const
+{
+  /** do nothing **/ 
+  return boost::tuple<bmlnElmnt::aperture_t, double, double>(bmlnElmnt::infinite, 0.0, 0.0);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
+boost::tuple<Vector,Vector>  BasePropagator::alignment()   const
+{
+  /** do nothing **/ 
+  return boost::tuple<Vector,Vector>(Vector(),Vector());
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
