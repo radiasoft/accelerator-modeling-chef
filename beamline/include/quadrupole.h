@@ -95,11 +95,10 @@ public:
 
   char const* Type()     const;
 
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
-
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
  private:
 
@@ -135,9 +134,10 @@ public:
 
   char const* Type()       const;
 
-  bool        isMagnet()   const;
-  bool        isThin()     const;
-  bool        isPassive()  const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
 
 };
