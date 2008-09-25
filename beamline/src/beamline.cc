@@ -173,6 +173,30 @@ beamline& beamline::operator=( beamline const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void beamline::registerReference( Particle const& p, bool scaling )
+{
+  Particle particle(p);
+  propagateReference( particle, p.ReferenceBRho(), scaling );  
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void beamline::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
+{
+  double cdt = 0.0;
+     
+  for ( iterator it=begin(); it != end(); ++it) {
+      (*it)->propagateReference( particle,initialBRho, scaling );
+       cdt +=(*it)->getReferenceTime();          
+  }
+
+  setReferenceTime( cdt );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char*  beamline::Type() const 
 { 
   return "beamline"; 
@@ -198,6 +222,14 @@ bool    beamline::isThin()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool    beamline::isPassive()  const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool    beamline::isDriftSpace()  const
 {
   return false;
 }
@@ -383,9 +415,6 @@ void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,dou
 
  ElmPtr  p_be   = ( bml_iter == end() ) ? null : *bml_iter;
 
- ElmPtr p_be_a;
- ElmPtr p_be_b;
-
  std::pair<ElmPtr,double>  p_ile = inList.front();  // top element; not removed
 
  bool   firstWarning = true;
@@ -461,7 +490,11 @@ void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,dou
   }
 
   else if ( ( p_ile.second > s ) && ( p_ile.second < s + localLength ) )  {
-    p_be->Split( ( p_ile.second - s )/localLength, p_be_a,  p_be_b );
+    
+    std::pair<ElmPtr,ElmPtr> selms = p_be->split( ( p_ile.second - s )/localLength );
+
+    ElmPtr p_be_a =  selms.first;
+    ElmPtr p_be_b =  selms.second;
 
     putAbove( bml_iter, p_be_a      );
     putAbove( bml_iter, p_ile.first );
@@ -568,10 +601,10 @@ beamline* beamline::reverse() const {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::Split( double const&, ElmPtr&, ElmPtr& ) const
+std::pair<ElmPtr,ElmPtr> beamline::split( double const& ) const
 {
   throw(  GenericException( __FILE__, __LINE__, 
-         "void beamline::Split( double const&, bmlnElmnt&, bmlnElmnt& )", 
+         "beamline::split( double const& )", 
          "This method should not be invoked by a beamline object." ) );
 }
 
@@ -1208,8 +1241,9 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
   } else if(    typeid( *thePtr )  == typeid(Slot) || typeid( *thePtr )  == typeid(beamline) ) {
       midFrame = Frame::tween( frameOne, frameTwo, pct );
   } else {
-      ElmPtr usHalfPtr, dsHalfPtr;
-      thePtr->Split( pct, usHalfPtr, dsHalfPtr );
+      std::pair<ElmPtr,ElmPtr> selms = thePtr->split(pct );
+      ElmPtr usHalfPtr = selms.first;
+      ElmPtr dsHalfPtr = selms.second;
       FramePusher fp2( frameOne );
       usHalfPtr->accept(fp2);
       midFrame = fp2.getFrame();
@@ -1315,69 +1349,6 @@ ostream& beamline::writeTo(ostream& os) {
 }
 
 
-// **************************************************
-//   Frame functions
-// **************************************************
-
-
-void beamline::enterLocalFrame( Particle& p ) const
-{
-
-  // Check for bends
-
-
-  for (beamline::const_iterator it = begin() ; it != end(); ++it) {
-
-    if( (typeid( *(*it) ) == typeid(sbend) ) ||
-        (typeid( *(*it) ) == typeid(rbend) ) ) {    
-
-      throw(  GenericException( __FILE__, __LINE__, 
-             "void beamline::enterLocalFrame( Particle& p ) const", 
-             "Not implemented for beamlines containing bends." ) );
-    }
-  }
-  
-  bmlnElmnt::enterLocalFrame( p );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::enterLocalFrame( JetParticle& p ) const
-{
-  // Check for bends
-
-  for (beamline::const_iterator it = begin() ; it != end(); ++it) {
-
-    if( (typeid( *(*it) ) == typeid(sbend) )||
-        (typeid( *(*it) ) == typeid(rbend) )  ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void beamline::enterLocalFrame( JetParticle& p ) const", 
-             "Not implemented for beamlines containing bends." ) );
-    }
-  }
-  
-  bmlnElmnt::enterLocalFrame( p );
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::leaveLocalFrame( Particle& p ) const
-{
-  bmlnElmnt::leaveLocalFrame( p );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::leaveLocalFrame( JetParticle& p ) const
-{
-  bmlnElmnt::leaveLocalFrame( p );
-}
-
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -1429,9 +1400,12 @@ double beamline::getReferenceTime()  const
 
 void beamline::setReferenceTime( double const& ct)
 { 
-  (*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
-  (*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
-  (*pcerr) << "*** WARNING ****: Continuing, nonetheless... " << std::endl;
+  bmlnElmnt::setReferenceTime(ct);
+ 
+  //(*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
+  //(*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
+  //(*pcerr) << "*** WARNING ****: Continuing, nonetheless... " << std::endl;
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1740,10 +1714,3 @@ beamline::reverse_deep_iterator beamline::rdeep_end()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void beamline::setReferenceTime( Particle& particle) 
-{
-  std::cerr << " beamline::setReferenceTime is not implemented ! " 
-            << std::endl;
-  exit(1);
-}
