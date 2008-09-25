@@ -187,26 +187,6 @@ CF_sbend& CF_sbend::operator=(CF_sbend const& rhs)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::peekAt( double& s, Particle const& prt ) 
-{
- (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
- (*pcout) << setw(12) << s           
-                  << " : " 
-      << setw(10) << (int) this  
-      << setw(15) << ident_       
-      << setw(15) << Type()      
-      << setw(12) << length_      
-      << setw(12) << Strength()    
-      << setw(12) << getQuadrupole()/length_
-      << setw(12) << 2.0*getSextupole()/length_
-      << setw(12) << 6.0*getOctupole()/length_
-      << endl;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 double CF_sbend::setEntryAngle( Particle const& p )
 {
   return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
@@ -346,11 +326,20 @@ double CF_sbend::getDipoleField() const
   return Strength();
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_sbend::propagateReference( Particle& p, double initialBRho, bool scaling )
+{
+  setEntryAngle(p);
+  bmlnElmnt::propagateReference(p,initialBRho, scaling);
+  setExitAngle(p);
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
 {
   // Preliminary tests ...
   // -----------------------------
@@ -358,7 +347,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void CF_sbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           " CF_sbend::split( double const& pc )", 
            uic.str().c_str() ) );
   }
 
@@ -370,7 +359,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
               "\nwith an Alignment struct.  That rolls are allowed in such"
               "\ncases is only a matter of courtesy. This is NOT encouraged!";
       throw( GenericException( __FILE__, __LINE__, 
-             "void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             "CF_sbend::split( double const& pc ) const", 
              uic.str().c_str() ) );
     }
     if( 1.0e-10 < std::abs(pc - 0.5 ) ) {
@@ -380,7 +369,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
               "\nThat rolls are allowed in such cases is only a matter"
               "\nof courtesy. This is NOT encouraged!";
       throw( GenericException( __FILE__, __LINE__, 
-             "void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             " CF_sbend::split( double const& pc ) const", 
              uic.str().c_str() ) );
     }
   }
@@ -391,9 +380,8 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void sbend::Split( double pc, bmlnElmnt** a, bmlnElmnt** b )"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
+         << "\n*** WARNING *** CF_sbend::split( double pc )"
+            "\n*** WARNING *** A new reference trajectory must be registered."
             "\n*** WARNING *** "
          << endl;
   }
@@ -401,24 +389,25 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "angle_" are private data members.
   // -----------------------------
-  CF_sbend* p_a = 0;
-  CF_sbend* p_b = 0;
 
-  a = CFSbendPtr( p_a = new CF_sbend(   ""
-                                      , pc*length_
-                                      , Strength()
-                                      , pc*angle_
-                                      , usFaceAngle_
-                                      , 0.0            ));
+  CFSbendPtr p_a(   new CF_sbend(   ""
+                                  , pc*length_
+                                  , Strength()
+                                  , pc*angle_
+                                  , usFaceAngle_
+                                  , 0.0            ));
+
   p_a->setEntryAngle( getEntryAngle() );
-
+  p_a->bml_->lastElement()->setStrength(0.0);
   
-  b = CFSbendPtr( p_b = new CF_sbend(   ""
-                                      , (1.0 - pc)*length_
-                                      , Strength()
-                                      , (1.0 - pc)*angle_
-                                      , 0.0
-                                      , dsFaceAngle_       ));
+  CFSbendPtr p_b(    new CF_sbend(   ""
+                                  , (1.0 - pc)*length_
+                                  , Strength()
+                                  , (1.0 - pc)*angle_
+                                  , 0.0
+                                  , dsFaceAngle_       ));
+
+  p_b->bml_->firstElement()->setStrength(0.0);
   p_b->setExitAngle( getExitAngle() );
 
 
@@ -442,13 +431,15 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------
-  a->setAlignment( ald );
-  b->setAlignment( ald );
+  p_a->setAlignment( ald );
+  p_b->setAlignment( ald );
 
   // Rename
   // -----------------------------
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2"));
+  p_a->rename( ident_ + string("_1") );
+  p_b->rename( ident_ + string("_2"));
+
+  return std::make_pair(p_a,p_b);
 }
 
 
@@ -529,6 +520,14 @@ bool  CF_sbend::isThin()    const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool  CF_sbend::isPassive() const
+{
+  return false;
+}
+  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool  CF_sbend::isDriftSpace() const
 {
   return false;
 }

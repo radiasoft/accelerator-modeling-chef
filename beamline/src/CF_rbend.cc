@@ -224,6 +224,16 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void CF_rbend::propagateReference(Particle& p, double initialBRho, bool scaling)
+{
+  setEntryAngle(p);
+  bmlnElmnt::propagateReference(p,initialBRho, scaling );
+  setExitAngle(p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::setEntryAngle( Particle const& p )
 {
   return this->setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
@@ -370,7 +380,7 @@ bool CF_rbend::hasStandardFaces() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> CF_rbend::split( double const& pc ) const
 {
   // Preliminary tests ...
   // -----------------------------
@@ -378,7 +388,7 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           "CF_rbend::split( double const& pc )", 
            uic.str().c_str() ) );
   }
 
@@ -390,7 +400,7 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\nwith an Alignment struct.  That rolls are allowed in such"
             "\ncases is only a matter of courtesy. This is NOT encouraged!";
     throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           "CF_rbend::split( double const& pc ) const", 
            uic.str().c_str() ) );
   }
 
@@ -400,9 +410,8 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
+         << "\n*** WARNING *** CF_rbend::Split( double const& ) const"
+            "\n*** WARNING *** A new reference trajectory must be registered."
             "\n*** WARNING *** "
          << endl;
   }
@@ -412,29 +421,26 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // "length_," "strength_," and "_angle" are private data members.
   // -----------------------------
 
-  CF_rbend* p_a = 0;
-  CF_rbend* p_b = 0;
-
-  a = CFRbendPtr( p_a = new CF_rbend(   ""
-                                      , pc*length_
-				      , Strength()
-                                      , usFaceAngle_
-                                      , 0.0           ));
+  CFRbendPtr p_a(    new CF_rbend(   ""
+                                   , pc*length_
+			           , Strength()
+                                   , usFaceAngle_
+                                   , 0.0           ));
   p_a->setEntryAngle( getEntryAngle() );
-  p_a->nullExitEdge();
+  p_a->bml_->lastElement()->setStrength(0.0);
 
-  b = CFRbendPtr ( p_b = new CF_rbend(   ""
-                                       , (1.0 - pc)*length_
-				       , Strength()
-                                       , 0.0
-                                       , dsFaceAngle_        ));
-  p_b->nullEntryEdge();
+  CFRbendPtr p_b(   new CF_rbend(   ""
+                                   , (1.0 - pc)*length_
+				   , Strength()
+                                   , 0.0
+                                   , dsFaceAngle_        ));
+  p_b->bml_->firstElement()->setStrength(0.0);
   p_b->setExitAngle( getExitAngle() );
-
 
   // Assign pole strengths
   // Note: pole strengths scale with length.
   // -----------------------------
+
   double poleStrength = getQuadrupole();
   p_a->setQuadrupole( pc*poleStrength );
   p_b->setQuadrupole( (1.0 - pc)*poleStrength );
@@ -451,97 +457,17 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------
-  a->setAlignment( ald );
-  b->setAlignment( ald );
+  p_a->setAlignment( ald );
+  p_b->setAlignment( ald );
 
   // Rename
   // -----------------------------
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2"));
+  p_a->rename( ident_ + string("_1") );
+  p_b->rename( ident_ + string("_2"));
+
+  return make_pair(p_a,p_b);
+
 }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::nullExitEdge()
-{
-  if( bml_ ) {
-    ElmPtr& endpoint = bml_->lastElement();
-    if( typeid(*endpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current CF_rbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*endpoint) == typeid(Edge) ) {
-      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << endpoint->Type() << " " << endpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void CF_rbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void CF_rbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::nullEntryEdge()
-{
-  if( bml_ ) {
-    ElmPtr& startpoint = bml_->firstElement();
-    if( typeid(*startpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current CF_rbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*startpoint) == typeid(Edge) ) {
-      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << startpoint->Type() << " " << startpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void CF_rbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void CF_rbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void CF_rbend::peekAt( double& s, Particle const& prt ) 
-{
- (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
- (*pcout) << setw(12) << s           
-                  << " : " 
-      << setw(10) << (int) this  
-      << setw(15) << ident_       
-      << setw(15) << Type()      
-      << setw(12) << length_      
-      << setw(12) << Strength()    
-      << setw(12) << ((this->getQuadrupole())/length_)
-      << setw(12) << (2.0*(this->getSextupole())/length_)
-      << setw(12) << (6.0*(this->getOctupole())/length_)
-      << endl;
-}
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -635,6 +561,14 @@ bool CF_rbend::isPassive() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool CF_rbend::isDriftSpace() const
+{
+  return false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_rbend::OrbitLength( Particle const& p )
 {
   double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / Strength();
@@ -645,19 +579,6 @@ double CF_rbend::OrbitLength( Particle const& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-double CF_rbend::AdjustPosition( Particle const& p )
-{
-  // This probably won't work properly ... 
-  // because the current env may not be appropriate 
-
-  JetParticle jetparticle(p);
-  return AdjustPosition( jetparticle );
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 {
@@ -679,12 +600,12 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
   Vector    instate =     state;
 
-  const double x_i  = state[x];
-  const double xp_i = state[xp]; 
+  double const x_i  = state[x];
+  double const xp_i = state[xp]; 
 
   // Initialize the derivative...
 
-  jetparticle.setState(instate); 
+  jetparticle.setState( instate ); 
 
   propagate(jetparticle);
 
