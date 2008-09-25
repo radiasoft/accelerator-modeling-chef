@@ -92,15 +92,16 @@ public:
 
   rfcavity& operator=( rfcavity const& rhs);
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  const char* Type()  const;
-  bool    isMagnet()  const;
-  bool    isThin()    const;
-  bool    isPassive() const;
+  const char* Type()     const;
+  bool    isMagnet()     const;
+  bool    isThin()       const;
+  bool    isPassive()    const;
+  bool    isDriftSpace() const;
  
   double getReferenceTime()              const;
 
@@ -120,6 +121,10 @@ public:
   void                 setPhi( double const& radians);  
   void                   setQ( double const& Q);
   void                   setR( double const& R);
+
+ protected:
+
+  void   propagateReference( Particle& particle, double initialBRho, bool scaling );
 
 private:
 
@@ -177,14 +182,15 @@ public:
   void setRadialFrequencyRelativeTo( double const& );
   void                       setPhi( double const& );  // radians
 
-  char const* Type()  const;
-  bool    isMagnet()  const;
-  bool    isThin()    const;
-  bool    isPassive() const;
+  char const*     Type()  const;
+
+  bool        isMagnet()  const;
+  bool          isThin()  const;
+  bool       isPassive()  const;
+  bool    isDriftSpace()  const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
-
 
 private:
 

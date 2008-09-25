@@ -87,7 +87,7 @@ public:
 
   sector& operator=( sector const& rhs);
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   Mapping const& getMap()    const;
   Matrix         getMatrix() const;
@@ -100,9 +100,10 @@ public:
  
   const char* Type()      const;
  
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
   bool        isMatrix()  const; 
 
