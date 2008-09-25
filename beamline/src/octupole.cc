@@ -161,34 +161,9 @@ bool octupole::isPassive() const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void octupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool octupole::isDriftSpace() const
 {
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw(  GenericException( __FILE__, __LINE__, 
-           "void octupole::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
-           uic.str().c_str() ) );
-  }
-
-  // We assume "strength" means field, not field*length_.
-  a = OctupolePtr( Clone() );
-  b = OctupolePtr( Clone() );
-
-  a->setLength(          pc* length_ );
-  b->setLength( (1.0 - pc) * length_ );
-
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  // -----------------------------------------------------------------
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
-
-  // Rename
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
-
+  return false;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -286,6 +261,13 @@ bool thinOctupole::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool thinOctupole::isPassive() const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool thinOctupole::isDriftSpace() const
 {
   return false;
 }

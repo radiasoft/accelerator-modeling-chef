@@ -59,7 +59,6 @@
 #include <beamline/beamline.h>
 #include <beamline/drift.h>
 #include <beamline/BmlVisitor.h>
-#include <beamline/RefRegVisitor.h>
 #include <beamline/marker.h>
 
 using namespace std;
@@ -148,18 +147,18 @@ rfcavity& rfcavity::operator=( rfcavity const& rhs)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Split( double const&, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> rfcavity::split( double const& pct) const
 {
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void " << Type() << "::Split( double const&, ElmPtr&, ElmPtr& ) const"
+           << "\n*** WARNING ****: void " << Type() << "::split( double const&) const"
               "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
               "\n*** WARNING ****: " 
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
   throw( GenericException( __FILE__, __LINE__, 
-         "void rfcavity::Split( double const&, ElmPtr&, ElmPtr& ) const", 
+         "rfcavity::split( double const& ) const", 
          uic.str().c_str() ) );
 }
 
@@ -225,6 +224,13 @@ bool    rfcavity::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 bool    rfcavity::isPassive() const 
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool    rfcavity::isDriftSpace() const 
 {
   return false;
 }
@@ -418,6 +424,20 @@ double const& rfcavity::getHarmonicNumber() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void rfcavity::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
+{               
+  if ( !(bml_) ) {
+    bmlnElmnt::propagateReference( particle,initialBRho, scaling);
+    return;
+  }
+  bml_->propagateReference(particle,initialBRho, scaling );
+
+  return;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class thinrfcavity 
 // **************************************************
@@ -554,6 +574,13 @@ bool    thinrfcavity::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool    thinrfcavity::isPassive() const 
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+bool    thinrfcavity::isDriftSpace() const 
 {
   return false;
 }

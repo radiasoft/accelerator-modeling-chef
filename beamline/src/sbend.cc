@@ -246,68 +246,6 @@ sbend::~sbend()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::nullExitEdge()
-{
-  if( bml_ ) {
-    ElmPtr& endpoint = bml_->lastElement();
-    if( typeid(*endpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current sbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*endpoint) == typeid(Edge) ) {
-      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << endpoint->Type() << " " << endpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void sbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void sbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::nullEntryEdge()
-{
-  if( bml_ ) {
-    ElmPtr& startpoint = bml_->firstElement();
-    if( typeid(*startpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current sbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*startpoint) == typeid(Edge) ) {
-      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << startpoint->Type() << " " << startpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void sbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void sbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 double sbend::setEntryAngle( Particle const& p )
 {
   return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
@@ -391,7 +329,15 @@ bool sbend::isPassive() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool sbend::isDriftSpace() const
+{
+  return false;
+} 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::pair<ElmPtr,ElmPtr> sbend::split( double const& pc ) const
 {
   // Preliminary tests ...
   // -----------------------------
@@ -399,7 +345,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
+           "sbend::split( double const& pc ) const",
            uic.str().c_str() ) );
   }
 
@@ -411,7 +357,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
               "\nwith an Alignment struct.  That rolls are allowed in such"
               "\ncases is only a matter of courtesy. This is NOT encouraged!";
       throw( GenericException( __FILE__, __LINE__, 
-             "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             "sbend::split( double const& pc) const", 
              uic.str().c_str() ) );
     }
     if( 1.0e-10 < std::abs(pc - 0.5 ) ) {
@@ -421,27 +367,11 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
               "\nThat rolls are allowed in such cases is only a matter"
               "\nof courtesy. This is NOT encouraged!";
       throw( GenericException( __FILE__, __LINE__, 
-             "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+             "sbend::split( double const& pc) const", 
              uic.str().c_str() ) );
     }
   }
 
-  // -------------------------------------------------------------------
-  // WARNING: The following code assumes that an sbend element
-  //          is modeled with a nested beamline, whith edge effects 
-  //          incorporated in upstream and downstream edge elements. 
-  //          Il will *fail* if propagator assumes otherwise. 
-  //--------------------------------------------------------------------
-
-  // .. Check for the presence of a nested beamline with 3 elements ... 
-
-  bool valid_nested_beamline = bml_ ? ( bml_->howMany() == 3 ) : false;
-  
-  if ( !valid_nested_beamline) { 
-       throw GenericException( __FILE__, __LINE__, 
-          "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
-          "Error: Cannot split: incompatible or missing nested beamline.");
-  }
 
   SBendPtr sb_a = SBendPtr( new sbend(   ""
                                        , length_*pc
@@ -449,8 +379,8 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                        , angle_*pc
                                        , usFaceAngle_
                                        , 0.0           ));
-  sb_a->setEntryAngle( this->getEntryAngle() );  // Reset from default
-  sb_a->nullExitEdge();
+  sb_a->setEntryAngle( getEntryAngle() );  // Reset from default
+  sb_a->enableEdges(true,false);
 
   SBendPtr sb_b = SBendPtr( new sbend(   ""
                                        , length_*(1.0-pc)
@@ -458,22 +388,21 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                        , angle_*(1.0-pc)
                                        , 0.0
                                        , dsFaceAngle_  ));
-  sb_b->nullEntryEdge();
-  sb_b->setExitAngle( this->getExitAngle() );    // Reset from default
-
-  a = sb_a;
-  b = sb_b;
+  sb_b->setExitAngle( getExitAngle() );    // Reset from default
+  sb_b->enableEdges(false,true);
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------------------------------------------
-  a->setAlignment( ald );
-  b->setAlignment( ald );
+  sb_a->setAlignment( ald );
+  sb_b->setAlignment( ald );
 
   // Rename
   // ------
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
+  sb_a->rename( ident_ + string("_1") );
+  sb_b->rename( ident_ + string("_2") );
+
+  return std::make_pair(sb_a,sb_b);
 }
 
 
@@ -503,45 +432,6 @@ istream& sbend::readFrom(istream& is)
   is >> angle_ >> usFaceAngle_ >> dsFaceAngle_;
   is >> usAngle_ >> dsAngle_;
   return is;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// **************************************************
-//   Frame functions
-// **************************************************
-
-void sbend::enterLocalFrame( Particle& p ) const
-{
-  bmlnElmnt::enterLocalFrame(p);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::enterLocalFrame( JetParticle& p ) const
-{
- bmlnElmnt::enterLocalFrame(p);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::leaveLocalFrame( Particle& p ) const
-{
-  bmlnElmnt::leaveLocalFrame(p);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void sbend::leaveLocalFrame( JetParticle& p ) const
-{
-  bmlnElmnt::leaveLocalFrame(p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -598,3 +488,16 @@ double sbend::getExitFaceAngle() const
 {
   return dsFaceAngle_;
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::propagateReference( Particle& p, double initialBRho, bool scaling) 
+{
+   setEntryAngle( p );
+   bmlnElmnt::propagateReference( p, initialBRho, scaling);
+   setExitAngle( p );
+} 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

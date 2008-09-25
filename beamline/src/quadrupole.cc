@@ -163,34 +163,11 @@ bool quadrupole::isPassive() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool quadrupole::isDriftSpace() const
 {
-  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
-    ostringstream uic;
-    uic  << "pc = " << pc << ": this should be within [0,1].";
-    throw( GenericException( __FILE__, __LINE__, 
-           "void quadrupole::Split( double const& pc,  ElmPtr& a,  ElmPtr& b )", 
-           uic.str().c_str() ) );
-  }
-
-  // We assume "strength" means field, not field*length_.
-  a = QuadrupolePtr( Clone() );
-  b = QuadrupolePtr( Clone()  );
-
-  a->setLength( pc        * length_ );
-  b->setLength( (1.0- pc) * length_ );
-
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  // -----------------------------------------------------------------
-  a->setAlignment( Alignment() );
-  b->setAlignment( Alignment() );
-
-  // Rename
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
-
+  return false;
 }
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -308,6 +285,14 @@ bool thinQuad::isThin() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool thinQuad::isPassive() const
+{
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool thinQuad::isDriftSpace() const
 {
   return false;
 }

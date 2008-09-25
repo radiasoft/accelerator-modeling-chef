@@ -288,33 +288,6 @@ rbend::rbend( std::string const& n, double const& l, double const& s,           
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-rbend::rbend( std::string const& n, double const& l, double const& s,           double const& bendangle, 
-                                              double const& entry_angle, double const& exit_angle, 
-                                              double const& us,          double const& ds )
-try
-  : bmlnElmnt( n, l, s),
-    angle_(bendangle),
-    usFaceAngle_(us), 
-    dsFaceAngle_(ds),
-    usAngle_(entry_angle + us),
-    dsAngle_( exit_angle - ds)
-{
-  // ??? FIX ME ???
-  throw( GenericException( __FILE__, __LINE__, 
-         "rbend::rbend( char const* n, double const& l, double const& s, double const& bendangle, \n"
-         "                                    double const& entry_angle, double const& exit_angle,\n"
-         "                                    double const& us,          double const& ds          )",
-         "THIS CONSTRUCTOR IS NOT WRITTEN." ) );
-}
-catch( GenericException const& ge )
-{
-  // This catch block is included only out of paranoia.
-  // Nothing needs to be done here.
-  throw ge;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( rbend const& x )
   : bmlnElmnt(x ),
@@ -358,6 +331,7 @@ bool rbend::isMagnet() const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool rbend::isThin() const
 {
   return false;
@@ -365,6 +339,7 @@ bool rbend::isThin() const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool rbend::isPassive() const
 {
   return false;
@@ -373,7 +348,15 @@ bool rbend::isPassive() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool rbend::isDriftSpace() const
+{
+  return false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::pair<ElmPtr,ElmPtr> rbend::split( double const& pc ) const
 {
   // Preliminary tests ...
   // -----------------------------
@@ -381,7 +364,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           "rbend::split( double const& pc)", 
            uic.str().c_str() ) );
   }
 
@@ -393,7 +376,7 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\nwith an Alignment struct.  That rolls are allowed in such"
             "\ncases is only a matter of courtesy. This is NOT encouraged!";
     throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+           "rbend::split( double const& pc) const", 
            uic.str().c_str() ) );
   }
 
@@ -403,26 +386,10 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     (*pcerr) << "\n"
             "\n*** WARNING ***"
             "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b )"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
+         << "\n*** WARNING *** rbend::split( double const& pc )"
+            "\n*** WARNING *** A new reference trajectory must be registered."
             "\n*** WARNING *** "
          << endl;
-  }
-
-  // -------------------------------------------------------------------
-  // WARNING: The following code assumes that an rbend element
-  //          is modeled with a nested beamline, with edge effects, if any,
-  //          incorporated in upstream and downstream edge elements. 
-  //          It will *fail* when the propagator that assumes otherwise. 
-  //--------------------------------------------------------------------
-  // .. Check for the presence of a nested beamline with 3 elements ... 
-  // ---------------------------------------------------------------
-  bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
-  if ( !valid_nested_beamline) { 
-       throw GenericException( __FILE__, __LINE__, 
-	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
-          "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
   RBendPtr rb_a( new rbend(   ""
@@ -431,8 +398,8 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                             , angle_*pc         // Wrong, but unimportant (I hope)!
                             , usFaceAngle_
                             , 0.0 ) ); 
-  rb_a->setEntryAngle( this->getEntryAngle() ); // Reset from default
-  rb_a->nullExitEdge();
+  rb_a->setEntryAngle( getEntryAngle() );       
+  rb_a->enableEdges(true,false);
 
   RBendPtr rb_b( new rbend(   ""
                             , (1.0 - pc)*length_
@@ -440,84 +407,21 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                             , angle_*(1.0-pc)   // Wrong, but unimportant (I hope)!
                             , 0.0
                             , dsFaceAngle_ ) );
-  rb_b->nullEntryEdge();
-  rb_b->setExitAngle( this->getExitAngle() );   // Reset from default
+  rb_b->setExitAngle( getExitAngle() );         // Reset from default
+  rb_a->enableEdges(false,true);
 
-  a = rb_a;
-  b = rb_b;
 
-  // Set the alignment struct
-  // : this is a STOPGAP MEASURE!!!
-  // -----------------------------------------------------------------
-  a->setAlignment( ald );
-  b->setAlignment( ald );
+  // Set the alignment struct : this is a STOPGAP MEASURE!!!
+
+  rb_a->setAlignment( ald );
+  rb_b->setAlignment( ald );
 
   // Rename
-  // ------
-  a->rename( ident_ + string("_1") );
-  b->rename( ident_ + string("_2") );
-}
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+  rb_a->rename( ident_ + string("_1") );
+  rb_b->rename( ident_ + string("_2") );
 
-void rbend::nullExitEdge()
-{
-  if( bml_ ) {
-    ElmPtr& endpoint = bml_->lastElement();
-    if( typeid(*endpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current rbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*endpoint) == typeid(Edge) ) {
-      endpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << endpoint->Type() << " " << endpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void rbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void rbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rbend::nullEntryEdge()
-{
-  if( bml_ ) {
-    ElmPtr& startpoint = bml_->firstElement();
-    if( typeid(*startpoint) == typeid(marker) ) {
-      // Nothing needs to be done.
-      // This occurs if the current rbend is a piece
-      // resulting from splitting another.
-    }
-    else if( typeid(*startpoint) == typeid(Edge) ) {
-      startpoint = ElmPtr( new marker( "EdgeMarker" ) );
-    }
-    else {
-      ostringstream uic;
-      uic  <<   "Internal beamline ends in unrecognized element "
-           << startpoint->Type() << " " << startpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
-               "void rbend::nullExitEdge()",
-               uic.str().c_str() ) );
-    }
-  }
-  else {
-    throw GenericException( __FILE__, __LINE__, 
-      "void rbend::nullExitEdge()",
-      "An impossibility: internal beamline is null.");
-  }
+  return std::make_pair(rb_a, rb_b);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -589,6 +493,16 @@ bool rbend::hasStandardFaces() const
 {
   return (    (std::abs(usFaceAngle_) < 1.0e-9) 
            && (std::abs(dsFaceAngle_) < 1.0e-9) );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::propagateReference( Particle& p, double initialBRho, bool scaling) 
+{
+  setEntryAngle(p);
+  propagateReference(p, initialBRho, scaling);
+  setExitAngle(p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
