@@ -118,18 +118,18 @@ combinedFunction::~combinedFunction()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> combinedFunction::split( double const& pc) const
 {
   (*pcerr) <<   "*** WARNING ****: "
               "\n*** WARNING ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** WARNING ****: void " << Type() << "::Split( double const&, ElmPtr&, ElmPtr& ) const"
+           << "\n*** WARNING ****: void " << Type() << "::split( double const& ) const"
               "\n*** WARNING ****: Splitting a " << Type() << " is forbidden in this version."
               "\n*** WARNING ****: " 
            << std::endl;
   ostringstream uic;
   uic  <<   "Splitting a " << Type() << " is forbidden in this version.";
   throw(  GenericException( __FILE__, __LINE__, 
-         "void combinedFunction::Split( double const&, ElmPtr& a, ElmPtr& b ) const", 
+         "combinedFunction::split( double const& ) const", 
          uic.str().c_str() ) );
 }
 
@@ -344,6 +344,13 @@ bool combinedFunction::isPassive() const
   return false;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool combinedFunction::isDriftSpace() const
+{
+  return false;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
