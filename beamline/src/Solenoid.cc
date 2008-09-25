@@ -127,7 +127,7 @@ Solenoid& Solenoid::operator=( Solenoid const& rhs)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> Solenoid::split( double const& pc ) const
 {
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
@@ -156,9 +156,7 @@ void Solenoid::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
    s_b->outEdge_  = outEdge_;   
    s_b->rename( Name() + std::string( "_2" ) );
 
-   a = s_a;
-   b = s_b;
-
+   return std::make_pair(s_a, s_b);
 }
 
 
@@ -182,6 +180,14 @@ bool Solenoid::isThin() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 bool Solenoid::isPassive() const
+{
+  return false;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool Solenoid::isDriftSpace() const
 {
   return false;
 }

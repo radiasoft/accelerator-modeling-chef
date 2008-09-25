@@ -132,14 +132,10 @@ bool  Bend::isPassive() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool  Bend::isDriftSpace() const
 {
-  // this should never be called. 
-  (*pcerr) << 
-     "WARNING:  Bend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const has been called." 
-	   << std::endl;
+  return false; 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

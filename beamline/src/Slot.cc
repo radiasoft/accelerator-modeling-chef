@@ -75,12 +75,12 @@ using FNAL::pcout;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 }
 
@@ -268,6 +268,14 @@ bool Slot::isPassive()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool Slot::isDriftSpace()  const  
+{ 
+  return true;  
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
  int Slot::setInFrame( Frame const& frm )
 {
 
@@ -427,8 +435,11 @@ istream& Slot::readFrom( istream& is )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
+std::pair<ElmPtr,ElmPtr> Slot::split( double const& pct ) const
 {
+  ElmPtr a;
+  ElmPtr b;
+
   if( pct < 0.0 || 1.0 < pct ) {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void Slot::Split( double, ElmPtr&, ElmPtr& )"
@@ -436,21 +447,19 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
          << pct <<             ", outside [0,1]."
          << "\n*** WARNING *** Null pointers are being returned." 
          << endl;
-    a = ElmPtr();
-    b = ElmPtr();
-    return;
+    return std::make_pair(a,b);
   }
 
-  
+
   if( pct == 0.0 ) {
      a = MarkerPtr( new marker( "Null Slot" ) );
      b =   SlotPtr( new Slot( *this ) );
-    return;
+    return std::make_pair(a,b);
   }
   if( pct == 1.0 ) {
      a = SlotPtr( new Slot( *this ) );
      b = MarkerPtr( new marker( "Null Slot" ) );
-    return;
+    return std::make_pair(a,b); 
   }
 
   Vector d( out_.getOrigin() - in_.getOrigin() );
@@ -466,6 +475,8 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 
   a->rename( ident_ + string("_1") );
   b->rename( ident_ + string("_2") );
+
+  return std::make_pair(a,b);
 
 }
 
