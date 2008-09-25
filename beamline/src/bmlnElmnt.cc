@@ -1,5 +1,6 @@
 /*************************************************************************
 **************************************************************************
+**************************************************************************
 ******                                                                
 ******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and   
@@ -65,7 +66,9 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
-#include <beamline/Aperture.h>
+#include <beamline/TBunch.h>
+#include <beamline/ApertureDecorator.h>
+#include <beamline/AlignmentDecorator.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
@@ -78,12 +81,12 @@ namespace {
 
   int const  BMLN_dynDim = 6;
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 }
 
 
@@ -223,7 +226,8 @@ bmlnElmnt::bmlnElmnt( std::string const&  n, double const& l, double const& s)
     ctRef_(0.0),
     attributes_(),
     tag_(), 
-    pAperture_(0)
+    usedge_(false),
+    dsedge_(false)
 {
   if( length_ < 0 ) {
     ostringstream uic;
@@ -251,10 +255,10 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& o )
                      ctRef_(o.ctRef_),
                 attributes_(o.attributes_),
                        tag_(o.tag_),
-                 pAperture_(0)
-{
+                    usedge_(o.usedge_),
+                    dsedge_(o.dsedge_)
+{                  
 
-     pAperture_ = o.pAperture_ ? o.pAperture_->Clone() : 0;
      align_ = o.align_     ? new alignment(*o.align_)  : 0;
 
      propagator_ =  PropagatorPtr( o.propagator_->Clone() );
@@ -332,7 +336,6 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     ctRef_        = rhs.ctRef_;
     attributes_   = rhs.attributes_;
     tag_          = rhs.tag_;
-    pAperture_    = rhs.pAperture_ ? rhs.pAperture_->Clone() : 0 ; 
     propagator_   = PropagatorPtr(rhs.propagator_->Clone());
 
     init_internals(rhs.bml_, rhs.elm_); 
@@ -348,12 +351,44 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
 bmlnElmnt::~bmlnElmnt() {
 
   if(align_)     delete align_;
-  if(pAperture_) delete pAperture_;
+
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::isSimple() const
+{
+  return ( !bml_ );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::hasParallelFaces() const
+{
+  return  true;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::hasStandardFaces() const
+{
+  return true;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::isBeamline() const
+{                   
+  return false;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::setLength( double const& length ) 
 {
@@ -460,32 +495,6 @@ void bmlnElmnt::setStrength( double const& s )
 char const* bmlnElmnt::Name()   const
 {
   return ident_.c_str();
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool bmlnElmnt::hasParallelFaces() const
-{
-  return true;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool bmlnElmnt::hasStandardFaces() const
-{
-  return true;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-bool bmlnElmnt::isSimple() const
-{
-  return ( (!bml_) && ( !elm_)  );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1074,24 +1083,10 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setAperture( Aperture* pAperture_in ) 
-{
-    //
-    // aperture = x;
-    //
-  pAperture_ = pAperture_in;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 double bmlnElmnt::getReferenceTime() const
 {
    return ctRef_;
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1101,30 +1096,44 @@ void bmlnElmnt::setReferenceTime( double const& x )
   ctRef_ = x;
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::rename( std::string const&  n ) {
-
+void bmlnElmnt::rename( std::string const&  n ) 
+{
   ident_ = (!n.empty()) ? n : string("NONAME"); 
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Aperture* bmlnElmnt::getAperture() {
-  Aperture* app = 0;
-  if(pAperture_ !=0)
-    app = pAperture_->Clone();
-  return app;
+void bmlnElmnt::enableEdges(bool usedge, bool dsedge)
+{
+   usedge_= usedge;
+   dsedge_= dsedge;
+   propagator_->setup(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+bool bmlnElmnt::hasUpstreamEdge() const
+{
+  return   usedge_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool bmlnElmnt::hasDownstreamEdge() const
+{
+  return   dsedge_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
 {
   // Preliminary tests ...
   // -----------------------------
@@ -1132,33 +1141,51 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+           "bmlnElmnt::split( double const& pc )", 
            uic.str().c_str() ) );
   }
 
   //-----------------------------------------------------------------------------
 
-  a = ElmPtr( Clone() );
-  b = ElmPtr( Clone() );
+  ElmPtr uelm( Clone() );
+  uelm->enableEdges(true, false);
+
+  ElmPtr delm( Clone() );
+  delm->enableEdges(false, true);
 
   // ---------------------------------------------
   // Note: cloning should set the alignment struct
   // via the bmlnElmnt copy constructor.  (see above)
   // ---------------------------------------------
 
-  a->ident_ = ident_ + string("_1") ;
-  b->ident_ = ident_ + string("_2") ;
+  uelm->ident_ = ident_ + string("_1") ;
+  delm->ident_ = ident_ + string("_2") ;
   
   //-----------------------------------------------------------------------------
   //  strength_  is changed only when it represents the  
   //  *integrated* strength; this is the case for _thin_ elements.
   //-----------------------------------------------------------------------------
 
-  a->strength_ = a->isThin() ? strength_  : pc*strength_;
-  b->strength_ = b->isThin() ? strength_  : ( 1.0 - pc )*strength_;
+  uelm->strength_ = uelm->isThin() ? strength_  : pc*strength_;
+  delm->strength_ = delm->isThin() ? strength_  : ( 1.0 - pc )*strength_;
 
-  a->length_   = a->isThin() ? 0.0 : pc*length_;
-  b->length_   = b->isThin() ? 0.0 : ( 1.0 - pc )*length_;
+  uelm->length_   = uelm->isThin() ? 0.0 : pc*length_;
+  delm->length_   = delm->isThin() ? 0.0 : ( 1.0 - pc )*length_;
+
+  // set the alignment struct
+  // this is a STOPGAP MEASURE ... until misalignments are handled differently. 
+
+  uelm->setAlignment( Alignment() );
+  delm->setAlignment( Alignment() );
+
+  // Rename
+
+  uelm->rename( ident_ + string("_1") );
+  delm->rename( ident_ + string("_2") );
+
+  return std::make_pair(uelm, delm);
+
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1193,7 +1220,7 @@ ostream& operator<<(ostream& os, bmlnElmnt& b)
 
 double bmlnElmnt::Length() const
 {
-  return length_;
+  return isThin() ? 0.0: length_;
 }
 
 
@@ -1208,7 +1235,7 @@ boost::any& bmlnElmnt::operator[]( std::string const& s)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool  bmlnElmnt::attributeExists( std::string const& s ) const
+bool  bmlnElmnt::queryAttribute( std::string const& s ) const
 {
   return (attributes_.end() !=  attributes_.find( s.c_str() ) );
 }
@@ -1216,7 +1243,7 @@ bool  bmlnElmnt::attributeExists( std::string const& s ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  bmlnElmnt::attributeClear( std::string const& s ) 
+void  bmlnElmnt::removeAttribute( std::string const& s ) 
 {
   attributes_.erase( s.c_str() ); 
 }
@@ -1225,7 +1252,7 @@ void  bmlnElmnt::attributeClear( std::string const& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  bmlnElmnt::attributeClear()
+void  bmlnElmnt::removeAttribute()
 {
   attributes_.clear();
 }
@@ -1233,39 +1260,21 @@ void  bmlnElmnt::attributeClear()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool  bmlnElmnt::isBeamline() const
-{
-   return false;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::acceptInner( BmlVisitor& v )
-{
-  v.setInnerFlag(true);
-  v.visit(*bml_);
-  v.setInnerFlag(false);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  bmlnElmnt::acceptInner( ConstBmlVisitor& v ) const
-{
-  v.setInnerFlag(true);
-  v.visit(*bml_);
-  v.setInnerFlag(false);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::setReferenceTime( Particle& particle) 
+void bmlnElmnt::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
 {               
+
+  double brho = particle.ReferenceBRho();
   setReferenceTime(0.0);
+  particle.set_cdt(0.0);
+ 
+  if ( (initialBRho != brho ) &&  isMagnet() && scaling ) { 
+    setStrengthScale( brho / initialBRho ); 
+  }
+
   propagate( particle );
+
   setReferenceTime( particle.get_cdt() );
+
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1375,4 +1384,55 @@ void bmlnElmnt::localPropagate( JetParticleBunch& b ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double bmlnElmnt::OrbitLength( Particle const& ) const
+{ 
+  return length_; 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+boost::tuple<bmlnElmnt::aperture_t,double,double> bmlnElmnt::aperture() const
+{ 
+  return (propagator_->hasAperture() ? propagator_->aperture()   
+                                     : boost::tuple<aperture_t,double,double>(infinite, 0.0, 0.0) );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void bmlnElmnt::setAperture( bmlnElmnt::aperture_t type, double hor, double ver) 
+{
+
+  if ( !propagator_->hasAperture() ) { 
+    propagator_ = PropagatorPtr(new ApertureDecorator(propagator_) ); 
+  }
+  
+  propagator_->setAperture( type, hor, ver);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+boost::tuple<Vector,Vector> bmlnElmnt::getAlignment() const
+{ 
+  return (propagator_->hasAlignment() ? propagator_->alignment()   
+                                      : boost::tuple<Vector,Vector>(Vector(3), Vector(3) ));
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  bmlnElmnt::setAlignment( Vector const& translation, Vector const& rotation)  
+{
+  if ( !propagator_->hasAlignment() ) { 
+   propagator_ = 
+       PropagatorPtr( new AlignmentDecorator( PropagatorPtr( propagator_->Clone() ) ) ); 
+  }
+  propagator_->setAlignment( translation, rotation );
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
