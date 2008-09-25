@@ -53,12 +53,12 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 template<typename Particle_t>
 void propagate( CF_sbend const& elm, Particle_t&  p)
@@ -130,7 +130,7 @@ void CF_sbend::Propagator::setup( bmlnElmnt& arg )
   for( int i=0; i<n_; ++i) {
 
     if ( i == 0 ) { 
-      if ( usedge.Strength() != 0.0 ) bml_->append( usedge  );
+      if ( (usedge.Strength() != 0.0) && elm.hasUpstreamEdge() ) { bml_->append( usedge  ); }
       bml_->append( usbend  );
     } 
     else {
@@ -151,7 +151,7 @@ void CF_sbend::Propagator::setup( bmlnElmnt& arg )
   
     if ( i == n_-1 ) { 
       bml_->append( dsbend );
-      if ( usedge.Strength() != 0.0 ) bml_->append( dsedge  );
+      if ( (dsedge.Strength() != 0.0 ) && elm.hasDownstreamEdge() ) { bml_->append( dsedge  ); }
     } 
     else {
       bml_->append( separator );

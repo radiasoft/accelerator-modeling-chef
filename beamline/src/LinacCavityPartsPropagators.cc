@@ -48,12 +48,12 @@
 
 namespace { // anonymous namespace
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
@@ -72,11 +72,11 @@ void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-    // NOTE : The reference time is adjusted by LinacCavityPropagator . 
+    // NOTE : the reference time is NOT adjusted here. 
 
      state[i_cdt ] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/p.Beta(); 
 
-     return;     
+     return;      
 }
 
 
@@ -194,7 +194,6 @@ void propagate( Element_t const& elm, Particle_t& p )
   }
 
   state[i_cdt] -= elm.getReferenceTime();
-
 }
 
 //----------------------------------------------------------------------------------
@@ -220,7 +219,7 @@ template void propagate<LCavityDnstream, JetParticle, downstream>( LCavityDnstre
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::setup(  bmlnElmnt& elm)
+void  LCavityUpstream::Propagator::setup(  bmlnElmnt& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -253,7 +252,7 @@ void  LCavityUpstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void  LCavityDnstream::Propagator::setup(  bmlnElmnt& elm)
+void  LCavityDnstream::Propagator::setup(  bmlnElmnt& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
