@@ -51,12 +51,12 @@ boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(gene
 boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
 
 
-Particle::PhaseSpaceIndex const&   i_x     = Particle::xIndex; 
-Particle::PhaseSpaceIndex const&   i_y     = Particle::yIndex; 
-Particle::PhaseSpaceIndex const&   i_cdt   = Particle::cdtIndex; 
-Particle::PhaseSpaceIndex const&   i_npx   = Particle::npxIndex; 
-Particle::PhaseSpaceIndex const&   i_npy   = Particle::npyIndex; 
-Particle::PhaseSpaceIndex const&   i_ndp   = Particle::ndpIndex;
+Particle::PhaseSpaceIndex const&   i_x     = Particle::i_x; 
+Particle::PhaseSpaceIndex const&   i_y     = Particle::i_y; 
+Particle::PhaseSpaceIndex const&   i_cdt   = Particle::i_cdt; 
+Particle::PhaseSpaceIndex const&   i_npx   = Particle::i_npx; 
+Particle::PhaseSpaceIndex const&   i_npy   = Particle::i_npy; 
+Particle::PhaseSpaceIndex const&   i_ndp   = Particle::i_ndp;
 
 }
 
