@@ -27,6 +27,7 @@ find . -name config\.sub      -exec \rm     {}  \; -print
 
 for dir in basic_toolkit bmlfactory mxyzptlk physics_toolkit integrator gms beamline
 do
+  echo 'Entering directory: '$dir
   cd   $dir
   if [ ! -L $dir ]
   then ln -s include $dir
@@ -35,12 +36,15 @@ do
   cd ./src
   ${rootdir}/updatesource.sh
   cd ../..
+  echo 'Exiting directory: '$dir
 done
 
 for dir in python-bindings
 do
   cd   $dir
+  echo 'Entering directory'$dir
   ${rootdir}/updateheaders.sh
+  echo 'Exiting directory: '$dir
   cd ..
 done
 
@@ -48,38 +52,21 @@ done
 ## use autotools to generate the build environment. 
 ## NOTE:  command invocation order matters !
 
-libtoolize --force --copy
-aclocal -I config
-automake --add-missing --foreign --copy
-autoconf
-
-
-for dir in basic_toolkit beamline bmlfactory parsers mxyzptlk physics_toolkit integrator gms python-bindings
+for dir in . basic_toolkit beamline bmlfactory parsers parsers/xsif mxyzptlk physics_toolkit integrator gms python-bindings 
 do
-  cd $dir
+  echo 'Entering directory: '$dir
+  top=`pwd`
+  cd $dir  
   libtoolize --force --copy
   aclocal -I config
-  autoheader
+  if [ -d src ]; then 
+      autoheader
+  fi
   automake --add-missing --foreign --copy
   autoconf
-  cd ..
+  echo 'Exiting directory: '$dir
+  cd $top
 done
-
-cd parsers/xsif
-libtoolize --force --copy
-aclocal -I config
-autoheader
-automake --add-missing --foreign --copy
-autoconf
-cd ..
-
-###libtoolize --force --copy
-aclocal -I config
-###autoheader
-automake --add-missing --foreign --copy
-autoconf
-cd ..
-
 
 ##----------------------------------------
 ## create links for include subdirectories

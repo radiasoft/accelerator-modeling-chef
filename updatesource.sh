@@ -18,18 +18,27 @@ do
 done
 
 libname=`basename \`pwd\``
-export libname
+export libname 
 
 cd $current_dir
-
 
 #----------------------------------------------------------
 # note: yacc sources must be listed *before* lex sources !
 #----------------------------------------------------------
 
-echo lib$libname"_la_SOURCES"=*.{cpp,cxx,cc,c,y,l,C} > source_files
-unset libname
-more source_files | tr " " "\n" > test.source_files.new
+echo lib$libname"_la_SOURCES= " > source_files.new
+ls | grep '.*\.cpp$' >> source_files.new  
+ls | grep '.*\.cxx$' >> source_files.new  
+ls | grep '.*\.cc$'  >> source_files.new  
+ls | grep '.*\.c$'   >> source_files.new  
+ls | grep '.*\.C$'   >> source_files.new  
+ls | grep '.*\.l$'   >> source_files.new  
+ls | grep '.*\.y$'   >> source_files.new  
+
+cat source_files.new | tr "\n" " " > test.source_files.new
+echo >> test.source_files.new
 diff test.source_files.old test.source_files.new | sed "s/</Removed/g" | sed "s/>/Added/g"
+rm source_files.new
 rm test.source_files.old
-rm test.source_files.new
+mv test.source_files.new source_files
+unset libname

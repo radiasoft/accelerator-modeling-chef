@@ -1,5 +1,288 @@
-Summary of changes since 20070808 release
------------------------------------------
+-----------------------------------------------------------------
+Summary of significant changes since the 20080125 branch release
+-----------------------------------------------------------------
+
+o Build system
+
+- converted old tchs scripts to bash syntax
+- modernized configure.in
+  use new-style syntax for AC_INIT and AM_INIT_AUTOMAKE
+    
+
+o basic_toolkit 
+  
+  - added new classes: NewtonSolver, QuasiNewtonSolver and LineSearch 
+
+  - the Matrix and Vector classes now consistently use the [] / [][] 
+    syntax for element access ( implemented using proxy classes).  
+ 
+  - added support for %, a Vector outer product binary operator 
+    v1 % v2 is a Matrix of dimension v1.Dim() x v2.Dim()
+      
+  - added support for in-place matrix +/-. 
+
+  - implemented efficient Matrix copy operation in a way that is 
+    general enough to work even when the rows have been swapped. 
+ 
+  - use stack-based dynamic arrays (currently an extension, but will become part of
+    the standard soon).
+
+  - the class Barnacle has been eliminated
+
+o  mxyzptlk
+
+  - new implementation for in-place +/- (operator+=(), operator-=() ) 
+  - the general operator+() and operator-() can now implemented in 
+    terms of the corresponding in-place versions. 
+  - optimizations in trig functions: uncessary deep copies 
+    have been eliminated.
+  - fixed ref counting bug fix in  pow( Jet, double const& s) function 
+  - eliminated need for beginEnvironment/EndEnvironement 
+  -  variables ( coordinates and parameters) may now be labelled
+    in addition to be accessible through numerical indices.  
+  - eliminated all public setVariable( .... ) members
+    (one, now _private_ signature remains) 
+  - automatic conversion between orders /env ... 
+  - fixes to TJL iterator. 
+  - Consistently use iterators in TJL implementation code.  
+
+o beamline
+  
+  Particle/JetParticle
+  
+  - BRho is now stored and returned as a _signed_ quantity. 
+    Rationale: this allows the propagator code to work (unmodified) 
+    with any particle species without the need to explicitly 
+    query charge magitude and/or sign.    
+
+    BRrho = p/q  = p [ 10**9 eV/c]     
+                  ----------------   =  p * ( 10**9 / 2.997 x 10^8) 
+                   q [ e         ]   
+
+    Code like this ( taken from an old sbendPhysics.cc implementation 
+    file ) 
+
+    ....
+
+     edgeCoeff = ( pbe->usTan_ / ( p.ReferenceBRho() / pbe->Strength() ) );
+
+      if( p.Charge() > 0.0 ) {
+        state[i_npy] -=  edgeCoeff * state[i_y];
+       }
+      else {
+        state[i_npy] +=  edgeCoeff * state[i_y];
+       }
+    }
+ 
+    ... 
+   
+    can be eliminated. 
+
+    Furthermore, note that the above code would fail for species 
+    that have a charge q such that q = ne where n > 1 
+    ( e.g. ions). 
+
+
+  - Some attributes are no longer stored, but rather, computed   
+    on the fly (e.g. reference energy is now computed from 
+    the reference momentum ). Rationale: this reduces the 
+    memory footprint, in particular, the footprint of a bunch. 
+
+  - Interface change: the particle constructor arg is momentum
+    _not_ energy ( no ambiguity ... which energy ? Total, Kinetic ? )
+ 
+
+  - In order to fix bugs in the 20080125 code that
+    resulted from an unfinished implementation of all the
+    changes needed to enable true plug-in propagation 
+    physics, a patch was applied to make the functions 
+    setLength() and setStrength() virtual. For example, the   
+    quadrupole::setStrength() function would change the  
+    adjust the strengths of indvidual thin elements in 
+    a private embedded beamline. 
+
+    While this works with the default propagators, 
+    the plug-in propagator scheme --and all the complexity
+    associated with it -- will be for naught if the 
+    element classes assume _*anything*_ about the 
+    internal structure or representation used by the 
+    propagator code.
+    Back to the (thick) quadrupole example: while it is 
+    treated as a series of thin kicks by the default
+.   propagator, any attempt to use an alternate propagator, 
+     - say,  a propagator based on a simple matrix - 
+    will break any code that assumes something about the
+    presence of and specific structure of a hidden
+    beamline. 
+ 
+    For this reason, functions that change an attribute 
+     such as setLength() and setStrength() 
+    **cannot do anything else than ** 
+
+    (1) change its private state (attribute) data  
+    (2) inform the propagator that an attribute has 
+        changed. 
+  
+    The propagator can decide what to do in the event 
+    an attribute is changed; that said, the default
+    behavior, if it is not overriden, is now to 
+    reconstruct the element based on its new state.   
+   
+    Consequently, setLength() and setStrength() are no longer virtual;
+    rather they are defined in the bmlnElmnt base class
+    and call a virtual function defined in the 
+    propagator interface. This function has the signature
+  
+    BasePropagator::setAttribute( std::string const& name, boost::any const& value );
+ 
+    In the (relatively rare) cases where the default behavior,
+    that is, reconstructing the element, is not a good option, 
+    the propagator must implement setAttribute(...).
+
+  
+    Other changes of significance are introduced in 
+    the beamline class include:
+
+  - The hierarchical information is now preserved, that is 
+    it is possible for a nested beamline to discover its
+    parent. Note that the guiding principle has been to 
+    accomplish this without radically changing the 
+    existing list-based low-level (private) implementation.  
+  
+  - The iterator implementation has been reworked and optimized 
+    but there is _no_ change to the public interface. Some of 
+    glitches with implicit conversion between const and non-const
+    iterators have been fixed. 
+  
+  - Propagator back as base class member.
+
+  - All beamline elements now have a proper implementation of
+    operator=(). Historically, in most cases no explicit 
+    implementation of operator=() was provided for most 
+    individual elements. The result is that he compiler 
+    would generate a default implementation - an incorrect one 
+    most of the time. In previous releases, I had started  
+    providing explicit implementations for a few elements, 
+    or in some cases, as an interim measure, simply made 
+    operator= forbidden. As of Jan 2008, the status of
+    operator= remained inconsistent at best. In this release,
+    it should be safe to write, for example
+
+    quadrupole q1( ... );  
+    quadrupole q2( ....); 
+
+    ...
+
+    q1 = q2;
+
+    Because we are mostly using smart pointers, this is a 
+    relatively rare occurence; perhaps code such as... 
+
+    QuadrupolePtr q1( new quadrupole( .. ) );  
+    QuadrupolePtr q2( new quadrupole( .. ) ); 
+
+    *q1 = *q2; 
+
+    in more likely. In any event, the idea is to make sure
+    that if one ever uses operator=() to copy an element,
+    this will not result in some very obscure, hard to track down  
+    bug ... 
+
+  
+  - The bmlnElmnt class has a new member: pscale_; This member
+    is used to keep track of the element strength scaling that
+    occurs when the reference trajectory is established.  
+    The benefit is that it is now possible to invoke RefRegVisitor
+    multiple times on a linac with acceleratingcavities. 
+    This is important: previously, it was not possible to
+    re-establish the reference trajectory on a beamline that 
+    has been modified if the beamline contained cavities, because
+    RefRegVisitor applied  momentum scaling directly 
+    to the nominal strength_.   
+
+
+ - the propagate functions are now const correct. Propagating a 
+    particle through an element should not change the state of the 
+    element. In the rare cases where there is state information 
+    that need to be preserved, the attribute can be declared 
+    mutable.   
+
+  - eliminated class RefRegVisitor. Functionality is now provided
+    using bmlnElmnt::registerReference(Particle const&). This 
+    non-virtuak function calls a virtual function with a slightly 
+    different signature which is then called recursively on beamlines.
+    Establishing the reference is a basic, fundamental operation. 
+    The old scheme relied on the Visitor pattern which is appropriate
+    to allow _users_ of a library to implement virtual functions
+    on a hierachy without having to modify headers in the library. 
+    The new implementation is much simpler to use. 
+
+
+-   enter/leaveLocalFrame no longer virtual. The previous 
+    implementation was effectively overriden only for the beamline
+    type.There was a test for the presence of sbend and rbend 
+    and ( not for CF_sbend. CF_rbend) to ascertain that none
+    were present. This test involve iterating over _every element_
+    of beamline for every particle that went through it. 
+    Needless to say, for a bunch this is not an option; it turns
+    out it also matter for the single particle performance, especially
+    for matching problems.    
+   
+
+o physics_toolkit
+
+  - Many VisitorXXX classes streamlined and/or eliminated. 
+ 
+  - FPSolver eliminated. Now using generic NewtonSolver class
+    in conjunction with suitable generalized functors to find 
+    closed orbit. 
+  
+  - BeamlineContext has been completely refactored
+
+  - Lattice functions computations are now performed by stand-alone
+    static functions placed in the namespace "Optics".
+    The results of all optics computations are committed to a 
+    relational database (sqlite) which is queried for plotting 
+    and tabular display.       
+
+
+  - knobs:
+
+
+
+python-bindings
+---------------
+
+ o  NumPy is now also supported, only in numarray emulation mode.     
+
+
+GUI
+---
+
+ o Significant changes have been made to the gui. The coupled/uncoupled
+   lattice function computation has been streamlined. The Edwards-Teng 
+   parametrization is no longer accessible from the menu (though the code 
+   is still there if needed). Mostly the issue is that the ET 
+   parametrization is not convenient in practice because 
+
+   (0) the physical significance (i.e. correspondence to measured beam sizes 
+       is not obvious    
+   (1) its asymptotic behavior for coupling -> 0 is not numerically very stable.  
+ 
+o  The gui now deals more consistently with both periodic (ring) and non-periodic 
+   beamlines (e..g). In particular, initial conditions will be be read from the 
+   latticefiles if they are specified. In all cases, initial conditions will be
+   displayed before the computation is performed and the used will be given an
+   opportunity to change them. Modified initial conditions are remembered.   
+
+o MADX parser
+
+ - new madx parser, to parse LHC files
+
+
+-----------------------------------------------------
+Summary of changes since the 20070808 stable release
+------------------------------------------------------
 
 o ParticleBunch  
 
@@ -16,10 +299,6 @@ o XSIF parser
  - improved command/element valid argument checking
  - support for BETA0 blocks (initial conditions)
 
-o MADX parser
-
- - new madx parser, to parse LHC files
-
 o beamline class
  
  - improved and streamlined iterator based public interface 
@@ -30,5 +309,21 @@ o beamline class
 o GUI
  
  - new bunch generation dialog
+
  - bunch projection plots 
+
  - bunch scatter plots 
+
+ - redesigned TuneDiagram 
+
+ - refactored BmlBrowser (BeamlineBrowser is the old version)
+
+ - fixed long-standing problems with widget scaling in MDI interface.
+   The root of the problem is that MDI widgets are reparented when
+   an child Event dispatched to the QWorkspace. child events are 
+   _posted_ which means that they are not processed immediately.
+   As a result, attempts to change the geometry of an MDI window
+   immediately after it is created may fail ( they do about 50% of the time)
+   The cure is to force processing of events meant to be dispatched
+   to QWorkspace before attempting to modify the geometry.
+ 
