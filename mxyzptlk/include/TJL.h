@@ -67,7 +67,9 @@
 ******
 ******  Mar 2008 ostiguy@fnal
 ******  - Jet composition and evaluation code refactored and optimized. 
-******  
+******  August 2008 
+******  - improved iterators 
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -134,7 +136,7 @@ std::istream& operator>>( std::istream& is, TJL<T>& x );
 
 
 template <typename T>
-JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  );  
+JLPtr<T>   operator+( JLPtr<T> const& x, JLPtr<T> const& y  );  
 
 template <typename T>
 JLPtr<T>& operator+=( JLPtr<T>&, T const& ); 
@@ -262,7 +264,7 @@ friend class TJL;
   TJL& Negate(); // in-place negation 
 
   friend JLPtr<T>  
-         operator+<>(  JLPtr<T> const& lhs,    JLPtr<T> const& rhs  );  
+         operator+<>(  JLPtr<T>   lhs,  JLPtr<T>  rhs  );  
 
   friend JLPtr<T>& 
          operator+=<>( JLPtr<T>&       lhs,           T const& rhs  ); 
@@ -351,7 +353,7 @@ friend class TJL;
 
 
   template <typename U>
-  class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::bidirectional_traversal_tag > {
+  class iter_ :  public boost::iterator_facade< iter_<U> , U , boost::random_access_traversal_tag > {
   
     template<typename V>
     friend class iter_;
@@ -370,6 +372,9 @@ friend class TJL;
              typename boost::enable_if<boost::is_convertible<OtherType*, U*> , enabler>::type = enabler())
            : node_(other.node_) {}
 
+      bool operator< ( iter_ const& it ) const { return node_ < it.node_; }
+      bool operator> ( iter_ const& it ) const { return node_ > it.node_; }
+
     private:
 
       friend class boost::iterator_core_access;
@@ -380,7 +385,7 @@ friend class TJL;
       void            decrement()                                   { --node_;          } 
       void            advance( typename iter_::difference_type n )  { node_ += n;       }   
       typename iter_::difference_type 
-                      distanceto( iter_ const&  j)                  { return node_ - j; }   
+                      distance_to( iter_ const&  j)  const          { return (j.node_ - node_); }   
  
       bool equal( iter_ const& other) const 
             {
