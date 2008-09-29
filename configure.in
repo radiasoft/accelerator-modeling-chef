@@ -1,12 +1,21 @@
+#--------------------------------------------------------------------
+# configure.in for top level  
+#
+# Authors:  Jean-Francois Ostiguy
+#           ostiguy@fnal.gov
+#
+#
 # Process this file with autoconf to produce a configure script.
-AC_INIT
+#
+#-------------------------------------------------------------------
+AC_INIT([fnal], [1.0])
 AC_CONFIG_MACRO_DIR([m4]) 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_SUBDIRS(basic_toolkit beamline bmlfactory parsers integrator mxyzptlk physics_toolkit gms python-bindings)
 
-LT_INIT
+AM_INIT_AUTOMAKE
 
-AM_INIT_AUTOMAKE(fnal, 1.0, no-define)
+LT_INIT
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT(tests/Makefile tests/local_paths.py)
