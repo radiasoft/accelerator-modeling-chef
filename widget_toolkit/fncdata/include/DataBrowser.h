@@ -33,34 +33,52 @@
 #ifndef DATABROWSER_H
 #define DATABROWSER_H
 
-#include <qtable.h>
+#include <DataBrowserBase2.h>
 #include <sqlite/connection.hpp>
 #include <sqlite/result.hpp>
+#include <ostream>
+#include <string>
 
+class DataBrowser;
+class QMenuBar;
+class QPopupMenu;
 
-class DataBrowser : public QTable {
+std::ostream& operator<<(  std::ostream& os, DataBrowser const& o); 
+
+class DataBrowser : public DataBrowserBase {
 
  Q_OBJECT
 
+ class FloatItem;
+
  public:
 
-  DataBrowser( sqlite::connection& db, QWidget* parent=0, const char* name=0 );
- ~DataBrowser();
+  DataBrowser( char const* dbname, QWidget* parent=0, const char* name=0 , WFlags fl = 0);
+  virtual  ~DataBrowser();
 
-  void closeEvent( QCloseEvent *event );
+  void print ( std::ostream& os) const;
 
  protected:
 
+  void closeEvent( QCloseEvent *event );
   void init( sqlite::connection& db, std::string const& sql);
 
-  sqlite::connection&  db_;  
+  mutable sqlite::connection   db_;  
+  std::string                 sql_;  
 
  private:   
 
-  sqlite::result_type               res_; 
-  bool                              table_complete_;  
-  
-  void get_rows();
+  void get_rows( sqlite::result_type res);
+  void clear();
+
+  QMenuBar*   menubar_;
+  QPopupMenu* col_display_menu_;
+
+ private slots:
+
+  void handleColumnSelection( int id); 
+  void handleSetPrecision( int );
+  void saveAs();
 
 };
 
@@ -72,7 +90,7 @@ class CS4DDataBrowser: public DataBrowser {
 
  public:
 
-  CS4DDataBrowser( sqlite::connection& db, QWidget* parent, char const* name );
+  CS4DDataBrowser( char const* dbname, QWidget* parent, char const* name, WFlags fl = 0  );
 };
 
 
@@ -80,7 +98,7 @@ class CS2DDataBrowser: public DataBrowser {
 
  public:
 
-  CS2DDataBrowser( sqlite::connection& db, QWidget* parent, char const* name );
+  CS2DDataBrowser( char const* dbname, QWidget* parent, char const* name, WFlags fl = 0);
 };
 
 
@@ -88,7 +106,7 @@ class DispersionDataBrowser: public DataBrowser {
 
  public:
 
-  DispersionDataBrowser( sqlite::connection& db, QWidget* parent, char const* name );
+  DispersionDataBrowser( char const* dbname, QWidget* parent, char const* name,  WFlags fl = 0 );
 };
 
 
@@ -96,7 +114,7 @@ class CovarianceDataBrowser: public DataBrowser {
 
  public:
 
-  CovarianceDataBrowser( sqlite::connection& db, QWidget* parent, char const* name );
+  CovarianceDataBrowser( char const* dbname, QWidget* parent, char const* name,   WFlags fl = 0);
 };
 
 
