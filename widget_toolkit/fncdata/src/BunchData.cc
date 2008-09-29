@@ -33,6 +33,7 @@
 
 #include <BunchData.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 
 using namespace std;
 
