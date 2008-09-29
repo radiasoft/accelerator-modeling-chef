@@ -56,6 +56,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/Alignment.h>
+#include <beamline/ParticleFwd.h>
 
 
 
@@ -63,8 +64,7 @@ enum WHICH_MULTIPOLE { DIPOLE_FIELD, QUADRUPOLE_FIELD, SEXTUPOLE_FIELD,
                        OCTUPOLE_FIELD, DECAPOLE_FIELD, TWELVEPOLE_FIELD, 
                        FOURTEENPOLE_FIELD, SIXTEENPOLE_FIELD, EIGHTEENPOLE_FIELD };
 
-class Particle;
-class JetParticle;
+
 class BmlVisitor;
 class ConstBmlVisitor;
 
@@ -84,7 +84,7 @@ public:
 
   combinedFunction* Clone() const { return new combinedFunction( *this ); }
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   void append(bmlnElmnt&);
 
@@ -107,10 +107,11 @@ public:
   alignmentData Skew( WHICH_MULTIPOLE );
   alignmentData getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }
 
-  const char* Type() const;
-  bool isMagnet()    const;
-  bool isThin()      const;
-  bool isPassive()   const;
+  const char* Type()    const;
+  bool isMagnet()       const;
+  bool isThin()         const;
+  bool isPassive()      const;
+  bool isDriftSpace()   const;
 
 private:
 

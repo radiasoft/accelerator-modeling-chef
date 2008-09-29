@@ -93,11 +93,12 @@ class DLLEXPORT Slot : public bmlnElmnt {
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
 
-   void Split( double const& s, ElmPtr&, ElmPtr& ) const;
+   std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
-   bool         isMagnet()  const;
-   bool         isThin()    const;
-   bool         isPassive() const;
+   bool         isMagnet()     const;
+   bool         isThin()       const;
+   bool         isPassive()    const;
+   bool         isDriftSpace() const;
 
    const char*  Type()      const;
 
