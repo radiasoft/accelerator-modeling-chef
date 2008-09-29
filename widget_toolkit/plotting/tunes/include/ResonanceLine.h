@@ -28,9 +28,10 @@
 #ifndef RESONANCELINE_H
 #define RESONANCELINE_H
 
+#include <qpoint.h>
+
 class TuneDiagram::ResonanceLine : public QwtData {
  
-
  public: 
 
   ResonanceLine( int nx, int ny, int n ); 
@@ -50,6 +51,10 @@ class TuneDiagram::ResonanceLine : public QwtData {
   double nx_;
   double ny_;
   double n_;
+
+  QPoint point1_;
+  QPoint point2_;
+
 
 };
 

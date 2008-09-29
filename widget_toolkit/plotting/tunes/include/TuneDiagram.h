@@ -27,8 +27,9 @@
 #ifndef TUNEDIAGRAM_H
 #define TUNEDIAGRAM_H
 
-#include <qwt_data.h>
 #include <TuneDiagramBase.h>
+#include <qwt_data.h>
+#include <cstdlib>
 
 class QwtPlotCurve;
 
@@ -51,23 +52,47 @@ class TuneDiagram: public TuneDiagramBase {
 
  private slots:
 
-  void maxOrderValueChanged( int ); 
-  void minOrderValueChanged( int ); 
-  void checkBoxSumsClicked();
-  void checkBoxDifferencesClicked();
+  void setMaxOrder( int ); 
+  void setMinOrder( int ); 
+  void showSums();
+  void showDifferences();
 
  private:
 
+  void plotResonances();
+  void clear();
+
   TuneDiagram( TuneDiagram const& );
-  QwtPlotCurve* tunescrv_;
+
+  double nu1_; 
+  double nu2_; 
 
 };
 
 class TuneDiagram::ResonanceLine : public QwtData {
  
+  struct Point {
+    Point() : xp(0.0), yp(0.0) {}
+    Point( double x, double y) : xp(x), yp(y) {}
+    Point( Point const& o ): xp(o.xp), yp(o.yp) {}
+    double xp;
+    double yp;
+
+    double x() const { return xp; }
+    double y() const { return yp; }
+    bool operator==( Point const& rhs) const { return ( (abs(this->xp-rhs.xp) < 1.0e-6)  && ( abs(this->yp-rhs.yp)<1.0e-6 )) ; }
+    bool operator< ( Point const& rhs) const {   if (  (abs(this->xp-rhs.xp) < 1.0e-6) ) { 
+                                                       return (this->yp < rhs.yp) ; 
+                                                 }
+                                                 else { 
+                                                     return (this->xp < rhs.xp) ; 
+					         }
+                                              }
+  };                          
+ 
  public: 
 
-  ResonanceLine( int nx, int ny, int n ); 
+  ResonanceLine( int nx, int ny, int n, double xoffset=0.0, double yoffset=0.0 ); 
   ResonanceLine(  ResonanceLine const& o); 
  ~ResonanceLine();
 
@@ -77,13 +102,21 @@ class TuneDiagram::ResonanceLine : public QwtData {
   double  	 x (size_t i)    const;
   double 	 y (size_t i)    const;
 
-  // QwtDoubleRect  boundingRect ();
-
+  QwtDoubleRect  boundingRect () const;
+ 
+  bool isVisible() const; 
+ 
  private:
   
   double    nx_;
   double    ny_;
   double    n_;
+
+  Point point1_;
+  Point point2_;
+
+  double xoffset_;
+  double yoffset_;
 };
 
 #endif // TUNEDIAGRAM_H
