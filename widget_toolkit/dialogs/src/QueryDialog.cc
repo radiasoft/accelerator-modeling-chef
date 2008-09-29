@@ -12,6 +12,13 @@
 ******  Copyright (c) 2004  Universities Research Association, Inc.   
 ******                All Rights Reserved                             
 ******                                                                
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S.and Foreign Copyright Laws. 
+******               
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -22,9 +29,6 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License and the GNU General Public License, both of
-******  which are supplied with this software.
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -66,29 +70,30 @@ QueryDialog::QueryDialog( QWidget* p, const char* n, WFlags f )
     QPushButton* enterPtr = new QPushButton( "Enter", opsBoxPtr_ );
     // enterPtr->setMinimumWidth( QApplication::desktop()->width()/9 );
     enterPtr->setMaximumWidth( 70 );
-    connect( enterPtr, SIGNAL(pressed()),
+    connect( enterPtr, SIGNAL(clicked()),
              this,     SLOT(opEnter()) );
     QPushButton* andPtr   = new QPushButton( "AND",   opsBoxPtr_ );
     andPtr->setMaximumWidth( 70 );
-    connect( andPtr,   SIGNAL(pressed()),
+    connect( andPtr,   SIGNAL(clicked()),
              this,     SLOT(opAnd()) );
     QPushButton* orPtr    = new QPushButton( "OR",    opsBoxPtr_ );
     orPtr->setMaximumWidth( 70 );
-    connect( orPtr,    SIGNAL(pressed()),
+    connect( orPtr,    SIGNAL(clicked()),
              this,     SLOT(opOr()) );
     QPushButton* notPtr   = new QPushButton( "NOT",   opsBoxPtr_ );
     notPtr->setMaximumWidth( 70 );
-    connect( notPtr,   SIGNAL(pressed()),
+    connect( notPtr,   SIGNAL(clicked()),
              this,     SLOT(opNot()) );
 
-    QPushButton* applyPtr = new QPushButton( "Apply",   opsBoxPtr_ );
+    QPushButton* applyPtr = new QPushButton( "Clear",   opsBoxPtr_ );
     applyPtr->setMaximumWidth( 70 );
-    connect( applyPtr, SIGNAL(pressed()),
-             this,     SLOT( doFilter()) );
-    QPushButton* closePtr = new QPushButton( "Close",   opsBoxPtr_ );
+    connect( applyPtr, SIGNAL(clicked()),
+             this,     SLOT(clear()) );
+
+    QPushButton* closePtr = new QPushButton( "OK",      opsBoxPtr_ );
     closePtr->setMaximumWidth( 70 );
-    connect( closePtr, SIGNAL(pressed()),
-             this,     SLOT(close()) );
+    connect( closePtr, SIGNAL(clicked()),
+             this,     SLOT( doFilter()) );
 
     QWidget* opsFiller = new QWidget( opsBoxPtr_ );
     opsFiller->setSizePolicy( QSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored) );
@@ -222,9 +227,6 @@ QueryDialog::~QueryDialog()
   for( int i = 0; i < 4; i++ ) {
     if( 0 != queryPtr_[i] )     { delete queryPtr_[i]; }
   }
-  if( tabWidgetPtr_ ) { delete  tabWidgetPtr_; }
-  if( opsBoxPtr_    ) { delete  opsBoxPtr_;    }
-  if( displayPtr_   ) { delete  displayPtr_;   }
 }
 
 
@@ -379,7 +381,17 @@ void QueryDialog::updateDisplay()
 
 void QueryDialog::doFilter()
 {
+  close();
   if( 0 != queryPtr_[0] ) { emit useThis( *(queryPtr_[0]) ); }
+}
+
+
+void QueryDialog::clear()
+{
+  for( int i = 0; i < 4; i++ ) {
+    queryPtr_[i] = 0;
+  }
+  updateDisplay();
 }
 
 
