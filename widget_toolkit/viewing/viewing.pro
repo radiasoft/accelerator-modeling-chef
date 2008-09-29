@@ -23,11 +23,17 @@ unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 HEADERS += ./include/EditDialog.h \
            ./include/SiteViewer.h \ 
            ./include/QElm.h \
-           ./include/BmlBrowser.h
+           ./include/BmlBrowser.h \
+           ./include/DialogElmInfo.h
 
 SOURCES += ./src/EditDialog.cc \
            ./src/SiteViewer.cc \
            ./src/BmlBrowser.cc \
-           ./src/QElm.cc
+           ./src/QElm.cc \
+           ./src/DialogElmInfo.cc
+
+FORMS = src/DialogElmInfoBase.ui
 
 INCLUDEPATH += ../dialogs/include
+INCLUDEPATH += ./ui
+
