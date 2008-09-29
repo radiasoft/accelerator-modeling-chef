@@ -34,6 +34,7 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/beamline.h>
 #include <list>
@@ -158,12 +159,10 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("insert",                 insert1);
  beamline_.def("append",                 append1 );
  beamline_.def("flatten",                &beamline::flatten);
+ beamline_.def("registerReference",      &beamline::registerReference );
 
 
  beamline_.def("InsertElementsFromList",     &InsertElementsFromList_wrap);
- // beamline_.def("InsertElementAt",         &beamline::InsertElementAt);          // NOT IMPLEMENTED !!! 
-
-  // PROPAGATE PARTICLES
 
  beamline_.def("propagateParticle",      beamline_propagateParticle);
  beamline_.def("propagateJetParticle",   beamline_propagateJetParticle);
@@ -172,10 +171,6 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("setMomentum",    &beamline::setMomentum);
 
 
-  // QUERIES
-
- //beamline_.def("whatisLattice",            whatisLattice1); 
- //beamline_.def("whatisLattice",            whatisLattice2);
  beamline_.def("countHowMany",               countHowMany1 );
  beamline_.def("countHowManyDeeply",         countHowManyDeeply1 );
  beamline_.def("isFlat",                     &beamline::isFlat);
@@ -183,12 +178,9 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("depth",                      &beamline::depth);
  beamline_.def("firstElement",               &beamline_firstElement, return_value_policy<reference_existing_object>() );
  beamline_.def("lastElement",                &beamline_lastElement,  return_value_policy<reference_existing_object>() );
-  beamline_.def("Momentum",                  &beamline::Momentum);
+ beamline_.def("Momentum",                   &beamline::Momentum);
  beamline_.def("OrbitLength",                &beamline::OrbitLength);
  beamline_.def("accept",                     accept1);
- //beamline_.def("flatten",&beamline::flatten,
- //     return_value_policy<reference_existing_object>());
- //beamline_.def("whatIsRing",               &beamline::whatIsRing)
 
 }
 
