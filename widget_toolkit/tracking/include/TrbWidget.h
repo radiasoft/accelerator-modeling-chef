@@ -106,7 +106,7 @@ private:
   void _drawOneLine( double, double, double, double );
   void _output(double, double, double );
   void _zoutput(double, double, double, double );
-  void _choutput(double, double, char* );
+  void _choutput(double, double, char const* );
   void _drawGrid();
 
   // Overloaded mouse handling functions
