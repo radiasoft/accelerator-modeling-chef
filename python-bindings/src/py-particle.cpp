@@ -114,12 +114,12 @@ void wrap_particle () {
  scope scope_Particle = Particle_;
 
  enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
-    .value("xIndex",     Particle::xIndex   )
-    .value("yIndex",     Particle::yIndex   )
-    .value("cdtIndex",   Particle::cdtIndex )
-    .value("npxIndex",   Particle::npxIndex )
-    .value("npyIndex",   Particle::npyIndex )
-    .value("ndpIndex",   Particle::ndpIndex )
+    .value("xIndex",     Particle::i_x   )
+    .value("yIndex",     Particle::i_y   )
+    .value("cdtIndex",   Particle::i_cdt )
+    .value("npxIndex",   Particle::i_npx )
+    .value("npyIndex",   Particle::i_npy )
+    .value("ndpIndex",   Particle::i_ndp )
   ;
 
 

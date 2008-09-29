@@ -61,12 +61,12 @@
 using namespace std;
 
 namespace {
- Particle::PhaseSpaceIndex const& i_x     = Particle::xIndex;
- Particle::PhaseSpaceIndex const& i_npx   = Particle::npxIndex;
- Particle::PhaseSpaceIndex const& i_y     = Particle::yIndex;
- Particle::PhaseSpaceIndex const& i_npy   = Particle::npyIndex;
- Particle::PhaseSpaceIndex const& i_cdt   = Particle::cdtIndex;
- Particle::PhaseSpaceIndex const& i_ndp   = Particle::ndpIndex;
+ Particle::PhaseSpaceIndex const& i_x     = Particle::i_x;
+ Particle::PhaseSpaceIndex const& i_npx   = Particle::i_npx;
+ Particle::PhaseSpaceIndex const& i_y     = Particle::i_y;
+ Particle::PhaseSpaceIndex const& i_npy   = Particle::i_npy;
+ Particle::PhaseSpaceIndex const& i_cdt   = Particle::i_cdt;
+ Particle::PhaseSpaceIndex const& i_ndp   = Particle::i_ndp;
 }
 
 using namespace std;
@@ -196,10 +196,10 @@ int BmlUtil::makeCovariance( CSLattFuncs& w, Particle const& prtn,
 
   MatrixD aa(n,n);
 
-  aa[Particle::xIndex  ][ Particle::xIndex    ]   = I1;
-  aa[Particle::npxIndex][ Particle::npxIndex  ]   = I1;
-  aa[Particle::yIndex  ][ Particle::yIndex    ]   = I2;
-  aa[Particle::npyIndex][ Particle::npyIndex  ]   = I2;
+  aa[i_x  ][ i_x   ]   = I1;
+  aa[i_npx][ i_npx ]   = I1;
+  aa[i_y  ][ i_y   ]   = I2;
+  aa[i_npy][ i_npy ]   = I2;
 
   // Construct matrix of eigenvectors
 
@@ -207,10 +207,10 @@ int BmlUtil::makeCovariance( CSLattFuncs& w, Particle const& prtn,
  
   CVLattFuncs lf(w);
  
-  E[ Particle::xIndex   ][0] =   sqrt( lf.beta.hor / 2.0 );
-  E[ Particle::npxIndex ][0] = - ( i + lf.alpha.hor )/sqrt( 2.0*lf.beta.hor );
-  E[ Particle::yIndex   ][1] =   sqrt( lf.beta.ver / 2.0 );
-  E[ Particle::npyIndex ][1] = - ( i + lf.alpha.ver )/sqrt( 2.0*lf.beta.ver );
+  E[ i_x   ][0] =   sqrt( lf.beta.hor / 2.0 );
+  E[ i_npx ][0] = - ( i + lf.alpha.hor )/sqrt( 2.0*lf.beta.hor );
+  E[ i_y   ][1] =   sqrt( lf.beta.ver / 2.0 );
+  E[ i_npy ][1] = - ( i + lf.alpha.ver )/sqrt( 2.0*lf.beta.ver );
 
   for( int j=0; j < 2; ++j) {
     int m = j + (n/2);
@@ -291,10 +291,11 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
           ret->append( ElmPtr( ins->Clone() ) );
         }
         else {
-          (*it)->Split( percent, spa, spb ); 
-          ret->append( ElmPtr(spa->Clone()) );
+
+          std::pair<ElmPtr,ElmPtr> elms = (*it)->split( percent); 
+          ret->append( ElmPtr(elms.first->Clone()) );
           ret->append( ElmPtr(ins->Clone()) );
-          ret->append( ElmPtr(spb->Clone()) );
+          ret->append( ElmPtr(elms.second->Clone()) );
         }
       }
 

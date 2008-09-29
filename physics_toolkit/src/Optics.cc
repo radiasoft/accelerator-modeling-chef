@@ -37,7 +37,6 @@
 #include <basic_toolkit/NewtonSolver.h>
 #include <mxyzptlk/Jet__environment.h>
 #include <beamline/beamline.h>
-#include <beamline/RefRegVisitor.h>
 #include <beamline/rfcavity.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
@@ -70,12 +69,12 @@ using namespace std;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x    = Particle::xIndex;
-  Particle::PhaseSpaceIndex const& i_y    = Particle::yIndex;
-  Particle::PhaseSpaceIndex const& i_cdt  = Particle::cdtIndex;
-  Particle::PhaseSpaceIndex const& i_npx  = Particle::npxIndex;
-  Particle::PhaseSpaceIndex const& i_npy  = Particle::npyIndex;
-  Particle::PhaseSpaceIndex const& i_ndp  = Particle::ndpIndex;
+  Particle::PhaseSpaceIndex const& i_x    = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y    = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt  = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx  = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy  = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp  = Particle::i_ndp;
 
 }
 
@@ -272,7 +271,6 @@ static double norm ( Vector const & v )
 JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp )
 {
 
-
   // TURN RF OFF **** FIXME     
 
    Jet__environment::pushEnv( jp.State().Env() );
@@ -300,7 +298,7 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
 
   // Register the closed orbit with the beamline.
 
-  RefRegVisitor(Particle(jpco)).visit( const_cast<beamline&>(bml) );
+   const_cast<beamline&>(bml).registerReference((Particle(jpco) ));
 
   // TURN RF ON  ****FIXME   
 
