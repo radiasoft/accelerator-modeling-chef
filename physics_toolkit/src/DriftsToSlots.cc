@@ -50,8 +50,6 @@
 ******      : (a ring does not close)
 ******
 ****** Oct 2007   michelotti@fnal.gov
-******  - a line that had been removed at some point in the murky
-******    past is being returned
 ******  - extended functionality to dipoles that bend vertically
 ****** 
 ****** Mar 2007   ostiguy@fnal.gov
@@ -279,10 +277,9 @@ beamline* DriftsToSlots( beamline const& argbml )
   beamline original(argbml);  
 
   double entryAngle = 0.0, exitAngle  = 0.0, rollAngle  = 0.0;
-  // Not necessary to initialize these, but what the hell.
 
   // Preliminary tests for a valid, sane argument.
-  const bool originalRing = ( beamline::ring == original.getLineMode() );
+  bool const originalRing = ( beamline::ring == original.getLineMode() );
 
   // There should be more than one element
   if( original.countHowManyDeeply() < 3 ) {
@@ -299,8 +296,7 @@ beamline* DriftsToSlots( beamline const& argbml )
   }
 
   // Bends with parallel faces should not be adjacent.
-  // 
-
+ 
   ElmPtr q;
   bool prev_is_rbend_like = false; // true if the previous element is rbend-like
 
@@ -379,6 +375,7 @@ beamline* DriftsToSlots( beamline const& argbml )
   // Create new beamlines ...
  
   beamline* ret = new beamline;
+
   beamline  flatRing = original.flatten();
 
 
