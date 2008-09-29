@@ -76,6 +76,7 @@
 #include <physics_toolkit/BeamlineContext.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 
 
 // This undef is needed because of the compiler.

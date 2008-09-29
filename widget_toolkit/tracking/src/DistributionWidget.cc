@@ -16,8 +16,7 @@
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S.and Foreign Copyright Laws. 
-                                                                
-                                                                
+******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
 ******             Fermilab                                           
@@ -55,6 +54,7 @@ typedef boost::variate_generator<boost::minstd_rand&, boost::normal_distribution
 #include <bmlnElmnt.h>
 #include <Particle.h>
 #include <ParticleBunch.h>
+#include <TBunch.h>
 #include <BeamlineContext.h>
 
 #include <qapplication.h>
