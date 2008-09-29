@@ -111,10 +111,11 @@ public:
   bool isEnabled() const;
   bool enable( bool set);
 
-  const char* Type()      const;
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
+  const char* Type()         const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
 protected:
 
@@ -156,9 +157,6 @@ class DLLEXPORT hmonitor : public monitor {
   hmonitor& operator=(hmonitor const& rhs);
 
   const char* Type()     const;
-  bool        isMagnet() const;
-  bool        isThin()    const;
-  bool        isPassive() const;
 
  };
 
@@ -182,10 +180,6 @@ public:
   vmonitor& operator=(vmonitor const& rhs);
 
   const char* Type()      const;
-  bool        isMagnet()  const;
-  bool        isThin()    const;
-  bool        isPassive() const;
-
 
 };
 

@@ -94,12 +94,12 @@ public:
 
   void setCurrent( double const& );
 
-  const char* Type() const;
-  bool isMagnet()    const;
-  bool isThin()      const;
-  bool isPassive()   const;
+  const char* Type()    const;
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  bool isMagnet()       const;
+  bool isThin()         const;
+  bool isPassive()      const;
+  bool isDriftSpace()   const;
 
 };
 
@@ -125,9 +125,10 @@ public:
 
   const char* Type() const;
 
-  bool isMagnet()    const;
-  bool isThin()      const;
-  bool isPassive()   const;
+  bool isMagnet()       const;
+  bool isThin()         const;
+  bool isPassive()      const;
+  bool isDriftSpace()   const;
 
 };
 
