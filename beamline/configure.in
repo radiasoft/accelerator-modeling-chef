@@ -10,11 +10,16 @@
 #
 #-------------------------------------------------------------------
 
-AC_INIT(src/BmlVisitor.cc)
+AC_INIT([beamline], [1.0])
+AC_CONFIG_SRCDIR([src/BmlVisitor.cc])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_AUX_DIR([config])
+
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE(beamline, 1.0, no-define)
+AC_CONFIG_HEADERS
+
+LT_INIT
 
 AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
 if test "x${withval}" != "xno"; then
@@ -74,8 +79,8 @@ elif test "x${CXX}" = "xpgCC"; then
      AC_SUBST(AM_CPPFLAGS)
 fi,
 if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
-	CXXFLAGS=set_CXXFLAGS
-	CFLAGS=set_CFLAGS
+	CXXFLAGS=$set_CXXFLAGS
+	CFLAGS=$set_CFLAGS
 	AC_SUBST(CFLAGS)
 	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
