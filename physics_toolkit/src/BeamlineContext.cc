@@ -63,7 +63,7 @@
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
-#include <beamline/RefRegVisitor.h>
+#include <beamline/TBunch.h>
 #include <beamline/LinacCavity.h>
 #include <beamline/FramePusher.h>
 
@@ -124,15 +124,21 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
    //-------------------------------------------------------------------
 
    bool convert_drifts_to_slots = false;
+
+#if 1
    for (beamline::deep_iterator it  = deep_begin();  
                                 it != deep_end(); ++it ) {
 
-     
-     if ( convert_drifts_to_slots = d2S_rbendLike( **it ) ) break;
+     if ( convert_drifts_to_slots = !(*it )->hasStandardFaces() ) break;
    }
 
-   // ***** if ( convert_drifts_to_slots ) { DriftsToSlots( *this ); }       
+   
+    if ( convert_drifts_to_slots ) { 
+      //DriftsToSlots( *this ); }       
+      std::cout << "contains slots ! " << std::endl;
+    }
 
+#endif
 
    //-------------------------------------------------------------------
    // create and initialize the database
@@ -252,7 +258,7 @@ void BeamlineContext::setInitialCS4D( CSLattFuncs4D const& u )
 
 CSLattFuncs const& BeamlineContext::getInitialCS()
 {
-  if  ( !initialCSLattFuncs_.defined() ) { periodicCourantSnyder2D(); }
+  if  ( !initialCSLattFuncs_.defined() && isTreatedAsRing() ) { periodicCourantSnyder2D(); }
   return initialCSLattFuncs_;
 }
 
@@ -347,16 +353,12 @@ Particle const& BeamlineContext::getParticle()
 
 void BeamlineContext::periodicReferenceOrbit()
 {
-  
-   if( reference_orbit_ok() )  return; 
+  if( reference_orbit_ok() )  return; 
 
-   Particle p(*particle_); 
-
-   RefRegVisitor( ( Particle(p) ) ).visit(*this) ;
-
-   refjp_ = Optics::find_closed_orbit( (*db_), *this, JetParticle(p) );  
-   
-   Optics::orbit( (*db_), *this, Particle(refjp_) );
+   refjp_ = Optics::find_closed_orbit( (*db_), *this, JetParticle(*particle_) );  
+   Particle p(refjp_);
+   registerReference(p);
+   Optics::orbit( (*db_), *this,  p);
 
 }
 
@@ -368,7 +370,6 @@ void BeamlineContext::propagateReferenceOrbit()
 
    if( reference_orbit_ok() )  return; 
 
-  
    Particle p(*particle_); 
 
    Vector& state = p.State();
@@ -378,14 +379,12 @@ void BeamlineContext::propagateReferenceOrbit()
    state[1] =  initialCSLattFuncs_.reference_orbit.y;
    state[4] =  initialCSLattFuncs_.reference_orbit.yp;
 
-   RefRegVisitor( ( Particle(p) ) ).visit(*this) ;
-
-   Optics::orbit( (*db_), *this, p );
-
    refjp_ = JetParticle(p);
 
-}
+   registerReference(p);
 
+   Optics::orbit( (*db_), *this, p );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
