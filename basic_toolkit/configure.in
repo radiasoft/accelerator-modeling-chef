@@ -14,9 +14,12 @@ AC_INIT([basic_toolkit], [1.0])
 AC_CONFIG_SRCDIR([src/IntArray.cc])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR(config)
-AM_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE
 
+AM_INIT_AUTOMAKE
+AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS
+
+LT_INIT
 
 AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
 if test "x${withval}" != "xno"; then
