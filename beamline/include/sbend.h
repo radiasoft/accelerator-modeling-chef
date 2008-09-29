@@ -99,20 +99,16 @@ class DLLEXPORT sbend : public bmlnElmnt {
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  void enterLocalFrame(    Particle& ) const;
-  void enterLocalFrame( JetParticle& ) const;
-  void leaveLocalFrame(    Particle& ) const;
-  void leaveLocalFrame( JetParticle& ) const;
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  const char* Type() const;
-  bool isMagnet()    const;
-  bool isThin()      const;
-  bool isPassive()   const;
+  char const* Type()  const;
+  bool isDriftSpace() const;
+  bool isMagnet()     const;
+  bool isThin()       const;
+  bool isPassive()    const;
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   double        setBendAngle(double const& a) { return (angle_ = a); }
   double const& getBendAngle() const          { return angle_; }
@@ -136,10 +132,11 @@ class DLLEXPORT sbend : public bmlnElmnt {
   double getEntryFaceAngle()   const; 
   double  getExitFaceAngle()   const; 
 
-  void nullExitEdge();
-  void nullEntryEdge();
+ protected:
 
-private:
+  void propagateReference( Particle& p, double initialBRho, bool scaling);          
+
+ private:
 
   double   angle_;
   double   usFaceAngle_;

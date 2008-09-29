@@ -94,6 +94,7 @@ class DLLEXPORT rbend : public bmlnElmnt
                                        // : for edge focusing calculations.
 
   // Other possibilities
+
   rbend( std::string const& name, 
          double const& length, 
          double const& field, 
@@ -116,14 +117,7 @@ class DLLEXPORT rbend : public bmlnElmnt
                                        // (assumes symmetric pssage unless reset)
          double const& usedge,
          double const& dsedge );
-  rbend( std::string const& name, 
-         double const& length,
-         double const& field,
-         double const& bendangle,
-         double const& entry_angle,    // entry angle (generally > 0)
-         double const& exit_angle,     // exit  angle (generally < 0)
-         double const& usedge,
-         double const& dsedge );
+
   rbend( rbend const& );
  ~rbend();
 
@@ -132,9 +126,9 @@ class DLLEXPORT rbend : public bmlnElmnt
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  // Note: fiducial trajectory entry and exit angles are not arguments
-  // in the rbend constructors. A symmetric bend is assumed
-  // by default. Otherwise, use one of the following.
+ // Note: fiducial trajectory entry and exit angles are not arguments
+ // in the rbend constructors. A symmetric bend is assumed
+ // by default. Otherwise, use one of the following.
 
   double setEntryAngle( Particle const& ); 
   double  setExitAngle( Particle const& ); 
@@ -143,9 +137,6 @@ class DLLEXPORT rbend : public bmlnElmnt
 
   double getEntryAngle()    const;
   double  getExitAngle()    const;
-
-  void nullExitEdge();
-  void nullEntryEdge();
 
   void          setPoleFaceAngle( Particle const& p );
   double const& getPoleFaceAngle() const;
@@ -163,19 +154,22 @@ class DLLEXPORT rbend : public bmlnElmnt
 
   const char* Type() const;
 
-  bool isMagnet()  const;
-  bool isThin()    const;
-  bool isPassive() const;
+  bool isMagnet()     const;
+  bool isThin()       const;
+  bool isPassive()    const;
+  bool isDriftSpace() const;
 
   double OrbitLength( Particle const& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.
 
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
-    // WARNING: After the Split function is used, the new elements 
-    // must be commissioned with RefRegVisitor.
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
-private:
+ protected:
+
+  void propagateReference( Particle& p, double initialBRho, bool scaling);
+
+ private:
 
   double   angle_;
   double   usFaceAngle_;
