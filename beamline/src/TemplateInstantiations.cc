@@ -41,8 +41,8 @@
 #include <beamline/EdgePropagators.h>
 #include <beamline/TBunch.h>
 #include <beamline/TBunch.tcc>
+#include <beamline/JetParticle.h>
 #include <beamline/Particle.h>
-#include <beamline/lattFunc.h>
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/WakeFunctions.h>
 #include <beamline/BeamlineExpressionTree.h>
@@ -76,6 +76,10 @@
 #include <beamline/ThinMultipolePropagators.h>
 #include <beamline/PropagatorFactory.h>
 #include <beamline/BunchProjector.h>
+
+#include <beamline/AlignmentDecorator.h>
+#include <beamline/ApertureDecorator.h>
+
 
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <boost/shared_ptr.hpp>
@@ -273,6 +277,9 @@ template       boost::shared_ptr<vkick>::shared_ptr( vkick* );
 
 template       boost::shared_ptr<WakeKick>::shared_ptr( WakeKick* );
 
+template       boost::shared_ptr<ApertureDecorator>::shared_ptr( ApertureDecorator * );
+template       boost::shared_ptr<AlignmentDecorator>::shared_ptr( AlignmentDecorator * );
+template       boost::shared_ptr<PropagatorDecorator>::shared_ptr( PropagatorDecorator * );
 
 //---------------------------------------------
 // BasePropagators
