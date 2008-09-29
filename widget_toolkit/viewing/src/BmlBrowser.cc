@@ -8,17 +8,23 @@
 ******                                                                
 ******  File:      BmlBrowser.cc
 ******                                                                
-****** Copyright (c) Universities Research Association, Inc./ Fermilab    
-******                 All Rights Reserved                             
+******  Copyright (c) Fermi Research Alliance LLC
+******                All Rights Reserved
 ******
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
 ******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359.
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S.and Foreign Copyright Laws. 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******                                                                
+******  Authors:    Jean-Francois Ostiguy  ostiguy@fnal.gov             
+******              Leo Michelotti         michelotti@fnal.gov 
+******
 **************************************************************************
 *************************************************************************/
 
@@ -39,6 +45,7 @@
 #include <qlayout.h>
 
 #include <BmlBrowser.h>
+#include <DialogElmInfo.h>
 #include <GenericException.h>
 #include <bmlfactory/MAD8Factory.h>
 #include <BeamlineExpressionTree.h>
@@ -454,12 +461,16 @@ std::list<ElmPtr> BmlBrowser::getElmSelection()       const
 
 void BmlBrowser::visit( beamline const& x )
 {
-  QWidget* pw = parentWidget()->parentWidget();
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
 
-  QString cap = QString("Beamline %1" ).arg( x.Name() ); 
-  QString msg = QString( "%1 elements. \nReference momentum = %2 GeV/c ").arg( x.countHowManyDeeply() ).arg(x.Momentum() );
+  QWidget* pw = parentWidget()->parentWidget();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "No of elements",     "",         QString("%1").arg( x.countHowManyDeeply()) );
+  w->addPropertyRow( "Reference Momentum", "[GeV/c]",  QString("%1").arg( x.Momentum()) );
  
-  QMessageBox::information( pw, cap, msg );
+  w->show();
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -468,10 +479,16 @@ void BmlBrowser::visit( beamline const& x )
 void BmlBrowser::visit( bmlnElmnt const& x )
 {
 
-  QWidget* pw = parentWidget()->parentWidget();
   QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
-  QString msg = QString("Length = %1; Strength = %2" ).arg(x.Length()).arg(x.Strength());
-  QMessageBox::information( pw, cap, msg );
+
+  QWidget* pw = parentWidget()->parentWidget();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",   "[m]",         QString("%1").arg(  x.Length()) );
+  w->addPropertyRow( "Strength", "unspecified", QString("%1").arg(x.Strength()) );
+ 
+  w->show();
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -479,36 +496,14 @@ void BmlBrowser::visit( bmlnElmnt const& x )
 
 void BmlBrowser::visit( drift const& x )
 {  
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QDialog* wpu = new QDialog( pw, 0, false, Qt::WDestructiveClose );
-     QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        new QLabel( "Length [m] = ", qhb1 );
-        new QLabel( QString().setNum( x.Length()), qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        QPushButton* closeBtn = new QPushButton( "Close", qhb2 );
-          closeBtn->setDefault( true );
-          QObject::connect( closeBtn,  SIGNAL( pressed()),
-                   wpu,       SLOT(   close()) );
-      qhb2->setMargin(10);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
- std::cout << "wpu parent name = " 
-           << wpu->parentWidget()->name() << std::endl; 
-
-  wpu->show();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",   "[m]",         QString("%1").arg(  x.Length()) );
+  w->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -517,86 +512,34 @@ void BmlBrowser::visit( drift const& x )
 void BmlBrowser::visit( Slot const& x )
 {
   
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
-
-  QString xstr, ystr, zstr;
-  QString lparen("( ");
-  QString rparen(" )");
-  QString comma(", ");
   
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
+  Vector uso =  x.getInFrame().getOrigin();
+  Vector ux =   x.getInFrame().getxAxis();
+  Vector uy =   x.getInFrame().getyAxis();
+  Vector us =   x.getInFrame().getzAxis();
 
-    QVBox* qvb = new QVBox( wpu );
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 5, 3, 5, 10 );
+  Vector dso =  x.getOutFrame().getOrigin();
+  Vector dx =   x.getOutFrame().getxAxis();
+  Vector dy =   x.getOutFrame().getyAxis();
+  Vector ds =   x.getOutFrame().getzAxis();
 
-         qgl->addWidget( new QLabel( QString("Upstream"),   qwa ), 0, 1 );
-         qgl->addWidget( new QLabel( QString("Downstream"), qwa ), 0, 2 );
-         
-         qgl->addWidget( new QLabel( QString("Origin   "), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString("U   "), qwa ), 2, 0 );
-         qgl->addWidget( new QLabel( QString("V   "), qwa ), 3, 0 );
-         qgl->addWidget( new QLabel( QString("W   "), qwa ), 4, 0 );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
 
-         xstr.setNum( (x.getInFrame().getOrigin())[0] );
-         ystr.setNum( (x.getInFrame().getOrigin())[1] );
-         zstr.setNum( (x.getInFrame().getOrigin())[2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 1, 1 );
-         xstr.setNum( (x.getOutFrame().getOrigin())[0] );
-         ystr.setNum( (x.getOutFrame().getOrigin())[1] );
-         zstr.setNum( (x.getOutFrame().getOrigin())[2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 1, 2 );
+  w->setCaption(cap);
+  w->addPropertyRow( "Upstream   Origin", "[m]",  QString("(%1, %2, %3)").arg( uso[0]).arg(uso[1]).arg(uso[2]) );
+  w->addPropertyRow( "Upstream   U-Axis", "",     QString("(%1, %2, %3)").arg(  ux[0]).arg(ux[1]).arg(ux[2])   );
+  w->addPropertyRow( "Upstream   V-Axis", "",     QString("(%1, %2, %3)").arg(  uy[0]).arg(uy[1]).arg(uy[2])   );
+  w->addPropertyRow( "Upstream   W-Axis", "",     QString("(%1, %2, %3)").arg(  us[0]).arg(us[1]).arg(us[2])   );
 
-         xstr.setNum( (x.getInFrame().getxAxis()) [0] );
-         ystr.setNum( (x.getInFrame().getxAxis()) [1] );
-         zstr.setNum( (x.getInFrame().getxAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 2, 1 );
-         xstr.setNum( (x.getInFrame().getyAxis()) [0] );
-         ystr.setNum( (x.getInFrame().getyAxis()) [1] );
-         zstr.setNum( (x.getInFrame().getyAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 3, 1 );
-         xstr.setNum( (x.getInFrame().getzAxis()) [0] );
-         ystr.setNum( (x.getInFrame().getzAxis()) [1] );
-         zstr.setNum( (x.getInFrame().getzAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 4, 1 );
-    
-         xstr.setNum( (x.getOutFrame().getxAxis()) [0] );
-         ystr.setNum( (x.getOutFrame().getxAxis()) [1] );
-         zstr.setNum( (x.getOutFrame().getxAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 2, 2 );
-         xstr.setNum( (x.getOutFrame().getyAxis()) [0] );
-         ystr.setNum( (x.getOutFrame().getyAxis()) [1] );
-         zstr.setNum( (x.getOutFrame().getyAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 3, 2 );
-         xstr.setNum( (x.getOutFrame().getzAxis()) [0] );
-         ystr.setNum( (x.getOutFrame().getzAxis()) [1] );
-         zstr.setNum( (x.getOutFrame().getzAxis()) [2] );
-         qgl->addWidget( new QLabel( lparen+xstr+comma+ystr+comma+zstr+rparen, qwa )
-                         , 4, 2 );
-    
-      qwa->adjustSize();
+  w->addPropertyRow( "Downstream  Origin", "[m]",QString("(%1, %2, %3)").arg( dso[0]).arg(dso[1]).arg(dso[2])  );
+  w->addPropertyRow( "Downstream  U-Axis", "",   QString("(%1, %2, %3)").arg(  dx[0]).arg(dx[1]).arg(dx[2] )   );
+  w->addPropertyRow( "Downstream  V-Axis", "",   QString("(%1, %2, %3)").arg(  dy[0]).arg(dy[1]).arg(dy[2] )   );
+  w->addPropertyRow( "Downstream  W-Axis", "",   QString("(%1, %2, %3)").arg(  ds[0]).arg(ds[1]).arg(ds[2] )   );
 
-      QHBox* qhb99 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb99 );
-          QObject::connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb99->setMargin(5);
-      qhb99->setSpacing(3);
-      qhb99->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
+  w->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -604,47 +547,15 @@ void BmlBrowser::visit( Slot const& x )
 
 void BmlBrowser::visit( sbend const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        new QLabel( QString("Length [m]: "), qhb1 );
-        QString stlen;
-        stlen.setNum( x.Length() );
-        new QLabel( stlen, qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        new QLabel( QString("Magnetic field [T]: "), qhb2 );
-        QString sts;
-        sts.setNum( x.Strength() );
-        new QLabel( sts, qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
-          QObject::connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
-
-    qvb->adjustSize();
-  // Note: when reject is activated, wpu and all its subwidgets
-  //       will be deleted, because of the flag Qt::WDestructiveClose.
-  //       This is confirmed by changing these from pointers to objects.
-  //       A warning message is issued, when exiting this scope, that
-  //       the objects are deleted twice.
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",         "[m]",         QString("%1").arg(    x.Length()) );
+  w->addPropertyRow( "Magnetic Field", "[T]",         QString("%1").arg(  x.Strength()) );
+  w->show();
 }
 
 
@@ -654,13 +565,18 @@ void BmlBrowser::visit( sbend const& x )
 void BmlBrowser::visit( CF_sbend const& x )
 {
 
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QMessageBox::information( 
-    pw, 
-    QString("%1 : %2" ).arg( x.Type() ).arg(x.Name()),
-    QString("Length [m]: %1 Bend field [T]: %2 Quad gradient [T/m]: %3 ").arg(x.Length()).arg(x.Strength()).arg( x.getQuadrupole()/x.Length() )
-  );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",        "[m]",         QString("%1").arg(    x.Length()) );
+  w->addPropertyRow( "Bend Field",    "[T]",         QString("%1").arg(  x.Strength()) );
+  w->addPropertyRow( "Gradient",      "[T/m]",       QString("%1").arg(  x.getQuadrupole()/x.Length()) );
+
+  w->show();
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -668,47 +584,18 @@ void BmlBrowser::visit( CF_sbend const& x )
 
 void BmlBrowser::visit( rbend const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 3, 3, 5 );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",              "[m]",         QString("%1").arg(    x.Length()) );
+  w->addPropertyRow( "Bend Field",          "[T]",         QString("%1").arg(  x.Strength()) );
+  w->addPropertyRow( "Nominal Entry Angle", "[mrad]",     QString("%1").arg(  1000.0 * x.getPoleFaceAngle() ));
 
-         qgl->addWidget( new QLabel( QString("Length"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString(" [m]: "), qwa ), 0, 1 );
-           QString stlen;
-           stlen.setNum( x.Length() );
-         qgl->addWidget( new QLabel( stlen, qwa ), 0, 2 );
+  w->show();
 
-         qgl->addWidget( new QLabel( QString("Magnetic field"), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString(" [T]: "), qwa ), 1, 1 );
-           QString sts;
-           sts.setNum( x.Strength() );
-         qgl->addWidget( new QLabel( sts, qwa ), 1, 2 );
-
-         qgl->addWidget( new QLabel( QString("Nominal entry angle"), qwa ), 2, 0 );
-         qgl->addWidget( new QLabel( QString(" [mrad]: "), qwa ), 2, 1 );
-           sts.setNum( 1000.0 * x.getPoleFaceAngle() );
-         qgl->addWidget( new QLabel( sts, qwa ), 2, 2 );
-
-       qwa->adjustSize();
-
-      QHBox* qhb4 = new QHBox( qvb );
-        QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
-          closeBtn->setDefault( true );
-          QObject::connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb4->setMargin(5);
-      qhb4->setSpacing(3);
-      qhb4->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
 }
 
 
@@ -717,53 +604,17 @@ void BmlBrowser::visit( rbend const& x )
 
  void BmlBrowser::visit( CF_rbend const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
 
   QWidget* pw = parentWidget()->parentWidget();
 
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
-
-      QHBox* qhb1 = new QHBox( qvb );
-        new QLabel( QString("Field [T]: "), qhb1 );
-        QString sts;
-        sts.setNum( x.Strength() );
-        new QLabel( sts, qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb4 = new QHBox( qvb );
-        new QLabel( QString("Gradient [T/m]: "), qhb4 );
-        QString stg;
-        stg.setNum( x.getQuadrupole() / x.Length() );
-        new QLabel( stg, qhb4 );
-      qhb4->setMargin(5);
-      qhb4->setSpacing(3);
-      qhb4->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        new QLabel( QString("Roll angle [mrad]: "), qhb2 );
-        alignmentData ad(x.Alignment());
-        QString str;
-        str.setNum( 1000.*(ad.roll /*[rad]*/) );
-        new QLabel( str, qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb3 );
-          QObject::connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
-
-    qvb->adjustSize();
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",             "[m]",        QString("%1").arg(    x.Length()) );
+  w->addPropertyRow( "Bend Field",         "[T]",        QString("%1").arg(  x.Strength()) );
+  w->addPropertyRow( "Gradient",            "[T/m]",     QString("%1").arg(  x.getQuadrupole() / x.Length()  ));
+  w->addPropertyRow( "Roll Angle",          "[mrad]",    QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -771,47 +622,17 @@ void BmlBrowser::visit( rbend const& x )
 
 void BmlBrowser::visit( quadrupole const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Length",           "[m]",         QString("%1").arg(    x.Length()) );
+  w->addPropertyRow( "Gradient",         "[T/m]",       QString("%1").arg(  x.Strength()) );
+  w->addPropertyRow( "Roll Angle",        "[mrad]",      QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->show();
 
-      QHBox* qhb1 = new QHBox( qvb );
-        new QLabel( QString("Gradient [T/m]: "),    qhb1 );
-        new QLabel( QString().setNum(x.Strength()), qhb1 );
-      qhb1->setMargin(5);
-      qhb1->setSpacing(3);
-      qhb1->adjustSize();
-
-      QHBox* qhb2 = new QHBox( qvb );
-        new QLabel( QString("Length: "), qhb2 );
-        new QLabel( QString().setNum( x.Length() ), qhb2 );
-      qhb2->setMargin(5);
-      qhb2->setSpacing(3);
-      qhb2->adjustSize();
-
-      QHBox* qhb3 = new QHBox( qvb );
-        new QLabel( QString("Roll angle [mrad]: "), qhb3 );
-        alignmentData ad(x.Alignment());
-        new QLabel( QString().setNum( 1000.*(ad.roll /*[rad]*/) ), qhb3 );
-      qhb3->setMargin(5);
-      qhb3->setSpacing(3);
-      qhb3->adjustSize();
-
-      QHBox* qhb4 = new QHBox( qvb );
-        QPushButton* closeBtn = new QPushButton( "Close", qhb4 );
-          closeBtn->setDefault( true );
-          QObject::connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb4->setMargin(5);
-      qhb4->setSpacing(3);
-      qhb4->adjustSize();
-
-    qvb->adjustSize();
-  wpu->setCaption( QString("%1 : %2").arg( x.Type() ).arg( x.Name() ));
-  wpu->adjustSize();
-
-  wpu->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -819,41 +640,15 @@ void BmlBrowser::visit( quadrupole const& x )
 
 void BmlBrowser::visit( thinQuad const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QString theValue;
-  QDialog* wpu = new QDialog( pw,0,false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
-
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 2, 3, 5 );
-
-         qgl->addWidget( new QLabel( QString("Integrated gradient"), qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString(" [T]  "), qwa ), 0, 1 );
-           theValue.setNum( x.Strength() );
-         qgl->addWidget( new QLabel( theValue, qwa ), 0, 2 );
-
-         qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
-           theValue.setNum( 1000.*(x.Alignment().roll /*[rad]*/) );
-         qgl->addWidget( new QLabel( theValue, qwa ), 1, 2 );
-      qwa->adjustSize();
-
-      QHBox* qhb = new QHBox( qvb );
-        QPushButton* closeBtn = new QPushButton( "Close", qhb );
-          closeBtn->setDefault( true );
-          QObject::connect( closeBtn,  SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-      qhb->setMargin(5);
-      qhb->setSpacing(3);
-      qhb->adjustSize();
-
-    qvb->adjustSize();
-
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Integrated Gradient", "[T]",         QString("%1").arg(  x.Strength()) );
+  w->addPropertyRow( "Roll Angle",          "[mrad]",      QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -861,12 +656,15 @@ void BmlBrowser::visit( thinQuad const& x )
 
 void BmlBrowser::visit( sextupole const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QMessageBox::information( 
-     pw, 
-     QString("%1 : %2").arg(x.Type()).arg(x.Name()),
-     QString("Length: %1 \nStrength: %2 [T/m**2]:").arg(x.Length() ).arg(x.Strength() ) );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "Strength",  "[T/m**2]", QString("%1").arg(  x.Strength()) );
+  w->show();
+
 }
 
 
@@ -875,14 +673,14 @@ void BmlBrowser::visit( sextupole const& x )
 
 void BmlBrowser::visit( marker const& x )
 {
- 
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
+
   QWidget* pw = parentWidget()->parentWidget();
 
-  QMessageBox::information( 
-          pw, 
-          QString(x.Type())+QString(": ")+QString(x.Name()),
-          "What do you expect here?\nIt's a marker!"
-          );
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->show();
+
 }
 
 
@@ -942,57 +740,17 @@ void BmlBrowser::visit( sector const& x )
 
 void BmlBrowser::visit( monitor const& x )
 {
+  QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
 
   QWidget* pw = parentWidget()->parentWidget();
 
-  // Set up the display widget
-  QString theValue;
-
-  QDialog* wpu = new QDialog( pw, 0, false,Qt::WDestructiveClose);
-    QVBox* qvb = new QVBox( wpu );
-      QWidget* qwa = new QWidget( qvb );
-         QGridLayout* qgl = new QGridLayout( qwa, 4, 4, 5 );
-
-         qgl->addWidget( new QLabel( QString("x"),     qwa ), 0, 0 );
-         qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 0, 1 );
-         qgl->addWidget( new QLabel( QString("="),     qwa ), 0, 2 );
-           theValue.setNum( 1000.0*x.hposition() );
-         qgl->addWidget( new QLabel( theValue,         qwa ), 0, 3 );
-
-         qgl->addWidget( new QLabel( QString("y"),     qwa ), 1, 0 );
-         qgl->addWidget( new QLabel( QString("[mm]"),  qwa ), 1, 1 );
-         qgl->addWidget( new QLabel( QString("="),     qwa ), 1, 2 );
-           theValue.setNum( 1000.0*x.vposition());
-         qgl->addWidget( new QLabel( theValue,         qwa ), 1, 3 );
-
-         qgl->addWidget( new QLabel( QString("p_x/p"), qwa ), 2, 0 );
-         qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 2, 1 );
-         qgl->addWidget( new QLabel( QString("="),     qwa ), 2, 2 );
-           theValue.setNum( 1000.0*x.npx() );
-         qgl->addWidget( new QLabel( theValue,         qwa ), 2, 3 );
-
-         qgl->addWidget( new QLabel( QString("p_y/p"), qwa ), 3, 0 );
-         qgl->addWidget( new QLabel( QString("[mrad]"),qwa ), 3, 1 );
-         qgl->addWidget( new QLabel( QString("="),     qwa ), 3, 2 );
-           theValue.setNum( 1000.0*x.npy() );
-         qgl->addWidget( new QLabel( theValue,         qwa ), 3, 3 );
-
-       qwa->adjustSize();
-
-      QHBox* qhb4 = new QHBox( qvb );
-        QPushButton* cancelBtn = new QPushButton( "Close", qhb4 );
-          QObject::connect( cancelBtn, SIGNAL(pressed()),
-                   wpu,       SLOT(close()) );
-
-      qhb4->setMargin(5);
-      qhb4->setSpacing(3);
-      qhb4->adjustSize();
-
-    qvb->adjustSize();
-  wpu->setCaption( QString(x.Type())+QString(": ")+QString(x.Name()) );
-  wpu->adjustSize();
-
-  wpu->show();
+  DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
+  w->setCaption(cap);
+  w->addPropertyRow( "x",    "[mm]", QString("%1").arg(1000.0*x.hposition()) );
+  w->addPropertyRow( "y",    "[mm]", QString("%1").arg(1000.0*x.vposition()) );
+  w->addPropertyRow( "p_x/p",    "", QString("%1").arg(x.npx()) );
+  w->addPropertyRow( "p_y/p",    "", QString("%1").arg(x.npy()) );
+  w->show();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1005,6 +763,4 @@ void BmlBrowser::visit( LinacCavity const& x )
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
