@@ -39,16 +39,18 @@
 #include <complex>
 #include <string>
 #include <boost/any.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <beamline/bmlnElmnt.h>
+#include <basic_toolkit/VectorFwd.h>
 
-class   bmlnElmnt;
 
-class    Particle;
-class JetParticle;
+class BasePropagator;
+typedef boost::shared_ptr<BasePropagator> PropagatorPtr; 
 
-template<typename T>
-class TVector;
+#include <beamline/ParticleFwd.h>
 
-typedef TVector<double> Vector;
+
 
 template<typename T>
 class TJet;
@@ -121,6 +123,15 @@ class BasePropagator {
    virtual void  operator()(  bmlnElmnt const& elm,      JetParticle& p) = 0; 
    virtual void  operator()(  bmlnElmnt const& elm,    ParticleBunch& b);  
    virtual void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
+
+   virtual  bool hasAlignment() const; 
+   virtual  void setAlignment( Vector const& translation, Vector const& rotation);
+
+   virtual  bool hasAperture()   const; 
+   virtual  void setAperture( bmlnElmnt::aperture_t, double const& hor, double const& ver );
+
+   virtual  boost::tuple<bmlnElmnt::aperture_t, double, double>  aperture()   const; 
+   virtual  boost::tuple<Vector,Vector>                         alignment()   const; 
 
 };
 

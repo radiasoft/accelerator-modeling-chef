@@ -159,9 +159,12 @@ public:
    
    virtual void     reset()   const; 
 
-   double getReferenceTime()                    const;     
+   double getReferenceTime()           const;     
    void   setReferenceTime( double   const& );               
-   void   setReferenceTime( Particle&       );             
+
+   void   registerReference( Particle const& p, bool scaling = true);
+
+   void   propagateReference( Particle& p, double initialBhro, bool scaling);
 
    iterator putAbove( iterator   it, ElmPtr y ); // Insert y above (before;  upstream of) x
    iterator putBelow( iterator   it, ElmPtr y ); // Insert y below (after, downstream of) x
@@ -177,7 +180,7 @@ public:
    void append( ElmPtr    );
    void append( bmlnElmnt const&  );
 
-   void Split( double const&, ElmPtr&, ElmPtr& ) const;
+   std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
    beamline*  reverse() const;                
 
@@ -227,12 +230,6 @@ public:
 
 
 
-  void enterLocalFrame( Particle&        ) const;   
-  void enterLocalFrame( JetParticle&     ) const;   
-
-  void leaveLocalFrame( Particle&        ) const;   
-  void leaveLocalFrame( JetParticle&     ) const;   
-
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const ;
 
@@ -246,7 +243,7 @@ public:
   { mode_ = x; }
 
   void setMomentum( double const&  nominalMomentumGeV );
-
+ 
   ElmPtr&        firstElement();
   ElmPtr const&  firstElement() const;
 
@@ -255,7 +252,6 @@ public:
 
   double Momentum() const; 
 
-  bool           isBeamline() const;
   bool                empty() const;
   void                peekAt( double& s, Particle const& ) const;
   int                howMany() const; 
@@ -270,11 +266,13 @@ public:
                                                                                     //            or all its subbeamlines are empty.
                                                                                     // Otherwise returns 1 + largest
                                                                                     // depth of all subbeamlines.
-
   const char*  Type()                           const;
+  bool         isBeamline()                     const;
+
   bool         isMagnet()                       const;
   bool         isThin()                         const;
   bool         isPassive()                      const;
+  bool         isDriftSpace()                   const;
 
   double       OrbitLength( Particle const& )   const;
   double       Length()                         const;
@@ -349,8 +347,9 @@ public:
     const_reverse_deep_iterator rdeep_end() const;          
           reverse_deep_iterator rdeep_end();                      
 
-private:
+ private:
 
+  void initProperties();
   void  InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList, boost::function<double(ElmPtr)> LengthFunctor );
 
   iterator   moveRel(   int axis, double const& u,     iterator pos,             std::string invoker );
