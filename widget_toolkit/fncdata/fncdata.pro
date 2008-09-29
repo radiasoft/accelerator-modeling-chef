@@ -42,3 +42,5 @@ SOURCES += ./src/MomentsFncData.cc \
            ./src/BunchData.cc \
            ./src/DataBrowser.cc 
 
+FORMS	= ./src/DataBrowserBase2.ui 
+
