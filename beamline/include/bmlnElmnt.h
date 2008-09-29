@@ -62,6 +62,8 @@
 ****** - propagator moved (back) to base class
 ****** - no assumption about internal structure
 ****** - Propagate/localPropagate functions now const correct
+****** - added physical apertures
+******
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -76,12 +78,12 @@
 #include <boost/any.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
-
+#include <boost/tuple/tuple.hpp>
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/Frame.h>
-
 #include <beamline/ElmPtr.h>
-#include <beamline/BasePropagator.h>
+
+#include <beamline/ParticleFwd.h>
 
 //------------------------------
 // Forward declarations
@@ -93,17 +95,9 @@ class beamline;
 class BmlVisitor;
 class ConstBmlVisitor;
 class Aperture;
-class Particle;
-class JetParticle;
 class sector;
 class alignment;
-
-template <typename Particle_t>
-class TBunch;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
-
+class BasePropagator;
 
 typedef boost::shared_ptr<beamline>        BmlPtr;
 typedef boost::shared_ptr<beamline const>  ConstBmlPtr;
@@ -126,6 +120,13 @@ typedef TJet<std::complex<double> >    JetC;
 typedef TJetVector<double>             JetVector;
 typedef TMapping<double>               Mapping;
 
+
+template <typename Particle_t>
+class TBunch;
+
+typedef TBunch<Particle>       ParticleBunch;
+typedef TBunch<JetParticle> JetParticleBunch;
+
 bmlnElmnt* read_istream(std::istream&);
 
 
@@ -136,6 +137,8 @@ class DLLEXPORT bmlnElmnt {
 
  public:
  
+   enum aperture_t { infinite, elliptical, rectangular};
+
    typedef boost::shared_ptr<BasePropagator> PropagatorPtr;   
 
    class core_access;
@@ -203,16 +206,24 @@ public:
  
   boost::any& operator[](std::string const& s);    // a type-safe facility to attach attributes of any type
 
-  bool        attributeExists(std::string const& s) const;     
-  void        attributeClear (std::string const& s);           
-  void        attributeClear ();                                
+  bool         queryAttribute(std::string const& s) const;     
+  void        removeAttribute(std::string const& s);           
+  void        removeAttribute(); 
 
-  virtual void accept( BmlVisitor& ) = 0;
+  virtual void accept( BmlVisitor&      )       = 0;
   virtual void accept( ConstBmlVisitor& ) const = 0;
 
-  void acceptInner( BmlVisitor& );
-  void acceptInner( ConstBmlVisitor& ) const;
+  bool         hasAperture() const;
+  void         setAperture( aperture_t type, double hor, double ver);
+  boost::tuple<aperture_t,double,double> aperture() const;
 
+  bool         hasAlignment() const;
+  void         setAlignment( Vector const& translation, Vector const& rotation);  
+  boost::tuple<Vector,Vector> getAlignment() const;
+
+  void          enableEdges(bool usedge, bool dsedge);
+  bool      hasUpstreamEdge() const;
+  bool    hasDownstreamEdge() const;
 
   // Methods to set alignment without 
   // (a little overkill, but so what?)
@@ -272,11 +283,8 @@ public:
 
   // Editing functions
 
-  virtual void Split( double const& pct, ElmPtr&, ElmPtr& ) const;
-                                   // Splits the element at percent orbitlength
-                                   // pct from the in-face and returns
-                                   // addresses to the two pieces
-                                   // in the second and third arguments.
+  virtual std::pair<ElmPtr,ElmPtr>  split( double const& ) const;
+                                   // Splits the element at percent orbitlength from the in-face.
 
   // ... Tagging methods
 
@@ -286,83 +294,91 @@ public:
 
   //  ... Modifiers
 
-  void    setLength   ( double const& );
-  void    setStrength ( double const& );
-  void    setStrengthScale( double const&);
+  void  setLength   ( double const& );
+  void  setStrength ( double const& );
 
-          void setAperture   ( Aperture* );
-          void rename        ( std::string const& name );  
+  void  rename        ( std::string const& name );  
 
 
   virtual double getReferenceTime()                    const;     // returns ctRef_
-  virtual void setReferenceTime( double const& );               
-  virtual void setReferenceTime( Particle&     );               
-
-
+  virtual void   setReferenceTime( double const& );               
 
   // ... Query functions 
 
   alignmentData       Alignment( void )        const;
-  Aperture*           getAperture();                  // returns a clone of the aperture class
-  bool                hasAperture()            const  { return  pAperture_; }
 
   double              Strength()               const;
-  double              strengthScale()          const;
   virtual double      Length()                 const;
 
+  virtual double OrbitLength( Particle const& ) const;  // Returns length of design orbit
+                                                        // segment through the element.
+                                                        // Will be different from "length"
+                                                        // for rbends.
 
+  virtual bool isSimple()         const;
   virtual bool hasParallelFaces() const;
   virtual bool hasStandardFaces() const;
-
-  virtual bool isBeamline()  const;                   
-  virtual bool   isSimple()  const;
-  virtual bool   isMagnet()  const = 0;
-  virtual bool  isPassive()  const = 0;                   
-  virtual bool     isThin()  const = 0;                   
+  virtual bool     isBeamline()   const;                   
+  virtual bool   isDriftSpace()   const = 0;
+  virtual bool       isMagnet()   const = 0;
+  virtual bool      isPassive()   const = 0;                   
+  virtual bool         isThin()   const = 0;                   
 
 
   char const*                 Name()   const;
   virtual char const*         Type()   const = 0;
 
 
-  virtual double OrbitLength( Particle const& ) { return length_; }
-                                   // Returns length of design orbit
-                                   // segment through the element.
-                                   // Will be different from "length"
-                                   // for rbends.
-
 private:
 
-  double                            strength_;           // Interpretation depends on object.
-  double                            pscale_;             // momentum scaling factor ( for a linac, pscale_ != 1.0 )     
+  double   strengthScale()          const;
+  void     setStrengthScale( double const&);
+
+  void     init_internals(BmlPtr const& bml, ElmPtr const& elm); 
+
+  double                             strength_;           // Interpretation depends on object.
+  double                             pscale_;             // momentum scaling factor ( for a linac, pscale_ != 1.0 )     
 
 protected:
 
-  std::string                       ident_;              // Name identifier of the element.
+  virtual void  propagateReference( Particle& p, double initialBhro, bool scaling );
 
-  double                            length_;             // Length of object [ meters ]
-  
-  alignment*                        align_;
-  PinnedFrameSet                    pinnedFrames_;
+  std::string                        ident_;              // Name identifier of the element.
 
-  mutable double                    ctRef_;              // (normalized) time required for
+  double                             length_;             // Length of object [ meters ]
+
+  alignment*                         align_;
+
+  PinnedFrameSet                     pinnedFrames_;
+
+  mutable double                     ctRef_;              // (normalized) time required for
                                                          // a reference particle to cross
                                                          // the element. Normally, established by a RefRegVisitor.
+
+  aperture_t                         aperture_;          // aperture type: elliptical, rectangular
+  double                             aperturex_;         // hor aperture 1/2 width;  < 0 ==> ignored  
+  double                             aperturey_;         // ver aperture 1/2 width;  < 0 ==> ignored  
+
 
   std::map<std::string, boost::any>  attributes_;
 
   std::string                        tag_;             // FIXME !!! OBSOLETE
 
-  Aperture*                          pAperture_;       // O.K.
 
   BmlPtr                             bml_;             // The element may be composite.
   ElmPtr                             elm_;             // with one active part.
 
-  PropagatorPtr  propagator_;
+    
+  bool                               usedge_;
+  bool                               dsedge_;
 
-private:
+  PropagatorPtr                      propagator_;
 
-  void init_internals(BmlPtr const& bml, ElmPtr const& elm); 
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
   /* All the work is done in friend ostream& operator<<(),
      placeholder for if descendants want to do somthing. */
