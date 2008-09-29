@@ -18,7 +18,7 @@
 ******                                                                
 ******  Author:    Jean-Francois Ostiguy                                     
 ******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
+******             Fermi National Laboratory, Batavia, IL   60510
 ******             ostiguy@fnal.gov                         
 ******
 ****************************************************************************
@@ -29,6 +29,7 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
+#include <beamline/TBunch.h>
 #include <beamline/bmlnElmnt.h>
 
 
@@ -51,7 +52,12 @@ void   (bmlnElmnt::* localPropagate_particle)    (     Particle& )  const =  &bm
 void   (bmlnElmnt::* localPropagate_jetparticle) (  JetParticle& )  const =  &bmlnElmnt::localPropagate; 
 void   (bmlnElmnt::* setReferenceTime_double   ) ( double const& )        =  &bmlnElmnt::setReferenceTime;
 
+
+tuple split( bmlnElmnt const& elm, double pct ) {
+  return boost::python::tuple( elm.split(pct) );
 }
+
+} // namespace
 
 void wrap_bmlnelmnt() {
   
@@ -71,6 +77,6 @@ void wrap_bmlnelmnt() {
     .def("setReferenceTime",              setReferenceTime_double )
     .def("Type",                          &bmlnElmnt::Type        )
     .def("OrbitLength",                   &bmlnElmnt::OrbitLength )
-    .def("Split",                         &bmlnElmnt::Split       );
+    .def("split",                         split       );
 }  
 
