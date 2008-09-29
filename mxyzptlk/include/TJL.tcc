@@ -2176,7 +2176,7 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator+(  JLPtr<T> x,  JLPtr<T> y  )
+JLPtr<T>   operator+(  JLPtr<T> const& x,  JLPtr<T> const& y  )
 {  
   JLPtr<T> z = x->clone();
   return TJL<T>::template inplace_add<TJL<T>::op_add >(z,y); 
