@@ -66,10 +66,12 @@
 ******  Mar 2008 ostiguy@fnal
 ******  - composition and evaluation code refactored and optimized. 
 ******  - more optimizations in pow(), sqrt(), sin() and cos() to 
-******    eliminate some superfluous deep copies.   
+******    eliminated some superfluous deep copies.   
 ******
 ******  Aug 2008 ostiguy@fnal
-******  - added new code for in-place add/subtract. 
+******  - added in-place add/subtract implementation 
+******  - member implementations using iterators rather than underlying 
+******    raw pointer types. 
 ******
 **************************************************************************
 *************************************************************************/
@@ -715,13 +717,13 @@ void TJL<T>::clear()
 template<typename T>
 T TJL<T>::weightedDerivative( IntArray const& ind ) const 
 {
- for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
+ for ( const_iterator it=begin(); it != end(); ++it ) {
    
    bool theOne = true; 
    for ( int i=0;  i < myEnv_->numVar(); ++i ) {
-      theOne  = theOne && ( myEnv_->exponents(p->offset_)[i] == ind[i] );
+      theOne  = theOne && ( myEnv_->exponents(it->offset_)[i] == ind[i] );
    }
-   if (theOne) return p->value_;
+   if (theOne) return it->value_;
  }
  
  // not found; return 0;
@@ -1002,13 +1004,13 @@ JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const
 
  std::vector<TJLterm<T> >& tjlmml =  myEnv_->TJLmml(); 
 
- TJLterm<T> const * const vstart    = v->jltermStore_; 
- TJLterm<T> const * const vend      = v->jltermStoreCurrentPtr_; 
- TJLterm<T> const * const thisstart = jltermStore_;
- TJLterm<T> const * const thisend   = jltermStoreCurrentPtr_;
+ const_iterator const vstart    = v->begin();
+ const_iterator const vend      = v->end();
+ const_iterator const thisstart = begin();
+ const_iterator const thisend   = end();
 
- for (  TJLterm<T> const* p=vstart; p<vend; p++ ) {
-    for ( TJLterm<T> const* q = thisstart; q < thisend; q++ ) {
+ for (  const_iterator p = vstart; p != vend; ++p ) {
+    for ( const_iterator q = thisstart; q != thisend; ++q ) {
 
       if( ( p->weight_ + q->weight_ ) > wl ) continue;
       
@@ -1296,8 +1298,8 @@ JLPtr<T>  TJL<T>::sin() const
 
  JLPtr<T> epsilon = clone(); 
 
-
  if( epsilon->standardPart() != T() ) {            // jet has non-zero standard part
+
    T cs = std::cos( epsilon->standardPart()  );
    T sn = std::sin( epsilon->standardPart()  );
    epsilon->setStandardPart( T() );                  // zero out the standard part;
@@ -1309,7 +1311,7 @@ JLPtr<T>  TJL<T>::sin() const
    JLPtr<T> eps_c = epsCos( epsilon ); 
    JLPtr<T> eps_s = epsSin( epsilon ); 
 
-    return  ( (eps_c *= sn) + (eps_s *=cs) );
+   return  ( (eps_c *= sn) + (eps_s *=cs) );
   
  }
 
@@ -1357,6 +1359,7 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
 { 
  
  JLPtr<T> z( epsilon->clone() );               //    z = epsilon -- deep copy 
+
  JLPtr<T> epsq = epsilon*epsilon;
  epsq->Negate();                               //   epsq = -epsilon*epsilon 
 
@@ -1368,12 +1371,11 @@ JLPtr<T> TJL<T>::epsSin( JLPtr<T> const& epsilon )
   int nsteps = 0;
   while( term->getCount() > 0 ) {
 
-    z    = z +term;                              // z += term;
-    term *= epsq;                                // term->multiply(epsq);
+    z    = z + term;    
+    term *= epsq;  
     double n1 = ++n;
     double n2 = ++n;
-    term *=  T(1.0/(n1*n2));                      // term = ( ( term*epsq ) / ++n ) / ++n;
-
+    term *=  T(1.0/(n1*n2));                          
     ++nsteps;
 
     if ( nsteps > mx_maxiter_ ) { 
@@ -1681,10 +1683,10 @@ JLPtr<T> TJL<T>::log() const
 
 template<typename T>
 std::istream& operator>>( std::istream& is,  TJL<T>& x ) 
-{  // ??? This function shouldn't
-   // ??? be here.
+{  
+
   char buf[100];
-  buf[99] = '\0';
+  buf[0] = '\0';
 
   int count;
   T value;
@@ -1721,7 +1723,8 @@ std::istream& operator>>( std::istream& is,  TJL<T>& x )
     is >> ndx;
     is >> buf;
     is >> value;
-    term = TJLterm<T>( ndx, value, x.myEnv_ );
+ 
+   term = TJLterm<T>( ndx, value, x.myEnv_ );
 
     if ( term.weight_ == 0)  x.setStandardPart(value);
     if ( term.weight_ == 1)  { 
@@ -2007,25 +2010,25 @@ JLPtr<T>  TJL<T>::add(JLPtr<T> const & x, JLPtr<T> const& y  )
   }
   JLPtr<T> z( TJL<T>::makeTJL(x->myEnv_) ); 
 
-  TJLterm<T> const * const xstart    = x->jltermStore_; 
-  TJLterm<T> const * const xend      = x->jltermStoreCurrentPtr_; 
-  TJLterm<T> const * const ystart    = y->jltermStore_;
-  TJLterm<T> const * const yend      = y->jltermStoreCurrentPtr_;
-  TJLterm<T> * const       zstart    = z->jltermStore_; 
+    const_iterator const xstart    = x->begin();
+    const_iterator const xend      = x->end();
+    const_iterator const ystart    = y->begin();
+    const_iterator const yend      = y->end();
+          iterator const zstart    = z->begin();
 
   T   value;
   int nlinear = x->myEnv_->numVar() + 1;  // the number of linear terms always present.
  
-  TJLterm<T> const* px = xstart;
-  TJLterm<T> const* py = ystart;
-  TJLterm<T>       *pz = zstart;
+   const_iterator  px = xstart;
+   const_iterator  py = ystart;
+         iterator  pz = zstart;
 
  for (int i=0; i<nlinear; ++i, ++px, ++py, ++pz ) {
     pz->value_ =  px->value_;
     T_function( pz->value_, py->value_);
   }
 
-  while(  (px < xend) && (py < yend)  ) 
+  while(  (px < xend ) && (py < yend)  ) 
   {
      if ( px->offset_  ==  py->offset_) { 
           value  =  px->value_;  
@@ -2097,24 +2100,24 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  )
   int lowWgt  = x->lowWgt_;   
   int accuWgt = x->accuWgt_;
 
-  TJLterm<T> const * const xstart0    = x->jltermStore_; 
-  TJLterm<T> const * const xend0      = x->jltermStoreCurrentPtr_; 
+  const_iterator const xstart0    = x->begin();
+  const_iterator const xend0      = x->end();
 
-  TJLterm<T> const * const ystart    = y->jltermStore_;
-  TJLterm<T> const * const yend      = y->jltermStoreCurrentPtr_;
+  const_iterator const ystart    = y->begin();
+  const_iterator const yend      = y->end();
 
   T   value;
   int nlinear = x->myEnv_->numVar() + 1;  // the number of linear terms always present.
 
-  TJLterm<T> xtmp[ xend0-xstart0] ;
+  TJLterm<T> xtmp[ std::distance( xstart0, xend0)] ;
 
   std::copy( xstart0, xend0, &xtmp[0] );
 
-  TJLterm<T> const * const xstart    = &xtmp[0];
-  TJLterm<T> const * const xend      = &xtmp[xend0-xstart0] ;
- 
-  TJLterm<T> const* px = xstart;
-  TJLterm<T> const* py = ystart;
+  const_iterator const xstart( &xtmp[0] );
+  const_iterator const   xend( &xtmp[std::distance( xstart0, xend0)] );
+
+  const_iterator px(xstart);
+  const_iterator py(ystart);
 
  x->clear();
 
@@ -2149,7 +2152,7 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  )
      }   
   }
    
-  while ( px<xend ) {
+  while ( px < xend ) {
        x->append( *px );
        ++px; 
   }   
@@ -2173,7 +2176,7 @@ JLPtr<T>&  TJL<T>::inplace_add(JLPtr<T>& x, JLPtr<T> const& y  )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <typename T>
-JLPtr<T>   operator+(JLPtr<T> const & x, JLPtr<T> const& y  )
+JLPtr<T>   operator+(  JLPtr<T> x,  JLPtr<T> y  )
 {  
   JLPtr<T> z = x->clone();
   return TJL<T>::template inplace_add<TJL<T>::op_add >(z,y); 
@@ -2245,6 +2248,9 @@ JLPtr<T>   operator*( T const & lhs,             JLPtr<T> const& rhs  )
 template <typename T>
 JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){  
 
+typedef typename TJL<T>::iterator             iterator;
+typedef typename TJL<T>::const_iterator const_iterator;
+
 //----------------------------
 // Multiplication of two jets
 //----------------------------
@@ -2276,9 +2282,9 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 
     T result;
 
-    TJLterm<T>* px = x->jltermStore_;
-    TJLterm<T>* py = y->jltermStore_;
-    TJLterm<T>* pz = z->jltermStore_;
+    iterator px = x->begin();
+    iterator py = y->begin();
+    iterator pz = z->begin();
     
     T std_x =  px->value_;
     T std_y =  py->value_;
@@ -2307,14 +2313,13 @@ JLPtr<T>   operator*(JLPtr<T> const & x,  JLPtr<T> const& y  ){
 
  std::vector<TJLterm<T> >& tjlmml =  x->myEnv_->TJLmml(); // the environment scratchpad
 
- TJLterm<T> const * const xstart    = x->jltermStore_; 
- TJLterm<T> const * const xend      = x->jltermStoreCurrentPtr_; 
- TJLterm<T> const * const ystart    = y->jltermStore_;
- TJLterm<T> const * const yend      = y->jltermStoreCurrentPtr_;
-
+ const_iterator const xstart    = x->begin();
+ const_iterator const xend      = x->end();
+ const_iterator const ystart    = y->begin();
+ const_iterator const yend      = y->end();
  
-for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
-  for(   TJLterm<T> const* q = xstart; q < xend; ++q  ) {
+for(   const_iterator p = ystart; p != yend; ++p  ) {
+  for(   const_iterator q = xstart; q != xend; ++q  ) {
 
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
 
@@ -2348,6 +2353,9 @@ for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
 template <typename T>
 JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )  
 {
+
+typedef typename TJL<T>::iterator             iterator;
+typedef typename TJL<T>::const_iterator const_iterator;
 
 //------------------------------------
 // In place Multiplication of two jets
@@ -2394,8 +2402,8 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
     T result;
 
-    TJLterm<T>* px = x->jltermStore_;
-    TJLterm<T>* py = y->jltermStore_;
+    iterator px = x->begin();
+    iterator py = y->begin();
     
     T std_x =  px->value_;
     T std_y =  py->value_;
@@ -2427,16 +2435,16 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
  std::vector<TJLterm<T> >& tjlmml =  x->myEnv_->TJLmml(); // the environment scratchpad
 
- TJLterm<T> const * const xstart = x->jltermStore_; 
- TJLterm<T> const * const xend   = x->jltermStoreCurrentPtr_; 
- TJLterm<T> const * const ystart = y->jltermStore_;
- TJLterm<T> const * const yend   = y->jltermStoreCurrentPtr_;
+ const_iterator const xstart = x->begin();
+ const_iterator const xend   = x->end();
+ const_iterator const ystart = y->begin();
+ const_iterator const yend   = y->end();
 
  int (TJetEnvironment<T>::* multOffset)( int const&, int const& ) const =  &TJetEnvironment<T>::multOffset;
  TJetEnvironment<T>& env = *pje; 
 
- for(   TJLterm<T> const* p = ystart; p < yend; ++p  ) {
-   for(  TJLterm<T> const* q = xstart; q < xend; ++q  ) {
+ for(   const_iterator p = ystart; p != yend; ++p  ) {
+   for(  const_iterator q = xstart; q != xend; ++q  ) {
 
      if( ( p->weight_ + q->weight_ ) > testWeight ) continue;   
 
@@ -2468,7 +2476,11 @@ JLPtr<T>&  operator*=(JLPtr<T> & x,     JLPtr<T> const& y  )
 
 
 template <typename T>
-JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){ 
+JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  )
+{ 
+
+ typedef typename TJL<T>::iterator             iterator;
+ typedef typename TJL<T>::const_iterator const_iterator;
 
  if ( (wArg->myEnv_) != (uArg->myEnv_) ) {
 
@@ -2497,9 +2509,9 @@ JLPtr<T>  operator/(JLPtr<T> const& wArg,  JLPtr<T> const& uArg  ){
 
      JLPtr<T>  z( TJL<T>::makeTJL(uArg->myEnv_) );
 
-     TJLterm<T>* pu = uArg->jltermStore_;
-     TJLterm<T>* pw = wArg->jltermStore_;
-     TJLterm<T>* pz =    z->jltermStore_;
+     iterator pu = uArg->begin();
+     iterator pw = wArg->begin();
+     iterator pz =    z->begin();
 
      T u_std =  pu->value_; 
      T w_std =  pw->value_;
