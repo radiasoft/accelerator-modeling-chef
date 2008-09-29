@@ -146,22 +146,6 @@ Interpreter::~Interpreter()
 void Interpreter::runString(const char* s) 
 {
 
-  static EnvPtr<double>                  pgmEnv;   // null ptr
-  static EnvPtr<std::complex<double> >   pgmEnvC;  // null ptr
-
-  static EnvPtr<double>                  interpreterEnv;   // null ptr
-  static EnvPtr<std::complex<double> >   interpreterEnvC;  // null ptr
-
-  // save the program  Jet environment ( an arbitrary script can change the environment !)
-
-  pgmEnv  =  Jet__environment::getLastEnv(); 
-  pgmEnvC =  JetC__environment::getLastEnv(); 
-
-  // restore the interpreter Jet environment if one was set 
-
-  if (interpreterEnv.get() )  Jet__environment::setLastEnv(interpreterEnv   );
-  if (interpreterEnvC.get())  JetC__environment::setLastEnv(interpreterEnvC ); 
-
   
   //  int Py_file_input 
   //  int Py_single_input:  This is the symbol used for the interactive interpreter loop
@@ -176,15 +160,6 @@ void Interpreter::runString(const char* s)
     throw e;
   }
   
- // save the interpreter Jet environment if one was set 
-
-  interpreterEnv  =  Jet__environment::getLastEnv(); 
-  interpreterEnvC =  JetC__environment::getLastEnv(); 
-
- // restore the program Jet environment
-
-  Jet__environment::setLastEnv( pgmEnv );
-  JetC__environment::setLastEnv(pgmEnvC );
 } 
 
 
@@ -251,22 +226,6 @@ void Interpreter::readFile(const char* fname)
     
  if (fp)  {
 
-  static EnvPtr<double>                  pgmEnv;   // null ptr
-  static EnvPtr<std::complex<double> >   pgmEnvC;  // null ptr
-
-  static EnvPtr<double>                 interpreterEnv;   // null ptr
-  static EnvPtr<std::complex<double> >  interpreterEnvC;  // null ptr
-
-  // save the program  Jet environment ( an arbitrary script can change the environment !)
-
-  pgmEnv  =  Jet__environment::getLastEnv(); 
-  pgmEnvC =  JetC__environment::getLastEnv();
-
-  // restore the interpreter Jet environment if one was set 
-
-  if (interpreterEnv.get() )  Jet__environment::setLastEnv( interpreterEnv  );
-  if (interpreterEnvC.get())  JetC__environment::setLastEnv(interpreterEnvC ); 
-
 #ifdef WIN32
 
 //   ----------------------------------------------------------------
@@ -289,16 +248,6 @@ void Interpreter::readFile(const char* fname)
 #else
      PyRun_SimpleFile(fp, fname); 
 #endif 
-
- // save the interpreter Jet environment if one was set 
-
-  interpreterEnv  =  Jet__environment::getLastEnv(); 
-  interpreterEnvC =  JetC__environment::getLastEnv(); 
-
- // restore the program Jet environment
-
-  Jet__environment::setLastEnv(pgmEnv);
-  JetC__environment::setLastEnv(pgmEnvC);
 
   } else { 
  
