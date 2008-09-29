@@ -8,7 +8,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES         = libpybasic_toolkit.la  libpymxyzptlk.la libpybeamline.la libpybmlfactory.la libpyphysics_toolkit.la libpurepybasic_toolkit.la  libpurepymxyzptlk.la libpurepybeamline.la libpurepybmlfactory.la libpurepyphysics_toolkit.la
 
-libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-barnacle.cpp  py-vector.cpp  py-matrix.cpp  
+libpybasic_toolkit_la_SOURCES     =   py-basictoolkit-module.cpp py-vector.cpp  py-matrix.cpp  
 
 libpymxyzptlk_la_SOURCES          =   py-mxyzptlk-module.cpp py-jetenv.cpp  py-jet.cpp py-jetvector.cpp py-mapping.cpp py-coord.cpp 
 
@@ -17,7 +17,7 @@ libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-
                                       py-quadrupole.cpp py-octupole.cpp py-sextupole.cpp py-septum.cpp py-sector.cpp py-slot.cpp \
                                       py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp py-decapole.cpp py-particle.cpp  py-jetparticle.cpp \
                                       py-lattfunc.cpp py-srot.cpp py-circuit.cpp py-fcircuit.cpp py-icircuit.cpp \
-                                      py-refregvisitor.cpp py-bmlvisitor.cpp
+                                      py-bmlvisitor.cpp
 
 libpybmlfactory_la_SOURCES        =   py-bmlfactory-module.cpp 
 
