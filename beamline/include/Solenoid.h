@@ -54,8 +54,8 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -85,15 +85,17 @@ public:
 
   Solenoid& operator=( Solenoid const& );
 
-  const char* Type() const;
-  bool isMagnet()    const;
-  bool isThin()      const;
-  bool isPassive()   const;
+  const char* Type()    const;
+
+  bool isMagnet()       const;
+  bool isThin()         const;
+  bool isPassive()      const;
+  bool isDriftSpace()   const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
-  void Split( double const&, ElmPtr& , ElmPtr& ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   bool hasInEdge()   const;
   bool hasOutEdge()  const;

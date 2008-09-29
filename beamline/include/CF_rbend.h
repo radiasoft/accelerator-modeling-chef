@@ -62,14 +62,12 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/ParticleFwd.h>
 #include <list>
 #include <utility>
 
 class BmlVisitor;
 class ConstBmlVisitor;
-
-class Particle;
-class JetParticle;
 
 class CF_rbend;
 
@@ -113,17 +111,14 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   void accept( BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
   
-  void peekAt( double& s, const Particle& );
-
-  const char* Type() const;
-  bool isMagnet()  const;
-  bool isThin()    const;
-  bool isPassive() const;
+  char const* Type()  const;
+  bool isMagnet()     const;
+  bool isThin()       const;
+  bool isPassive()    const;
+  bool isDriftSpace() const;
   
-  double OrbitLength( const Particle& );
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
-    // WARNING: After the Split function is used, the new elements 
-    // must be commissioned with RefRegVisitor.
+  double OrbitLength( Particle const& );
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   // Note: entry and exit angles are not arguments
   // in the rbend constructors. A symmetric bend is assumed
@@ -153,8 +148,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   bool hasParallelFaces() const;
   bool hasStandardFaces() const;
 
-  double AdjustPosition( const Particle& );
-  double AdjustPosition( const JetParticle& );
+  double AdjustPosition( JetParticle const& );
 
   void setQuadrupole ( double const& );  
   void setSextupole  ( double const& );  
@@ -185,6 +179,10 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   double getDipoleField() const;
   // Returns the dipole field,
   // NOT the integrated dipole field.
+
+ protected:
+
+  void propagateReference(Particle& p, double initialBRho, bool scaling );
 
  private:
 

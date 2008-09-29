@@ -68,9 +68,10 @@ public:
 
   char const* Type()       const;
 
-  bool        isMagnet()   const;
-  bool        isThin()     const;
-  bool        isPassive()  const;
+  bool        isMagnet()      const;
+  bool        isThin()        const;
+  bool        isPassive()     const;
+  bool        isDriftSpace()  const;
 
 };
 

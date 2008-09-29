@@ -46,13 +46,13 @@
 #include <beamline/bmlnElmnt.h>
 #include <beamline/WakeKick.h>
 #include <beamline/WakeKickPropagator.h>
+#include <beamline/ParticleFwd.h>
 
 #include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
-class RefRegVisitor;
 
 class LinacCavity;
 class thinLinacCavity;
@@ -98,15 +98,20 @@ public:
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  const char* Type()  const;
-  bool    isMagnet()  const;
-  bool    isThin()    const;
-  bool    isPassive() const;
+  const char* Type()     const;
+  bool    isMagnet()     const;
+  bool    isThin()       const;
+  bool    isPassive()    const;
+  bool    isDriftSpace() const;
 
  
-  void Split( double const& pc, ElmPtr& a, ElmPtr& b ) const;
+  std::pair<ElmPtr,ElmPtr> split( double const& pc) const;
 
-private:
+ protected:
+
+  void propagateReference( Particle& particle, double initialBRho, bool scaling );
+
+ private:
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);

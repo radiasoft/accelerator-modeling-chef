@@ -59,14 +59,12 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
+#include <beamline/ParticleFwd.h>
 #include <list>
 #include <utility>
 
 class BmlVisitor;
 class ConstBmlVisitor;
-
-class Particle;
-class JetParticle;
 
 class CF_sbend;
 
@@ -105,19 +103,15 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   void accept(      BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
-  
-  void peekAt( double& s, const Particle& );
 
-  const char* Type() const;
-  bool isMagnet()  const;
-  bool isThin()    const;
-  bool isPassive() const;
+  char const* Type()  const;
+  bool isMagnet()     const;
+  bool isThin()       const;
+  bool isPassive()    const;
+  bool isDriftSpace() const;
   
   double OrbitLength( Particle const& );
-  void Split( double const&, ElmPtr&, ElmPtr& ) const;
-    // WARNING: After the Split function is used, the new elements 
-    // must be commissioned with RefRegVisitor.
-
+  std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
   // Note: entry and exit angles are not arguments
   // in the sbend constructors. A symmetric bend is assumed
@@ -169,6 +163,9 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   double const& getBendAngle()   const { return angle_; }
 
+ protected:
+
+  void propagateReference( Particle& p, double initialBRho, bool scaling );
 
  private:
 

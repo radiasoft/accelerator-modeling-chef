@@ -35,9 +35,10 @@
 #ifndef KICKPROPAGATORS_H
 #define KICKPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
+#include <beamline/kick.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class kick::Propagator: public BasePropagator {
 
