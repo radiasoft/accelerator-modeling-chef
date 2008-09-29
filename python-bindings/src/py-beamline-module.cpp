@@ -38,7 +38,6 @@ extern void wrap_beamline();
 extern void wrap_particle();
 extern void wrap_jetparticle();
 
-extern void wrap_aperture();
 extern void wrap_bblens();
 extern void wrap_cf_rbend();
 extern void wrap_cf_sbend();
@@ -66,7 +65,6 @@ extern void wrap_srot();
 extern void wrap_thinpoles();
 extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
-extern void wrap_refregvisitor(); 
 extern void wrap_bmlvisitor();
 
 BOOST_PYTHON_MODULE( beamline ) 
@@ -77,7 +75,6 @@ wrap_beamline();
 wrap_particle();
 wrap_jetparticle();
 wrap_bmlvisitor(); 
-wrap_aperture();
 wrap_bblens();
 wrap_cf_rbend();
 wrap_cf_sbend();
@@ -101,7 +98,6 @@ wrap_slot();
 wrap_srot();
 wrap_thinpoles();
 wrap_lattfunc();
-wrap_refregvisitor(); 
 wrap_mover();
 wrap_monitor();
 }
