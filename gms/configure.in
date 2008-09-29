@@ -9,13 +9,17 @@
 #
 #-------------------------------------------------------------------
 
-AC_INIT(include/FastAllocator.h)
-AC_CONFIG_AUX_DIR(config)
-##AM_CONFIG_HEADER([config.h])
-
-AM_INIT_AUTOMAKE(gms, 1.0, no-define)
-
+AC_INIT([gms], [1.0])
+#AC_CONFIG_SRCDIR([include/FastAllocator.h])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_HEADERS
 
-#AC_CONFIG_FILES( [ Makefile ] )
-AC_OUTPUT( [Makefile] ) 
+AM_INIT_AUTOMAKE
+AM_CONFIG_HEADER([config.h])
+
+LT_INIT
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+

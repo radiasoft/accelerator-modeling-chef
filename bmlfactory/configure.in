@@ -1,19 +1,23 @@
 #--------------------------------------------------------------------
 # configure.in for bmlfactory
 #
-# Authors:  Enrico Ng (Summer Intern) 
-#
-#           Jean-Francois Ostiguy
+# Authors:  Jean-Francois Ostiguy
 #           ostiguy@fnal.gov
+#           Enrico Ng (Summer Intern) 
+#
 #
 # Process this file with autoconf to produce a configure script.
 #
 #-------------------------------------------------------------------
 
-AC_INIT(src/beam_element.c)
+AC_INIT([bmlfactory], [1.0])
+AC_CONFIG_SRCDIR([src/beam_element.c])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR(config)
+
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE(bmlfactory, 1.0, no-define)
+AC_CONFIG_HEADERS
 
 AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
 if test "x${withval}" != "xno"; then
@@ -37,7 +41,7 @@ AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[
               CXXFLAGS="-DMXYZPTLK_EXPLICIT_TEMPLATES -DBASICTOOLKIT_EXPLICIT_TEMPLATES ${CXXFLAGS}" )
 
 
-if test ${CXXFLAGS} && test ${CFLAGS}; then
+if test x${CXXFLAGS} != "x" && test x${CFLAGS} != "x"; then
 set_CXXFLAGS=${CXXFLAGS}
 set_CFLAGS=${CFLAGS}
 fi
@@ -231,12 +235,8 @@ else
 		    boost_inc="/usr/local/include"
 		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_34"
-		elif test -r /usr/local/include/boost-1_34_1/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include/boost-1_34_1"
 		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/ap/include/boost-1_34"
-		elif test -r /usr/local/ap/include/boost-1_34_1/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_34_1"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
