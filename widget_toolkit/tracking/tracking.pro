@@ -20,16 +20,22 @@ LANGUAGE        = C++
 windows:CONFIG  += qt opengl x11 debug warn_on thread staticlib exceptions rtti
 unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
+INCLUDEPATH += ../tracking/src/ui
+
 HEADERS	+= ./include/Tracker.h \
            ./include/DistributionWidget.h \
            ./include/PointEdit.h \
            ./include/QtMonitor.h \
            ./include/TrbWidget.h \
-           ./include/RayTrace.h
+           ./include/RayTrace.h \
+           ./include/RayTracerNew.h 
 
 SOURCES += ./src/DistributionWidget.cc \
            ./src/PointEdit.cc \
            ./src/QtMonitor.cc \
            ./src/TrbWidget.cc \
            ./src/RayTrace.cc \
-           ./src/Tracker.cc
+           ./src/Tracker.cc \
+           ./src/RayTracerNew.cc
+
+FORMS	+= ./src/RayTracerBase.ui 
