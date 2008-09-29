@@ -333,7 +333,7 @@ void EditDialog::visit( drift& x )
       if( !ok ) { newLength = x.Length(); }
 
       Vector origin(3);
-      origin[Particle::cdtIndex]  = newLength; 
+      origin[Particle::i_cdt]  = newLength; 
       // This is a phenomenally stupid and convoluted
       // way to do this.
       Frame outFrame;
