@@ -38,9 +38,8 @@
 
 #include <beamline/sector.h>
 #include <beamline/BasePropagator.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class sector::Propagator: public BasePropagator {
 

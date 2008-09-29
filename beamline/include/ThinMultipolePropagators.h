@@ -35,10 +35,10 @@
 #ifndef THINMULTIPOLESPROPAGATORS_H
 #define THINMULTIPOLESPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/thinMultipole.h>
+#include <beamline/ParticleFwd.h>
 
-class    Particle;
-class JetParticle;
 
 class thinMultipole::Propagator: public BasePropagator {
 

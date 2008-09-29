@@ -31,11 +31,11 @@
 #define BUNCHPROJECTOR_H
 
 #include <vector>
+#include <beamline/ParticleFwd.h>
+
 
 template <typename Particle_t> 
 class TBunch;
-
-class Particle;
 typedef TBunch<Particle> ParticleBunch;
 
 

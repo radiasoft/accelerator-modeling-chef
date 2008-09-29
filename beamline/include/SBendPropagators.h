@@ -35,10 +35,10 @@
 #ifndef SBENDPROPAGATORS_H
 #define SBENDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/sbend.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class sbend::Propagator: public BasePropagator {
 

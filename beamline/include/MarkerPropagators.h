@@ -32,15 +32,16 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-
 #ifndef MARKERPROPAGATORS_H
 #define MARKERPROPAGATORS_H
+
+#include <beamline/BasePropagator.h>
+#include <beamline/marker.h>
+#include <beamline/ParticleFwd.h>
 
 template<typename Particle_t>
 class TBunch;
 
-class Particle;
-class JetParticle;
 
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;

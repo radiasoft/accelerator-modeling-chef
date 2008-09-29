@@ -34,13 +34,13 @@
 #ifndef CFRBENDPROPAGATORS_H
 #define CFRBENDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/CF_rbend.h>
+#include <beamline/ParticleFwd.h>
 
 template<typename Particle_t>
 class TBunch;
 
-class Particle;
-class JetParticle;
 
 
 class CF_rbend::Propagator: public BasePropagator {

@@ -35,9 +35,10 @@
 #define  LINACCAVITYPROPAGATORS_H
 
 #include <beamline/LinacCavity.h>
+#include <beamline/BasePropagator.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
+
 
 class LinacCavity::Propagator : public BasePropagator {
 

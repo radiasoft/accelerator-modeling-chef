@@ -33,10 +33,10 @@
 #ifndef  LINACCAVITYPARTSPROPAGATORS_H
 #define  LINACCAVITYPARTSPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/LinacCavityParts.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class LCavityUpstream::Propagator : public BasePropagator {
 

@@ -38,9 +38,8 @@
 #include <iomanip>
 
 #include<boost/random.hpp>
+#include<beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 using namespace std;
 

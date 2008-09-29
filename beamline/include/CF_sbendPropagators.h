@@ -34,10 +34,10 @@
 #ifndef CFSBENDPROPAGATORS_H
 #define CFSBENDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/CF_sbend.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class CF_sbend::Propagator: public BasePropagator {
 

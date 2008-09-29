@@ -38,9 +38,7 @@
 
 #include <beamline/septum.h>
 #include <beamline/BasePropagator.h>
-
-class Particle;
-class JetParticle;
+#include <beamline/ParticleFwd.h>
 
 class thinSeptum::Propagator: public BasePropagator {
 

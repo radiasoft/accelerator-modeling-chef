@@ -33,13 +33,13 @@
 #ifndef  LAMBERTSONPROPAGATORS_H
 #define  LAMBERTSONPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/lambertson.h>
+#include <beamline/ParticleFwd.h>
 
 template<typename Particle_t>
 class TBunch;
 
-class Particle;
-class JetParticle;
 
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;

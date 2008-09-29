@@ -40,9 +40,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <beamline/WakeKick.h>
-
-class    Particle;
-class JetParticle;
+#include <beamline/ParticleFwd.h>
 
 template <typename Particle_t>
 class TBunch;

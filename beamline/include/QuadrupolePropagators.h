@@ -34,10 +34,10 @@
 #ifndef  QUADRUPOLEPROPAGATORS_H
 #define  QUADRUPOLEPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/quadrupole.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class quadrupole::Propagator: public BasePropagator {
 

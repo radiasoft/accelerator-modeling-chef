@@ -36,6 +36,7 @@
 #ifndef COMBINEDFUNCTIONPROPAGATORS_H
 #define COMBINEDFUNCTIONPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/combinedFunction.h>
 
 class combinedFunction::Propagator: public BasePropagator {

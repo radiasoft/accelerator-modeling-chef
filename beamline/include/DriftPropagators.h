@@ -34,6 +34,7 @@
 #ifndef  DRIFTPROPAGATORS_H
 #define  DRIFTPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/drift.h>
 
 class drift::Propagator : public BasePropagator {

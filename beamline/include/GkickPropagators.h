@@ -35,10 +35,10 @@
 #ifndef GKICKPROPAGATORS_H
 #define GKICKPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/gkick.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 
 class gkick::Propagator: public BasePropagator {

@@ -33,10 +33,10 @@
 #ifndef  SROTPROPAGATORS_H
 #define  SROTPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/srot.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class srot::Propagator : public BasePropagator {
 

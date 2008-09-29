@@ -36,10 +36,10 @@
 #ifndef OCTUPOLEPROPAGATORS_H
 #define OCTUPOLEPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/octupole.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class octupole::Propagator: public BasePropagator {
 

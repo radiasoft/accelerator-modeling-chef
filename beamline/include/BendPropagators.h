@@ -35,6 +35,7 @@
 #ifndef BENDPROPAGATORS_H
 #define BENDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/Bend.h>
 
 class Bend::Propagator: public BasePropagator {

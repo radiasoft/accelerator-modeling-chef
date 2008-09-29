@@ -34,6 +34,7 @@
 #ifndef  BBLENSPROPAGATORS_H
 #define  BBLENSPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/BBLens.h>
 
 class BBLens::Propagator : public BasePropagator {

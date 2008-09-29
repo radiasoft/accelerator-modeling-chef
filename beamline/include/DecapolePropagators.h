@@ -35,10 +35,10 @@
 #ifndef DECAPOLEPROPAGATORS_H
 #define DECAPOLEPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/decapole.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class thinDecapole::Propagator: public BasePropagator {
 

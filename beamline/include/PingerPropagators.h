@@ -35,16 +35,17 @@
 #ifndef PINGERPROPAGATORS_H
 #define PINGERPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
+#include <beamline/pinger.h>
+#include <beamline/ParticleFwd.h>
+
 template<typename Particle_t>
 class TBunch;
 
-class Particle;
-class JetParticle;
 
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
-#include <beamline/pinger.h>
 
 class Pinger::Propagator: public BasePropagator {
 

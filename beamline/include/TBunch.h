@@ -36,13 +36,11 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/Distribution.h>
+#include <beamline/ParticleBunch.h>
 #include <beamline/Particle.h>
 #include <boost/pool/pool.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ptr_container/indirect_fun.hpp>
-
-template <typename Particle_t> 
-class TBunch;
 
 // stream operators
 
@@ -156,7 +154,8 @@ void TBunch<Particle_t>::remove( UnaryPredicate_t predicate)
 // specializations
 //------------------------------------------------------------------------------------
 
-class Particle;
+#include <beamline/ParticleFwd.h> 
+//class Particle;
 
 template<>
 void TBunch<Particle>::populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12);

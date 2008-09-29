@@ -36,10 +36,9 @@
 #ifndef SOLENOIDPROPAGATORS_H
 #define SOLENOIDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/Solenoid.h>
-
-class Particle;
-class JetParticle;
+#include <beamline/ParticleFwd.h>
 
 class Solenoid::Propagator: public BasePropagator {
 

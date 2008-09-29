@@ -31,9 +31,7 @@
 
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
-
-class Particle;
-class JetParticle;
+#include <beamline/ParticleFwd.h>
 
 
 template <typename T>

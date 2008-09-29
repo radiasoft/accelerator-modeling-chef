@@ -35,10 +35,10 @@
 #ifndef SEXTUPOLEPROPAGATORS_H
 #define SEXTUPOLEPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/sextupole.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class sextupole::Propagator: public BasePropagator {
 

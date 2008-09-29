@@ -36,10 +36,10 @@
 #ifndef RFCAVITYPROPAGATORS_H
 #define RFCAVITYPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/rfcavity.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class rfcavity::Propagator: public BasePropagator {
 

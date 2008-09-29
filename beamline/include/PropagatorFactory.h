@@ -34,9 +34,8 @@
 
 #include <map>
 #include <boost/function.hpp>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 template <typename Particle_t>
 class TBunch;

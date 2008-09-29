@@ -35,10 +35,10 @@
 #ifndef SLOTPROPAGATORS_H
 #define SLOTPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/Slot.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class Slot::Propagator: public BasePropagator {
 

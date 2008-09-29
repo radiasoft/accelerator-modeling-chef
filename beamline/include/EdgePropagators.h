@@ -34,10 +34,10 @@
 #ifndef  EDGEPROPAGATORS_H
 #define  EDGEPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/Edge.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class Edge::Propagator: public BasePropagator {
 

@@ -37,10 +37,10 @@
 #ifndef RBENDPROPAGATORS_H
 #define RBENDPROPAGATORS_H
 
+#include <beamline/BasePropagator.h>
 #include <beamline/rbend.h>
+#include <beamline/ParticleFwd.h>
 
-class Particle;
-class JetParticle;
 
 class rbend::Propagator: public BasePropagator {
 
