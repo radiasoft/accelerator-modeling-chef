@@ -32,26 +32,23 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot.h>
 #include <qwt_symbol.h>
-#include <cstdlib>
 #include <iostream>
 
 using namespace std;
 
 
 TuneDiagram::TuneDiagram( QWidget* parent, char const* name, WFlags f )
-: TuneDiagramBase(parent, name, f), tunescrv_(0) 
+  : TuneDiagramBase(parent, name, f), nu1_(0.0), nu2_(0.0) 
 {
 
   qwtPlot->setCanvasBackground( QColor("white")              );
-  qwtPlot->setAxisTitle( QwtPlot::yLeft,   "Vertical Tune"   );
-  qwtPlot->setAxisTitle( QwtPlot::xBottom, "Horizontal Tune" );
-  qwtPlot->setAxisScale( QwtPlot::yLeft,   0.0,  1.0,  0     );	 
-  qwtPlot->setAxisScale( QwtPlot::xBottom, 0.0,  1.0,  0     );	 
+  qwtPlot->setAxisTitle( QwtPlot::yLeft,   "'Vertical'   Tune"   );
+  qwtPlot->setAxisTitle( QwtPlot::xBottom, "'Horizontal' Tune" );
 
-  connect ( spinBoxMaxOrder,     SIGNAL( valueChanged(int) ), this, SLOT( maxOrderValueChanged( int ) ) ); 
-  connect ( spinBoxMinOrder,     SIGNAL( valueChanged(int) ), this, SLOT( minOrderValueChanged( int ) ) ); 
-  connect ( checkBoxSums,        SIGNAL( clicked()  ),        this, SLOT( checkBoxSumsClicked()       ) ); 
-  connect ( checkBoxDifferences, SIGNAL( clicked()  ),        this, SLOT( checkBoxDifferencesClicked()) ); 
+  connect ( spinBoxMaxOrder,     SIGNAL( valueChanged(int) ), this, SLOT( setMaxOrder( int ) ) ); 
+  connect ( spinBoxMinOrder,     SIGNAL( valueChanged(int) ), this, SLOT( setMinOrder( int ) ) ); 
+  connect ( checkBoxSums,        SIGNAL( clicked()  ),        this, SLOT( showSums()       ) ); 
+  connect ( checkBoxDifferences, SIGNAL( clicked()  ),        this, SLOT( showDifferences()) ); 
 
   lineEditNu1->setEnabled(false);
   lineEditNu2->setEnabled(false);
@@ -75,30 +72,38 @@ TuneDiagram::~TuneDiagram()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneDiagram::replot()
+void TuneDiagram::clear()
+{
+  QwtPlotItemList items = qwtPlot->itemList();
+
+  for ( QwtPlotItemIterator it = items.begin(); it != items.end(); ++it ) {
+    QwtPlotCurve* curve = dynamic_cast<QwtPlotCurve*>(*it);
+    if (!curve) continue; 
+    curve->detach(); delete (curve );  
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneDiagram::plotResonances()
 {
   
   // All resonance lines recreated and displayed.
   // Tunes remain unchanged.
 
-  QwtPlotItemList items = qwtPlot->itemList();
-
-  for ( QwtPlotItemIterator it = items.begin(); it != items.end(); ++it ) {
-
-    QwtPlotCurve* curve = dynamic_cast<QwtPlotCurve*>(*it);
-
-    if (!curve) continue; 
-
-    if ( dynamic_cast<ResonanceLine*>( &(curve->data()) )) { 
-        curve->attach(0); delete (curve );  
-    }
-  }
 
   int min_order = spinBoxMinOrder->value(); 
   int max_order = spinBoxMaxOrder->value(); 
  
   bool show_diffs =  checkBoxDifferences->isChecked();
   bool show_sums  =  checkBoxSums->isChecked();
+
+  double nu1min;  modf( nu1_, &nu1min); 
+  double nu2min;  modf( nu2_, &nu2min);
+
+  for ( int xoff= nu1min; xoff<nu1min+1; ++xoff ) {
+  for ( int yoff= nu2min; yoff<nu2min+1;  ++yoff ) {
 
   for ( int n=0; n<max_order; ++n ) {
 
@@ -115,7 +120,10 @@ void TuneDiagram::replot()
 	if ( (!show_sums)  && (  is_sum ) ) continue; 
 
          QwtPlotCurve* curve = new QwtPlotCurve();
-	 curve->setData( ( ResonanceLine( i, j, n )) );
+         ResonanceLine rl( i, j, n, xoff, yoff );
+         if (!rl.isVisible() ) continue; 
+
+	 curve->setData( rl );
 	 is_sum ? curve->setPen( QPen(QColor("gray"), 2, Qt::SolidLine )) : curve->setPen( QPen( QColor("gray"), 1, Qt::DotLine) );
          curve->setStyle(QwtPlotCurve::Lines);
          curve->attach(qwtPlot);
@@ -124,6 +132,8 @@ void TuneDiagram::replot()
     }
   }
 
+  }}
+
   qwtPlot->replot();
 
 }
@@ -131,28 +141,55 @@ void TuneDiagram::replot()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneDiagram::checkBoxSumsClicked()
+void TuneDiagram::replot()
+{
+  clear();
+
+  double nu1min;  modf( nu1_, &nu1min); 
+  double nu2min;  modf( nu2_, &nu2min);
+
+  qwtPlot->setAxisScale( QwtPlot::yLeft,   nu1min,  nu1min+1.0,  0     );	 
+  qwtPlot->setAxisScale( QwtPlot::xBottom, nu2min,  nu2min+1.0,  0     );	 
+
+  plotResonances(); 
+  
+  QwtPlotCurve* tunescrv = new QwtPlotCurve();
+  tunescrv->setTitle("Tunes");
+  tunescrv->setStyle(QwtPlotCurve::NoCurve);
+  tunescrv->setSymbol(QwtSymbol(QwtSymbol::Cross, QBrush(), QPen("red",2), QSize(10,10)) );
+  tunescrv->setZ(1.0); // always displayed on top 
+  tunescrv->attach( qwtPlot) ;
+  tunescrv->setData(&nu1_, &nu2_, 1);
+
+  qwtPlot->replot();
+   
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void TuneDiagram::showSums()
 {
   replot();
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneDiagram::checkBoxDifferencesClicked()
+void TuneDiagram::showDifferences()
 {
   replot();
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneDiagram::maxOrderValueChanged( int )
+void TuneDiagram::setMaxOrder( int )
 {
   replot();
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void TuneDiagram::minOrderValueChanged( int ) 
+void TuneDiagram::setMinOrder( int ) 
 {
   replot();
 }
@@ -173,24 +210,18 @@ void  TuneDiagram::setRange( int min, int max, bool showdiffs )
 void TuneDiagram::setTunes( double nu1, double nu2)
 {
 
-  if (!tunescrv_) { 
-    tunescrv_ = new QwtPlotCurve();
-    tunescrv_->setTitle("Tunes");
-    tunescrv_->setStyle(QwtPlotCurve::NoCurve);
-    tunescrv_->setSymbol(QwtSymbol(QwtSymbol::Cross, QBrush(), QPen("red",2), QSize(10,10)) );
-    tunescrv_->setZ(1.0); // always displayed on top 
-    tunescrv_->attach( qwtPlot) ;
-  }
-  
-  tunescrv_->setData(&nu1, &nu2, 1);
-  lineEditNu1->setText(QString("%1").arg(nu1, 7, 'f', 4 ));
-  lineEditNu2->setText(QString("%1").arg(nu2, 7, 'f', 4 ));
+  nu1_ = nu1;
+  nu2_ = nu2;
+
+  lineEditNu1->setText(QString("%1").arg(nu1_, 7, 'f', 4 ));
+  lineEditNu2->setText(QString("%1").arg(nu2_, 7, 'f', 4 ));
   lineEditNu1->setEnabled(true);
   lineEditNu2->setEnabled(true);
   
   lineEditNu1->update();
   lineEditNu2->update();
-
+ 
+  replot();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

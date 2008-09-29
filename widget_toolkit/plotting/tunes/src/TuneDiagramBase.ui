@@ -206,8 +206,8 @@
     </vbox>
 </widget>
 <slots>
-    <slot>maxOrderValueChanged(int)</slot>
-    <slot>minOrderValueChanged(int)</slot>
+    <slot>setMaxOrder(int)</slot>
+    <slot>setMinOrder(int)</slot>
     <slot>rotValueChanged(int)</slot>
 </slots>
 <layoutdefaults spacing="6" margin="11"/>
