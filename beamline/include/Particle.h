@@ -123,8 +123,8 @@ class DLLEXPORT Particle {
 
 public:
 
-  enum PhaseSpaceIndex { xIndex   = 0, yIndex   = 1, cdtIndex =  2, 
-                         npxIndex = 3, npyIndex = 4, ndpIndex  = 5 };
+  enum PhaseSpaceIndex { i_x   = 0, i_y   = 1, i_cdt =  2, 
+                         i_npx = 3, i_npy = 4, i_ndp =  5 };
 
 protected:
 
@@ -341,32 +341,32 @@ class particle_core_access
 
   inline int  Particle::psd()          { return Particle::PSD; }
 
-  inline double  Particle::get_x()     const { return state_[xIndex  ]; }
-  inline double  Particle::get_y()     const { return state_[yIndex  ]; }
-  inline double  Particle::get_cdt()   const { return state_[cdtIndex]; }
-  inline double  Particle::get_npx()   const { return state_[npxIndex]; }
-  inline double  Particle::get_npy()   const { return state_[npyIndex]; }
-  inline double  Particle::get_ndp()   const { return state_[ndpIndex]; }
+  inline double  Particle::get_x()     const { return state_[i_x  ]; }
+  inline double  Particle::get_y()     const { return state_[i_y  ]; }
+  inline double  Particle::get_cdt()   const { return state_[i_cdt]; }
+  inline double  Particle::get_npx()   const { return state_[i_npx]; }
+  inline double  Particle::get_npy()   const { return state_[i_npy]; }
+  inline double  Particle::get_ndp()   const { return state_[i_ndp]; }
 
-  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[ndpIndex] )*( 1.0 + state_[ndpIndex] ) 
-                                         - state_[npxIndex]*state_[npxIndex] - state_[npyIndex]*state_[npyIndex] );      }   
+  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[i_ndp] )*( 1.0 + state_[i_ndp] ) 
+                                            - state_[i_npx]*state_[i_npx] - state_[i_npy]*state_[i_npy] );      }   
 
 
-  inline void  Particle::set_x   ( double u )  { state_[xIndex  ] = u; }
-  inline void  Particle::set_y   ( double u )  { state_[yIndex  ] = u; }
-  inline void  Particle::set_cdt ( double u )  { state_[cdtIndex] = u; }
-  inline void  Particle::set_npx ( double u )  { state_[npxIndex] = u; }
-  inline void  Particle::set_npy ( double u )  { state_[npyIndex] = u; }
-  inline void  Particle::set_ndp ( double u )  { state_[ndpIndex] = u; }
+  inline void  Particle::set_x   ( double u )  { state_[i_x  ] = u; }
+  inline void  Particle::set_y   ( double u )  { state_[i_y  ] = u; }
+  inline void  Particle::set_cdt ( double u )  { state_[i_cdt] = u; }
+  inline void  Particle::set_npx ( double u )  { state_[i_npx] = u; }
+  inline void  Particle::set_npy ( double u )  { state_[i_npy] = u; }
+  inline void  Particle::set_ndp ( double u )  { state_[i_ndp] = u; }
 
   inline Vector&       Particle::State()       { return state_; } 
   inline Vector const& Particle::State() const { return state_; } 
 
-  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[ndpIndex] );  }
+  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[i_ndp] );  }
   inline double         Particle::Energy()                   const   { double p = Momentum(); 
                                                                        return sqrt( p*p + m_*m_ );       }
   inline double         Particle::KineticEnergy()            const   { return Energy() - m_;             }
-  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[ndpIndex] );}
+  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[i_ndp] );   }
   inline double  const& Particle::Mass()                     const   { return m_;                        }
   inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
   inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
@@ -380,6 +380,6 @@ class particle_core_access
   inline double  const& Particle::ReferenceMomentum()        const   { return p_;                        }
   inline double         Particle::ReferenceEnergy()          const   { return sqrt(p_*p_ + m_*m_);       }
   inline double  const& Particle::Charge()                   const   { return q_;                        }
-  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[ndpIndex] ); }
+  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[i_ndp] ); }
 
 #endif // PARTICLE_H

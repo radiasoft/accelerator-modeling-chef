@@ -30,9 +30,10 @@
 #ifndef PARTICLEBUNCH_H
 #define PARTICLEBUNCH_H
 
-#include <beamline/TBunch.h>
-#include <beamline/Particle.h>
-#include <beamline/JetParticle.h>
+#include <beamline/ParticleFwd.h>
+
+template <typename Particle_t> 
+class TBunch;
 
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
