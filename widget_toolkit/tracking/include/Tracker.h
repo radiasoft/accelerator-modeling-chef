@@ -65,13 +65,13 @@
 #include <basic_toolkit/VectorD.h>
 #include <beamline/BmlPtr.h>
 #include <beamline/LatticeFunctions.h>
+#include <beamline/Particle.h>
 
 // Predeclaration of classes...
 
 class DrawSpace;
 class Tracker;
 class PointEdit;
-class Particle;
 
 typedef void (*DrawFunc) ( DrawSpace* );
 
@@ -262,13 +262,15 @@ class Tracker : public QVBox
 Q_OBJECT
 
 public:
-  Tracker( Particle const &,  BmlPtr, QWidget* parent=0, const char* name=0, WFlags f=0 );
-  Tracker( BmlContextPtr, QWidget* parent=0, const char* name=0, WFlags f=0 );
-  ~Tracker();
+
+  Tracker( Particle const& p, BmlPtr bml, QWidget* parent=0, const char* name=0, WFlags f=0 );
+  Tracker( BmlContextPtr bmlc, QWidget* parent=0, const char* name=0, WFlags f=0 );
+ ~Tracker();
+
   int run();
 
   std::list<Orbit*>       orbits_;
-  CSLattFuncs*             _p_info;
+  CSLattFuncs             lf_;
 
   void setState( const Vector& );
 
@@ -343,7 +345,7 @@ private:
   QLabel*          _p_yp_label;
 
   BmlContextPtr    _bmlConPtr;
-  Particle*        _centralParticlePtr;
+  Particle          particle_;
   bool             _isIterating;
   Orbit*           _p_currOrb;
 };
