@@ -264,7 +264,7 @@ friend class TJL;
   TJL& Negate(); // in-place negation 
 
   friend JLPtr<T>  
-         operator+<>(  JLPtr<T>   lhs,  JLPtr<T>  rhs  );  
+         operator+<>(  JLPtr<T> const& lhs,  JLPtr<T>  const& rhs  );  
 
   friend JLPtr<T>& 
          operator+=<>( JLPtr<T>&       lhs,           T const& rhs  ); 
