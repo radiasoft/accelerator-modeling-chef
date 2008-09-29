@@ -5,7 +5,8 @@
 #
 # Author: ostiguy@fnal.gov
 #
-# Updates a list of header files (to be included in Makefile.am)  
+# Produces a list of header files in a format suitable for inclusion in
+# in Makefile.am  
 #-----------------------------------------------------------------------
 
 if [ -f header_files ]; then  mv header_files  header_files.old; else touch header_files.old; fi
