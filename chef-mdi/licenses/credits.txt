@@ -1,46 +1,43 @@
-CHEF (an acronym for Collaborative Hierachical Expansible Framework, 
+CHEF (an acronym for Collaborative Hierarchical Expansible Framework, 
 if you must really know) is being developed at the 
 Fermi National Accelerator Laboratory.
 . 
-The authors are 
+Authors: 
 
 Leo Michelotti            michelotti@fnal.gov
 Jean-Francois Ostiguy        ostiguy@fnal.gov
 
-CHEF is layered on a set of (C++) class libraries, originally 
-authored by Leo Michelotti. In recent years Jean-Francois Ostiguy
-made significant contributions. The libraries continue to be 
-jointly developed.
+CHEF (the application) depends on a set of (C++) class libraries 
+initially authored by Leo Michelotti in the 1990s. 
+In recent years, Jean-Francois Ostiguy made major contributions 
+and the original code went through a series of in-depth revisions.  
+The libraries are now developed jointly. They include:
 
 basic_toolkit:       Foundations Classes 
 mxyzptlk:            A full-featured  automatic differentiation engine
 beamline:            Beamline elements, hierarchical beamline containers 
                      and associated operations 
-physics_toolkit:     Accelerator Physics related calculations.
-bmlfactory:          parsing 
+physics_toolkit:     accelerator physics related calculations.
+python-bindings:     a fairly comprehensive set of python bindings for the c++ classes
+bmlfactory:          a now somewhat deprecated MAD8 parser  
+parsers:             parsers ( xsif and madx ) 
  
-Enrico Ng (as a summer intern) helped putting together the 
-automated build system. 
+Over the years, many people have contributed code, time and expertise. 
+Enrico Ng (as a summer intern) helped putting together an autotools-based 
+build system. Jim Amundson contributed a series of python-based unit tests.
+The first MAD8 format parser (bmlfactory) was developed by Dmitri Mokhov 
+(then a summer intern now with Intel Corp.) and Oleg  Krivosheev 
+(then a Post Doc, now working in the medical instruments industry).
 
-Jim Amundson contributed a series of python-based tests.
+James Holt, Elliot McCrory, Andrew Braun, Jim Amundson, 
+Mike Martens and Paul Lebrun, either used or tested the libraries 
+in various contexts, identified many bugs, helped diagnose 
+inefficiencies and shortcomings and suggested and contributed 
+improvements. 
 
-MAD format parsing is provided by the bmlfactory class library. 
-A parser based on Lex/Yacc was authored by Dmitri Mokhov 
-(a summer intern now working for Intel Corp.) and Oleg  Krivosheev 
-(then a Post Doc, now working in the medical instruments industry). 
-Many bug fixes and improvements were contributed by 
-Jean-Francois Ostiguy. Recently, a new XSIF parser (MAD8 + support 
-for linacs) was added and will likely supersede the old one. 
+The authors would like to express their gratitude 
+to Fermilab management for continued support.
 
-The authors would also like to acknowledge contributions from many 
-people, incluing James Holt, Elliot McCrory, Andrew Braun, Jim Amundson, 
-Mike Martens, and Paul Lebrun, who  exercised the libraries in various 
-contexts, identified bugs, helped diagnose inefficiencies 
-and shortcomings and suggested and/or contributed improvements. 
-
-Finally, the authors would like to express their gratitute to
-the management of the Accelerator and Computing Divisions 
-for their continued support.
 
 
 

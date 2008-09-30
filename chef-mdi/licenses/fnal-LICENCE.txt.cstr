@@ -1,18 +1,22 @@
 "\
 =============================================================================\n\
-ATTENTION:\n\
-\n\
-UNTIL OFFICIAL FURTHER NOTICE IS GIVEN, CHEF IS FOR FNAL INTERNAL USE ONLY.\n\
-\n\
-While it is the authors' intent to allow free redistribution of the source code,\n\
-redistribution in any form (binary or source) outside of Fermilab of this program \n\
-or any of its FNAL authored components, is prohibited without official \n\
-authorization. The rules shall remain in force until Copyright and license \n\
-issues have been resolved and terms of distribution have been approved by \n\
-legally competent authorities at URA/Fermilab and DOE.   \n\
-  \n\
-(C) University Research Association\n\
-\n\
+******  Copyright (c) Fermi Research Alliance LLC\n\
+******                All Rights Reserved\n\
+******\n\
+******  Usage, modification, and redistribution are subject to terms          \n\
+******  of the License(s) supplied with this software.\n\
+******  \n\
+******  Software and documentation created under \n\
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359.\n\
+******  The U.S. Government retains a world-wide non-exclusive, \n\
+******  royalty-free license to publish or reproduce documentation \n\
+******  and software for U.S. Government purposes. This software \n\
+******  is protected under the U.S. and Foreign Copyright Laws. \n\
+******\n\
+******\n\
+****** Authors: michelotti@fnal.gov\n\
+******          ostiguy@fnal.gov\n\
+******\n\
 ============================================================================= \n\
 \n\
 "
