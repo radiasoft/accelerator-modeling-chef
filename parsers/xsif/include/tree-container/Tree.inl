@@ -27,21 +27,20 @@ Email questions, comments or suggestions to mhaas@datasoftsolutions.net
 
 // copy constructor
 template<typename stored_type, typename node_compare_type>
-tcl::multitree<stored_type, node_compare_type>::multitree( const tree_type& rhs ) : associative_tree_type(rhs)
+tcl::tree<stored_type, node_compare_type>::tree( const tree_type& rhs ) : associative_tree_type(rhs)
 {
   typename associative_tree_type::const_iterator it = rhs.begin();
   const typename associative_tree_type::const_iterator it_end = rhs.end();
-  for (; it != it_end; ++it)  // do deep copy by inserting children (and descendants)
+  for (; it != it_end; ++it) // do a deep copy by inserting children (and descendants)
   {
     associative_tree_type::insert(*it.node(), this);
   }
 }
 
-
 // assignment operator
 template<typename stored_type, typename node_compare_type>
-tcl::multitree<stored_type, node_compare_type>& 
-tcl::multitree<stored_type, node_compare_type>::operator = (const tree_type& rhs)
+tcl::tree<stored_type, node_compare_type>& 
+tcl::tree<stored_type, node_compare_type>::operator = (const tree_type& rhs)
 {
   if (!associative_tree_type::is_root()) // can assign only to root node
     return *this;
@@ -50,11 +49,11 @@ tcl::multitree<stored_type, node_compare_type>::operator = (const tree_type& rhs
     return *this;
 
   associative_tree_type::clear();
-  basic_tree_type::operator =(rhs);  // call base class operation
+  basic_tree_type::operator =(rhs); // call base class operation
 
   typename associative_tree_type::const_iterator it = rhs.begin();
   const typename associative_tree_type::const_iterator it_end = rhs.end();
-  for (; it != it_end; ++it)  // insert children and descendants
+  for (; it != it_end; ++it) // insert children and descendants
   {
     associative_tree_type::insert(*it.node(), this);
   }
@@ -63,7 +62,7 @@ tcl::multitree<stored_type, node_compare_type>::operator = (const tree_type& rhs
 
 // swap
 template<typename stored_type, typename node_compare_type>
-void tcl::multitree<stored_type, node_compare_type>::swap(tree_type& rhs)
+void tcl::tree<stored_type, node_compare_type>::swap(tree_type& rhs)
 {
   tree_type temp(*this);
 
@@ -73,4 +72,5 @@ void tcl::multitree<stored_type, node_compare_type>::swap(tree_type& rhs)
   rhs.clear();
   rhs = temp;
 }
+
 
