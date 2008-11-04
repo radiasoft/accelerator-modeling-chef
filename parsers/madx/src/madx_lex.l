@@ -38,6 +38,7 @@
 %option prefix="madx_yy"
 
 %x COMMENT
+%s ATTRIBUTE_MODE
 %s EXPRESSION
 %s SEQ_STATE
 
@@ -48,16 +49,14 @@
 #include <basic_toolkit/iosetup.h>
 #include <unistd.h>
 
-#include "MadxParser_ypp.hh"
 #include "MadxParserDriver.h"
-
 #include "location.hh"
 
 static std::string& trim(std::string& str);
 
 #define YY_USER_ACTION yylloc->columns(yyleng); 
 
-#define yyterminate() return token::MADX_END;
+#define yyterminate() return madx_yy::MadxParser::token_type(0); 
 
 %}
 
@@ -71,7 +70,9 @@ integer         [0-9]+[0-9]*
 
 string          (\"[^\"]*\")|(\'[^\']*\')
 
-identifier      [a-zA-Z][_\.a-zA-Z0-9]*(\[[a-zA-Z][_\.a-zA-Z0-9]*\])?            
+identifier      [a-zA-Z][_\.a-zA-Z0-9]*
+
+label           [a-zA-Z][_\.a-zA-Z0-9]*[\t ]*:
 
 blk             [ \t]                                  
 
@@ -92,48 +93,19 @@ blk             [ \t]
 
 
 
-<COMMENT>{comment_end}                                    { yy_pop_state(yyscanner);
+<COMMENT>{comment_end}                                   { yy_pop_state(yyscanner);
                                                             yylloc->lines(1); yylloc->step();   
-                                                          }                                            
-<COMMENT>.*\n                                             { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/ 
+                                                         }                                            
+<COMMENT>.*\n                                            { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/ 
                                                            
 
-{comment_begin}                                           { yy_push_state(COMMENT, yyscanner); } 
+{comment_begin}                                          { yy_push_state(COMMENT, yyscanner); } 
 
-{comment}.*\n                                             { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/
+{comment}.*\n                                            { yylloc->lines(1); yylloc->step(); }  /* ignore comments*/
  
 
 
-(real|REAL)                                               { return token::MADX_REAL; }
-
-(integer|INTEGER)                                         { return token::MADX_INTEGER; }
-
-(const|CONST)                                             { return token::MADX_CONST; }
-
-(shared|SHARED)                                           { return token::MADX_SHARED; }
-
-(sequence|SEQUENCE)                                       { std::cout << "pushing state " << std::endl; 
-
-                                                             std::cout << " state = " << yy_top_state(yyscanner) <<std::endl; 
-                                                             yy_push_state(SEQ_STATE, yyscanner);
-                                                             std::cout << " state = " << yy_top_state(yyscanner) <<std::endl; 
-                                                             std::cout << " state SEQ_STATE  = " << SEQ_STATE <<std::endl; 
-                                                             std::cout << " state COMMENT    = " << COMMENT <<std::endl; 
-                                                             std::cout << " state EXPRESSION = " << EXPRESSION <<std::endl; 
-
-                                                             return token::MADX_SEQUENCE; 
-                                                          }
-
-ENDSEQUENCE                                               { 
-                                                            yy_pop_state(yyscanner); 
-                                                            return token::MADX_ENDSEQUENCE; }
-
-<SEQ_STATE>((at)|(AT)){blk}*=                              { unput('='); return token::MADX_AT;     } 
-
-<SEQ_STATE>((from)|(FROM)){blk}*=                          { unput('='); return token::MADX_FROM;   }
-
-
-^#(include|INCLUDE)[ \t]+.*                               {  
+^#(include|INCLUDE)[ \t]+.*                              {  
                                                               std::string* filename = new std::string(&yytext[8]);
                                                               *filename = trim(*filename); // remove quotes, if any 
                                                               FILE* fp = fopen( filename->c_str(), "r");
@@ -152,108 +124,233 @@ ENDSEQUENCE                                               {
                                                          }
 
 
-{identifier}                                             {  
-                                                              yylval->sval =  new parser_string_t(yytext);
-                                                              return token::MADX_IDENTIFIER; 
+
+,/{blk}*{identifier}                                     { /*set in attribute mode if it is not already set !!! */ 
+                                                           yy_push_state(ATTRIBUTE_MODE, yyscanner);
+                                                           return madx_yy::MadxParser::token_type(','); 
+                                                         }
+
+%{ 
+/*************
+<ATTRIBUTE_MODE>{identifier}[ \t]*,                      {    unput(',');
+                                                               yylval->sval =  new parser_string_t(yytext);
+                                                               return token::ATTRIBUTE; 
+               
                                                          } 
                                                              
-{integer}                                                {     yylval->ival = atoi(yytext); 
-                                                               return token::MADX_INT_VALUE;   
+<ATTRIBUTE_MODE>{identifier}[ \t]*(:=|=)                 {     unput('=');
+                                                               unput(':');
+                                                               yylval->sval =  new parser_string_t(yytext);
+                                                               return token::ATTRIBUTE; 
+                                                        } 
+***************/
+%}
+
+
+(CONST|const)                                            { return token::CONST;  }
+(REAL|real)                                              { return token::REAL;   }
+(STRING|string)                                          { return token::STRING; }
+(VECTOR|vector)                                          { return token::VECTOR; }
+(TABLE|table)                                            { return token::TABLE;  }
+(COLUMN|column)                                          { return token::COLUMN; }
+(ROW|row)                                                { return token::ROW;    }
+ 
+
+{identifier}/{blk}*=                                     { 
+                                                           yy_push_state(EXPRESSION, yyscanner);
+                                                           yylval->sval =  new parser_string_t(yytext);
+                                                           return token::IDENTIFIER;
+                                                         }
+{identifier}/{blk}*:=                                    { 
+                                                           yy_push_state(EXPRESSION, yyscanner);
+                                                           yylval->sval =  new parser_string_t(yytext);
+                                                           return token::IDENTIFIER;  
+                                                         }
+
+
+{identifier}/{blk}*:                                     {  
+                                                           yylval->sval =  new parser_string_t(yytext);
+                                                           return token::IDENTIFIER; 
+                                                         }
+
+                                                             
+{identifier}                                             {  
+                                                           yylval->sval =  new parser_string_t(yytext);
+                                                           return token::IDENTIFIER; 
+               
+                                                         } 
+                                                             
+{integer}                                                {  
+                                                            yylval->ival = atoi(yytext); 
+                                                            return token::INTEGER_LITERAL;   
                                                          }
 
 {real}                                                   {    
-                                                              yylval->dval = strtof(yytext,0);
-                                                              return token::MADX_VALUE;   
+                                                            yylval->dval = strtof(yytext,0);
+                                                            return token::REAL_LITERAL;   
                                                          }
 
 
-<EXPRESSION>(SQRT|sqrt){blk}*\(                          {  
-                                                           unput('('); return token::MADX_SQRT;
-                                                         }
-<EXPRESSION>(LOG|log){blk}*\(                            {  
-                                                           unput('('); return token::MADX_LOG;
-                                                         }
-<EXPRESSION>(LOG10|log10){blk}*\(                        {  
-                                                           unput('('); return token::MADX_LOG10;
-                                                         }
-<EXPRESSION>(EXP|exp){blk}*\(                            { 
-                                                           unput('('); return token::MADX_EXP;
-                                                         }
-<EXPRESSION>(SIN|sin){blk}*\(                            {  
-                                                           unput('('); return token::MADX_SIN;
-                                                         }
-<EXPRESSION>(COS|cos){blk}*\(                            {  
-                                                           unput('('); return token::MADX_COS;
-                                                         }
-<EXPRESSION>(TAN|tan){blk}*\(                            {  
-                                                           unput('('); return token::MADX_TAN;
+<EXPRESSION>(RANF|ranf)/{blk}*\(                         { /* random number, uniformly distributed in [0,1]                         */   
+                                                           return token::RANF;
                                                          }
 
-<EXPRESSION>(ASIN|asin){blk}*\(                          {  
-                                                           unput('('); return token::MADX_ASIN;
+<EXPRESSION>(GAUSS|gauss)/{blk}*\(                       { /* random number, gaussian distribution with unit standard deviation,    */   
+                                                           return token::GAUSS;
+                                                         }
+<EXPRESSION>(USER0|user0)/{blk}*\(                       {  
+                                                            return token::USER0;
+                                                         }
+<EXPRESSION>(SI|si)/{blk}*\(                             {  
+                                                            return token::SI;
+                                                         }
+<EXPRESSION>(SC|sc)/{blk}*\(                             {  
+                                                            return token::SC;
+                                                         }
+<EXPRESSION>(SO|so)/{blk}*\(                             {  
+                                                            return token::SO;
+                                                         }
+<EXPRESSION>(ABS|abs)/{blk}*\(                           {  
+                                                            return token::ABS;
+                                                         }
+<EXPRESSION>(TRUNC|trunc)/{blk}*\(                       {  
+                                                            return token::TRUNC;
+                                                         }
+<EXPRESSION>(ROUND|round)/{blk}*\(                       {  
+                                                            return token::ROUND;
+                                                         }
+<EXPRESSION>(FLOOR|floor)/{blk}*\(                       {  
+                                                            return token::FLOOR;
+                                                         }
+<EXPRESSION>(CEIL|ceil)/{blk}*\(                         {  
+                                                            return token::CEIL;
+                                                         }
+<EXPRESSION>(SIGN|sign)/{blk}*\(                         {  
+                                                            return token::SIGN;
+                                                         }
+<EXPRESSION>(SQRT|sqrt)/{blk}*\(                         {  
+                                                            return token::SQRT;
+                                                         }
+<EXPRESSION>(LOG|log)/{blk}*\(                           {  
+                                                            return token::LOG;
+                                                         }
+<EXPRESSION>(EXP|exp)/{blk}*\(                           {  
+                                                            return token::EXP;
+                                                         }
+<EXPRESSION>(SIN|sin)/{blk}*\(                           {  
+                                                            return token::SIN;
+                                                         }
+<EXPRESSION>(COS|cos)/{blk}*\(                           {  
+                                                            return token::COS;
+                                                         }
+<EXPRESSION>(TAN|tan)/{blk}*\(                           {  
+                                                            return token::TAN;
+                                                         }
+<EXPRESSION>(ASIN|asin)/{blk}*\(                         {  
+                                                            return token::ASIN;
+                                                         }
+<EXPRESSION>(ACOS|acos)/{blk}*\(                         {  
+                                                            return token::ACOS;
+                                                         }
+<EXPRESSION>(ATAN|atan)/{blk}*\(                         {  
+                                                            return token::ATAN;
+                                                         }
+<EXPRESSION>(TGAUSS|tgauss)/{blk}*\(                     {  /* random number, gaussian distribution with unit standard deviation, 
+                                                              truncated at x standard deviations */  
+                                                            return token::TGAUSS;
+                                                         }
+<EXPRESSION>(USER1|user1)/{blk}*\(                       {  
+                                                            return token::USER1;
+                                                         }
+<EXPRESSION>(ATAN2|atan2)/{blk}*\(                       {  
+                                                            return token::ATAN2;
+                                                         }
+<EXPRESSION>(MAX|max)/{blk}*\(                           {  
+                                                            return token::MAX;
+                                                         }
+<EXPRESSION>(MIN|min)/{blk}*\(                           {  
+                                                            return token::MIN;
+                                                         }
+<EXPRESSION>(MOD|mod)/{blk}*\(                           {  
+                                                            return token::MOD;
+                                                         }
+<EXPRESSION>(POW|pow)/{blk}*\(                           {  
+                                                            return token::POW;
+                                                         }
+<EXPRESSION>(USER2|user2)/{blk}*\(                       {  
+                                                           return token::USER2;
                                                          }
 
-<EXPRESSION>(ACOS|acos){blk}*\(                          {  
-                                                           unput('('); return token::MADX_COS;
+<EXPRESSION>(VMIN|vmin)/{blk}*\(                         {  
+                                                            return token::VMIN;
+                                                         }
+<EXPRESSION>(VMAX|vmax)/{blk}*\(                         {  
+                                                            return token::VMAX;
+                                                         }
+<EXPRESSION>(VRMS|vrms)/{blk}*\(                         {  
+                                                            return token::VRMS;
+                                                         }
+<EXPRESSION>(VABSMAX|vabsmax)/{blk}*\(                   {  
+                                                            return token::VABSMAX;
                                                          }
 
-<EXPRESSION>(ATAN|atan){blk}*\(                          {  
-                                                           unput('('); return token::MADX_ATAN;
-                                                         }
-
-
-
-<EXPRESSION>(RANF|ranf){blk}*\(                          { /* random number, uniformly distributed in [0,1]                         */ 
-                                                           unput('('); return token::MADX_RANF;
-                                                         }
-<EXPRESSION>(GAUSS|gauss){blk}*\(                        { /* random number, gaussian distribution with unit standard deviation,    */
-                                                           unput('('); return token::MADX_GAUSS;
-                                                         }
- 
-<EXPRESSION>(TGAUSS|tgauss){blk}*\(                      { /* random number, gaussian distribution with unit standard deviation, 
-                                                              truncated at x standard deviations */ 
-                                                           unput('('); return token::MADX_TGAUSS;
-                                                         }
-
-
-:=                                                       { yy_push_state(EXPRESSION, yyscanner);
-                                                           return token::MADX_ASSIGN;  
-                                                         }
-
-=                                                        { yy_push_state(EXPRESSION, yyscanner);
-                                                           return madx_yy::MadxParser::token_type (yytext[0]);  
-                                                         }
 
 ;                                                        {
-                                                          if  ( ( yy_top_state(yyscanner) == COMMENT )   ||  
-                                                                ( yy_top_state(yyscanner) == EXPRESSION ) )  { 
-                                                                 std::cout << "about to pop ! " << std::endl;
+                                                          if  ( ( yy_top_state(yyscanner) != INITIAL )  ) {
                                                                  yy_pop_state(yyscanner); 
                                                           }   
-                                                          return madx_yy::MadxParser::token_type (yytext[0]);  
+                                                            return madx_yy::MadxParser::token_type (yytext[0]);  
                                                          }         
 
-[-()+*/:\{\},]                                           { return madx_yy::MadxParser::token_type (yytext[0]);  }
+:=                                                       { 
+                                                            return token::ASSIGN;  
+                                                         }
 
+=                                                        { 
+                                                            return madx_yy::MadxParser::token_type('='); 
+                                                         }
+&&                                                       {  
+                                                            return token::AND;   
+                                                         }                                    
+\|\|                                                     {  
+                                                            return token::OR;   
+                                                         }                                    
+\>=                                                      {  
+                                                            return token::GT_OR_EQ;   
+                                                         }                                    
+\<=                                                      {  
+                                                            return token::LT_OR_EQ;   
+                                                         }                                    
+
+[-()+/*:\{\},&]                                          {  return madx_yy::MadxParser::token_type (yytext[0]);  }
+
+->                                                       {  return token::ARROW;                                 }
 
 \".*\"                                                   { 
-                                                           yylval->sval = new parser_string_t(yytext);
-                                                           return token::MADX_STRING_VALUE; 
+                                                            yylval->sval = new parser_string_t(yytext);
+                                                            return token::STRING_LITERAL; 
+                                                         }                                     
+\'.*\'                                                   { 
+                                                            yylval->sval = new parser_string_t(yytext);
+                                                            return token::STRING_LITERAL; 
                                                          }                                     
 
-[\t ]+                                                  ;/* ignore whitespace */
+[\t ]+                                                   { /* ignore whitespace */ }
 
 
-\n                                                       { yylloc->lines(1); yylloc->step();} 
+\n                                                       {  yylloc->lines(1); yylloc->step();} 
 
 
 <<EOF>>                                                  {     
+                                                          std::cout << "EOF reached." << std::endl;
                                                           YY_BUFFER_STATE old_buffer = YY_CURRENT_BUFFER;
 
                                                           yypop_buffer_state(yyscanner); /* NOTE: yy_delete_buffer is called by yypop_buffer() */ 
 
-                                                          if (! YY_CURRENT_BUFFER ) 
-                                                             yyterminate();
+                                                          if (! YY_CURRENT_BUFFER ) {
+                                                             std::cout << "calling yyterminate" << std::endl;
+                                                             return madx_yy::MadxParser::token_type(0); 
+                                                          }
 
                                                           /* returning form #include                             */
                                                           /* destroy the current location and restore the old    */
@@ -270,8 +367,12 @@ ENDSEQUENCE                                               {
 
                                                           *yylloc = driver.locations_stack_.top();
                                                           driver.locations_stack_.pop();
-
+                                                           
+                                                          return madx_yy::MadxParser::token_type(0); 
                                                         }
+
+
+
 
 %%
 
