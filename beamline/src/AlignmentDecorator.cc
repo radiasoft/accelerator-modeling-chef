@@ -30,6 +30,8 @@
 *************************************************************************/
 
 #include <beamline/AlignmentDecorator.h>
+#include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -71,9 +73,60 @@ bool AlignmentDecorator::hasAlignment() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AlignmentDecorator::setAlignment(Vector const& translation, Vector const& rotation)
+Matrix AlignmentDecorator::rotation( double const& r, double const& y,  double const& p ) 
 {
   
+//-------------------------     -------------------------       ----------------------	
+// pitch			  Yaw		                Roll			
+//-------------------------	  -------------------------     ----------------------	
+// 1.0        0.0     0.0 	  cos(y) 0.0     sin(y)         cos(r) -sin(r)   0.0 	
+// 0.0      cos(p) -sin(p) 	  0.0    1.0       0.0          sin(r)  cos(r)   0.0 	
+// 0.0      sin(p)  cos(p) 	 -sin(y) 0.0     cos(y)         0.0        0.0   1.0       
+//-------------------------------------------------------------------------- ---------
+
+
+  TMatrix<double> mtrx_pitch(6,6);
+  TMatrix<double>  mtrx_roll(6,6);
+  TMatrix<double>   mtrx_yaw(6,6);
+   
+
+  mtrx_pitch[0][0] =  1.0;      mtrx_pitch[3][3] =  1.0;    
+  mtrx_pitch[1][1] =  cos(p);   mtrx_pitch[4][4] =  cos(p);   
+  mtrx_pitch[1][2] =  0.0;      mtrx_pitch[4][5]  =  0.0;       //-sin(p); 
+  mtrx_pitch[2][1] =  0.0;      mtrx_pitch[5][3] =  0.0;        // sin(p); 
+  mtrx_pitch[2][2] =  1.0;      mtrx_pitch[5][5] =  1.0;        // cos(p); 
+  
+
+  mtrx_yaw[0][0]   =  cos(y);   mtrx_yaw[3][3]   =  cos(y); 
+  mtrx_yaw[0][2]   =  0.0;      mtrx_yaw[3][5]   =  0.0;        // sin(y); 
+  mtrx_yaw[1][1]   =  1.0;      mtrx_yaw[4][4]   =  1.0;    
+  mtrx_yaw[2][0]   =  0.0;      mtrx_yaw[5][3]   =  0.0;        // -sin(y); 
+  mtrx_yaw[2][2]   =  1.0;      mtrx_yaw[5][5]   =  1.0;        // cos(y); 
+
+  mtrx_roll[0][0]  =  cos(r);   mtrx_roll[3][3]  =  cos(r); 
+  mtrx_roll[0][1]  = -sin(r); 	mtrx_roll[3][4]  = -sin(r); 
+  mtrx_roll[1][0]  =  sin(r); 	mtrx_roll[4][3]  =  sin(r); 
+  mtrx_roll[1][1]  =  cos(r); 	mtrx_roll[4][4]  =  cos(r); 
+  mtrx_roll[2][2]  =  1.0;    	mtrx_roll[5][5]  =  1.0;    
+  
+  return mtrx_roll * mtrx_yaw * mtrx_pitch;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void AlignmentDecorator::setAlignment(Vector const& offsets, Vector const& angles , bool relative)
+{
+  if (relative) {
+   offsets_   += offsets; 
+   angles_    += angles; 
+  } 
+  else {
+   offsets_   = offsets; 
+   angles_    = angles; 
+  }
+
+  rotation_  = rotation( angles_[0], angles_[1], angles_[2] );   
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -82,51 +135,16 @@ void AlignmentDecorator::setAlignment(Vector const& translation, Vector const& r
 void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
 {
   
-#if  0
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  Vector& state = p.State();
-
-  state[0] -= align_->x_offset();
-  state[1] -= align_->y_offset();
-
-  if( align_->roll() != 0.0) {
-
-    double temp  = state[0] * cs + state[1] * sn;
-    state[1]     = state[1] * cs - state[0] * sn;
-    state[0]     = temp;
-
-    temp       = state[3] * cs + state[4] * sn;
-    state[4]   = state[4] * cs - state[3] * sn;
-    state[3]   = temp;
-  }
+  Vector state = p.State();
  
-  }
-#endif
+  state[Particle::i_x]   -= offsets_[0];
+  state[Particle::i_y]   -= offsets_[1];
+
+  //   state[i_cdt] -= offset_[2];
+ 
+  p.State() = rotation_*state; 
 
   (*propagator_)( elm, p); 
-
-#if 0
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  Vector& state = p.State();
-
-  if( align_->roll() != 0.0) {
-    double temp   = state[0] * cs - state[1] * sn;
-    state[1]      = state[1] * cs + state[0] * sn;
-    state[0]      = temp;
-
-    temp        = state[3] * cs - state[4] * sn;
-    state[4]    = state[4] * cs + state[3] * sn;
-    state[3]    = temp;
-  }
-
-  state[0] += align_->x_offset();
-  state[1] += align_->y_offset();
-
-#endif
 
 } 
 
@@ -135,6 +153,14 @@ void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
 
 void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  JetParticle& p) 
 {
+  Mapping state = p.State();
+ 
+  state[Particle::i_x]   -= offsets_[0];
+  state[Particle::i_y]   -= offsets_[1];
+//state[i_cdt] -= offset_[2];
+ 
+  p.State() = rotation_*state; 
+
   (*propagator_)( elm, p); 
 } 
 

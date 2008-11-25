@@ -83,6 +83,22 @@ bool ApertureDecorator::hasAperture() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+bool  ApertureDecorator::lost ( double const& x, double const& y) const
+{
+  switch ( type_ ) {
+
+    case bmlnElmnt::elliptical : return ( (x*x) + (y*y) > 1.0 );
+                                 break;
+    case bmlnElmnt::rectangular: return ( (abs(x) > 1.0) || (abs(y) > 1.0) );  
+                                 break;
+    default:                     return false;
+               
+  }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void ApertureDecorator::setAperture( bmlnElmnt::aperture_t type, double const& hor, 
                                                                  double const& ver )
 {
@@ -98,25 +114,28 @@ void ApertureDecorator::operator()( bmlnElmnt const& elm,         Particle& p)
 {
   Vector& state = p.State();
   
-
-  double const x = state[i_x]/hor_;  
-  double const y = state[i_y]/ver_;  
+  double xn = state[i_x]/hor_;
+  double yn = state[i_y]/ver_;
   
-  bool lost = false;
+  if ( p.isLost() ); return;  // do nothing 
 
-  switch ( type_ ) {
-
-    case bmlnElmnt::elliptical : lost = ( (x*x) + (y*y) > 1.0 );    
-			         break;
-
-    case bmlnElmnt::rectangular: lost = ( (abs(x) > 1.0) || (abs(y) > 1.0) ); 
-                                 break; 
-
-    default:                     break;
- 
-  }
+  if ( lost(xn, yn) ) { 
+    p.setLost(true);
+    return;
+  }  
 
   (*propagator_)(elm,p);   
+
+  if ( elm.isThin() ) return;
+
+  xn = state[i_x]/hor_;
+  yn = state[i_y]/ver_;
+
+  if ( lost(xn, yn) ) { 
+    p.setLost(true);
+    return;
+  }  
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -127,24 +146,29 @@ void ApertureDecorator::operator()( bmlnElmnt const& elm,      JetParticle& p)
  
   Mapping& state = p.State();
   
-  double const x = state[i_x].standardPart()/hor_;  
-  double const y = state[i_y].standardPart()/ver_;  
-  
-  bool lost = false;
+  double xn = state[i_x].standardPart()/hor_;
+  double yn = state[i_y].standardPart()/ver_;
 
-  switch ( type_ ) {
+  if ( p.isLost() ); return;  // do nothing 
 
-    case bmlnElmnt::elliptical :  lost = ( (x*x) + (y*y) > 1.0 );    
-			          break;
-
-    case bmlnElmnt::rectangular:  lost = ( (abs(x) > 1.0) || (abs(y) > 1.0) ); 
-                                  break; 
-
-    default:                      break;
- 
-  }
+  if ( lost(xn, yn) ) { 
+    p.setLost(true);
+    return;
+  }  
 
   (*propagator_)(elm,p);   
+
+  if ( elm.isThin() ) return;
+
+  xn = state[i_x].standardPart()/hor_;
+  yn = state[i_y].standardPart()/ver_;
+
+  if ( lost(xn, yn) ) { 
+    p.setLost(true);
+    return;
+  }  
+
+  
 
 }
 
