@@ -82,7 +82,9 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetParticle::JetParticle( double const& mass, double const& charge, double const& momentum )
-  : tag_(""),       
+  : 
+ lost_(false),       
+  tag_(""),       
     q_(charge),
     m_(mass),         
     p_( momentum ),         
@@ -108,7 +110,9 @@ gamma_(ReferenceEnergy()/m_),
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetParticle::JetParticle( double const& mass, double const& charge, double const& momentum, Mapping const& state) 
-  : tag_(""),       
+ : 
+ lost_(false),       
+  tag_(""),       
     q_(charge),
     m_(mass),         
     p_( momentum ),         
@@ -131,7 +135,9 @@ bRho_(p_ /(q_/PH_MKS_e*PH_CNV_brho_to_p ) ),
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetParticle::JetParticle( Particle const& u , EnvPtr<double> const& pje) 
- : tag_(u.tag_),       
+ : 
+ lost_(u.lost_),       
+  tag_(u.tag_),       
     q_(u.q_),
     m_(u.m_),         
     p_(u.p_),         
@@ -152,7 +158,9 @@ gamma_(u.gamma_),
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 JetParticle::JetParticle(JetParticle const& u)
- : tag_(u.tag_),       
+ : 
+ lost_(u.lost_),       
+  tag_(u.tag_),       
     q_(u.q_),
     m_(u.m_),         
     p_(u.p_),         
@@ -170,6 +178,7 @@ JetParticle& JetParticle::operator=(JetParticle const& u)
 {
   if ( &u == this ) return *this;
  
+  lost_  = u.lost_;       
   tag_   = u.tag_;
   q_     = u.q_;
   p_     = u.p_;
@@ -231,7 +240,6 @@ void   JetParticle::setState( Vector  const& u ) {    // sets the state to the i
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 Mapping& JetParticle::State() 
 {
   return state_;
@@ -240,31 +248,10 @@ Mapping& JetParticle::State()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 Mapping const& JetParticle::State() const 
 {
   return state_;
 } 
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#if 0 
-Jet& JetParticle::State( int i )
-{
-  if( (0 <= i) && (i < 6) ) {
-    return state_(i);
-  }
-  else { 
-    ostringstream uic;
-    uic  << "Argument = " << i << ": out of range.";
-    throw( GenericException( __FILE__, __LINE__, 
-           "inline Jet State( int ) const", 
-           uic.str().c_str() ) );
-  }
-}
-#endif
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
