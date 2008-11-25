@@ -85,12 +85,12 @@ public:
   void   setWakeOn( bool );
   bool   wakeOn() const;
 
-  double const&          getPhi()                const;
-  double                 getDesignEnergyGain()   const;
+  double const&          phi()                const;
+  double                 designEnergyGain()   const;
 
   void                   setFrequency( double const& );
-  double                 getFrequency() const;
-  double const&    getRadialFrequency() const;
+  double                 frequency() const;
+  double const&    radialFrequency() const;
   void                 setPhi( double const& radians);  
 
   double          getReferenceTime() const;  
@@ -120,6 +120,7 @@ public:
 
   double                w_rf_;          // RF frequency [Hz]
   double                phi_s_;         // synchronous phase
+  bool                  wakeon_;        // wake is on/off
 
 };
 
