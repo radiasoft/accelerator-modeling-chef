@@ -1570,13 +1570,13 @@ if( kl[3] != 0.0 ) {
   temp->append( q );
 }
 
-int n = temp->howMany();
+int n = temp->size();
 
 if( n == 0 ) {
   elm = ElmPtr( new marker( label.c_str() ) );
 }
 else if( n == 1 ) {
-  elm = temp->firstElement();
+  elm = temp->front();
   elm->rename( label.c_str() );
 }
 else {
@@ -1827,7 +1827,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
    elm->rename( label.c_str() );
    elm->setLength(length);
    elm->setFrequency(freq*1.0e6);
-   elm->setStrength(deltae*1.0e6);
+   elm->setStrength(deltae*1.0e-3);
    elm->setPhi(phi0*2.0*M_PI);
      
    elm->setTag("LCAVITY");
