@@ -88,7 +88,9 @@ int const    BMLN_dynDim = 6;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Particle::Particle( double const& mass, double const& charge, double const& momentum ) 
-:   tag_(""),   
+:  
+   lost_(false),
+    tag_(""),   
       q_(charge),   
       m_(mass), 
       p_(momentum ), 
@@ -116,7 +118,9 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Particle::Particle( double const& mass, double const& charge, double const& momentum, Vector const& s ) 
-:     tag_(""),   
+:
+   lost_(false),
+    tag_(""),   
       q_(charge),   
       m_(mass), 
       p_( momentum ), 
@@ -143,7 +147,9 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Particle::Particle( Particle const& u ) 
-:   tag_(u.tag_),   
+:
+   lost_(u.lost_),
+    tag_(u.tag_),   
       q_(u.q_),   
       m_(u.m_), 
       p_(u.p_), 
@@ -157,7 +163,9 @@ Particle::Particle( Particle const& u )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Particle::Particle( JetParticle const& u ) 
-:  tag_(u.tag_), 
+:  
+  lost_(u.lost_),
+   tag_(u.tag_), 
      q_(u.q_),
      m_(u.m_), 
      p_(u.p_), 
@@ -193,6 +201,27 @@ void Particle::dtor()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+Particle& Particle::operator=( Particle const& p ) 
+{
+
+  if( &p == this ) return *this;
+
+  lost_  = p.lost_,
+  tag_   = p.tag_;
+  q_     = p.q_;
+  p_     = p.p_;
+  m_     = p.m_;
+  bRho_  = p.bRho_;
+  beta_  = p.beta_;
+  gamma_ = p.gamma_;
+  state_ = p.state_;  
+
+ return *this;
+
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void Particle::setStateToZero() {
  for( int i = 0; i < BMLN_dynDim; i++ )  state_[i] = 0.0;
@@ -266,27 +295,6 @@ Vector Particle::NormalizedVectorMomentum() const
  ret[2] = get_npz();
 
  return ret;
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Particle& Particle::operator=( Particle const& p ) 
-{
-
-  if( &p == this ) return *this;
-
-  tag_   = p.tag_;
-  q_     = p.q_;
-  p_     = p.p_;
-  m_     = p.m_;
-  bRho_  = p.bRho_;
-  beta_  = p.beta_;
-  gamma_ = p.gamma_;
-  state_ = p.state_;  
-
- return *this;
 
 }
 
