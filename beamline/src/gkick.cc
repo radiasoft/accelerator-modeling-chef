@@ -93,12 +93,12 @@ gkick::gkick()
   v_    ( 0.0 ),  
   t_    ( 0.0 )
 {
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
+
   setStrength(1.0); // the strength is used here only as a momentum dependent 
                     // scaling factor for linacs.
   
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
- 
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -136,6 +136,7 @@ gkick&  gkick::operator=( gkick const& rhs) {
   dz_   = rhs.dx_;    
   v_    = rhs.v_;  
   t_    = rhs.t_;
+
   return *this; 
 }
 
@@ -330,7 +331,7 @@ bool gkick::isMagnet() const
 
 bool gkick::isThin() const 
 { 
-  return true;  
+  return (length_ == 0.0 );
 }
 
 
