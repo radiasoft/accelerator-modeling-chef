@@ -128,6 +128,7 @@ public:
 
 protected:
 
+  bool        lost_;  
   std::string tag_;        // tag for arbitrary identification
                            // of a particle.
   double      q_;          // electric charge [C]
@@ -160,6 +161,9 @@ public:
 
   static const int PSD;
   int psd();
+
+  bool isLost() const;
+  void setLost( bool );
 
   void SetReferenceEnergy(   double const& energyGeV     );
   void SetReferenceMomentum( double const& momentumGeV_c );
@@ -381,5 +385,14 @@ class particle_core_access
   inline double         Particle::ReferenceEnergy()          const   { return sqrt(p_*p_ + m_*m_);       }
   inline double  const& Particle::Charge()                   const   { return q_;                        }
   inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[i_ndp] ); }
+
+  inline bool           Particle:: isLost()                  const   { return lost_; } 
+  inline void           Particle:: setLost( bool set)                { lost_ = set;  } 
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
 
 #endif // PARTICLE_H

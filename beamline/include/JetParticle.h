@@ -123,16 +123,17 @@ class JetParticle {
 
 protected:
 
-  std::string tag_;   // Utility tag for arbitrary identification
-                      // of a particle.
-  double   q_;        // electric charge [C]
-  double   m_;        // mass in GeV / c^2
-  double   p_;        // reference momentum in GeV / c
-  double   gamma_;    // reference gamma
-  double   beta_;     // normalized reference velocity = v/c
-  double   bRho_;     // normalized reference momentum / charge
-                      //                               = beta*gamma
-  Mapping state_;
+  bool        lost_;
+  std::string tag_;      // Utility tag for arbitrary identification
+                         // of a particle.
+  double      q_;        // electric charge [C]
+  double      m_;        // mass in GeV / c^2
+  double      p_;        // reference momentum in GeV / c
+  double      gamma_;    // reference gamma
+  double      beta_;     // normalized reference velocity = v/c
+  double      bRho_;     // normalized reference momentum / charge
+                         //                               = beta*gamma
+  Mapping     state_;
                       // state_[0] = x
                       // state_[1] = y
                       // state_[2] = c dt
@@ -171,6 +172,9 @@ public:
   // Dimension of phase space
   int psd()      const;
 
+  bool   isLost()     const;
+  void   setLost( bool set);                
+
   void SetReferenceEnergy(   double const& EnergyGeV );
   void SetReferenceMomentum( double const& momentumGeV_c);
 
@@ -201,10 +205,6 @@ public:
 
   std::string getTag();                         
   void        setTag(std::string const& tag);     
-
-
-
-  //static void createStandardEnvironments( int order = 1 );
 
 
   Jet           Energy()               const;
@@ -391,6 +391,10 @@ class jetparticle_core_access
 
   inline double const& JetParticle::Charge()             const { return q_;                                       }
   inline Jet           JetParticle::BRho()               const { return bRho_*( 1.0 + state_[5] );                }
+
+
+  inline bool          JetParticle:: isLost()                  const   { return lost_; } 
+  inline void          JetParticle:: setLost( bool set)                { lost_ = set;  } 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

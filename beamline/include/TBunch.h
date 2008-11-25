@@ -75,12 +75,12 @@ public:
   double  Intensity() const;      // actual population i.e. no of particles, as opposed to no of pseudo-particles
   void setIntensity( double const& value);      
 
-  void populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
-  void populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
-  void populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
-  void populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0);
+  void populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
+  void populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
+  void populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
+  void populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
 
-  void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0);
+  void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
 
   std::vector<double> emittances() const;
   std::vector<double> emittances(std::vector<double> const& dispersion ) const;
@@ -158,19 +158,19 @@ void TBunch<Particle_t>::remove( UnaryPredicate_t predicate)
 //class Particle;
 
 template<>
-void TBunch<Particle>::populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12);
+void TBunch<Particle>::populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
 
 template<>
-void TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12);
+void TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
 
 template<>
-void TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12);
+void TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
 
 template<>
-void TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12);
+void TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
 
 template<>
-void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12);
+void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12, unsigned int, unsigned int);
 
 template<>
 std::vector<double> TBunch<Particle>::emittances() const;
