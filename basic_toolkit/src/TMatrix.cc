@@ -55,6 +55,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <limits>
 
 #include <basic_toolkit/TML.h>
 #include <basic_toolkit/MLPtr.h>
@@ -240,7 +241,8 @@ TMatrix<std::complex<double> >   normalize_columns( TMatrix<std::complex<double>
       for (int i=0; i<rows; ++i ) {
         norm[j] += ( E[i][j] * conj(E[i][j]) ).real();
       }
-      norm[j] =  1.0 / sqrt( norm[j] ); 
+      norm[j] =   
+         ( abs( norm[j] > 10*std::numeric_limits<double>::epsilon() ) ) ? 1.0 / sqrt( norm[j] ) : 1.0; 
   }
 
   TMatrix<std::complex<double> > EN(rows,cols);
