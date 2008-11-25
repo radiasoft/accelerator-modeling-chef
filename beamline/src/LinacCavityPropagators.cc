@@ -37,6 +37,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/LinacCavity.h>
+#include <beamline/LinacCavityParts.h>
 #include <beamline/LinacCavityPropagators.h>
 #include <beamline/LinacCavityParts.h>
 #include <beamline/WakeKick.h>
@@ -44,6 +45,8 @@
 #include <beamline/beamline.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
+
+using boost::dynamic_pointer_cast;
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -103,21 +106,21 @@ void LinacCavity::Propagator::setup( bmlnElmnt& arg )
   ElmPtr& wk  = bmlnElmnt::core_access::get_ElmPtr(elm);
   
   bml = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
-  
-  bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   elm.Length()/2.0,   elm.getFrequency(), 
-                                                                         elm.Strength()/2.0, elm.getPhi() )   )  );
+
+  bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   elm.Length()/2.0,   elm.frequency(), 
+                                                                         elm.Strength()/2.0, elm.phi() )   )  );
   wk = WakeKickPtr( new WakeKick ( "WAKE" ) ); 
  
   if ( elm.wakeOn()) bml->append(wk); 
 
-  bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", elm.Length()/2.0, elm.getFrequency(), 
-                                                                         elm.Strength()/2.0, elm.getPhi() )   )  );
+  bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", elm.Length()/2.0, elm.frequency(), 
+                                                                         elm.Strength()/2.0, elm.phi() )   )  );
 
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool LinacCavity::Propagator::wakeOn( LinacCavity const& arg ) const
+bool LinacCavity::Propagator::wakeIsOn( LinacCavity const& arg ) const
 {
 
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( const_cast<LinacCavity&>(arg) );
@@ -133,44 +136,67 @@ bool LinacCavity::Propagator::wakeOn( LinacCavity const& arg ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::setWakeOn( LinacCavity& arg, bool set ) 
-{
-
-
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
-  ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
-  
-  bool wakeon =  wakeOn(arg);
-
-  if (  set   &&  wakeon   ) return; // wake is already set   just return
-  if ( (!set) && (!wakeon) ) return; // wake is already unset just return
- 
-  if ( set ) {
-    beamline::iterator it = bml->begin(); 
-    bml->putBelow( it, elm);
-  }
-  else {
-   for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
-     if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml->erase(it); } 
-   } 
- 
-  }
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 void  LinacCavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  if ( name == "STRENGTH" ) { 
+     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+     (bml->front())->setStrength( elm.Strength()/2.0 ); 
+     (bml->back() )->setStrength( elm.Strength()/2.0 ); 
+     return;
+  }
+  if ( name == "LENGTH" ) { 
+     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+     (bml->front())->setLength( elm.Length()/2.0 ); 
+     (bml->back() )->setLength( elm.Length()/2.0 ); 
+     return;
+  }
+  if ( name == "FREQUENCY" ) { 
+     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+     dynamic_pointer_cast<LCavityUpstream>(bml->front())->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
+     dynamic_pointer_cast<LCavityDnstream>(bml->back() )->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
+     return;
+  }
+
+  if ( name == "PHASE" ) { 
+     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+     dynamic_pointer_cast<LCavityUpstream>(bml->front())->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
+     dynamic_pointer_cast<LCavityDnstream>(bml->back() )->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
+     return;
+  }
+
+  if ( name == "WAKEON" ) { 
+
+     BmlPtr& bml  = bmlnElmnt::core_access::get_BmlPtr(elm);
+     ElmPtr& wake = bmlnElmnt::core_access::get_ElmPtr(elm);
+  
+     bool wakeon =   static_cast<LinacCavity&>(elm).wakeOn();
+
+     bool set    =   wakeIsOn( static_cast<LinacCavity&>(elm) );  
+
+     if (  set   &&  wakeon   ) return; // wake is already set   just return
+
+     if ( (!set) && (!wakeon) ) return; // wake is already unset just return
+ 
+     if ( set ) {
+       beamline::iterator it = bml->begin(); 
+       bml->putBelow( it, wake);
+     }
+     else {
+      for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
+         if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml->erase(it); } 
+       } 
+     }
+     return;
+  }
 }
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate( static_cast< LinacCavity const&>(elm),p);
+  ::propagate( static_cast<LinacCavity const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
