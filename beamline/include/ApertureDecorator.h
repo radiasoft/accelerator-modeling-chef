@@ -52,6 +52,8 @@ public:
 
  private:
   
+  bool  lost ( double const& x, double const& y) const;
+
   bmlnElmnt::aperture_t type_;
   double                hor_;
   double                ver_;
