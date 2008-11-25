@@ -78,12 +78,12 @@ public:
 
   LCavityUpstream& operator=(  LCavityUpstream const& rhs);
 
-  double const&          getPhi()                const;
-  double                 getDesignEnergyGain()   const;
+  double const&          phi()                const;
+  double                 designEnergyGain()   const;
 
   void                   setFrequency( double const& );
-  double                 getFrequency() const;
-  double const&    getRadialFrequency() const;
+  double                 frequency() const;
+  double const&    radialFrequency() const;
   void                 setPhi( double const& radians);  
 
   void accept( BmlVisitor&      v ); 
@@ -123,12 +123,12 @@ public:
 
   LCavityDnstream& operator=(  LCavityDnstream const& rhs);
 
-  double const&          getPhi()                const;
-  double                 getDesignEnergyGain()   const;
+  double const&          phi()                const;
+  double                 designEnergyGain()   const;
 
   void                   setFrequency( double const& );
-  double                 getFrequency() const;
-  double const&    getRadialFrequency() const;
+  double                    frequency() const;
+  double const&       radialFrequency() const;
   void                 setPhi( double const& radians);  
 
   
