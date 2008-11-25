@@ -44,13 +44,6 @@ namespace {
 
 typedef  boost::rand48    base_generator_type;
 
-base_generator_type generator1(static_cast<boost::int32_t>(117u) );
-base_generator_type generator2(static_cast<boost::int32_t>(137u) );
-
-boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
-boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
-
-
 Particle::PhaseSpaceIndex const&   i_x     = Particle::i_x; 
 Particle::PhaseSpaceIndex const&   i_y     = Particle::i_y; 
 Particle::PhaseSpaceIndex const&   i_cdt   = Particle::i_cdt; 
@@ -175,8 +168,13 @@ std::vector<double>  TBunch<Particle>::emittances( std::vector<double> const&  d
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <>
-void  TBunch<Particle>::populateGaussian( PhaseSpaceProjection psid, double sigma_x, double sigma_px, double r_12 )
+void  TBunch<Particle>::populateGaussian( PhaseSpaceProjection psid, double sigma_x, double sigma_px, double r_12, unsigned int sd1, unsigned int sd2 )
 {
+  base_generator_type generator1(static_cast<boost::int32_t>(sd1) );
+  base_generator_type generator2(static_cast<boost::int32_t>(sd2) );
+
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
 
   int M = 10; //  Strictly speaking, the limit M --> infty is the Gaussian, but 10 is more than good enough
               //  Cutoff will be at sqrt(10.5) = 3.2 sigma
@@ -193,8 +191,15 @@ void  TBunch<Particle>::populateGaussian( PhaseSpaceProjection psid, double sigm
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <>
-void  TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12 )
+void  TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12,  unsigned int sd1, unsigned int sd2 )
 {
+
+  base_generator_type generator1(static_cast<boost::int32_t>(sd1) );
+  base_generator_type generator2(static_cast<boost::int32_t>(sd2) );
+
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
+
 
   // Water Bag = uniform in phase space 
 
@@ -210,8 +215,14 @@ void  TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double x_r
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <>
-void  TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12 )
+void  TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12, unsigned int sd1, unsigned int sd2)
 {
+
+  base_generator_type generator1(static_cast<boost::int32_t>(sd1) );
+  base_generator_type generator2(static_cast<boost::int32_t>(sd2) );
+
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
 
   double M = 2.0; 
 
@@ -227,8 +238,14 @@ void  TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double x_r
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <>
-void  TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12 )
+void  TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double x_rms, double px_rms,  double r_12, unsigned int sd1, unsigned int sd2 )
 {
+  base_generator_type generator1(static_cast<boost::int32_t>(sd1) );
+  base_generator_type generator2(static_cast<boost::int32_t>(sd2) );
+
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
+
   // KV = uniform projection  (KV in 2N phase space ==> uniform projection in N (momentum or coordinates) subspace    
   
   double M = 1.0e-9; // Stricly speaking, KV is the limit  M-->0, but this is pretty good. 
@@ -240,8 +257,14 @@ void  TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double x_r
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template <>
-void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12)
+void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12, unsigned int sd1, unsigned int sd2)
 {
+
+  base_generator_type generator1(static_cast<boost::int32_t>(sd1) );
+  base_generator_type generator2(static_cast<boost::int32_t>(sd2) );
+
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > srnd(generator1,   boost::uniform_real<>(0.0, 1.0 )   );
+  boost::variate_generator<base_generator_type&, boost::uniform_real<> > trnd(generator2,   boost::uniform_real<>(0.0, 2*M_PI) );
 
  double chi    = asin(r_12);
 
