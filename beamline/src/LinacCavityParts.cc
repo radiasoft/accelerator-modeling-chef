@@ -47,7 +47,7 @@
 
 LCavityUpstream::LCavityUpstream( std::string const& name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
-  : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+  : bmlnElmnt(name,length, volts ), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -108,7 +108,7 @@ void  LCavityUpstream::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  LCavityUpstream::getPhi()  const
+double const&  LCavityUpstream::phi()  const
 {
   return phi_s_;
 }
@@ -116,7 +116,7 @@ double const&  LCavityUpstream::getPhi()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  LCavityUpstream::getRadialFrequency()  const
+double const&  LCavityUpstream::radialFrequency()  const
 {
   return w_rf_;
 }
@@ -124,7 +124,7 @@ double const&  LCavityUpstream::getRadialFrequency()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double LCavityUpstream::getDesignEnergyGain()   const
+double LCavityUpstream::designEnergyGain()   const
 {
   return Strength()* cos(phi_s_); 
 }
@@ -194,7 +194,7 @@ void  LCavityUpstream::setPhi( double const& radians)
 
 LCavityDnstream::LCavityDnstream( std::string const&  name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
-  : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+  : bmlnElmnt(name,length, volts), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -255,7 +255,7 @@ void  LCavityDnstream::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  LCavityDnstream::getPhi()  const
+double const&  LCavityDnstream::phi()  const
 {
   return phi_s_;
 }
@@ -263,7 +263,7 @@ double const&  LCavityDnstream::getPhi()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  LCavityDnstream::getRadialFrequency()  const
+double const&  LCavityDnstream::radialFrequency()  const
 {
   return w_rf_;
 }
@@ -271,7 +271,7 @@ double const&  LCavityDnstream::getRadialFrequency()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double LCavityDnstream::getDesignEnergyGain()   const
+double LCavityDnstream::designEnergyGain()   const
 {
   return Strength()* cos(phi_s_); 
 }
