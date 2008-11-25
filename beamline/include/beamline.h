@@ -244,17 +244,17 @@ public:
 
   void setMomentum( double const&  nominalMomentumGeV );
  
-  ElmPtr&        firstElement();
-  ElmPtr const&  firstElement() const;
+  ElmPtr&        front();
+  ElmPtr const&  front() const;
 
-  ElmPtr&        lastElement();
-  ElmPtr const&  lastElement()  const;
+  ElmPtr&        back();
+  ElmPtr const&  back()  const;
 
   double Momentum() const; 
 
   bool                empty() const;
   void                peekAt( double& s, Particle const& ) const;
-  int                howMany() const; 
+  int                   size() const; 
   int           countHowMany() const;
   int     countHowManyDeeply() const;
 

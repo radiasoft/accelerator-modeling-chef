@@ -93,8 +93,8 @@ void (beamline::*accept1) (  BmlVisitor& )                         =  &beamline:
 int (beamline::*countHowMany1)()       const                       =  &beamline::countHowMany;
 int (beamline::*countHowManyDeeply1)() const                       =  &beamline::countHowManyDeeply;
 
-bmlnElmnt& beamline_firstElement ( beamline& bml ) { return *bml.firstElement(); }
-bmlnElmnt& beamline_lastElement  ( beamline& bml ) { return *bml.lastElement(); }
+bmlnElmnt& beamline_front ( beamline& bml ) { return *bml.front(); }
+bmlnElmnt& beamline_back  ( beamline& bml ) { return *bml.back();  }
 
 void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, double s, boost::python::list elements)
 {
@@ -176,8 +176,8 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("isFlat",                     &beamline::isFlat);
  beamline_.def("empty",                      &beamline::empty);
  beamline_.def("depth",                      &beamline::depth);
- beamline_.def("firstElement",               &beamline_firstElement, return_value_policy<reference_existing_object>() );
- beamline_.def("lastElement",                &beamline_lastElement,  return_value_policy<reference_existing_object>() );
+ beamline_.def("front",                      &beamline_front, return_value_policy<reference_existing_object>() );
+ beamline_.def("back",                       &beamline_back,  return_value_policy<reference_existing_object>() );
  beamline_.def("Momentum",                   &beamline::Momentum);
  beamline_.def("OrbitLength",                &beamline::OrbitLength);
  beamline_.def("accept",                     accept1);
