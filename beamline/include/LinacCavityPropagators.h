@@ -55,8 +55,10 @@ class LinacCavity::Propagator : public BasePropagator {
   void  operator()( bmlnElmnt const& elm,    ParticleBunch& b ); 
   void  operator()( bmlnElmnt const& elm, JetParticleBunch& b );   
 
-  void setWakeOn(   LinacCavity&       elm, bool set ); 
-  bool    wakeOn(   LinacCavity const& elm           ) const; 
+ private:
+
+  bool    wakeIsOn(   LinacCavity const& elm  ) const;
+
 };
 
 #endif //  LINACCAVITYPROPAGATORS_H
