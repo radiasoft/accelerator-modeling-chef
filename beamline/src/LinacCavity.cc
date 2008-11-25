@@ -111,21 +111,18 @@ LinacCavity::LinacCavity( std::string const& name,
                           double const& eV,         // rf voltage 
                           double const& phi_s,      // synchronous phase 
                           bool   wake_on     )      
- : bmlnElmnt( name, length,  eV*1.0e-9), w_rf_(2*M_PI*f), phi_s_(phi_s)
+: bmlnElmnt( name, length,  eV ), w_rf_(2*M_PI*f), phi_s_(phi_s), wakeon_(wake_on)
 
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
-
-  setWakeOn( wake_on);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
- : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_)
+  : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_), wakeon_( x.wakeon_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -249,7 +246,7 @@ double LinacCavity::getReferenceTime() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const&  LinacCavity::getPhi()  const
+double const&  LinacCavity::phi()  const
 {
   return phi_s_;
 }
@@ -257,7 +254,7 @@ double const&  LinacCavity::getPhi()  const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double LinacCavity::getDesignEnergyGain()   const
+double LinacCavity::designEnergyGain()   const
 {
   return Strength() * cos(phi_s_); 
 }
@@ -268,12 +265,14 @@ double LinacCavity::getDesignEnergyGain()   const
 void   LinacCavity::setFrequency( double const& freq)
 {
   w_rf_ = 2.0*M_PI*freq;
+
+  propagator_->setAttribute( *this, "FREQUENCY", freq );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   LinacCavity::getFrequency() const
+double   LinacCavity::frequency() const
 {
   return w_rf_/(2.0*M_PI);
 }
@@ -281,7 +280,7 @@ double   LinacCavity::getFrequency() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const& LinacCavity::getRadialFrequency() const
+double const& LinacCavity::radialFrequency() const
 {
   return w_rf_;
 }
@@ -292,9 +291,7 @@ double const& LinacCavity::getRadialFrequency() const
  void  LinacCavity::setPhi( double const& radians)
 {
   phi_s_ = radians;
-
-  boost::dynamic_pointer_cast<LCavityUpstream>(bml_->firstElement())->setPhi(phi_s_);
-  boost::dynamic_pointer_cast<LCavityDnstream>(bml_->lastElement())->setPhi(phi_s_);
+  propagator_->setAttribute(*this, "PHASE", radians );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
@@ -302,7 +299,8 @@ double const& LinacCavity::getRadialFrequency() const
 
 void  LinacCavity::setWakeOn( bool set )
 {
-  boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->setWakeOn(*this, set);
+  wakeon_ = set;
+  propagator_->setAttribute(*this, "WAKEON", set);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||  
@@ -310,7 +308,7 @@ void  LinacCavity::setWakeOn( bool set )
 
 bool LinacCavity::wakeOn() const
 {
-  return boost::dynamic_pointer_cast<LinacCavity::Propagator>(propagator_)->wakeOn( *this );
+  return wakeon_;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
