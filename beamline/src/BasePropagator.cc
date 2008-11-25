@@ -94,6 +94,13 @@ void  BasePropagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& b)
 
 void   BasePropagator::setAttribute( bmlnElmnt& elm, std::string const& attribute, boost::any const& value )
 { 
+  // default: the propagator reconstructs itself.  
+ 
+   setup( elm ); 
+
+  // if this member is overriden in a derived class, the code should 
+  // call setup() for any attribute change that is not explicitly handled.
+
   // std::cout << "element   " << elm.Type() << "  " << elm.Name() << std::endl;   
   // std::cout << "attribute " << attribute << " has been modified." << std::endl;   
 } 
@@ -116,7 +123,7 @@ bool BasePropagator::hasAlignment() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BasePropagator::setAlignment( Vector const& translation, Vector const& rotation)
+void BasePropagator::setAlignment( Vector const& translation, Vector const& rotation, bool )
 {
   /** do nothing **/ 
 }
