@@ -658,13 +658,13 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
              << endl;
       }
 
-      int n = temp->howMany();
+      int n = temp->size();
 
       if( 0 == n ) {
         lbel = ElmPtr( new marker( strip_final_colon( bel->name_ ).c_str() ) );
       }
       else if( 1 == n ) {
-        lbel = temp->firstElement();
+        lbel = temp->front();
         lbel->rename( strip_final_colon( bel->name_ ).c_str() );
       }
       else {

@@ -427,14 +427,14 @@ std::pair<ElmPtr,ElmPtr> CF_rbend::split( double const& pc ) const
                                    , usFaceAngle_
                                    , 0.0           ));
   p_a->setEntryAngle( getEntryAngle() );
-  p_a->bml_->lastElement()->setStrength(0.0);
+  p_a->bml_->back()->setStrength(0.0);
 
   CFRbendPtr p_b(   new CF_rbend(   ""
                                    , (1.0 - pc)*length_
 				   , Strength()
                                    , 0.0
                                    , dsFaceAngle_        ));
-  p_b->bml_->firstElement()->setStrength(0.0);
+  p_b->bml_->front()->setStrength(0.0);
   p_b->setExitAngle( getExitAngle() );
 
   // Assign pole strengths

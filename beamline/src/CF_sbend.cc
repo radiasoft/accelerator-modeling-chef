@@ -398,7 +398,7 @@ std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
                                   , 0.0            ));
 
   p_a->setEntryAngle( getEntryAngle() );
-  p_a->bml_->lastElement()->setStrength(0.0);
+  p_a->bml_->back()->setStrength(0.0);
   
   CFSbendPtr p_b(    new CF_sbend(   ""
                                   , (1.0 - pc)*length_
@@ -407,7 +407,7 @@ std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
                                   , 0.0
                                   , dsFaceAngle_       ));
 
-  p_b->bml_->firstElement()->setStrength(0.0);
+  p_b->bml_->front()->setStrength(0.0);
   p_b->setExitAngle( getExitAngle() );
 
 
