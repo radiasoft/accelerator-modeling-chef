@@ -125,7 +125,7 @@ class BasePropagator {
    virtual void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
 
    virtual  bool hasAlignment() const; 
-   virtual  void setAlignment( Vector const& translation, Vector const& rotation);
+   virtual  void setAlignment( Vector const& translation, Vector const& rotation, bool relative=false);
 
    virtual  bool hasAperture()   const; 
    virtual  void setAperture( bmlnElmnt::aperture_t, double const& hor, double const& ver );

@@ -33,6 +33,7 @@
 #define ALIGNMENTDECORATOR_H
 
 #include <beamline/PropagatorDecorator.h>
+#include <basic_toolkit/Matrix.h>
 
 class AlignmentDecorator: public PropagatorDecorator {
  
@@ -48,12 +49,16 @@ public:
   void  operator()(  bmlnElmnt const& elm,      JetParticle& p); 
 
   bool hasAlignment() const; 
-  void setAlignment( Vector const& translation, Vector const& rotation);
+  void setAlignment( Vector const& offset, Vector const& angles, bool relative=false);
 
  private:
   
+  Matrix rotation( double const& roll, double const& yaw,  double const& pitch ); 
+
+  Vector offsets_;
+  Vector angles_;
+  
   Matrix rotation_;
-  Vector translaton_;
 };
 
 #endif // ALIGNMENTDECORATOR_H
