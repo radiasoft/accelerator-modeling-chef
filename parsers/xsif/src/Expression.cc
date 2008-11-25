@@ -84,19 +84,16 @@ std::ostream&  operator<<( std::ostream& os, Expression const& exp) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double 
-Expression::evaluate( ) const                         
+double Expression::evaluate( ) const                         
 { 
-  const_iterator    theIterator(  begin() ); 
-  return evaluate(  const_iterator( theIterator ) ); 
+  return evaluate(  begin() ); 
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double 
-Expression::evaluate( Expression::const_iterator  arg ) const  
+double Expression::evaluate( Expression::const_iterator  arg ) const  
 {
 
     typedef xsif_yy::XsifParser::token_type token_type; 
@@ -154,7 +151,7 @@ Expression::evaluate( Expression::const_iterator  arg ) const
 
 Expression::iterator  Expression::begin()
 {
-  return sequential_tree<ExprData>::begin();
+  return tcl::sequential_tree<ExprData>::begin();
 }  
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -162,14 +159,14 @@ Expression::iterator  Expression::begin()
 
 Expression::const_iterator Expression::begin() const
 {
-  return sequential_tree<ExprData>::begin();
+  return tcl::sequential_tree<ExprData>::begin();
 } 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 Expression::iterator       Expression::end() 
 { 
-  return sequential_tree<ExprData>::end();
+  return tcl::sequential_tree<ExprData>::end();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -177,7 +174,7 @@ Expression::iterator       Expression::end()
 
 Expression::const_iterator Expression::end() const
 { 
-  return sequential_tree<ExprData>::end();
+  return tcl::sequential_tree<ExprData>::end();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -185,7 +182,7 @@ Expression::const_iterator Expression::end() const
 
 Expression::pre_order_iterator        Expression::pre_order_begin()
 { 
-  return sequential_tree<ExprData>::pre_order_begin();
+  return tcl::sequential_tree<ExprData>::pre_order_begin();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -193,7 +190,7 @@ Expression::pre_order_iterator        Expression::pre_order_begin()
 
 Expression::const_pre_order_iterator  Expression::pre_order_begin()  const
 { 
-  return sequential_tree<ExprData>::pre_order_begin();
+  return tcl::sequential_tree<ExprData>::pre_order_begin();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -201,7 +198,7 @@ Expression::const_pre_order_iterator  Expression::pre_order_begin()  const
 
 Expression::pre_order_iterator          Expression::pre_order_end()
 { 
-  return sequential_tree<ExprData>::pre_order_end();
+  return tcl::sequential_tree<ExprData>::pre_order_end();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -209,7 +206,7 @@ Expression::pre_order_iterator          Expression::pre_order_end()
 
 Expression::const_pre_order_iterator    Expression::pre_order_end()  const
 {
-  return sequential_tree<ExprData>::pre_order_end();
+  return tcl::sequential_tree<ExprData>::pre_order_end();
 } 
 
 

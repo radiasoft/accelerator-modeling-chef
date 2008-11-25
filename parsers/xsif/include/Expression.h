@@ -3,7 +3,7 @@
 **************************************************************************
 ******                                                                
 ******  XSIF Parser: Interprets XSIF input files and             
-******               creates instances of class beamline.                       
+******               creates instances of class beamline.
 ******                                                
 ******                                    
 ******  File:      Expression.h
@@ -27,6 +27,7 @@
 ******                                                                
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
@@ -42,27 +43,28 @@ class Token {
 
  public:
   Token(xsif_yy::XsifParser::token_type  t ) 
-   : m_token(t) {}
+   : token_(t) {}
 
   bool operator==(Token const& rhs)       
-     { return m_token == rhs.m_token;    } 
+     { return token_ == rhs.token_;    } 
 
   operator int() const                    
-     { return static_cast<int>(m_token); }
+     { return static_cast<int>(token_); }
 
   friend std::ostream& operator<<( std::ostream&  os, Token const& token) 
-     { os << static_cast<char>(token.m_token); return os; } 
+     { os << static_cast<char>(token.token_); return os; } 
 
  private:
 
-  xsif_yy::XsifParser::token_type  m_token;
+  xsif_yy::XsifParser::token_type  token_;
 
 };
 
 //--------------------------------------------------------------------------------------
+
 class ExprData {
 
-friend  std::ostream& operator<<(std::ostream &os, const ExprData & expr);
+  friend  std::ostream& operator<<(std::ostream &os, ExprData const& expr);
 
 public:
 
@@ -74,26 +76,26 @@ public:
 
 };
 
-std::ostream& operator<<(std::ostream &os, const ExprData & expr);
+std::ostream& operator<<(std::ostream &os, ExprData const& expr);
 
 //--------------------------------------------------------------------------------------
 
-class Expression : public sequential_tree<ExprData> {
+class Expression : public tcl::sequential_tree<ExprData> {
 
  friend  std::ostream&  operator<<( std::ostream& os, Expression const& exp);
  friend  std::ostream&  operator<<( std::ostream &os, ExprData   const& expr);
 
 public:
 
-  typedef sequential_tree<ExprData>::iterator                                 iterator; 
-  typedef sequential_tree<ExprData>::const_iterator                     const_iterator; 
+  typedef tcl::sequential_tree<ExprData>::iterator                                 iterator; 
+  typedef tcl::sequential_tree<ExprData>::const_iterator                     const_iterator; 
 
-  typedef sequential_tree<ExprData>::pre_order_iterator              pre_order_iterator;
-  typedef sequential_tree<ExprData>::const_pre_order_iterator  const_pre_order_iterator;
+  typedef tcl::sequential_tree<ExprData>::pre_order_iterator              pre_order_iterator;
+  typedef tcl::sequential_tree<ExprData>::const_pre_order_iterator  const_pre_order_iterator;
 
   Expression() {} ;
   Expression(Expression const& expr) 
-   : sequential_tree<ExprData>( expr ){ }
+   : tcl::sequential_tree<ExprData>( expr ){ }
 
   double evaluate() const;
 
