@@ -34,10 +34,6 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added sextupole::setLength(..) method to override
-******   the base class implementation.
-****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -48,8 +44,13 @@
 ****** - new typesafe propagators
 ****** 
 ****** Apr 2008           michelotti@fnal.gov
+****** - added sextupole::setLength(..) method to override
+******   the base class implementation.
 ****** - changed signature of setStrength(..) to
 ******   match that of the virtual bmlnElmnt method
+****** 
+****** Dec 2008           michelotti@fnal.gov
+****** - fixed vestigial error in sextupole::Split method.
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -200,11 +201,11 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   }
 
   // We assume "strength" means field, not field*length_.
-  SextupolePtr s_a( (Clone()) );
-  SextupolePtr s_b( (Clone()) );
+  a = SextupolePtr( Clone() );
+  b = SextupolePtr( Clone() );
 
-  s_a->setLength(       pc  *length_ );
-  s_b->setLength(  (1.0-pc )*length_ );
+  a->setLength(       pc  *length_ );
+  b->setLength(  (1.0-pc )*length_ );
 
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
@@ -212,12 +213,8 @@ void sextupole::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   b->setAlignment( Alignment() );
 
   // Rename
-  s_a->rename( ident_ + string("_1") );
-  s_b->rename( ident_ + string("_2") );
-
-  a = s_a;
-  b = s_b;
-
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
 }
 
 
