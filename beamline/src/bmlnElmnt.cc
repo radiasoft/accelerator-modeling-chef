@@ -408,7 +408,7 @@ void bmlnElmnt::setLength( double const& length )
     msg << " ***ERROR***: Lengths must be positive. You have entered length " << length 
                <<  " for " << Type() << "  " << Name() << endl;
     throw(  GenericException( __FILE__, __LINE__, 
-					  "void bmlnElmnt::setLength( double const& length )", msg.str() ));
+                              "void bmlnElmnt::setLength( double const& length )", msg.str() ));
    }
 
    if ( isThin() ) {  
@@ -1158,16 +1158,13 @@ std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
   // via the bmlnElmnt copy constructor.  (see above)
   // ---------------------------------------------
 
-  uelm->ident_ = ident_ + string("_1") ;
-  delm->ident_ = ident_ + string("_2") ;
-  
   //-----------------------------------------------------------------------------
   //  strength_  is changed only when it represents the  
   //  *integrated* strength; this is the case for _thin_ elements.
   //-----------------------------------------------------------------------------
 
-  uelm->strength_ = uelm->isThin() ? strength_  : pc*strength_;
-  delm->strength_ = delm->isThin() ? strength_  : ( 1.0 - pc )*strength_;
+  uelm->strength_ = uelm->isThin() ? pc*strength_            : strength_;
+  delm->strength_ = delm->isThin() ? ( 1.0 - pc )*strength_  : strength_;
 
   uelm->length_   = uelm->isThin() ? 0.0 : pc*length_;
   delm->length_   = delm->isThin() ? 0.0 : ( 1.0 - pc )*length_;
@@ -1184,13 +1181,10 @@ std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
   delm->rename( ident_ + string("_2") );
 
   return std::make_pair(uelm, delm);
-
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
