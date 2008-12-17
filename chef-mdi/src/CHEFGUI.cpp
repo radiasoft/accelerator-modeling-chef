@@ -2182,19 +2182,17 @@ void CHEFGUI::editPartition()
   for ( beamline::const_deep_iterator dit  = oldbmlPtr->deep_begin();  
                                       dit != oldbmlPtr->deep_end();  ++dit ) 
   {
-
-        if( (*dit) == (*it) ) 
-        {
-           (*it)->Split( 0.5, spa, spb );
-            bmlPtr->append(spa);
-            bmlPtr->append(spb);
-            ++it;
-        }
-        else 
-        {
-           bmlPtr->append( ElmPtr( (*dit)->Clone() ) );
-        }
-
+    if( (*dit) == (*it) ) 
+    {
+      (*it)->Split( 0.5, spa, spb );
+      bmlPtr->append(spa);
+      bmlPtr->append(spb);
+      ++it;
+    }
+    else 
+    {
+      bmlPtr->append( ElmPtr( (*dit)->Clone() ) );
+    }
   }
 
 
