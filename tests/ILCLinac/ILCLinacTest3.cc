@@ -1,22 +1,25 @@
-#include <boost/test/minimal.hpp>
 #include <iostream>
 #include <string>
 #include <stdlib.h>
-#include <PhysicsConstants.h>
-#include "bmlnElmnt.h"
-#include <parsers/xsif/XSIFFactory.h>
-#include <beamline.h>
+
+#include <boost/test/minimal.hpp>
+
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/bmlnElmnt.h>
+#include <beamline/beamline.h>
 #include <beamline/LinacCavity.h>
 #include <beamline/quadrupole.h>
 #include <beamline/kick.h>
 #include <beamline/monitor.h>
 #include <beamline/drift.h>
-#include <Particle.h>
-#include <RefRegVisitor.h>
-#include "SteerUtil.h"
+#include <beamline/Particle.h>
+#include <beamline/RefRegVisitor.h>
 #include <beamline/Alignment.h>
-#include "ILCMisalignmentSets.h"
-#include "SteeringAlgos.h"
+#include <parsers/xsif/XSIFFactory.h>
+
+#include <SteerUtil.h>
+#include <ILCMisalignmentSets.h>
+#include <SteeringAlgos.h>
 
 /* ILC Linac Test 3: 
 

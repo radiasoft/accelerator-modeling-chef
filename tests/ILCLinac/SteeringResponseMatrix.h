@@ -1,12 +1,12 @@
 #ifndef _h_SteeringResponseMatrix
 #define _h_SteeringResponseMatrix 1
 #include <vector>
-#include <MathConstants.h>
-#include <PhysicsConstants.h>
-#include <beamline.h>
-#include "MLBPMs.h"
-#include <Matrix.h>
-#include "SteerUtil.h"
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/beamline.h>
+#include <MLBPMs.h>
+#include <basic_toolkit/Matrix.h>
+#include <SteerUtil.h>
 
 using std::vector;
 

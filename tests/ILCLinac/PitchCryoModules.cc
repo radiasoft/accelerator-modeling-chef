@@ -1,9 +1,9 @@
 #include <cmath>
 #include <iostream>
-#include "SteeringResponseMatrix.h"
-#include "SteeringAlgos.h"
+#include <SteeringResponseMatrix.h>
+#include <SteeringAlgos.h>
 #include <time.h>
-#include <SVDFit.h>
+#include <basic_toolkit/SVDFit.h>
 // 
 // 
 // Part of a collection of algorithm, using SteerUitl and 

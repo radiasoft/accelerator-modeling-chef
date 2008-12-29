@@ -1,8 +1,8 @@
 #include <cmath>
 #include <iostream>
 #include <beamline/Alignment.h>
-#include "SteeringResponseMatrix.h"
-#include "SteeringAlgos.h"
+#include <SteeringResponseMatrix.h>
+#include <SteeringAlgos.h>
 #include <time.h>
 
 using std::cout;

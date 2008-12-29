@@ -3,9 +3,9 @@
 #include <string>
 #include <cstdlib>
 
-#include <beamline.h>
-#include "myPositronBunch.h"
-#include <Distribution.h>
+#include <beamline/beamline.h>
+#include <myPositronBunch.h>
+#include <basic_toolkit/Distribution.h>
 
 using std::cerr; 
 using std::endl;

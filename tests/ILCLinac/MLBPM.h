@@ -1,11 +1,11 @@
 #ifndef _h_MLBPM
 #define _h_MLBPM 1
 
-#include <Distribution.h>
-#include <MathConstants.h>
-#include <PhysicsConstants.h>
+#include <basic_toolkit/Distribution.h>
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/PhysicsConstants.h>
 #include <vector>
-#include <monitor.h>
+#include <beamline/monitor.h>
 
 //! \brief Beam Position Monitor Class
 /*!

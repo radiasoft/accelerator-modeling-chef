@@ -1,12 +1,12 @@
 #ifndef _h_MLBPMs
 #define _h_MLBPMs 1
 
-#include <beamline.h>
-#include <Distribution.h>
+#include <beamline/beamline.h>
+#include <basic_toolkit/Distribution.h>
 #include <vector>
 #include <iostream>
-#include "MLBPM.h"
-#include <Distribution.h>
+#include <MLBPM.h>
+#include <basic_toolkit/Distribution.h>
 // A container class for all my BPM;s and some utilities, excluding 
 // Root plotting. 
 // Will dump the data to files to be studied with R 

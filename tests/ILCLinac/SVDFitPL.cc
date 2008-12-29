@@ -39,7 +39,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
-#include <./SVDFitPL.h>
+#include <SVDFitPL.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

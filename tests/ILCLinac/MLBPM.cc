@@ -1,8 +1,8 @@
 #include <cmath>
 #include <iostream>
-#include "MLBPM.h"
-#include <Particle.h>
-#include <ParticleBunch.h>
+#include <MLBPM.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 
 using std::abs;
 using std::cerr;

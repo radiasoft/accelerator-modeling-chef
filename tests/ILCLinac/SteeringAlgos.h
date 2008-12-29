@@ -3,11 +3,11 @@
 #define _h_SteerOneToOne 1
 #include <vector>
 #include <time.h>
-#include <MathConstants.h>
-#include <PhysicsConstants.h>
-#include <Distribution.h>
-#include <ParticleBunch.h>
-#include "SteeringResponseMatrix.h"
+#include <basic_toolkit/MathConstants.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <basic_toolkit/Distribution.h>
+#include <beamline/ParticleBunch.h>
+#include <SteeringResponseMatrix.h>
 // No need to define class, at least not yet.. 
 
 namespace Steering {

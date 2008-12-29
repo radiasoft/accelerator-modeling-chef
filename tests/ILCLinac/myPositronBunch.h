@@ -5,10 +5,10 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
-#include <Matrix.h>
-#include <PhysicsConstants.h>
-#include <ParticleBunch.h>
-#include <beamline.h>
+#include <basic_toolkit/Matrix.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/ParticleBunch.h>
+#include <beamline/beamline.h>
 
 typedef boost::uniform_real<double>
         basUnifGen;

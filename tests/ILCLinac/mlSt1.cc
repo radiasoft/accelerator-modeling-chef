@@ -32,13 +32,13 @@
 #include <iostream>
 #include <string>
 
-#include <PhysicsConstants.h>
-#include "bmlnElmnt.h"
-#include <bmlfactory.h>
+#include <basic_toolkit/PhysicsConstants.h>
+#include <beamline/bmlnElmnt.h>
+#include <bmlfactory/bmlfactory.h>
 #include <parsers/xsif/XSIFFactory.h>
-#include <beamline.h>
-#include <drift.h>
-#include <BmlUtil.h>
+#include <beamline/beamline.h>
+#include <beamline/drift.h>
+#include <physics_toolkit/BmlUtil.h>
 #include <beamline/RefRegVisitor.h>
 
 #include <boost/random/linear_congruential.hpp>
@@ -46,13 +46,13 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "myPositronBunch.h"
-#include "MLBPMs.h"
-#include "SteerUtil.h"
-#include "ILCMisalignmentSets.h"
-#include "SteeringResponseMatrix.h"
-#include "SteeringAlgos.h"
-#include "SteerAnalysis.h"
+#include <myPositronBunch.h>
+#include <MLBPMs.h>
+#include <SteerUtil.h>
+#include <ILCMisalignmentSets.h>
+#include <SteeringResponseMatrix.h>
+#include <SteeringAlgos.h>
+#include <SteerAnalysis.h>
 
 typedef boost::uniform_real<double>
         basUnifGen;
