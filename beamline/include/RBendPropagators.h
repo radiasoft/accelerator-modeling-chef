@@ -56,6 +56,20 @@ class rbend::Propagator: public BasePropagator {
   void  operator()( bmlnElmnt const& elm,          JetParticle& p);
 };
 
+class rbend::MADPropagator: public BasePropagator {
+
+ public:
+ 
+  MADPropagator* Clone() const { return new MADPropagator(*this); }
+
+  void  setup( bmlnElmnt& elm); 
+
+  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const&  value);
+
+  void  operator()(  bmlnElmnt const& elm,             Particle& p);
+  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
+
+};
 
 
 #endif // RBENDPROPAGATORS_H

@@ -76,16 +76,11 @@ public:
 
 //----------------------------------------------------------------
 
-#if 0
-
 class quadrupole::MADPropagator: public BasePropagator {
 
  public:
 
-  Propagator () {}
-  Propagator ( Propagator const& o );
-
-  Propagator* Clone() const { return new Propagator(*this); }
+  MADPropagator* Clone() const { return new MADPropagator(*this); }
 
   void  setup(bmlnElmnt& elm); 
 
@@ -94,12 +89,7 @@ class quadrupole::MADPropagator: public BasePropagator {
   void  operator()( bmlnElmnt const& elm,             Particle& p);
   void  operator()( bmlnElmnt const& elm,          JetParticle& p);
 
- private:
-
-  
 };
-#endif
-
 
 #endif //  QUADRUPOLEPROPAGATORS_H
 
