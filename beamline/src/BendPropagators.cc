@@ -81,15 +81,14 @@ void propagate( std::complex<double> const& propPhase,
 
  Component_t beta_1 = E_factor * state[i_npx];
  Component_t beta_2 = E_factor * state[i_npy];
- Component_t beta_3 = E_factor * sqrt( psq - state[i_npx]*state[i_npx] 
-                                           - state[i_npy]*state[i_npy] );
+ Component_t beta_3 = E_factor *  p.get_npz();
 
  ComplexComponent_t ui  =   complex_i* state[i_x];
  ComplexComponent_t vui =   PH_MKS_c*beta_3 + complex_i*PH_MKS_c*beta_1;
 
  // Step 1.
 
- Component_t omega         = csq_red * elm.Strength() /  p.Energy();
+ Component_t omega         = csq_red * elm.Strength() /  p.Energy();  // FIXME: fails when charge is not +1  
  ComplexComponent_t bi     = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
