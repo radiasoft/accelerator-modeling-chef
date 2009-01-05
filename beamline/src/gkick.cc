@@ -331,7 +331,7 @@ bool gkick::isMagnet() const
 
 bool gkick::isThin() const 
 { 
-  return (length_ == 0.0 );
+  return false;
 }
 
 
