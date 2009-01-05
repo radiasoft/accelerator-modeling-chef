@@ -75,7 +75,10 @@ void propagate( LinacCavity const& elm, Particle_t&  p)
      (*it)->localPropagate( p );
   }
 
-  // reference time adjustment is done at the element level in the nested beamline. 
+  // **** NOTE****  
+  // reference time adjustment is done at the _element level_
+  // in the nested beamline. 
+
 }
 
 //----------------------------------------------------------------------------------
