@@ -26,15 +26,15 @@
 ******
 ****** REVISION HISTORY
 ******
+****** May 2008   ostiguy@fnal.gov
+****** - setStrength() /setLength () now dispatched to propagator 
+******   by base class (no longer virtual)
+****** - added explicit implementation for assignment operator
+****** Apr 2008   michelotti@fnal.gov
+****** - added placeholder LinacCavity::setLength method [ now eliminated -jfo]
 ****** Dec 2007   ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ******
-****** Apr 2008   michelotti@fnal.gov
-****** - added placeholder LinacCavity::setLength method
-****** May 2008   ostiguy@fnal.gov
-****** - setStrength() now dispatched to propagator by base class
-******   (no longer virtual)
-****** - added explicit implementation for assignment operator
 ******
 **************************************************************************
 *************************************************************************/
