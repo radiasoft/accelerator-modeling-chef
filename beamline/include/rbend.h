@@ -35,12 +35,12 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - covariant return types
-****** - support for reference counted elements
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators 
-****** - rbend is now implemented as composite element
+****** Dec 2008 ostiguy@fnal
+****** - restored basic support for MAD-style propagator 
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder setLength method
 ****** - added setStrength method
@@ -48,10 +48,12 @@
 ******     rbend had no internal structure then.
 ****** - added member functions to nullify edge effects
 ******   : used by rbend::Split
-****** May 2008 ostiguy@fnal
-****** - proper, explicit assignment operator
-****** - propagator moved (back) to base class
-****** - no assumption about internal structure
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators 
+****** - rbend is now implemented as composite element
+****** Mar 2007           ostiguy@fnal.gov
+****** - covariant return types
+****** - support for reference counted elements
 ******     
 **************************************************************************
 *************************************************************************/

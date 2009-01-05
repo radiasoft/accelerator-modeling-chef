@@ -34,15 +34,12 @@
 ******                                                                
 ******    REVISION HISTORY
 ******
-****** Mar 2007            ostiguy@fnal.gov
-****** - use covariant return types
-****** - support for reference counted elements
-******
-****** Dec 2007            ostiguy@fnal.gov
-******
-****** - eliminated obsolete support for "fast" arcsin 
-****** - new typesafe propagator scheme
-****** - sbend now implemented as a composite element  
+****** Dec 2008 ostiguy@fnal
+****** - restored basic support for MAD-style propagators.
+****** May 2008 ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure   
 ****** Apr 2008            michelotti@fnal.gov
 ****** - added placeholder setLength method
 ****** - added setStrength method
@@ -50,10 +47,14 @@
 ******     sbend had no internal structure then.
 ****** - added member functions to nullify edge effects
 ******   : used by sbend::Split
-****** May 2008 ostiguy@fnal
-****** - proper, explicit assignment operator
-****** - propagator moved (back) to base class
-****** - no implicit assumption about internal structure   
+****** Dec 2007            ostiguy@fnal.gov
+****** - eliminated obsolete support for "fast" arcsin 
+****** - new typesafe propagator scheme
+****** - sbend now implemented as a composite element  
+****** Mar 2007            ostiguy@fnal.gov
+****** - use covariant return types
+****** - support for reference counted elements
+******
 **************************************************************************
 *************************************************************************/
 #ifndef SBEND_H
@@ -74,6 +75,7 @@ typedef boost::shared_ptr<sbend const> ConstSBendPtr;
 class DLLEXPORT sbend : public bmlnElmnt {
 
   class Propagator;
+  class MADPropagator;
 
  public:
  

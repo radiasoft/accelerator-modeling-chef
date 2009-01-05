@@ -34,18 +34,20 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
+****** Dec 2008           ostiguy@fnal
+****** - restored basic support for MAD-style propagator
+****** May 2008           ostiguy@fnal
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no implicit assumption about internal structure
+****** Apr 2008           michelotti@fnal.gov
+****** - added quadrupole::setLength(..) method to override
+******   the base class implementation.
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - covariant return types
 ****** - support for reference counted elements
 ****** December 2007      ostiguy@fnal.gov
 ****** - new typesafe propagator scheme
-****** Apr 2008           michelotti@fnal.gov
-****** - added quadrupole::setLength(..) method to override
-******   the base class implementation.
-****** May 2008           ostiguy@fnal
-****** - proper, explicit assignment operator
-****** - propagator moved (back) to base class
-****** - no implicit assumption about internal structure
 ******
 **************************************************************************
 *************************************************************************/
