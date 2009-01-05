@@ -307,7 +307,9 @@ template boost::shared_ptr<LCavityDnstream::Propagator>::shared_ptr( LCavityDnst
 template boost::shared_ptr<LCavityUpstream::Propagator>::shared_ptr( LCavityUpstream::Propagator* );
 template boost::shared_ptr<BBLens::Propagator         >::shared_ptr( BBLens::Propagator*          );
 template boost::shared_ptr<quadrupole::Propagator     >::shared_ptr( quadrupole::Propagator*      );
+template boost::shared_ptr<quadrupole::MADPropagator  >::shared_ptr( quadrupole::MADPropagator*   );
 template boost::shared_ptr<sbend::Propagator          >::shared_ptr( sbend::Propagator*           );
+template boost::shared_ptr<sbend::MADPropagator       >::shared_ptr( sbend::MADPropagator*        );
 template boost::shared_ptr<thinDecapole::Propagator   >::shared_ptr( thinDecapole::Propagator*    );
 template boost::shared_ptr<Edge::Propagator           >::shared_ptr( Edge::Propagator*            );
 template boost::shared_ptr<octupole::Propagator       >::shared_ptr( octupole::Propagator*        );
