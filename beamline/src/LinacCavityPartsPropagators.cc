@@ -27,12 +27,28 @@
 ******              Leo Michelotti        
 ******              michelotti@fnal.gov
 ******
+****** The propagation algorithm is based on code 
+****** originally written by LM.    
+******
 ****** REVISION HISTORY:
+******
+****** Dec 2008 ostiguy@fnal.gov
+******
+****** Restructured code to eliminate duplication. Ensure that
+****** the entrance kick is applied correctly; this was done 
+****** correctly in LM's original code.
 ******
 ****** May 2008 ostiguy@fnal.gov
 ******  - propagator moved backed to base class. Use static downcast 
 ******    in operator()() implementation
 ******
+******
+****** PLEASE NOTE:
+****** ------------
+****** This propagator assumes 
+******
+****** (1) v/c ~ 1    (relativistic approximation)
+****** (2) px/pz << 1 (paraxial approximation)
 ******
 **************************************************************************
 **************************************************************************
@@ -56,8 +72,24 @@ namespace { // anonymous namespace
   Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 
+  enum Position_t { upstream, downstream }; 
+
+
+  template<typename Component_t>
+  double toDouble( Component_t const& val );
+
+  template<>
+  double toDouble( Jet const& val ) { return val.standardPart(); }
+
+  template<>
+  double toDouble( double const& val ) { return val; }
+
+
+// ------------------------------------------------------------------------------
+
+
 template<typename Particle_t>
-void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
+void driftpropagate( typename PropagatorTraits<Particle_t>::Component_t const& length, bmlnElmnt const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -66,21 +98,65 @@ void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
 
      Component_t npz = p.get_npz();
 
-     Component_t xpr = state[i_npx] / npz;
-     Component_t ypr = state[i_npy] / npz;
+     Component_t xpr = state[i_npx] / npz ;
+     Component_t ypr = state[i_npy] / npz ;
 
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
-
-    // NOTE : the reference time is NOT adjusted here. 
 
      state[i_cdt ] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/p.Beta(); 
 
      return;      
 }
 
+// ------------------------------------------------------------------------------
 
-enum Position_t { upstream, downstream }; 
+template<typename Particle_t>
+void edge_focusing_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::Component_t const& eE_z, double const& sign )
+{
+ 
+  // sign : entrance kick is negative (toward     axis)
+  //        exit     kick is positive (away from  axis)
+
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t& state = p.State();
+
+  Component_t k   = sign*( eE_z/p.Momentum() ) / ( 2.0*p.BetaZ() );
+
+  state[i_npx] += k*state[i_x];  
+  state[i_npy] += k*state[i_y];
+
+}
+
+// ------------------------------------------------------------------------------
+
+template<typename Particle_t>
+void acceleration_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::Component_t const& onaxisEnergyGain, double const& referenceEnergyGain )
+{
+   
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  double const m          = p.Mass();
+
+  State_t& state = p.State();
+
+  Component_t E  = p.Energy() + onaxisEnergyGain;
+
+  double oldRefP = p.ReferenceMomentum();
+  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain );
+  double newRefP = p.ReferenceMomentum();
+
+  state[i_npx] *= ( oldRefP / newRefP );
+  state[i_npy] *= ( oldRefP / newRefP );
+
+  state[i_ndp] = ( sqrt((E - m)*(E + m)) / newRefP ) - 1.0;
+
+}
+
+// ------------------------------------------------------------------------------
 
 template<typename Element_t, typename Particle_t, Position_t position>
 void propagate( Element_t const& elm, Particle_t& p ) 
@@ -92,55 +168,35 @@ void propagate( Element_t const& elm, Particle_t& p )
   boost::function<double(Component_t const& comp)> norm = &PropagatorTraits<Particle_t>::norm;
 
 
-  const double strength   = elm.Strength();
-  const double length     = elm.Length();
-  const double phi_s      = elm.getPhi();
-  const double w_rf       = elm.getRadialFrequency();
-  const double m          = p.Mass();
-
+  double const strength   = elm.Strength();
+  double const length     = elm.Length();
+  double const phi_s      = elm.phi();
+  double const w_rf       = elm.radialFrequency();
  
   State_t& state = p.State();
-
+  
   if( strength == 0.0) { 
-
-  ::driftpropagate( length, elm, p ); 
-  state[i_cdt] -= elm.getReferenceTime();
- 
-   return;
+    ::driftpropagate( length, elm, p ); 
+    state[i_cdt] -= elm.getReferenceTime();
+    return;
   }
 
   double         const referenceEnergyGain = strength*cos ( phi_s);
   Component_t    const onaxisEnergyGain    = strength*cos ( phi_s + state[i_cdt] * w_rf / PH_MKS_c );
   Component_t    const eE_z                = onaxisEnergyGain / length;
 
-  if ( position == upstream ) {
+  // this defined here and used later for ct correction  
+ 
+  Component_t    const E_i                 = p.Energy();
+  Component_t    const p_i                 = p.get_npz() * p.ReferenceMomentum();
 
-    //----------------------------------------------
-    // Thin lens kick upon entry for upstream part
-    //----------------------------------------------
 
-     Component_t k     = - ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
+  if ( position == upstream ) { ::edge_focusing_kick( p, eE_z, -1.0 ); }
 
-     state[i_npx] += k*state[i_x];  
-     state[i_npy] += k*state[i_y];
-  }
-  else if ( position == downstream ) {
+  Component_t xp0 = state[i_npx]/p.get_npz();
+  Component_t yp0 = state[i_npy]/p.get_npz();
 
-   //----------------------------------------------------
-   // Cavity energy and momentum kick for downstream part
-   //----------------------------------------------------
-
-    Component_t E  = p.Energy() + onaxisEnergyGain;
-
-     double oldRefP = p.ReferenceMomentum();
-     p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain );
-     double newRefP = p.ReferenceMomentum();
-
-     state[i_npx] *= ( oldRefP / newRefP );
-     state[i_npy] *= ( oldRefP / newRefP );
-
-     state[i_ndp] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
-   }
+  ::acceleration_kick( p, onaxisEnergyGain, referenceEnergyGain );
 
   //--------------------------------------------------------------
   // Free space propagation through "effective half length"
@@ -149,51 +205,22 @@ void propagate( Element_t const& elm, Particle_t& p )
   // over the length of the cavity.
   //--------------------------------------------------------------
   
-  Component_t x_in  = state[i_x];
-  Component_t y_in  = state[i_y];
-
-  ::driftpropagate( length, elm, p ); 
-
   Component_t w = onaxisEnergyGain/ p.Energy();
- 
-  if( norm(w) > 1.0e-8 ) { w = (log(1.+w)/w); }
-  else                   { w = 1.0;           }
-
-  state[i_x] = ( 1.0 - w )*x_in + w*state[i_x];
-  state[i_y] = ( 1.0 - w )*y_in + w*state[i_y];
-
-
-  if ( position == upstream ) {
-
-   //----------------------------------------------------
-   // Cavity energy and momentum kick for upstream part
-   //----------------------------------------------------
-
-     Component_t E  = p.Energy() + onaxisEnergyGain;
-
-     double oldRefP = p.ReferenceMomentum();
-     p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain );
-     double newRefP = p.ReferenceMomentum();
-
-     state[i_npx] *= ( oldRefP / newRefP );
-     state[i_npy] *= ( oldRefP / newRefP );
-
-     state[i_ndp] = ( sqrt((E - m)*(E + m))/newRefP ) - 1.0;
-  }  
   
-  else if ( position == downstream ) {
+   w = ( norm(w) > 1.0e-10 ) ? log(1.0 +w )/w : 1.0;
 
-   //----------------------------------------------
-   // Thin lens kick upon exit for downstream part
-   //----------------------------------------------
+  // drift through "effective" length  w*length
 
-      Component_t k   = ( eE_z/p.ReferenceMomentum() ) / ( 2.0*p.BetaZ() );
+  state[ i_x ] += xp0 * w * length; 
+  state[ i_y ] += yp0 * w * length; 
 
-      state[i_npx]  += k*state[i_x];
-      state[i_npy]  += k*state[i_y];
-  }
+  if ( position == downstream ) { ::edge_focusing_kick( p, eE_z, 1.0); }
 
-  state[i_cdt] -= elm.getReferenceTime();
+
+  // Fix the time calculation
+
+  state[i_cdt] =  length * (( p.get_npz() * p.ReferenceMomentum() - p_i ) / (p.Energy() - E_i) ) - elm.getReferenceTime();
+
 }
 
 //----------------------------------------------------------------------------------
@@ -201,17 +228,24 @@ void propagate( Element_t const& elm, Particle_t& p )
 //----------------------------------------------------------------------------------
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void driftpropagate( double const& length, bmlnElmnt& elm, Particle& p );
-template void driftpropagate( double const& length, bmlnElmnt& elm, JetParticle& p );
+template void driftpropagate( Component_t length, bmlnElmnt& elm, Particle& p );
+template void driftpropagate( Component_t length, bmlnElmnt& elm, JetParticle& p );
 
-template void propagate<LCavityUpstream, Particle, upstream>( LCavityUpstream& elm,    Particle& p );
-template void propagate<LCavityUpstream, JetParticle, upstream>( LCavityUpstream& elm, JetParticle& p );
-template void propagate<LCavityDnstream, Particle, downstream>( LCavityDnstream& elm,    Particle& p );
+template void propagate<LCavityUpstream, Particle,      upstream>( LCavityUpstream& elm,    Particle& p );
+template void propagate<LCavityUpstream, JetParticle,   upstream>( LCavityUpstream& elm, JetParticle& p );
+template void propagate<LCavityDnstream, Particle,    downstream>( LCavityDnstream& elm,    Particle& p );
 template void propagate<LCavityDnstream, JetParticle, downstream>( LCavityDnstream& elm, JetParticle& p );
+template void edge_focusing_kick<Particle>   (    Particle& p,  typename PropagatorTraits<Particle>::Component_t const& eE_z, 
+                                                  double const& sign );
+template void edge_focusing_kick<JetParticle>( JetParticle& p,  typename PropagatorTraits<JetParticle>::Component_t const& eE_z, 
+                                                  double const& sign );
+template void acceleration_kick<Particle>( Particle& p,  typename PropagatorTraits<Particle>::Component_t const& onaxisEnergyGain, 
+                                          double const& referenceEnergyGain )
+template void acceleration_kick<JetParticle>( JetParticle& p,  typename PropagatorTraits<JetParticle>::Component_t const& onaxisEnergyGain, 
+                                          double const& referenceEnergyGain )
 
 #endif
 //-----------------------------------------------------------------------------------
-
 
 
 } // anonymous namespace
@@ -230,10 +264,8 @@ void  LCavityUpstream::Propagator::setAttribute( bmlnElmnt& elm, std::string con
   setup(elm);
 }
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void  LCavityUpstream::Propagator::operator()(  bmlnElmnt const& elm, Particle& p )
 {
@@ -281,4 +313,5 @@ void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
