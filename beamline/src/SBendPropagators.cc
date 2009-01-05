@@ -56,13 +56,13 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
 template <typename T>
-inline double standardPart( T const& );
+inline double toDouble( T const& );
 
 template<>
-inline double standardPart( Jet const& value)    { return value.standardPart(); }
+inline double toDouble( Jet const& value)    { return value.standardPart(); }
 
 template<>
-inline double standardPart( double const& value) { return value; }
+inline double toDouble( double const& value) { return value; }
  
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -90,19 +90,21 @@ void propagate( sbend const& elm, Particle_t&     p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template < typename Element_t, typename Particle_t>
-void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
+template <typename Element_t, typename Particle_t>
+void mad_propagate( sbend const& elm, Particle_t& p, double n )
 {
 
   typedef typename PropagatorTraits<Particle_t>::State_t     State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t Component_t;
 
   State_t& state = p.State();
+
+  double const rho = toDouble(p.BRho())/elm.Strength();
   
-  double const h      = 1/rho;                    // curvature
+  double const h      = 1.0/rho;          // curvature
   double const length = elm.Length();         
-  double const gamma  = standardPart( p.Gamma() );
-  double const beta   = standardPart( p.Beta()  );
+  double const gamma  =  toDouble(p.Gamma());
+  double const beta   =  toDouble(p.Beta() );
 
   double const angle   = elm.getBendAngle();
 
@@ -110,7 +112,7 @@ void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double c
     state[i_x  ] +=   length * state[i_npx];
     state[i_y  ] +=   length * state[i_npy];
     state[i_cdt] +=  -length /(beta*gamma*gamma) * state[i_ndp];
-    return 0;
+    return;
   }  
 
   static const int BMLN_dynDim = 6;
@@ -146,7 +148,7 @@ void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double c
   matrix[i_npy][i_y   ] = -ky*sin(ky*length);
   matrix[i_npy][i_npy ] =  cos(ky*length);
 
-  const double cnv =  - 1.0/beta;  
+  double const cnv =  - 1.0/beta;  
 
   //----------------------------------------------------------------------------------
   // Note: the std optical matrix formalism assumes the arc length s as the independent 
@@ -196,8 +198,8 @@ void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double c
 
 template void propagate(     sbend const& elm,    Particle& p );
 template void propagate(     sbend const& elm, JetParticle& p );
-template void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
-template void mad_propagate( sbend const& elm, Particle_t& p, double const& rho, double const& n )
+template void mad_propagate( sbend const& elm, Particle_t& p, double const& n )
+template void mad_propagate( sbend const& elm, Particle_t& p, double const& n )
 template double standardPart( double const& value);
 template double standardPart( Jet    const& value);
 
@@ -268,12 +270,24 @@ void sbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if 0
+
+void  sbend::MADPropagator::setup( bmlnElmnt& elm )
+{ }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  sbend::MADPropagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void sbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p)
 {
-  double const rho = p.BRho()/pbe->Strength();
-  ::mad_propagate( static_cast<sbend&>(elm), p, rho, 0.0);
+  ::mad_propagate<sbend,Particle>( static_cast<sbend const&>(elm), p,  0.0);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -281,14 +295,10 @@ void sbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p)
 
 void sbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 {
-  // for MAD Propagator
-  //--------------------
-  double const rho = p.BRho()/pbe->Strength();
-  ::mad_propagate( static_cast<sbend&>(elm), p, rho, 0.0);
+  ::mad_propagate<sbend,JetParticle>( static_cast<sbend const&>(elm), p,  0.0);
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#endif

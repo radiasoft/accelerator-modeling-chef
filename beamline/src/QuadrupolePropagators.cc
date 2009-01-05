@@ -52,6 +52,17 @@ namespace {
   Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
   Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
 
+template<typename Component_t>
+double toDouble( Component_t const& val );
+
+template<>
+double toDouble( Jet const& val ) { return val.standardPart(); }
+
+template<>
+double toDouble( double const& val ) { return val; }
+
+
+// ------------------------------------------------------------------------------
 
 template<typename Particle_t>
 void propagate( quadrupole const& elm, Particle_t& p )
@@ -71,6 +82,8 @@ void propagate( quadrupole const& elm, Particle_t& p )
   state[i_cdt] -= elm.getReferenceTime();
 }
 
+// ------------------------------------------------------------------------------
+
 template <typename Particle_t>
 void propagate( thinQuad const& elm, Particle_t& p ) 
 {
@@ -86,23 +99,67 @@ void propagate( thinQuad const& elm, Particle_t& p )
 
  double const k = elm.Strength() / p.ReferenceBRho();
  
- state[i_npx] += - k * state[i_x];
- state[i_npy] +=   k * state[i_y];
+ state[i_npx]  += - k * state[i_x]; 
+ state[i_npy]  +=   k * state[i_y];
 
 }
 
+// ------------------------------------------------------------------------------
 
-#if 0
 template<typename Particle_t>
 void mad_propagate( quadrupole const& elm, Particle_t& p )
 {
+
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t& state = p.State();
+
+  double const length = elm.Length();
+
+  double q0divp0 = 1.0 + toDouble(p.get_ndp()); 
+  double K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
+  double Beta    = toDouble(p.Beta() );   
+  double Gamma   = toDouble(p.Gamma());
+
+  double kxsqr =  K1;
+  double kysqr = -K1;
+
+  double factor = ( K1 > 0.0 )? sqrt( K1 ): sqrt( -K1 );
+
+  double arg = factor * elm.Length();
+ 
+  double  cn_x = 0.0; 
+  double  sn_x = 0.0; 
+  double  cn_y = 0.0; 
+  double  sn_y = 0.0; 
+
+  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
+      cn_x  = cos( arg );
+      sn_x  = sin( arg )/factor;
+      cn_y  = cosh( arg );
+      sn_y  = sinh( arg )/factor;
+   } else {                                 // Defocussing horizontally
+      cn_x  = cosh( arg );
+      sn_x  = sinh( arg )/factor;
+      cn_y  = cos( arg );
+      sn_y  = sin( arg )/factor;
+   } 
+  
+    double T200  =   ( length - sn_x * cn_x );
+    double T203  = - ( sn_x * sn_x          );
+    double T233  =   ( length + sn_x * cn_x );
+    double T211  = - ( length - sn_y * cn_y );
+    double T214  =   ( sn_y * sn_y          );        
+    double T244  =   ( length + sn_y * cn_y );
 
     State_t instate =  state; 
 
     instate[i_npx] /= q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
     instate[i_npy] /= q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
 
- 
+    Component_t npz = p.get_npz();  
+
     state[i_x  ] =          cn_x * instate[i_x] +  sn_x * instate[i_npx];
     state[i_npx] = -kxsqr * sn_x * instate[i_x] +  cn_x * instate[i_npx];
     state[i_y  ] =          cn_y * instate[i_y] +  sn_y * instate[i_npy];
@@ -122,7 +179,6 @@ void mad_propagate( quadrupole const& elm, Particle_t& p )
     state[i_cdt] +=  Dist/Beta - elm.getReferenceTime();
 
   }
-#endif
 
 
 //----------------------------------------------------------------------------------
@@ -232,7 +288,6 @@ void  quadrupole::Propagator::setAttribute( bmlnElmnt& elm, std::string const& n
   setup(elm);
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -270,51 +325,36 @@ void thinQuad::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if  0
-void quadrupole::MADPropagator::setup( )  
-{
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
-
-  State_t& state = p.State();
-
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  double const length = elm.Length();
-
-  Component_t q0divp0 = 1.0 + p.get_ndp(); 
-  Component_t K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
-  Component_t Beta    = p.Beta();   
-  Component_t Gamma   = p.Gamma();
-
-  Component_t kxsqr =  K1;
-  Component_t kysqr = -K1;
-
-  Component_t factor = ( elm.Strength() > 0.0 )? sqrt( K1 ): sqrt( -K1 );
-
-  Component_t arg = factor * elm.Length();
-
-  Component_t cn_x, sn_x, cn_y, sn_y;
+void quadrupole::MADPropagator::setup( bmlnElmnt& elm)  
+{}
   
-  if ( elm.Strength() > 0.0 )  {            // Focussing horizontally
-      cn_x = cos( arg );
-      sn_x = sin( arg )/factor;
-      cn_y = cosh( arg );
-      sn_y = sinh( arg )/factor;
-   } else {                                 // Defocussing horizontally
-      cn_x = cosh( arg );
-      sn_x = sinh( arg )/factor;
-      cn_y = cos( arg );
-      sn_y = sin( arg )/factor;
-   } 
-  
-    Component_t T200 =   ( length - sn_x * cn_x );
-    Component_t T203 = - ( sn_x * sn_x          );
-    Component_t T233 =   ( length + sn_x * cn_x );
-    Component_t T211 = - ( length - sn_y * cn_y );
-    Component_t T214 =   ( sn_y * sn_y          );        
-    Component_t T244 =   ( length + sn_y * cn_y );
-  
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#endif
+void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, Particle& p)
+{  
+  static bool show_message = true; 
+  if ( show_message) { 
+    std::cout << "using   quadrupole::MADPropagator" << std::endl;
+    show_message = false;
+  }
+  
+ ::mad_propagate(static_cast<quadrupole const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, JetParticle& p)
+{  
+  ::mad_propagate(static_cast<quadrupole const&>(elm), p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  quadrupole::MADPropagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  setup(elm);
+}
 
