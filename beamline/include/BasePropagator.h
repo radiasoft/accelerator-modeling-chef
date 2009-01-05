@@ -44,39 +44,15 @@
 #include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/VectorFwd.h>
 
-
 class BasePropagator;
 typedef boost::shared_ptr<BasePropagator> PropagatorPtr; 
 
 #include <beamline/ParticleFwd.h>
-
-
-
-template<typename T>
-class TJet;
-
-typedef TJet<double>                Jet;
-typedef TJet<std::complex<double> > JetC;
-
-
-template<typename T>
-class TJetVector;
-
-typedef TJetVector<double>                 JetVector;
-typedef TJetVector<std::complex<double> > JetCVector;
-
-
-template<typename T>
-class TBunch;
-
-typedef TBunch<Particle>            ParticleBunch;
-typedef TBunch<JetParticle>      JetParticleBunch;
-
-template<typename T>
-class TMapping;
-
-typedef TMapping<double>                 Mapping;
-typedef TMapping<std::complex<double> >  MappingC;
+#include <beamline/ParticleBunchFwd.h>
+#include <mxyzptlk/JetFwd.h>
+#include <mxyzptlk/JetVectorFwd.h>
+#include <mxyzptlk/MappingFwd.h>
+#include <basic_toolkit/VectorFwd.h>
 
 template<typename Particle_t>
   struct PropagatorTraits { 

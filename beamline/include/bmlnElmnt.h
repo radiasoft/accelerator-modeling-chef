@@ -35,12 +35,21 @@
 ****** REVISION HISTORY:
 ****** -----------------
 ****** 
-****** Oct 2006:   Jean-Francois Ostiguy  ostiguy@fnal.gov
-****** - beamline: improved implementation. beamline is no longer 
-******             derived from a list container, but rather contains 
-******             an instance of a list.  std:list<> is used rather 
-******             than the old style (void*) dlist, which is not type 
-******             safe and could not hold smart pointers. 
+****** Nov 2008 ostiguy@fnal.gov
+****** - added virtual bool queries
+****** May 2008 ostiguy@fnal.gov
+****** - proper, explicit assignment operator
+****** - propagator moved (back) to base class
+****** - no assumption about internal structure
+****** - Propagate/localPropagate functions now const correct
+****** - added physical apertures
+****** Dec 2007   ostiguy@fnal.gov
+****** - new typesafe propagators
+****** July 2007   ostiguy@fnal.gov
+****** - new, less memory hungry implementation for PinnedFrameSet
+****** - eliminated nested functor base classes (e.g. CRITFUNC) 
+****** Mar 2007:   ostiguy@fnal.gov
+****** - support for reference counted elements    
 ****** Dec 2006:   ostiguy@fnal.gov  
 ****** - fixed (possibly long standing) memory corruption problems 
 ******   in bmlnElmnt destructor for many element types.   
@@ -50,20 +59,12 @@
 ****** - eliminated raw c-style strings 
 ****** - Eliminated obsolete tagging functions 
 ****** - various public interface cleanups
-****** Mar 2007:   ostiguy@fnal.gov
-****** - support for reference counted elements    
-****** July 2007   ostiguy@fnal.gov
-****** - new, less memory hungry implementation for PinnedFrameSet
-****** - eliminated nested functor base classes (e.g. CRITFUNC) 
-****** Dec 2007   ostiguy@fnal.gov
-****** - new typesafe propagators
-****** May 2008 ostiguy@fnal.gov
-****** - proper, explicit assignment operator
-****** - propagator moved (back) to base class
-****** - no assumption about internal structure
-****** - Propagate/localPropagate functions now const correct
-****** - added physical apertures
-******
+****** Oct 2006:   ostiguy@fnal.gov
+****** - beamline: improved implementation. beamline is no longer 
+******             derived from a list container, but rather contains 
+******             an instance of a list.  std:list<> is used rather 
+******             than the old style (void*) dlist, which is not type 
+******             safe and could not hold smart pointers. 
 **************************************************************************
 *************************************************************************/
 #ifndef BMLNELMNT_H
@@ -83,11 +84,14 @@
 #include <basic_toolkit/Frame.h>
 #include <beamline/ElmPtr.h>
 
-#include <beamline/ParticleFwd.h>
-
 //------------------------------
 // Forward declarations
 //------------------------------
+#include <basic_toolkit/VectorFwd.h>
+#include <mxyzptlk/JetFwd.h>
+#include <mxyzptlk/MappingFwd.h>
+#include <beamline/ParticleFwd.h>
+#include <beamline/ParticleBunchFwd.h>
 
 class bmlnElmnt;
 class alignmentData;
@@ -101,31 +105,6 @@ class BasePropagator;
 
 typedef boost::shared_ptr<beamline>        BmlPtr;
 typedef boost::shared_ptr<beamline const>  ConstBmlPtr;
-
-template <typename T>
-class TVector;
-
-template <typename T>
-class TMapping;
-
-template <typename T>
-class TJet;
-
-template <typename T>
-class TJetVector;
-
-typedef TVector<double>                VectorD;
-typedef TJet<double>                   Jet;
-typedef TJet<std::complex<double> >    JetC;
-typedef TJetVector<double>             JetVector;
-typedef TMapping<double>               Mapping;
-
-
-template <typename Particle_t>
-class TBunch;
-
-typedef TBunch<Particle>       ParticleBunch;
-typedef TBunch<JetParticle> JetParticleBunch;
 
 bmlnElmnt* read_istream(std::istream&);
 
@@ -283,7 +262,7 @@ public:
 
   // Editing functions
 
-  virtual std::pair<ElmPtr,ElmPtr>  split( double const& ) const;
+  virtual std::pair<ElmPtr,ElmPtr>  split( double const& pc ) const;
                                    // Splits the element at percent orbitlength from the in-face.
 
   // ... Tagging methods
