@@ -31,6 +31,17 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
+****** - new implementation: sbend is now a composite element
+******
+****** Oct 2007           michelotti@fnal.gov
+****** - extended sbend::Split so that local alignment information 
+******   (i.e. the alignment struct) is carried over to the new, 
+******   split elements.  The results should be interpreted carefully.
+******   This is a stopgap measure. In the longer term, I intend
+******   to remove the (vestigial) alignment data from these classes.
+******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
@@ -38,25 +49,6 @@
 ****** - use std::string for string operations. 
 ****** - eliminated unneeded dynamic casts in Split(...);
 ****** 
-****** Oct 2007           michelotti@fnal.gov
-****** - extended sbend::Split so that local alignment information 
-******   (i.e. the alignment struct) is carried over to the new, 
-******   split elements.  The results should be interpreted carefully.
-******   This is a stopgap measure. In the longer term, I intend
-******   to remove the (vestigial) alignment data from these classes.
-****** 
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
-****** - new implementation: sbend is now a composite element
-******                                                                  
-****** Apr 2008           michelotti@fnal.gov
-****** - added placeholder setLength method
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     sbend had no internal structure then.
-****** - modified sbend::Split
-****** - added member functions to nullify edge effects
-******   : used by modified sbend::Split
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -266,8 +258,8 @@ double sbend::setExitAngle( Particle const& p )
 
 double sbend::setEntryAngle( double const& phi /* radians */ )
 {
-  double ret = usAngle_;
-  usAngle_  = phi;
+  double ret  = usAngle_;
+  usAngle_    = phi;
   propagator_->setup(*this);
   return ret;
 }
@@ -278,7 +270,7 @@ double sbend::setEntryAngle( double const& phi /* radians */ )
 double sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
-  dsAngle_ = phi;  
+  dsAngle_   = phi;  
   propagator_->setup(*this);
   return ret;
 }
