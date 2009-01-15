@@ -512,11 +512,12 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   {
     ElmPtr lbe = (*it);
 
-    // bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) && 
-    //                  (   typeid(*lbe) != typeid(CF_rbend) ) && 
-    //                  (   typeid(*lbe) != typeid(Slot)     )   );
+    bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) && 
+                      (   typeid(*lbe) != typeid(CF_rbend) ) && 
+                      (   typeid(*lbe) != typeid(Slot)     ) &&
+                      (     (*lbe).hasStandardFaces()      )  );
 
-    bool is_regular = true;
+    // bool is_regular = true;
 
     lng += lbe->OrbitLength( particle );
     lbe -> propagate( jparticle );
