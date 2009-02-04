@@ -41,8 +41,9 @@
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <beamline/bmlnElmnt.h>
 #include <basic_toolkit/VectorFwd.h>
+#include <mxyzptlk/JetVectorFwd.h>
+#include <beamline/bmlnElmnt.h>
 
 class BasePropagator;
 typedef boost::shared_ptr<BasePropagator> PropagatorPtr; 
