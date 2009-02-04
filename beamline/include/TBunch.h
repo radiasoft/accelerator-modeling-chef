@@ -41,6 +41,7 @@
 #include <boost/pool/pool.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ptr_container/indirect_fun.hpp>
+#include <boost/function.hpp>
 
 // stream operators
 
@@ -75,15 +76,28 @@ public:
   double  Intensity() const;      // actual population i.e. no of particles, as opposed to no of pseudo-particles
   void setIntensity( double const& value);      
 
-  void populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
-  void populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
-  void populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
-  void populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
+  // populate using parametric representation for beam ellipse
 
-  void populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12=0.0, unsigned int sd1=117, unsigned int sd2=137 );
+  void populateParGaussian    ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12 ,       boost::function<double()>&  rand , double cutoff );
+  void populateParGaussianAlt ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12 ,       boost::function<double()>& nrand , double cutoff );
+  void populateParWaterBag    ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12,        boost::function<double()>&  rand );
+  void populateParElliptic    ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12,        boost::function<double()>&  rand );
+  void populateParKV          ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12,        boost::function<double()>&  rand );
+  void populateParBinomial    ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12,  boost::function<double()>&  rand );
 
-  std::vector<double> emittances() const;
+  // populate using Courant Snyder representation for beam ellipse
+  void populateCSGaussian    ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>&  rand, double cutoff);
+  void populateCSGaussianAlt ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& nrand, double cutoff);
+  void populateCSWaterBag    ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& rand );
+  void populateCSElliptic    ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& rand );
+  void populateCSKV          ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& rand );
+  void populateCSBinomial    ( PhaseSpaceProjection psid, double M, double beta, double alpha, double epsilon, boost::function<double()>& rand);
+
+
+  Matrix  sigmas( std::vector<double> const&  dispersion) const; 
+
   std::vector<double> emittances(std::vector<double> const& dispersion ) const;
+  std::vector<double> emittances() const;
 
   template <typename UnaryPredicate_t>
   inline void remove( UnaryPredicate_t );          
@@ -155,22 +169,37 @@ void TBunch<Particle_t>::remove( UnaryPredicate_t predicate)
 //------------------------------------------------------------------------------------
 
 #include <beamline/ParticleFwd.h> 
-//class Particle;
 
 template<>
-void TBunch<Particle>::populateGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
+void TBunch<Particle>::populateParGaussian ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, boost::function<double()>& , double cutoff);
 
 template<>
-void TBunch<Particle>::populateWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
+void TBunch<Particle>::populateParWaterBag ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, boost::function<double()>& );
 
 template<>
-void TBunch<Particle>::populateParabolic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
+void TBunch<Particle>::populateParElliptic( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, boost::function<double()>& );
 
 template<>
-void TBunch<Particle>::populateKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, unsigned int, unsigned int );
+void TBunch<Particle>::populateParKV       ( PhaseSpaceProjection psid, double sigma_x, double sigma_np, double r_12, boost::function<double()>& );
 
 template<>
-void TBunch<Particle>::populateBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12, unsigned int, unsigned int);
+void TBunch<Particle>::populateParBinomial ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12, boost::function<double()>& );
+
+
+template<>
+void TBunch<Particle>::populateCSGaussian ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>&, double cutoff );
+
+template<>
+void TBunch<Particle>::populateCSWaterBag ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& );
+
+template<>
+void TBunch<Particle>::populateCSElliptic( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& );
+
+template<>
+void TBunch<Particle>::populateCSKV       ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& );
+
+template<>
+void TBunch<Particle>::populateCSBinomial ( PhaseSpaceProjection psid,  double M, double beta, double alpha, double epsilon, boost::function<double()>& );
 
 template<>
 std::vector<double> TBunch<Particle>::emittances() const;
@@ -178,6 +207,8 @@ std::vector<double> TBunch<Particle>::emittances() const;
 template<>
 std::vector<double> TBunch<Particle>::emittances(std::vector<double> const& dispersion ) const;
 
+template<>
+Matrix   TBunch<Particle>::sigmas( std::vector<double> const&  dispersion) const; 
 
 #ifndef BEAMLINE_EXPLICIT_TEMPLATES
 #include <beamline/TBunch.tcc>
