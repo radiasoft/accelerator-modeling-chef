@@ -79,8 +79,7 @@ TLieOperator<T> operator^( TLieOperator<T> const&,  TLieOperator<T> const& );
 
 
 template<typename T>
-class DLLEXPORT TLieOperator : public TJetVector<T>
-{
+class DLLEXPORT TLieOperator : public TJetVector<T> {
 
 public:
 
@@ -91,13 +90,10 @@ public:
   TLieOperator( TJet<T>      const& );      // Creates a Hamiltonian vector field.
   TLieOperator( char const*, EnvPtr<T> const env = TJetEnvironment<T>::topEnv  ); 
                                             // Creates the identity function.  
-  ~TLieOperator();
-
-  // Member functions (public)
+ ~TLieOperator();
 
   TLieOperator& operator=( TJetVector<T> const& );
 
-  // Friendly operators ...........................
   friend std::ostream& operator<<<>( std::ostream&, TLieOperator const& );
   friend std::istream& operator>><>( std::istream&, TLieOperator & );
 
@@ -108,14 +104,18 @@ public:
 
   TJet<T> operator^( TJet<T> const& ) const ;                     // Action as a Lie operator
 
-  TJet<T> expMap( T       const&, TJet<T> const & );              // Performs exponential map on the second argument.
-  TJet<T> expMap( TJet<T> const&, TJet<T> const & );              // The orbit parameter is here a TJet<T> variable.
+  template<typename U>
+  TJet<T> expMap( U       const&, TJet<T> const & );              // Performs exponential map on the second argument.
 
-  TJetVector<T> expMap( T       const&,  TJetVector<T> const& );  // Performs exponential map component-wise.
-  TJetVector<T> expMap( TJet<T> const &, TJetVector<T> const& );
+  template<typename U>
+  TJetVector<T> expMap( U       const&,  TJetVector<T> const& );  // Performs exponential map component-wise.
 
   TJet<T>       expMap( TJet<T>       const & );  
   TJetVector<T> expMap( TJetVector<T> const & );
+
+ private:
+
+  static int const maxiter_ = 100; 
 
 };
 

@@ -61,36 +61,21 @@
 #include <config.h>
 #endif
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <limits>
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>
 #include <basic_toolkit/GenericException.h>
-
-#ifndef MX_SMALL
-#define MX_SMALL    1.0e-12 // Used by Jet::addTerm to decide 
-                            //   removal of a JetCterm.
-#endif  // MX_SMALL
-
-#ifndef MX_MAXITER
-#define MX_MAXITER  100     // Maximum number of iterations allowed
-                            //   in iterative routines
-#endif  // MX_MAXITER
 
 using namespace std;
 
 using FNAL::pcerr;
 using FNAL::pcout;
 
-// ***************************************************************
-// ***************************************************************
-// ***************************************************************
-//
-//    Implementation of class TLieOperator<T>
-//
 
-//    Constructors and destructors    |||||||||||||||||||||||||||
-
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::TLieOperator( EnvPtr<T> const theEnv ) 
@@ -105,14 +90,16 @@ TLieOperator<T>::TLieOperator( EnvPtr<T> const theEnv )
  }
 }
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::TLieOperator( TLieOperator<T> const& x ) 
 : TJetVector<T>( x )
 {}
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::TLieOperator( TJet<T> const& x ) 
@@ -155,7 +142,8 @@ TLieOperator<T>::TLieOperator( TJet<T> const& x )
  }
 }
 
-//    |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::TLieOperator( char const*, EnvPtr<T> const pje  ) 
@@ -178,7 +166,8 @@ TLieOperator<T>::TLieOperator( char const*, EnvPtr<T> const pje  )
     TJetVector<T>::comp_[i] = TJet<T>::makeCoordinate( pje, i );
 }
 
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 TLieOperator<T>::~TLieOperator() 
@@ -187,7 +176,6 @@ TLieOperator<T>::~TLieOperator()
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-//     Operators   |||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 istream& operator>>(istream& is,  TLieOperator<T>& x) 
@@ -214,6 +202,7 @@ istream& operator>>(istream& is,  TLieOperator<T>& x)
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
 ostream& operator<<(ostream& os,  TLieOperator<T> const& x) 
@@ -229,6 +218,7 @@ ostream& operator<<(ostream& os,  TLieOperator<T> const& x)
 }
 
 
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
@@ -260,7 +250,7 @@ TJet<T> TLieOperator<T>::operator^( TJet<T> const& x ) const
  return answer;
 }
 
-
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
@@ -281,28 +271,50 @@ TLieOperator<T> operator^( TLieOperator<T> const& x, TLieOperator<T> const& y )
  return z;
 }
 
-
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+namespace {
+ 
+template<typename U>
+bool isNull( U const& u);
+
+template<>
+bool isNull( double const& u)               { return (std::abs(u) < 10.0*std::numeric_limits<double>::epsilon()); } 
+
+template<>
+bool isNull( std::complex<double> const& u) { return (std::abs(u) < 10.0*std::numeric_limits<double>::epsilon()); } 
+
+template<>
+bool isNull( TJet<double> const& u)                 { return ( u.isNull() ); }
+
+template<>
+bool isNull( TJet<std::complex<double> > const& u) { return ( u.isNull() ); }
+
+
+}// namespace
+//--------------------------------------------------------------------------
+ 
 template<typename T>
-TJet<T> TLieOperator<T>::expMap( T const& t, TJet<T> const& x ) 
+template<typename U>
+TJet<T> TLieOperator<T>::expMap( U const& t, TJet<T> const& x ) 
 { 
- double f  = 1.0;
+ double f  = 0.0;
  int count = 0;
  
- TJet<T> u = ( t/f++ )*( (*this)^( x ) );
+ TJet<T> u = ( t/(++f))*( (*this)^( x ) );
  TJet<T> answer(x);
 
- while(   (++count < MX_MAXITER ) && (  u  != T()  ) ) {
+ while(   ( ++count < TLieOperator<T>::maxiter_ ) && (  !::isNull(u) ) ) {
   answer += u;                       
-  u  = ( t/f++ )* ( (*this)^( u ) );  
+  u  = ( t/(++f) )* ( (*this)^( u ) );  
  }
 
- if( count >= MX_MAXITER ) {
+ if( count >= TLieOperator<T>::maxiter_ ) {
   (*pcerr) << "\n" 
        << "*** WARNING ***                                         \n" 
        << "*** WARNING *** TJet<T> TLieOperator<T>::expMap()               \n" 
-       << "*** WARNING *** Number of iterations has exceeded " << MX_MAXITER << "\n"
+       << "*** WARNING *** Number of iterations has exceeded " << TLieOperator<T>::maxiter_ << "\n"
        << "*** WARNING *** without achieving convergence.          \n" 
        << "*** WARNING *** Results may be incorrect.               \n" 
        << "*** WARNING ***                                         \n" 
@@ -315,41 +327,11 @@ TJet<T> TLieOperator<T>::expMap( T const& t, TJet<T> const& x )
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-TJet<T> TLieOperator<T>::expMap( TJet<T> const& t, TJet<T> const& x ) 
-{ 
-
- double f      = 1.0;
- int    count  = 0;
-
- TJet<T> u = ( t/f++ )*( (*this)^( x ) );
- TJet<T> answer(x);
-
- while( ( ++count < MX_MAXITER ) && ( u != T() ) ) {
-  answer += u;                       
-  u  = ( t/f++ )* ( (*this)^( u ) );  
- }
-
- if( count >= MX_MAXITER ) {
-  (*pcerr) << "\n" 
-       << "*** WARNING ***                                         \n" 
-       << "*** WARNING *** TJet<T> TLieOperator<T>::expMap()               \n" 
-       << "*** WARNING *** Number of iterations has exceeded " << MX_MAXITER  << "\n"
-       << "*** WARNING *** without achieving convergence.          \n" 
-       << "*** WARNING *** Results may be incorrect.               \n" 
-       << "*** WARNING ***                                         \n" 
-       << endl;
- }
-
- return answer;
-}
-
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x ) 
+template<typename U>
+TJetVector<T> TLieOperator<T>::expMap( U const& t , TJetVector<T> const& x ) 
 {
 
  TJetVector<T> z( x.Dim() );
@@ -362,18 +344,7 @@ TJetVector<T> TLieOperator<T>::expMap( T const& t , TJetVector<T> const& x )
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<typename T>
-TJetVector<T> TLieOperator<T>::expMap( TJet<T> const& t, TJetVector<T> const& x ) 
-{
- TJetVector<T> z( x.Dim() );
-
- typename TJetVector<T>::const_iterator itx =x.begin(); 
- for(  typename TJetVector<T>::iterator itz=z.begin() ; itz <z.end(); ++itz, ++itx ) {
-  (*itz) = expMap( t, (*itx) );
- }
- return z;
-
-}
 
 
