@@ -8,10 +8,17 @@
 #
 #-------------------------------------------------------------------
 
-AC_INIT(src/py-marker.cpp)
+AC_INIT([python-bindings], [1.0])
+AC_CONFIG_SRCDIR([src/py-marker.cpp])
 AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE(python-bindings, 1.0, no-define)
+
+AC_CONFIG_HEADERS
+
+LT_INIT
 
 AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
 if test "x${withval}" != "xno"; then
@@ -50,10 +57,10 @@ if test "x${set_CXXFLAGS}" != "x" && test "x${set_CFLAGS}" != "x"; then
    CXXFLAGS=${set_CXXFLAGS}
    CFLAGS=${set_CFLAGS}
    AC_SUBST(CFLAGS)
-   AC_SUBST(CXXFLAGS )
+   AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="${CFLAGS} -g -O2"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
+   CFLAGS="${CFLAGS} -g3 -O0"
+   CXXFLAGS="${CXXFLAGS} -g3 -O0 -pipe -fpermissive"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -74,7 +81,7 @@ if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
 	AC_SUBST(CXXFLAGS)
 elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
    CFLAGS="${CFLAGS} -g -O2"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated"
+   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated -fno-strict-aliasing"
    AC_SUBST(CFLAGS)
    AC_SUBST(CXXFLAGS)
 elif test "x${CXX}" = "xCC"; then
@@ -131,6 +138,7 @@ AC_C_INLINE
 #-----------------------------------------------------------------------------------------------------------
 # glib
 #-----------------------------------------------------------------------------------------------------------
+
 AC_ARG_VAR([GLIB_INC],    [GLIB include directory])dnl
 AC_CHECK_HEADER(glib.h,,[
 if test ${GLIB_INC} && test -r ${GLIB_INC}; then
@@ -206,6 +214,7 @@ fi
 #-----------------------------------------------------------------------------------------------------------
 # Python
 #-----------------------------------------------------------------------------------------------------------
+
 AC_ARG_VAR([PYTHON_INC],    [PYTHON include directory])dnl
 AC_CHECK_HEADER( Python.h,,[
 if test ${PYTHON_INC} && test -r ${PYTHON_INC}; then
@@ -268,12 +277,8 @@ else
 		    boost_inc="/usr/local/include"
 		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_34"
-		elif test -r /usr/local/include/boost-1_34_1/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include/boost-1_34_1"
 		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/ap/include/boost-1_34"
-		elif test -r /usr/local/ap/include/boost-1_34_1/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_34_1"
 		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
 		    boost_inc="/usr/local/include/boost-1_33"
 		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
