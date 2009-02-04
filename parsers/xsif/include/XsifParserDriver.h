@@ -46,6 +46,7 @@
 #include <parsers/xsif/Expression.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/BmlPtr.h>
+#include <beamline/ElmPtr.h>
 #include <beamline/LatticeFunctions.h>
 
 

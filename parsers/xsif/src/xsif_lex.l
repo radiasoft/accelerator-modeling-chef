@@ -48,8 +48,24 @@
 #include <string>
 #include <basic_toolkit/iosetup.h>
 #include <unistd.h>
+#include <boost/algorithm/string.hpp>
 
 #include "XsifParserDriver.h"
+
+//-----------------------------------------------------------------------
+// The following forward class declarations must appear _before_
+// #include <XsifParser_ypp.hh>. 
+// They are needed for bison 2.4, which somehow no longer put the 
+// declarations in the user code section %{  ...  %} into the 
+// *.hh files, as was done in v2.3. 
+// This is _ugly_; the best solution would be to get rid 
+// of the the Token class below.  
+//------------------------------------------------------------------------
+
+class Expression;
+class Macro;
+class XsifParserDriver;
+
 #include "XsifParser_ypp.hh"
 
 #include "location.hh"
