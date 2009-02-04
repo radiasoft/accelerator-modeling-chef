@@ -66,16 +66,12 @@ mover::~mover() {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-void mover::append( ElmPtr q ) {
-
+void mover::append( ElmPtr q ) 
+{
+  // *** broken ? *** : should we prevent insertion of duplicates ?
+ 
    theList_.push_back(q);
-
-   if ( align_.xOffset == 0 && align_.yOffset == 0 && align_.roll == 0 ) {
-     align_ = q->Alignment();
-   }
-   
-  
+   q->setAlignment(alignment());
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -92,13 +88,13 @@ void mover::switchOn() {
 
 void mover::switchOff() {
   onOffSwitch_ = false;
-  set( alignmentData() ); // reset alignment
+  set( Alignment() ); // reset alignment
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void mover::set( alignmentData const& x) {
+void mover::set( Alignment const& x) {
  
   for ( std::list<ElmPtr>::iterator it  = theList_.begin(); 
 	it != theList_.end(); ++it ) {
@@ -109,8 +105,8 @@ void mover::set( alignmentData const& x) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData mover::get()  const {
-
+Alignment mover::get()  const 
+{
   return align_;
 }
 

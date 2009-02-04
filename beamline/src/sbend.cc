@@ -341,8 +341,7 @@ std::pair<ElmPtr,ElmPtr> sbend::split( double const& pc ) const
            uic.str().c_str() ) );
   }
 
-  alignmentData ald( Alignment() );
-  if( 0. != ald.xOffset || 0. != ald.yOffset ) {
+  if(  alignment().xOffset() == 0.0 || alignment().yOffset() == 0.0  ) {
     if( !hasParallelFaces() ) {
       ostringstream uic;
       uic  <<   "Not allowed to displace an sbend with non-parallel faces"
@@ -386,8 +385,8 @@ std::pair<ElmPtr,ElmPtr> sbend::split( double const& pc ) const
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------------------------------------------
-  sb_a->setAlignment( ald );
-  sb_b->setAlignment( ald );
+  sb_a->setAlignment( alignment() );
+  sb_b->setAlignment( alignment() );
 
   // Rename
   // ------

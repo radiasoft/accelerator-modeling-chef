@@ -368,9 +368,8 @@ std::pair<ElmPtr,ElmPtr> rbend::split( double const& pc ) const
            uic.str().c_str() ) );
   }
 
-  alignmentData ald( Alignment() );
-  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
-      && ( !hasParallelFaces()                    ) ) {
+  if(    ( (alignment().xOffset() != 0.0) || (alignment().yOffset() != 0.0) ) 
+      && ( !hasParallelFaces() ) ) {
     ostringstream uic;
     uic  <<   "Not allowed to displace an rbend with non-parallel faces";
             "\nwith an Alignment struct.  That rolls are allowed in such"
@@ -413,8 +412,8 @@ std::pair<ElmPtr,ElmPtr> rbend::split( double const& pc ) const
 
   // Set the alignment struct : this is a STOPGAP MEASURE!!!
 
-  rb_a->setAlignment( ald );
-  rb_b->setAlignment( ald );
+  rb_a->setAlignment( *align_ );
+  rb_b->setAlignment( *align_ );
 
   // Rename
 
