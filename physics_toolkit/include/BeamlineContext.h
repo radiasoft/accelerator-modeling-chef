@@ -40,7 +40,8 @@
 ****** - support for reference counted beamlines/elements/BeamlineContext
 ****** - Particles/JetParticles members stored by value whenever possible
 ****** Aug 2008           ostiguy@fnal.gov
-****** - refactored version using embedded database. 
+****** - completely rewritten version using embedded database. 
+******
 **************************************************************************
 *************************************************************************/
 #ifndef BEAMLINECONTEXT_H
@@ -99,6 +100,8 @@ class BeamlineContext: public beamline {
 
     char const*  dbname() const;
 
+    void saveDatabase( std::string const& dbname) const;
+
     void                  setInitialCS( CSLattFuncs const& );
     CSLattFuncs const&    getInitialCS( );
 
@@ -131,23 +134,25 @@ class BeamlineContext: public beamline {
     void  propagateEdwardsTeng( );
     void  propagateCovariance( );
 
-    double  arclength ( ElmPtr const& elm ) const;
-    double     beta_x ( ElmPtr const& elm ) const;
-    double     beta_y ( ElmPtr const& elm ) const;
-    double    alpha_x ( ElmPtr const& elm ) const;
-    double    alpha_y ( ElmPtr const& elm ) const;
-    double    beta_1x ( ElmPtr const& elm ) const;
-    double    beta_1y ( ElmPtr const& elm ) const;
-    double   alpha_1x ( ElmPtr const& elm ) const;
-    double   alpha_1y ( ElmPtr const& elm ) const;
-    double    beta_2x ( ElmPtr const& elm ) const;
-    double    beta_2y ( ElmPtr const& elm ) const;
-    double   alpha_2x ( ElmPtr const& elm ) const;
-    double   alpha_2y ( ElmPtr const& elm ) const;
-    double      eta_x ( ElmPtr const& elm ) const;
-    double      eta_y ( ElmPtr const& elm ) const;
-    double     etap_x ( ElmPtr const& elm ) const;
-    double     etap_y ( ElmPtr const& elm ) const;
+    std::vector<double>  arclength ( ) const;
+    std::vector<double>     beta_x ( ) const;
+    std::vector<double>     beta_y ( ) const;
+    std::vector<double>    alpha_x ( ) const;
+    std::vector<double>    alpha_y ( ) const;
+    std::vector<double>      psi_x ( ) const;
+    std::vector<double>      psi_y ( ) const;
+    std::vector<double>    beta_1x ( ) const;
+    std::vector<double>    beta_1y ( ) const;
+    std::vector<double>   alpha_1x ( ) const;
+    std::vector<double>   alpha_1y ( ) const;
+    std::vector<double>    beta_2x ( ) const;
+    std::vector<double>    beta_2y ( ) const;
+    std::vector<double>   alpha_2x ( ) const;
+    std::vector<double>   alpha_2y ( ) const;
+    std::vector<double>      eta_x ( ) const;
+    std::vector<double>      eta_y ( ) const;
+    std::vector<double>     etap_x ( ) const;
+    std::vector<double>     etap_y ( ) const;
 
 
     double  getHTune();
