@@ -75,8 +75,12 @@
 #include <basic_toolkit/TVector.tcc>
 #include <basic_toolkit/FFTWAllocator.h>
 #include <basic_toolkit/FFTFunctor.h>
+#include <basic_toolkit/FFTFunctorImpl.h>
 #include <basic_toolkit/FFTFunctor.tcc>
+#include <basic_toolkit/FFTFunctorImpl.tcc>
 #include <basic_toolkit/ConvolutionFunctor.h>
+#include <basic_toolkit/ConvolutionFunctorImpl.h>
+#include <basic_toolkit/ConvolutionFunctorImpl.tcc>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
 
 
@@ -182,12 +186,6 @@ template class FFTFunctor<std::complex<double>,       double,               fft_
 template class FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >;
 template class FFTFunctor<std::complex<double>, std::complex<double>, fft_backward >;
 
-template class FFTFunctorImpl<std::complex<double>, std::complex<double>, (transform_type)-1>;
-template class FFTFunctorImpl<double,               std::complex<double>, (transform_type)-1>;
-template class FFTFunctorImpl<std::complex<double>, double,               (transform_type) 1>;
-template class FFTFunctorImpl<std::complex<double>, std::complex<double>, (transform_type) 1>;
-
-
 template
 FFTFunctor<double, std::complex<double>, fft_forward>*  boost::addressof(FFTFunctor<double, std::complex<double>, fft_forward>&);
 
@@ -218,8 +216,8 @@ boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> co
 template class ConvolutionFunctor<double>;
 template class ConvolutionFunctor<std::complex<double> >;
 
-template class ConvolutionFunctorImpl<double>;
-template class ConvolutionFunctorImpl<std::complex<double> >;
+template class ConvolutionFunctorFFTImpl<double>;
+template class ConvolutionFunctorFFTImpl<std::complex<double> >;
 
 template 
 class FFTWAllocator<double>;
