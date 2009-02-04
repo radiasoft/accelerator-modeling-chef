@@ -34,25 +34,29 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - forbade negative length elements
-****** 
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - modified visitor to reduce src file coupling. 
-******   visit() now takes advantage of (reference) dynamic type.
-****** - use std::string consistently for string operations. 
-****** Jul 2007           ostiguy@fnal.gov
-****** - new, less memory-hungry PinnedFrameSet implementation
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagator architecture
-****** Apr 2008           michelotti@fnal.gov
-****** - modified bmlnElmnt::setLength
+****** Jan 2009           ostiguy@fnal.gov
+****** - eliminated class alignmentData
+****** - support for small pitch angles.
+****** Nov 2008           ostiguy@fnal.gov
+****** - added misc virtual boolean queries. These are introduced
+******   to eliminate code that attempts similar queries via RTTI
+******   and if-then-else blocks. 
 ****** May 2008           ostiguy@fnal.gov
 ****** - attribute changes now dispatched to propagator
 ****** - added explicit implementation for assigment operator.
 ****** - eliminated obsolete attributes (IToField_, etc ) 
 ****** - setLength(), setStrength() no longer virtual
+****** Apr 2008           michelotti@fnal.gov
+****** - forbade negative length elements
+****** Dec 2007           ostiguy@fnal.gov
+****** - major refactoring, new typesafe propagator architecture
+****** Jul 2007           ostiguy@fnal.gov
+****** - new, less memory-hungry PinnedFrameSet implementation
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - modified visitor to reduce src file coupling. 
+******   visit() now takes advantage of (reference) dynamic type.
+****** - use std::string consistently for string operations. 
 **************************************************************************
 *************************************************************************/
 
@@ -106,8 +110,6 @@ double PropagatorTraits<JetParticle>::norm(  PropagatorTraits<JetParticle>::Comp
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 // ***********************************
 //   class bmlnElmnt::PinnedFrameSet
@@ -259,7 +261,7 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& o )
                     dsedge_(o.dsedge_)
 {                  
 
-     align_ = o.align_     ? new alignment(*o.align_)  : 0;
+     align_ = o.align_  ? new Alignment(*o.align_)  : 0;
 
      propagator_ =  PropagatorPtr( o.propagator_->Clone() );
 
@@ -329,7 +331,7 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     length_       = rhs.length_;     
     strength_     = rhs.strength_;  
     pscale_       = rhs.pscale_;  
-    align_        = rhs.align_ ? new alignment(*rhs.align_) : 0;  
+    align_        = rhs.align_ ? new Alignment(*rhs.align_) : 0;  
     bml_          = BmlPtr();      
     elm_          = ElmPtr();    
     pinnedFrames_ = rhs.pinnedFrames_;
@@ -348,10 +350,9 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::~bmlnElmnt() {
-
+bmlnElmnt::~bmlnElmnt() 
+{
   if(align_)     delete align_;
-
 }
 
 
@@ -408,7 +409,7 @@ void bmlnElmnt::setLength( double const& length )
     msg << " ***ERROR***: Lengths must be positive. You have entered length " << length 
                <<  " for " << Type() << "  " << Name() << endl;
     throw(  GenericException( __FILE__, __LINE__, 
-                              "void bmlnElmnt::setLength( double const& length )", msg.str() ));
+					  "void bmlnElmnt::setLength( double const& length )", msg.str() ));
    }
 
    if ( isThin() ) {  
@@ -477,13 +478,13 @@ void bmlnElmnt::setStrength( double const& s )
 
     throw(   GenericException( __FILE__, __LINE__, 
              "void bmlnElmnt::setLength( double const& x )",
-             "Resetting the strength of a beamline is not allowed." ) );
+             "Setting the strength of a beamline is not allowed." ) );
    }
 
   strength_ = s/pscale_; 
 
   // Notify propagator of attribute change  
-
+ 
   propagator_->setAttribute(*this, "STRENGTH", s );
 
 }
@@ -510,16 +511,10 @@ char const* bmlnElmnt::Name()   const
 bool bmlnElmnt::alignRelX( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(u, 0.0, 0.0);
-    }
-    else {
-      // This is stupid!
-      alignmentData w(Alignment());
-      w.xOffset += u;
-      setAlignment( w );
-    }
+    if ( !align_ ) { align_ = new Alignment(); }
+    align_->setXOffset( align_->xOffset() + u );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -543,16 +538,10 @@ bool bmlnElmnt::alignRelX( double const& u )
 bool bmlnElmnt::alignRelY( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(0.0, u, 0.0);
-    }
-    else {
-      // This is stupid!
-      alignmentData w(Alignment());
-      w.yOffset += u;
-      setAlignment( w );
-    }
+    if ( !align_ ) { align_ = new Alignment(); }
+    align_->setYOffset( align_->yOffset() + u );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -566,6 +555,7 @@ bool bmlnElmnt::alignRelY( double const& u )
          << endl;
     ret = false;
   }
+
   return ret;
 }
 
@@ -576,16 +566,12 @@ bool bmlnElmnt::alignRelY( double const& u )
 bool bmlnElmnt::alignAbsX( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(u, 0.0, 0.0);
-    }
-    else {
-      alignmentData w(Alignment());
-      w.xOffset = u;
-      setAlignment( w );
-    }
+    if ( !align_ ) { align_ = new Alignment(); }
+    align_->setXOffset( u );
   }
+
   else {
     (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -608,16 +594,12 @@ bool bmlnElmnt::alignAbsX( double const& u )
 bool bmlnElmnt::alignAbsY( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(0.0, u, 0.0);
-    }
-    else {
-      alignmentData w(Alignment());
-      w.yOffset = u;
-      setAlignment( w );
-    }
+    if ( !align_ ) { align_ = new Alignment(); }
+    align_->setYOffset( u );
   }
+
   else {
     (*pcerr) << "\n*** WARNING *** "
          << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
@@ -676,16 +658,11 @@ bool bmlnElmnt::alignAbsYmm( double const& u )
 bool bmlnElmnt::alignRelRoll( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() && hasStandardFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(0.0, 0.0, u);
-    }
-    else {
-      // This is stupid!
-      alignmentData w(Alignment());
-      w.roll += u;
-      setAlignment( w );
-    }
+
+    if ( !align_) { align_ = new Alignment(); } 
+    align_->setRoll( align_->roll() + u );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -709,16 +686,10 @@ bool bmlnElmnt::alignRelRoll( double const& u )
 bool bmlnElmnt::alignAbsRoll( double const& u )
 {
   bool ret = true;
+
   if( hasParallelFaces() && hasStandardFaces() ) {
-    if( !align_ ) {
-      align_ = new alignment(0.0, 0.0, u);
-    }
-    else {
-      // This is stupid!
-      alignmentData w(Alignment());
-      w.roll = u;
-      setAlignment( w );
-    }
+    if (!align_) { align_ = new Alignment(); } 
+    align_->setRoll( u );
   }
   else {
     (*pcerr) << "\n*** WARNING *** "
@@ -864,8 +835,8 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
 
   //....................................................................................
 
-  if( pct < 0.000001 ) { pct = 0; }
-  if( 0.999999 < pct ) { pct = 1; }
+  if( pct < 0.000001 ) { pct = 0.0; }
+  if( 0.999999 < pct ) { pct = 1.0; }
 
   // Load position and momentum vectors
 
@@ -904,184 +875,59 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::setAlignment(alignmentData const& a) 
+bool bmlnElmnt::setAlignment(Alignment const& a) 
 {
-  bool ret = true;
-  alignment* nuAlignPtr = new alignment(a);
-
   realign();
 
-  if( nuAlignPtr->isNull() ) {
-    delete nuAlignPtr;
-    nuAlignPtr = 0;
-  }
-  else if( hasParallelFaces() ) {
-    align_ = nuAlignPtr;
-  }
-  else 
-  {
-    if(    ( std::abs(a.roll)                      < 1.0e-12 )
-        || ( std::abs( M_PI   - std::abs(a.roll) ) < 1.0e-9  )
-        || ( std::abs( M_PI_2 - std::abs(a.roll) ) < 1.0e-9  ) )
-    {
-      if( (a.xOffset == 0.0) || (a.yOffset == 0.0) ) {
-        align_ = nuAlignPtr;
-      }
-      else {
-        ret = false;
-      }
-    }
+  if (!align_) align_ = new Alignment(); //  this is necessary because realign() deletes the alignment object ...   
+                                         //  realign() remains an unfinished kludge ! 
+
+  if( hasParallelFaces() ) {
+    (*align_) = a;
+    return true;
   }
 
-  if( !ret ) {
-    (*pcerr) << "\n*** WARNING *** "
-         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
-         << "\n*** WARNING *** bool bmlnElmnt::setAlignment(const alignmentData& a)"
+  // rotation by 0 pi or pi/2 is OK even when faces are not parallel
+  
+  if(      ( std::abs(a.roll())                      < 1.0e-12 )
+        || ( std::abs( M_PI   - std::abs(a.roll()) ) < 1.0e-9  )
+        || ( std::abs( M_PI_2 - std::abs(a.roll()) ) < 1.0e-9  ) ) {
+      if( (a.xOffset() == 0.0) || (a.yOffset() == 0.0) ) {
+        (*align_) =  a;
+        return true; 
+   }
+
+  // faces are not parallel and rotation not a multiple of pi/2 
+
+  (*pcerr) << "\n*** WARNING *** "
+            << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+            << "\n*** WARNING *** bool bmlnElmnt::setAlignment(const alignmentData& a)"
             "\n*** WARNING *** Cannot use this method on an element "
-         << Type() << "  " << Name()
-         << "\n*** WARNING *** without affecting its neighbors."
+            << Type() << "  " << Name()
+            << "\n*** WARNING *** without affecting its neighbors."
             "\n*** WARNING *** Nothing has been done."
             "\n*** WARNING *** "
-         << endl;
+            << endl;
 
-    if( 0 != nuAlignPtr ) { delete nuAlignPtr; nuAlignPtr = 0; }
-    ret = false;
+    return false;
   }
 
   // pinnedFrames_._altered is not changed
 
-  return ret;
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData bmlnElmnt::Alignment() const {
-
-  alignmentData x;
-  if( align_) {
-    x = align_->getAlignment();
-  }
-  return x;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-// --- End of local, small alignment routines.
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::enterLocalFrame( Particle& p ) const
+Alignment bmlnElmnt::alignment() const 
 {
-
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  Vector& state = p.State();
-
-  state[0] -= align_->x_offset();
-  state[1] -= align_->y_offset();
-
-  if( align_->roll() != 0.0) {
-
-    double temp  = state[0] * cs + state[1] * sn;
-    state[1]     = state[1] * cs - state[0] * sn;
-    state[0]     = temp;
-
-    temp       = state[3] * cs + state[4] * sn;
-    state[4]   = state[4] * cs - state[3] * sn;
-    state[3]   = temp;
-  }
- 
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::enterLocalFrame( JetParticle& p ) const
-{
-
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  JetVector& state = p.State();
-
-  state[0] -= align_->x_offset();
-  state[1] -= align_->y_offset();
-
-  if( align_->roll() != 0.0) {
-    Jet temp   = state[0] * cs + state[1] * sn;
-    state[1]   = state[1] * cs - state[0] * sn;
-    state[0]   = temp;
-
-    temp       = state[3] * cs + state[4] * sn;
-    state[4]   = state[4] * cs - state[3] * sn;
-    state[3]   = temp;
-  }
-
-
+  return align_ ? (*align_) : Alignment();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::leaveLocalFrame( Particle& p ) const
-{
-
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  Vector& state = p.State();
-
-  if( align_->roll() != 0.0) {
-    double temp   = state[0] * cs - state[1] * sn;
-    state[1]      = state[1] * cs + state[0] * sn;
-    state[0]      = temp;
-
-    temp        = state[3] * cs - state[4] * sn;
-    state[4]    = state[4] * cs + state[3] * sn;
-    state[3]    = temp;
-  }
-
-  state[0] += align_->x_offset();
-  state[1] += align_->y_offset();
-
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
-{
-
-  double cs = align_->cos_roll();
-  double sn = align_->sin_roll();
-
-  Mapping& state = p.State();
-
-  if( align_->roll() != 0.0) {
-    Jet temp   = state[0] * cs - state[1] * sn;
-    state[1]   = state[1] * cs + state[0] * sn;
-    state[0]   = temp;
-
-    temp     = state[3] * cs - state[4] * sn;
-    state[4] = state[4] * cs + state[3] * sn;
-    state[3] = temp;
-  }
-
-  state[0] += align_->x_offset();
-  state[1] += align_->y_offset();
-
-
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double bmlnElmnt::getReferenceTime() const
 {
@@ -1153,11 +999,6 @@ std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
   ElmPtr delm( Clone() );
   delm->enableEdges(false, true);
 
-  // ---------------------------------------------
-  // Note: cloning should set the alignment struct
-  // via the bmlnElmnt copy constructor.  (see above)
-  // ---------------------------------------------
-
   //-----------------------------------------------------------------------------
   //  strength_  is changed only when it represents the  
   //  *integrated* strength; this is the case for _thin_ elements.
@@ -1166,14 +1007,14 @@ std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
   uelm->strength_ = uelm->isThin() ? pc*strength_            : strength_;
   delm->strength_ = delm->isThin() ? ( 1.0 - pc )*strength_  : strength_;
 
-  uelm->length_   = uelm->isThin() ? 0.0 : pc*length_;
-  delm->length_   = delm->isThin() ? 0.0 : ( 1.0 - pc )*length_;
+  uelm->length_   = uelm->isThin() ?  0.0 : pc*length_;
+  delm->length_   = delm->isThin() ?  0.0 : ( 1.0 - pc )*length_;
 
   // set the alignment struct
   // this is a STOPGAP MEASURE ... until misalignments are handled differently. 
 
-  uelm->setAlignment( Alignment() );
-  delm->setAlignment( Alignment() );
+  uelm->setAlignment( *align_ );
+  delm->setAlignment( *align_ );
 
   // Rename
 
@@ -1181,10 +1022,13 @@ std::pair<ElmPtr,ElmPtr>  bmlnElmnt::split( double const& pc ) const
   delm->rename( ident_ + string("_2") );
 
   return std::make_pair(uelm, delm);
+
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
@@ -1266,9 +1110,7 @@ void bmlnElmnt::propagateReference( Particle& particle, double initialBRho, bool
   }
 
   propagate( particle );
-
   setReferenceTime( particle.get_cdt() );
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
