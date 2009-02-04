@@ -96,7 +96,7 @@ class BendEliminator : public ConstBmlVisitor {
   double        usFaceAngle_;
   double        dsFaceAngle_;
   std::string   new_bend_name_;
-  alignmentData new_alignmentData_;
+  Alignment     new_alignment_;
 };
 
 
