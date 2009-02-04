@@ -60,6 +60,92 @@ bool betaParallelTest( Jet const&   betaParallel ) {
     return (betaParallel.standardPart() )<= 0.0; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename Particle_t>
+void processFrame( Frame const& frm,  Particle_t & p ) 
+{
+
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  static bool firstTime = true;
+  static Vector u_z(3);
+  static Vector u_y(3);
+ 
+
+  if( firstTime ) {
+    firstTime = false;
+    u_y[0] = 0.0; u_y[1] = 1.0; u_y[2] = 0.0;
+    u_z[0] = 0.0; u_z[1] = 0.0; u_z[2] = 1.0;
+  }
+
+   
+  State_t&  state = p.State();
+
+
+  // Yaw -------------------------------------
+
+  if( ( frm.getAxis(1) == u_y ) && ( frm.getAxis(2) != u_z ) ) 
+  {
+    // "Old" frame represented in "new" frame coordinates.
+
+    Vector e_1 = frm.getAxis(0);
+    Vector e_2 = frm.getAxis(1);
+    Vector e_3 = frm.getAxis(2);
+    
+    double cs = e_1[0];
+    double sn = e_3[0];
+
+    // Coordinate transformation.
+
+    State_t r        ( state[i_x]*e_1 + state[i_y]*e_2 );
+    State_t dummy    ( p.VectorBeta() );
+    State_t beta     ( dummy[0]*e_1 + dummy[1]*e_2 + dummy[2]*e_3 );
+  
+    Component_t tau   = ( - r[2] / beta[2] );
+  
+    state[i_x]    =   r[0] + tau*beta[0];
+    state[i_y]    =   r[1] + tau*beta[1];
+    state[i_cdt] +=   tau ;
+  
+    // Momentum transformation
+
+    Component_t p1( state[i_npx] );
+    Component_t p2( state[i_npy] );
+    Component_t p3divpbar = sqrt( ( 1.0 + state[i_ndp] ) * ( 1.0 + state[i_ndp] ) - p1*p1 - p2*p2 );
+  
+     state[i_npx] =  cs*state[i_npx] + sn*p3divpbar ;
+  }
+
+  // Roll ------------------------------------
+
+  else if( ( frm.getAxis(2) == u_z ) && ( frm.getAxis(1) != u_y ) ) 
+  {
+    double cs = ( frm.getAxis(0) )[0];
+    double sn = ( frm.getAxis(1) )[0]; // ??? right?
+
+    // sin of angle by which magnet is rolled
+  
+    Component_t temp   = state[i_x] * cs + state[i_y] * sn;
+
+    state[1]   = state[i_y] * cs - state[i_x] * sn;
+    state[0]   = temp;
+
+    temp      = state[i_npx] * cs + state[i_npy] * sn;
+    state[4]  = state[i_npy] * cs - state[i_npx] * sn;
+    state[3]  = temp;
+
+  }
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
 template <typename Particle_t>
 void propagate( Slot const& elm, Particle_t& p )
 {
@@ -70,11 +156,17 @@ void propagate( Slot const& elm, Particle_t& p )
  
   State_t& state = p.State();
 
-  Frame const& outframe = elm.getOutFrame();
+ //----------------------------------------
+ // Transform to Input Frame 
+ //-----------------------------------------
+
+  ::processFrame( elm.getInFrame(), p ); 
 
  //----------------------------------------
  // Propagate as drift to the out-plane
  //-----------------------------------------
+
+  Frame const& outframe = elm.getOutFrame();
 
   Vector_t r(3);
 
@@ -114,6 +206,13 @@ void propagate( Slot const& elm, Particle_t& p )
 
   state[ i_npx ] = momntm*u_1;
   state[ i_npy ] = momntm*u_2;
+
+ //----------------------------------------
+ // Transform to Output Frame 
+ //-----------------------------------------
+
+  ::processFrame( elm.getOutFrame(), p ); 
+
 }
 
 //----------------------------------------------------------------------------------
