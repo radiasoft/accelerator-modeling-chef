@@ -32,11 +32,14 @@
 #include <list>
 #include <map>
 #include <utility>
+#include <algorithm>
 
 #include <beamline/beamline.h>
 #include <beamline/beamline_elements.h>
 
 #include <beamline/BBLens.tcc>
+#include <beamline/bmlnElmnt.tcc>
+
 #include <beamline/BendPropagators.h>
 #include <beamline/EdgePropagators.h>
 #include <beamline/TBunch.h>
@@ -82,6 +85,10 @@
 
 
 #include <basic_toolkit/ConvolutionFunctor.h>
+#include <basic_toolkit/ConvolutionFunctorImpl.h>
+#include <basic_toolkit/ConvolutionFunctor.tcc>
+#include <basic_toolkit/ConvolutionFunctorImpl.tcc>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
 #include <boost/bind.hpp>
@@ -97,6 +104,18 @@ template class TBunch<Particle>;
 template class TBunch<JetParticle>;
 
 template class list<ElmPtr>;
+
+template 
+void bmlnElmnt::enterLocalFrame( Particle& p ) const;
+
+template 
+void bmlnElmnt::enterLocalFrame( JetParticle& p ) const;
+
+template 
+void bmlnElmnt::leaveLocalFrame( Particle& p ) const;
+
+template 
+void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const;
 
 
 template boost::shared_ptr<thinSextupole const> boost::dynamic_pointer_cast<thinSextupole const, bmlnElmnt>(boost::shared_ptr<bmlnElmnt> const&);
@@ -173,14 +192,9 @@ namespace {
  boost::function<double(int)> fl = boost::bind<double>( ShortRangeLWakeFunction(), _1, 0.0, 0.0 );
 }
 
-template class ConvolutionFunctorImpl<double>;
-template class ConvolutionFunctor<double>;
-
-template ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
 template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
-
-template ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
 template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
+
 
 
 template class boost::function1<bool,   bmlnElmnt const*,   std::allocator<void> >;
@@ -413,6 +427,7 @@ template class boost::function1<double, TVector<double> const&,          std::al
 template class boost::function1<TVector<double>, TVector<double> const&, std::allocator<void> >;
 template class boost::function1<Matrix, TVector<double> const&,          std::allocator<void> >;
 
+template class boost::function0<double,  std::allocator<void> >; 
 
 namespace { 
  double OrbitLength( ElmPtr elm, Particle& p) { return elm->OrbitLength(p); } 
@@ -424,9 +439,33 @@ namespace {
 }
 
 
-
 template 
 class boost::function1<double, boost::shared_ptr<bmlnElmnt>, std::allocator<void> >;
+
+template 
+boost::any::any( bool const &);
+
+template 
+bool boost::any_cast(any &);
+
+template 
+bool boost::any_cast(const any &);
+
+template
+const bool* boost::any_cast(const any *);
+
+template
+bool * boost::any_cast(any *);
+
+
+template
+class std::vector<void*, std::allocator<void*> >;
+
+typedef std::vector<void*, std::allocator<void*> >::iterator viter; 
+
+template
+void std::vector<void*, std::allocator<void*> >::insert( viter, viter, viter);
+
 
 
 #endif //BEAMLINE_EXPLICIT_TEMPLATES
