@@ -24,7 +24,7 @@
 ******             ostiguy@fnal.gov                         
 ****** 
 **************************************************************************
-*************************************************************************/
+**************************************************************************
 *************************************************************************/
 
 #ifndef JETVECTORFWD_H
@@ -32,10 +32,10 @@
 
 #include <complex>
 
-template class TJetVector<typename T>
-TJectVector;
+template <typename T>
+class TJetVector;
  
 typedef TJetVector<double>                 JetVector;
-typedef TJectVector<std::complex<double> > JetCVector;
+typedef TJetVector<std::complex<double> > JetCVector;
 
 #endif // JETVECTORFWD_H
