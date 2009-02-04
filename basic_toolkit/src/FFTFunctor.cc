@@ -30,6 +30,7 @@
 
 #include <basic_toolkit/FFTWAllocator.h>
 #include <basic_toolkit/FFTFunctor.h>
+#include <basic_toolkit/FFTFunctorImpl.h>
 
 using namespace std;
  
@@ -37,7 +38,7 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-void FFTFunctorImpl<double, std::complex<double>, fft_forward>::ctor()
+void FFTFunctor<double, std::complex<double>, fft_forward>::FFTFunctorImpl::ctor()
 {
   
   input_array_size_   =  nsamples_;
@@ -57,7 +58,7 @@ void FFTFunctorImpl<double, std::complex<double>, fft_forward>::ctor()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-void FFTFunctorImpl<std::complex<double>, double, fft_backward>::ctor()
+void FFTFunctor<std::complex<double>, double, fft_backward>::FFTFunctorImpl::ctor()
 {
   
   input_array_size_  =  nsamples_/2+ 1;

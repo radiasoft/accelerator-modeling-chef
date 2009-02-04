@@ -28,125 +28,61 @@
 **************************************************************************
 *************************************************************************/
 
-#include <algorithm>
-#include <iostream>
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template <typename T>
-ConvolutionFunctorImpl<T>::~ConvolutionFunctorImpl() 
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> const& lhs, std::vector<T> const& rhs )  
-{
-  //-------------------------------------------------------------------------------------------
-  // compute lhs transform ... If unary=true, lhs is assumed to already contain the transform 
-  //-------------------------------------------------------------------------------------------
-
-   std::copy( (FFT_Input_t*) &lhs[0],  (FFT_Input_t*) &lhs[0] + fft_input_array_size_,   (FFT_Input_t*)  &lhsdata_[0] );   
-
-   forward_transform_( (FFT_Input_t*) &lhsdata_[0] );
-
-
-  //--------------------------------------------------------------
-  // compute rhs transform ....
-  //--------------------------------------------------------------
-
-   std::copy(  (FFT_Input_t*) &rhs[0],  (FFT_Input_t*) &rhs[0] + fft_input_array_size_ ,   (FFT_Input_t*) &rhsdata_[0] );
-
-   forward_transform_( (FFT_Input_t*) &rhsdata_[0] );
-
-  
-  //--------------------------------------------------------------
-  // compute product in Fourier space and apply normalization ...
-  //--------------------------------------------------------------
- 
-  FFT_Output_t*  it_lhs     =  ( FFT_Output_t* ) &lhsdata_[0];
-  FFT_Output_t*  it_lhs_end =  ( FFT_Output_t* ) &lhsdata_[0] + fft_output_array_size_;
-
-  FFT_Output_t*  it_rhs     =  ( FFT_Output_t* ) &rhsdata_[0];
-  FFT_Output_t*  it_rhs_end =  ( FFT_Output_t* ) &rhsdata_[0] + fft_output_array_size_;
-
-
-  for ( ; it_lhs != it_lhs_end;  ++it_lhs, ++it_rhs )
-  {
-    (*it_lhs) *= (*it_rhs);
-  }
- 
-  //------------------------------------
-  // invert and return ...
-  //-------------------------------------
-  
-  inverse_transform_( (FFT_Output_t*) &lhsdata_[0] );
-  
-  return reinterpret_cast<std::vector<T> const&> ( lhsdata_ );
-} 
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-std::vector<T> const& ConvolutionFunctorImpl<T>::operator()( std::vector<T> const& rhs )  
-{
-  //-------------------------------------------------------------------------------------------
-  // lhsdata_ already contain the transform 
-  //-------------------------------------------------------------------------------------------
-
-  //--------------------------------------------------------------
-  // compute rhs transform ....
-  //--------------------------------------------------------------
-
-   std::copy(  (FFT_Input_t*) &rhs[0],  (FFT_Input_t*) &rhs[0] + fft_input_array_size_ ,   (FFT_Input_t*) &rhsdata_[0] );
-
-   forward_transform_( (FFT_Input_t*) &rhsdata_[0] );
-
-  
-  //--------------------------------------------------------------
-  // compute product in Fourier space and apply normalization ...
-  //--------------------------------------------------------------
- 
-  FFT_Output_t*  it_lhs     =  ( FFT_Output_t* ) &lhsdata_[0];
-  FFT_Output_t*  it_lhs_end =  ( FFT_Output_t* ) &lhsdata_[0] + fft_output_array_size_;
-
-  FFT_Output_t*  it_rhs     =  ( FFT_Output_t* ) &rhsdata_[0];
-  FFT_Output_t*  it_rhs_end =  ( FFT_Output_t* ) &rhsdata_[0] + fft_output_array_size_;
-
-  FFT_Output_t*  it_result     =  ( FFT_Output_t* ) &result_[0];
-  FFT_Output_t*  it_result_end =  ( FFT_Output_t* ) &result_[0] + fft_output_array_size_;
-
-  std::copy( it_lhs, it_lhs_end, it_result);
-
-  for ( ; it_result != it_result_end;  ++it_result, ++it_rhs )
-  {
-    (*it_result) *= (*it_rhs);
-  }
- 
-  //------------------------------------
-  // invert and return ...
-  //-------------------------------------
-  
-  inverse_transform_( (FFT_Output_t*) &result_[0] );
-  return reinterpret_cast<std::vector<T> const&> (result_ );
-} 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-template <typename T>
-void  ConvolutionFunctorImpl<T>::resetLHS( std::vector<T>  const& lhs) 
-{
-  //---------------------------------------------------
-  // recompute and store new lhs operand transform ...  
-  //---------------------------------------------------
-
-   std::copy( (FFT_Input_t*) &lhs[0],  (FFT_Input_t*) &lhs[0] + fft_input_array_size_,   (FFT_Input_t*)  &lhsdata_[0] );   
-
-   forward_transform_( (FFT_Input_t*) &lhsdata_[0] );
-
+ConvolutionFunctor<T>::ConvolutionFunctor( int nsamples, bool measure) 
+{ 
+   pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl >( new ConvolutionFunctorFFTImpl<T>( nsamples, measure) ); 
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+template<typename Fnct>
+ConvolutionFunctor<T>::ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure ) { 
+  pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl >( new ConvolutionFunctorFFTImpl<T>( nsamples, lhs, measure) ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+ConvolutionFunctor<T>::~ConvolutionFunctor() 
+{ }
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+void ConvolutionFunctor<T>::resetLHS( std::vector<T>  const& lhs)
+{ 
+  return pimpl_->resetLHS( lhs); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+std::vector<T>   ConvolutionFunctor<T>::operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
+{ 
+  return pimpl_->operator()( lhs, rhs); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template <typename T>
+std::vector<T>   ConvolutionFunctor<T>::operator()(  std::vector<T> const& rhs ) 
+{ 
+  return pimpl_->operator()( rhs); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+

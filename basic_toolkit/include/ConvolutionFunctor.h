@@ -24,8 +24,10 @@
 ******  Author:    Jean-Francois Ostiguy                                     
 ******             ostiguy@fnal.gov                         
 ****** 
-****** A function object to efficiently perform a convolution between  
-****** two functions using FFTs. By using the constructor 
+****** SYNOPSIS:
+****** 
+******* A function object to efficiently perform a convolution between  
+******  two functions using FFTs. 
 ******
 **************************************************************************
 **************************************************************************
@@ -34,71 +36,12 @@
 #ifndef CONVOLUTIONFUNCTOR_H
 #define CONVOLUTIONFUNCTOR_H
 
-#include <complex> // note: this header *must* be included *before* fftw.h
-#include <fftw3.h>
+#include <complex> // note: this header *must* be included *before* fftw3.h
 #include <vector>
-#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
-#include <basic_toolkit/FFTFunctor.h>
 #include <iostream>
 
 
-
-template <typename U>
-     struct ConvolutionFunctorTraits {
-
-};
-
-template<>
-struct ConvolutionFunctorTraits<double> {
-   typedef double                FFT_Input_t; 
-   typedef std::complex<double>  FFT_Output_t;
-
-}; 
-
-template<>
-struct ConvolutionFunctorTraits<std::complex<double> > {
-   typedef std::complex<double>  FFT_Input_t; 
-   typedef std::complex<double>  FFT_Output_t;
-}; 
-
-
-//----------------------------------------------------------------------------------------------
-
-template <typename T>
-class ConvolutionFunctorImpl {
-
- public:
-
-  typedef typename ConvolutionFunctorTraits<T>::FFT_Input_t   FFT_Input_t;
-  typedef typename ConvolutionFunctorTraits<T>::FFT_Output_t  FFT_Output_t;
-
-  ConvolutionFunctorImpl( int sample, bool measure);
-
-  template<typename Fnct>
-  ConvolutionFunctorImpl(  int nsamples, Fnct lhs, bool measure); 
-
- ~ConvolutionFunctorImpl();
-
-  std::vector<T> const&   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs );
-  std::vector<T> const&   operator()( std::vector<T>  const& rhs );
-
-  void resetLHS( std::vector<T>  const& lhs);
-
- private:
-
-  int                                                  nsamples_;
-  int                                                  fft_input_array_size_;
-  int                                                  fft_output_array_size_;
-
-  boost::function< FFT_Output_t* ( FFT_Input_t*  ) >   forward_transform_; 
-  boost::function< FFT_Input_t*  ( FFT_Output_t* ) >   inverse_transform_; 
-
-  std::vector<double, FFTWAllocator<double> >          rhsdata_;
-  std::vector<double, FFTWAllocator<double> >          lhsdata_;
-  std::vector<double, FFTWAllocator<double> >          result_;
-
-};
 
 //---------------------------------------------------------------------------------------------
 
@@ -107,92 +50,28 @@ class ConvolutionFunctor {
 
  public:
 
-  ConvolutionFunctor( int nsamples=0, bool measure=true ) 
-    { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, measure) ); }
+  class ConvolutionFunctorImpl;    // for conventional convolution 
+
+  ConvolutionFunctor( int nsamples=0, bool measure=true ); 
+
+  // Fnct is a function object. lhs(i) returns the value at sample i
+  // The samples i are assumed to be equally spaced.  
 
   template<typename Fnct>
-  ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure=true ) 
-    { pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl<T> >( new ConvolutionFunctorImpl<T>( nsamples, lhs, measure) ); }
+  ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure=true );
 
-  ~ConvolutionFunctor() { }
+  ~ConvolutionFunctor();
 
-  void resetLHS( std::vector<T>  const& lhs)
-    { return pimpl_->resetLHS( lhs); }
+  void resetLHS( std::vector<T>  const& lhs);
 
-  std::vector<T>   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
-    { return pimpl_->operator()( lhs, rhs); }
+  std::vector<T>   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs );
 
-  std::vector<T>   operator()(  std::vector<T> const& rhs )
-    { return pimpl_->operator()( rhs); }
+  std::vector<T>   operator()(  std::vector<T> const& rhs );
 
  private:
   
-  boost::shared_ptr<ConvolutionFunctorImpl<T> >       pimpl_;
+  boost::shared_ptr<ConvolutionFunctorImpl>       pimpl_;
 };
-
-//-------------------------------------------------------------------------------------------------------
-// Specializations
-//-------------------------------------------------------------------------------------------------------
-
-template<>
-ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int array_size, bool fftw_measure);
-
-template<>
-ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int array_size, bool fftw_measure);
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-template<typename Fnct>
-ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, Fnct lhs, bool measure )
-  : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
-{
-  
-  lhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-  rhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-   result_.resize(  2 * nsamples ); 
-
-  forward_transform_ =  FFTFunctor<double, std::complex<double>, fft_forward >( nsamples_, measure);  
-  inverse_transform_ =  FFTFunctor<std::complex<double>, double, fft_backward>( nsamples_, measure);
-
-  int i = 0;
-  for (  double* it  = &lhsdata_[0];  
-                 it != &lhsdata_[0] + fft_input_array_size_;  ++it, ++i ) {
-   (*it) = lhs(i);
-  }
-
-  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
-  
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-template<typename Fnct>
-ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamples, Fnct lhs, bool measure)
-  : nsamples_(nsamples),  fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples)  
-{
-  
-  lhsdata_.resize(  2 * nsamples );
-  rhsdata_.resize(  2 * nsamples );
-   result_.resize(  2 * nsamples ); 
-
-  forward_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >( nsamples, measure);  
-  inverse_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>( nsamples, measure);
-
-  int i = 0;
-  for ( std::complex<double>* it  = ( std::complex<double>* ) &lhsdata_[0];  
-                              it != ( std::complex<double>* ) &lhsdata_[0]+ fft_input_array_size_ ;  ++it, ++i) {
-    (*it) = lhs(i);
-  };
-
-  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
-
-}
-
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES

@@ -29,6 +29,8 @@
 *************************************************************************/
 
 #include <basic_toolkit/ConvolutionFunctor.h>
+#include <basic_toolkit/ConvolutionFunctorImpl.h>
+#include <basic_toolkit/FFTFunctor.h>
 
 using namespace std;
  
@@ -36,7 +38,7 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, bool measure)
+ConvolutionFunctorFFTImpl<double>::ConvolutionFunctorFFTImpl( int nsamples, bool measure)
   : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
 {
   
@@ -54,7 +56,7 @@ ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int nsamples, bool measu
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-ConvolutionFunctorImpl<std::complex<double> >::ConvolutionFunctorImpl( int nsamples, bool measure)
+ConvolutionFunctorFFTImpl<std::complex<double> >::ConvolutionFunctorFFTImpl( int nsamples, bool measure)
   : nsamples_(nsamples),  fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples)  
 {
   
