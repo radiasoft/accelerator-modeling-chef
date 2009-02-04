@@ -29,38 +29,9 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******  
-******  Revision History:
+******  REVISION HISTORY:
+******  -----------------
 ******
-******  Feb-May 2005  Jean-Francois Ostiguy
-******                ostiguy@fnal.gov
-******
-******  - Efficiency improvements.
-******  - New memory allocation and management scheme.
-******
-******  Sept-Dec 2005  ostiguy@fnal.gov
-******  
-****** - refactored code to use a single class template parameter
-******   instead of two. Mixed mode operations now handled using 
-******   implicit conversions.
-****** - reference counting now based on using boost::intrusive pointer
-****** - reference counted TJetEnvironment
-****** - all implementation dependent code properly moved to implementation class TJL   
-****** - redesigned coordinate class Tcoord. New class Tparams for parameters
-****** - header files support for both explicit and implicit template instantiations
-******   (default for mxyzptlk = explicit)
-******   for _explicit_ instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
-******
-****** Sep 2006  ostiguy@fnal.gov  
-****** - eliminated dlist representation for polynomials.   
-****** - eliminated archaic "Reconstruct" members: use placement 
-******   new syntax when needed. 
-****** Mar 2007 ostiguy@fnal.gov  
-****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   to replace previous scheme based explicitly on monomial exponents tuples.
-****** - monomial multiplication handled via a lookup-table.
-****** - added STL-style iterators ( for monomials)    
-****** Mar 2008 ostiguy@fnal.gov
-******  - Jet composition and evaluation code refactored and optimized. 
 ****** Aug 2008  ostiguy@fnal.gov
 ******  - added [] syntax for monomial coefficient access ( proxy class)
 ******  - eliminated redundant inline members that merely dispatched 
@@ -68,6 +39,33 @@
 ******  - added static factory functions to replace the (unsafe) 
 ******    setVariable() interface.
 ******  - added new Environment stack functions 
+****** Mar 2008 ostiguy@fnal.gov
+******  - Jet composition and evaluation code refactored and optimized. 
+****** Mar 2007 ostiguy@fnal.gov  
+****** - Introduced new compact monomial indexing scheme based on monomial ordering
+******   to replace previous scheme based explicitly on monomial exponents tuples.
+****** - monomial multiplication handled via a lookup-table.
+****** - added STL-style iterators for monomials    
+****** Sep 2006  ostiguy@fnal.gov  
+****** - eliminated dlist representation for polynomials.   
+****** - eliminated archaic "Reconstruct" members: use placement 
+******   new syntax when needed. 
+******  Sept-Dec 2005  ostiguy@fnal.gov
+****** - refactored code to use a single class template parameter
+******   instead of two. Mixed mode operations now handled using 
+******   implicit conversions.
+****** - const correctness consistently enforced
+****** - reference counting scheme based on well-documented boost::intrusive pointer
+****** - reference counted TJetEnvironment
+****** - all implementation dependent code properly moved to implementation class TJL   
+****** - redesigned coordinate class Tcoord. New class Tparams for parameters
+****** - header files support for both explicit and implicit template instantiations
+******   (default for mxyzptlk = explicit)
+******   for _explicit_ instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******  Feb-May 2005  ostiguy@fnal.gov
+******  - Efficiency improvements.
+******  - introduced specialized allocation and centralized
+******    memory management scheme.
 ******
 **************************************************************************
 **************************************************************************
@@ -135,8 +133,7 @@ TJet<T> operator-( TJet<T> const& );
 template<typename T> 
 TJet<T> operator-( TJet<T> const&, T const& );
 
-template<typename T> 
-TJet<T> operator-( T const&, TJet<T> const& );
+template<typename T> TJet<T> operator-( T const&, TJet<T> const& );
 
 TJet<std::complex<double> > operator-( TJet<double >               const& x, TJet<std::complex<double> > const& y );
 TJet<std::complex<double> > operator-( TJet<std::complex<double> > const& x, TJet<double >               const& y );
@@ -374,6 +371,7 @@ public:
   coeff_proxy        operator[]( IntArray const& );   
 
   bool isNilpotent() const;
+  bool isNull()      const;
 
   void printCoeffs() const;
   int  termCount()   const;  // Returns number of monomial terms
@@ -387,8 +385,8 @@ public:
   void     setStandardPart( T const& std ); 
   T const& standardPart() const            { return jl_->standardPart();    }
 
-  T        weightedDerivative( IntArray const&  ) const;  
-  T                derivative( IntArray const&  ) const; 
+  T        weightedDerivative( IntArray const&  ) const;  // includes Taylor expansion factor
+  T                derivative( IntArray const&  ) const;  // pure derivative 
 
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 
@@ -403,8 +401,7 @@ public:
   T       operator() ( TVector<T>      const& ) const; // evaluation 
   T       operator() ( std::vector<T>  const& ) const; // evaluation 
 
-  TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
-
+  TJet  D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
 
   // Operators________________________________________________________
 
