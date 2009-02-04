@@ -219,7 +219,7 @@ public:
 
   // Change geometry of the line
 
-  bool     setAlignment( alignmentData const& );
+  bool     setAlignment( Alignment const& );
  
   iterator moveRelX( iterator pos, double const& dx);
   iterator moveRelY( iterator pos, double const& dy);
