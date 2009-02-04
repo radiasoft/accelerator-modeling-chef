@@ -47,21 +47,21 @@
 #include <physics_toolkit/AlignVisitor.h>
 #include <beamline/BeamlineExpressionTree.h>
 
-AlignVisitor::AlignVisitor( alignmentData const& a, ElmPtr q)
+AlignVisitor::AlignVisitor( Alignment const& a, ElmPtr q)
 : ModifierVisitor(q), myAlign_(a)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AlignVisitor::AlignVisitor( alignmentData const& a, BoolNode const& q )
+AlignVisitor::AlignVisitor( Alignment const& a, BoolNode const& q )
 : ModifierVisitor(q), myAlign_(a)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AlignVisitor::AlignVisitor( alignmentData const& a, std::list<ElmPtr> const& q )
+AlignVisitor::AlignVisitor( Alignment const& a, std::list<ElmPtr> const& q )
 : ModifierVisitor(q), myAlign_(a)
 {}
 

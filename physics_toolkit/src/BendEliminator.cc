@@ -76,7 +76,7 @@ BendEliminator::BendEliminator()
   , usFaceAngle_(0.0)
   , dsFaceAngle_(0.0)
   , new_bend_name_()
-  , new_alignmentData_()
+  , new_alignment_()
 {}
 
 
@@ -245,14 +245,14 @@ void BendEliminator::visit( sbend const& x )
     usFaceAngle_   = x.getEntryFaceAngle();
     dsFaceAngle_ = x.getExitFaceAngle();
     new_bend_name_       = x.Name();
-    new_alignmentData_   = x.Alignment();
+    new_alignment_       = x.alignment();
     build_sbend_         = true;
     // NOTE: if a personal propagator (ProfFunc*) has been
     //   written, it is NOT handled.  There is no way
     //   of assuring that these would be merged correctly.
   }
-  else if(    ( new_alignmentData_  == x.Alignment() )
-           && ( field_              == x.Strength()  ) ) {
+  else if(    ( new_alignment_  == x.alignment() )
+           && ( field_          == x.Strength()  ) ) {
 
     bool accepted = false;
     if( relaxed_ ) {
