@@ -94,13 +94,12 @@
 #include <beamline/ParticleBunchFwd.h>
 
 class bmlnElmnt;
-class alignmentData;
 class beamline;
 class BmlVisitor;
 class ConstBmlVisitor;
+class Alignment;
 class Aperture;
 class sector;
-class alignment;
 class BasePropagator;
 
 typedef boost::shared_ptr<beamline>        BmlPtr;
@@ -219,7 +218,7 @@ public:
   bool     alignAbsRoll( double const& radians );
   bool alignRelRollmrad( double const& mrad    );
   bool alignAbsRollmrad( double const& mrad    );
-  bool     setAlignment( alignmentData const& );
+  bool     setAlignment( Alignment const& );
 
   bool    hasMoved()  const  { return ( pinnedFrames_.altered() || align_  ); }
   void    realign();  // Resets element to its original position.
@@ -254,11 +253,11 @@ public:
   void localPropagate(    ParticleBunch& b ) const;
   void localPropagate( JetParticleBunch& b ) const;
 
-  void enterLocalFrame( Particle&                )   const;
-  void enterLocalFrame( JetParticle&             )   const;
+  template  <typename Particle_t>
+  void enterLocalFrame( Particle_t&  )   const;
 
-  void leaveLocalFrame( Particle&                )   const;
-  void leaveLocalFrame( JetParticle&             )   const;
+  template  <typename Particle_t>
+  void leaveLocalFrame( Particle_t&  )   const;
 
   // Editing functions
 
@@ -284,10 +283,10 @@ public:
 
   // ... Query functions 
 
-  alignmentData       Alignment( void )        const;
+  Alignment          alignment()         const;
 
-  double              Strength()               const;
-  virtual double      Length()                 const;
+  double             Strength()          const;
+  virtual double     Length()            const;
 
   virtual double OrbitLength( Particle const& ) const;  // Returns length of design orbit
                                                         // segment through the element.
@@ -326,7 +325,7 @@ protected:
 
   double                             length_;             // Length of object [ meters ]
 
-  alignment*                         align_;
+  Alignment*                         align_;              // Alignment object
 
   PinnedFrameSet                     pinnedFrames_;
 
@@ -384,5 +383,8 @@ class bmlnElmnt::core_access {
 
 };
    
+#ifndef  BEAMLINE_EXPLICIT_TEMPLATES
+#include <beamline/bmlnElmnt.h> 
+#endif
 
 #endif // BMLNELMNT_H
