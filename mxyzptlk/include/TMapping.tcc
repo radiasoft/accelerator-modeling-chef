@@ -80,8 +80,6 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-static const int maxiter = 100;
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -420,22 +418,22 @@ TMapping<T> TMapping<T>::epsInverse( EnvPtr<T> const& pje) const
 
 
  TMapping<T>  z = M*id;
- v = ( operator()(z) - id );
+ v = ( (*this)(z) - id );
 
 
  int  i = 0;
- while ( ( i++ < maxiter ) && ( ( v - v.filter(0,1)) != T() ) ) {
+ while ( ( i++ < TMapping<T>::maxiter_ ) && ( ( v - v.filter(0,1)) != T() ) ) {
                // This assumes linear is handled well enough
                // by the TMatrix<T> routine.  
   z = z - M*v;
   v = ( (*this)(z) - id );
  }
 
- if( i >= maxiter ) {
+ if( i >= TMapping<T>::maxiter_ ) {
   (*pcerr) << "\n\n"
        << "*** WARNING ***                                            \n" 
           "*** WARNING *** TMapping<T>& TMapping<T>::epsInverse()                     \n" 
-          "*** WARNING *** Over " << maxiter << " iterations used. \n"
+          "*** WARNING *** Over " << TMapping<T>::maxiter_ << " iterations used. \n"
           "*** WARNING *** result may be incorrect.                   \n" 
           "*** WARNING ***                                            \n" 
        << endl;

@@ -112,8 +112,8 @@ class DLLEXPORT TMapping: public TJetVector<T> {
  private:
 
   TMapping<T> epsInverse(  EnvPtr<T> const&) const;
-
-
+ 
+  static int const maxiter_ = 100;   
 };
 
 //-------------------------------------------------------------------------------
