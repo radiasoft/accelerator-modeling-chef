@@ -70,11 +70,11 @@ class DLLEXPORT Slot : public bmlnElmnt {
  public:
 
    Slot();
-   Slot( char const*  name);
+   Slot( std::string const&  name);
 
-   Slot( char const*  name, Frame const& out );
+   Slot(  std::string const& name, Frame const& out );
 
-   Slot( const Slot& );
+   Slot( Slot const& );
 
    ~Slot();
  
@@ -88,7 +88,7 @@ class DLLEXPORT Slot : public bmlnElmnt {
    void makeUpstreamVertical     ( double const& length, double const& angle );
    void makeDownstreamVertical   ( double const& length, double const& angle );
 
-   int  checkFrame( const Frame& ) const;
+   int  checkFrame( Frame const& ) const;
 
    void accept( BmlVisitor& v );
    void accept( ConstBmlVisitor& v ) const;
