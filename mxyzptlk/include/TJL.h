@@ -91,18 +91,9 @@
 #include<boost/iterator/reverse_iterator.hpp>
 #include <vector>
 
-#define MX_SMALL       1.0e-12 // Used by TJL<T>::addTerm to decide 
-                               // removal of a TJL<T>Cterm.
-
-#define MX_ABS_SMALL   1.0e-15 // Used by TJL<T>::addTerm to decide 
-
-#define MX_MAXITER     20      // Maximum number of iterations allowed
-                               //   in iterative routines
-
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// *******************************************************************
 
 template<typename T>
 class TJL;
