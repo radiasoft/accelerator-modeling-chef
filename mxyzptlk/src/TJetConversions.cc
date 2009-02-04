@@ -154,23 +154,14 @@ TJet<complex<double> > erf( TJet<complex<double> > const& z )
     return u;
   }
 
-  TJet<complex<double> >    series    ( pje );
-  TJet<complex<double> >    oldseries ( pje );
-  TJet<complex<double> >    arg       ( pje );
-  TJet<complex<double> >    term      ( pje );
+  TJet<complex<double> >  series  ( complex_1, pje);
+  TJet<complex<double> >  oldseries(pje); 
+  TJet<complex<double> >  arg           = - z*z;
+  double                  den           = 1.0;
+   TJet<complex<double> > term          = complex_1;
+  double                  fctr_x        = 0.0;
 
-  static double  den;
-  static double  fctr_x;
-  static int     counter;
-
-  series        = complex_1;
-  oldseries     = complex_0;  // ??? Why necessary?
-   arg           = - z*z;
-  den           = 1.0;
-  term          = complex_1;
-  fctr_x        = 0.0;
-
-  counter = 0;
+  int counter = 0;
   while( ( series != oldseries ) || counter++ < pje->maxWeight() ) {
     oldseries = series;
     den      += 2.0;
@@ -179,7 +170,7 @@ TJet<complex<double> > erf( TJet<complex<double> > const& z )
     series   += term/den;
   }  
 
-  return complex<double> (2.0/MATH_SQRTPI,0.0)*z*series;
+  return ( complex<double>(2.0/MATH_SQRTPI,0.0) * z *series );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -187,38 +178,40 @@ TJet<complex<double> > erf( TJet<complex<double> > const& z )
 
 TJet<complex<double> > w( TJet<complex<double> >const& z ) 
 {
-  const complex<double>  mi( 0., -1. );
-  double x;
-  double y;
+  complex<double> const    mi( 0., -1. );
   TJet<complex<double> >  answer( z.Env() );
   
-  x = real( z.standardPart() );
-  y = imag( z.standardPart() );
+  double x = real( z.standardPart() );
+  double y = imag( z.standardPart() );
 
   if( ( x < 0.0 ) || ( y < 0.0  ) ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "TJet<complex<double> > w( const TJet<complex<double> >& ) ",
+           "TJet<complex<double> > w( TJet<complex<double> > const& ) ",
            "Argument must have positive standard part." ) );
   }
 
-  if( ( x > 6.0 ) || ( y > 6.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.5124242  /( z*z - 0.2752551 )) + 
-                          ( 0.05176536 /( z*z - 2.724745  ))
-                          ) 
-             );
+  TJet<complex<double> > zsq = z*z;
 
-  else if( ( x > 3.9 ) || ( y > 3.0 ) ) 
-    answer = ( - mi * z * (
-                          ( 0.4613135   /( z*z - 0.1901635 )) + 
-                          ( 0.09999216  /( z*z - 1.7844927 )) + 
-                          ( 0.002883894 /( z*z - 5.5253437 ))
-                          ) 
-             );
+  if( ( x > 6.0 ) || ( y > 6.0 ) ) {
 
-  else answer = exp( -z*z )*(  1.0 -erf( mi*z ) );
+   return  ( - mi * z * (
+                          ( 0.5124242  /( zsq - 0.2752551 )) + 
+                          ( 0.05176536 /( zsq - 2.724745  ))
+                          ) );
+  }
 
-  return answer;
+  else if( ( x > 3.9 ) || ( y > 3.0 ) ) {
+
+    return ( - mi * z * (
+                          ( 0.4613135   /( zsq - 0.1901635 )) + 
+                          ( 0.09999216  /( zsq - 1.7844927 )) + 
+                          ( 0.002883894 /( zsq - 5.5253437 ))
+                          ) );
+  }
+
+  else { 
+     return exp( -zsq ) * (  1.0 -erf( mi*z ) );
+  } 
 }
 
 
