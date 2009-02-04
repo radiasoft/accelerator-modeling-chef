@@ -32,9 +32,16 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******                                                                
+******  
+****** REVISION HISTORY
+****** 
+****** Jan 2009  ostiguy@fnal.gov
+****** - refactored: redundant class alignmentData has been eliminated
+****** - added support for pitch angle
+******
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -49,124 +56,56 @@
 
 using namespace std;
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignmentData::alignmentData()
- : xOffset(0.0), yOffset(0.0), roll(0.0) 
+Alignment::Alignment()
+  : xOffset_(0.0), yOffset_(0.0), roll_(0.0), pitch_(0.0), cosRoll_(1.0), sinRoll_(0.0) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData::alignmentData(double const& xoff, double const& yoff, double const& t)
-: xOffset( xoff ), yOffset( yoff ), roll( t ) 
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignmentData::alignmentData( alignmentData const& o)
-: xOffset(o.xOffset), yOffset(o.yOffset), roll(o.roll) 
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignmentData::~alignmentData() {}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignmentData& alignmentData::operator=(alignmentData const& data) 
+Alignment::Alignment(double const& x, double const& y, double const& t, double const& p ) 
+  : xOffset_(x), yOffset_(y), roll_(t), pitch_(p)
 {
-  if ( &data == this ) return *this;
-
-  xOffset = data.xOffset;
-  yOffset = data.yOffset;
-  roll    = data.roll;
-
-  return *this;
+  cosRoll_ = cos(t);
+  sinRoll_ = sin(t);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool alignmentData::operator==( alignmentData const& data ) const
-{
-  return ( (yOffset == data.yOffset) && 
-           (xOffset == data.xOffset) && 
-           (roll    == data.roll   ) );
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignment::alignment()
-: adata_(0.0, 0.0, 0.0 ), cosRoll_(1.0), sinRoll_(0.0) 
+Alignment::Alignment( Alignment const& o) 
+: xOffset_(o.xOffset_), yOffset_(o.yOffset_), roll_(o.roll_), pitch_(o.pitch_), 
+  cosRoll_(o.cosRoll_), sinRoll_(o.sinRoll_) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment::alignment(double const& x, double const& y, double const& t ) 
-  : adata_(x, y, t), cosRoll_(cos(t)), sinRoll_(sin(t))
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignment::alignment( alignment const& o) 
-: adata_(o.adata_), cosRoll_(o.cosRoll_), sinRoll_(o.sinRoll_) 
-{}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignment::alignment(alignmentData const& o)
-  :  adata_(o) 
-{
- 
-     cosRoll_ = cos(adata_.roll),
-     sinRoll_ = sin(adata_.roll);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignment::~alignment() 
+Alignment::~Alignment() 
 {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool alignment::isNull() const
+bool Alignment::isNull() const
 {
-  return ( ( adata_.yOffset == 0.0) && (adata_.xOffset == 0.0) && (adata_.roll == 0.0) );
+  return ( ( yOffset_ == 0.0) && ( xOffset_ == 0.0) && ( roll_ == 0.0) );
 }
 
-
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool alignment::operator==( alignment const& o ) const
+Alignment& Alignment::operator=( Alignment const& o ) 
 {
-  return ( adata_ == o.adata_ );
-}
+  if ( this == &o ) return *this;
 
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-alignment& alignment::operator=(alignment const& o) {
-
-  if ( &o == this) return *this;
-
-  adata_   = o.adata_;
-  cosRoll_ = o.cosRoll_;
+  xOffset_ = o.xOffset_;
+  yOffset_ = o.yOffset_;
+  roll_    = o.roll_;
+  pitch_   = o.pitch_;
   sinRoll_ = o.sinRoll_;
+  cosRoll_ = o.cosRoll_;
 
   return *this;
 }
@@ -175,38 +114,22 @@ alignment& alignment::operator=(alignment const& o) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void alignment::setAlignment(alignmentData const& data) 
+bool Alignment::operator==(Alignment const& o) const
 {
-
-  adata_   = data;
-
-  cosRoll_ = cos( data.roll );
-  sinRoll_ = sin( data.roll );
+  return (  (xOffset_ == o.xOffset_) && 
+            (yOffset_ == o.yOffset_) && 
+            (roll_    == o.roll_ )   &&
+            (pitch_   == o.pitch_ ) ); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData const& alignment::getAlignment()  const 
+std::ostream& operator<<(ostream& os, Alignment const& align)
 {
-  return adata_;
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-ostream& operator<<(ostream& os, alignment& align)
-{
-#if 0
-  if ( &align ) 
-    os << OSTREAM_DOUBLE_PREC << align.xOffset_ << " " << align.yOffset_ << " " << align.roll_;
-  else
-    os << "0 0 0 ";
-
-#endif
+  os << align.xOffset() << " " << align.yOffset() << " " << align.roll() << endl;
   return os;
 }
-
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
