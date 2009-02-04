@@ -1177,7 +1177,7 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   double tilt   = 0.0;  bool attribute_tilt   = false;
   double e1     = 0.0;  bool attribute_e1     = false;
   double e2     = 0.0;  bool attribute_e2     = false;
-  alignmentData aligner;
+  Alignment aligner;
 
   bool simple = true;
 
@@ -1193,9 +1193,7 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
 
 
-  aligner.xOffset = 0.0;
-  aligner.yOffset = 0.0;
-  aligner.roll    = tilt;
+  aligner.setRoll(tilt);
 
   if( simple) {
     elm =  new sbend( label.c_str(), length, BRHO*angle/length, angle, e1, e2 );
@@ -1267,7 +1265,8 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
   double tilt   = 0.0;
   double e1     = 0.0;
   double e2     = 0.0;
-  alignmentData aligner;
+ 
+  Alignment aligner;
 
   bool simple = true;
 
@@ -1303,9 +1302,7 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
       elm = new CF_rbend( label.c_str(), length, BRHO*(2.0*sin(0.5*angle))/length, angle, e1, e2 );
   }
 
-  aligner.xOffset = 0.0;
-  aligner.yOffset = 0.0;
-  aligner.roll    = tilt;
+  aligner.setRoll( tilt );
 
   if (tilt != 0.0 ) elm->setAlignment( aligner );
 
@@ -1347,7 +1344,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& 
   
   any value;
   bmlnElmnt* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length   = 0.0;
   double k1       = 0.0;
@@ -1370,9 +1367,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& 
   }
   
   if ( tilt != 0.0  ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll(tilt );
     elm->setAlignment( aligner );
   }
 
@@ -1397,7 +1392,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
 
   any value;
   bmlnElmnt* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length   = 0.0;
   double k2       = 0.0;
@@ -1420,9 +1415,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
   }
   
   if ( tilt != 0.0  ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll( tilt );
     elm->setAlignment( aligner );
   }
 
@@ -1448,7 +1441,7 @@ ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& B
   
   any value;
   bmlnElmnt* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length   = 0.0;
   double k3       = 0.0;
@@ -1471,9 +1464,7 @@ ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& B
   }
   
   if ( tilt != 0.0 ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll(tilt);
     elm->setAlignment( aligner );
   }
 
@@ -1501,7 +1492,7 @@ ElmPtr  XsifParserDriver::make_multipole(    ConstElmPtr& udelm, double const& B
 
 any value;
 ElmPtr elm;
-alignmentData aligner;
+Alignment aligner;
 
 ElmPtr  q;
 
@@ -1528,9 +1519,7 @@ if( kl[0] != 0.0 ) {
   q    = ElmPtr( new thin2pole("", BRHO*kl[0]) );
   
   if( tilt[0] != 0.0 ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt[0];
+    aligner.setRoll( tilt[0] );
     q->setAlignment( aligner );
   }
 
@@ -1540,9 +1529,7 @@ if( kl[0] != 0.0 ) {
 if( kl[1] != 0.0 ) {
   q = ElmPtr( new thinQuad( "", BRHO*kl[1] ) );
   if( 0.0 != tilt[1] ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt[1];
+    aligner.setRoll( tilt[1] );
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1551,9 +1538,7 @@ if( kl[1] != 0.0 ) {
 if( kl[2] != 0.0 ) {
   q = ElmPtr( new thinSextupole( "", BRHO*kl[2]/2.0 ) );
   if( tilt[2] != 0.0 ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt[2];
+    aligner.setRoll( tilt[2]);
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1562,9 +1547,7 @@ if( kl[2] != 0.0 ) {
 if( kl[3] != 0.0 ) {
   q = ElmPtr( new thinOctupole( "", BRHO*kl[3]/6.0 ) );
   if( 0.0 != tilt[3] ) {
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt[3];
+    aligner.setRoll( tilt[3] );
     q->setAlignment( aligner );
 	}
   temp->append( q );
@@ -1643,7 +1626,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
  
   any value;
   hkick* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length = 0.0;  bool attribute_length = false;
   double kck    = 0.0;  bool attribute_kck    = false;
@@ -1660,9 +1643,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
   if ( attribute_kck   )    elm->setStrength(kck*BRHO);
   if ( attribute_tilt  ) 
   {  
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll( tilt );
     elm->setAlignment( aligner );
   }
 
@@ -1687,7 +1668,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
   
   any value;
   vkick* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length = 0.0;  bool attribute_length = false;
   double kck    = 0.0;  bool attribute_kck    = false;
@@ -1704,9 +1685,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
   if ( attribute_kck    )    { elm->setStrength(kck*BRHO);  }
   if ( attribute_tilt   ) 
   {  
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll(tilt);
     elm->setAlignment( aligner );
   }
   
@@ -1732,7 +1711,7 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   
   any value;
   kick* elm = 0;
-  alignmentData aligner;
+  Alignment aligner;
 
   double length = 0.0;  bool attribute_length  = false; 
   double hkck   = 0.0;  bool attribute_hkck    = false;
@@ -1753,9 +1732,7 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   if ( attribute_vkck   )   elm->setVerStrength(vkck*BRHO);
   if ( attribute_tilt   ) 
   {  
-    aligner.xOffset = 0.0;
-    aligner.yOffset = 0.0;
-    aligner.roll    = tilt;
+    aligner.setRoll( tilt);
     elm->setAlignment( aligner );
   }
   

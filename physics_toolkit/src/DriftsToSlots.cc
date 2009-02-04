@@ -519,7 +519,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             delete ret; ret=0;;
             return original.Clone();
           }
-          rollAngle = c->Alignment().roll;
+          rollAngle = c->alignment().roll();
           arcFrame.reset();
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
@@ -574,7 +574,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             delete ret; ret=0;;
             return original.Clone();
           }
-          rollAngle = a->Alignment().roll;
+          rollAngle = a->alignment().roll();
           arcFrame.reset(); 
           fd[x] = 0.0;
           fd[y] = 0.0;
@@ -631,7 +631,7 @@ beamline* DriftsToSlots( beamline const& argbml )
               return original.Clone();
             }
           }
-          rollAngle = c->Alignment().roll;
+          rollAngle = c->alignment().roll();
           arcFrame.reset();  
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
@@ -680,7 +680,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             }
           }
 
-          rollAngle = a->Alignment().roll;
+          rollAngle = a->alignment().roll();
           if( 1.0e-12 < std::abs(rollAngle) ) {
             arcFrame.rotate(    rollAngle, arcFrame.getzAxis() );
             arcFrame.rotate(    exitAngle, arcFrame.getyAxis() );

@@ -66,9 +66,10 @@ class AlignVisitor : public ModifierVisitor
 {
  public: 
 
-  AlignVisitor( alignmentData const&, ElmPtr elm = ElmPtr() );
-  AlignVisitor( alignmentData const&, BoolNode const& );
-  AlignVisitor( alignmentData const&, std::list<ElmPtr> const& );
+  AlignVisitor( Alignment const&, ElmPtr elm = ElmPtr() );
+  AlignVisitor( Alignment const&, BoolNode const& );
+  AlignVisitor( Alignment const&, std::list<ElmPtr> const& );
+
  ~AlignVisitor();
 
   void visit( bmlnElmnt& );
@@ -77,7 +78,7 @@ class AlignVisitor : public ModifierVisitor
 
   void          doAlign( bmlnElmnt& );
 
-  alignmentData myAlign_;
+  Alignment myAlign_;
 
 };
 

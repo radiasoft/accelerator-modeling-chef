@@ -75,23 +75,26 @@ namespace Optics {
   void              propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetParticle const& jp, MatrixC const& ev0, Vector const& eta0 );
 
 
-  double            arclength( sqlite::connection& db, ElmPtr const& elm );
-  double               beta_x( sqlite::connection& db, ElmPtr const& elm );
-  double               beta_y( sqlite::connection& db, ElmPtr const& elm );
-  double              alpha_x( sqlite::connection& db, ElmPtr const& elm );
-  double              alpha_y( sqlite::connection& db, ElmPtr const& elm );
-  double              beta_1x( sqlite::connection& db, ElmPtr const& elm );
-  double              beta_1y( sqlite::connection& db, ElmPtr const& elm );
-  double             alpha_1x( sqlite::connection& db, ElmPtr const& elm );
-  double             alpha_1y( sqlite::connection& db, ElmPtr const& elm );
-  double              beta_2x( sqlite::connection& db, ElmPtr const& elm );
-  double              beta_2y( sqlite::connection& db, ElmPtr const& elm );
-  double             alpha_2x( sqlite::connection& db, ElmPtr const& elm );
-  double             alpha_2y( sqlite::connection& db, ElmPtr const& elm );
-  double                eta_x( sqlite::connection& db, ElmPtr const& elm );
-  double                eta_y( sqlite::connection& db, ElmPtr const& elm );
-  double               etap_x( sqlite::connection& db, ElmPtr const& elm );
-  double               etap_y( sqlite::connection& db, ElmPtr const& elm );
+  std::vector<double>      lattice_function(std::string const& dbname, std::string const& colname);
+  std::vector<double>            arclength( std::string const& dbname );
+  std::vector<double>               beta_x( std::string const& dbname );
+  std::vector<double>               beta_y( std::string const& dbname );
+  std::vector<double>              alpha_x( std::string const& dbname );
+  std::vector<double>              alpha_y( std::string const& dbname );
+  std::vector<double>                psi_x( std::string const& dbname );
+  std::vector<double>                psi_y( std::string const& dbname );
+  std::vector<double>              beta_1x( std::string const& dbname );
+  std::vector<double>              beta_1y( std::string const& dbname );
+  std::vector<double>             alpha_1x( std::string const& dbname );
+  std::vector<double>             alpha_1y( std::string const& dbname );
+  std::vector<double>              beta_2x( std::string const& dbname );
+  std::vector<double>              beta_2y( std::string const& dbname );
+  std::vector<double>             alpha_2x( std::string const& dbname );
+  std::vector<double>             alpha_2y( std::string const& dbname );
+  std::vector<double>                eta_x( std::string const& dbname );
+  std::vector<double>                eta_y( std::string const& dbname );
+  std::vector<double>               etap_x( std::string const& dbname );
+  std::vector<double>               etap_y( std::string const& dbname );
 
 
   Vector                     chromaticity( sqlite::connection& db, beamline const& bml, JetParticle const& jp, Vector const& eta );

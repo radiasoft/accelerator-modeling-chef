@@ -429,15 +429,10 @@ void SurveyMatcher::generateAlignments()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignment SurveyMatcher::getAlignment( int i ) const
+Alignment SurveyMatcher::getAlignment( int i ) const
 {
-  alignmentData ret;
-  Vector dr(3);
-  dr          = modelCoordinates_[i];
-  ret.xOffset = dr[0];
-  ret.yOffset = dr[1];
-  ret.roll    = 0.0;
-  return alignment( ret );
+  Vector dr = modelCoordinates_[i];
+  return Alignment( dr[0], dr[1], 0.0, 0.0 );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -143,7 +143,7 @@ void QuadEliminator::visit( quadrupole& x )
     quadPtr_ = QuadrupolePtr( x.Clone() );
   }
 
-  else if( ( quadPtr_->Alignment() == x.Alignment() ) &&
+  else if( ( quadPtr_->alignment() == x.alignment() ) &&
            ( quadPtr_->Strength()  == x.Strength()  )    ) {
 
     string newName =  quadPtr_->Name() + string("+") +  x.Name();

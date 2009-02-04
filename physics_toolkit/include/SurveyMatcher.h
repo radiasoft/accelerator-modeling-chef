@@ -67,7 +67,7 @@ class SurveyMatcher : public Sage {
   Frame getModelFrame() const;
   Frame getDataFrame()  const;
 
-  alignment getAlignment( int )         const;
+  Alignment getAlignment( int )         const;
   Vector    getLocalDisplacement( int ) const;
 
   int  size()                        const;

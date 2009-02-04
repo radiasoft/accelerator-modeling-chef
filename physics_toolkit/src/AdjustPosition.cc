@@ -60,24 +60,22 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
 
   int i = 0;
 
-  alignmentData v( p_be->Alignment() );
+  Alignment v( p_be->alignment() );
   // ---------------------------------------------------------
 
   // --- Set up indices -----------------------------
-  // /* static */ enum { x = 0, y, cdt, xp, yp, dpop };
 
-  static int x, y, cdt, xp, yp, dpop;
+  static double x    = arg_jp.xIndex();
+  static double y    = arg_jp.yIndex();
+  static double cdt  = arg_jp.cdtIndex();
+  static double xp   = arg_jp.npxIndex();
+  static double yp   = arg_jp.npyIndex();
+  static double dpop = arg_jp.ndpIndex();
 
   bool firstTime = true;
 
   if( firstTime ) {
     firstTime = false;
-    x    = arg_jp.xIndex();
-    y    = arg_jp.yIndex();
-    cdt  = arg_jp.cdtIndex();
-    xp   = arg_jp.npxIndex();
-    yp   = arg_jp.npyIndex();
-    dpop = arg_jp.ndpIndex();
   }
   // -----------------------------------------------
 
@@ -225,7 +223,7 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
   // Set alignment of the object.
   // p_be->align->getAlignment().xOffset -= z;
 
-  v.xOffset -= z;
+  v.setXOffset(v.xOffset() - z );
   p_be->setAlignment( v );
 
   // ??? Does not work when in and out faces are not parallel.
