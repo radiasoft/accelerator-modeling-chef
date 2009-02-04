@@ -102,20 +102,20 @@ public:
   double getField( WHICH_MULTIPOLE x ) 
     { return this->Field(x); }
 
-  void setSkew( WHICH_MULTIPOLE, alignmentData& );
+  void setSkew( WHICH_MULTIPOLE, Alignment const& );
 
-  alignmentData Skew( WHICH_MULTIPOLE );
-  alignmentData getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }
+  Alignment Skew( WHICH_MULTIPOLE );
+  Alignment getAlignment( WHICH_MULTIPOLE x )    { return Skew(x); }
 
-  const char* Type()    const;
-  bool isMagnet()       const;
-  bool isThin()         const;
-  bool isPassive()      const;
-  bool isDriftSpace()   const;
+  char const* Type()         const;
+  bool        isMagnet()     const;
+  bool        isThin()       const;
+  bool        isPassive()    const;
+  bool        isDriftSpace() const;
 
 private:
 
-  bool hasMultipole( ElmPtr elm, WHICH_MULTIPOLE mult );  
+  bool hasMultipole( bmlnElmnt const& elm, WHICH_MULTIPOLE mult ) const;  
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
 };
