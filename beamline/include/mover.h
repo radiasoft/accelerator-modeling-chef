@@ -36,7 +36,6 @@
 **************************************************************************
 *************************************************************************/
 
-
 #ifndef MOVER_H
 #define MOVER_H
 
@@ -57,12 +56,12 @@ public:
   void switchOn();
   void switchOff();
 
-  void set( alignmentData const& );
-  alignmentData get() const;
+  void      set( Alignment const& );
+  Alignment get() const;
 
 protected:
 
-  alignmentData align_;
+  Alignment align_;
 
 };
 
