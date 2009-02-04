@@ -241,10 +241,10 @@ void Particle::SetReferenceEnergy( double const& energy )
          uic.str().c_str() ) );
   }
 
- p_     = sqrt( (energy + m_)*(energy - m_) );
- bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
  gamma_ = energy / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
+ p_     = energy * beta_;
+ bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
