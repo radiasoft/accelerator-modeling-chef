@@ -90,8 +90,6 @@ namespace {
 Slot::Slot()
  : bmlnElmnt()
 {
-  align_ = new alignment;  // ??? why???
-
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
 
@@ -100,11 +98,9 @@ Slot::Slot()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Slot::Slot( char const* nm )
+Slot::Slot( std::string const& nm )
 : bmlnElmnt(nm)
 {
-  align_ = new alignment;
-
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
 }
@@ -112,7 +108,7 @@ Slot::Slot( char const* nm )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Slot::Slot( char const* nm, Frame const& y )
+Slot::Slot( std::string const& nm, Frame const& y )
   : bmlnElmnt(nm), in_(), out_(y) 
 {
   if( !out_.isOrthonormal() )
@@ -122,7 +118,6 @@ Slot::Slot( char const* nm, Frame const& y )
            "Current implementation requires that frames be orthonormal." ) );
   }
 
-  align_  = 0;
   length_ = out_.getOrigin().Norm();
 
   propagator_ = PropagatorPtr( new Propagator() );
@@ -136,9 +131,7 @@ Slot::Slot( char const* nm, Frame const& y )
 
 Slot::Slot( Slot const& x )
   : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ) 
-{
-  align_ =  x.align_ ? new alignment(*x.align_) : 0; 
-}
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -235,7 +228,7 @@ void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char*  Slot::Type()  const  
+char const*  Slot::Type()  const  
 { 
   return "Slot"; 
 }
@@ -385,7 +378,8 @@ ostream& Slot::writeTo ( ostream& os )
 
 istream& Slot::readFrom( istream& is )
 {
-  // Read in my private attributes
+  
+  // ********* BROKEN ********************
 
   // First, get the "in" frame"
   is >> in_;
@@ -414,11 +408,6 @@ istream& Slot::readFrom( istream& is )
       throw( GenericException( __FILE__, __LINE__,
              "istream& Slot::readFrom( istream& is )", 
              uic.str().c_str() ) );
-    }
-  } else {
-    if( align_ != 0 ) {
-      delete align_;
-      align_ = 0;
     }
     // Skip the next line--it is not "slot_BEGIN" (assume it is "slot_empty")
     ;
