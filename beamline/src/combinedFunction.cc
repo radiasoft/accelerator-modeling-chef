@@ -75,7 +75,7 @@
 #include <beamline/thinpoles.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/marker.h>
-
+#include <typeinfo> 
 using namespace std;
 
 using FNAL::pcout;
@@ -163,9 +163,8 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
 
   for (beamline::deep_iterator it  = bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) {
-    element = (*it); 
 
-    if ( hasMultipole( element, mult) ) { foundElements.push_back( element ) ;}
+    if ( hasMultipole( **it, mult) ) { foundElements.push_back( element ) ;}
 
   }
 
@@ -226,9 +225,8 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
   for (beamline::deep_iterator it= bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) 
   {
-    element = (*it);
 
-    if ( hasMultipole( element, mult) ) {
+    if ( hasMultipole( **it, mult) ) {
 	multStrength += element->Strength();
     }
   }
@@ -238,18 +236,14 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD) 
+void combinedFunction::setSkew(WHICH_MULTIPOLE mult, Alignment const& align) 
 {
-
-  ElmPtr element;
 
   for (beamline::deep_iterator it= bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) 
   {
-    element = (*it); 
-
-    if ( hasMultipole( element, mult) ) {
-	element->setAlignment(alignD);
+    if ( hasMultipole( **it, mult) ) {
+	(*it)->setAlignment(align);
     }
   }
 }
@@ -257,25 +251,18 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, alignmentData& alignD)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-alignmentData combinedFunction::Skew(WHICH_MULTIPOLE mult) 
+Alignment combinedFunction::Skew(WHICH_MULTIPOLE mult) 
 {
-
-  ElmPtr element;
-  alignmentData alignD;
-  bool foundIt = false;
 
   for (beamline::deep_iterator it  = bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) {
  
-    if ( foundIt ) break;
-
-    if ( hasMultipole( element, mult) ) {
-	alignD = element->Alignment();
-	foundIt = true;
+    if ( hasMultipole( (**it), mult) ) {
+	return (*it)->alignment();
     } 
 
   }
-  return alignD;
+  return Alignment();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -386,9 +373,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 
   propagate( jetparticle );
 
-  double f, m, z;
-
-  m = ( jetparticle.State().jacobian() )[x][x];
+  double m = ( jetparticle.State().jacobian() )[x][x];
   m -= 1.0;
   if( std::abs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -397,27 +382,30 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
   }
   m = 1.0 / m;
 
-  z = x_i;
+  double z = x_i;
   for( int i = 0; i < 75; i++ ) {
     inState[x] = z;
     particle.State() = inState;
     propagate( particle );
-    f = state[x] - z;
+    double f = state[x] - z;
     z -= m*f;
   }
 
 
   // Set the alignment of the internal beamline.
   // align->getAlignment().xOffset -= z;
-  alignmentData v;	// Assumes zero alignment constructed this way.
-  if ( align_ )
-    v = align_->getAlignment();
-  v.xOffset -= z;
+
   // ??? Does not work: bml_->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
   // ??? parallel.
-  setAlignment( v );
+
+  if ( align_ )  { 
+     align_->setXOffset(align_->xOffset() - z ); }
+  else {
+    align_  = new Alignment(-z, 0.0, 0.0, 0.0 );
+  }
+
   // ??? This will work only if the in and out faces
   // ??? of the combinedFunction element are parallel.
 
@@ -427,52 +415,54 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool combinedFunction::hasMultipole( ElmPtr elm, WHICH_MULTIPOLE mult )  
+bool combinedFunction::hasMultipole( bmlnElmnt const &elm, WHICH_MULTIPOLE mult ) const 
 {
   bool ret = false;
 
-  switch (mult) {
+  std::type_info const& elmtid = typeid(elm);
+
+  switch (mult) { 
 
     case DIPOLE_FIELD:
-      if( (typeid(*elm) == typeid(sbend)) ||
-          (typeid(*elm) == typeid(rbend))    ) {
+      if( (elmtid == typeid(sbend)) ||
+          (elmtid == typeid(rbend))    ) {
  	      ret = true;
       }
       break;
     case QUADRUPOLE_FIELD:
-      if(     (typeid(*elm) == typeid(quadrupole)  ) 
-	      || (typeid(*elm) == typeid(thinQuad) ) ) {
+      if(     (elmtid == typeid(quadrupole)  ) 
+	      || (elmtid == typeid(thinQuad) ) ) {
 	ret = true;
       }
       break;
     case SEXTUPOLE_FIELD:
-      if(   (typeid(*elm) == typeid(sextupole)     )
-	 || (typeid(*elm) == typeid(thinSextupole )) ) {
+      if(   (elmtid == typeid(sextupole)     )
+	 || (elmtid == typeid(thinSextupole )) ) {
 	ret = true;
       }
       break;
     case OCTUPOLE_FIELD:
-      if( typeid(*elm) == typeid(thinOctupole) ) 
+      if( elmtid == typeid(thinOctupole) ) 
 	ret = true;
       break;
     case DECAPOLE_FIELD:
-      if( typeid(*elm) == typeid(thinDecapole) )
+      if( elmtid == typeid(thinDecapole) )
 	ret = true;
       break;
     case TWELVEPOLE_FIELD:
-      if( typeid(*elm) == typeid(thin12pole) )
+      if( elmtid == typeid(thin12pole) )
 	ret = true;
       break;
     case FOURTEENPOLE_FIELD:
-      if( typeid(*elm) == typeid(thin14pole) )
+      if( elmtid == typeid(thin14pole) )
 	ret = true;
       break;
     case SIXTEENPOLE_FIELD:
-      if( typeid(*elm) == typeid(thin16pole) )
+      if( elmtid == typeid(thin16pole) )
 	ret = true;
       break;
     case EIGHTEENPOLE_FIELD:
-      if( typeid(*elm) == typeid(thin18pole) )
+      if( elmtid == typeid(thin18pole) )
 	 ret = true;
       break;
     default:
