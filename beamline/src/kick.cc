@@ -33,19 +33,19 @@
 ******
 ****** REVISION HISTORY
 ******
+****** May 2008           ostiguy@fnal.gov
+****** - attribute changes now dispatched to propagator
+****** - added explicit implementation for assigment operator.
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagators
+****** - strength_ is now B*L (used to be kick angle) 
+******   so that behavior is consistent with other magnets 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface. 
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations. 
 ******
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
-****** - strength_ is now B*L (used to be kick angle) 
-******   so that behavior is consistent with other magnets 
-****** May 2008           ostiguy@fnal.gov
-****** - attribute changes now dispatched to propagator
-****** - added explicit implementation for assigment operator.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -154,7 +154,12 @@ bool vkick::isMagnet() const
 
 bool vkick::isThin() const 
 { 
-  return false; 
+  //--------------------------------------------------------------------------- 
+  // NOTE: even though a kicker is allowed to have a finite length 
+  //       is is a thin element because strength_ is the integrated strength
+  //       and changing its length_ attribute will *not* change this value.  
+  //---------------------------------------------------------------------------
+  return true; 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -279,7 +284,12 @@ bool hkick::isMagnet() const
 
 bool hkick::isThin() const 
 { 
-  return false; 
+  //--------------------------------------------------------------------------- 
+  // NOTE: even though a kicker is allowed to have a finite length 
+  //       is is a thin element because strength_ is the integrated strength
+  //       and changing its length_ attribute will *not* change this value.  
+  //---------------------------------------------------------------------------
+  return true; 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -447,19 +457,6 @@ double kick::getVerStrength() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-// NOTE: 
-// NOTE: The base class bmlnElmnt::setLength(..) method is purposely
-// NOTE: NOT overridden.  Doing so would mean rescaling the strength of
-// NOTE: the kick, which violates the concept that a "kick" is a 
-// NOTE: fictitious element that provides a predefined change in
-// NOTE: transverse momentum.
-// NOTE: 
-// NOTE: Leo Michelotti
-// NOTE: 
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 const char* kick::Type() const 
 { 
   return "kick"; 
@@ -479,7 +476,12 @@ bool kick::isMagnet() const
 
 bool kick::isThin() const 
 { 
-  return false; 
+  //--------------------------------------------------------------------------- 
+  // NOTE: even though a kicker is allowed to have a finite length 
+  //       is is a thin element because strength_ is the integrated strength
+  //       and changing its length_ attribute will *not* change this value.  
+  //---------------------------------------------------------------------------
+  return true; 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
