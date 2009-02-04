@@ -73,6 +73,17 @@ template class TMapping<std::complex<double> >;
 
 template class TLieOperator<double>;
 template class TLieOperator<std::complex<double> >;
+template TJet<double>                               TLieOperator<double>::expMap(               double const&,                TJet<double> const & );
+template TJet<std::complex<double> > TLieOperator<std::complex<double> >::expMap( std::complex<double> const&, TJet<std::complex<double> > const & );
+
+template TJet<double>                               TLieOperator<double>::expMap( TJet<double> const&,                               TJet<double> const & );
+template TJet<std::complex<double> > TLieOperator<std::complex<double> >::expMap( TJet<std::complex<double> > const&, TJet<std::complex<double> > const & );
+
+template TJetVector<double>                               TLieOperator<double>::expMap(               double const&,                TJetVector<double> const & );
+template TJetVector<std::complex<double> > TLieOperator<std::complex<double> >::expMap( std::complex<double> const&, TJetVector<std::complex<double> > const & );
+
+template TJetVector<double>                               TLieOperator<double>::expMap( TJet<double> const&,                               TJetVector<double> const & );
+template TJetVector<std::complex<double> > TLieOperator<std::complex<double> >::expMap( TJet<std::complex<double> > const&, TJetVector<std::complex<double> > const & );
 
 template class Tcoord<double>;
 template class Tcoord<std::complex<double> >;
