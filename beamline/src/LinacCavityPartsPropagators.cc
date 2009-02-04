@@ -115,15 +115,17 @@ template<typename Particle_t>
 void edge_focusing_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::Component_t const& eE_z, double const& sign )
 {
  
+  //------------------------------------------------------
   // sign : entrance kick is negative (toward     axis)
   //        exit     kick is positive (away from  axis)
+  //------------------------------------------------------
 
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
   State_t& state = p.State();
 
-  Component_t k   = sign*( eE_z/p.Momentum() ) / ( 2.0*p.BetaZ() );
+  Component_t k   = sign * eE_z/p.ReferenceMomentum() / ( 2.0*p.BetaZ() );
 
   state[i_npx] += k*state[i_x];  
   state[i_npy] += k*state[i_y];
@@ -152,7 +154,10 @@ void acceleration_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::C
   state[i_npx] *= ( oldRefP / newRefP );
   state[i_npy] *= ( oldRefP / newRefP );
 
-  state[i_ndp] = ( sqrt((E - m)*(E + m)) / newRefP ) - 1.0;
+  Component_t one_over_gamma2 = (m*m)/(E*E);
+  Component_t beta  = sqrt(1.0 - one_over_gamma2 );
+
+  state[i_ndp] = ( ( E * beta) / newRefP ) - 1.0;
 
 }
 
@@ -188,13 +193,17 @@ void propagate( Element_t const& elm, Particle_t& p )
   // this defined here and used later for ct correction  
  
   Component_t    const E_i                 = p.Energy();
-  Component_t    const p_i                 = p.get_npz() * p.ReferenceMomentum();
+  Component_t    const pz_i                = p.get_npz() * p.ReferenceMomentum();
 
 
   if ( position == upstream ) { ::edge_focusing_kick( p, eE_z, -1.0 ); }
 
   Component_t xp0 = state[i_npx]/p.get_npz();
   Component_t yp0 = state[i_npy]/p.get_npz();
+
+  Component_t w = onaxisEnergyGain/ p.Energy();
+
+  w = ( norm(w) > 1.0e-10 ) ? log(1.0 + w )/ w : 1.0;
 
   ::acceleration_kick( p, onaxisEnergyGain, referenceEnergyGain );
 
@@ -205,21 +214,19 @@ void propagate( Element_t const& elm, Particle_t& p )
   // over the length of the cavity.
   //--------------------------------------------------------------
   
-  Component_t w = onaxisEnergyGain/ p.Energy();
-  
-   w = ( norm(w) > 1.0e-10 ) ? log(1.0 +w )/w : 1.0;
 
   // drift through "effective" length  w*length
 
-  state[ i_x ] += xp0 * w * length; 
-  state[ i_y ] += yp0 * w * length; 
+  state[ i_x ] +=  xp0 * w * length; 
+  state[ i_y ] +=  yp0 * w * length; 
+
 
   if ( position == downstream ) { ::edge_focusing_kick( p, eE_z, 1.0); }
 
-
   // Fix the time calculation
 
-  state[i_cdt] =  length * (( p.get_npz() * p.ReferenceMomentum() - p_i ) / (p.Energy() - E_i) ) - elm.getReferenceTime();
+  state[i_cdt] +=  (length * (( p.get_npz() * p.ReferenceMomentum() - pz_i ) / (p.Energy() - E_i) ) - elm.getReferenceTime() );
+ 
 
 }
 
@@ -236,7 +243,7 @@ template void propagate<LCavityUpstream, JetParticle,   upstream>( LCavityUpstre
 template void propagate<LCavityDnstream, Particle,    downstream>( LCavityDnstream& elm,    Particle& p );
 template void propagate<LCavityDnstream, JetParticle, downstream>( LCavityDnstream& elm, JetParticle& p );
 template void edge_focusing_kick<Particle>   (    Particle& p,  typename PropagatorTraits<Particle>::Component_t const& eE_z, 
-                                                  double const& sign );
+						                                                     double const& sign );
 template void edge_focusing_kick<JetParticle>( JetParticle& p,  typename PropagatorTraits<JetParticle>::Component_t const& eE_z, 
                                                   double const& sign );
 template void acceleration_kick<Particle>( Particle& p,  typename PropagatorTraits<Particle>::Component_t const& onaxisEnergyGain, 
