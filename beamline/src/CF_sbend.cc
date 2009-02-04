@@ -33,25 +33,25 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on regular beamline
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagator architecture  
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ****** Apr 2008            michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
 ****** - modified sbend::Split
 ****** - added member functions to nullify edge effects
 ******   : used by modified sbend::Split
-****** May 2008           ostiguy@fnal.gov
-****** - setStrength() now dispatched to propagator by base class
-******   (no longer virtual)
-****** - added explicit implementation for assignment operator
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
+****** Dec 2007           ostiguy@fnal.gov
+****** - new typesafe propagator architecture  
 ******
 **************************************************************************
 *************************************************************************/
@@ -351,8 +351,8 @@ std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
            uic.str().c_str() ) );
   }
 
-  alignmentData ald( Alignment() );
-  if( 0. != ald.xOffset || 0. != ald.yOffset ) {
+  if( (alignment().xOffset() != 0.0 ) || 
+      (alignment().yOffset() != 0.0 ) ) {
     if( !hasParallelFaces() ) {
       ostringstream uic;
       uic  <<   "Not allowed to displace an CF_sbend with non-parallel faces"
@@ -431,8 +431,8 @@ std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------
-  p_a->setAlignment( ald );
-  p_b->setAlignment( ald );
+  p_a->setAlignment( alignment() );
+  p_b->setAlignment( alignment() );
 
   // Rename
   // -----------------------------

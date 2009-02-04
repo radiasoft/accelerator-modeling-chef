@@ -5,7 +5,6 @@
 ******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
 ******             which facilitate calculations with the             
 ******             BEAMLINE class library.                            
-******  Version:   2.0
 ******                                    
 ******  File:      FramePusher.cc
 ******                                                                
@@ -123,8 +122,10 @@ void FramePusher::visit( bmlnElmnt const& x )
 void FramePusher::visit( rbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().roll;
-  bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
+
+  double rollAngle = x.alignment().roll();
+  bool   isRolled  = ( 1.0e-12 < std::abs(rollAngle) );
+
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
   }
@@ -156,7 +157,7 @@ void FramePusher::visit( rbend const& x )
 void FramePusher::visit( CF_rbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().roll;
+  double rollAngle = x.alignment().roll();
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -189,7 +190,7 @@ void FramePusher::visit( CF_rbend const& x )
 void FramePusher::visit( sbend const& x    )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().roll;
+  double rollAngle = x.alignment().roll();
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );
@@ -223,7 +224,7 @@ void FramePusher::visit( sbend const& x    )
 void FramePusher::visit( CF_sbend const& x )
 {
   // Note: 1.0e-12 is in agreement with DriftsToSlots.cc
-  double rollAngle = x.Alignment().roll;
+  double rollAngle = x.alignment().roll();
   bool isRolled = ( 1.0e-12 < std::abs(rollAngle) );
   if( isRolled ) {
     frame_.rotate( rollAngle, frame_.getzAxis(), false );

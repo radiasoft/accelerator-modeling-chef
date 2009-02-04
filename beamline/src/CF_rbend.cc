@@ -33,15 +33,10 @@
 ******                                                                
 ****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on regular beamline
-****** Dec                ostiguy@fnal.gov
-****** - new typesafe propagator architecture
+****** May 2008           ostiguy@fnal.gov
+****** - setStrength() now dispatched to propagator by base class
+******   (no longer virtual)
+****** - added explicit implementation for assignment operator
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
@@ -50,10 +45,15 @@
 ******   in order to conform with usage in other bend constructors.
 ****** - corrected rbend::Split
 ******   : including adding methods to nullify edge effects
-****** May 2008           ostiguy@fnal.gov
-****** - setStrength() now dispatched to propagator by base class
-******   (no longer virtual)
-****** - added explicit implementation for assignment operator
+****** Dec 2008           ostiguy@fnal.gov
+****** - new typesafe propagator architecture
+****** Aug 2007           ostiguy@fnal.gov
+****** - composite structure based on regular beamline
+****** Mar 2007           ostiguy@fnal.gov
+****** - support for reference counted elements
+****** - reduced src file coupling due to visitor interface. 
+******   visit() takes advantage of (reference) dynamic type.
+****** - use std::string for string operations. 
 ******
 *************************************************************************
 *************************************************************************/
@@ -392,9 +392,8 @@ std::pair<ElmPtr,ElmPtr> CF_rbend::split( double const& pc ) const
            uic.str().c_str() ) );
   }
 
-  alignmentData ald( Alignment() );
-  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
-      && ( !hasParallelFaces()                    ) ) {
+  if(    ( ( alignment().xOffset() != 0.0) || (alignment().yOffset() != 0.0 ) ) 
+      && ( !hasParallelFaces() )  ) {
     ostringstream uic;
     uic  <<   "Not allowed to displace an rbend with non-parallel faces";
             "\nwith an Alignment struct.  That rolls are allowed in such"
@@ -457,8 +456,8 @@ std::pair<ElmPtr,ElmPtr> CF_rbend::split( double const& pc ) const
   // Set the alignment struct
   // : this is a STOPGAP MEASURE!!!
   // -----------------------------
-  p_a->setAlignment( ald );
-  p_b->setAlignment( ald );
+  p_a->setAlignment( alignment() );
+  p_b->setAlignment( alignment() );
 
   // Rename
   // -----------------------------
@@ -737,24 +736,14 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
     z = state[x];
 
-  } // if 
-
-
-  // Set the alignment of the internal beamline.
-  // this->align_->getAlignment().xOffset -= z;
-
-  alignmentData v; 
-
-  if ( align_ ) {
-     v = align_->getAlignment();
-  }
+  } 
 
   // ??? Does not work: p_bml->setAlignment( v );
   // ??? The reason is that the alignment stategy is
   // ??? not correct for elements whose faces are not
   // ??? parallel.
 
-  setAlignment( v );
+  setAlignment( alignment() );
 
   // ??? This will work only if the in and out faces
   // ??? of the CF_rbend element are parallel.
