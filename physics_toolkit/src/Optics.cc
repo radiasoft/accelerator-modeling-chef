@@ -122,7 +122,7 @@ void initdb( sqlite::connection& db )
   sql.str("");
   sql << "CREATE TABLE DISPERSION "
       << "( iseq INTEGER PRIMARY KEY, "
-      << "eta_x REAL,  etap_x REAL,  eta_y REAL,  etap_y REAL )"
+      << "etax REAL,  etapx REAL,  etay REAL,  etapy REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
@@ -130,7 +130,7 @@ void initdb( sqlite::connection& db )
   sql.str("");
   sql << "CREATE TABLE " 
       << "COURANT_SNYDER"
-      << "( iseq INTEGER PRIMARY KEY, beta_x REAL, alpha_x REAL, psi_x REAL, beta_y REAL, alpha_y REAL, psi_y REAL  )" 
+      << "( iseq INTEGER PRIMARY KEY, betax REAL, alphax REAL, psix REAL, betay REAL, alphay REAL, psi_y REAL  )" 
       << ends;
   sqlite::execute(db, sql.str(),true );
 
@@ -517,6 +517,8 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
 
   //--------------------------------------------------------------------
   // This method computes the dispersion using automatic differentiation  
+  // 
+  // NOTE: Optionally, dp/p may be held constant by rescaling 
   //--------------------------------------------------------------------
 
   int ret = 0;
@@ -545,14 +547,14 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
   sql.str("");
   sql << "CREATE TABLE DISPERSION "
       << "( iseq INTEGER PRIMARY KEY, "
-      << "eta_x REAL,  etap_x REAL,  eta_y REAL,  etap_y REAL )"
+      << "etax REAL,  etapx REAL,  etay REAL,  etapy REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
   sql << "INSERT INTO DISPERSION "  
-      << " ( iseq, eta_x, etap_x, eta_y,  etap_y )  VALUES (?, ?, ?, ?, ? )" 
+      << " ( iseq, etax, etapx, etay,  etapy )  VALUES (?, ?, ?, ?, ? )" 
       << std::ends;
 
   sqlite::command cmd_dispersion(db, sql.str());
@@ -565,13 +567,13 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
 
       (*it)->propagate(jp);
      
-      double scale  =  jp.ReferenceMomentum()/start_momentum;
- 
+      double scale  =  jp.ReferenceMomentum()/start_momentum  * (1.0 + state[i_ndp].standardPart() ) ;
+
       cmd_dispersion.clear();
-      cmd_dispersion % ++iseq  % (scale * state[i_x  ].getTermCoefficient( exp_d ) )
-			       % (scale * state[i_npx].getTermCoefficient( exp_d ) )
-			       % (scale * state[i_y  ].getTermCoefficient( exp_d ) )
-                               % (scale * state[i_npy].getTermCoefficient( exp_d ) );
+      cmd_dispersion % ++iseq  % ( scale * state[i_x  ].getTermCoefficient( exp_d ) )
+	                       % ( scale * state[i_npx].getTermCoefficient( exp_d ) )
+			       % ( scale * state[i_y  ].getTermCoefficient( exp_d ) )
+                               % ( scale * state[i_npy].getTermCoefficient( exp_d ) );
       cmd_dispersion();
   }
 
@@ -648,13 +650,13 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
   CSLattFuncs const& lf = initialConditions;
 
-  const double beta_x0  = lf.beta.hor;
-  const double alpha_x0 = lf.alpha.hor;
-  const double gamma_x0 = ( 1.0 + alpha_x0*alpha_x0 )/beta_x0;
+  const double betax0  = lf.beta.hor;
+  const double alphax0 = lf.alpha.hor;
+  const double gamma_x0 = ( 1.0 + alphax0*alphax0 )/betax0;
      
-  const double beta_y0  = lf.beta.ver;
-  const double alpha_y0 = lf.alpha.ver;
-  const double gamma_y0 = ( 1.0 + alpha_y0*alpha_y0 )/beta_y0;
+  const double betay0  = lf.beta.ver;
+  const double alphay0 = lf.alpha.ver;
+  const double gamma_y0 = ( 1.0 + alphay0*alphay0 )/betay0;
 
   Vector eta0 = lf.dispersion.eta;
 
@@ -673,7 +675,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
   sql.str("");
   sql << "CREATE TABLE DISPERSION "
       << "( iseq INTEGER PRIMARY KEY, "
-      << "eta_x REAL,  etap_x REAL,  eta_y REAL,  etap_y REAL )"
+      << "etax REAL,  etapx REAL,  etay REAL,  etapy REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
@@ -685,19 +687,19 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
   sql.str("");
   sql << "CREATE TABLE " 
       << "COURANT_SNYDER"
-      << "( iseq INTEGER PRIMARY KEY, beta_x REAL, alpha_x REAL, psi_x REAL, beta_y REAL, alpha_y REAL, psi_y REAL  )" 
+      << "( iseq INTEGER PRIMARY KEY, betax REAL, alphax REAL, psix REAL, betay REAL, alphay REAL, psiy REAL  )" 
       << ends;
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
   sql << "INSERT INTO DISPERSION "  
-      << " ( iseq, eta_x, etap_x, eta_y,  etap_y )  VALUES (?, ?, ?, ?, ? )" 
+      << " ( iseq, etax, etapx, etay,  etapy )  VALUES (?, ?, ?, ?, ? )" 
       << std::ends;
   sqlite::command cmd_insert_disp(db, sql.str());
 
   sql.str("");
   sql << "INSERT INTO COURANT_SNYDER "  
-      << " ( iseq, beta_x, alpha_x, psi_x,  beta_y, alpha_y, psi_y)  VALUES ( ?, ?, ?, ?, ?, ?, ? )" << ends;
+      << " ( iseq, betax, alphax, psix,  betay, alphay, psiy)  VALUES ( ?, ?, ?, ?, ?, ?, ? )" << ends;
   
   sqlite::command cmd_insert_cs(db, sql.str());
 
@@ -708,8 +710,8 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
   double mux    = 0.0;
   double muy    = 0.0;
-  double psi_x0 = 0.0;
-  double psi_y0 = 0.0;
+  double psix0  = 0.0;
+  double psiy0  = 0.0;
 
   for (beamline::const_deep_iterator it =  bml.deep_begin(); 
                                      it != bml.deep_end();  ++it) {
@@ -729,14 +731,14 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
     double const scale =  jp.ReferenceMomentum()/momentum; 
 
-    double beta_x =  scale * ( a*a*beta_x0 - 2.0*a*b*alpha_x0 + b*b*gamma_x0 );
+    double betax =  scale * ( a*a*betax0 - 2.0*a*b*alphax0 + b*b*gamma_x0 );
 
-    double alpha_x = scale * ( - a*c*beta_x0 + (a*d+b*c)*alpha_x0 - d*b*gamma_x0 );
+    double alphax = scale * ( - a*c*betax0 + (a*d+b*c)*alphax0 - d*b*gamma_x0 );
 
-    double sinpsi =   b / sqrt(beta_x*beta_x0);
-    double cospsi =   a * sqrt(beta_x0/beta_x) - alpha_x0*sinpsi;
+    double sinpsi =   b / sqrt(betax*betax0);
+    double cospsi =   a * sqrt(betax0/betax) - alphax0*sinpsi;
 
-    double psi_x  =  atan2( sinpsi,cospsi) / M_TWOPI; if ( psi_x < 0.0) {psi_x += 1.0;}
+    double psix  =  atan2( sinpsi,cospsi) / M_TWOPI; if ( psix < 0.0) {psix += 1.0;}
     
 
     a = mtrx[i_y  ][i_y   ];
@@ -744,34 +746,34 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
     c = mtrx[i_npy][i_y   ];
     d = mtrx[i_npy][i_npy ];
 
-    double beta_y =  scale * ( a*a*beta_y0 - 2.0*a*b*alpha_y0 + b*b*gamma_y0 );
+    double betay =  scale * ( a*a*betay0 - 2.0*a*b*alphay0 + b*b*gamma_y0 );
 
-    double alpha_y = scale * ( - a*c*beta_y0 + (a*d+b*c)*alpha_y0 - d*b*gamma_y0 );
+    double alphay = scale * ( - a*c*betay0 + (a*d+b*c)*alphay0 - d*b*gamma_y0 );
 
     //-----------------------------------------------------------------------------------------
-    // NOTE: There is no way do figure out a-priori the direction in which a given mode is
-    //       is "rotating", so we accumulate the absolute value of the phase variation.
+    // NOTE: In absence of a reliable way to figure out a-priori the direction in which 
+    //       a given mode is "rotating", we accumulate the absolute value of the phase variation.
     //       We assume that no single element will introduce a phase advance larger than 
     //       than M_PI (0.5). The test allows one to detect the phase going across the 
     //       boundary between 2*PI and 0. ( 1.0 and 0.0 ) 
     //----------------------------------------------------------------------------------------
 
-    sinpsi =   b /sqrt(beta_y*beta_y0);
-    cospsi =   a * sqrt(beta_y0/beta_y) - alpha_y0*sinpsi;
+    sinpsi =   b /sqrt(betay*betay0);
+    cospsi =   a * sqrt(betay0/betay) - alphay0*sinpsi;
     
-    double psi_y  =  atan2( sinpsi,cospsi) / M_TWOPI; { if ( psi_y < 0.0) psi_y += 1.0;}
+    double psiy  =  atan2( sinpsi,cospsi) / M_TWOPI; { if ( psiy < 0.0) psiy += 1.0;}
     
-    double dmux = abs(psi_x - psi_x0);
-    double dmuy = abs(psi_y - psi_y0);
+    double dmux = abs(psix - psix0);
+    double dmuy = abs(psiy - psiy0);
 
     mux +=  (dmux>0.5) ? ( 1.0-dmux ) : dmux;
     muy +=  (dmuy>0.5) ? ( 1.0-dmuy ) : dmuy;
 
-    psi_x0 =   psi_x;
-    psi_y0 =   psi_y;
+    psix0 =   psix;
+    psiy0 =   psiy;
 
     cmd_insert_cs.clear(); 
-    cmd_insert_cs % ++iseq % beta_x % alpha_x % mux % beta_y % alpha_y % muy; 
+    cmd_insert_cs % ++iseq % betax % alphax % mux % betay % alphay % muy; 
     cmd_insert_cs(); 
 
     cmd_insert_disp.clear(); 
@@ -823,25 +825,25 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
   double csV = cos( nu[1]* M_TWOPI );
   double snV = ( mtrx[i_y][ i_npy] > 0.0 ) ? sqrt( 1.0 - csV*csV ) : -sqrt( 1.0 - csV*csV );
 
-  double beta_x  =   mtrx[ i_x][ i_npx ] / snH;
-  double alpha_x = ( mtrx[ i_x][ i_x ] - mtrx[ i_npx][ i_npx ] ) / ( 2.0*snH );
+  double betax  =   mtrx[ i_x][ i_npx ] / snH;
+  double alphax = ( mtrx[ i_x][ i_x ] - mtrx[ i_npx][ i_npx ] ) / ( 2.0*snH );
 
-  double  beta_y  =   mtrx[ i_y][ i_npy ] / snV;
-  double alpha_y  = ( mtrx[ i_y][ i_y ] - mtrx[ i_npy][ i_npy ] ) / ( 2.0*snV );
+  double  betay  =   mtrx[ i_y][ i_npy ] / snV;
+  double alphay  = ( mtrx[ i_y][ i_y ] - mtrx[ i_npy][ i_npy ] ) / ( 2.0*snV );
 
   
   Vector eta = periodicDispersion(db, jp);
 
   CSLattFuncs lf;
 
-  lf.beta.hor        =  beta_x;
-  lf.alpha.hor       =  alpha_x;
+  lf.beta.hor        =  betax;
+  lf.alpha.hor       =  alphax;
   lf.psi.hor         =  0.0;
   lf.dispersion.x    =  eta[i_x  ];
   lf.dispersion.xp   =  eta[i_npx];
 
-  lf.beta.ver        =  beta_y;
-  lf.alpha.ver       =  alpha_y;
+  lf.beta.ver        =  betay;
+  lf.alpha.ver       =  alphay;
   lf.psi.ver         =  0.0;
   lf.dispersion.y    =  eta[i_y  ];
   lf.dispersion.yp   =  eta[i_npy];
@@ -921,14 +923,14 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
   sql.str("");
   sql << "CREATE TABLE DISPERSION "
       << "( iseq INTEGER PRIMARY KEY, "
-      << "eta_x REAL,  etap_x REAL,  eta_y REAL,  etap_y REAL )"
+      << "etax REAL,  etapx REAL,  etay REAL,  etapy REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
 
   sql.str("");
   sql << "INSERT INTO DISPERSION "  
-      << " ( iseq, eta_x, etap_x, eta_y,  etap_y )  VALUES (?, ?, ?, ?, ? )" 
+      << " ( iseq, etax, etapx, etay,  etapy )  VALUES (?, ?, ?, ?, ? )" 
       << std::ends;
   sqlite::command cmd_insert_disp(db, sql.str());
 
@@ -1807,369 +1809,235 @@ bool  courant_snyder4d_ok( sqlite::connection& db )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   arclength (sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> lattice_function (std::string const& dbname, std::string const& sql )
 {
-  static const std::string sql( "SELECT arclength  FROM ELEMENT, REFERENCE_ORBIT "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( REFERENCE_ORBIT.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
+  sqlite::connection db(dbname);
+
+  sqlite::query q( db, sql ); 
+
+  sqlite::result_type res = q.emit_result();
+
+  std::vector<double> values;
+  
+  if  (!res) return values; // no result, return an empty vector
  
-  static boost::shared_ptr<sqlite::query> q;
+  do {
+ 	  values.push_back( res->get_double(0) );
+  } while ( res->next_row() ); 
 
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return values;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double beta_x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> arclength (std::string const& dbname )
 {
-  static const std::string sql( "SELECT beta_x  FROM ELEMENTS, COURANT_SNYDER "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
+  static const std::string sql( "SELECT arclength FROM ELEMENTS, REFERENCE_ORBIT "
+                                "WHERE ( REFERENCE_ORBIT.iseq =  ELEMENTS.iseq )" );
 
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   beta_y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> beta_x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT beta_y  FROM ELEMENTS, COURANT_SNYDER "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT betax FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
+ return Optics::lattice_function ( dbname, sql);
+}
 
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
 
-  (*q) % reinterpret_cast<int>(&elm); 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  sqlite::result_type res = q->emit_result();
+std::vector<double> beta_y ( std::string const& dbname)
+{
+  static const std::string sql( "SELECT betay FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  alpha_x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_x  FROM ELEMENTS, COURANT_SNYDER "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT alphax FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  alpha_y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_y  FROM ELEMENTS, COURANT_SNYDER "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT alphay FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  beta_1x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> psi_x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT beta_1x  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT psix FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-  return 0.0;
+  return Optics::lattice_function ( dbname, "psix");
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  beta_1y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> psi_y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT beta_1y  FROM ELEMENT, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT psiy FROM ELEMENTS, COURANT_SNYDER "
+                                "WHERE ( COURANT_SNYDER.iseq =  ELEMENTS.iseq )" );
 
-
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   alpha_1x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> beta_1x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_1x  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT beta_1x FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double alpha_1y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> beta_1y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_1y  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT beta_1y FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double  beta_2x ( sqlite::connection& db, ElmPtr const& elm )
-{
-  static const std::string sql( "SELECT beta_2x  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
-
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function ( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  beta_2y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_1x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT beta_2y  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT alpha_1x FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  alpha_2x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_1y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_2x  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT alpha_1y FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   alpha_2y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> beta_2x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT alpha_2y  FROM ELEMENTS, COURANT_SNYDER_4D "
-                                "WHERE (  ELEMENTS.object = ? ) AND ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT beta_2x FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  eta_x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> beta_2y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT eta_x  FROM ELEMENTS, DISPERSION "
-                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT beta_2y FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double   eta_y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_2x ( std::string const& dbname)
 {
+  static const std::string sql( "SELECT alpha_2x FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static const std::string sql( "SELECT eta_y  FROM ELEMENTS, DISPERSION "
-                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
-
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  etap_x ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> alpha_2y ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT etap_x  FROM ELEMENTS, DISPERSION "
-                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT alpha_2y FROM ELEMENTS, COURANT_SNYDER_4D "
+                                "WHERE ( COURANT_SNYDER_4D.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
-
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
-
-  (*q) % reinterpret_cast<int>(&elm); 
-
-  sqlite::result_type res = q->emit_result();
-
-  return (res) ? res->get_double(0) : 0.0;
-
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double  etap_y ( sqlite::connection& db, ElmPtr const& elm )
+std::vector<double> eta_x ( std::string const& dbname)
 {
-  static const std::string sql( "SELECT etap_y  FROM ELEMENTS, DISPERSION "
-                                "WHERE (  ELEMENTS.object = ? ) AND (DISPERSION.iseq =  ELEMENTS.iseq )" );
+  static const std::string sql( "SELECT etax FROM ELEMENTS, DISPERSION "
+                                "WHERE ( DISPERSION.iseq =  ELEMENTS.iseq )" );
 
-  static sqlite::connection* dbp = 0;
- 
-  static boost::shared_ptr<sqlite::query> q;
+  return Optics::lattice_function( dbname, sql);
+}
 
-  if ( dbp != &db )  q =  boost::shared_ptr<sqlite::query>( new sqlite::query( db, sql ) ); 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  (*q) % reinterpret_cast<int>(&elm); 
+std::vector<double> eta_y ( std::string const& dbname)
+{
+  static const std::string sql( "SELECT etay FROM ELEMENTS, DISPERSION "
+                                "WHERE (  DISPERSION.iseq =  ELEMENTS.iseq )" );
 
-  sqlite::result_type res = q->emit_result();
+  return Optics::lattice_function( dbname, sql);
+}
 
-  return (res) ? res->get_double(0) : 0.0;
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+std::vector<double> etap_x ( std::string const& dbname)
+{
+  static const std::string sql( "SELECT etapx FROM ELEMENTS, DISPERSION "
+                                "WHERE (  DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  return Optics::lattice_function( dbname, sql);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> etap_y ( std::string const& dbname)
+{
+  static const std::string sql( "SELECT etapy FROM ELEMENTS, DISPERSION "
+                                "WHERE (  DISPERSION.iseq =  ELEMENTS.iseq )" );
+
+  return Optics::lattice_function( dbname, sql);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
