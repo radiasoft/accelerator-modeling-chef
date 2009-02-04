@@ -75,7 +75,8 @@ class ConstBmlVisitor;
 class DLLEXPORT rbend : public bmlnElmnt
 {
 
-  class Propagator;
+  class    Propagator;
+  class MADPropagator;
 
  public:
 
