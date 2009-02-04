@@ -675,10 +675,6 @@ beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr elm)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-    // ++++++++++++ End:   Insert and append functions ++++++++++++++++++
-
-
 beamline beamline::flatten() const {
 
  beamline r;
@@ -1217,17 +1213,15 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
   SlotPtr sp; 
 
   Frame const frameZero;
-  Frame frameOne, frameTwo, frameThree;
-  Frame pinnedFrameOne, pinnedFrameTwo; 
 
   FramePusher fp( frameZero );
 
-  frameOne   =  upStreamPtr ? upStreamPtr->accept(fp),  fp.getFrame() : fp.getFrame();
-  frameTwo   =  ( thePtr->accept( fp ),  fp.getFrame() );
-  frameThree =  downStreamPtr ? downStreamPtr->accept(fp), fp.getFrame() : fp.getFrame();
+  Frame frameOne   =  upStreamPtr   ?  ( upStreamPtr->accept(fp),  fp.getFrame() )  : fp.getFrame();
+  Frame frameTwo   =  ( thePtr->accept( fp ),  fp.getFrame() );
+  Frame frameThree =  downStreamPtr ?  ( downStreamPtr->accept(fp), fp.getFrame() ) : fp.getFrame();
  
-  pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
-  pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
+  Frame pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
+  Frame pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
 
   //................................................... 
   // Construct a Frame in between frameOne and frameTwo
@@ -1255,10 +1249,13 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
   //................................................... 
  
    Vector rotationAxis( midFrame.getAxis(axis) );
+
    Frame uFrame( frameOne.relativeTo(midFrame) );
    Frame dFrame( frameTwo.relativeTo(midFrame) );
+
    uFrame.rotate( angle, rotationAxis, true );
    dFrame.rotate( angle, rotationAxis, true );
+
    frameOne = uFrame.patchedOnto(midFrame);
    frameTwo = dFrame.patchedOnto(midFrame);
 
@@ -1300,16 +1297,16 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool beamline::setAlignment( alignmentData const& al ) {
-  // Propogate alignment data of entire  beamline to each individual element
+bool beamline::setAlignment( Alignment const& al ) {
 
+  // Propagate alignment data of entire  beamline to each individual element
 
   for (beamline::iterator it = begin() ; it != end(); ++it) {
 
     if( !(*it)->setAlignment(al)  ) {
       (*pcerr) << "\n*** ERROR *** "
            << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
-           << "\n*** ERROR *** bool beamline::setAlignment( const alignmentData& al )"
+           << "\n*** ERROR *** bool beamline::setAlignment( Alignment const& al )"
               "\n*** ERROR *** Unable to perform operation on "
            << (*it)->Type() << "  " << (*it)->Name()
            << "\n*** ERROR *** without affecting its neighbors."
