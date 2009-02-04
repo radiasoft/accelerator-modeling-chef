@@ -46,6 +46,7 @@
 ****** - refactored implementation taking advantage of embedded database.  
 ******
 **************************************************************************
+**************************************************************************
 *************************************************************************/
 
 #if HAVE_CONFIG_H
@@ -73,8 +74,10 @@
 
 #include <sstream>
 #include <sqlite/connection.hpp>
+#include <sqlite/execute.hpp>
 
 #include <boost/filesystem.hpp>   
+#include <boost/filesystem/fstream.hpp> 
 
 extern void      BeamlineSpitout( int, beamline const&, beamline::const_iterator &);
 extern beamline* DriftsToSlots( beamline const& argbml );
@@ -99,7 +102,7 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
 :   beamline(*bml.Clone()), particle_(0) ,particleBunchPtr_(0) , 
     initialCSLattFuncs_() , 
     eps1_(40.0), eps2_(40.0), refjp_(p),
-    dbname_ (),
+    dbname_(),
     db_()
 {
 
@@ -152,21 +155,23 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
 #ifdef _WIN32
    std::ostringstream address; 
    address << std::hex << this;
-   dbname_ =  "./" + Name()+ address.str() + ".db";  
+   dbname_ = string("./") + Name()+  address.str() + string(".db"); }  
 #else
-   dbname_ =   tempnam("/tmp", "chefdb" ); 
-   db_     =   shared_ptr<sqlite::connection>(new sqlite::connection(dbname_));
+
+   dbname_ =   tempnam("/tmp", "chefdb" );  
+
+   //std::ostringstream address; 
+   //address << std::hex << this;
+   //dbname_ =  string("./") + Name()+  address.str() + string(".db");  
+
+   db_  =   shared_ptr<sqlite::connection>(new sqlite::connection(dbname_));
 #endif
 
    Optics::initdb( *db_ );
 
    if(  isRing() ) { handleAsRing(); }
    else            { handleAsLine(); }
-
-
 }
-
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -216,13 +221,33 @@ BeamlineContext* BeamlineContext::Clone() const
 BeamlineContext::~BeamlineContext()
 {
 
-  boost::filesystem::path dbpathname(dbname_ ); 
-  boost::filesystem::remove( dbpathname );
+ boost::filesystem::path dbpathname(dbname_ ); 
+ boost::filesystem::remove( dbpathname );
 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BeamlineContext::saveDatabase( std::string const& dbname) const
+{
+  std::string sql("BEGIN IMMEDIATE TRANSACTION");
+  sqlite::execute(*db_, sql, true );
+
+  boost::filesystem::path to_path(dbname ); 
+  if ( boost::filesystem::exists(to_path) ) boost::filesystem::remove( to_path);
+  
+  boost::filesystem::copy_file( dbname_, dbname);
+
+  sql = "ROLLBACK";
+  sqlite::execute(*db_, sql, true );
+
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 void BeamlineContext::setParticle( Particle const& p) 
 { 
@@ -753,136 +778,154 @@ bool BeamlineContext::isRing() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::arclength ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::arclength() const
 {
-  return Optics::arclength(*db_, elm);
+  return Optics::arclength(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_x() const
 {
-  return Optics::beta_x(*db_,elm);
+  return Optics::beta_x(dbname_);
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_y() const
 {  
-  return Optics::beta_y(*db_,elm);
+  return Optics::beta_y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::alpha_x() const
 {
-  return Optics::alpha_x(*db_,elm);
+  return Optics::alpha_x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::alpha_y() const
 {
-  return Optics::alpha_y(*db_,elm);
+  return Optics::alpha_y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_1x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::psi_x() const
 {
-  return Optics::beta_1x(*db_,elm);
+  return Optics::psi_x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_1y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::psi_y() const
 {
-  return Optics::beta_1y(*db_,elm);
+  return Optics::psi_y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_1x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_1x() const
 {
-  return Optics::alpha_1x(*db_,elm);
+  return Optics::beta_1x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_1y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_1y() const
 {
-  return Optics::alpha_1y(*db_,elm);
+  return Optics::beta_1y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_2x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::alpha_1x() const
 {
-  return Optics::beta_2x(*db_,elm);
+  return Optics::alpha_1x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::beta_2y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::alpha_1y() const
 {
-  return Optics::beta_2y(*db_,elm);
+  return Optics::alpha_1y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_2x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_2x() const
 {
-  return Optics::alpha_2x(*db_,elm);
+  return Optics::beta_2x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::alpha_2y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::beta_2y() const
 {
-  return Optics::alpha_2y(*db_,elm);
+  return Optics::beta_2y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::eta_x ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::alpha_2x() const
+{
+  return Optics::alpha_2x(dbname_);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> BeamlineContext::alpha_2y() const
+{
+  return Optics::alpha_2y(dbname_);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<double> BeamlineContext::eta_x() const
 {  
-  return Optics::eta_x(*db_,elm);
+  return Optics::eta_x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::eta_y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::eta_y() const
 {
-  return Optics::eta_y(*db_,elm);
+  return Optics::eta_y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::etap_x ( ElmPtr const& elm ) const
+
+
+std::vector<double> BeamlineContext::etap_x() const
 {
-   return Optics::etap_x(*db_,elm);
+   return Optics::etap_x(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double BeamlineContext::etap_y ( ElmPtr const& elm ) const
+std::vector<double> BeamlineContext::etap_y() const
 {     
-  return Optics::etap_y(*db_,elm);
+  return Optics::etap_y(dbname_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
