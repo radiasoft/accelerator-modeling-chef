@@ -38,6 +38,10 @@
 ****** Mar 2007     ostiguy@fnal.gov
 ****** -eliminated unsafe casts
 ****** -support for reference counted elements
+******
+****** NOTE: THIS CODE IS OLD AND BADLY BROKEN. 
+******       PERSISTENCE SHOULD BE RE-IMPLEMNTED PROPERLY
+******
 **************************************************************************
 *************************************************************************/
 
@@ -72,54 +76,17 @@ bmlnElmnt* read_istream(istream& is)
   // if/..." below.
 
   // This will be the return value at the end
-  bmlnElmnt* element = NULL;
 
-  // Need one possible object of each type of bmlnElmnt
-  BBLens                * bblensPtr;
-  beamline              * bl;
-  combinedFunction      * cmbPtr;
-  drift                 * driftPtr;
-  hkick                 * hkickPtr;
-  hmonitor              * hmonitorPtr;
-  marker                * markerPtr;
-  monitor               * monitorPtr;
-  octupole              * octupolePtr;
-  quadrupole            * quadrupolePtr;
-  rbend                 * rbendPtr;
-  sbend                 * sbendPtr;
-  sector                * sectorPtr;
-  sextupole             * sextupolePtr;
-  srot                  * srotPtr;
-  thin12pole            * pole12Ptr;
-  thin14pole            * pole14Ptr;
-  thin16pole            * pole16Ptr;
-  thin18pole            * pole18Ptr;
-  thinDecapole          * thinDecapolePtr;
-  thinLamb              * thinLambPtr;
-  thinMultipole         * thinMultipolePtr;
-  thinOctupole          * thinOctupolePtr;
-  thinQuad              * thinQuadPtr;
-  thinSeptum            * thinSeptaPtr;
-  thinSextupole         * thinSextupolePtr;
-  thinrfcavity          * cavityPtr;
-  rfcavity              * cavPtr;
-  vkick                 * vkickPtr;
-  vmonitor              * vmonitorPtr;
-  Pinger                * PingerPtr;
-  HPinger               * hPingerPtr;
-  VPinger               * vPingerPtr;
-  kick                  * kickPtr;
-  Slot                  * slot;
-  CF_rbend              * cfRbendPtr;
-  CF_sbend              * cfSbendPtr;
+  bmlnElmnt* element = 0;
 
-  const double MIN_ANGLE = 2.0E-9;
-  const int SIZE=80;
-  char type[SIZE], *name;
+  std::string name;
+  std::string type;
+
+  double const MIN_ANGLE = 2.0E-9;
+  int    const SIZE      = 80;
+
   double length, strength, ref_ct, x, y, t;
   std::string previousLine;
-
-  name = new char[SIZE];
 
   if ( is.eof() )
     return NULL;
@@ -128,174 +95,137 @@ bmlnElmnt* read_istream(istream& is)
   is >> type >> name >> length >> strength >> ref_ct >> x >> y >> t;
   
   // Figure out which type of element we have here
-  if ( strcasecmp(type,                 "beamline") == 0 ) {
-    bl = new beamline(name);
-    element = bl;
+  if ( type == "beamline" ) { 
+    element = new beamline(name);
   }
-  else if ( strcasecmp(type,            "Slot") == 0 ) {
-    slot = new Slot(name);
-    element = slot;
+  else if ( type == "Slot") {
+    element = new Slot(name);
   }
-  else if ( strcasecmp(type,            "beamline_END") == 0 ) {
-    element = NULL;
+  else if ( type == "beamline_END") {
+    element = 0;
   }
-  else if ( strcasecmp(type,            "combinedFunction_END") == 0 ) {
-    element = NULL;
+  else if ( type == "combinedFunction_END" ) {
+    element = 0;
   }
-  else if ( strcasecmp(type,            "slot_END") == 0 ) {
-    element = NULL;
+  else if ( type == "slot_END" ) {
+    element = 0;
   }
-  else if ( strcasecmp(type,            "combinedFunction") == 0 ) {
-    cmbPtr = new combinedFunction(name);
-    element = cmbPtr;
+  else if ( type == "combinedFunction") {
+    element = new combinedFunction(name);
   }
-  else if( strcasecmp(type,             "drift") == 0 ) {
-    driftPtr = new drift(name, length);
-    element = driftPtr;
+  else if(  type == "drift" ) {
+    element = new drift(name, length);
+   }
+  else if(type == "hkick")  {
+    element = new hkick(name, length, strength);
   }
-  else if( strcasecmp(type,             "hkick") == 0 ) {
-    hkickPtr = new hkick(name, length, strength);
-    element = hkickPtr;
+  else if (type ==             "vkick")  {
+    element = new vkick(name, length, strength);
   }
-  else if( strcasecmp(type,             "vkick") == 0 ) {
-    vkickPtr = new vkick(name, length, strength);
-    element = vkickPtr;
+  else if( type ==             "kick")  {
+    element = new kick(name, length, strength, strength );
   }
-  else if( strcasecmp(type,             "kick") == 0 ) {
-    kickPtr = new kick(name, length, strength, strength );
-    element = kickPtr;
+  else if( type ==             "vpinger")  {
+    element = new VPinger(name, strength);
   }
-  else if( strcasecmp(type,             "vpinger") == 0 ) {
-    vPingerPtr = new VPinger(name, strength);
-    element = vPingerPtr;
+  else if( type ==             "hpinger")  {
+    element = new HPinger(name, strength);
   }
-  else if( strcasecmp(type,             "hpinger") == 0 ) {
-    hPingerPtr = new HPinger(name, strength);
-    element = hPingerPtr;
+  else if( type ==             "pinger")  {
+   element = new Pinger(name, strength);
   }
-  else if( strcasecmp(type,             "pinger") == 0 ) {
-    PingerPtr = new Pinger(name, strength);
-    element = PingerPtr;
+  else if( type ==             "hmonitor")  {
+    element = new hmonitor(name, length);
   }
-  else if( strcasecmp(type,             "hmonitor") == 0 ) {
-    hmonitorPtr = new hmonitor(name, length);
-    element = hmonitorPtr;
+  else if(type ==             "marker")  {
+    element = new marker(name);
   }
-  else if( strcasecmp(type,             "marker") == 0 ) {
-    markerPtr = new marker(name);
-    element = markerPtr;
+  else if(type ==             "monitor")  {
+    element = new monitor(name, length);
   }
-  else if( strcasecmp(type,             "monitor") == 0 ) {
-    monitorPtr = new monitor(name, length);
-    element = monitorPtr;
+  else if(type ==             "octupole")  {
+    element = new octupole(name, length, strength);
   }
-  else if( strcasecmp(type,             "octupole") == 0 ) {
-    octupolePtr = new octupole(name, length, strength);
-    element = octupolePtr;
+  else if(type ==             "quadrupole")  {
+    element = new quadrupole(name, length, strength);
   }
-  else if( strcasecmp(type,             "quadrupole") == 0 ) {
-    quadrupolePtr = new quadrupole(name, length, strength);
-    element = quadrupolePtr;
-  }
-  else if( strcasecmp(type,             "rbend") == 0 ) {
+  else if(type ==             "rbend")  {
     if( 0 <= strength ) 
-    { rbendPtr = new rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    { element = new rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
     else 
-    { rbendPtr = new rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
-    element = rbendPtr;
+    { element = new rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
   }
-  else if( strcasecmp(type,             "sbend") == 0 ) {
+  else if(type ==             "sbend")  {
     if( 0 <= strength ) 
-    { sbendPtr = new sbend(name, length, strength,   1.0 /* Dummy large angle */ ); }
+    { element = new sbend(name, length, strength,   1.0 /* Dummy large angle */ ); }
     else
-    { sbendPtr = new sbend(name, length, strength, - 1.0 /* Dummy large angle */ ); }
-    element = sbendPtr;
+    { element = new sbend(name, length, strength, - 1.0 /* Dummy large angle */ ); }
   }
-  else if( strcasecmp(type,             "sextupole") == 0 ) {
-    sextupolePtr = new sextupole(name, length, strength);
-    element = sextupolePtr;
+  else if(type ==             "sextupole")  {
+    element = new sextupole(name, length, strength);
   }
-  else if( strcasecmp(type,             "srot") == 0 ) {
-    srotPtr = new srot(name, strength);
-    element = srotPtr;
+  else if(type ==             "srot")  {
+    element = new srot(name, strength);
   }
-  else if( strcasecmp(type,             "thinDecapole") == 0 ) {
-    thinDecapolePtr = new thinDecapole(name, strength);
-    element = thinDecapolePtr;
+  else if(type ==             "thinDecapole")  {
+    element = new thinDecapole(name, strength);
   }
-  else if( strcasecmp(type,             "thinLamb") == 0 ) {
-    thinLambPtr = new thinLamb(name);
-    element = thinLambPtr;
+  else if(type ==             "thinLamb")  {
+    element = new thinLamb(name);
   }
-  else if( strcasecmp(type,             "thinMultipole") == 0 ) {
-    thinMultipolePtr = new thinMultipole(name);
-    element = thinMultipolePtr;
+  else if(type ==             "thinMultipole")  {
+    element = new thinMultipole(name);
   }
-  else if( strcasecmp(type,             "thinOctupole") == 0 ) {
-    thinOctupolePtr = new thinOctupole(name, strength);
-    element = thinOctupolePtr;
+  else if(type ==             "thinOctupole")  {
+    element = new thinOctupole(name, strength);
   }
-  else if( strcasecmp(type,             "thinQuad") == 0 ) {
-    thinQuadPtr = new thinQuad(name, strength);
-    element = thinQuadPtr;
+  else if(type ==             "thinQuad")  {
+    element = new thinQuad(name, strength);
   }
-  else if( strcasecmp(type,             "thinSeptum") == 0 ) {
-    thinSeptaPtr = new thinSeptum(name);
-    element = thinSeptaPtr;
+  else if(type ==             "thinSeptum")  {
+   element = new thinSeptum(name);
   }
-  else if( strcasecmp(type,             "thinSextupole") == 0 ) {
-    thinSextupolePtr = new thinSextupole(name, strength);
-    element = thinSextupolePtr;
+  else if(type ==             "thinSextupole")  {
+    element = new thinSextupole(name, strength);
   }
-  else if( strcasecmp(type,             "thinrfcavity") == 0 ) {
-    cavityPtr = new thinrfcavity(name,0,(strength*1.0e9),0,0,0);
-    element = cavityPtr;
+  else if(type ==             "thinrfcavity")  {
+    element = new thinrfcavity(name,0,(strength*1.0e9),0,0,0);
   }
-  else if( strcasecmp(type,             "rfcavity") == 0 ) {
-    cavPtr = new rfcavity(name,length,0,(strength*1.0e9),0,0,0);
-    element = cavPtr;
+  else if(type ==             "rfcavity")  {
+    element = new rfcavity(name,length,0,(strength*1.0e9),0,0,0);
   }
-  else if( strcasecmp(type,             "vmonitor" ) == 0 ) {
-    vmonitorPtr = new vmonitor(name, length);
-    element = vmonitorPtr;
+  else if(type ==             "vmonitor" )  {
+    element = new vmonitor(name, length);
   }
-  else if( strcasecmp(type,             "BBLens") == 0 ) {
-    bblensPtr = new BBLens(name, length);
-    element = bblensPtr;
+  else if(type ==             "BBLens")  {
+    element = new BBLens(name, length);
   }
-  else if( strcasecmp(type,             "sector") == 0 ) {
-    sectorPtr = new sector(name, length);
-    element = sectorPtr;
+  else if(type ==             "sector")  {
+    element = new sector(name, length);
   }
-  else if( strcasecmp(type,             "thin12pole") == 0 ) {
-    pole12Ptr = new thin12pole(name, length);
-    element = pole12Ptr;
+  else if(type ==             "thin12pole")  {
+    element = new thin12pole(name, length);
   }
-  else if( strcasecmp(type,             "thin14pole") == 0 ) {
-    pole14Ptr = new thin14pole(name, length);
-    element = pole14Ptr;
+  else if(type ==             "thin14pole")  {
+    element = new thin14pole(name, length);
   }
-  else if( strcasecmp(type,             "thin16pole") == 0 ) {
-    pole16Ptr = new thin16pole(name, length);
-    element = pole16Ptr;
+  else if(type ==             "thin16pole")  {
+    element = new thin16pole(name, length);
   }
-  else if( strcasecmp(type,             "thin18pole") == 0 ) {
-    pole18Ptr = new thin18pole(name, length);
-    element = pole18Ptr;
+  else if(type ==             "thin18pole")  {
+    element = new thin18pole(name, length);
   }
-  else if( strcasecmp(type,             "CF_rbend") == 0 ) {
+  else if(type ==             "CF_rbend")  {
     if( 0 <= strength ) 
-    { cfRbendPtr = new CF_rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    { element = new CF_rbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
     else
-    { cfRbendPtr = new CF_rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
-    element = cfRbendPtr;
+    { element = new CF_rbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
   }
-  else if( strcasecmp(type,             "CF_sbend") == 0 ) {
+  else if(type ==             "CF_sbend")  {
     if( 0 <= strength ) 
-    { cfSbendPtr = new CF_sbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
+    { element = new CF_sbend(name, length, strength,  1.0 /* Dummy large angle */ ); }
     else
-    { cfSbendPtr = new CF_sbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
-    element = cfSbendPtr;
+    { element = new CF_sbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
   }
   else {
     (*pcerr) << "\n **** WARNING **** read_istream(istream&): Unknown element type \"" << type << "\" "
@@ -313,6 +243,7 @@ bmlnElmnt* read_istream(istream& is)
 
   // Save away the current line in case we need to report something 
   // unreadable next time.
+
   previousLine.clear();
   previousLine = type;
   previousLine += "  ";
@@ -322,20 +253,21 @@ bmlnElmnt* read_istream(istream& is)
     uic  << length << "  " << strength << "... and so forth.";
     previousLine += uic.str();
   }
-  // REMOVE: sprintf(previousLine,"%s  %s  %lf  %lf  %lf  %lf  %lf",
-  // REMOVE:         type,name,length,strength,x,y,t);
 
   // Get the rest of the description if we got a real element
+
+  bmlnElmnt* e = 0;
+
   if ( element ) {
     element->setReferenceTime(ref_ct);
-    if( 0 != strcmp( element->Type(), "beamline" ) ) {
+    if( std::string(element->Type()) == "beamline" )  {
       element->readFrom(is);
     }
     else {
       double momentum;
       is >> momentum;
       static_cast<beamline*>(element)->setMomentum( momentum );
-      bmlnElmnt *e = NULL;
+
       do {
         e = read_istream(is);
         if ( e ) {
@@ -345,22 +277,19 @@ bmlnElmnt* read_istream(istream& is)
     }
 
     // Check if this element is misaligned
-    if ( x!=0 || y!=0 || t!= 0 ) {
-      alignmentData align;
-      align.xOffset = x;
-      align.yOffset = y;
-      align.roll    = t;
-      element->setAlignment(align);
+
+    if ( !(e->alignment().isNull()) ) {
+      element->setAlignment(e->alignment());
     }
   }
 
-  delete [] name;
   return element;
 }
  
 
 istream& operator>>(istream& is, beamline& bl)
 {
+#if 0 
   const int SIZE=80;
   char name[SIZE], type[SIZE];
   double length, strength, ref_ct, x, y, t;
@@ -410,5 +339,6 @@ istream& operator>>(istream& is, beamline& bl)
     align.roll    = t;
     bl.setAlignment(align);
   }
+#endif
   return is;
 }
