@@ -42,8 +42,8 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityUpstream::LCavityUpstream( const  char*  name, double const& length, double const& rfreq,         
-                                                      double const& volts,  double const& phis)
-  : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+                                                      double const& gigavolts,  double const& phis)
+  : bmlnElmnt(name,length,gigavolts), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -181,8 +181,8 @@ void  LCavityUpstream::localPropagate( JetParticleBunch& b)
 
 
 LCavityDnstream::LCavityDnstream( const  char*  name, double const& length, double const& rfreq,         
-                                                      double const& volts,  double const& phis)
-  : bmlnElmnt(name,length,volts*1.0e-9), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+                                                      double const& gigavolts,  double const& phis)
+  : bmlnElmnt(name,length,gigavolts), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
