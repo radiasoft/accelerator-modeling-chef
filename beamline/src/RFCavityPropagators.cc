@@ -123,7 +123,7 @@ void rfcavity::Propagator::setup( rfcavity& elm)
 
   bml = BmlPtr(new beamline(""));
   bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
-  bml->append( ElmPtr(new thinrfcavity( "", elm.getRadialFrequency()/(2*M_PI), elm.Strength(), elm.getPhi(), elm.getQ(), elm.getR() )));
+  bml->append( ElmPtr(new thinrfcavity( "", elm.getRadialFrequency()/(2*M_PI), 1.0e9*(elm.Strength()), elm.getPhi(), elm.getQ(), elm.getR() )));
   bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
 }
 
