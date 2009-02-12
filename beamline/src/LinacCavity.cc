@@ -115,7 +115,6 @@ LinacCavity::LinacCavity( const char* name,         // name
   propagator_->setup(*this);
 
   setWakeOn( wake_on);
-
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

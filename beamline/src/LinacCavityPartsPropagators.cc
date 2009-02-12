@@ -79,7 +79,6 @@ enum Position_t { upstream, downstream };
 template<typename Element_t, typename Particle_t, Position_t position>
 void propagate( Element_t& elm, Particle_t& p ) 
 {
-  
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
   
@@ -96,13 +95,12 @@ void propagate( Element_t& elm, Particle_t& p )
   State_t& state = p.State();
 
   if( strength == 0.0) { 
-
-  ::driftpropagate( length, elm, p ); 
-  state[i_cdt] -= elm.getReferenceTime();
- 
-   return;
+    ::driftpropagate( length, elm, p ); 
+    state[i_cdt] -= elm.getReferenceTime();
+    return;
   }
 
+  
   double         const referenceEnergyGain = strength*cos ( phi_s);
   Component_t    const onaxisEnergyGain    = strength*cos ( phi_s + state[i_cdt] * w_rf / PH_MKS_c );
   Component_t    const eE_z                = onaxisEnergyGain / length;
