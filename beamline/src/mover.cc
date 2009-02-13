@@ -71,7 +71,7 @@ void mover::append( ElmPtr q )
   // *** broken ? *** : should we prevent insertion of duplicates ?
  
    theList_.push_back(q);
-   q->setAlignment(alignment());
+   q->setAlignment( align_ );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
