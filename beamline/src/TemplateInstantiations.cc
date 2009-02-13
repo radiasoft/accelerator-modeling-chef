@@ -83,11 +83,10 @@
 #include <beamline/AlignmentDecorator.h>
 #include <beamline/ApertureDecorator.h>
 
-
 #include <basic_toolkit/ConvolutionFunctor.h>
-#include <basic_toolkit/ConvolutionFunctorImpl.h>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
-#include <basic_toolkit/ConvolutionFunctorImpl.tcc>
+#include <basic_toolkit/ConvolutionPolicies.h>
+#include <basic_toolkit/ConvolutionPolicies.tcc>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
@@ -192,8 +191,8 @@ namespace {
  boost::function<double(int)> fl = boost::bind<double>( ShortRangeLWakeFunction(), _1, 0.0, 0.0 );
 }
 
-template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
-template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
+template ConvolutionFunctor<double, ConvolutionFFTPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
+template ConvolutionFunctor<double, ConvolutionFFTPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
 
 
 
@@ -304,11 +303,11 @@ template boost::shared_ptr<Slot::Propagator           >::shared_ptr( Slot::Propa
 template boost::shared_ptr<kick::Propagator           >::shared_ptr( kick::Propagator*            );
 template boost::shared_ptr<sector::Propagator         >::shared_ptr( sector::Propagator*          );
 template boost::shared_ptr<vkick::Propagator          >::shared_ptr( vkick::Propagator*           );
-template boost::shared_ptr<hmonitor::Propagator       >::shared_ptr( hmonitor::Propagator*        );
-template boost::shared_ptr<vmonitor::Propagator       >::shared_ptr( vmonitor::Propagator*        );
+template boost::shared_ptr<HMonitor::Propagator       >::shared_ptr( HMonitor::Propagator*        );
+template boost::shared_ptr<VMonitor::Propagator       >::shared_ptr( VMonitor::Propagator*        );
 template boost::shared_ptr<marker::Propagator         >::shared_ptr( marker::Propagator*          );
 template boost::shared_ptr<hkick::Propagator          >::shared_ptr( hkick::Propagator*           );
-template boost::shared_ptr<monitor::Propagator        >::shared_ptr( monitor::Propagator*         );
+template boost::shared_ptr<Monitor::Propagator        >::shared_ptr( Monitor::Propagator*         );
 template boost::shared_ptr<gkick::Propagator          >::shared_ptr( gkick::Propagator*           );
 template boost::shared_ptr<thinSeptum::Propagator     >::shared_ptr( thinSeptum::Propagator*      );
 template boost::shared_ptr<ThinPole::Propagator       >::shared_ptr( ThinPole::Propagator*        );
@@ -467,5 +466,18 @@ template
 void std::vector<void*, std::allocator<void*> >::insert( viter, viter, viter);
 
 
+namespace { 
+  
+  typedef boost::mt19937       base_generator_type; 
+  base_generator_type          rng;                    // pseudo-random number generator
+  boost::normal_distribution<> gauss(0.0,1.0 );        
+  boost::variate_generator<base_generator_type&, boost::normal_distribution<> > bpm_error(rng, gauss);             
 
-#endif //BEAMLINE_EXPLICIT_TEMPLATES
+  double ( boost::variate_generator<base_generator_type&, boost::normal_distribution<> >::* mfptr )() = 
+   &boost::variate_generator<base_generator_type&, boost::normal_distribution<> >::operator();
+
+  boost::function<double()> nrnd = boost::bind( mfptr, &bpm_error );
+
+}  
+
+#endif

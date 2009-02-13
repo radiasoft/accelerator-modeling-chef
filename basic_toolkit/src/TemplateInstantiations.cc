@@ -20,22 +20,24 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******
 ******                                                                
-******  Author:    Leo Michelotti                                     
-******             Email: michelotti@fnal.gov                         
-****** 
-******  Revision (Sep 2005):
+******  Authors:   ostiguy@fnal.gov                                    
+******             michelotti@fnal.gov                         
 ******
-******             Jean-Francois Ostiguy
-******             ostiguy@fnal.gov
-******             
-******             - segregated explicit template instantiations
-******             - new template Vector class
-******           
-****** Mar 2007 ostiguy@fnal.gov
+******  REVISION HISTORY
+****** 
+******  Mar 2007 ostiguy@fnal.gov
 ******
 ******  - eliminated need for instantiating dependant classes, in particular
 ******    private classes used by the STL implementation.
-******                                                                
+******
+******  Sep 2005 ostiguy@fnal.gov
+******   
+******  - complete rewrite 
+******  - segregated explicit template instantiations
+******  - new template Vector class
+******           
+******  Original implementation: michelotti@fnal.gov                                                                 
+******
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -79,9 +81,11 @@
 #include <basic_toolkit/FFTFunctor.tcc>
 #include <basic_toolkit/FFTFunctorImpl.tcc>
 #include <basic_toolkit/ConvolutionFunctor.h>
-#include <basic_toolkit/ConvolutionFunctorImpl.h>
-#include <basic_toolkit/ConvolutionFunctorImpl.tcc>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
+//#include <basic_toolkit/ConvolutionFunctorImpl.h>
+//#include <basic_toolkit/ConvolutionFunctorImpl.tcc>
+#include <basic_toolkit/ConvolutionPolicies.h>
+#include <basic_toolkit/ConvolutionPolicies.tcc>
 
 
 using namespace std;
@@ -209,15 +213,28 @@ FFTFunctor<std::complex<double>, double, (transform_type)1> const*
 boost::addressof(FFTFunctor<std::complex<double>, double, (transform_type)1> const&);
 
 template
+FFTFunctor<std::complex<double>, double, (transform_type)-1> const* 
+boost::addressof(FFTFunctor<std::complex<double>, double, (transform_type)-1> const&);
+
+template
+FFTFunctor<double, std::complex<double>, (transform_type) 1> const* 
+boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type) 1> const&);
+
+template
 FFTFunctor<double, std::complex<double>, (transform_type)-1> const* 
 boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> const&);
 
+template class ConvolutionFFTPolicy<double>;
+template class ConvolutionFFTPolicy<std::complex<double> >;
 
-template class ConvolutionFunctor<double>;
-template class ConvolutionFunctor<std::complex<double> >;
+template class ConvolutionInnerProductPolicy<double>;
+template class ConvolutionInnerProductPolicy<std::complex<double> >;
 
-template class ConvolutionFunctorFFTImpl<double>;
-template class ConvolutionFunctorFFTImpl<std::complex<double> >;
+template class ConvolutionFunctor<double, ConvolutionFFTPolicy >;
+template class ConvolutionFunctor<std::complex<double>,ConvolutionFFTPolicy >;
+
+template class ConvolutionFunctor<double, ConvolutionInnerProductPolicy >;
+template class ConvolutionFunctor<std::complex<double>, ConvolutionInnerProductPolicy >;
 
 template 
 class FFTWAllocator<double>;
