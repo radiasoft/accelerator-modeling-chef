@@ -147,7 +147,7 @@ TVector<T>::TVector( TMatrix<T> const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T> 
-void TVector<T>::reset()
+void TVector<T>::clear()
 {
   theVector_.clear();
 }

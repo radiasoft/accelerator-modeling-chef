@@ -128,7 +128,7 @@ public:
   TVector( TVector    const& );
   TVector( TMatrix<T> const& m); // implicit conversion
 
-  void reset();
+  void clear();
 
   ~TVector();
 
@@ -178,7 +178,8 @@ public:
 
   //  ... Queries
 
-  int  Dim() const { return theVector_.size(); }
+  int  Dim()   const { return theVector_.size(); } // deprecated
+  int  size()  const { return theVector_.size(); }
 
   // ... Utilities
 
