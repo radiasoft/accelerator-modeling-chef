@@ -134,14 +134,14 @@ bmlnElmnt* read_istream(istream& is)
   else if( type ==             "pinger")  {
    element = new Pinger(name, strength);
   }
-  else if( type ==             "hmonitor")  {
-    element = new hmonitor(name, length);
+  else if( type ==             "HMonitor")  {
+    element = new HMonitor(name, length);
   }
   else if(type ==             "marker")  {
     element = new marker(name);
   }
-  else if(type ==             "monitor")  {
-    element = new monitor(name, length);
+  else if(type ==             "Monitor")  {
+    element = new Monitor(name, length);
   }
   else if(type ==             "octupole")  {
     element = new octupole(name, length, strength);
@@ -194,8 +194,8 @@ bmlnElmnt* read_istream(istream& is)
   else if(type ==             "rfcavity")  {
     element = new rfcavity(name,length,0,(strength*1.0e9),0,0,0);
   }
-  else if(type ==             "vmonitor" )  {
-    element = new vmonitor(name, length);
+  else if(type ==             "VMonitor" )  {
+    element = new VMonitor(name, length);
   }
   else if(type ==             "BBLens")  {
     element = new BBLens(name, length);
