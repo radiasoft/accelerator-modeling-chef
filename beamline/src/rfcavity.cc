@@ -275,10 +275,14 @@ void rfcavity::setHarmonicNumber( int n )
 
 void rfcavity::setFrequency( double const& f )
 {
+  if( f > 0 ) {
+    w_rf_ = MATH_TWOPI*f;
+  }
+
   ThinRFCavityPtr q;
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setHarmonicNumber( h_ );
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) { q->setFrequency( f ); }
   }
 }
 
@@ -610,7 +614,7 @@ void thinrfcavity::setHarmonicNumber( int n )
 
 void thinrfcavity::setFrequency( double const& f )
 {
-  if( f > 0) {
+  if( f > 0 ) {
     w_rf_ = MATH_TWOPI*f;
   }
 }
