@@ -53,16 +53,17 @@ class SVDFit
 
     Matrix solve( Matrix const& ) const;
 
-    inline Matrix U() const;
+    Matrix U() const;
     Matrix D() const;
-    inline Matrix V() const;
-    inline Vector singularValues() const;
+    Matrix V() const;
+
+    Vector  singularValues() const;
     Matrix stateCovariance() const;
 
-    void setNullSpaceThreshold(double);
-    inline double nullSpaceThreshold() const;
+     void setNullSpaceThreshold(double);
+    double nullSpaceThreshold() const;
 
-    inline bool isWeighted() const;
+    bool isWeighted() const;
 
     static Matrix sqrt( Matrix& );
 
@@ -96,36 +97,5 @@ class SVDFit
     void  buildSolver_();
 };
 
-
-// Inlined functions
-// -----------------
-inline Matrix SVDFit::U() const
-{
-  return xU0_;
-}
-
-
-inline Matrix SVDFit::V() const
-{
-  return xV0_;
-}
-
-
-inline Vector SVDFit::singularValues() const
-{
-  return xW0_;
-}
-
-
-inline double SVDFit::nullSpaceThreshold() const
-{ 
-  return limW_; 
-}
-
-
-inline bool SVDFit::isWeighted() const
-{
-  return applyWeights_;
-}
 
 #endif // SVDFIT_H
