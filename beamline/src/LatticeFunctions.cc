@@ -1,3 +1,34 @@
+/*************************************************************************
+**************************************************************************
+**************************************************************************
+******                                                                
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******                                    
+******  File:      LatticeFunctions.cc
+******                                                                
+******  Copyright Fermi Research Alliance / Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
+******  of the License supplied with this software.
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+****** 
+******  Author: Jean-Francois Ostiguy 
+******          ostiguy@fnal.gov                                                              
+******                                                                
+**************************************************************************
+**************************************************************************
+*************************************************************************/
+
 #include <beamline/LatticeFunctions.h>
 
 // the dispersion is stored in a vector of dimension 6 for compatibility with 6D transfer matrices
@@ -31,14 +62,14 @@ dispersion_t& dispersion_t::operator=( dispersion_t const& rhs )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CSLattFuncs::CSLattFuncs()
-  : arcLength(0.0), reference_orbit(), dispersion(), beta(), alpha(),  psi()  
+  : arcLength(0.0), orbit(), dispersion(), beta(), alpha(),  psi()  
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CSLattFuncs::CSLattFuncs( CSLattFuncs const& o)
-  : arcLength(o.arcLength), reference_orbit(o.reference_orbit), 
+  : arcLength(o.arcLength), orbit(o.orbit), 
     dispersion(o.dispersion), beta(o.beta), alpha(o.alpha),  psi(o.psi)  
 {}
 
@@ -56,7 +87,7 @@ bool CSLattFuncs::defined() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CSLattFuncs4D::CSLattFuncs4D()
-  : arcLength(0.0), reference_orbit(), dispersion() 
+  : arcLength(0.0), orbit(), dispersion() 
 {
   mode1.beta.hor  = 0.0;
   mode1.alpha.hor = 0.0;
@@ -90,7 +121,7 @@ CSLattFuncs4D::CSLattFuncs4D()
 
 CSLattFuncs4D::CSLattFuncs4D( CSLattFuncs const& o):
      arcLength(o.arcLength),  
-  reference_orbit(o.reference_orbit), 
+  orbit(o.orbit), 
     dispersion(o.dispersion)  
 {
 
@@ -126,7 +157,7 @@ bool CSLattFuncs4D::defined() const
 
 ETLattFuncs::ETLattFuncs( CSLattFuncs const& o) 
   :   arcLength(o.arcLength),
-   reference_orbit(o.reference_orbit), 
+   orbit(o.orbit), 
       dispersion(o.dispersion)
 {  
    beta.hor  = o.beta.hor;
@@ -144,7 +175,7 @@ ETLattFuncs::ETLattFuncs( CSLattFuncs const& o)
 
 CVLattFuncs::CVLattFuncs( CSLattFuncs const& o)
   :   arcLength(o.arcLength),
-   reference_orbit(o.reference_orbit), 
+      orbit(o.orbit), 
       dispersion(o.dispersion)
 {  
    beta.hor  = o.beta.hor;
