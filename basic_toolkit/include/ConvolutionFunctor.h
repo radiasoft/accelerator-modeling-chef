@@ -40,27 +40,22 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
+#include <basic_toolkit/ConvolutionPolicies.h>
 
-
-
-//---------------------------------------------------------------------------------------------
-
-template <typename T>
-class ConvolutionFunctor {
+template <typename T, template<typename U> class AlgorithmPolicy > 
+class ConvolutionFunctor : public AlgorithmPolicy<T> {
 
  public:
 
-  class ConvolutionFunctorImpl;    // for conventional convolution 
-
-  ConvolutionFunctor( int nsamples=0, bool measure=true ); 
+  ConvolutionFunctor( int nsamples=0, bool test =true ); 
 
   // Fnct is a function object. lhs(i) returns the value at sample i
   // The samples i are assumed to be equally spaced.  
 
   template<typename Fnct>
-  ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure=true );
+    ConvolutionFunctor(  int nsamples, Fnct lhs, bool test );
 
-  ~ConvolutionFunctor();
+ ~ConvolutionFunctor();
 
   void resetLHS( std::vector<T>  const& lhs);
 
@@ -68,9 +63,6 @@ class ConvolutionFunctor {
 
   std::vector<T>   operator()(  std::vector<T> const& rhs );
 
- private:
-  
-  boost::shared_ptr<ConvolutionFunctorImpl>       pimpl_;
 };
 
 

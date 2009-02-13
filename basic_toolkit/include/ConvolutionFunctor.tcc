@@ -29,58 +29,54 @@
 *************************************************************************/
 
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-template <typename T>
-ConvolutionFunctor<T>::ConvolutionFunctor( int nsamples, bool measure) 
-{ 
-   pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl >( new ConvolutionFunctorFFTImpl<T>( nsamples, measure) ); 
-}
+template <typename T,  template<typename U> class AlgorithmPolicy >
+ConvolutionFunctor<T, AlgorithmPolicy>::ConvolutionFunctor( int nsamples, bool measure) 
+:  AlgorithmPolicy<T>(nsamples,measure)
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename T>
-template<typename Fnct>
-ConvolutionFunctor<T>::ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure ) { 
-  pimpl_ = boost::shared_ptr<ConvolutionFunctorImpl >( new ConvolutionFunctorFFTImpl<T>( nsamples, lhs, measure) ); 
-}
+
+template <typename T,  template<typename U> class AlgorithmPolicy >
+template <typename Fnct>
+ConvolutionFunctor<T, AlgorithmPolicy >::ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure ) 
+: AlgorithmPolicy<T>(nsamples, lhs, measure)
+{}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename T>
-ConvolutionFunctor<T>::~ConvolutionFunctor() 
+template <typename T,  template<typename U> class AlgorithmPolicy >
+ConvolutionFunctor<T, AlgorithmPolicy >::~ConvolutionFunctor() 
 { }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename T>
-void ConvolutionFunctor<T>::resetLHS( std::vector<T>  const& lhs)
+template <typename T,  template<typename U> class AlgorithmPolicy >
+void ConvolutionFunctor<T, AlgorithmPolicy >::resetLHS( std::vector<T>  const& lhs)
 { 
-  return pimpl_->resetLHS( lhs); 
+   AlgorithmPolicy<T>::resetLHS( lhs); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename T>
-std::vector<T>   ConvolutionFunctor<T>::operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
+template <typename T,  template<typename U> class AlgorithmPolicy >
+std::vector<T>   ConvolutionFunctor<T, AlgorithmPolicy >::operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
 { 
-  return pimpl_->operator()( lhs, rhs); 
+  return  AlgorithmPolicy<T>::operator()( lhs, rhs); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template <typename T>
-std::vector<T>   ConvolutionFunctor<T>::operator()(  std::vector<T> const& rhs ) 
+template <typename T,  template<typename U> class AlgorithmPolicy >
+std::vector<T>   ConvolutionFunctor<T, AlgorithmPolicy >::operator()(  std::vector<T> const& rhs ) 
 { 
-  return pimpl_->operator()( rhs); 
+  return  AlgorithmPolicy<T>::operator()( rhs); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
