@@ -109,7 +109,13 @@ void BmlVisitor::visit( srot& x )
 void BmlVisitor::visit( vkick& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
-void BmlVisitor::visit( monitor& x ) 
+void BmlVisitor::visit( Monitor& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( HMonitor& x ) 
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
+void BmlVisitor::visit( VMonitor& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
 void BmlVisitor::visit( marker& x ) 
@@ -234,7 +240,13 @@ void ConstBmlVisitor::visit( srot const& x )
 void ConstBmlVisitor::visit(  vkick const& x ) 
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
-void ConstBmlVisitor::visit(  monitor const& x ) 
+void ConstBmlVisitor::visit(  Monitor const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
+
+void ConstBmlVisitor::visit(  HMonitor const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
+
+void ConstBmlVisitor::visit(  VMonitor const& x ) 
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
 void ConstBmlVisitor::visit(  marker const& x ) 

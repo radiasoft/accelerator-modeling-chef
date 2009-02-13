@@ -29,7 +29,7 @@
 *************************************************************************/
 
 #include <beamline/MonitorPropagators.h>
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
@@ -78,7 +78,7 @@ template<typename Elm_t, typename Particle_t>
 double setMonitorState( Elm_t elm,  Particle_t const& p );
 
 template<typename Particle_t>
-double setMonitorState( monitor const& elm,  Particle_t const& p )
+double setMonitorState( Monitor const& elm,  Particle_t const& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -92,7 +92,7 @@ double setMonitorState( monitor const& elm,  Particle_t const& p )
 }
 
 template<typename Particle_t>
-double setMonitorState( vmonitor const& elm,  Particle_t const& p )
+double setMonitorState( VMonitor const& elm,  Particle_t const& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -103,7 +103,7 @@ double setMonitorState( vmonitor const& elm,  Particle_t const& p )
 }
 
 template<typename Particle_t>
-double setMonitorState( hmonitor const& elm,  Particle_t const& p )
+double setMonitorState( HMonitor const& elm,  Particle_t const& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -136,10 +136,11 @@ void propagate( Element_t const& elm, Particle_t& p )
 
 
 template<typename Element_t>
-void propagate( Element_t const& elm, ParticleBunch& b ) 
-{ 
+void propagate( Element_t const& elm, ParticleBunch& b );
 
-  // note: specialized versions for H and V monitors would be a tad more efficient
+template<>
+void propagate( Monitor const& elm, ParticleBunch& b )
+{ 
 
   double xpos = 0.0;
   double ypos = 0.0;
@@ -157,17 +158,55 @@ void propagate( Element_t const& elm, ParticleBunch& b )
   elm.setVposition( ypos/b.size());
 
 }
+
+template<>
+void propagate( HMonitor const& elm, ParticleBunch& b )
+{ 
+
+  double xpos = 0.0;
+
+  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    ::propagate(elm, *it); 
+    xpos +=  elm.hposition();
+  }
+  
+  // record the bunch centroid position (average position)
+ 
+  elm.setHposition( xpos/b.size());
+}
+
+template<>
+void propagate( VMonitor const& elm, ParticleBunch& b )
+{ 
+
+  double ypos = 0.0;
+
+  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    ::propagate(elm, *it); 
+    ypos +=  elm.vposition();
+  }
+  
+  // record the bunch centroid position (average position)
+ 
+  elm.setVposition( ypos/b.size());
+}
+
 
 template<typename Element_t>
-void propagate( Element_t const& elm, JetParticleBunch& b ) 
+void propagate( Element_t const& elm, JetParticleBunch& b ); 
+
+template<>
+void propagate( Monitor const& elm, JetParticleBunch& b ) 
 { 
   double xpos = 0.0;
   double ypos = 0.0;
 
-  for( ParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  for( JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
   {
     ::propagate(elm, *it); 
-    xpos +=  elm.hposition();
+    xpos +=  elm.hposition();  
     ypos +=  elm.vposition();  
   }
   
@@ -177,6 +216,43 @@ void propagate( Element_t const& elm, JetParticleBunch& b )
   elm.setVposition( ypos/b.size());
 
 }
+
+
+template<>
+void propagate( HMonitor const& elm, JetParticleBunch& b ) 
+{ 
+  double xpos = 0.0;
+
+  for( JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    ::propagate(elm, *it); 
+    xpos +=  elm.hposition();  
+  }
+  
+  // record the bunch centroid position (average position)
+ 
+  elm.setHposition( xpos/b.size());
+}
+
+
+template<>
+void propagate( VMonitor const& elm, JetParticleBunch& b ) 
+{ 
+  double ypos = 0.0;
+
+  for( JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it ) 
+  {
+    ::propagate(elm, *it); 
+    ypos +=  elm.vposition();  
+  }
+  
+  // record the bunch centroid position (average position)
+ 
+  elm.setVposition( ypos/b.size());
+
+}
+
+
 
 //----------------------------------------------------------------------------------
 // Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
@@ -187,26 +263,26 @@ void propagate( Element_t const& elm, JetParticleBunch& b )
 template void driftpropagate( double const& length, bmlnElmnt const& elm, Particle& p );
 template void driftpropagate( double const& length, bmlnElmnt const& elm, JetParticle& p );
 
-template void propagate( monitor  const& elm,    Particle& p );
-template void propagate( monitor  const& elm, JetParticle& p );
-template void propagate( hmonitor const& elm,    Particle& p );
-template void propagate( hmonitor const& elm, JetParticle& p );
-template void propagate( vmonitor const& elm,    Particle& p );
-template void propagate( vmonitor const& elm, JetParticle& p );
+template void propagate( Monitor  const& elm,    Particle& p );
+template void propagate( Monitor  const& elm, JetParticle& p );
+template void propagate( HMonitor const& elm,    Particle& p );
+template void propagate( HMonitor const& elm, JetParticle& p );
+template void propagate( VMonitor const& elm,    Particle& p );
+template void propagate( VMonitor const& elm, JetParticle& p );
 
-template void propagate( monitor  const& elm,    ParticleBunch& b );
-template void propagate( monitor  const& elm, JetParticleBunch& b );
-template void propagate( hmonitor const& elm,    ParticleBunch& b );
-template void propagate( hmonitor const& elm, JetParticleBunch& b );
-template void propagate( vmonitor const& elm,    ParticleBunch& b );
-template void propagate( vmonitor const& elm, JetParticleBunch& b );
+template void propagate( Monitor  const& elm,    ParticleBunch& b );
+template void propagate( Monitor  const& elm, JetParticleBunch& b );
+template void propagate( HMonitor const& elm,    ParticleBunch& b );
+template void propagate( HMonitor const& elm, JetParticleBunch& b );
+template void propagate( VMonitor const& elm,    ParticleBunch& b );
+template void propagate( VMonitor const& elm, JetParticleBunch& b );
 
-template double setMonitorState( monitor& elm,  Particle     const& p );
-template double setMonitorState( monitor& elm,  JetParticle  const& p );
-template double setMonitorState( hmonitor& elm,  Particle    const& p );
-template double setMonitorState( hmonitor& elm,  JetParticle const& p );
-template double setMonitorState( vmonitor& elm,  Particle    const& p );
-template double setMonitorState( vmonitor& elm,  JetParticle const& p );
+template double setMonitorState( Monitor& elm,  Particle     const& p );
+template double setMonitorState( Monitor& elm,  JetParticle  const& p );
+template double setMonitorState( HMonitor& elm,  Particle    const& p );
+template double setMonitorState( HMonitor& elm,  JetParticle const& p );
+template double setMonitorState( VMonitor& elm,  Particle    const& p );
+template double setMonitorState( VMonitor& elm,  JetParticle const& p );
 
 #endif
 
@@ -215,116 +291,116 @@ template double setMonitorState( vmonitor& elm,  JetParticle const& p );
 } // anonymous namespace
 
 
-void monitor::Propagator::setup( bmlnElmnt& elm) 
+void Monitor::Propagator::setup( bmlnElmnt& elm) 
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void monitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
+void Monitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
 {
-  ::propagate( static_cast<monitor const&>(elm),p);
+  ::propagate( static_cast<Monitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
+void Monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
 {
-  ::propagate( static_cast<monitor const&>(elm),p);
+  ::propagate( static_cast<Monitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void monitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
+void Monitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
 {
-  ::propagate( static_cast<monitor const&>(elm),p);
+  ::propagate( static_cast<Monitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
+void Monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
 {
-  ::propagate( static_cast<monitor const&>(elm),p);
+  ::propagate( static_cast<Monitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void vmonitor::Propagator::setup( bmlnElmnt& elm) 
+void VMonitor::Propagator::setup( bmlnElmnt& elm) 
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void vmonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
+void VMonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
 {
-  ::propagate( static_cast<vmonitor const&>(elm),p);
+  ::propagate( static_cast<VMonitor const&>(elm),p);
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void vmonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
+void VMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
 {
-  ::propagate( static_cast<vmonitor const&>(elm),p);
+  ::propagate( static_cast<VMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void vmonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
+void VMonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
 {
-  ::propagate( static_cast<vmonitor const&>(elm),p);
+  ::propagate( static_cast<VMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void vmonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
+void VMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
 {
-  ::propagate( static_cast<vmonitor const&>(elm),p);
+  ::propagate( static_cast<VMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void hmonitor::Propagator::setup( bmlnElmnt& elm) 
+void HMonitor::Propagator::setup( bmlnElmnt& elm) 
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void hmonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
+void HMonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
 {
-  ::propagate( static_cast<hmonitor const&>(elm),p);
+  ::propagate( static_cast<HMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void hmonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
+void HMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
 {
-  ::propagate( static_cast<hmonitor const&>(elm),p);
+  ::propagate( static_cast<HMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void hmonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
+void HMonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
 {
-  ::propagate( static_cast<hmonitor const&>(elm),p);
+  ::propagate( static_cast<HMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void hmonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
+void HMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
 {
-  ::propagate( static_cast<hmonitor const&>(elm),p);
+  ::propagate( static_cast<HMonitor const&>(elm),p);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
