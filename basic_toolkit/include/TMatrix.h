@@ -29,6 +29,9 @@
 ****** 
 ******  Revision History 
 ******
+******  Nov 2007   ostiguy@fnal.gov
+******   - implmented support for matrix[i][j] element access syntax
+******                                                             
 ******  Sep-Nov 2005   Jean-Francois Ostiguy
 ******                 ostiguy@fnal.gov
 ******  
@@ -43,9 +46,6 @@
 ******   - eliminated code that attempted to discriminate between objects allocated
 ******     on the stack and objects allocated from the free store.
 ****** 
-******  Nov 2007   ostiguy@fnal.gov
-******   - added support for matrix[i][j] element access syntax
-******                                                             
 **************************************************************************
 **************************************************************************
 *************************************************************************/
@@ -132,16 +132,18 @@ public:
  public:
 
   TMatrix();
-  explicit TMatrix(int);
 
+  explicit TMatrix(int); // a square matrix
+
+  TMatrix( TVector<T> const& );
   TMatrix(int rows, int columns);
   TMatrix(int rows, int columns, T  initval);
   TMatrix(int rows, int columns, T* initval);
 
+  TMatrix(TMatrix const& );
+
   template<typename U>
   TMatrix(TMatrix<U> const& );
-
-  TMatrix(TMatrix const& );
 
  ~TMatrix();
 
