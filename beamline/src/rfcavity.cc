@@ -254,10 +254,11 @@ double rfcavity::getReferenceTime()    const
 
 void rfcavity::setHarmonicNumber( double const& n )
 {
-  ThinRFCavityPtr q;
+  if( 0 < n ) { h_ = n; }
 
+  ThinRFCavityPtr q;
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setHarmonicNumber( n );
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) { q->setHarmonicNumber( n ); }
   }
 }
 
@@ -594,9 +595,7 @@ bool    thinrfcavity::isDriftSpace() const
 
 void thinrfcavity::setHarmonicNumber( double const& n )
 {
-  if( 0 < n ) {
-    h_ = n;
-  }
+  if( 0 < n ) { h_ = n; }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
