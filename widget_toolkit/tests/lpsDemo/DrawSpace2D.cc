@@ -161,18 +161,18 @@ void DrawSpace2D::setDraw( DrawFunc x )
 
 void DrawSpace2D::setColors( double r, double g, double b )
 {
-  if( 0.0 <= r && r <= 1.0 ) _r = r;
-  if( 0.0 <= g && g <= 1.0 ) _g = g;
-  if( 0.0 <= b && b <= 1.0 ) _b = b;
+  if( 0.0 <= r && r <= 1.0 ) { _r = r; }
+  if( 0.0 <= g && g <= 1.0 ) { _g = g; }
+  if( 0.0 <= b && b <= 1.0 ) { _b = b; }
 }
 
 
 
 void DrawSpace2D::setClearColor( double r, double g, double b )
 {
-  _rClr = r;
-  _gClr = g;
-  _bClr = b;
+  if( 0.0 <= r && r <= 1.0 ) { _rClr = r; }
+  if( 0.0 <= r && r <= 1.0 ) { _gClr = g; }
+  if( 0.0 <= r && r <= 1.0 ) { _bClr = b; }
 }
 
 
