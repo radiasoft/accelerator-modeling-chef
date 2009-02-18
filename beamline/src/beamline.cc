@@ -854,7 +854,7 @@ int beamline::startAt( ConstElmPtr const& x, int n ) {
   }
 
   theList_ = newList;
-
+  return 0;
 }
 
 
@@ -887,8 +887,7 @@ int beamline::startAt( char const* s, int n ) {
   }
 
   theList_ = newList;
-
-  return 1;
+  return 0;
 }
 
 
