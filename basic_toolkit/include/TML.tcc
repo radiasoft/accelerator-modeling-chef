@@ -61,6 +61,7 @@
 #endif
 
 #include <algorithm>
+#include <cstring>
 #include <vector>
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
@@ -175,7 +176,7 @@ TML<T>::TML(int rows, int columns, const T* values): nrows_(rows), ncols_(column
     dataPtr += ncols_;
   }
 
-  memcpy( (void*) (mdata_[0]), (void*) values, sz*sizeof(T) );
+ std::memcpy( (void*) (mdata_[0]), (void*) values, sz*sizeof(T) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -196,7 +197,7 @@ TML<T>::TML( TML<T> const& X ): ReferenceCounter<TML<T> >(), nrows_(X.nrows_), n
      dataPtr += ncols_;
   }
 
-  memcpy( (void*) (mdata_[0]), (void*) ((X.mdata_)[0]), sz*sizeof(T) );
+  std::memcpy( (void*) (mdata_[0]), (void*) ((X.mdata_)[0]), sz*sizeof(T) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
