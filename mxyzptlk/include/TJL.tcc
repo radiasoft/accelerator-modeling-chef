@@ -75,6 +75,7 @@
 #include <fstream>
 #include <limits>
 #include <algorithm>
+#include <cstring>
 #include <mxyzptlk/TJetEnvironment.h>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
@@ -386,7 +387,7 @@ TJL<T>::TJL( TJL<T> const& x ): ReferenceCounter<TJL<T> >(),
 {
  
  initStore( x.jltermStoreCapacity_ );
- memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
+ std::memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
  jltermStoreCurrentPtr_ = jltermStore_ + (x.jltermStoreCurrentPtr_ - x.jltermStore_);
 
 
@@ -418,7 +419,7 @@ JLPtr<T>  TJL<T>::makeTJL( TJL<U> const& x )
   p->lowWgt_   = x.lowWgt_;
   p->myEnv_    = x.myEnv_;
  
-   memcpy( p->jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
+   std::memcpy( p->jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
    p->jltermStoreCurrentPtr_ = p->jltermStore_ + (x.jltermStoreCurrentPtr_ - x.jltermStore_);
 
   return JLPtr<T>(p);
@@ -463,7 +464,7 @@ int         old_jltermStoreCapacity   = 0;
     jltermStore_ = jltermStoreCurrentPtr_ = TJLterm<T>::array_allocate( jltermStoreCapacity_ );
  
 
-    memcpy( jltermStore_, old_jltermStore, (old_jltermStoreCurrentPtr-old_jltermStore )*sizeof(TJLterm<T>) );
+    std::memcpy( jltermStore_, old_jltermStore, (old_jltermStoreCurrentPtr-old_jltermStore )*sizeof(TJLterm<T>) );
     jltermStoreCurrentPtr_ = jltermStore_ + (old_jltermStoreCurrentPtr - old_jltermStore );
 
 
@@ -1282,7 +1283,7 @@ TJL<T>& TJL<T>::operator=( const TJL<T>& x )  {
  };
 
  
- memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
+ std::memcpy( jltermStore_, x.jltermStore_, (x.jltermStoreCurrentPtr_-x.jltermStore_)*sizeof(TJLterm<T>) );
  jltermStoreCurrentPtr_ = jltermStore_ + (x.jltermStoreCurrentPtr_-x.jltermStore_);
 
  
