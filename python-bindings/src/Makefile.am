@@ -35,46 +35,32 @@ libpurepyphysics_toolkit_la_SOURCES = $(libpyphysics_toolkit_la_SOURCES)
 # libpychef_la_SOURCES            =   py-chef-module.cpp 
 
 libpurepybasic_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
-    ../../physics_toolkit/src/libphysics_toolkit.la \
-    ../../beamline/src/libbeamline.la \
-    ../../bmlfactory/src/libbmlfactory.la \
-    -lglib-2.0 \
-    ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la 
 
 libpurepymxyzptlk_la_LIBADD = $(BOOST_PYTHON_LINK) \
-    ../../physics_toolkit/src/libphysics_toolkit.la \
-    ../../beamline/src/libbeamline.la \
-    ../../bmlfactory/src/libbmlfactory.la \
-    -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la 
 
 libpurepybeamline_la_LIBADD = $(BOOST_PYTHON_LINK) \
-    ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
-    ../../bmlfactory/src/libbmlfactory.la \
-    -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
 libpurepybmlfactory_la_LIBADD = $(BOOST_PYTHON_LINK) \
-    ../../physics_toolkit/src/libphysics_toolkit.la \
-    ../../beamline/src/libbeamline.la \
     ../../bmlfactory/src/libbmlfactory.la \
-    -lglib-2.0 \
+    ../../parsers/xsif/src/libxsifparser.la \
+    ../../beamline/src/libbeamline.la \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la \
-    ../../parsers/xsif/src/libxsifparser.la \
-    $(BOOST_REGEX_LINK)
+    $(BOOST_REGEX_LINK) \
+    -lglib-2.0 
     
 libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../physics_toolkit/src/libphysics_toolkit.la \
     ../../beamline/src/libbeamline.la \
-    ../../bmlfactory/src/libbmlfactory.la \
-    -lglib-2.0 \
     ../../mxyzptlk/src/libmxyzptlk.la \
-    ../../basic_toolkit/src/libbasic_toolkit.la
+    ../../basic_toolkit/src/libbasic_toolkit.la 
+
 
 CPPFLAGS   =     $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC) $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src 
 
