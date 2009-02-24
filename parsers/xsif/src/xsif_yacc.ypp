@@ -37,14 +37,16 @@
 
   /**** ----------------------------------------- ***/  
 
+%debug         
 %skeleton "lalr1.cc"
-%require "2.3"    
-%define   "parser_class_name" "XsifParser"
+%require "2.4"    
+%define  parser_class_name "XsifParser"
+%define   namespace  "xsif_yy"
 %output="XsifParser_ypp.cc"
 %lex-param   {void* yyscanner} 
 %parse-param {void* yyscanner}
 %name-prefix="xsif_yy"                            /**** note: this affects the namespace yy ***/  
-%token-table
+ %token-table
 %defines
 %{
 

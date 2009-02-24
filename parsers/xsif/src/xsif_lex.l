@@ -48,6 +48,7 @@
 #include <string>
 #include <basic_toolkit/iosetup.h>
 #include <unistd.h>
+#include <boost/algorithm/string.hpp>
 
 #include "XsifParserDriver.h"
 #include "XsifParser_ypp.hh"
