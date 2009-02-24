@@ -69,6 +69,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <cstring>
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/IntArray.h>
@@ -356,7 +357,7 @@ std::istream& operator>>( std::istream& is, IntArray& x )
   i = 0;
   is >> buf;
 
-  while( buf[ strlen(buf) - 1 ] != ')' ) {
+  while( buf[ std::strlen(buf) - 1 ] != ')' ) {
     x.comp_[i++] = atoi( buf );
     is >> buf;
   }
