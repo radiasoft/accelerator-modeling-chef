@@ -252,6 +252,7 @@ void BeamlineContext::saveDatabase( std::string const& dbname) const
 void BeamlineContext::setParticle( Particle const& p) 
 { 
   particle_ = p.Clone();
+  clear();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -268,6 +269,7 @@ char const*  BeamlineContext::dbname() const
 void BeamlineContext::setInitialCS( CSLattFuncs const& u )
 {
   initialCSLattFuncs_       = u;
+  clear();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -276,6 +278,7 @@ void BeamlineContext::setInitialCS( CSLattFuncs const& u )
 void BeamlineContext::setInitialCS4D( CSLattFuncs4D const& u )
 {
   initialCS4DLattFuncs_       = u;
+  clear();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -399,10 +402,14 @@ void BeamlineContext::propagateReferenceOrbit()
 
    Vector& state = p.State();
 
-   state[0] =  initialCSLattFuncs_.reference_orbit.x;
-   state[3] =  initialCSLattFuncs_.reference_orbit.xp;
-   state[1] =  initialCSLattFuncs_.reference_orbit.y;
-   state[4] =  initialCSLattFuncs_.reference_orbit.yp;
+   state[0] =  initialCSLattFuncs_.orbit.x;
+   state[3] =  initialCSLattFuncs_.orbit.xp;
+
+   state[1] =  initialCSLattFuncs_.orbit.y;
+   state[4] =  initialCSLattFuncs_.orbit.yp;
+
+   state[2] =  initialCSLattFuncs_.orbit.cdt;
+   state[5] =  initialCSLattFuncs_.orbit.ndp;
 
    refjp_ = JetParticle(p);
 
@@ -786,6 +793,14 @@ std::vector<double> BeamlineContext::arclength() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+std::vector<double> BeamlineContext::gamma() const
+{
+  return Optics::gamma(dbname_);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 std::vector<double> BeamlineContext::beta_x() const
 {
   return Optics::beta_x(dbname_);
@@ -912,8 +927,6 @@ std::vector<double> BeamlineContext::eta_y() const
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
 
 std::vector<double> BeamlineContext::etap_x() const
 {
