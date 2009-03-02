@@ -71,6 +71,7 @@
 
 #include <iomanip>
 #include <fstream>
+#include <limits>
 
 #include <basic_toolkit/utils.h> // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/iosetup.h>
@@ -1219,6 +1220,18 @@ typename TJet<T>::coeff_proxy
 TJet<T>::operator[]( IntArray const& index)
 {
   return  coeff_proxy( this->jl_, index );   
+}    
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+bool TJet<T>::isNull() const
+{
+  for ( const_iterator it = begin(); it != end(); ++it ) {
+     if ( std:: abs(it->value_) >   10.0*std::numeric_limits<double>::epsilon() ) return false;
+  }
+  return true; 
 }    
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
