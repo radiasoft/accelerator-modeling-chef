@@ -153,75 +153,12 @@ void ConvolutionFFTPolicy<T>::resetLHS( std::vector<T>  const& lhs)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-template<>
-template<typename Fnct>
-ConvolutionFFTPolicy<double>::ConvolutionFFTPolicy( int nsamples, Fnct lhs, bool measure )
-  : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
-{
-  
-  lhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-  rhsdata_.resize(  2 * (nsamples/2+ 1) ); 
-   result_.resize(  2 * nsamples ); 
-
-  forward_transform_ =  FFTFunctor<double, std::complex<double>, fft_forward >( nsamples_, measure);  
-  inverse_transform_ =  FFTFunctor<std::complex<double>, double, fft_backward>( nsamples_, measure);
-
-  int i = 0;
-  for (  double* it  = &lhsdata_[0];  
-                 it != &lhsdata_[0] + fft_input_array_size_;  ++it, ++i ) {
-   (*it) = lhs(i);
-  }
-
-  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
-  
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<>
-template<typename Fnct>
-ConvolutionFFTPolicy<std::complex<double> >::ConvolutionFFTPolicy( int nsamples, Fnct lhs, bool measure)
-  : nsamples_(nsamples),  fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples)  
-{
-  
-  lhsdata_.resize(  2 * nsamples );
-  rhsdata_.resize(  2 * nsamples );
-   result_.resize(  2 * nsamples ); 
-
-  forward_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >( nsamples, measure);  
-  inverse_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>( nsamples, measure);
-
-  int i = 0;
-  for ( std::complex<double>* it  = ( std::complex<double>* ) &lhsdata_[0];  
-                              it != ( std::complex<double>* ) &lhsdata_[0]+ fft_input_array_size_ ;  ++it, ++i) {
-    (*it) = lhs(i);
-  };
-
-  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 template <typename T>
 ConvolutionInnerProductPolicy<T>::ConvolutionInnerProductPolicy( int nsamples, bool measure )
-: lhsdata_(nsamples), result_(nsamples)
+: lhsdata_(nsamples), result_()
 {}
  
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template <typename T>
-template <typename Fnct>
-ConvolutionInnerProductPolicy<T>::ConvolutionInnerProductPolicy(  int nsamples, Fnct lhs, bool measure ) 
-: lhsdata_(nsamples), result_(nsamples)
-{
-  for (int i=0; i<nsamples; ++i) { lhsdata_[i] = lhs(i); }
-}
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -235,19 +172,40 @@ ConvolutionInnerProductPolicy<T>:: ~ConvolutionInnerProductPolicy()
 template <typename T>
 std::vector<T> const&  ConvolutionInnerProductPolicy<T>::operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs )
 { 
-  //-----------------------------------------------
-  // Discrete Convolution   h[n] = Sum_m f[n-m] g[m] 
-  //------------------------------------------------
 
-   typename std::vector<T>::const_reverse_iterator itlhs1 = lhs.rbegin();
-   typename std::vector<T>::const_reverse_iterator itlhs2 = lhs.rend();
-   typename std::vector<T>::const_iterator itrhs1         = rhs.begin();
+  //---------------------------------------------------------------
+  // Performs the discrete Convolution   h[n] = Sum_m f[m] g[n-m] 
+  // f and g are assumed to be sampled equally with e same interval 
+  // value. The number of samples in for function need not be equal.  
+  //----------------------------------------------------------------
 
-   for ( typename std::vector<T>::reverse_iterator rit  = result_.rbegin(); 
-                                                   rit != result_.rend(); ++rit, ++itlhs1, ++itrhs1 ) {   
-     
-         (*rit) = std::inner_product( itlhs1, itlhs2, itrhs1, T() );
+   result_.clear();
+
+   typename std::vector<T>::const_iterator         itlhs1   =   lhs.begin();
+   typename std::vector<T>::const_iterator         itlhs2   = ++(lhs.begin());
+   typename std::vector<T>::const_reverse_iterator itrhs1   = --(rhs.rend());
+
+   typename std::vector<T>::iterator it  = result_.begin(); 
+
+   for (  ; itlhs2 != lhs.end(); ++itlhs2, --itrhs1 ) {
+        if ( std::distance( itlhs1, itlhs2 ) <= std::distance( itrhs1, rhs.rend()) ) {
+            result_.push_back( std::inner_product( itlhs1, itlhs2, itrhs1, T() ) );
+        }
+        else {
+            result_.push_back( std::inner_product( itrhs1, rhs.rend(), itlhs1, T() ) );
+        }
+   }
    
+   itrhs1 = rhs.rbegin();  
+   ++itlhs1;
+ 
+   for (  ; itlhs1 != lhs.end(); ++itlhs1 ) {
+       if (std::distance( itlhs1, itlhs2 ) <= std::distance( itrhs1, rhs.rend()) ) { 
+            result_.push_back( std::inner_product( itlhs1, itlhs2, itrhs1, T() ));
+       }
+       else {
+            result_.push_back( std::inner_product( itrhs1, rhs.rend(), itlhs1, T() ) );
+       }
    }
 
   return result_;
@@ -259,19 +217,38 @@ std::vector<T> const&  ConvolutionInnerProductPolicy<T>::operator()( std::vector
 template <typename T>
 std::vector<T> const&   ConvolutionInnerProductPolicy<T>::operator()( std::vector<T>  const& rhs )
 {
+  
   //------------------------------------------------
-  // Discrete Convolution   h[n] = Sum_m f[n-m] g[m] 
-  //------------------------------------------------
- 
-  typename std::vector<T>::const_reverse_iterator itlhs1 = lhsdata_.rbegin();
-  typename std::vector<T>::const_reverse_iterator itlhs2 = lhsdata_.rend();
-  typename std::vector<T>::const_iterator itrhs1         = rhs.begin();
+  // Discrete Convolution   h[n] = Sum_m f[m] g[n-m] 
+  //-------------------------------------------------
 
-   for ( typename std::vector<T>::reverse_iterator rit  = result_.rbegin(); 
-                                                   rit != result_.rend(); ++rit, ++itlhs1, ++itrhs1  ) {
-     
-         (*rit) = std::inner_product( itlhs1, itlhs2, itrhs1 , T());
+   result_.clear();
+
+   typename std::vector<T>::const_iterator         itlhs1   =   lhsdata_.begin();
+   typename std::vector<T>::const_iterator         itlhs2   = ++(lhsdata_.begin());
+   typename std::vector<T>::const_reverse_iterator itrhs1   = --(rhs.rend());
+
+   typename std::vector<T>::iterator it  = result_.begin(); 
+
+   for (  ; itlhs2 != lhsdata_.end(); ++it, ++itlhs2, --itrhs1 ) {
+        if (std::distance( itlhs1,itlhs2 ) <= std::distance(itrhs1, rhs.rend()) ) {
+             result_.push_back(std::inner_product( itlhs1, itlhs2, itrhs1, T() ) );
+        }
+        else {
+             result_.push_back(std::inner_product( itrhs1, rhs.rend(), itlhs1, T() ) );
+        }
+   }
    
+   itrhs1 = rhs.rbegin();  
+   ++itlhs1;
+ 
+   for (  ; itlhs1 != lhsdata_.end(); ++it, ++itlhs1 ) {
+       if (std::distance( itlhs1, itlhs2 ) <= std::distance( itrhs1, rhs.rend()) ){ 
+            result_.push_back( std::inner_product( itlhs1, itlhs2, itrhs1, T() ) );
+       }
+       else {
+            result_.push_back( std::inner_product( itrhs1, rhs.rend(), itlhs1, T() ) );
+       }
    }
 
   return result_;

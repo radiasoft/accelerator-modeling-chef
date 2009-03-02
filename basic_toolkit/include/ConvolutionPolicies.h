@@ -45,6 +45,7 @@
 #include <vector>
 
 #include <basic_toolkit/FFTWAllocator.h>
+#include <basic_toolkit/FFTFunctor.h>
 
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
@@ -115,6 +116,54 @@ template<>
 ConvolutionFFTPolicy<std::complex<double> >::ConvolutionFFTPolicy( int array_size, bool measure );
 
 
+template<>
+template<typename Fnct>
+ConvolutionFFTPolicy<double>::ConvolutionFFTPolicy( int nsamples, Fnct lhs, bool measure )
+  : nsamples_(nsamples), fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples/2+1)   
+{
+  
+  lhsdata_.resize(  2 * (nsamples/2+ 1) ); 
+  rhsdata_.resize(  2 * (nsamples/2+ 1) ); 
+   result_.resize(  2 * nsamples ); 
+
+  forward_transform_ =  FFTFunctor<double, std::complex<double>, fft_forward >( nsamples_, measure);  
+  inverse_transform_ =  FFTFunctor<std::complex<double>, double, fft_backward>( nsamples_, measure);
+
+  int i = 0;
+  for (  double* it  = &lhsdata_[0];  
+                 it != &lhsdata_[0] + fft_input_array_size_;  ++it, ++i ) {
+   (*it) = lhs(i);
+  }
+
+  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
+  
+}
+// ------------------------------------------------------------------------------------------------------------
+
+template<>
+template<typename Fnct>
+ConvolutionFFTPolicy<std::complex<double> >::ConvolutionFFTPolicy( int nsamples, Fnct lhs, bool measure)
+  : nsamples_(nsamples),  fft_input_array_size_(nsamples),  fft_output_array_size_(nsamples)  
+{
+  
+  lhsdata_.resize(  2 * nsamples );
+  rhsdata_.resize(  2 * nsamples );
+   result_.resize(  2 * nsamples ); 
+
+  forward_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_forward >( nsamples, measure);  
+  inverse_transform_ =  FFTFunctor<std::complex<double>, std::complex<double>, fft_backward>( nsamples, measure);
+
+  int i = 0;
+  for ( std::complex<double>* it  = ( std::complex<double>* ) &lhsdata_[0];  
+                              it != ( std::complex<double>* ) &lhsdata_[0]+ fft_input_array_size_ ;  ++it, ++i) {
+    (*it) = lhs(i);
+  };
+
+  forward_transform_(   (FFT_Input_t*) &lhsdata_[0] );
+
+}
+
+
 //------------------------------------------------------------------------------------------------------------
 
 template<typename T>
@@ -140,6 +189,16 @@ class ConvolutionInnerProductPolicy  {
 
 
 };
+
+
+template <typename T>
+template <typename Fnct>
+ConvolutionInnerProductPolicy<T>::ConvolutionInnerProductPolicy(  int nsamples, Fnct lhs, bool measure ) 
+: lhsdata_(nsamples), result_()
+{
+ for (int i=0; i<nsamples; ++i) { lhsdata_[i] = lhs(i);}
+}
+
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
 #include <basic_toolkit/ConvolutionPolicies.tcc>
