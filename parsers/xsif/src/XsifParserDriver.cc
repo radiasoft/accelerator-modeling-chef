@@ -34,6 +34,7 @@
 #include <boost/assign/std/vector.hpp> 
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <basic_toolkit/PhysicsConstants.h>
@@ -348,18 +349,8 @@ bool XsifParserDriver::validate_attributes( std::string const& name, std::map<st
 
 int XsifParserDriver::parse(string const& f)
 {
-  int bufsize     = 1024; 
-  char* saved_cwd = new char[bufsize];
 
-#ifdef _WIN32
-  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
-  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
-   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
-  }
-
-#else
-  getcwd( saved_cwd, bufsize);
-#endif
+  boost::filesystem::path saved_cwd  = boost::filesystem::current_path(); 
  
   m_file = f; 
   m_input_is_file = true;    
@@ -377,12 +368,11 @@ int XsifParserDriver::parse(string const& f)
   scan_end(  m_yyscanner);
   
 #ifdef _WIN32
-  setCurrentDirectory(saved_cwd);
+  setCurrentDirectory(saved_cwd.string().c_str());
 #else
-  chdir(saved_cwd);  
+  chdir(saved_cwd.string().c_str());  
 #endif 
 
-  delete [] saved_cwd; 
   return ret;
 }
 
@@ -392,18 +382,8 @@ int XsifParserDriver::parse(string const& f)
 int XsifParserDriver::parseFromBuffer(char const* buffer)
 {
  
-  int bufsize     = 1024; 
-  char* saved_cwd = new char[bufsize];
+  boost::filesystem::path saved_cwd  = boost::filesystem::current_path(); 
 
-#ifdef _WIN32
-  GetFullPathName( f.cstr(), bufsize, saved_cwd,  0); // this is done in order to reliably receive the drive letter prefix.  
-  for (int i=strlen(saved_cwd)-1; i >=0; --i) {
-   if (saved_cwd[i] == '\\') { saved_cwd[i] = 0; break; 
-  }
-#else
-  getcwd( saved_cwd, bufsize);
-#endif
- 
   m_buffer = buffer; 
   m_input_is_file = false;    
    
@@ -420,12 +400,11 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
   scan_end(  m_yyscanner);
   
 #ifdef _WIN32
-  setCurrentDirectory(saved_cwd);
+  setCurrentDirectory(saved_cwd.string().c_str());
 #else
-  chdir(saved_cwd);  
+  chdir(saved_cwd.string().c_str());  
 #endif 
 
-  delete [] saved_cwd; 
   return ret;
 
 }
@@ -1115,7 +1094,7 @@ ElmPtr XsifParserDriver::make_drift(  ConstElmPtr& udelm, double const& BRHO, st
    double length = 0.0;  bool attribute_length = false; 
    if ( eval( string("L"), attributes, value) )  { attribute_length = true; length = any_cast<double>(value); } 
    
-   elm = (udelm) ?  dynamic_cast<drift*>( udelm->Clone() ) : new drift();           
+   elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();           
 
    elm->rename( label.c_str() );
    if (  attribute_length ) elm->setLength( length );
@@ -1131,7 +1110,7 @@ ElmPtr XsifParserDriver::make_marker(   ConstElmPtr& udelm, double const& BRHO, 
 {
       marker* elm = 0;
 
-      elm = (udelm) ?  dynamic_cast<marker*>( udelm->Clone() ) : new marker();  
+      elm = (udelm) ? dynamic_cast<marker*>( udelm->Clone() ) : new marker();  
 
       elm->rename( label.c_str() );
 
@@ -1805,7 +1784,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
    elm->setLength(length);
    elm->setFrequency(freq*1.0e6);
    elm->setStrength(deltae*1.0e-3);
-   elm->setPhi(phi0*2.0*M_PI);
+   elm->setPhi(phi0*M_TWOPI);
      
    elm->setTag("LCAVITY");
    return ElmPtr(elm);
@@ -1818,7 +1797,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
 ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BRHO, std::string const& label, map<string,boost::any> const& attributes ) 
 {
  //----------------------------------------------------------------------------------------------
- // valid attributes for type RFCAVITY
+ // valid attributes for type RFCAVITY [xsif]
  // ---------------------------------------------------------------------------------------------
  // L           length in m                   
  // VOLT        cavity voltage                    
@@ -1835,44 +1814,78 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
  //----------------------------------------------------------------------------------------------
  // SHUNT       extension: shunt impedance
  //-----------------------------------------------------------------------------------------------
-  
-  
+ //----------------------------------------------------------------------------------------------
+ // valid attributes for type RFCAVITY [MAD8]
+ // ---------------------------------------------------------------------------------------------
+ // L       The length of the cavity (default: 0 m)
+ // VOLT    The peak RF voltage (default: 0 MV). The effect of the cavity is
+ //         delta(E) = VOLT * sin(2 pi * (LAG - HARMON * f0 t)).
+ // LAG     The phase lag [2pi] (default: 0). 
+ // HARMON  The harmonic number h (no default). Note that the RF frequency is computed 
+ //         from the harmonic number and the revolution frequency f0. 
+ //         The frequency attribute FREQ must no longer be used.
+ // BETRF   RF coupling factor (default: 0).
+ //         PG: The RF power per cavity (default: 0 MW).
+ // SHUNT   The relative shunt impedance (default: 0 MOhm/m).
+ // TFILL   The filling time of the cavity Tfill (default: 0 microseconds)
+// ---------------------------------------------------------------------------------------------
+
   any value;
-  bmlnElmnt* elm = 0;
+  rfcavity* elm = 0;
 
-  double length   = 0.0;
-  double volt     = 0.0;
-  double lag      = 0.0;
-  double freq     = 0.0;
-  int    harmon   = 0;
-  double energy   = 0.0;
-  double eloss    = 0.0;
-  string lfile    = "";
-  string tfile    = "";
-  int    nbin     = 0;
-  int    binmax   = 0;
-  double aperture = 0.0;
-  double shunt    = 0.0;
+  double length   = 0.0;    bool attribute_length   = false;  
+  double volt     = 0.0;    bool attribute_volt     = false; 
+  double lag      = 0.0;    bool attribute_lag      = false;
+  double freq     = 0.0;    bool attribute_freq     = false;
+  int    harmon   = 0;      bool attribute_harmon   = false;
+  double energy   = 0.0;    bool attribute_energy   = false;
+  double eloss    = 0.0;    bool attribute_eloss    = false;
+  string lfile    = "";     bool attribute_lfile    = false;
+  string tfile    = "";     bool attribute_tfile    = false;
+  int    nbin     = 0;      bool attribute_nbin     = false;
+  int    binmax   = 0;      bool attribute_binmax   = false;
+  double aperture = 0.0;    bool attribute_aperture = false;
+  double shunt    = 0.0;    bool attribute_shunt    = false;
+  double betrf    = 0.0;    bool attribute_betrf    = false;
+  double tfill    = 0.0;    bool attribute_tfill    = false;
 
-  if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
-  if ( eval( string("VOLT"),     attributes, value) )    volt     = any_cast<double>(value); 
-  if ( eval( string("LAG"),      attributes, value) )    lag      = any_cast<double>(value); 
-  if ( eval( string("FREQ"),     attributes, value) )    freq     = any_cast<double>(value); 
-  if ( eval( string("HARMON"),   attributes, value) )    harmon   = any_cast<double>(value); 
-  if ( eval( string("ENERGY"),   attributes, value) )    energy   = any_cast<double>(value); 
-  if ( eval( string("ELOSS"),    attributes, value) )    eloss    = any_cast<double>(value); 
-  if ( eval( string("LFILE"),    attributes, value) )    lfile    = any_cast<string>(value); 
-  if ( eval( string("TFILE"),    attributes, value) )    tfile    = any_cast<string>(value); 
-  if ( eval( string("NBIN"),     attributes, value) )    nbin     = any_cast<double>(value); 
-  if ( eval( string("BINMAX"),   attributes, value) )    binmax   = any_cast<double>(value); 
-  if ( eval( string("APERTURE"), attributes, value) )    aperture = any_cast<double>(value); 
-  if ( eval( string("SHUNT"),    attributes, value) )    shunt    = any_cast<double>(value); 
+// ---------------------------------------------------------------------------------------------
+  if ( eval( string("L"),        attributes, value) )    { attribute_length   = true;   length   = any_cast<double>(value); } 
+  if ( eval( string("VOLT"),     attributes, value) )    { attribute_volt     = true;   volt     = any_cast<double>(value); }
+  if ( eval( string("LAG"),      attributes, value) )    { attribute_lag      = true;   lag      = any_cast<double>(value); }
+  if ( eval( string("FREQ"),     attributes, value) )    { attribute_freq     = true;   freq     = any_cast<double>(value); }
+  if ( eval( string("HARMON"),   attributes, value) )    { attribute_harmon   = true;   harmon   = any_cast<double>(value); }
+  if ( eval( string("ENERGY"),   attributes, value) )    { attribute_energy   = true;   energy   = any_cast<double>(value); }
+  if ( eval( string("ELOSS"),    attributes, value) )    { attribute_eloss    = true;   eloss    = any_cast<double>(value); }
+  if ( eval( string("LFILE"),    attributes, value) )    { attribute_lfile    = true;   lfile    = any_cast<string>(value); }
+  if ( eval( string("TFILE"),    attributes, value) )    { attribute_tfile    = true;   tfile    = any_cast<string>(value); }
+  if ( eval( string("NBIN"),     attributes, value) )    { attribute_nbin     = true;   nbin     = any_cast<double>(value); }
+  if ( eval( string("BINMAX"),   attributes, value) )    { attribute_binmax   = true;   binmax   = any_cast<double>(value); }
+  if ( eval( string("APERTURE"), attributes, value) )    { attribute_aperture = true;   aperture = any_cast<double>(value); }
+  if ( eval( string("SHUNT"),    attributes, value) )    { attribute_shunt    = true;   shunt    = any_cast<double>(value); }
 
   
-  elm = new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt );
+  elm = (udelm) ? dynamic_cast<rfcavity*>( udelm->Clone() ) : new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt );
 
+  if (attribute_length ) { elm->setLength(length);        }
+  if (attribute_volt   ) { elm->setStrength(volt*1.0e-3); } // MAD uses MeV, rfcavity expects GeV  
+  if (attribute_lag    ) { elm->setPhi(lag*2.0*M_PI);     }
+  if (attribute_harmon ) { elm->setHarmon(harmon);        }
+  if (attribute_shunt  ) { elm->setR(shunt);              }
+
+  // NOT IMPLEMENTED YET
+
+  // ENERGY
+  // ELOSS
+  // LFILE
+  // TFILE
+  // NBIN
+  // BINMAX
+  // APERTURE
+  // TFILL
+  // BETRF
   // ......................................................................
-  // NOTE: I cannot set the frequency of the rf cavity from harmonic number
+  // NOTE: cannot set the frequency of the rf cavity from harmonic number
   // until the revolution frequency is known; i.e. until the beamline
   // model is instantiated.  Thus, the rf cavity must be completed
   // by a registration visitor before being used.
@@ -1902,7 +1915,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
  //-----------------------------------------------------------------------------------------------
                        
   any value;
-  bmlnElmnt* elm = 0;
+  Monitor* elm = 0;
 
   double length = 0.0;   bool attribute_length = false;
   double xserr  = 0.0;   bool attribute_xserr  = false;
@@ -1916,7 +1929,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    { attribute_xrerr  = true; xrerr   = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    { attribute_yrerr  = true; yrerr   = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<monitor*>( udelm->Clone() ) : new monitor();
+  elm = (udelm) ? dynamic_cast<Monitor*>( udelm->Clone() ) : new Monitor();
 
   elm->rename(label);
 
@@ -1947,7 +1960,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
                        
   
   any value;
-  hmonitor* elm = 0;
+  HMonitor* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
   double xserr  = 0.0;  bool attribute_xserr  = false;
@@ -1962,7 +1975,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    { attribute_xrerr  = true; xrerr    = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    { attribute_yrerr  = true; yrerr    = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<hmonitor*>( udelm->Clone() ) : new hmonitor();
+  elm = (udelm) ? dynamic_cast<HMonitor*>( udelm->Clone() ) : new HMonitor();
 
   elm->rename(label);
 
@@ -1994,7 +2007,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
                        
   
   any value;
-  vmonitor* elm = 0;
+  VMonitor* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
   double xserr  = 0.0;  bool attribute_xserr  = false;
@@ -2008,7 +2021,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    {  attribute_xrerr  = true; xrerr    = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    {  attribute_yrerr  = true; yrerr    = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<vmonitor*>( udelm->Clone() ) : new vmonitor();
+  elm = (udelm) ? dynamic_cast<VMonitor*>( udelm->Clone() ) : new VMonitor();
 
   elm->rename(label);
    
