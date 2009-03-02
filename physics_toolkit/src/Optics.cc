@@ -38,6 +38,7 @@
 #include <mxyzptlk/Jet__environment.h>
 #include <beamline/beamline.h>
 #include <beamline/rfcavity.h>
+#include <beamline/Monitor.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/LatticeFunctions.h>
@@ -337,7 +338,7 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
   sql.str("");
   sql << "CREATE TABLE " 
       << "REFERENCE_ORBIT "
-      << "( iseq INTEGER PRIMARY KEY, arclength REAL, xco REAL,  yco REAL )"
+      << "( iseq INTEGER PRIMARY KEY, arclength REAL, xco REAL,  yco REAL, beta REAL, gamma REAL )"
       << std::ends;
 
   sqlite::execute(db, sql.str(),true );
@@ -352,7 +353,7 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
 
   sql.str("");
   sql << "INSERT INTO REFERENCE_ORBIT "  
-      << " ( iseq, arclength, xco, yco )  VALUES (?, ?, ?, ? )" << std::ends;
+      << " ( iseq, arclength, xco, yco, beta, gamma )  VALUES (?, ?, ?, ?, ?, ?)" << std::ends;
 
   sqlite::command cmd_corbit(db, sql.str());
 
@@ -376,11 +377,11 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
       lng += (*it)->OrbitLength( p );
 
       cmd_elements.clear();
-      cmd_elements % ++iseq % (int) &(*it) % (*it)->Name() % (*it)->Type() % (*it)->Length() % (*it)->Strength() ;  
+      cmd_elements % ++iseq % (int) &(*it) % (*it)->Name() % (*it)->Type() % (*it)->Length() % (*it)->Strength();
       cmd_elements();
 
       cmd_corbit.clear();
-      cmd_corbit     %  iseq %  lng % p.get_x() %  p.get_y();  
+      cmd_corbit     %  iseq %  lng % p.get_x() %  p.get_y()  % p.Beta() % p.Gamma();  
       cmd_corbit();
   };
 
@@ -644,8 +645,8 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
    Jet__environment::pushEnv(env );
   JetC__environment::pushEnv(envc); 
  
-  
   Particle    p0(jparg);
+
   JetParticle jp(p0);   // resets state 
 
   CSLattFuncs const& lf = initialConditions;
@@ -1844,6 +1845,17 @@ std::vector<double> arclength (std::string const& dbname )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+std::vector<double> gamma( std::string const& dbname)
+{
+  static const std::string sql( "SELECT gamma FROM ELEMENTS, REFERENCE_ORBIT "
+                                "WHERE ( REFERENCE_ORBIT.iseq =  ELEMENTS.iseq )" );
+
+  return Optics::lattice_function( dbname, sql);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 std::vector<double> beta_x ( std::string const& dbname)
 {
   static const std::string sql( "SELECT betax FROM ELEMENTS, COURANT_SNYDER "
@@ -1851,7 +1863,6 @@ std::vector<double> beta_x ( std::string const& dbname)
 
  return Optics::lattice_function ( dbname, sql);
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -2042,5 +2053,8 @@ std::vector<double> etap_y ( std::string const& dbname)
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+
 
 } // namespace Optics
