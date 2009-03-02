@@ -19,7 +19,7 @@ AC_CONFIG_AUX_DIR(config)
 
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
-AC_CONFIG_HEADERS
+#AC_CONFIG_HEADERS
 
 AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
 if test "x${withval}" != "xno"; then
