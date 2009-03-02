@@ -67,9 +67,6 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <beamline/drift.h>
-#include <beamline/marker.h>
-#include <beamline/monitor.h>
-#include <beamline/Slot.h>
 #include <beamline/beamline.h>
 
 using namespace std;
