@@ -77,6 +77,8 @@ double toDouble(Jet    const& value) { return value.standardPart(); }
 template<typename Elm_t, typename Particle_t>
 double setMonitorState( Elm_t elm,  Particle_t const& p );
 
+//-------------------------------------------------------------------------------
+
 template<typename Particle_t>
 double setMonitorState( Monitor const& elm,  Particle_t const& p )
 {
@@ -91,6 +93,8 @@ double setMonitorState( Monitor const& elm,  Particle_t const& p )
         elm.setNpy( toDouble(state[i_npy]) );
 }
 
+//-------------------------------------------------------------------------------
+
 template<typename Particle_t>
 double setMonitorState( VMonitor const& elm,  Particle_t const& p )
 {
@@ -102,6 +106,8 @@ double setMonitorState( VMonitor const& elm,  Particle_t const& p )
   elm.setNpy( toDouble(state[i_npy]) );
 }
 
+//-------------------------------------------------------------------------------
+
 template<typename Particle_t>
 double setMonitorState( HMonitor const& elm,  Particle_t const& p )
 {
@@ -112,6 +118,8 @@ double setMonitorState( HMonitor const& elm,  Particle_t const& p )
   elm.setHposition( toDouble(state[i_x]) );
   elm.setNpx( toDouble(state[i_npx]) );
 }
+
+//-------------------------------------------------------------------------------
 
 template <typename Element_t, typename Particle_t>
 void propagate( Element_t const& elm, Particle_t& p )
@@ -134,6 +142,7 @@ void propagate( Element_t const& elm, Particle_t& p )
   state[i_cdt] -= elm.getReferenceTime();
 }
 
+//-------------------------------------------------------------------------------
 
 template<typename Element_t>
 void propagate( Element_t const& elm, ParticleBunch& b );
@@ -159,6 +168,8 @@ void propagate( Monitor const& elm, ParticleBunch& b )
 
 }
 
+//-------------------------------------------------------------------------------
+
 template<>
 void propagate( HMonitor const& elm, ParticleBunch& b )
 { 
@@ -175,6 +186,8 @@ void propagate( HMonitor const& elm, ParticleBunch& b )
  
   elm.setHposition( xpos/b.size());
 }
+
+//-------------------------------------------------------------------------------
 
 template<>
 void propagate( VMonitor const& elm, ParticleBunch& b )
@@ -193,6 +206,8 @@ void propagate( VMonitor const& elm, ParticleBunch& b )
   elm.setVposition( ypos/b.size());
 }
 
+
+//-------------------------------------------------------------------------------
 
 template<typename Element_t>
 void propagate( Element_t const& elm, JetParticleBunch& b ); 
@@ -217,6 +232,7 @@ void propagate( Monitor const& elm, JetParticleBunch& b )
 
 }
 
+//-------------------------------------------------------------------------------
 
 template<>
 void propagate( HMonitor const& elm, JetParticleBunch& b ) 
@@ -235,6 +251,8 @@ void propagate( HMonitor const& elm, JetParticleBunch& b )
 }
 
 
+//-------------------------------------------------------------------------------
+
 template<>
 void propagate( VMonitor const& elm, JetParticleBunch& b ) 
 { 
@@ -251,7 +269,6 @@ void propagate( VMonitor const& elm, JetParticleBunch& b )
   elm.setVposition( ypos/b.size());
 
 }
-
 
 
 //----------------------------------------------------------------------------------
