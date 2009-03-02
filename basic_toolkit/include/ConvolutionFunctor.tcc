@@ -37,16 +37,6 @@ ConvolutionFunctor<T, AlgorithmPolicy>::ConvolutionFunctor( int nsamples, bool m
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-template <typename T,  template<typename U> class AlgorithmPolicy >
-template <typename Fnct>
-ConvolutionFunctor<T, AlgorithmPolicy >::ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure ) 
-: AlgorithmPolicy<T>(nsamples, lhs, measure)
-{}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 template <typename T,  template<typename U> class AlgorithmPolicy >
 ConvolutionFunctor<T, AlgorithmPolicy >::~ConvolutionFunctor() 
 { }
