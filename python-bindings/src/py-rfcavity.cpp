@@ -36,23 +36,30 @@ void wrap_rfcavity () {
 class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def( init<const char*>() )
   .def( init<char*, double,double,double,double,double,double>() )    
-  .def("getPhi",             &rfcavity::getPhi,             return_value_policy<copy_const_reference>())
+  .def("frequency",          &rfcavity::frequency,       return_value_policy<copy_const_reference>())
+  .def("harmon",             &rfcavity::harmon,          return_value_policy<copy_const_reference>())
+  .def("phi",                &rfcavity::phi,             return_value_policy<copy_const_reference>())
+  .def("Q",                  &rfcavity::Q,               return_value_policy<copy_const_reference>())
+  .def("R",                  &rfcavity::R,               return_value_policy<copy_const_reference>())
+  .def("setHarmon",          &rfcavity::setHarmon)
+  .def("setFrequency",       &rfcavity::setFrequency) 
   .def("setPhi",             &rfcavity::setPhi)
-  .def("getRadialFrequency", &rfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
-  .def("getQ",               &rfcavity::getQ,               return_value_policy<copy_const_reference>())
-  .def("getR",               &rfcavity::getR,               return_value_policy<copy_const_reference>())
-  .def("Type",               &rfcavity::Type);
+  .def("Q",                  &rfcavity::setQ)
+  .def("R",                  &rfcavity::setR);
 
 
 class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<char *>() )
   .def(init< char*,    double,   double, double, double, double> () )    
-  .def("getPhi",             &thinrfcavity::getPhi,             return_value_policy<copy_const_reference>())
+  .def("frequency",          &thinrfcavity::frequency,       return_value_policy<copy_const_reference>())
+  .def("harmon",             &thinrfcavity::harmon,          return_value_policy<copy_const_reference>())
+  .def("phi",                &thinrfcavity::phi,             return_value_policy<copy_const_reference>())
+  .def("Q",                  &thinrfcavity::Q,               return_value_policy<copy_const_reference>())
+  .def("R",                  &thinrfcavity::R,               return_value_policy<copy_const_reference>())
+  .def("setHarmon",          &thinrfcavity::setHarmon)
+  .def("setFrequency",       &thinrfcavity::setFrequency) 
   .def("setPhi",             &thinrfcavity::setPhi)
-  .def("getRadialFrequency", &thinrfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
-  .def("getQ",               &thinrfcavity::getQ,               return_value_policy<copy_const_reference>())
-  .def("getR",               &thinrfcavity::getR,               return_value_policy<copy_const_reference>())
-  .def("Type",               &thinrfcavity::Type);
-
+  .def("Q",                  &thinrfcavity::setQ)
+  .def("R",                  &thinrfcavity::setR);
 }
 
 
