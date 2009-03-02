@@ -28,48 +28,9 @@
 *********************************************************************************/
 
 #include <boost/python.hpp>
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 
 using namespace boost::python;
-
-//------------------------------------------------------------------------------
-// local code and definition
-//------------------------------------------------------------------------------
-
-namespace {
-
-struct monitorWrap: monitor {
-  monitorWrap(PyObject* self)
-     : self_(self) {}
-
-  monitorWrap(PyObject* self, monitor const& elm)
-     : monitor(elm),self_(self)  {}
-
-  monitorWrap(PyObject* self, std::string const& name)
-     : self_(self), monitor(name) {}
-
-  monitorWrap(PyObject* self, std::string const& name, double length):
-       self_(self),monitor(name,length) {}
-
-    bool on();  
-    bool off();
-    const char* version();
-   
-    PyObject* self_;
-     
-};
-
-
-bool monitorWrap::on(){ 
-return call_method<bool>(self_, "on"); }
-
-bool monitorWrap::off(){ 
-return call_method<bool>(self_, "off"); }
-
-const char* monitorWrap::version(){ 
-return call_method<const char*>(self_, "version"); }
-
-}
 
 //------------------------------------------------------------------------------
 // wrapper code
@@ -77,22 +38,43 @@ return call_method<const char*>(self_, "version"); }
 
 void wrap_monitor () {
 
-class_<monitor, bases<bmlnElmnt>, boost::shared_ptr<monitorWrap> >("monitor", init<>() )
-  .def(init<std::string const&>() )
-  .def(init<std::string const&, double>() )
-  .def("on",               &monitorWrap::on)  
-  .def("off",              &monitorWrap::off) 
-  .def("version",          &monitorWrap::version)
-  .def("setDriftFraction", &monitor::setDriftFraction);
- 
- class_<hmonitor, bases<monitor>, HMonitorPtr >("hmonitor", init<>() )
-    .def( init<std::string const&>() )
-    .def( init<std::string const&, double const&>() );
+class_<Monitor,  bases<bmlnElmnt>, MonitorPtr >("Monitor", init<>() )
+.def( init<std::string const&>() )
+.def( init<std::string const&, double>() )
+.def("isEnabled",         &Monitor::isEnabled ) 
+.def("enable",            &Monitor::enable )
+.def("setDriftFraction",  &Monitor::setDriftFraction)
+.def("getDriftFraction",  &Monitor::getDriftFraction, return_value_policy<copy_const_reference>() )
+.def("hposition",         &Monitor::hposition )
+.def("vposition",         &Monitor::vposition )
+.def("setHposition",      &Monitor::setHposition )
+.def("setVposition",      &Monitor::setVposition )
+.def("npx",               &Monitor::npx )
+.def("npy",               &Monitor::npy )
+.def("setNpx",            &Monitor::setNpx )
+.def("setNpy",            &Monitor::setNpy );
+
+class_<HMonitor, bases<bmlnElmnt>, HMonitorPtr >("HMonitor", init<>() )
+.def( init<std::string const&>() )
+.def( init<std::string const&, double const&>() )
+.def("isEnabled",         &HMonitor::isEnabled )
+.def("enable",            &HMonitor::enable)
+.def("setDriftFraction",  &HMonitor::setDriftFraction)
+.def("getDriftFraction",  &HMonitor::getDriftFraction, return_value_policy<copy_const_reference>() )
+.def("hposition",         &HMonitor::hposition)
+.def("npx",               &HMonitor::npx    )
+.def("setNpx",            &HMonitor::setNpx );
 
 
-class_<vmonitor, bases<monitor>, VMonitorPtr >("vmonitor", init<>() )
-  .def(init<std::string const&>() )
-  .def(init<std::string const&, double const&>() );
- 
+class_<VMonitor,  bases<bmlnElmnt>, VMonitorPtr >("VMonitor", init<>() )
+.def( init<std::string const&>() )
+.def( init<std::string const&, double const&>() )
+.def("isEnabled",         &VMonitor::isEnabled )
+.def("enable",            &VMonitor::enable)
+.def("setDriftFraction",  &VMonitor::setDriftFraction)
+.def("getDriftFraction",  &VMonitor::getDriftFraction, return_value_policy<copy_const_reference>() )
+.def("vposition",         &VMonitor::vposition )
+.def("npy",               &VMonitor::npy    )
+.def("setNpy",            &VMonitor::setNpy );
 
 }
