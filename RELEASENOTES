@@ -1,6 +1,38 @@
+
+What has has been accomplished 
+
+(1) very substantial improvements in mxyzptlk performance. 
+(2) code is much cleaner ( 1 template vs 2 ). 
+    Uses std, well documented  smart pointers     
+    real - complex conversions handled transparently 
+    ( implicit conversions) 
+    "environment" are reference counted
+    reduced memory footprint, clean memomory management
+       
+
 -----------------------------------------------------------------
 Summary of significant changes since the 20080125 branch release
 -----------------------------------------------------------------
+
+o general cleanup:
+
+  Global consistent const correctness 
+  (e.g. "propagate does not change an element !) 
+  Ripple effects .. this is harder than you think. 
+
+
+  eliminate raw pointers pass by reference whenever possible
+
+  e.g., 
+        bool some_test ( bmlnElmt* p)  
+           
+ 
+        bool some_test ( bmlnElmnt const& p ) const 
+ 
+  take maximum advantage of standard iterators
+
+   
+  
 
 o Build system
 
@@ -14,7 +46,8 @@ o basic_toolkit
   - added new classes: NewtonSolver, QuasiNewtonSolver and LineSearch 
 
   - the Matrix and Vector classes now consistently use the [] / [][] 
-    syntax for element access ( implemented using proxy classes).  
+    syntax for element access ( implemented using proxy classes). 
+    This matters for templated code ! 
  
   - added support for %, a Vector outer product binary operator 
     v1 % v2 is a Matrix of dimension v1.Dim() x v2.Dim()
@@ -189,7 +222,7 @@ o beamline
     bug ... 
 
   
-  - The bmlnElmnt class has a new member: pscale_; This member
+  - The bmlnElmnt class has a new (private) member: pscale_; This member
     is used to keep track of the element strength scaling that
     occurs when the reference trajectory is established.  
     The benefit is that it is now possible to invoke RefRegVisitor
