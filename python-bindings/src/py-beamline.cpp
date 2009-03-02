@@ -180,6 +180,7 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("back",                       &beamline_back,  return_value_policy<reference_existing_object>() );
  beamline_.def("Momentum",                   &beamline::Momentum);
  beamline_.def("OrbitLength",                &beamline::OrbitLength);
+ beamline_.def("registerReference",          &beamline::registerReference);
  beamline_.def("accept",                     accept1);
 
 }
