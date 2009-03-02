@@ -836,15 +836,15 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = ElmPtr ( new hmonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
+        lbel = ElmPtr ( new HMonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = ElmPtr( new hmonitor( strip_final_colon( bel->name_ ).c_str() ) );
+        lbel = ElmPtr( new HMonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new hmonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new HMonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       break;
@@ -854,15 +854,15 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = ElmPtr( new vmonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
+        lbel = ElmPtr( new VMonitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = ElmPtr( new vmonitor( strip_final_colon( bel->name_ ).c_str() ) );
+        lbel = ElmPtr( new VMonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new vmonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
+      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new VMonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
       // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       break;
@@ -872,10 +872,10 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       // REMOVE: char   name[BEL_NAME_LENGTH];
       
       if( length > 0.0 ) {
-        lbel = ElmPtr( new monitor( strip_final_colon( bel->name_ ).c_str(), length ) );
+        lbel = ElmPtr( new Monitor( strip_final_colon( bel->name_ ).c_str(), length ) );
       }
       else {
-        lbel = ElmPtr( new monitor( strip_final_colon( bel->name_ ).c_str() ) );
+        lbel = ElmPtr( new Monitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
       // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
