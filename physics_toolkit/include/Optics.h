@@ -77,6 +77,7 @@ namespace Optics {
 
   std::vector<double>      lattice_function(std::string const& dbname, std::string const& colname);
   std::vector<double>            arclength( std::string const& dbname );
+  std::vector<double>                gamma( std::string const& dbname );
   std::vector<double>               beta_x( std::string const& dbname );
   std::vector<double>               beta_y( std::string const& dbname );
   std::vector<double>              alpha_x( std::string const& dbname );

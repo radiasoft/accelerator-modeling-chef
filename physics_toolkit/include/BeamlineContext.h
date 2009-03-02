@@ -135,6 +135,7 @@ class BeamlineContext: public beamline {
     void  propagateCovariance( );
 
     std::vector<double>  arclength ( ) const;
+    std::vector<double>       gamma( ) const;
     std::vector<double>     beta_x ( ) const;
     std::vector<double>     beta_y ( ) const;
     std::vector<double>    alpha_x ( ) const;
