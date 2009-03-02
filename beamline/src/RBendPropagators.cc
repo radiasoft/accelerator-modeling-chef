@@ -55,13 +55,13 @@ namespace {
 
 
 template <typename T>
-inline double standardPart( T const& );
+inline double toDouble( T const& );
 
 template<>
-inline double standardPart( Jet const& value)    { return value.standardPart(); }
+inline double toDouble( Jet const& value)    { return value.standardPart(); }
 
 template<>
-inline double standardPart( double const& value) { return value; }
+inline double toDouble( double const& value) { return value; }
  
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -101,10 +101,10 @@ void mad_propagate( Element_t const& elm, Particle_t& p, double const& rho, doub
   State_t& state = p.State();
   
   double const h      = 1/rho;                    // curvature
-  double angle        = 2.0 * asin(elm.Length()/( 2.0*standardPart(rho)));
+  double angle        = 2.0 * asin(elm.Length()/( 2.0*toDouble(rho)));
   double const length = angle*rho;         
-  double const gamma  = standardPart( p.Gamma() );
-  double const beta   = standardPart( p.Beta()  );
+  double const gamma  = toDouble( p.Gamma() );
+  double const beta   = toDouble( p.Beta()  );
 
 
   if(angle == 0.0) {
@@ -195,8 +195,8 @@ template void mad_propagate( rbend& elm,    Particle& p, double const& rho, doub
 template void mad_propagate( rbend& elm, JetParticle& p, double const& rho, double const& n );
 template void mad_propagate( rbend& elm,  Particle_t& p )
 template void mad_propagate( rbend& elm,  Particle_t& p )
-template double standardPart( double const& );
-template double standardPart( Jet    const& );
+template double toDouble( double const& );
+template double toDouble( Jet    const& );
 
 #endif
 
@@ -265,7 +265,7 @@ void rbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 void rbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p ) 
 {
 
-  double const rho    = standardPart( p.BRho() )/elm.Strength();
+  double const rho    = toDouble( p.BRho() )/elm.Strength();
 
   // field index = -(dB/B)/ (dx/rho) 
 
@@ -279,7 +279,7 @@ void rbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p )
 
 void rbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
 {
-  double const rho    = standardPart( p.BRho() )/elm.Strength();
+  double const rho    = toDouble( p.BRho() )/elm.Strength();
 
   // field index = -(dB/B)/ (dx/rho) 
 
