@@ -27,7 +27,7 @@ lib_LTLIBRARIES		= libbasic_toolkit.la
 include source_files
 
 CPPFLAGS		     =  -I/usr/local/vsqlite++/include $(BOOST_INC) $(FFTW3_INC) -I$(top_srcdir)/../include 
-libbasic_toolkit_la_LDFLAGS  =  -L/usr/local/vsqlite++/lib -lvsqlite++ $(FFTW3_LIB) -lfftw3 
+libbasic_toolkit_la_LDFLAGS  =  -L/usr/local/vsqlite++/lib -lvsqlite++ $(FFTW3_LIB) -lfftw3 -lsqlite3 
 
 if IMPLICIT_TEMPLATES
 LTCXXCOMPILE_TEMPLATES = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
