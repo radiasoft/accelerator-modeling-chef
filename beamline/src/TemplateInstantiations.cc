@@ -194,6 +194,11 @@ namespace {
 template ConvolutionFunctor<double, ConvolutionFFTPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
 template ConvolutionFunctor<double, ConvolutionFFTPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
 
+template ConvolutionFunctor<double, ConvolutionInnerProductPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  0.0,  0.0 )), bool);
+template ConvolutionFunctor<double, ConvolutionInnerProductPolicy>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
+
+
+
 
 
 template class boost::function1<bool,   bmlnElmnt const*,   std::allocator<void> >;
