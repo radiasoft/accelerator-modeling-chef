@@ -53,17 +53,23 @@ class ConvolutionFunctor : public AlgorithmPolicy<T> {
   // The samples i are assumed to be equally spaced.  
 
   template<typename Fnct>
-    ConvolutionFunctor(  int nsamples, Fnct lhs, bool test );
+  ConvolutionFunctor(  int nsamples, Fnct lhs, bool test );
 
  ~ConvolutionFunctor();
 
   void resetLHS( std::vector<T>  const& lhs);
 
   std::vector<T>   operator()( std::vector<T>  const& lhs, std::vector<T>  const& rhs );
-
-  std::vector<T>   operator()(  std::vector<T> const& rhs );
+  std::vector<T>   operator()( std::vector<T> const& rhs );
 
 };
+
+
+template <typename T,  template<typename U> class AlgorithmPolicy >
+template <typename Fnct>
+ConvolutionFunctor<T, AlgorithmPolicy >::ConvolutionFunctor(  int nsamples, Fnct lhs, bool measure ) 
+: AlgorithmPolicy<T>(nsamples, lhs, measure)
+{}
 
 
 #ifndef BASICTOOLKIT_EXPLICIT_TEMPLATES
