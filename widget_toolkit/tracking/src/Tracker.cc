@@ -1799,9 +1799,13 @@ void Tracker::_tool_pdicOrb()
     const uint order = 5;  // ??? Change this
     const uint ul    = 5;  // ??? Change this
     #endif
-    #if 1
+    #if 0
     const uint order = 7;   // ??? Change this
     const uint ul    = 10;  // ??? Change this
+    #endif
+    #if 1
+    const uint order = 1;   // ??? Change this
+    const uint ul    = 5;  // ??? Change this
     #endif
   
     Vector z(w);
