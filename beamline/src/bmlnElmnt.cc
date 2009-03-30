@@ -260,7 +260,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& o )
                     usedge_(o.usedge_),
                     dsedge_(o.dsedge_)
 {                  
-
      align_ = o.align_  ? new Alignment(*o.align_)  : 0;
 
      propagator_ =  PropagatorPtr( o.propagator_->Clone() );
@@ -298,7 +297,7 @@ void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
 
  bml_ = BmlPtr( bml->Clone() );
 
- if (!elm_) return;  // there is no element of interest ... were are done 
+ if (!elm) return;  // there is no element of interest ... we are done 
 
 
  beamline::iterator it  =   bml_->begin(); 
@@ -324,7 +323,6 @@ void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
 
 bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )  
 {
-
     if ( &rhs == this ) return *this;
 
     ident_        = rhs.ident_;      
@@ -343,7 +341,6 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     init_internals(rhs.bml_, rhs.elm_); 
 
     return *this;
-
 }
 
 
