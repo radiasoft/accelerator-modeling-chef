@@ -266,8 +266,6 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
                  pAperture_(0),
                      dataHook()
 {
-
-
  pAperture_ = a.pAperture_ ? a.pAperture_->Clone()    : 0;
      align_ = a.align_     ? new alignment(*a.align_) : 0;
 
@@ -304,7 +302,7 @@ void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
 
  bml_ = BmlPtr( bml->Clone() );
 
- if (!elm_) return;  // there is no element of interest ... were are done 
+ if (!elm) return;  // there is no element of interest ... we are done 
 
 
  beamline::iterator it  =   bml_->begin(); 
@@ -330,7 +328,6 @@ void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
 
 bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )  
 {
-
     if ( &rhs == this ) return *this;
 
     ident_        = rhs.ident_;      
@@ -351,7 +348,6 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
     init_internals(rhs.bml_, rhs.elm_); 
 
     return *this;
-
 }
 
 
@@ -518,7 +514,8 @@ void bmlnElmnt::setLength( double const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setStrength( double const& s ) {
+void bmlnElmnt::setStrength( double const& s ) 
+{
   strength_ = s - getShunt()*IToField(); 
 }
 
