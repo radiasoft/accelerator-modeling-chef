@@ -57,7 +57,7 @@
 #include <beamline/lambertson.h>
 #include <beamline/LinacCavity.h>
 #include <beamline/marker.h>
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 #include <beamline/octupole.h>
 #include <beamline/pinger.h>
 #include <beamline/quadrupole.h>

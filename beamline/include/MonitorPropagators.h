@@ -31,11 +31,12 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
+
 #ifndef MONITORPROPAGATORS_H
 #define MONITORPROPAGATORS_H
 
 #include <beamline/BasePropagator.h>
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 #include <beamline/ParticleFwd.h>
 
 
@@ -46,7 +47,22 @@ class TBunch;
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
 
-class monitor::Propagator: public BasePropagator {
+class HMonitor::Propagator: public BasePropagator {
+
+ public:
+
+  Propagator* Clone() const { return new Propagator(*this); }
+ 
+  void  setup( bmlnElmnt& elm ); 
+
+  void  operator()(  bmlnElmnt const& elm,            Particle& p);
+  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
+  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
+
+};
+
+class VMonitor::Propagator: public BasePropagator {
 
  public:
 
@@ -62,22 +78,7 @@ class monitor::Propagator: public BasePropagator {
 };
 
 
-class hmonitor::Propagator: public BasePropagator {
-
- public:
-
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
-
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
-  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
-  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
-
-};
-
-class vmonitor::Propagator: public BasePropagator {
+class Monitor::Propagator: public BasePropagator {
 
  public:
 

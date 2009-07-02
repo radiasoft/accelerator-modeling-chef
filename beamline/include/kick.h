@@ -68,6 +68,7 @@ class kick;
 typedef boost::shared_ptr<kick>        KickPtr;
 typedef boost::shared_ptr<kick const>  ConstKickPtr;
 
+
 class DLLEXPORT hkick : public bmlnElmnt {
 
   class Propagator;
@@ -87,14 +88,17 @@ public:
 
  ~hkick();
 
+  void accept( BmlVisitor& v );
+  void accept( ConstBmlVisitor& v ) const;
+
+  std::pair<ElmPtr,ElmPtr>  split( double const& pc ) const;
+
   const char* Type()          const;
   bool        isMagnet()      const;
   bool        isThin()        const;
   bool        isPassive()     const;
   bool        isDriftSpace()  const;
 
-  void accept( BmlVisitor& v );
-  void accept( ConstBmlVisitor& v ) const;
 
 };
 
@@ -120,6 +124,8 @@ public:
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
+
+  std::pair<ElmPtr,ElmPtr>  split( double const& pc ) const;
 
   const char* Type()       const;
   bool        isMagnet()   const;
@@ -152,6 +158,8 @@ public:
   void accept(BmlVisitor& v);
   void accept(ConstBmlVisitor& v) const;
 
+  std::pair<ElmPtr,ElmPtr>  split( double const& pc ) const;
+
   double  getHorStrength() const;
   double  getVerStrength() const;
 
@@ -159,6 +167,7 @@ public:
   void setVerStrength( double const& value);   
 
   const char* Type()       const;
+
   bool        isMagnet()   const;
   bool        isThin()     const;
   bool        isPassive()  const;

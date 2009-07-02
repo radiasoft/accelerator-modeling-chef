@@ -86,6 +86,7 @@ public:
   void populateParBinomial    ( PhaseSpaceProjection psid, double M, double x_lim, double px_lim, double r_12,  boost::function<double()>&  rand );
 
   // populate using Courant Snyder representation for beam ellipse
+
   void populateCSGaussian    ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>&  rand, double cutoff);
   void populateCSGaussianAlt ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& nrand, double cutoff);
   void populateCSWaterBag    ( PhaseSpaceProjection psid, double beta, double alpha, double epsilon, boost::function<double()>& rand );

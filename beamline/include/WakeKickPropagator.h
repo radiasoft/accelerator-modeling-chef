@@ -72,8 +72,10 @@ private:
   int                        nsamples_;
   double                     interval_;
 
-  ConvolutionFunctor<double> lwake_;
-  ConvolutionFunctor<double> twake_;
+  // ConvolutionFunctor<double, ConvolutionFFTPolicy> lwake_;
+  // ConvolutionFunctor<double, ConvolutionFFTPolicy> twake_;
+  ConvolutionFunctor<double, ConvolutionInnerProductPolicy> lwake_;
+  ConvolutionFunctor<double, ConvolutionInnerProductPolicy> twake_;
  
 };
 

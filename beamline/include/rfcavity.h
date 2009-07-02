@@ -103,21 +103,17 @@ public:
   bool    isPassive()    const;
   bool    isDriftSpace() const;
  
-  double getReferenceTime()              const;
+  double getReferenceTime()           const;
 
-  double const&  getPhi()                const;
-  double const&  getRadialFrequency()    const;
-  double         getDesignEnergyGain()   const;
-  double const&  getQ()                  const;
-  double const&  getR()                  const;
-  double const&  getHarmonicNumber()     const;
+  double const&  phi()                const;
+  double const&  frequency()          const;
+  double const&  Q()                  const;
+  double const&  R()                  const;
+  double const&  harmon()             const;
 
-  void      setHarmonicNumber( int );
-  void      setHarmonicNumber( double const& );
+  void              setHarmon( double const& );
   void           setFrequency( double const& );
   void setFrequencyRelativeTo( double const& );
-  void     setRadialFrequency( double const& );
-  void  setRadialFrequencyRelativeTo( double const& );
   void                 setPhi( double const& radians);  
   void                   setQ( double const& Q);
   void                   setR( double const& R);
@@ -132,12 +128,14 @@ private:
   std::istream& readFrom(std::istream&);
 
 
-  double w_rf_;                  // RF frequency [Hz]
-  double phi_s_;                 // synchronous phase
-  double sin_phi_s_;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
-  double Q_;                     // quality factor
-  double R_;                     // shunt impedance
+
+  double f_;                    // RF frequency [Hz]
+  double phi_s_;                // synchronous phase
+  double sin_phi_s_;            // sine of synchronous phase
+
+  double Q_;                    // quality factor
+  double R_;                    // shunt impedance
 
   double h_;                    // harmonic number 
                                 //   = ratio cavity frequency to
@@ -145,6 +143,9 @@ private:
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
 };
+
+
+//---------------------------------------------------------------------------------------
 
 
 class thinrfcavity : public bmlnElmnt {
@@ -168,19 +169,19 @@ public:
 
   thinrfcavity& operator=( thinrfcavity const& rhs);
 
-  double const& getPhi()              const; 
-  double const& getRadialFrequency()  const; 
-  double const& getQ()                const; 
-  double const& getR()                const; 
-  double const& getHarmonicNumber()   const; 
+  double const& frequency()       const; 
+  double const& harmon()          const; 
+  double const& phi()             const; 
+  double const& Q()               const; 
+  double const& R()               const; 
 
-  void            setHarmonicNumber( int );
-  void            setHarmonicNumber( double const& );
+
   void                 setFrequency( double const& );
   void       setFrequencyRelativeTo( double const& );
-  void           setRadialFrequency( double const& );
-  void setRadialFrequencyRelativeTo( double const& );
+  void                    setHarmon( double const& );
   void                       setPhi( double const& );  // radians
+  void                         setQ( double const& );
+  void                         setR( double const&);
 
   char const*     Type()  const;
 
@@ -197,7 +198,7 @@ private:
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
-  double w_rf_;                  // RF frequency [Hz]
+  double f_;                     // RF frequency [Hz]
   double phi_s_;                 // synchronous phase
   double sin_phi_s_;             // sine of synchronous phase
   // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength

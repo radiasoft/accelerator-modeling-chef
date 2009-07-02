@@ -79,7 +79,9 @@ class LinacCavity;
 class Solenoid;
 class srot;
 class vkick;
-class monitor;
+class Monitor;
+class HMonitor;
+class VMonitor;
 class marker;
 class drift;
 class rbend;
@@ -137,7 +139,11 @@ public:
 
   virtual void visit( vkick&         x ); 
 
-  virtual void visit( monitor&       x ); 
+  virtual void visit( Monitor&       x ); 
+
+  virtual void visit( HMonitor&      x ); 
+
+  virtual void visit( VMonitor&      x ); 
 
   virtual void visit( marker&        x ); 
 
@@ -237,7 +243,11 @@ public:
 
   virtual void visit( vkick         const& x ); 
 
-  virtual void visit( monitor       const& x ); 
+  virtual void visit( Monitor       const& x ); 
+
+  virtual void visit( HMonitor      const& x ); 
+
+  virtual void visit( VMonitor      const& x ); 
 
   virtual void visit( marker        const& x );
 

@@ -53,15 +53,18 @@ struct LattRing  {
 
 } ;
 
-struct reference_orbit_t {
+struct orbit_t {
 
-   reference_orbit_t(): x(0.0), xp(0.0), y(0.0), yp(0.0) {} 
-   reference_orbit_t(reference_orbit_t  const& o): x(o.x), xp(o.xp), y(o.y), yp(o.yp) {} 
+   orbit_t(): x(0.0), xp(0.0), y(0.0), yp(0.0), cdt(0.0), ndp(0.0) {} 
+   orbit_t( orbit_t  const& o): x(o.x), xp(o.xp), y(o.y), yp(o.yp), cdt(o.cdt), ndp(o.ndp) {} 
 
    double x;
    double xp;
    double y;
    double yp;
+   double cdt;
+   double ndp;
+
 };
 
 struct dispersion_t {
@@ -78,6 +81,7 @@ struct dispersion_t {
   double& xp;
   double& y;
   double& yp;
+
 };
  
 //------------------------------------------------------
@@ -89,9 +93,9 @@ struct CSLattFuncs {
   CSLattFuncs();  
   CSLattFuncs( CSLattFuncs const& );  
 
-  double arcLength;
+  double         arcLength;
 
-  reference_orbit_t reference_orbit;
+  orbit_t        orbit;
 
   dispersion_t   dispersion;
 
@@ -139,7 +143,7 @@ struct CSLattFuncs4D{
 
   double arcLength;
 
-  reference_orbit_t reference_orbit;
+  orbit_t orbit;
 
   dispersion_t   dispersion;
   
@@ -179,7 +183,7 @@ struct ETLattFuncs{
 
   double         arcLength;
 
-  reference_orbit_t reference_orbit;
+  orbit_t orbit;
   dispersion_t   dispersion;
 
   struct  beta_t {
@@ -212,7 +216,7 @@ struct CVLattFuncs {
 
   double arcLength;
 
-  reference_orbit_t reference_orbit;
+  orbit_t        orbit;
 
   dispersion_t   dispersion;
 
