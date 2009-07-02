@@ -370,7 +370,7 @@ int XsifParserDriver::parse(string const& f)
 #ifdef _WIN32
   setCurrentDirectory(saved_cwd.string().c_str());
 #else
-  chdir(saved_cwd.string().c_str());  
+  int status = chdir(saved_cwd.string().c_str());  
 #endif 
 
   return ret;
@@ -402,7 +402,7 @@ int XsifParserDriver::parseFromBuffer(char const* buffer)
 #ifdef _WIN32
   setCurrentDirectory(saved_cwd.string().c_str());
 #else
-  chdir(saved_cwd.string().c_str());  
+  int status = chdir(saved_cwd.string().c_str());  
 #endif 
 
   return ret;
