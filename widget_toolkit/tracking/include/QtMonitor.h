@@ -43,7 +43,7 @@
 #define QTMONITOR_H
 
 
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 #include <beamline/BmlPtr.h>
 #include <qobject.h>
 
@@ -53,7 +53,7 @@ typedef boost::shared_ptr<QtMonitor>            QtMonitorPtr;
 typedef boost::shared_ptr<QtMonitor const> ConstQtMonitorPtr;
 
 
-class QtMonitor : public QObject, public monitor {
+class QtMonitor : public QObject, public Monitor {
 
 Q_OBJECT
 
