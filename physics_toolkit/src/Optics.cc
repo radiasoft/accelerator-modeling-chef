@@ -44,6 +44,8 @@
 #include <beamline/LatticeFunctions.h>
 #include <physics_toolkit/BmlUtil.h>
 #include <algorithm>
+#include <limits>
+#include <cmath>
 
 #include <physics_toolkit/Sage.h> // REMOVE needed for fpsolver.
 
@@ -513,15 +515,31 @@ Vector periodicDispersion( sqlite::connection& db, JetParticle const& jp_arg )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticle const& arg_jp,  Vector const& eta0 )
+int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticle const& arg_jp,  Vector const& eta0,  bool dppconstant)
 {
 
   //--------------------------------------------------------------------
-  // This method computes the dispersion using automatic differentiation  
+  // This method computes the dispersion using automatic differentiation.  
   // 
-  // NOTE: Optionally, dp/p may be held constant by rescaling 
+  // NOTE:
+  // 
+  // By default, dp/p is held constant. This accomplished by by dynamically 
+  // rescaling the momentum variable. This should be pretty accurate, 
+  // unless the relative energy 
+  // change in a single accelerating element is large (say > a few %) 
+  // and/or the accelerating elements are dispersive. 
+  //   
+  // Dispersion is not uniquely defined in the presence of acceleration. 
+  // In a linac, this can be circumvented by defining the dispersion 
+  // at constant dp/p, which is equivalent to proportionally decrease 
+  // the gradient by 1/(1+dp/p) in all cavities when computing the 
+  // off-momentum trajectory. 
+  //
+  // To get the dispersion corresponding to a specific acceleration 
+  // profile, set the argument dppconstant = false. 
+  //  
   //--------------------------------------------------------------------
-
+ 
   int ret = 0;
 
   JetParticle jp( (Particle(arg_jp)) ); // resets the state and keeps initial conditions
@@ -531,11 +549,11 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
   IntArray exp_d(6);
   exp_d[5]  = 1;
  
-   state[i_x ].setTermCoefficient(eta0[0], exp_d  );
-  state[i_npx].setTermCoefficient(eta0[3], exp_d  );
+   state[i_x ].setWeightedDerivative( exp_d, eta0[0] );
+  state[i_npx].setWeightedDerivative( exp_d, eta0[3] );
 
-   state[i_y ].setTermCoefficient(eta0[1], exp_d  );
-  state[i_npy].setTermCoefficient(eta0[4], exp_d  );
+   state[i_y ].setWeightedDerivative( exp_d, eta0[1] );
+  state[i_npy].setWeightedDerivative( exp_d, eta0[4] );
  
 
   const double start_momentum = jp.ReferenceMomentum();
@@ -563,25 +581,51 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
   sqlite::execute(db, "BEGIN TRANSACTION", true);
 
   int iseq = -1;
+
   for ( beamline::const_deep_iterator it  = bml.deep_begin();  
                                       it != bml.deep_end(); ++it ) {
 
+      Jet   ndp   = state[i_ndp];   
+      double p0   = jp.ReferenceMomentum();
+
       (*it)->propagate(jp);
      
-      double scale  =  jp.ReferenceMomentum()/start_momentum  * (1.0 + state[i_ndp].standardPart() ) ;
 
       cmd_dispersion.clear();
-      cmd_dispersion % ++iseq  % ( scale * state[i_x  ].getTermCoefficient( exp_d ) )
-	                       % ( scale * state[i_npx].getTermCoefficient( exp_d ) )
-			       % ( scale * state[i_y  ].getTermCoefficient( exp_d ) )
-                               % ( scale * state[i_npy].getTermCoefficient( exp_d ) );
+
+
+      if (dppconstant) { 
+          
+         cmd_dispersion % ++iseq  % ( state[i_x  ].weightedDerivative( exp_d ) ) 
+	                          % ( state[i_npx].weightedDerivative( exp_d ) )
+		                  % ( state[i_y  ].weightedDerivative( exp_d ) )
+                                  % ( state[i_npy].weightedDerivative( exp_d ) );
+
+          // keep dp/p constant ...
+
+         static double const eps =  10.0 * std::numeric_limits<double>::epsilon();
+	 if ( std::fabs(p0 - jp.ReferenceMomentum()) > eps ) { state[i_ndp] = ndp; } 
+      } 
+
+      else { 
+
+ 	 double scale = ( 1.0 / state[i_ndp].weightedDerivative( exp_d ));
+
+         cmd_dispersion % ++iseq  % ( scale*state[i_x  ].weightedDerivative( exp_d ) ) 
+	                          % ( scale*state[i_npx].weightedDerivative( exp_d ) )
+		                  % ( scale*state[i_y  ].weightedDerivative( exp_d ) )
+                                  % ( scale*state[i_npy].weightedDerivative( exp_d ) );
+      }
+      
       cmd_dispersion();
+ 
   }
 
   sqlite::execute(db, "COMMIT TRANSACTION", true);
   
   return ret;
 }
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -887,6 +931,8 @@ MatrixC periodicEigenVectors( sqlite::connection& db, JetParticle const& oneturn
 
 void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetParticle const& jp, TMatrix<std::complex<double> >const& EV0, TVector<double> const& eta0)
 {
+  std::cerr << "propagateEigenVectors" << std::endl;
+  std::cerr << EV0 << std::endl;
  
   std::ostringstream sql;
 
@@ -1355,6 +1401,7 @@ CSLattFuncs4D periodicCourantSnyder4D( sqlite::connection& db, JetParticle const
 
   lf.dispersion.eta = periodicDispersion(db, oneturnjp );
 
+
   return lf;
 
 }
@@ -1390,9 +1437,23 @@ int  propagateCourantSnyder4D( sqlite::connection& db, beamline const& bml, JetP
 //       
 //------------------------------------------------------------------------------
  
-  MatrixC EV0 = courantSnyder4DtoEV(initial);
-  propagateEigenVectors( db, bml, jp, EV0, initial.dispersion.eta );
+  std::cerr << initial.mode1.beta.hor  << std::endl; 
+  std::cerr << initial.mode1.alpha.hor << std::endl;
+  std::cerr << initial.mode1.beta.ver  << std::endl; 
+  std::cerr << initial.mode1.alpha.ver << std::endl;
 
+  std::cerr << initial.mode2.beta.hor  << std::endl; 
+  std::cerr << initial.mode2.alpha.hor << std::endl;
+  std::cerr << initial.mode2.beta.ver  << std::endl; 
+  std::cerr << initial.mode2.alpha.ver << std::endl;
+
+  // MatrixC EV0 = courantSnyder4DtoEV(initial); FIXME !!!!!
+
+  MatrixC EV0 = periodicEigenVectors( db, const_cast<JetParticle &>(jp) );
+
+  std::cout <<  EV0 << std::endl;
+
+  propagateEigenVectors( db, bml, jp, EV0, initial.dispersion.eta );
 
 
   std::ostringstream sql;
@@ -1561,7 +1622,7 @@ MatrixC courantSnyder4DtoEV( CSLattFuncs4D const& lf )
 {
 
   //----------------------------------------------------------------
-  //  Mapping from 4D Generalized Lattice Functions to eigenvectors.
+  //  From 4D Generalized Lattice Functions to eigenvectors.
   //---------------------------------------------------------------- 
 
   double    beta_1x = lf.mode1.beta.hor;
@@ -1662,7 +1723,7 @@ MatrixC courantSnyder4DtoEV( CSLattFuncs4D const& lf )
   EV[5][5] = 1.0;
 
   return ( std::complex<double>(1.0/sqrt(2.0),0.0)*EV ); // Note normalization, which is different from 
-                                                         // the one assumed in the Lbedev-Bogacz writup. 
+                                                         // the one assumed in the Lebedev-Bogacz writup. 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

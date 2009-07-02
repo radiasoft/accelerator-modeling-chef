@@ -62,7 +62,7 @@ namespace Optics {
   int            propagateCourantSnyder4D( sqlite::connection& db, beamline const& bml, JetParticle const& jp,     CSLattFuncs4D const& initial );
 
   Vector               periodicDispersion( sqlite::connection& db,                      JetParticle const& jp );
-  int                 propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticle const& jp,     Vector const& eta0 );
+  int                 propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticle const& jp,     Vector const& eta0, bool dppconstant = true );
 
   MatrixD              periodicCovariance( sqlite::connection& db,                      JetParticle const& jp );
   void                propagateCovariance( sqlite::connection& db, beamline const& bml, JetParticle const& jp,     MatrixD const& cov     );
