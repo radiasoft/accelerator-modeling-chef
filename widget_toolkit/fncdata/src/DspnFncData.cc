@@ -56,7 +56,7 @@ DspnFncData::DspnFncData( sqlite::connection& db )
   
   char const*  sql[] =  
    { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",
-     "SELECT arclength, eta_x, eta_y, etap_x, etap_y FROM REFERENCE_ORBIT, DISPERSION WHERE ( REFERENCE_ORBIT.iseq = DISPERSION.iseq )"
+     "SELECT arclength, etax, etay, etapx, etapy FROM REFERENCE_ORBIT, DISPERSION WHERE ( REFERENCE_ORBIT.iseq = DISPERSION.iseq )"
    };
  
   int ncrvs        = sizeof( curve_attributes ) / sizeof(CurveData::curve_attribute );

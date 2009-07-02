@@ -357,7 +357,7 @@ CS4DDataBrowser::CS4DDataBrowser( char const* dbname, QWidget* parent, char cons
   sql_ = std::string("") 
        + "SELECT ELEMENTS.iseq, name, type, length, strength, arclength, beta1x, alpha1x, beta1y, alpha1y, psi1,"
        + "beta2x, alpha2x, beta2y, alpha2y, psi2,"
-       + "eta_x, etap_x, eta_y, etap_y FROM " 
+       + "etax, etapx, etay, etapy FROM " 
        + "ELEMENTS, REFERENCE_ORBIT, COURANT_SNYDER_4D, DISPERSION "
        +" WHERE (ELEMENTS.iseq =  COURANT_SNYDER_4D.iseq ) " 
        +"   AND (ELEMENTS.iseq =      REFERENCE_ORBIT.iseq ) "
@@ -376,8 +376,8 @@ CS2DDataBrowser::CS2DDataBrowser(  char const* dbname, QWidget* parent, char con
 
   setCaption("Courant-Snyder Lattice Functions ( Uncoupled )" );  
   sql_ = std::string("") +  
-       + "SELECT ELEMENTS.iseq, name, type, length, strength, arclength, beta_x, alpha_x, psi_x, eta_x, etap_x, "
-       + "beta_y, alpha_y, psi_y  eta_y, etap_y FROM " 
+       + "SELECT ELEMENTS.iseq, name, type, length, strength, arclength, betax, alphax, psix, etax, etapx, "
+       + "betay, alphay, psiy  etay, etapy FROM " 
        + "ELEMENTS, REFERENCE_ORBIT, COURANT_SNYDER, DISPERSION "
        +" WHERE (ELEMENTS.iseq =  COURANT_SNYDER.iseq ) " 
        +"   AND (ELEMENTS.iseq =    REFERENCE_ORBIT.iseq ) "
@@ -393,7 +393,7 @@ DispersionDataBrowser::DispersionDataBrowser( char const* dbname, QWidget* paren
 {
 
   sql_ = std::string("") 
-       + "SELECT ELEMENTS.iseq, name, type, length, strength, arclength, x, xp, y,  yp, eta_x, etap_x "
+       + "SELECT ELEMENTS.iseq, name, type, length, strength, arclength, x, xp, y,  yp, etax, etapx "
        + "FROM ELEMENTS, REFERENCE_ORBIT, COURANT_SNYDER, DISPERSION "
        +" WHERE (ELEMENTS.iseq =    REFERENCE_ORBIT.iseq ) "
        +"   AND (ELEMENTS.iseq =      DISPERSION.iseq ) ";

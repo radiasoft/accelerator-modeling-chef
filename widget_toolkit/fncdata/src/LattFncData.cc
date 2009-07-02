@@ -63,7 +63,7 @@ LattFncData::LattFncData(   sqlite::connection& db,
   
   char const*  sql[] =  
    { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",
-     "SELECT arclength, beta_x, alpha_x, psi_x,  beta_y, alpha_y, psi_y FROM "
+     "SELECT arclength, betax, alphax, psix,  betay, alphay, psiy FROM "
      "REFERENCE_ORBIT, COURANT_SNYDER WHERE (REFERENCE_ORBIT.iseq = COURANT_SNYDER.iseq)" 
    };
  

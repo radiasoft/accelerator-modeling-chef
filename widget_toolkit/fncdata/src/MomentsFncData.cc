@@ -61,7 +61,7 @@ MomentsFncData::MomentsFncData(   sqlite::connection& db,
   
   char const*  sql[] =  
    { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",
-     "SELECT arclength, beta_x, beta_y, alpha_x, alpha_y  FROM "
+     "SELECT arclength, betax, betay, alphax, alphay  FROM "
      "REFERENCE_ORBIT, COVARIANCE WHERE (REFERENCE_ORBIT.iseq = COVARIANCE.iseq)" 
    };
  

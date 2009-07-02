@@ -58,7 +58,7 @@
 #include <beamline/marker.h>
 #include <beamline/sextupole.h>
 #include <beamline/quadrupole.h>
-#include <beamline/monitor.h>
+#include <beamline/Monitor.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/sbend.h>
@@ -229,8 +229,8 @@ void EditDialog::visit( quadrupole& x )
          qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 2, 0 );
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 2, 1 );
            QString st2;
-           alignmentData ad(x.Alignment());
-           st2.setNum( 1000.*(ad.roll /*[rad]*/) );
+           Alignment ad(x.alignment());
+           st2.setNum( 1000.*(ad.roll() /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
          qgl->addWidget( qle2, 2, 2 );
       qwa->adjustSize();
@@ -269,7 +269,7 @@ void EditDialog::visit( quadrupole& x )
     }
     if( st2 != qle2->text() ) {
       bool ok;
-      ad.roll /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
+      ad.setRoll( /*[rad]*/ 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/));
       if( ok ) {
         x.setAlignment( ad );
       }
@@ -508,8 +508,8 @@ void EditDialog::visit( thinQuad& x )
          qgl->addWidget( new QLabel( QString("Roll angle"), qwa ), 1, 0 );
          qgl->addWidget( new QLabel( QString(" [mrad]  "), qwa ), 1, 1 );
            QString st2;
-           alignmentData ad(x.Alignment());
-           st2.setNum( 1000.*(ad.roll /*[rad]*/) );
+           Alignment ad(x.alignment());
+           st2.setNum( 1000.*(ad.roll() /*[rad]*/) );
            QLineEdit* qle2 = new QLineEdit( st2, qwa );
          qgl->addWidget( qle2, 1, 2 );
       qwa->adjustSize();
@@ -548,9 +548,8 @@ void EditDialog::visit( thinQuad& x )
     }
 
     if( st2 != qle2->text() ) {
-      bool ok;
-      ad.roll /*[rad]*/ = 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/);
-      if( ok ) {
+      bool ok = false;
+      ad.setRoll(/*[rad]*/ 0.001*((qle2->text()).toDouble( &ok ) /*[mrad]*/));      if( ok ) {
         x.setAlignment( ad );
       }
     }

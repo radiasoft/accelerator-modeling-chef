@@ -154,7 +154,7 @@ struct infoWriter : public ConstBmlVisitor
   void visit( sextupole  const& );
   void visit( marker     const& );
   void visit( sector     const& );
-  void visit( monitor    const& );
+  void visit( Monitor    const& );
 
   BmlPtr     bml_;
 };

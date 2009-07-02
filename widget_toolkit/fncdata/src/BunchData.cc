@@ -32,10 +32,21 @@
 **************************************************************************/
 
 #include <BunchData.h>
+#include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/TBunch.h>
 
 using namespace std;
+
+namespace {
+
+  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
+  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
+  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
+  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
+  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
+  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -44,11 +55,13 @@ BunchData::BunchData( ParticleBunch const& b)
 : PlotData() 
 {
     std::vector<double>    x;
+    std::vector<double>    npx;
+
     std::vector<double>    y;
+    std::vector<double>    npy;
+
     std::vector<double>    z;
-    std::vector<double>    px;
-    std::vector<double>    py;
-    std::vector<double>    pz;
+    std::vector<double>    npz;
 
   int npts = b.size();
   CurveData  c1( npts,  "x vs y"  );
@@ -60,12 +73,12 @@ BunchData::BunchData( ParticleBunch const& b)
      
      Vector const& state = it->State(); 
 
-     double   x = state[0]; 
-     double   y = state[1]; 
-     double   z = state[2]; 
-     double npx = state[3]; 
-     double npy = state[4]; 
-     double npz = state[5]; 
+     double   x = state[i_x]; 
+     double   y = state[i_y]; 
+     double   z = state[i_cdt]; 
+     double npx = state[i_npx]; 
+     double npy = state[i_npy]; 
+     double npz = state[i_ndp]; 
 
     *(it1++) = CurveData::Point(x,y);
 
@@ -78,13 +91,12 @@ BunchData::BunchData( ParticleBunch const& b)
 
   addCurve( c1 );
 
-  setXLabel( "X vs Y "                     );
-  setYLabel( CurveData::yLeft,  "X [m]"    );
-  setYLabel( CurveData::yRight, "Y [m]"    );
-
+  setXLabel( "x vs x' "                    );
+  setYLabel( CurveData::yLeft,  "x [m]"    );
+  setYLabel( CurveData::yRight, "x'[m]"    );
+  //  setYLabel( CurveData::yRight, "Y [m]"    );
 
 }
-
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -92,3 +104,5 @@ BunchData::BunchData( ParticleBunch const& b)
 BunchData::~BunchData() 
 { } 
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

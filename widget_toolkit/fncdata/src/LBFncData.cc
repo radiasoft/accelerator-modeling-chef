@@ -57,10 +57,10 @@ LBFncData::LBFncData( sqlite::connection& db, double const& horTune, double cons
   char const*      plot_attributes[]  = { "Generalized (4D) Courant-Snyder Lattice Functions", "Arc Length [m]", "Beta [m]",  "Beta [m]" }; 
 
   CurveData::curve_attribute  curve_attributes[] = 
-          { {"<hor|beta|hor> (beta_1x ) ",                CurveData::yLeft,   CurveData::Color(255,0,0)}, 
-	    {"<ver|beta|hor> (beta_1y ) ",                CurveData::yLeft,   CurveData::Color(0,0,0)  },
-            {"<hor|beta|ver> (beta_2x ) ",                CurveData::yRight,  CurveData::Color(0,0,0)  },
-            {"<ver|beta|ver> (beta_2y ) ",                CurveData::yRight,  CurveData::Color(255,0,0)}  };
+          { {"<hor|beta|hor> (beta1x ) ",                CurveData::yLeft,   CurveData::Color(255,0,0)}, 
+	    {"<ver|beta|hor> (beta1y ) ",                CurveData::yLeft,   CurveData::Color(0,0,0)  },
+            {"<hor|beta|ver> (beta2x ) ",                CurveData::yRight,  CurveData::Color(0,0,0)  },
+            {"<ver|beta|ver> (beta2y ) ",                CurveData::yRight,  CurveData::Color(255,0,0)}  };
   
   char const*  sql[] =  
    { "SELECT COUNT(*) AS NELMS FROM REFERENCE_ORBIT",

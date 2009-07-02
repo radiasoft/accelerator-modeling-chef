@@ -612,8 +612,8 @@ void BmlBrowser::visit( rbend const& x )
   w->setCaption(cap);
   w->addPropertyRow( "Length",             "[m]",        QString("%1").arg(    x.Length()) );
   w->addPropertyRow( "Bend Field",         "[T]",        QString("%1").arg(  x.Strength()) );
-  w->addPropertyRow( "Gradient",            "[T/m]",     QString("%1").arg(  x.getQuadrupole() / x.Length()  ));
-  w->addPropertyRow( "Roll Angle",          "[mrad]",    QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->addPropertyRow( "Gradient",           "[T/m]",      QString("%1").arg(  x.getQuadrupole() / x.Length()  ));
+  w->addPropertyRow( "Roll Angle",         "[mrad]",     QString("%1").arg(  x.alignment().roll()*1000.0 ) );
   w->show();
 }
 
@@ -630,7 +630,7 @@ void BmlBrowser::visit( quadrupole const& x )
   w->setCaption(cap);
   w->addPropertyRow( "Length",           "[m]",         QString("%1").arg(    x.Length()) );
   w->addPropertyRow( "Gradient",         "[T/m]",       QString("%1").arg(  x.Strength()) );
-  w->addPropertyRow( "Roll Angle",        "[mrad]",      QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->addPropertyRow( "Roll Angle",        "[mrad]",      QString("%1").arg(  x.alignment().roll()*1000.0 ) );
   w->show();
 
 }
@@ -647,7 +647,7 @@ void BmlBrowser::visit( thinQuad const& x )
   DialogElmInfo* w = new DialogElmInfo( pw, 0, true, Qt::WDestructiveClose );
   w->setCaption(cap);
   w->addPropertyRow( "Integrated Gradient", "[T]",         QString("%1").arg(  x.Strength()) );
-  w->addPropertyRow( "Roll Angle",          "[mrad]",      QString("%1").arg(  x.Alignment().roll*1000.0 ) );
+  w->addPropertyRow( "Roll Angle",          "[mrad]",      QString("%1").arg(  x.alignment().roll()*1000.0 ) );
   w->show();
 }
 
@@ -738,7 +738,7 @@ void BmlBrowser::visit( sector const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BmlBrowser::visit( monitor const& x )
+void BmlBrowser::visit( Monitor const& x )
 {
   QString cap = QString("%1 %2" ).arg( x.Type() ).arg( x.Name());
 
