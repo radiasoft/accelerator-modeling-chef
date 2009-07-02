@@ -101,12 +101,12 @@ public:
    coeff_proxy( JLPtr<T> jl, IntArray const& index ) : jl_(jl), index_(index) {}
 
    operator T const () const { 
-           return jl_->getTermCoefficient( index_);
+           return jl_->weightedDerivative( index_);
    }
 
    coeff_proxy& operator=( T const& value ) 
    { 
-       jl_->setTermCoefficient(value, index_ );
+       jl_->setWeightedDerivative(index_ , value);
        return *this;
    }
 
@@ -286,27 +286,6 @@ void TJet<T>::addTerm( TJLterm<T> const& a)
   if (jl_.count() > 1 ) jl_ = jl_->clone();
   jl_->addTerm( TJLterm<T>(a) );
 }
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-T TJet<T>::getTermCoefficient(IntArray const& exp) const
-{
-  return jl_->getTermCoefficient(exp);
-} 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJet<T>::setTermCoefficient(T const& value, IntArray const& exp) 
-{
-
-  if (jl_.count() > 1 ) jl_ = jl_->clone();
-  jl_->setTermCoefficient(value, exp);
-
-} 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1120,6 +1099,30 @@ T TJet<T>::derivative( IntArray const& ind ) const
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+void TJet<T>::setDerivative(IntArray const& exp, T const& value)
+{
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->setDerivative(exp,value);
+} 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJet<T>::setWeightedDerivative(IntArray const& exp, T const& value)
+{
+
+  if (jl_.count() > 1 ) jl_ = jl_->clone();
+  jl_->setWeightedDerivative(exp,value);
+
+} 
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 TJet<T> TJet<T>::filter( int const& wgtLo, int const& wgtHi ) const 

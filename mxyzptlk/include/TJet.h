@@ -364,9 +364,6 @@ public:
 
   void      addTerm( TJLterm<T> const& ); 
 
-  T         getTermCoefficient(IntArray const& exp) const; 
-  void      setTermCoefficient(T const& value, IntArray const& exp); 
-
   coeff_proxy const  operator[]( IntArray const& ) const;   
   coeff_proxy        operator[]( IntArray const& );   
 
@@ -385,8 +382,11 @@ public:
   void     setStandardPart( T const& std ); 
   T const& standardPart() const            { return jl_->standardPart();    }
 
-  T        weightedDerivative( IntArray const&  ) const;  // includes Taylor expansion factor
-  T                derivative( IntArray const&  ) const;  // pure derivative 
+  void      setWeightedDerivative( IntArray const& exp, T const& value ); 
+  void              setDerivative( IntArray const& exp, T const& value ); 
+
+  T            weightedDerivative( IntArray const&  ) const;  // includes Taylor expansion factor
+  T                    derivative( IntArray const&  ) const;  // pure derivative 
 
   TJet     filter( int const&, int  const& ) const;  
                                   // Returns only those JLterms whose weight 

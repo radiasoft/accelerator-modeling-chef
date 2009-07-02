@@ -244,9 +244,6 @@ friend class TJL;
 
   void addTerm( TJLterm<T> const& ); 
      
-  T    getTermCoefficient( IntArray const& ) const;      
-  void setTermCoefficient( T const& value, IntArray const& exp); 
-
   void removeTerm( TJLterm<T> const& a);  // remove term a; 
  
   bool isNilpotent() const;
@@ -329,6 +326,9 @@ friend class TJL;
 
   T weightedDerivative( IntArray const& ) const;
   T derivative( IntArray const& )         const;
+
+  void         setDerivative( IntArray const& exp, T const& value); 
+  void setWeightedDerivative( IntArray const& exp, T const& value); 
 
   template<typename const_iterator_t>
   T evaluate( const_iterator_t itb, const_iterator_t ite) const; 

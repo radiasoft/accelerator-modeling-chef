@@ -591,40 +591,6 @@ void TJL<T>::addTerm( TJLterm<T> const& a )
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T  TJL<T>::getTermCoefficient( IntArray const& exp ) const
-{
-
-   // Note: the monomial terms are always sorted w/r to offset index !
-
-   int offset = myEnv_->offsetIndex(exp);
-
-   TJLterm<T> term( T(), offset, exp.Sum() );
-
-   std::pair<typename TJL<T>::const_iterator, typename TJL<T>::const_iterator> 
-      result = std::equal_range( begin(), end(), term);
-   
-
-   if (result.first == result.second ) {
-    return T(); // empty range;
-   }
-
-   return result.first->value_; 
-   
-}
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
-void TJL<T>::setTermCoefficient( T   const&   value, IntArray const& exp) 
-{
-  T oldvalue =  getTermCoefficient( exp );
-  addTerm( TJLterm<T>( exp, (-oldvalue + value), myEnv_ ) );
-}
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-template<typename T>
 bool TJL<T>::isNilpotent() const 
 {
  return ( std::abs(standardPart()) <= mx_small_ ); 
@@ -708,31 +674,46 @@ void TJL<T>::clear()
  accuWgt_ = 0;
  weight_  = 0;
  count_   = 0;
- jltermStoreCurrentPtr_  = jltermStore_; // do not delete the store here !
+ jltermStoreCurrentPtr_  = jltermStore_; // do not release the store memory here !
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-T TJL<T>::weightedDerivative( IntArray const& ind ) const 
+T  TJL<T>::weightedDerivative( IntArray const& exp ) const
 {
- for ( const_iterator it=begin(); it != end(); ++it ) {
-   
-   bool theOne = true; 
-   for ( int i=0;  i < myEnv_->numVar(); ++i ) {
-      theOne  = theOne && ( myEnv_->exponents(it->offset_)[i] == ind[i] );
-   }
-   if (theOne) return it->value_;
- }
- 
- // not found; return 0;
 
- return T();
+   // Note: the monomial terms are always sorted w/r to offset index !
+
+   int offset = myEnv_->offsetIndex(exp);
+
+   TJLterm<T> term( T(), offset, exp.Sum() );
+
+   std::pair<typename TJL<T>::const_iterator, typename TJL<T>::const_iterator> 
+      result = std::equal_range( begin(), end(), term);
+   
+
+   if (result.first == result.second ) {
+    return T(); // empty range;
+   }
+
+   return result.first->value_; 
+   
+}
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJL<T>::setWeightedDerivative( IntArray const& exp, T const&   value) 
+{
+  T oldvalue =  weightedDerivative( exp );
+  addTerm( TJLterm<T>( exp, (-oldvalue + value), myEnv_ ) );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 T TJL<T>::derivative( IntArray const& ind ) const 
@@ -748,6 +729,23 @@ T TJL<T>::derivative( IntArray const& ind ) const
  }
  
  return multiplier*d;
+}
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+template<typename T>
+void TJL<T>::setDerivative( IntArray const& ind, T const& value) 
+{
+ 
+ double multiplier = 1.0;
+
+ for ( int i=0; i < myEnv_->numVar(); ++i ) {
+   double n = ind[i];
+   while(n)  multiplier *= n--;
+ }
+ 
+ setWeightedDerivative(ind, value/multiplier );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
