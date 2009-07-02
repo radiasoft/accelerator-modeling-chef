@@ -201,12 +201,12 @@ template ConvolutionFunctor<double, ConvolutionInnerProductPolicy>::ConvolutionF
 
 
 
-template class boost::function1<bool,   bmlnElmnt const*,   std::allocator<void> >;
-template class boost::function1<bool,   bmlnElmnt const&,   std::allocator<void> >;
-template class boost::function1<double, int,                std::allocator<void> >;
-template class boost::function1<void,   TBunch<Particle>&,  std::allocator<void> >;
-template class boost::function1<double, TJet<double> const&,std::allocator<void> >;
-template class boost::function1<double, double const&,      std::allocator<void> >;
+template class boost::function1<bool,   bmlnElmnt const*    >;
+template class boost::function1<bool,   bmlnElmnt const&    >;
+template class boost::function1<double, int                 >;
+template class boost::function1<void,   TBunch<Particle>&   >;
+template class boost::function1<double, TJet<double> const& >;
+template class boost::function1<double, double const&       >;
 
   // we force instantiation of an anomymous function objects. In that case, this turns out to be easier that attempting to 
   // instantiatiate the right templates ...
@@ -427,11 +427,11 @@ template       class       beamline::deep_iter<ElmPtr const>;
 template       class       beamline::reverse_deep_iter<ElmPtr>;
 template       class       beamline::reverse_deep_iter<ElmPtr const>;
 
-template class boost::function1<double, TVector<double> const&,          std::allocator<void> >;
-template class boost::function1<TVector<double>, TVector<double> const&, std::allocator<void> >;
-template class boost::function1<Matrix, TVector<double> const&,          std::allocator<void> >;
+template class boost::function1<double, TVector<double> const&           >;
+template class boost::function1<TVector<double>, TVector<double> const&  >;
+template class boost::function1<Matrix, TVector<double> const&           >;
 
-template class boost::function0<double,  std::allocator<void> >; 
+template class boost::function0<double >; 
 
 namespace { 
  double OrbitLength( ElmPtr elm, Particle& p) { return elm->OrbitLength(p); } 
@@ -444,7 +444,7 @@ namespace {
 
 
 template 
-class boost::function1<double, boost::shared_ptr<bmlnElmnt>, std::allocator<void> >;
+class boost::function1<double, boost::shared_ptr<bmlnElmnt> >;
 
 template 
 boost::any::any( bool const &);

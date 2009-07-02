@@ -272,11 +272,9 @@ template
 boost::function<TVector<double>(TVector<double> const&) > const* 
 boost::addressof( boost::function< TVector<double>(TVector<double> const& )> const& );
 
-template TMatrix<double> boost::function1<TMatrix<double>, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
-template double          boost::function1<double, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
-template TVector<double> boost::function1<TVector<double>, TVector<double> const&, std::allocator<void> >::operator()(TVector<double> const&) const;
-
-
+template TMatrix<double> boost::function1<TMatrix<double>,TVector<double> const&>::operator()(TVector<double> const&) const;
+template double          boost::function1<double,         TVector<double> const&>::operator()(TVector<double> const&) const;
+template TVector<double> boost::function1<TVector<double>,TVector<double> const&>::operator()(TVector<double> const&) const;
 
 // ----------------------------------------------------------------------------
 // Misc Instantiations related to STL
