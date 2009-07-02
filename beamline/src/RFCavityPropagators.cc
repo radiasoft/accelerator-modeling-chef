@@ -66,13 +66,13 @@ void propagate( thinrfcavity const& elm, Particle_t&  p)
 
   if( elm.Strength() == 0.0 ) return;
 
-  double const m         = p.Mass();
-  double const phi_s     = elm.getPhi(); 
-  double const w_rf      = elm.getRadialFrequency(); 
+  double const m       = p.Mass();
+  double const phi_s   = elm.phi(); 
+  double const wrf     = elm.frequency()*2.0*M_PI; 
 
   State_t& state = p.State(); 
   
-  Component_t E = p.Energy() + elm.Strength()*sin( phi_s + state[i_cdt] * w_rf / PH_MKS_c );
+  Component_t E = p.Energy() + elm.Strength()*sin( phi_s + state[i_cdt] * wrf / PH_MKS_c );
 
   double oldRefP = p.ReferenceMomentum();
   p.SetReferenceEnergy( p.ReferenceEnergy() + elm.Strength()*sin(phi_s) );
@@ -122,16 +122,16 @@ template void propagate(     thinrfcavity const& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Propagator::setup( bmlnElmnt& arg)
+void rfcavity::Propagator::setup( bmlnElmnt& elm)
 {
 
-  rfcavity& elm = static_cast<rfcavity&>(arg);
+  rfcavity& cav = static_cast<rfcavity&>(elm);
 
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
   bml = BmlPtr(new beamline(""));
   bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
-  bml->append( ElmPtr(new thinrfcavity( "", elm.getRadialFrequency()/(2*M_PI), 1.0e9*(elm.Strength()), elm.getPhi(), elm.getQ(), elm.getR() )));
+  bml->append( ElmPtr(new thinrfcavity( "", cav.frequency(), cav.Strength()*1.0e-9, cav.phi(), cav.Q(), cav.R() )));
   bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
 }
 
@@ -184,36 +184,4 @@ void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-#if 0
-void rfcavity::setStrength( double const& strength)
-{
-  bmlnElmnt::setStrength(strength);
-}
 
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::setLength( double const& )
-{
-  ostringstream methodIdent;
-  methodIdent << "void " << Type() << "::setLength( double const& )";
-  
-  (*pcerr) <<   "*** ERROR ****: "
-              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
-           << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
-           << std::endl;
-
-  ostringstream uic;
-  uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( bmlnElmnt::GenericException( __FILE__, __LINE__, 
-           methodIdent.str().c_str(),
-           uic.str().c_str() ) );
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-#endif
