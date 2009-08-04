@@ -38,6 +38,8 @@
 #include <basic_toolkit/RandomOrthogonal.h>
 #include <basic_toolkit/MathConstants.h>
 
+using namespace MathConstants;
+
 RandomOrthogonal::RandomOrthogonal( int n )
 : dim_(n), passes_(1)
 {
@@ -58,14 +60,14 @@ RandomOrthogonal::RandomOrthogonal( int n )
   upperTheta_ = new double*[ dim_ ];
   for( int i=0; i <dim_; ++i ) {
     upperTheta_[i] = new double[ dim_ ];
-    for( int j=0; j< dim_; ++j) { upperTheta_[i][j] = M_TWOPI; }
+    for( int j=0; j< dim_; ++j) { upperTheta_[i][j] = Math_TWOPI; }
     upperTheta_[i][i] = 0.0;
   }
 
   rangeTheta_ = new double*[ dim_ ];
   for( int i=0; i< dim_; ++i) {
     rangeTheta_[i] = new double[ dim_ ];
-    for( int j=0; j<dim_; ++j) { rangeTheta_[i][j] = M_TWOPI; }
+    for( int j=0; j<dim_; ++j) { rangeTheta_[i][j] = Math_TWOPI; }
     rangeTheta_[i][i] = 0.0;
   }
 }
@@ -76,7 +78,7 @@ RandomOrthogonal::RandomOrthogonal( int n )
 
 RandomOrthogonal::~RandomOrthogonal()
 {
-  for( int i = 0; i < dim_; i++ ) {
+  for( int i = 0; i < dim_; ++i) {
     delete [] omitted_[i];
     delete [] lowerTheta_[i];
     delete [] upperTheta_[i];
@@ -107,7 +109,7 @@ void RandomOrthogonal::omitIndex( int i, int j )
 
 void RandomOrthogonal::omitIndex( int n )
 {
-  for( int i = 0; i < dim_; i++ ) {
+  for( int i = 0; i < dim_; ++i) {
     this->omitIndex( n, i );
   }
 }
@@ -157,12 +159,12 @@ void RandomOrthogonal::setRange( int i, int j, double lo, double hi )
   { return; }
 
   if( std::abs(lo) < 1.0e-12            ) { lo = 0.0;     }
-  if( std::abs(hi - M_TWOPI ) < 1.0e-12 ) { hi = M_TWOPI; }
+  if( std::abs(hi - Math_TWOPI ) < 1.0e-12 ) { hi = Math_TWOPI; }
 
-  while( lo < 0.0      ) { lo += M_TWOPI; }
-  while( lo > M_TWOPI  ) { lo -= M_TWOPI; }
-  while( hi < 0.0      ) { hi += M_TWOPI; }
-  while( hi > M_TWOPI  ) { hi -= M_TWOPI; }
+  while( lo < 0.0        ) { lo += Math_TWOPI; }
+  while( lo > Math_TWOPI ) { lo -= Math_TWOPI; }
+  while( hi < 0.0        ) { hi += Math_TWOPI; }
+  while( hi > Math_TWOPI ) { hi -= Math_TWOPI; }
 
   // Set the range
   lowerTheta_[i][j] = lo;

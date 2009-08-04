@@ -41,6 +41,8 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/MathConstants.h>
 
+using namespace MathConstants;
+
 using FNAL::pcerr;
 using FNAL::pcout;
 
