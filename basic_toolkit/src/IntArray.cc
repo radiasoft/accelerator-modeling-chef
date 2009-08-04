@@ -167,7 +167,7 @@ IntArray IntArray::operator+( IntArray const& y) const
 {
   IntArray result( Dim() );
 
-  std::transform( begin(), end(), y.begin(), result.begin(), std::plus<exponent_t>());
+  std::transform( const_iterator(begin()), const_iterator(end()), const_iterator(y.begin()), result.begin(), std::plus<exponent_t>());
 
   result.weight_is_valid_ = false;  
   result.Sum();  // forces recomputation of the weight
@@ -181,7 +181,7 @@ IntArray IntArray::operator+( IntArray const& y) const
 IntArray  IntArray::operator*  ( IntArray const& rhs) const
 {
   IntArray result( Dim() );
-  transform( begin(), end(), rhs.begin(), result.begin(), std::multiplies<exponent_t>() );
+  transform( const_iterator(begin()), const_iterator(end()), const_iterator(rhs.begin()), result.begin(), std::multiplies<exponent_t>() );
 
   result.weight_is_valid_ = false;  
   result.Sum();  // forces recomputation of the weight
@@ -194,7 +194,7 @@ IntArray  IntArray::operator*  ( IntArray const& rhs) const
 
 bool IntArray::operator== ( IntArray const& rhs ) const
 {
-  return std::equal( begin(), end(), rhs.begin() );
+  return std::equal( const_iterator(begin()), const_iterator(end()), const_iterator(rhs.begin()) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
