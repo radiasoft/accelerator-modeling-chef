@@ -32,6 +32,7 @@
 #include <fftw3.h>
 #include <basic_toolkit/FFTFunctor.h>
 #include <algorithm>
+#include <numeric>
 
 
 template <typename T>
