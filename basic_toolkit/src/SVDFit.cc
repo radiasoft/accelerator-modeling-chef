@@ -65,9 +65,9 @@ Matrix SVDFit::sqrt( Matrix& x )
     // Next to using a diagonal matrix, this is
     // probably the slowest possible way to do this.
     double aaa;
-    for( int j = 0; j < c; j++ ) {
+    for( int j=0; j<c; ++j) {
       aaa = std::sqrt(W[j]);
-      for( int i = 0; i < r; i++ ) {
+      for( int i=0; i<r; ++i) {
         U[i][j] *= aaa;
       }
     }
@@ -166,8 +166,7 @@ void SVDFit::finishConstruction_()
 
 
 SVDFit::~SVDFit()
-{
-}
+{}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
