@@ -145,8 +145,6 @@ namespace PhysicsConstants {
 #define PH_CNV_eV_to_mks    1.602176487e-19   /* Energy [N-m] = -- * Energy [eV]             */
 #define PH_CNV_brho_to_p    0.299792458       /*    p [Gev/c] = -- * B*rho  [ Tesla meters ] */
 
-}
-
 #endif /* __cplusplus*/
 
 #endif /*PHYSICSCONSTANTS_H*/
