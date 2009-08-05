@@ -64,6 +64,7 @@
 ******  - added (missing) implementation for in-place Map composition
 ******  Aug 2008 ostiguy@fnal.gov
 ******  - intialization optimizations in inverse()
+******
 **************************************************************************
 *************************************************************************/
 
@@ -71,6 +72,7 @@
 #include <config.h>
 #endif
 
+#include <boost/scoped_array.hpp>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
 #include <mxyzptlk/TJet.h>
