@@ -365,9 +365,7 @@ public:
 
 }; 
 
-
 #include <beamline/beamline_iterators.h> 
-
 
 
 #endif // BEAMLINE_H

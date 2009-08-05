@@ -7,7 +7,7 @@
 ******              of beamlines, storage rings, and                      ******
 ******              synchrotrons.                                         ******
 ******                                                                    ******
-******    File:      beamline.tcc                                         ******
+******    File:      beamline_iterators.h                                 ******
 ******                                                                    ******
 ******    Copyright (c) Universities Research Association, Inc./Fermilab  ******
 ******                  All Rights Reserved                               ******

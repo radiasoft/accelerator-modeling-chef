@@ -21,7 +21,7 @@
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******     
-******  Authors:    Leo Michelotti         michelotti@fnal.gov                                    
+******  Authors:    Leo Michelotti         michelotti@fnal.gov
 ******              Jean-Francois Ostiguy     ostiguy@fnal.gov
 ******
 ******  This is a streamlined, templated version of the function 
@@ -34,14 +34,17 @@
 #include <mxyzptlk/JetVector.h>
 #include <basic_toolkit/utils.h>
 #include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/MathConstants.h>
+
+using namespace MathConstants;
 
 extern JetC    w( const JetC& );
 
 template <>  
-double BBLens::toDouble( double const& value) { return value;                }
+inline double BBLens::toDouble( double const& value) { return value;                }
 
 template <>
-double BBLens::toDouble ( Jet const& value)   { return value.standardPart(); } 
+inline double BBLens::toDouble ( Jet const& value)   { return value.standardPart(); } 
 
 template <typename T >
 typename EVector_t<T>::Type BBLens::NormalizedEField( T const& arg_x, T const& arg_y ) const
@@ -148,7 +151,7 @@ typename EVector_t<T>::Type BBLens::NormalizedEField( T const& arg_x, T const& a
   ComplexComponent_t z    = retarg1;
 
   z   -= retarg2 * exp( - r0/2.0 );
-  z   = z * ( - complex_i * MATH_SQRTPI / ds );
+  z   = z * ( - complex_i * Math_SQRTPI / ds );
 
   // And return ...
   

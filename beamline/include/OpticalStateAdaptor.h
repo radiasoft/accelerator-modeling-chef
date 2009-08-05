@@ -84,7 +84,9 @@ class  OpticalStateAdaptor {
  
 };
 
+#ifndef BEAMLINE_EXPLICIT_TEMPLATES
 #include  <beamline/OpticalStateAdaptor.tcc>
+#endif
 
 #endif // OPTICALSTATEADAPTOR
 
