@@ -61,7 +61,7 @@ libpurepyphysics_toolkit_la_LIBADD = $(BOOST_PYTHON_LINK) \
     ../../mxyzptlk/src/libmxyzptlk.la \
     ../../basic_toolkit/src/libbasic_toolkit.la
 
-CPPFLAGS   =     -I/usr/local/vsqlite++/include $(GLIB_INC) $(GLIBCONFIG_INC) $(PYTHON_INC) $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src 
+CPPFLAGS   =     -I/usr/local/vsqlite++/include $(GLIB_INC) $(GLIBCONFIG_INC) -I/usr/include/python2.6  $(PYTHON_INC) $(BOOST_INC)  -I$(top_srcdir)/../include/parsers/xsif  -I$(top_srcdir)/../include/parsers/xsif/tree-container  -I$(top_srcdir)/../include -I../../parsers/xsif/src 
 
 install-exec-hook:
 	for lib in basic_toolkit beamline bmlfactory mxyzptlk physics_toolkit ;\
