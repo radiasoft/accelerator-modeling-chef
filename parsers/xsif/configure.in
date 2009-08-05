@@ -21,181 +21,66 @@ AM_CONFIG_HEADER([config.h])
 AC_CONFIG_HEADERS
 
 
-AC_ARG_WITH(cxx,AC_HELP_STRING([--with-cxx=CXX],[CXX = your compiler; g++=GNU Compiler (default), CC=Sun Compiler, pgCC=PGI compiler]),
-if test "x${withval}" != "xno"; then
-CXX=${withval}
-fi)
+## -------------------------------------------------
+## Compiler flags - we require g++
+##
+##--------------------------------------------------
 
-AC_ARG_WITH(cc,AC_HELP_STRING([--with-cc=CC],[CC = your compiler; gcc=GNU Compiler (default), cc=Sun Compiler]),
-if test "x${withval}" != "xno"; then
-CC=${withval}
-fi)
+if test ${CFLAGS}   ;then cflags_is_set=set;   fi 
+if test ${CXXFLAGS} ;then cxxflags_is_set=set; fi 
 
-##----------------------------------------------------------
-## by default, use the explicit template instantiation model
-##-----------------------------------------------------------
-
-AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[ Enable implicit template instantiation for portability ]), 
-	      CXXFLAGS="${CXXFLAGS}",
-              CXXFLAGS="-DMXYZPTLK_EXPLICIT_TEMPLATES -DBASICTOOLKIT_EXPLICIT_TEMPLATES ${CXXFLAGS}" )
-
-
-if test -n "${CXXFLAGS}"; then 
-set_CXXFLAGS=${CXXFLAGS}
-fi
-if test -n "${CFLAGS}"; then
-set_CFLAGS=${CFLAGS}
-fi 
-
-
-# Checks for programs.
-AC_PROG_CXX(g++ CC)
-AC_PROG_CC(gcc cc)
+AC_PROG_CC([gcc])
+AC_PROG_CXX([g++])
 AC_PROG_LIBTOOL
 
-AC_ARG_ENABLE(debug,AC_HELP_STRING([--enable-debug],[Debugging. Turns off Optimization]),
-if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
-	CXXFLAGS=$set_CXXFLAGS
-	CFLAGS=$set_CFLAGS
-	AC_SUBST(CFLAGS)
-	AC_SUBST(CXXFLAGS)
-elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="${CFLAGS} -g -fno-strict-aliasing"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated -fno-strict-aliasing"
-   AC_SUBST(CFLAGS)
-   AC_SUBST(CXXFLAGS)
-elif test "x${CXX}" = "xCC"; then
-     CXXFLAGS="-instances=global"
-     LDFLAGS="-Xlinker -zmuldefs"
-     AC_SUBST(CXXFLAGS)
-     AC_SUBST(LDFLAGS)
-elif test "x${CXX}" = "xpgCC"; then
-     CXXFLAGS="-g"
-     AM_CPPFLAGS="--prelink_objects"
-     AC_SUBST(CXXFLAGS)
-     AC_SUBST(AM_CPPFLAGS)
-fi,
-if test "x$set_CXXFLAGS" != "x" && test "x$set_CFLAGS" != "x"; then
-	CXXFLAGS=$set_CXXFLAGS
-	CFLAGS=$set_CFLAGS
-##	AC_SUBST(CFLAGS)
-##	AC_SUBST(CXXFLAGS)
-elif test "x${GXX}" = "xyes" || test "x${GCC}" = "xyes"; then
-   CFLAGS="${CFLAGS} -g -O2 -fno-strict-aliasing"
-   CXXFLAGS="${CXXFLAGS} -g -O2 -pipe -fpermissive -Wno-deprecated -fno-strict-aliasing"
-   AC_SUBST(CFLAGS)
-   AC_SUBST(CXXFLAGS)
-elif test "x${CXX}" = "xCC"; then
-     CXXFLAGS="-fast -instances=global"
-     LDFLAGS="-Xlinker -zmuldefs"
-     AC_SUBST(CXXFLAGS)
-     AC_SUBST(LDFLAGS)
-elif test "x${CXX}" = "xpgCC"; then
-     CXXFLAGS="-g -fast"
-     AM_CPPFLAGS="--prelink_objects"
-     AC_SUBST(CXXFLAGS)
-     AC_SUBST(AM_CPPFLAGS)
-fi
-)
+dnl The AC_PROG_xx macros set CFLAGS and CXXFLAGS 
+dnl to a default value if they are not set. 
+dnl We keep them unset ! 
 
-#AC_ARG_WITH(gxx_rtti,AC_HELP_STRING([--with-gxx_rtti],[disable G++ rtti]),,
-#if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
-#CXXFLAGS="-fno-rtti ${CXXFLAGS}"
-#AC_SUBST(CXXFLAGS)
-#AC_DEFINE(NO_RTTI,,nortti)
-#fi
-#)
+if test ! ${cflags_is_set};   then CFLAGS="";   fi
+if test ! ${cxxflags_is_set}; then CXXFLAGS=""; fi
 
-#AC_ARG_WITH(gxx_exception,AC_HELP_STRING([--with-gxx_exception],[Enable G++ exceptions]),,
-#if test "x${GXX}" = "xyes" && test "x$set_CXXFLAGS" = "x"; then
-#CXXFLAGS="-fno-exceptions ${CXXFLAGS}"
-#AC_SUBST(CXXFLAGS)
-#fi
-#)
 
-if test "x$CXX" = "xpgCC"; then
-	enable_shared=yes
-fi
+AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[ Enable implicit template instantiation for portability ]), 
+	      TEMPLATEFLAGS="",
+              LOCALDEFS="-DMXYZPTLK_EXPLICIT_TEMPLATES -DBASICTOOLKIT_EXPLICIT_TEMPLATES ${LOCALDEFS}"; TEMPLATEFLAGS=-fno-implicit-templates )
 
-if test "$enable_shared" = yes; then
-   AM_CONDITIONAL(SHARED_LIB,true)
+
+AC_ARG_ENABLE(debugging, AC_HELP_STRING([--enable-debugging],[set flags for debugging] ),,)
+
+if test "x$val_debugging" = "xyes"; then
+  OPTFLAGS="-pipe -O0 -g3"
 else
-   AM_CONDITIONAL(SHARED_LIB,false)
+  OPTFLAGS="-pipe -g -O3 -mtune=pentium4" 
 fi
 
-# Checks for libraries.
-
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h strings.h])
-
-#---------------------------------------------------------------------
-# FFTW3
-#---------------------------------------------------------------------
-
-AC_ARG_VAR([FFTW3_INC],    [FFTW3 include directory])dnl
-if test ${FFTW3_INC} && test -r ${FFTW3_INC}; then
-        FFTW3_INC="-I"${FFTW3_INC}
-        AC_SUBST(FFTW3_INC)
-        AC_MSG_RESULT([Location specified: ${FFTW3_INC}])
-else
-	AC_CHECK_HEADER(fftw3.h,,[
-		AC_MSG_ERROR([FFTW3 includes not found, please define FFTW3_INC.])
-	])
-fi
-
-AC_ARG_VAR([FFTW3_LIB],    [FFTW3 lib directory])dnl
-AC_LANG_PUSH(C)
-if test ${FFTW3_LIB} && test -r ${FFTW3_LIB}; then
-        AC_MSG_RESULT([Location specified: ${FFTW3_LIB}]) 
-        FFTW3_LIB="-L"${FFTW3_LIB}
-        AC_SUBST(FFTW3_LIB)
-else
-	AC_CHECK_LIB(fftw3,fftw_execute,,[ 
-		AC_MSG_ERROR([FFTW3 library not found, please define FFTW3_LIB.])
-	])
-fi
-AC_LANG_POP(C)
 
 #---------------------------------------------------------------------
 # BOOST
 #---------------------------------------------------------------------
 
-AC_ARG_VAR([BOOST_INC],    [BOOST include directory])dnl
-AC_CHECK_HEADER(shared_ptr.hpp,,[
+BOOST_INC="/usr/include/boost"
+BOOST_LIB="/usr/lib"
+
+AC_ARG_VAR([BOOST_INC],    [BOOST include directory])
 if test ${BOOST_INC} && test -r ${BOOST_INC}; then
         AC_MSG_RESULT([Location specified: ${BOOST_INC}])
-        BOOST_INC="-I"${BOOST_INC}
-        AC_SUBST(BOOST_INC)
 else
-# Try to guess the location based on the location of gcc 
-        boost_inc=`which gcc | sed "s#bin\/gcc#include#"`
-        if test -r $boost_inc/boost/shared_ptr.hpp; then
-                BOOST_INC="-I"$boost_inc
-                AC_SUBST(BOOST_INC)
-                AC_MSG_RESULT([Header file located in ${boost_inc}])
-        else
-		if test -r /usr/include/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/include"
-		elif test -r /usr/local/include/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include"
-		elif test -r /usr/local/include/boost-1_34/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include/boost-1_34"
-		elif test -r /usr/local/ap/include/boost-1_34/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_34"
-		elif test -r /usr/local/include/boost-1_33/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/include/boost-1_33"
-		elif test -r /usr/local/ap/include/boost-1_33/boost/shared_ptr.hpp; then
-		    boost_inc="/usr/local/ap/include/boost-1_33"
-                else
-		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.]);
-		fi
-	fi
-        BOOST_INC="-I"${boost_inc}
-        AC_SUBST(BOOST_INC)
-        AC_MSG_RESULT([Header file located in ${boost_inc}])
+	AC_CHECK_HEADER(shared_ptr.hpp,,[
+		AC_MSG_ERROR([BOOST includes not found, please define BOOST_INC.])
+	])
 fi
-])
+
+AC_ARG_VAR([BOOST_LIB],    [BOOST library directory])
+if test ${BOOST_LIB} && test -r ${BOOST_LIB}; then
+        AC_MSG_RESULT([Location specified: ${BOOST_LIB}])
+else
+	AC_CHECK_FILE([libboost_python.so],,[
+		AC_MSG_ERROR([BOOST libary not found, please define BOOST_LIB.])
+	])
+fi
+
+#
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -205,6 +90,16 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([floor pow sqrt strspn strstr])
+
+
+if test ${BOOST_INC}; then  BOOST_INC="-I"${BOOST_INC}; fi
+
+AC_SUBST(BOOST_INC) 
+AC_SUBST(TEMPLATEFLAGS) 
+AC_SUBST(OPTFLAGS) 
+AC_SUBST(LOCALDEFS) 
+
+AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "${val_implicit_templates}" = "yes")
 
 AC_CONFIG_FILES([src/Makefile Makefile])
 AC_OUTPUT
