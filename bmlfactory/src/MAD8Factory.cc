@@ -104,6 +104,7 @@ using namespace std;
 
 #include <boost/algorithm/string.hpp>
 
+using namespace PhysicsConstants;
 using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;

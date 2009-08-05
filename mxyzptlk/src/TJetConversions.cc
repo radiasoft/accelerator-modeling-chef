@@ -59,6 +59,7 @@
 
 #include <mxyzptlk/TJet.h>
 
+using namespace MathConstants;
 using namespace std;
 
 using FNAL::pcout;
@@ -136,7 +137,7 @@ TJet<double> erf( TJet<double> const& z )
     series   += term/den;
   }  
 
-  return (2.0/MATH_SQRTPI)*z*series;
+  return (2.0/Math_SQRTPI)*z*series;
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -170,7 +171,7 @@ TJet<complex<double> > erf( TJet<complex<double> > const& z )
     series   += term/den;
   }  
 
-  return ( complex<double>(2.0/MATH_SQRTPI,0.0) * z *series );
+  return ( complex<double>(2.0/Math_SQRTPI,0.0) * z *series );
 }
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

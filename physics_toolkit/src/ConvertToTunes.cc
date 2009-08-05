@@ -74,6 +74,7 @@
 #include <beamline/Particle.h>
 #include <iomanip>
 
+using namespace MathConstants;
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -91,6 +92,7 @@ namespace {
 
 
 #if 0 
+//////////////////////////////  OBSOLETE /////////////////////////////////////////////////
 enum tune_status { OK=0, TUNES_UNSTABLE, TUNES_NOTCONJUGATE, TUNES_EQUAL, TUNES_NOTSYMPLECTIC };
 
 int filterTransverseTunes(  MatrixD const& mtrx,  Vector& nu )
@@ -336,7 +338,7 @@ int ConvertNtoTunes( MappingC&  nu,  CLieOperator& N )
             return 142;
 	  }
         }
-	nu[i].addTerm( JLCterm( ndx, c_i*v/MATH_TWOPI, thisEnv) );
+	nu[i].addTerm( JLCterm( ndx, c_i*v/Math_TWOPI, thisEnv) );
       }
     }
   }

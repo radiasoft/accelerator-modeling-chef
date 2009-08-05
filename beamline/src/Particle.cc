@@ -71,6 +71,7 @@
 #include <mxyzptlk/Jet__environment.h>
 
 
+using namespace PhysicsConstants;
 using namespace std;
 using FNAL::pcerr;
 using FNAL::pcout;

@@ -83,6 +83,8 @@
 
 
 using namespace std;
+using namespace PhysicsConstants;
+using namespace MathConstants;
 
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -95,8 +97,8 @@ CF_rbend::CF_rbend()
   : bmlnElmnt( "", 0.0, 0.0 ),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
-    usAngle_(M_TWOPI),
-    dsAngle_(-M_TWOPI),
+    usAngle_(Math_TWOPI),
+    dsAngle_(-Math_TWOPI),
     multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); 
@@ -112,8 +114,8 @@ CF_rbend::CF_rbend( std::string const&  name,
   : bmlnElmnt( name, length, field ),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
-    usAngle_(M_TWOPI),
-    dsAngle_(-M_TWOPI),
+    usAngle_(Math_TWOPI),
+    dsAngle_(-Math_TWOPI),
     multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
@@ -152,8 +154,8 @@ CF_rbend::CF_rbend( std::string const& name,
   : bmlnElmnt( name, length, field ),
    usFaceAngle_(us),
    dsFaceAngle_(ds),
-       usAngle_(M_TWOPI),
-       dsAngle_(-M_TWOPI),
+       usAngle_(Math_TWOPI),
+       dsAngle_(-Math_TWOPI),
     multipoles_(4, std::complex<double>(0.0,0.0) )
 {
   propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  

@@ -70,6 +70,8 @@
 
 
 using namespace std;
+using namespace PhysicsConstants;
+
 using FNAL::pcerr;
 using FNAL::pcout;
 

@@ -54,11 +54,9 @@
  */
 
 
-#ifndef NO_RTTI
 #include <typeinfo>
-#endif
-
 #include <basic_toolkit/GenericException.h>
+#include <basic_toolkit/MathConstants.h>
 #include <physics_toolkit/Sage.h>
 #include <beamline/FramePusher.h>  // Used by Sage::isRing functions
 #include <beamline/Particle.h>
@@ -66,6 +64,7 @@
 double Sage::defGapTol_   = 0.005;  // = 5 mm
 double Sage::defAngleTol_ = 0.001;  // = 1 mrad
 
+using namespace MathConstants;
 using namespace std;
 
 namespace {
@@ -306,13 +305,13 @@ std::vector<double> Sage::compute_tunes( Matrix const& oneturn )
   }
 
   double ht = 0.0;
-  ht = ( (ht=arg(lambda_x.first)) > 0 ) ? (ht/ M_TWOPI) : (ht += M_TWOPI)/ M_TWOPI; 
+  ht = ( (ht=arg(lambda_x.first)) > 0 ) ? (ht/ Math_TWOPI) : (ht += Math_TWOPI)/ Math_TWOPI; 
 
   double vt = 0.0;
-  vt = ( (vt=arg(lambda_y.first)) > 0 ) ? (vt/ M_TWOPI) : (vt += M_TWOPI)/ M_TWOPI; 
+  vt = ( (vt=arg(lambda_y.first)) > 0 ) ? (vt/ Math_TWOPI) : (vt += Math_TWOPI)/ Math_TWOPI; 
 
   double lt = 0.0;
-  lt = ( (lt=arg(lambda_s.first)) > 0 ) ? (lt/ M_TWOPI) : (lt += M_TWOPI)/ M_TWOPI; 
+  lt = ( (lt=arg(lambda_s.first)) > 0 ) ? (lt/ Math_TWOPI) : (lt += Math_TWOPI)/ Math_TWOPI; 
 
   nu[0] = ht; nu[1] = vt; nu[2] = lt;
 

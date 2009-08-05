@@ -62,6 +62,8 @@
 #include<beamline/ParticleBunch.h>
 #include<beamline/JetParticle.h>
 
+using namespace PhysicsConstants;
+
 namespace { // anonymous namespace
 
   Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;

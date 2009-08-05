@@ -94,6 +94,9 @@
 #include <beamline/marker.h>
 #include <beamline/Edge.h>
 
+using namespace MathConstants;
+using namespace PhysicsConstants;
+
 using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
@@ -111,8 +114,8 @@ rbend::rbend()
     angle_(0.0),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
-    usAngle_(M_TWOPI),  // uninitialized        
-    dsAngle_(-M_TWOPI)  // uninitialized
+    usAngle_(Math_TWOPI),  // uninitialized        
+    dsAngle_(-Math_TWOPI)  // uninitialized
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);

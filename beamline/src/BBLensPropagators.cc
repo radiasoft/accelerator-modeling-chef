@@ -42,6 +42,8 @@
 #include <beamline/BBLens.h>
 #include <basic_toolkit/PhysicsConstants.h>
 
+using namespace PhysicsConstants;
+
 namespace {
 
   Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;

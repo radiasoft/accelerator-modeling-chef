@@ -38,6 +38,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string_regex.hpp>
 #include <basic_toolkit/PhysicsConstants.h>
+#include <basic_toolkit/MathConstants.h>
 #include <beamline/Particle.h>
 #include <beamline/Alignment.h>
 #include <beamline/beamline.h>
@@ -46,6 +47,8 @@
 #include <cstdlib>
 #include <sstream>
 
+using namespace PhysicsConstants;
+using namespace MathConstants;
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
@@ -177,10 +180,10 @@ XsifParserDriver::XsifParserDriver()
   // Predefined constants in XSIF spec
   //------------------------------------------------------------------------------------
 
-  m_constants["PI"]       = M_PI;          
-  m_constants["TWOPI"]    = 2.0*M_PI;          
-  m_constants["DEGRAD"]   = 180.0/M_PI;
-  m_constants["RADDEG"]   = M_PI/180.0;
+  m_constants["PI"]       = Math_PI;          
+  m_constants["TWOPI"]    = 2.0*Math_PI;          
+  m_constants["DEGRAD"]   = 180.0/Math_PI;
+  m_constants["RADDEG"]   = Math_PI/180.0;
   m_constants["E"]        = exp(1.0);
   m_constants["EMASS"]    = PH_NORM_me;    //  ~0.510998902e-3;     electron mass in GeV
   m_constants["PMASS"]    = PH_NORM_mp;    //  ~0.938271998;        proton mass in GeV
@@ -1166,7 +1169,7 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   if ( eval( string("K2"),     attributes, value) )  { attribute_k2     = true;  k2     = any_cast<double>(value); simple = ( k2 == 0.0 ); }
   if ( eval( string("K3"),     attributes, value) )  { attribute_k3     = true;  k3     = any_cast<double>(value); simple = ( k3 == 0.0 ); }
 
-  if ( eval( string("TILT"),   attributes, value) )  { tilt = value.empty() ?  M_PI/2.0 : tilt  = any_cast<double>(value); } 
+  if ( eval( string("TILT"),   attributes, value) )  { tilt = value.empty() ?  Math_PI/2.0 : tilt  = any_cast<double>(value); } 
 
   if ( eval( string("E1"),     attributes, value) )    e1     = any_cast<double>(value); 
   if ( eval( string("E2"),     attributes, value) )    e2     = any_cast<double>(value); 
@@ -1255,7 +1258,7 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
   if ( eval( string("K2"),     attributes, value) )  { k2     = any_cast<double>(value); simple = false; }
   if ( eval( string("K3"),     attributes, value) )  { k3     = any_cast<double>(value); simple = false; }
   if ( eval( string("TILT"),   attributes, value) )  {  if (value.empty() ) 
-                                                           { simple = false; tilt = M_PI/2.0; } 
+                                                           { simple = false; tilt = Math_PI/2.0; } 
                                                         else 
                                                            { tilt  = any_cast<double>(value); simple = ( tilt == 0.0); } 
                                                      }; 
@@ -1333,7 +1336,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& 
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K1"),       attributes, value) )    k1       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
-                                                           { tilt = M_PI/4.0; } 
+                                                           { tilt = Math_PI/4.0; } 
                                                         else 
                                                            { tilt  = any_cast<double>(value); } 
                                                      }; 
@@ -1381,7 +1384,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K2"),       attributes, value) )    k2       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
-                                                           { tilt = M_PI/6.0; } 
+                                                           { tilt = Math_PI/6.0; } 
                                                         else 
                                                            { tilt  = any_cast<double>(value); } 
                                                      }; 
@@ -1430,7 +1433,7 @@ ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& B
   if ( eval( string("L"),        attributes, value) )    length   = any_cast<double>(value); 
   if ( eval( string("K3"),       attributes, value) )    k3       = any_cast<double>(value); 
   if ( eval( string("TILT"),     attributes, value) )  {  if (value.empty() ) 
-                                                           { tilt = M_PI/8.0; } 
+                                                           { tilt = Math_PI/8.0; } 
                                                         else 
                                                            { tilt  = any_cast<double>(value); } 
                                                      }; 
@@ -1487,10 +1490,10 @@ if ( eval( string("K1L"),   attributes,   value) )    kl[1]   = any_cast<double>
 if ( eval( string("K2L"),   attributes,   value) )    kl[2]   = any_cast<double>(value); 
 if ( eval( string("K3L"),   attributes,   value) )    kl[3]   = any_cast<double>(value); 
 
-if ( eval( string("T0"),    attributes, value) )    {  tilt[0] = (value.empty() ) ?  M_PI/2.0 : any_cast<double>(value); } 
-if ( eval( string("T1"),    attributes, value) )    {  tilt[1] = (value.empty() ) ?  M_PI/4.0 : any_cast<double>(value); } 
-if ( eval( string("T2"),    attributes, value) )    {  tilt[2] = (value.empty() ) ?  M_PI/6.0 : any_cast<double>(value); } 
-if ( eval( string("T3"),    attributes, value) )    {  tilt[3] = (value.empty() ) ?  M_PI/8.0 : any_cast<double>(value); } 
+if ( eval( string("T0"),    attributes, value) )    {  tilt[0] = (value.empty() ) ?  Math_PI/2.0 : any_cast<double>(value); } 
+if ( eval( string("T1"),    attributes, value) )    {  tilt[1] = (value.empty() ) ?  Math_PI/4.0 : any_cast<double>(value); } 
+if ( eval( string("T2"),    attributes, value) )    {  tilt[2] = (value.empty() ) ?  Math_PI/6.0 : any_cast<double>(value); } 
+if ( eval( string("T3"),    attributes, value) )    {  tilt[3] = (value.empty() ) ?  Math_PI/8.0 : any_cast<double>(value); } 
 
 
 if( kl[0] != 0.0 ) {
@@ -1613,7 +1616,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
 
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
 
   elm = (udelm) ? dynamic_cast<hkick*>( udelm->Clone() ) : new hkick();
 
@@ -1655,7 +1658,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
 
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
                           
   elm = (udelm) ? dynamic_cast<vkick*>( udelm->Clone() ) : new vkick();
 
@@ -1700,7 +1703,7 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   if ( eval( string("L"),           attributes, value) )    { attribute_length = true; length  = any_cast<double>(value); } 
   if ( eval( string("HKICK"),       attributes, value) )    { attribute_hkck   = true; hkck    = any_cast<double>(value); }
   if ( eval( string("VKICK"),       attributes, value) )    { attribute_vkck   = true; vkck    = any_cast<double>(value); }
-  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? M_PI/2.0 : any_cast<double>(value); } 
+  if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
 
 
   elm = (udelm) ? dynamic_cast<kick*>( udelm->Clone() ) : new kick();
@@ -1778,13 +1781,13 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   // NOTE: for a linac, PHI0=0 implies being on crest.  
   //--------------------------------------------------
 
-   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*M_TWOPI, wakeon);
+   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*Math_TWOPI, wakeon);
 
    elm->rename( label.c_str() );
    elm->setLength(length);
    elm->setFrequency(freq*1.0e6);
    elm->setStrength(deltae*1.0e-3);
-   elm->setPhi(phi0*M_TWOPI);
+   elm->setPhi(phi0*Math_TWOPI);
      
    elm->setTag("LCAVITY");
    return ElmPtr(elm);
@@ -1865,11 +1868,11 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("SHUNT"),    attributes, value) )    { attribute_shunt    = true;   shunt    = any_cast<double>(value); }
 
   
-  elm = (udelm) ? dynamic_cast<rfcavity*>( udelm->Clone() ) : new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt );
+  elm = (udelm) ? dynamic_cast<rfcavity*>( udelm->Clone() ) : new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*Math_PI), 0, shunt );
 
   if (attribute_length ) { elm->setLength(length);        }
   if (attribute_volt   ) { elm->setStrength(volt*1.0e-3); } // MAD uses MeV, rfcavity expects GeV  
-  if (attribute_lag    ) { elm->setPhi(lag*2.0*M_PI);     }
+  if (attribute_lag    ) { elm->setPhi(lag*2.0*Math_PI);     }
   if (attribute_harmon ) { elm->setHarmon(harmon);        }
   if (attribute_shunt  ) { elm->setR(shunt);              }
 

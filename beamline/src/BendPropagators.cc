@@ -47,6 +47,8 @@
 #include <beamline/BendPropagators.h>
 #include <beamline/beamline.h>
 
+using namespace PhysicsConstants; 
+
 namespace {
 
   std::complex<double> const complex_i(0,1.0);

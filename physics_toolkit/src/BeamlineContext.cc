@@ -222,7 +222,7 @@ BeamlineContext::~BeamlineContext()
 {
 
  boost::filesystem::path dbpathname(dbname_ ); 
- boost::filesystem::remove( dbpathname );
+ //boost::filesystem::remove( dbpathname );
 
 }
 

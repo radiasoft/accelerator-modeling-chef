@@ -44,6 +44,7 @@
 #include <beamline/rfcavity.h>
 #include <beamline/drift.h>
 
+using namespace PhysicsConstants;
 using FNAL::pcerr;
 using FNAL::pcout;
 

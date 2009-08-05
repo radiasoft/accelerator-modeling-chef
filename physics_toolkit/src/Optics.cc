@@ -34,6 +34,7 @@
 #include <physics_toolkit/Optics.h>
 
 #include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/MathConstants.h>
 #include <basic_toolkit/NewtonSolver.h>
 #include <mxyzptlk/Jet__environment.h>
 #include <beamline/beamline.h>
@@ -68,6 +69,7 @@
 using FNAL::pcout;
 using FNAL::pcerr;
 
+using namespace MathConstants;
 using namespace std;
 
 namespace {
@@ -449,9 +451,9 @@ Vector tunes( sqlite::connection& db, JetParticle const& oneturnjp)
 
    Vector tunes(3); 
 
-   tunes[0] =  arg( hlambda[0] )/M_TWOPI;  
-   tunes[1] =  arg( vlambda[0] )/M_TWOPI;  
-   tunes[2] =  arg( slambda[0] )/M_TWOPI;  
+   tunes[0] =  arg( hlambda[0] )/Math_TWOPI;  
+   tunes[1] =  arg( vlambda[0] )/Math_TWOPI;  
+   tunes[2] =  arg( slambda[0] )/Math_TWOPI;  
    
 
    for (int i=0; i<3; ++i) {
@@ -783,7 +785,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
     double sinpsi =   b / sqrt(betax*betax0);
     double cospsi =   a * sqrt(betax0/betax) - alphax0*sinpsi;
 
-    double psix  =  atan2( sinpsi,cospsi) / M_TWOPI; if ( psix < 0.0) {psix += 1.0;}
+    double psix  =  atan2( sinpsi,cospsi) / Math_TWOPI; if ( psix < 0.0) {psix += 1.0;}
     
 
     a = mtrx[i_y  ][i_y   ];
@@ -799,14 +801,14 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
     // NOTE: In absence of a reliable way to figure out a-priori the direction in which 
     //       a given mode is "rotating", we accumulate the absolute value of the phase variation.
     //       We assume that no single element will introduce a phase advance larger than 
-    //       than M_PI (0.5). The test allows one to detect the phase going across the 
+    //       than Math_PI (0.5). The test allows one to detect the phase going across the 
     //       boundary between 2*PI and 0. ( 1.0 and 0.0 ) 
     //----------------------------------------------------------------------------------------
 
     sinpsi =   b /sqrt(betay*betay0);
     cospsi =   a * sqrt(betay0/betay) - alphay0*sinpsi;
     
-    double psiy  =  atan2( sinpsi,cospsi) / M_TWOPI; { if ( psiy < 0.0) psiy += 1.0;}
+    double psiy  =  atan2( sinpsi,cospsi) / Math_TWOPI; { if ( psiy < 0.0) psiy += 1.0;}
     
     double dmux = abs(psix - psix0);
     double dmuy = abs(psiy - psiy0);
@@ -864,10 +866,10 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
 
   Vector nu = tunes( db, jp); 
 
-  double csH = cos( nu[0]* M_TWOPI );
+  double csH = cos( nu[0]* Math_TWOPI );
   double snH = ( mtrx[i_x][ i_npx] > 0.0 ) ? sqrt( 1.0 - csH*csH ) : -sqrt( 1.0 - csH*csH );
 
-  double csV = cos( nu[1]* M_TWOPI );
+  double csV = cos( nu[1]* Math_TWOPI );
   double snV = ( mtrx[i_y][ i_npy] > 0.0 ) ? sqrt( 1.0 - csV*csV ) : -sqrt( 1.0 - csV*csV );
 
   double betax  =   mtrx[ i_x][ i_npx ] / snH;
@@ -1214,8 +1216,8 @@ ETLattFuncs periodicETLatticeFunctions( sqlite::connection& db, beamline const& 
 
  Vector nu = tunes(db, jp);
 
- double csH = cos( M_TWOPI*nu[0]);
- double csV = cos( M_TWOPI*nu[1]);
+ double csH = cos( Math_TWOPI*nu[0]);
+ double csV = cos( Math_TWOPI*nu[1]);
 
  Matrix mtrx = jp.State().jacobian();
 
@@ -1568,8 +1570,8 @@ int  propagateCourantSnyder4D( sqlite::connection& db, beamline const& bml, JetP
     //--------------------------------------------------------
 
     
-    double fmu1 =  arg(mu1)/M_TWOPI;  if ( fmu1 < 0.0 ) fmu1  += 1.0;
-    double fmu2 =  arg(mu2)/M_TWOPI;  if ( fmu2 < 0.0 ) fmu2  += 1.0;
+    double fmu1 =  arg(mu1)/Math_TWOPI;  if ( fmu1 < 0.0 ) fmu1  += 1.0;
+    double fmu2 =  arg(mu2)/Math_TWOPI;  if ( fmu2 < 0.0 ) fmu2  += 1.0;
 
     //--------------------------------
     // after the above normalization 
@@ -1587,7 +1589,7 @@ int  propagateCourantSnyder4D( sqlite::connection& db, beamline const& bml, JetP
     // NOTE: There is no way do figure out a-priori the direction in which a given eigenvector 
     //       is "rotating", so we accumulate the absolute value of the phase variation.
     //       We assume that no single element will introduce a phase advance larger than 
-    //       than M_PI (0.5). The test allows one to detect the phase going across the 
+    //       than Math_PI (0.5). The test allows one to detect the phase going across the 
     //       boundary between 2*PI and 0. ( 1.0 and 0.0 ) 
     //----------------------------------------------------------------------------------------
 
@@ -1657,10 +1659,10 @@ MatrixC courantSnyder4DtoEV( CSLattFuncs4D const& lf )
 
 
   double nu_p2 = (kappa_x != 0.0) ? asin( C_p/sqrt(A_p*A_p + B*B)) + atan2(A_p,B) : 0.0;
-  double nu_p1 = (kappa_x != 0.0) ? M_PI - nu_p2                                  : 0.0;
+  double nu_p1 = (kappa_x != 0.0) ? Math_PI - nu_p2                                  : 0.0;
 
   double nu_m2 = (kappa_x != 0.0) ? - asin( C_m/sqrt(A_m*A_m + B*B)) - atan2(A_m,B) : 0.0;
-  double nu_m1 = (kappa_x != 0.0) ? M_PI + nu_m2                                    : 0.0;
+  double nu_m1 = (kappa_x != 0.0) ? Math_PI + nu_m2                                    : 0.0;
 
 
   double kappa_pxy = (kappa_x != 0.0) ? 2*kappa_x*kappa_y - kappa_y/kappa_x -kappa_x/kappa_y : 0.0;
