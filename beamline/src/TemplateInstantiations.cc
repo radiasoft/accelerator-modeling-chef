@@ -40,6 +40,8 @@
 #include <beamline/BBLens.tcc>
 #include <beamline/bmlnElmnt.tcc>
 
+#include <beamline/OpticalStateAdaptor.h>
+#include <beamline/OpticalStateAdaptor.tcc>
 #include <beamline/BendPropagators.h>
 #include <beamline/EdgePropagators.h>
 #include <beamline/TBunch.h>
@@ -152,17 +154,6 @@ template boost::shared_ptr<Bend>             boost::static_pointer_cast<Bend,   
 template boost::shared_ptr<LinacCavity::Propagator> boost::dynamic_pointer_cast<LinacCavity::Propagator, BasePropagator>(boost::shared_ptr<BasePropagator> const&);
 template boost::shared_ptr<BasePropagator>::shared_ptr( BasePropagator * p );
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void TBunch<Particle>::sort<LWakeOrder>( LWakeOrder );
-// template void TBunch<JetParticle>::sort<LWakeOrder>( LWakeOrder ); // disabled for now ??? FIX ME ???
-
-#endif
-//----------------------------------------------------------------------------------
-
 template       NameIs const *       boost::addressof(            NameIs const& );
 template       TypeIs const *       boost::addressof(            TypeIs const& );
 template     LengthIs const *       boost::addressof(          LengthIs const& );
@@ -186,7 +177,7 @@ template LattRing* boost::any_cast<LattRing>(boost::any*);
 
 template std::ostream& boost::operator<< (std::ostream&, boost::shared_ptr<beamline> const&);
 
-namespace {
+namespace beamline_instantiations {
  boost::function<double(int)> ft = boost::bind<double>( ShortRangeTWakeFunction(), _1, 0.0, 0.0 );
  boost::function<double(int)> fl = boost::bind<double>( ShortRangeLWakeFunction(), _1, 0.0, 0.0 );
 }
@@ -471,7 +462,14 @@ template
 void std::vector<void*, std::allocator<void*> >::insert( viter, viter, viter);
 
 
-namespace { 
+template 
+class OpticalStateAdaptor<Particle>;
+
+template 
+class OpticalStateAdaptor<JetParticle>;
+
+
+namespace beamline_instantiations { 
   
   typedef boost::mt19937       base_generator_type; 
   base_generator_type          rng;                    // pseudo-random number generator

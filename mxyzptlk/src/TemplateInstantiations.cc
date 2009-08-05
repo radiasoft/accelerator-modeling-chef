@@ -71,6 +71,11 @@ template class TJetVector<std::complex<double> >;
 template class TMapping<double>;
 template class TMapping<std::complex<double> >;
 
+template 
+TMapping<double>::TMapping( std::vector<TJet<double> >::iterator, 
+			    std::vector<TJet<double> >::iterator, EnvPtr<double> const&);
+
+
 template class TLieOperator<double>;
 template class TLieOperator<std::complex<double> >;
 template TJet<double>                               TLieOperator<double>::expMap(               double const&,                TJet<double> const & );
