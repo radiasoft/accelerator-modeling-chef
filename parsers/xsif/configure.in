@@ -48,7 +48,7 @@ AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[
 
 AC_ARG_ENABLE(debugging, AC_HELP_STRING([--enable-debugging],[set flags for debugging] ),,)
 
-if test "x$val_debugging" = "xyes"; then
+if test "x$enable_debugging" = "xyes"; then
   OPTFLAGS="-pipe -O0 -g3"
 else
   OPTFLAGS="-pipe -g -O3 -mtune=pentium4" 
@@ -99,7 +99,7 @@ AC_SUBST(TEMPLATEFLAGS)
 AC_SUBST(OPTFLAGS) 
 AC_SUBST(LOCALDEFS) 
 
-AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "${val_implicit_templates}" = "yes")
+AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "x${enable_implicit_templates}" = "xyes")
 
 AC_CONFIG_FILES([src/Makefile Makefile])
 AC_OUTPUT

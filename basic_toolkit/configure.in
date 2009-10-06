@@ -50,10 +50,10 @@ AC_ARG_ENABLE(implicit-templates,
               TEMPLATEFLAGS="", TEMPLATEFLAGS="-fno-implicit-templates"; LOCALDEFS="-DBASICTOOLKIT_EXPLICIT_TEMPLATES")
 
 
-if test "${val_enable_debugging}" = "yes"; then 
+if test "x${enable_debugging}" = "xyes"; then 
   OPTFLAGS="-pipe -g3 -O0"  
 else
-  OPTFLAGS="-pipe -mtune=pentium4 -O3 -g ${OPTFLAGS}"   
+  OPTFLAGS="-pipe -mtune=pentium4 -O2 -g ${OPTFLAGS}"   
 fi
 
 # Checks for libraries.
@@ -160,7 +160,7 @@ AC_SUBST(LOCALDEFS)
 AC_SUBST(OPTFLAGS)
 AC_SUBST(TEMPLATEFLAGS)
 
-AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "${val_implicit_templates}" = "yes")
+AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "x${enable_implicit_templates}" = "xyes")
 
 AC_CONFIG_FILES([src/Makefile Makefile])
 AC_OUTPUT
