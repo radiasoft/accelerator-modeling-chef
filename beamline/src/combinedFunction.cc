@@ -45,7 +45,7 @@
 ****** 
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified signature of setLength method to conform
-******   to the virtual method in base class bmlnElmnt.
+******   to the virtual method in base class BmlnElmnt.
 ****** - wrote placeholder implementation for combinedFunction::setLength
 ******   : evidently, one had never been written
 ****** - added placeholder setStrength method.
@@ -86,24 +86,21 @@ using FNAL::pcerr;
 // **************************************************
 
 combinedFunction::combinedFunction()
-: bmlnElmnt()
-{
-  bml_ = BmlPtr( new beamline );
-}
+: BmlnElmnt()
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-combinedFunction::combinedFunction( std::string const& n ) : bmlnElmnt(n) 
-{
-  bml_ =  BmlPtr( new beamline );
-}
+combinedFunction::combinedFunction( std::string const& n ) 
+ : BmlnElmnt(n) 
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 combinedFunction::combinedFunction( combinedFunction const& x ) 
-: bmlnElmnt( x )
+: BmlnElmnt( x )
 {
   // FIXME ! the state of internal multipoles needs to be preserved
   //         as private element data 
@@ -137,17 +134,19 @@ std::pair<ElmPtr,ElmPtr> combinedFunction::split( double const& pc) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 //combinedFunction& combinedFunction::operator=(const combinedFunction& x) {
-//  bmlnElmnt::operator=(x);	// This operator needs to be fixed.
-//  bml_ = (beamline*)x.bml_->Clone();
+//  BmlnElmnt::operator=(x);	// This operator needs to be fixed.
+//  bml_ = (beamline*)x.bml_->clone();
 //}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void combinedFunction::append(bmlnElmnt& x) {
-  bml_->append( ElmPtr( x.Clone() ));
+void combinedFunction::append(BmlnElmnt& x) {
+#if 0
+  bml_->append( ElmPtr( x.clone() ));
   length_ += x.Length();
+#endif
 }
 
 
@@ -156,6 +155,7 @@ void combinedFunction::append(bmlnElmnt& x) {
 
 void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
 
+#if 0
   ElmPtr element;
  
   double newstrength;
@@ -180,14 +180,17 @@ void combinedFunction::setField(WHICH_MULTIPOLE mult, double field) {
          }
      }// for
    } // if
+#endif
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::setField(  boost::function<bool(bmlnElmnt const&)> crit, double s )
+void combinedFunction::setField(  boost::function<bool(BmlnElmnt const&)> crit, double s )
 {
 
+#if 0
   std::list<ElmPtr>  foundElements;
 
   for (beamline::deep_iterator it= bml_->deep_begin();
@@ -211,6 +214,7 @@ void combinedFunction::setField(  boost::function<bool(bmlnElmnt const&)> crit, 
        }
   
  } // for
+#endif
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -218,9 +222,10 @@ void combinedFunction::setField(  boost::function<bool(bmlnElmnt const&)> crit, 
 
 double combinedFunction::Field(WHICH_MULTIPOLE mult) 
 {
-
   ElmPtr element;
   double multStrength = 0.0;
+
+#if 0
 
   for (beamline::deep_iterator it= bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) 
@@ -230,6 +235,7 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
 	multStrength += element->Strength();
     }
   }
+#endif
   return multStrength;
 }
 
@@ -239,6 +245,7 @@ double combinedFunction::Field(WHICH_MULTIPOLE mult)
 void combinedFunction::setSkew(WHICH_MULTIPOLE mult, Alignment const& align) 
 {
 
+#if 0
   for (beamline::deep_iterator it= bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) 
   {
@@ -246,6 +253,7 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, Alignment const& align)
 	(*it)->setAlignment(align);
     }
   }
+#endif
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -254,6 +262,7 @@ void combinedFunction::setSkew(WHICH_MULTIPOLE mult, Alignment const& align)
 Alignment combinedFunction::Skew(WHICH_MULTIPOLE mult) 
 {
 
+#if 0
   for (beamline::deep_iterator it  = bml_->deep_begin();
                                it !=  bml_->deep_end(); ++it ) {
  
@@ -262,6 +271,7 @@ Alignment combinedFunction::Skew(WHICH_MULTIPOLE mult)
     } 
 
   }
+#endif
   return Alignment();
 }
 
@@ -269,8 +279,10 @@ Alignment combinedFunction::Skew(WHICH_MULTIPOLE mult)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& combinedFunction::writeTo(ostream& os) {
+#if 0
   os << *bml_;
   os << "combinedFunction_END " << ident_ << " 0 0 0 0 0\n";
+#endif
   return os;
 }
 
@@ -279,19 +291,21 @@ ostream& combinedFunction::writeTo(ostream& os) {
 
 istream& combinedFunction::readFrom(istream& is)
 {
+#if 0
   bml_ = BmlPtr( new beamline() );
 
   is >> *bml_;
 
   length_ = bml_->Length();
 
-  bmlnElmnt* e = read_istream(is);  /// !!!! FIX ME !!!! 
+  BmlnElmnt* e = read_istream(is);  /// !!!! FIX ME !!!! 
 
   if ( e ) {
-    (*pcerr) << " **** WARNING **** Expecting an end of combinedFunction but got another bmlnElmnt\n";
+    (*pcerr) << " **** WARNING **** Expecting an end of combinedFunction but got another BmlnElmnt\n";
     (*pcerr) << " **** WARNING **** Will attempt to proceed, but all bets are off!\n";
     delete e;
   }
+#endif
   return is;
 }
 
@@ -362,18 +376,18 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
   JetParticle jetparticle(arg_jp);
   Particle    particle(jetparticle);
 
-  Vector& state   = particle.State();
-  Vector  inState = particle.State();
+  Vector& state   = particle.state();
+  Vector  inState = particle.state();
 
   double x_i  = inState[x];
   double xp_i = inState[xp];
 
   jetparticle.setState( inState );
-  particle.State() =  inState;
+  particle.state() =  inState;
 
   propagate( jetparticle );
 
-  double m = ( jetparticle.State().jacobian() )[x][x];
+  double m = ( jetparticle.state().jacobian() )[x][x];
   m -= 1.0;
   if( std::abs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
@@ -385,7 +399,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
   double z = x_i;
   for( int i = 0; i < 75; i++ ) {
     inState[x] = z;
-    particle.State() = inState;
+    particle.state() = inState;
     propagate( particle );
     double f = state[x] - z;
     z -= m*f;
@@ -415,7 +429,7 @@ double combinedFunction::AdjustPosition( JetParticle const& arg_jp )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool combinedFunction::hasMultipole( bmlnElmnt const &elm, WHICH_MULTIPOLE mult ) const 
+bool combinedFunction::hasMultipole( BmlnElmnt const &elm, WHICH_MULTIPOLE mult ) const 
 {
   bool ret = false;
 

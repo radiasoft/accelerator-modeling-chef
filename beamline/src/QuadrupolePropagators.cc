@@ -41,48 +41,39 @@
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/quadrupole.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = PhaseSpaceIndexing::i_x;
+ index const i_y   = PhaseSpaceIndexing::i_y;
+ index const i_cdt = PhaseSpaceIndexing::i_cdt;
+ index const i_npx = PhaseSpaceIndexing::i_npx;
+ index const i_npy = PhaseSpaceIndexing::i_npy;
+ index const i_ndp = PhaseSpaceIndexing::i_ndp;
 
 template<typename Component_t>
-double toDouble( Component_t const& val );
+inline double toDouble( Component_t const& val );
 
 template<>
-double toDouble( Jet const& val ) { return val.standardPart(); }
+inline double toDouble( Jet const& val ) { return val.standardPart(); }
 
 template<>
-double toDouble( double const& val ) { return val; }
+inline double toDouble( double const& val ) { return val; }
 
 
-// ------------------------------------------------------------------------------
 
-template<typename Particle_t>
-void propagate( quadrupole const& elm, Particle_t& p )
-{
-   
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+} // namespace
 
-  State_t& state = p.State();
+//******************************************************************************************
+//
+//   ThinQuad::Propagator
+//
+//******************************************************************************************
 
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
-     (*it)->localPropagate( p );
-  }
-  
-  state[i_cdt] -= elm.getReferenceTime();
-}
-
-// ------------------------------------------------------------------------------
+namespace { 
 
 template <typename Particle_t>
 void propagate( thinQuad const& elm, Particle_t& p ) 
@@ -93,18 +84,227 @@ void propagate( thinQuad const& elm, Particle_t& p )
  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
- State_t& state = p.State();
+ State_t& state = p.state();
 
  if( elm.Strength() == 0.0 ) return; 
 
- double const k = elm.Strength() / p.ReferenceBRho();
+ double const k = elm.Strength() / p.refBrho();
  
  state[i_npx]  += - k * state[i_x]; 
  state[i_npy]  +=   k * state[i_y];
 
 }
+} // namespace
 
-// ------------------------------------------------------------------------------
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::Propagator::Propagator::Propagator()
+ : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::Propagator::Propagator( thinQuad const& elm)
+ : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinQuad::Propagator::Propagator( thinQuad::Propagator const& p)
+: BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinQuad::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
+{
+  ::propagate( static_cast<thinQuad const&>(elm),p);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinQuad::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
+{
+  ::propagate( static_cast<thinQuad const&>(elm),p);
+}
+
+//******************************************************************************************
+//
+//   Quadrupole::Propagator
+//
+//******************************************************************************************
+
+namespace { 
+
+template<typename Particle_t>
+void propagate( quadrupole const& elm, Particle_t& p,  BmlPtr bml )
+{
+   
+  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+
+  State_t& state = p.state();
+
+  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
+     (*it)->localPropagate( p );
+  }
+  
+  state[i_cdt] -= elm.getReferenceTime();
+}
+
+} // namespace
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::Propagator::Propagator(int n)
+  : n_(n),BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::Propagator::Propagator(quadrupole const& elm, int n) 
+  : n_(n), BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::Propagator::Propagator(quadrupole::Propagator const& p)
+  : n_(p.n_), BasePropagator(p)
+{}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+quadrupole::Propagator*  quadrupole::Propagator::clone() const
+{
+ return new Propagator(*this);
+} 
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::Propagator::ctor( BmlnElmnt const& arg )
+{
+  quadrupole const& elm = static_cast< quadrupole const&>(arg); 
+
+  double const lng  = arg.Length();
+  double const str  = arg.Strength();
+ 
+  double frontLength     = 6.0*(lng/4.0)/15.0;
+  double sepLength       = ( lng - 2.0*frontLength ) / 3.0;
+  double quarterStrength = str*lng/4.0;
+ 
+  bml_ = BmlPtr( new beamline("QUADRUPOLE_PRIVATE") );
+
+  //-----------------------------
+  // One thin element ..........
+  //-----------------------------
+
+  if( n_ == 1 ) {           
+    bml_->append( DriftPtr( new Drift( "", lng / 2.0 ) ));
+    bml_->append( ThinQuadPtr( new thinQuad( "", str*lng ) ));
+    bml_->append( DriftPtr( new Drift( "", lng / 2.0 ) ) );
+  }
+  
+  //-----------------------------
+  // TEAPOT-like schema .........
+  //-----------------------------
+
+  else if( n_ == 4 ) {      
+    bml_->append( DriftPtr( new Drift( "", frontLength ) ));
+    bml_->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
+ 
+   for( int i = 0; i<3; ++i) {
+      bml_->append( DriftPtr( new Drift( "", sepLength ) ));
+      bml_->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
+    }
+
+    bml_->append( DriftPtr( new Drift( "", frontLength ) ) );
+  }
+  
+  //-----------------------------
+  // TEAPOT tandem ...............
+  //-----------------------------
+
+  else if( (n_ % 4) == 0 ) { 
+    int    u         = n_/4;
+    double xu        = u;
+    frontLength     /= xu;
+    sepLength       /= xu;
+    quarterStrength /= xu;
+
+    for( int i=0; i<u; ++i) {
+      bml_->append( DriftPtr( new Drift( "", frontLength ) ) );
+      bml_->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
+
+      for( int i=0; i<3; ++i) {
+        bml_->append( DriftPtr( new Drift( "", sepLength ) ));
+        bml_->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
+      }
+      bml_->append( DriftPtr( new Drift( "", frontLength ) ) );
+    }
+  }
+
+  //-----------------------------
+  // Equal spacing ...............
+  //-----------------------------
+
+  else {                   
+    bml_->append( DriftPtr( new Drift( "", lng / ( 2.0*n_ ) )  ));
+    bml_->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ) );
+
+    for( int i=0; i<n_-1; ++i ) {
+      bml_->append( DriftPtr( new Drift( "", lng / n_ ) ));
+      bml_->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ));
+    }
+    bml_->append( DriftPtr( new Drift( "", lng / ( 2.0*n_ ) ) ) );
+  }
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  quadrupole::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
+{
+  ::propagate( static_cast<quadrupole const&>(elm),p, bml_);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void quadrupole::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
+{
+  ::propagate( static_cast<quadrupole const&>(elm),p, bml_);
+}
+
+//******************************************************************************************
+//
+//   Quadrupole::MADPropagator
+//
+//******************************************************************************************
+
+namespace { 
 
 template<typename Particle_t>
 void mad_propagate( quadrupole const& elm, Particle_t& p )
@@ -113,14 +313,14 @@ void mad_propagate( quadrupole const& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   double const length = elm.Length();
 
-  double q0divp0 = 1.0 + toDouble(p.get_ndp()); 
-  double K1      = elm.Strength() / p.ReferenceBRho() / q0divp0;
-  double Beta    = toDouble(p.Beta() );   
-  double Gamma   = toDouble(p.Gamma());
+  double q0divp0 = 1.0 + toDouble(p.ndp()); 
+  double K1      = elm.Strength() / p.refBrho() / q0divp0;
+  double Beta    = toDouble(p.beta() );   
+  double Gamma   = toDouble(p.gamma());
 
   double kxsqr =  K1;
   double kysqr = -K1;
@@ -158,7 +358,7 @@ void mad_propagate( quadrupole const& elm, Particle_t& p )
     instate[i_npx] /= q0divp0;   // p_x/p_0 * p_0/q_0 = p_x/q_0 
     instate[i_npy] /= q0divp0;   // p_y/p_0 * p_0/q_0 = p_y/q_0 
 
-    Component_t npz = p.get_npz();  
+    Component_t npz = p.npz();  
 
     state[i_x  ] =          cn_x * instate[i_x] +  sn_x * instate[i_npx];
     state[i_npx] = -kxsqr * sn_x * instate[i_x] +  cn_x * instate[i_npx];
@@ -180,158 +380,39 @@ void mad_propagate( quadrupole const& elm, Particle_t& p )
 
   }
 
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     quadrupole const& elm,    Particle& p );
-template void propagate(     quadrupole const& elm, JetParticle& p );
-template void propagate(       thinQuad const& elm,    Particle& p );
-template void propagate(       thinQuad const& elm, JetParticle& p );
-
-#endif
-
-} // namespace
+} //namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Propagator::setup( bmlnElmnt& arg)
-{
- 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
-  ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
-
-  const double lng  = arg.Length();
-  const double str  = arg.Strength();
- 
-  double frontLength     = 6.0*(lng/4.0)/15.0;
-  double sepLength       = ( lng - 2.0*frontLength ) / 3.0;
-  double quarterStrength = str*lng/4.0;
- 
-  bml = BmlPtr( new beamline("QUADRUPOLE_PRIVATE") );
-
-  //-----------------------------
-  // One thin element ..........
-  //-----------------------------
-
-  if( n_ == 1 ) {           
-    bml->append( DriftPtr( new drift( "", lng / 2.0 ) ));
-    bml->append( elm = ThinQuadPtr( new thinQuad( "", str*lng ) ));
-    bml->append( DriftPtr( new drift( "", lng / 2.0 ) ) );
-  }
-  
-  //-----------------------------
-  // TEAPOT-like schema .........
-  //-----------------------------
-
-  else if( n_ == 4 ) {      
-    bml->append( DriftPtr( new drift( "", frontLength ) ));
-    bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
- 
-   for( int i = 0; i<3; ++i) {
-      bml->append( DriftPtr( new drift( "", sepLength ) ));
-      bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
-    }
-
-    bml->append( DriftPtr( new drift( "", frontLength ) ) );
-  }
-  
-  //-----------------------------
-  // TEAPOT tandem ...............
-  //-----------------------------
-
-  else if( (n_ % 4) == 0 ) { 
-    int    u         = n_/4;
-    double xu        = u;
-    frontLength     /= xu;
-    sepLength       /= xu;
-    quarterStrength /= xu;
-
-    for( int i=0; i<u; ++i) {
-      bml->append( DriftPtr( new drift( "", frontLength ) ) );
-      bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
-
-      for( int i=0; i<3; ++i) {
-        bml->append( DriftPtr( new drift( "", sepLength ) ));
-        bml->append( ThinQuadPtr( new thinQuad( "", quarterStrength ) ) );
-      }
-      bml->append( DriftPtr( new drift( "", frontLength ) ) );
-    }
-  }
-
-  //-----------------------------
-  // Equal spacing ...............
-  //-----------------------------
-
-  else {                   
-    bml->append( DriftPtr( new drift( "", lng / ( 2.0*n_ ) )  ));
-    bml->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ) );
-
-    for( int i=0; i<n_-1; ++i ) {
-      bml->append( DriftPtr( new drift( "", lng / n_ ) ));
-      bml->append( ThinQuadPtr( new thinQuad( "", str*lng/ n_ ) ));
-    }
-    bml->append( DriftPtr( new drift( "", lng / ( 2.0*n_ ) ) ) );
-  }
-
-}
+quadrupole::MADPropagator::MADPropagator()
+ : BasePropagator()
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  quadrupole::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
-{ 
-  setup(elm);
-}
+quadrupole::MADPropagator::MADPropagator( quadrupole const& elm)
+ : BasePropagator(elm)
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
-{
-  ::propagate( static_cast<quadrupole const&>(elm),p);
-}
+quadrupole::MADPropagator::MADPropagator( quadrupole::MADPropagator const& p)
+ : BasePropagator(p)
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
-{
-  ::propagate( static_cast<quadrupole const&>(elm),p);
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinQuad::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
-{
-  ::propagate( static_cast<thinQuad const&>(elm),p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinQuad::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
-{
-  ::propagate( static_cast<thinQuad const&>(elm),p);
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void quadrupole::MADPropagator::setup( bmlnElmnt& elm)  
+void quadrupole::MADPropagator::ctor( BmlnElmnt const& elm)  
 {}
   
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, Particle& p)
+void quadrupole::MADPropagator::operator()(  BmlnElmnt const& elm, Particle& p)
 {  
   static bool show_message = true; 
   if ( show_message) { 
@@ -345,7 +426,7 @@ void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, Particle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, JetParticle& p)
+void quadrupole::MADPropagator::operator()(  BmlnElmnt const& elm, JetParticle& p)
 {  
   ::mad_propagate(static_cast<quadrupole const&>(elm), p);
 }
@@ -353,8 +434,8 @@ void quadrupole::MADPropagator::operator()(  bmlnElmnt const& elm, JetParticle& 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  quadrupole::MADPropagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  quadrupole::MADPropagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 

@@ -64,37 +64,34 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 srot::srot() 
-: bmlnElmnt() 
+: BmlnElmnt() 
 {
-  propagator_ = PropagatorPtr(new Propagator());
-  propagator_->setup(*this); 
+  propagator_ = PropagatorPtr(new Propagator(*this) ); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 srot::srot( std::string const& n ) 
-: bmlnElmnt(n) 
+: BmlnElmnt(n) 
 {
-  propagator_ = PropagatorPtr(new Propagator());
-  propagator_->setup(*this); 
+  propagator_ = PropagatorPtr(new Propagator(*this) ); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 srot::srot( std::string const& n, double const& s) 
- : bmlnElmnt( n, 0.0,s) 
+ : BmlnElmnt( n, 0.0,s) 
 {
-  propagator_ = PropagatorPtr(new Propagator());
-  propagator_->setup(*this); 
+  propagator_ = PropagatorPtr(new Propagator(*this) ); 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 srot::srot( srot const& x )
-  : bmlnElmnt(x )
+  : BmlnElmnt(x )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -109,7 +106,7 @@ srot::~srot()
 srot& srot::operator=( srot const& rhs)  
 {
   if (this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this;
 }
 

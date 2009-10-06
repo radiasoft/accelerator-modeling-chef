@@ -46,7 +46,28 @@ void propagate( beamline const& bml, particle_t& p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline::Propagator* beamline::Propagator::Clone() const
+beamline::Propagator::Propagator()
+ : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::Propagator::Propagator(beamline const& elm)
+ : BasePropagator(elm)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::Propagator::Propagator( beamline::Propagator const& p)
+ : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::Propagator* beamline::Propagator::clone() const
 {
   return  new beamline::Propagator(*this);
 }
@@ -55,7 +76,7 @@ beamline::Propagator* beamline::Propagator::Clone() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void beamline::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p ) 
+void beamline::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& p ) 
 {
   ::propagate( static_cast<beamline const&>(elm), p);
 }
@@ -63,7 +84,7 @@ void beamline::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p ) 
+void beamline::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch& p ) 
 {
   ::propagate( static_cast<beamline const&>(elm), p);
 }
@@ -71,7 +92,7 @@ void beamline::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void beamline::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate( static_cast<beamline const&>(elm),p);
 }
@@ -80,7 +101,7 @@ void beamline::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void beamline::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void beamline::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
   ::propagate( static_cast<beamline const&>(elm),p);
 }
@@ -88,5 +109,36 @@ void beamline::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void beamline::Propagator::setReferenceTime( double ct)
+{ 
+  BasePropagator::setReferenceTime(ct);
+ 
+  //(*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
+  //(*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
+  //(*pcerr) << "*** WARNING ****: Continuing, nonetheless... " << std::endl;
+}
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beamline::Propagator::getReferenceTime()  const
+{
+
+  double ct = 0.0; 
+
+#if  0 // FIXME
+
+  for ( beamline::const_iterator it = begin(); it != end(); ++it ) {
+
+    ct += (*it)->getReferenceTime();
+
+  } 
+#endif
+
+  return ct; 
+
+}     
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

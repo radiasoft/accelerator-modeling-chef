@@ -60,7 +60,7 @@
 #define CF_RBEND_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/ParticleFwd.h>
 #include <list>
@@ -74,7 +74,7 @@ class CF_rbend;
 typedef boost::shared_ptr<CF_rbend>            CFRbendPtr;
 typedef boost::shared_ptr<CF_rbend const> ConstCFRbendPtr;
 
-class DLLEXPORT CF_rbend : public bmlnElmnt
+class DLLEXPORT CF_rbend : public BmlnElmnt
 {
 
   class Propagator;
@@ -101,7 +101,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   CF_rbend(CF_rbend const& );
 
-  CF_rbend* Clone() const 
+  CF_rbend* clone() const 
      { return new CF_rbend( *this ); }
 
   ~CF_rbend();

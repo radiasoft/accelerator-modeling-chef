@@ -53,7 +53,7 @@
 #define SOLENOID_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/ParticleFwd.h>
 
 
@@ -65,7 +65,7 @@ typedef boost::shared_ptr<Solenoid>        SolenoidPtr;
 typedef boost::shared_ptr<Solenoid const>  ConstSolenoidPtr; 
 
 
-class DLLEXPORT Solenoid : public bmlnElmnt {
+class DLLEXPORT Solenoid : public BmlnElmnt {
 
   class Propagator; 
 
@@ -79,7 +79,7 @@ public:
 
   Solenoid( Solenoid const& );
 
-  Solenoid* Clone() const;
+  Solenoid* clone() const;
 
   ~Solenoid();   
 

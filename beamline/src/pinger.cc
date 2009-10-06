@@ -58,7 +58,7 @@
 
 using namespace std;
 
-/** Implements the classes Pinger, HPinger and VPinger.  This bmlnElmt kicks
+/** Implements the classes Pinger, HPinger and VPinger.  This BmlnElmt kicks
     the beam the same as an hkick and vkick, but only the first time a
     particle passes through the device after it is armed.
 
@@ -75,37 +75,34 @@ using namespace std;
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Pinger::Pinger() 
-  : bmlnElmnt("", 0.0, 0.0 ), kick_direction_(0), counter_(-1)
+  : BmlnElmnt("", 0.0, 0.0 ), kick_direction_(0), counter_(-1)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Pinger::Pinger(std::string const& n) 
-  : bmlnElmnt(n ,0.0, 0.0 ),  kick_direction_(0), counter_(-1)
+  : BmlnElmnt(n ,0.0, 0.0 ),  kick_direction_(0), counter_(-1)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Pinger::Pinger(std::string const& n, double const& k, double const& r, int c) 
-  : bmlnElmnt(n, 0.0, k), kick_direction_(r), counter_(c)
+  : BmlnElmnt(n, 0.0, k), kick_direction_(r), counter_(c)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Pinger::Pinger( Pinger const& o) 
-  : bmlnElmnt(o),  kick_direction_(o.kick_direction_), counter_(o. counter_) 
+  : BmlnElmnt(o),  kick_direction_(o.kick_direction_), counter_(o. counter_) 
 {}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -120,7 +117,7 @@ Pinger::~Pinger()
 Pinger& Pinger::operator=( Pinger const& rhs)
 {
   if ( this == &rhs ) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   kick_direction_  = rhs.kick_direction_;
   counter_         = rhs.counter_;        

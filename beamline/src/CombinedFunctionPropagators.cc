@@ -40,42 +40,33 @@
 #include <beamline/JetParticle.h>
 #include <beamline/beamline.h>
 #include <beamline/combinedFunction.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <iostream>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
  template<typename Particle_t>
- void propagate( combinedFunction const& elm, Particle_t& p)
+ void propagate( combinedFunction const& elm, Particle_t& p, BmlPtr bml)
  {
     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-    State_t& state = p.State();
+    State_t& state = p.state();
  
-    bmlnElmnt::core_access::get_BmlPtr(elm)->propagate( p );
+    bml->localPropagate( p );
 
-    state[i_cdt] -=   bmlnElmnt::core_access::get_ctRef(elm);
+    state[i_cdt] -=  elm.getReferenceTime();
  }
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( combinedFunction const& elm,    Particle& p );
-template void propagate( combinedFunction const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
 
 } // namespace
 
@@ -83,25 +74,52 @@ template void propagate( combinedFunction const& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  combinedFunction::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+combinedFunction::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+combinedFunction::Propagator::Propagator(combinedFunction const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+combinedFunction::Propagator::Propagator( combinedFunction::Propagator const& p)
+  : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  combinedFunction::Propagator::ctor(BmlnElmnt const& elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  combinedFunction::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void combinedFunction::Propagator::operator()( BmlnElmnt const& elm, Particle& p) 
 {
-  ::propagate( static_cast<combinedFunction const&>(elm), p);
+  ::propagate( static_cast<combinedFunction const&>(elm), p, bml_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void combinedFunction::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void combinedFunction::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p) 
 {
-  ::propagate( static_cast<combinedFunction const&>(elm),p);
+  ::propagate( static_cast<combinedFunction const&>(elm), p, bml_ );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

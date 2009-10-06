@@ -37,27 +37,25 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinMultipole::thinMultipole () 
-  : bmlnElmnt( "", 0.0, 0.0 ), poles_() 
+  : BmlnElmnt( "", 0.0, 0.0 ), poles_() 
 {
-  propagator_ = PropagatorPtr( new Propagator());
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinMultipole::thinMultipole ( std::string const& name) 
-  : bmlnElmnt( name, 0.0, 0.0 ), poles_() 
+  : BmlnElmnt( name, 0.0, 0.0 ), poles_() 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinMultipole::thinMultipole(  thinMultipole const& x ) 
-  : bmlnElmnt( x ), poles_(x.poles_)
+  : BmlnElmnt( x ), poles_(x.poles_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -72,7 +70,7 @@ thinMultipole::~thinMultipole()
 thinMultipole& thinMultipole::operator=(thinMultipole const& rhs)
 {
   if ( this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   poles_ = rhs.poles_;
   return *this;
 }

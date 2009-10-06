@@ -51,7 +51,7 @@ AlignmentDecorator::AlignmentDecorator( AlignmentDecorator const& o)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AlignmentDecorator* AlignmentDecorator::Clone() const
+AlignmentDecorator* AlignmentDecorator::clone() const
 { 
   return new AlignmentDecorator(*this);
 }
@@ -132,17 +132,17 @@ void AlignmentDecorator::setAlignment(Vector const& offsets, Vector const& angle
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
+void  AlignmentDecorator::operator()(  BmlnElmnt const& elm,  Particle& p)
 {
   
-  Vector state = p.State();
+  Vector state = p.state();
  
   state[Particle::i_x]   -= offsets_[0];
   state[Particle::i_y]   -= offsets_[1];
 
   //   state[i_cdt] -= offset_[2];
  
-  p.State() = rotation_*state; 
+  p.state() = rotation_*state; 
 
   (*propagator_)( elm, p); 
 
@@ -151,15 +151,15 @@ void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  AlignmentDecorator::operator()(  bmlnElmnt const& elm,  JetParticle& p) 
+void  AlignmentDecorator::operator()(  BmlnElmnt const& elm,  JetParticle& p) 
 {
-  Mapping state = p.State();
+  Mapping state = p.state();
  
   state[Particle::i_x]   -= offsets_[0];
   state[Particle::i_y]   -= offsets_[1];
 //state[i_cdt] -= offset_[2];
  
-  p.State() = rotation_*state; 
+  p.state() = rotation_*state; 
 
   (*propagator_)( elm, p); 
 } 

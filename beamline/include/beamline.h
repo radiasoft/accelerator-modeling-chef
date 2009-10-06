@@ -59,7 +59,7 @@
 #include <list>
 #include <stack>
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/LatticeFunctions.h>
 
 #include <boost/function.hpp>
@@ -75,7 +75,7 @@ class ConstBmlVisitor;
  
 // -------------------------------------------------------------------------------
 
-class beamline: public bmlnElmnt {
+class beamline: public BmlnElmnt {
 
 private:
 
@@ -147,7 +147,7 @@ public:
                                       //  in a binary file.
 
   ~beamline();
-   beamline* Clone() const;
+   beamline* clone() const;
 
    beamline& operator=( beamline const& rhs);
 
@@ -158,9 +158,6 @@ public:
    beamline*        parent()         { return parent_; }    
    
    virtual void     reset()   const; 
-
-   double getReferenceTime()           const;     
-   void   setReferenceTime( double   const& );               
 
    void   registerReference( Particle const& p, bool scaling = true);
 
@@ -175,10 +172,10 @@ public:
    void     remove( ElmPtr );
 
    void insert( ElmPtr    );
-   void insert( bmlnElmnt const&  );
+   void insert( BmlnElmnt const&  );
 
    void append( ElmPtr    );
-   void append( bmlnElmnt const&  );
+   void append( BmlnElmnt const&  );
 
    std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
@@ -194,8 +191,8 @@ public:
                                        // Both methods insert elements from the list into
                                        // the beamline (in place) at locations specified in
                                        // the list.  The only difference in behavior arises
-                                       // from using bmlnElmmnt::OrbitLength(Particle const&)
-                                       // rather than  bmlnElmnt::Length() in the second form
+                                       // from using BmlnElmnt::OrbitLength(Particle const&)
+                                       // rather than  BmlnElmnt::Length() in the second form
                                        // when distributing the elements.
 
 
@@ -258,8 +255,8 @@ public:
   int           countHowMany() const;
   int     countHowManyDeeply() const;
 
-  int           countHowMany( boost::function<bool(bmlnElmnt const&)>, std::list<ElmPtr>& ) const;
-  int     countHowManyDeeply( boost::function<bool(bmlnElmnt const&)>, std::list<ElmPtr>& ) const;
+  int           countHowMany( boost::function<bool(BmlnElmnt const&)>, std::list<ElmPtr>& ) const;
+  int     countHowManyDeeply( boost::function<bool(BmlnElmnt const&)>, std::list<ElmPtr>& ) const;
 
   int                  depth()                               const;                 // Returns -1 if beamline is empty.
                                                                                     // Returns  0 if beamline is flat
@@ -277,7 +274,6 @@ public:
   double       OrbitLength( Particle const& )   const;
   double       Length()                         const;
   bool         isFlat()                         const;
-
 
   beamline flatten() const;     //   Produces a flattened version of itself.
 

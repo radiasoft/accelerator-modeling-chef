@@ -40,7 +40,7 @@
 #define GKICK_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -52,7 +52,7 @@ typedef boost::shared_ptr<gkick>        GKickPtr;
 typedef boost::shared_ptr<gkick const>  ConstGKickPtr;
 
 
-class DLLEXPORT gkick : public bmlnElmnt {
+class DLLEXPORT gkick : public BmlnElmnt {
 
   class Propagator;
 
@@ -62,7 +62,7 @@ public:
 
   gkick( gkick const& x);
 
-  gkick* Clone() const { return new gkick( *this ); }
+  gkick* clone() const { return new gkick( *this ); }
 
  ~gkick();
 

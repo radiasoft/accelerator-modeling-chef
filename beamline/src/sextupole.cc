@@ -46,7 +46,7 @@
 ****** - new typesafe propagators
 ****** Apr 2008           michelotti@fnal.gov
 ****** - changed signature of setStrength(..) to
-******   match that of the virtual bmlnElmnt method
+******   match that of the virtual BmlnElmnt method
 ****** May 2008           ostiguy@fnal.gov
 ****** - setStrength() now dispatched to propagator by base class
 ******   (no longer virtual)
@@ -62,7 +62,7 @@
 #include <basic_toolkit/GenericException.h>
 #include <beamline/beamline.h>
 #include <beamline/sextupole.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/SextupolePropagators.h>
 #include <beamline/Alignment.h>
@@ -78,33 +78,31 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole ()
-: bmlnElmnt( "", 1.0, 0.0 ) 
+: BmlnElmnt( "", 1.0, 0.0 ) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole ( std::string const& n, double const& l, double const& s ) 
-: bmlnElmnt( n, l, s ) 
+: BmlnElmnt( n, l, s ) 
 {
-  propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ =  PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sextupole::sextupole( sextupole const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-sextupole* sextupole::Clone() const 
+sextupole* sextupole::clone() const 
 { 
   return new sextupole( *this ); 
 }
@@ -123,8 +121,8 @@ sextupole& sextupole::operator=( sextupole const& o)
 {
   if ( this == &o ) return *this; 
 
-  bmlnElmnt::operator=(o);
-  propagator_->setup(*this);
+  BmlnElmnt::operator=(o);
+  propagator_->ctor(*this);
   return (*this);
 }
 
@@ -194,35 +192,35 @@ void sextupole::accept( ConstBmlVisitor& v ) const
 // **************************************************
 
 thinSextupole::thinSextupole () 
-: bmlnElmnt( "", 0.0, 0.0 ) {
+: BmlnElmnt( "", 0.0, 0.0 ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
   propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSextupole::thinSextupole ( std::string const& n, double const& s ) 
-: bmlnElmnt( n, 0.0, s ) {
+: BmlnElmnt( n, 0.0, s ) {
  // The strength is to be interpreted as
  // (1/2)*B''l in  Tesla / meter
   propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSextupole::thinSextupole( thinSextupole const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSextupole* thinSextupole::Clone() const 
+thinSextupole* thinSextupole::clone() const 
 { 
   return new thinSextupole( *this ); 
 }
@@ -240,8 +238,8 @@ thinSextupole& thinSextupole::operator=( thinSextupole const& o)
 {
   if ( this == &o ) return *this; 
 
-  bmlnElmnt::operator=(o);
-  propagator_->setup(*this);
+  BmlnElmnt::operator=(o);
+  propagator_->ctor(*this);
   return (*this);
 }
 

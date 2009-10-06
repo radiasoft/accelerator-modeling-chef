@@ -111,18 +111,17 @@ LinacCavity::LinacCavity( std::string const& name,
                           double const& eV,         // rf voltage 
                           double const& phi_s,      // synchronous phase 
                           bool   wake_on     )      
-: bmlnElmnt( name, length,  eV ), w_rf_(2*M_PI*f), phi_s_(phi_s), wakeon_(wake_on)
+: BmlnElmnt( name, length,  eV ), w_rf_(2*M_PI*f), phi_s_(phi_s), wakeon_(wake_on)
 
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LinacCavity::LinacCavity( LinacCavity const& x ) 
-  : bmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_), wakeon_( x.wakeon_)
+  : BmlnElmnt( x ), w_rf_(x.w_rf_), phi_s_(x.phi_s_), wakeon_( x.wakeon_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -138,7 +137,7 @@ LinacCavity& LinacCavity::operator=(LinacCavity const& rhs)
 {
   if (this == &rhs ) return *this;
   
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   w_rf_  = rhs.w_rf_;
   phi_s_ = rhs.phi_s_;
@@ -229,23 +228,6 @@ void LinacCavity::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double LinacCavity::getReferenceTime() const 
-{
-
-  ctRef_ = 0.0;
-
-  for ( beamline::const_iterator it  = bml_->begin(); 
-                                 it != bml_->end(); ++it ) {
-        
-   ctRef_  += (*it)->getReferenceTime();
-  }
-
-  return ctRef_;
-
-}
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 double const&  LinacCavity::phi()  const
 {
   return phi_s_;
@@ -332,14 +314,10 @@ std::pair<ElmPtr,ElmPtr> LinacCavity::split( double const& pc ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
-{               
-  if ( !(bml_) ) {
-    bmlnElmnt::propagateReference( particle, initialBRho, scaling);
-    return;
-  }
-
-  bml_->propagateReference(particle, initialBRho, scaling );
-
-  return;
+void   LinacCavity::propagateReference( Particle& particle, double initialBRho, bool scaling )
+{
+  propagator_->propagateReference( particle, initialBRho, scaling );
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

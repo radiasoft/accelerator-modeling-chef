@@ -40,7 +40,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <boost/bind.hpp>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/BasePropagator.h>
 
 class BmlVisitor;
@@ -52,7 +52,7 @@ typedef boost::shared_ptr<WakeKick>        WakeKickPtr;
 typedef boost::shared_ptr<WakeKick const>  ConstWakeKickPtr;
 
 
-class DLLEXPORT WakeKick : public bmlnElmnt {
+class DLLEXPORT WakeKick : public BmlnElmnt {
 
 private:
 
@@ -64,7 +64,7 @@ public:
 
    WakeKick( WakeKick const& );
 
-   WakeKick* Clone() const { return new WakeKick( *this ); }
+   WakeKick* clone() const { return new WakeKick( *this ); }
 
   ~WakeKick();
 

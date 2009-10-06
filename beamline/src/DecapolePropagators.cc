@@ -42,12 +42,14 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -63,10 +65,9 @@ void propagate( thinDecapole const& elm, Particle_t & p )
 
  if( elm.Strength() == 0.0 ) return;  
  
- State_t& state = p.State();
+ State_t& state = p.state();
 
- 
- double const k      = elm.Strength() / p.ReferenceBRho();
+ double const k      = elm.Strength() / p.refBrho();
 
  Component_t x = state[i_x];
  Component_t y = state[i_y];
@@ -79,24 +80,34 @@ void propagate( thinDecapole const& elm, Particle_t & p )
  state[i_npy] -= ( 4.0 * k * xy * ( xx - yy ) );
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( thinDecapole const& elm,    Particle& p );
-template void propagate( thinDecapole const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+thinDecapole::Propagator::Propagator()
+  : BasePropagator()
+{}
 
-void thinDecapole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+thinDecapole::Propagator::Propagator( thinDecapole const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinDecapole::Propagator::Propagator( thinDecapole::Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinDecapole::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate( static_cast<thinDecapole const&>(elm),p);
 }
@@ -104,7 +115,7 @@ void thinDecapole::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinDecapole::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void thinDecapole::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate( static_cast<thinDecapole const&>(elm), p);
 }

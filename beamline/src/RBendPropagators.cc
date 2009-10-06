@@ -41,17 +41,18 @@
 #include <beamline/Edge.h>
 #include <beamline/Bend.h>
 #include <beamline/rbend.h>
-#include <beamline/drift.h>
 #include <iostream>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
 template <typename T>
@@ -68,15 +69,13 @@ inline double toDouble( double const& value) { return value; }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( rbend const& elm, Particle_t& p )
+void propagate( rbend const& elm, Particle_t& p, BmlPtr bml )
 {
    
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  State_t& state = p.state();
 
   for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
@@ -98,7 +97,7 @@ void mad_propagate( Element_t const& elm, Particle_t& p, double const& rho, doub
   typedef typename PropagatorTraits<Particle_t>::State_t     State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
   
   double const h      = 1/rho;                    // curvature
   double angle        = 2.0 * asin(elm.Length()/( 2.0*toDouble(rho)));
@@ -164,8 +163,8 @@ void mad_propagate( Element_t const& elm, Particle_t& p, double const& rho, doub
 
   // Finally .. the mapping ...............................
 
-  State_t const& inState  = p.State();
-  State_t        outState( p.State().Dim() ); 
+  State_t const& inState  = p.state();
+  State_t        outState( p.state().Dim() ); 
 
   for(  int i=0; i<BMLN_dynDim; ++i  ) {
     outState[i] = 0.0;
@@ -183,53 +182,58 @@ void mad_propagate( Element_t const& elm, Particle_t& p, double const& rho, doub
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     rbend& elm,    Particle& p );
-template void propagate(     rbend& elm, JetParticle& p );
-template void mad_propagate( rbend& elm,    Particle& p, double const& rho, double const& n );
-template void mad_propagate( rbend& elm, JetParticle& p, double const& rho, double const& n );
-template void mad_propagate( rbend& elm,  Particle_t& p )
-template void mad_propagate( rbend& elm,  Particle_t& p )
-template double toDouble( double const& );
-template double toDouble( Jet    const& );
-
-#endif
-
 } // namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::setup( bmlnElmnt& arg                                ) 
+rbend::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+rbend::Propagator::Propagator(rbend const& elm)
+  : BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+rbend::Propagator::Propagator( Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rbend::Propagator::ctor( BmlnElmnt const& arg) 
 {
   
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
-  bml = BmlPtr(new beamline("RBEND_PRIVATE") );
+  rbend const& elm = static_cast<rbend const&>(arg); 
+
+  bml_ = BmlPtr(new beamline("RBEND_PRIVATE") );
  
-  rbend& elm = static_cast<rbend&>(arg); 
- 
-  double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(elm); 
-  double& dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(elm); 
-  double& usAngle_     = rbend::rbend_core_access::get_usAngle(elm); 
-  double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(elm); 
+  double usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(elm); 
+  double dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(elm); 
+  double usAngle_     = rbend::rbend_core_access::get_usAngle(elm); 
+  double dsAngle_     = rbend::rbend_core_access::get_dsAngle(elm); 
 
   if ( elm.hasUpstreamEdge() ) {
        EdgePtr uedge( new Edge("",  tan(usAngle_) * elm.Strength() ) );
-       bml->append( uedge );
+       bml_->append( uedge );
   }
 
   BendPtr bend( new Bend( "RBEND_PRIVATE",  elm.Length(), elm.Strength(), elm.getBendAngle(),  usAngle_,  dsAngle_, 
                                                           usFaceAngle_,  dsFaceAngle_ , Bend::type_rbend)  );
-  bml->append( bend  );
+  bml_->append( bend  );
 
   if (elm.hasDownstreamEdge() ) {
      EdgePtr dedge( new Edge( "", -tan(dsAngle_) * elm.Strength() ));
-     bml->append( dedge );
+     bml_->append( dedge );
   }
 
 }
@@ -237,32 +241,32 @@ void rbend::Propagator::setup( bmlnElmnt& arg                                )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  rbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  rbend::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void rbend::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate( static_cast<rbend const&>(elm),p);
+  ::propagate( static_cast<rbend const&>(elm),p, bml_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void rbend::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate(static_cast<rbend const&>(elm), p );
+  ::propagate(static_cast<rbend const&>(elm), p, bml_ );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 #if 0
-void rbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void rbend::MADPropagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
 
   double const rho    = toDouble( p.BRho() )/elm.Strength();
@@ -277,7 +281,7 @@ void rbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void rbend::MADPropagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
   double const rho    = toDouble( p.BRho() )/elm.Strength();
 

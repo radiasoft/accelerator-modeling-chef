@@ -66,9 +66,9 @@
 #include <beamline/LatticeFunctions.h>
 #include <beamline/beamline.h>
 #include <beamline/BeamlinePropagators.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/combinedFunction.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/Slot.h>
 #include <beamline/sbend.h>
 #include <beamline/rbend.h>
@@ -93,10 +93,9 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline::beamline( std::string const& nm ) 
-: bmlnElmnt( nm ),  nominalMomentum_(0.0), mode_(line), parent_(0), theList_()
+: BmlnElmnt( nm ),  nominalMomentum_(0.0), mode_(line), parent_(0), theList_()
 {
-   propagator_ = PropagatorPtr( new Propagator() );     
-   propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) ); 
 } 
 
 
@@ -104,7 +103,7 @@ beamline::beamline( std::string const& nm )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline::beamline( beamline const& a ) 
-  : bmlnElmnt(a), 
+  : BmlnElmnt(a), 
     nominalMomentum_(a.nominalMomentum_), 
     mode_(a.mode_), 
     parent_(0), 
@@ -129,11 +128,11 @@ beamline::~beamline()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* beamline::Clone() const {
+beamline* beamline::clone() const {
 
  beamline*  bml  = new beamline("");
 
- bml->bmlnElmnt::operator=(*this); // copy bmlnElmnt state
+ bml->BmlnElmnt::operator=(*this); // copy BmlnElmnt state
  
  bml->mode_            = mode_;  
  bml->nominalMomentum_ = nominalMomentum_; 
@@ -141,7 +140,7 @@ beamline* beamline::Clone() const {
  // Recursively clone ALL beamlines AND ALL elements.
 
  for ( beamline::const_iterator it = begin(); it != end(); ++it) {
-    bml->append( ElmPtr( (*it)->Clone() ) );
+    bml->append( ElmPtr( (*it)->clone() ) );
  }
  
  return bml;
@@ -155,7 +154,7 @@ beamline& beamline::operator=( beamline const& rhs) {
 
     if ( &rhs == this) return (*this);  
     
-    bmlnElmnt::operator=(*this);
+    BmlnElmnt::operator=(*this);
 
     mode_            = rhs.mode_;  
     nominalMomentum_ = rhs.nominalMomentum_; 
@@ -176,7 +175,7 @@ beamline& beamline::operator=( beamline const& rhs) {
 void beamline::registerReference( Particle const& p, bool scaling )
 {
   Particle particle(p);
-  propagateReference( particle, p.ReferenceBRho(), scaling );  
+  propagateReference( particle, p.refBrho(), scaling );  
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -346,16 +345,16 @@ void beamline::insert( ElmPtr q ) {
 
   if (bml)  bml->parent_ = this; 
   
-  length_ += bml ? bml->bmlnElmnt::Length() : q->Length();
+  length_ += bml ? bml->BmlnElmnt::Length() : q->Length();
 
 }  
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::insert( bmlnElmnt const& elm ) {
+void beamline::insert( BmlnElmnt const& elm ) {
 
-  insert( ElmPtr( elm.Clone() ) );
+  insert( ElmPtr( elm.clone() ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -377,7 +376,7 @@ void beamline::append( ElmPtr q ) {
  }
 
  if (bml)  bml->parent_ = this; 
- length_ += bml ? bml->bmlnElmnt::Length() : q->Length();
+ length_ += bml ? bml->BmlnElmnt::Length() : q->Length();
 
 
 } 
@@ -386,9 +385,9 @@ void beamline::append( ElmPtr q ) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void beamline::append( bmlnElmnt const& elm ) 
+void beamline::append( BmlnElmnt const& elm ) 
 {
-  append( ElmPtr( elm.Clone() ) );
+  append( ElmPtr( elm.clone() ) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -471,15 +470,17 @@ void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,dou
 
   else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
     
-    bmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList, Length );
+#if 0
+    BmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList, Length );
 
     p_ile = inList.front();     // this may have changed
 
     ++bml_iter; 
     p_be = (bml_iter == end()) ? null : *bml_iter;     
 
+#endif
     if( firstWarning ) {
-      (*pcerr) << "\n*** WARNING:                                   *** "
+      (*pcerr) << "\n*** WARNING: FIXME !                           *** "
                   "\n*** WARNING: Insertion into a combinedFunction *** "
                   "\n*** WARNING: element will hide what is being   *** "
                   "\n*** WARNING: inserted.                         *** "
@@ -487,6 +488,7 @@ void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,dou
                << endl;
       firstWarning = false;
     }
+
   }
 
   else if ( ( p_ile.second > s ) && ( p_ile.second < s + localLength ) )  {
@@ -589,7 +591,7 @@ beamline* beamline::reverse() const {
     }
     else
     {                      
-      result->append(  ElmPtr( (*rit)->Clone() ) ); 
+      result->append(  ElmPtr( (*rit)->clone() ) ); 
     }
 
   } // for
@@ -792,7 +794,7 @@ sector* beamline::makeSector ( beamline::iterator pos1, beamline::iterator pos2,
  //s->align_        = align_;
  //s->pAperture_    = pAperture_;
 
- return new sector( "", jp.State().filter( 0, deg ), s );
+ return new sector( "", jp.state().filter( 0, deg ), s );
 
 }
 
@@ -862,7 +864,7 @@ int beamline::countHowManyDeeply() const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int beamline::countHowMany(  boost::function<bool(bmlnElmnt const&)> query,  std::list<ElmPtr>& elmlist ) const 
+int beamline::countHowMany(  boost::function<bool(BmlnElmnt const&)> query,  std::list<ElmPtr>& elmlist ) const 
 {
   elmlist.clear();
   int ret = 0;
@@ -881,7 +883,7 @@ int beamline::countHowMany(  boost::function<bool(bmlnElmnt const&)> query,  std
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-int beamline::countHowManyDeeply( boost::function<bool(bmlnElmnt const&)> query, std::list<ElmPtr>& elmlist ) const 
+int beamline::countHowManyDeeply( boost::function<bool(BmlnElmnt const&)> query, std::list<ElmPtr>& elmlist ) const 
 {
 
   elmlist.clear();
@@ -1074,7 +1076,7 @@ beamline::iterator beamline::moveRel( int axis, double const& u, beamline::itera
 
   SlotPtr sp;
 
-  if( typeid(*upStreamPtr) == typeid(drift) ) {
+  if( typeid(*upStreamPtr) == typeid(Drift) ) {
       SlotPtr slotPtr( new Slot(upStreamPtr->Name(), frameOne ) );
       slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
       slotPtr->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
@@ -1088,7 +1090,7 @@ beamline::iterator beamline::moveRel( int axis, double const& u, beamline::itera
   } 
  
   
-  if( typeid(*downStreamPtr) == typeid(drift) ) {
+  if( typeid(*downStreamPtr) == typeid(Drift) ) {
       SlotPtr slotPtr( new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) ) );
       slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
       slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
@@ -1274,14 +1276,14 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
    }
-   if( typeid(*upStreamPtr) == typeid(drift) ) {
+   if( typeid(*upStreamPtr) == typeid(Drift) ) {
         SlotPtr slotPtr( new Slot(upStreamPtr->Name(), frameOne ) );
         slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
         slotPtr->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
         it = erase( --it );
         putAbove( it, slotPtr ); 
    }
-   if( typeid(*downStreamPtr) == typeid(drift) ) {
+   if( typeid(*downStreamPtr) == typeid(Drift) ) {
        SlotPtr slotPtr( new Slot(downStreamPtr->Name(), frameThree.relativeTo(frameTwo) ) );
        slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
        slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
@@ -1380,33 +1382,6 @@ void beamline::accept( ConstBmlVisitor& v ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double beamline::getReferenceTime()  const
-{
-
-  double ct = 0.0; 
-  for ( beamline::const_iterator it = begin(); it != end(); ++it ) {
-
-    ct += (*it)->getReferenceTime();
-
-  } 
-  return ct; 
-}     
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void beamline::setReferenceTime( double const& ct)
-{ 
-  bmlnElmnt::setReferenceTime(ct);
- 
-  //(*pcerr) << "*** WARNING ****: Attempt to explicitly set the reference time attribute of a beamline. " << std::endl;
-  //(*pcerr) << "*** WARNING ****: This is most likely an error." << std::endl; 
-  //(*pcerr) << "*** WARNING ****: Continuing, nonetheless... " << std::endl;
-
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 beamline::iterator beamline::erase( beamline::iterator it)
 {

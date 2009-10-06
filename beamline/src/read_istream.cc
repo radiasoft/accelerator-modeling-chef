@@ -65,19 +65,19 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
-bmlnElmnt* read_istream(istream& is)
+BmlnElmnt* read_istream(istream& is)
 {
   // This is, in essence, the global "factory" function needed for operator<<().
   //
-  // Read in a bmlnElmnt.  Recurses when a beamline is found (withing
+  // Read in a BmlnElmnt.  Recurses when a beamline is found (withing
   // beamline::readFrom(). Returns the bmnlElmnt which has been read
-  // in.  Note that knowledge of ALL possible types of bmlnElmnt's is
+  // in.  Note that knowledge of ALL possible types of BmlnElmnt's is
   // necessary, as is shown in the long string of "if/else if/else
   // if/..." below.
 
   // This will be the return value at the end
 
-  bmlnElmnt* element = 0;
+  BmlnElmnt* element = 0;
 
   std::string name;
   std::string type;
@@ -113,8 +113,8 @@ bmlnElmnt* read_istream(istream& is)
   else if ( type == "combinedFunction") {
     element = new combinedFunction(name);
   }
-  else if(  type == "drift" ) {
-    element = new drift(name, length);
+  else if(  type == "Drift" ) {
+    element = new Drift(name, length);
    }
   else if(type == "hkick")  {
     element = new hkick(name, length, strength);
@@ -256,7 +256,7 @@ bmlnElmnt* read_istream(istream& is)
 
   // Get the rest of the description if we got a real element
 
-  bmlnElmnt* e = 0;
+  BmlnElmnt* e = 0;
 
   if ( element ) {
     element->setReferenceTime(ref_ct);
@@ -297,7 +297,7 @@ istream& operator>>(istream& is, beamline& bl)
   // Read in a beamline
   is >> type >> name >> length >> strength >> ref_ct >> x >> y >> t;
   // Some of these arguments are meaningless for a beamline but must
-  // be included because beamline inherits from bmlnElmnt.
+  // be included because beamline inherits from BmlnElmnt.
 
   if ( strcasecmp(type, "beamline") != 0 ) {
     (*pcerr) << "\n **** WARNING **** Expecting data file to begin with a \"beamline\" directive"
@@ -321,7 +321,7 @@ istream& operator>>(istream& is, beamline& bl)
   }
   
   // ??? REMOVE: bl.readFrom(is); // Polymorphically call the right readFrom().
-  bmlnElmnt *e = 0;
+  BmlnElmnt *e = 0;
   is >> bl.nominalMomentum_;
   // Now, continue reading is until we see the end of this beamline
   length = 0;

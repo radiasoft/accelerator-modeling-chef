@@ -66,29 +66,27 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole () 
- : bmlnElmnt( "", 0.0, 0.0 ) 
+ : BmlnElmnt( "", 0.0, 0.0 ) 
 {
-    propagator_ = PropagatorPtr( new Propagator() );  
-    propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole ( std::string const& n, double const& s ) 
- : bmlnElmnt( n, 0.0, s ) 
+ : BmlnElmnt( n, 0.0, s ) 
 {
  // The strength is to be interpreted as
  // (1/4!)*B''''l/Brho  in  meters^-2
-    propagator_ = PropagatorPtr( new Propagator() );  
-    propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinDecapole::thinDecapole( thinDecapole const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 
@@ -99,7 +97,7 @@ thinDecapole& thinDecapole::operator=( thinDecapole const& rhs)
 {  
   if ( &rhs == this) return *this;
 
-  bmlnElmnt::operator=( rhs); 
+  BmlnElmnt::operator=( rhs); 
 
   return *this;
 }
@@ -107,7 +105,7 @@ thinDecapole& thinDecapole::operator=( thinDecapole const& rhs)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinDecapole* thinDecapole::Clone() const 
+thinDecapole* thinDecapole::clone() const 
 { 
   return new thinDecapole( *this ); 
 }

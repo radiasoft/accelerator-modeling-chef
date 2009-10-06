@@ -44,15 +44,17 @@ class sextupole::Propagator: public BasePropagator {
 
 public:
 
-  Propagator ( int n=4) : n_(n) {}
+  Propagator ( int n=4);
+  Propagator ( sextupole const& elm, int n=4);
+  Propagator ( Propagator const& p);
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  setup( bmlnElmnt& elm ); 
+  void  ctor( BmlnElmnt const& elm ); 
 
-  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const&  value);
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
+  void  setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const&  value);
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
 
  private:
 
@@ -67,10 +69,14 @@ class thinSextupole::Propagator: public BasePropagator {
 
 public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator ();
+  Propagator ( thinSextupole const& elm);
+  Propagator ( Propagator const& p);
+ 
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  operator()( bmlnElmnt const& elm,            Particle& p);
-  void  operator()( bmlnElmnt const& elm,         JetParticle& p);
+  void  operator()( BmlnElmnt const& elm,            Particle& p);
+  void  operator()( BmlnElmnt const& elm,         JetParticle& p);
 
 };
 

@@ -57,7 +57,7 @@
 #include <beamline/RFCavityPropagators.h>
 #include <beamline/rfcavity.h>
 #include <beamline/beamline.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/marker.h>
 
@@ -70,7 +70,7 @@ using FNAL::pcout;
 // **************************************************
 
 rfcavity::rfcavity( std::string const& name)
-  :   bmlnElmnt(name, 1.0, 0.0),
+  :   BmlnElmnt(name, 1.0, 0.0),
     f_(0.0),
     phi_s_(0.0),
     sin_phi_s_(0.0),
@@ -79,8 +79,7 @@ rfcavity::rfcavity( std::string const& name)
     h_(-1.0)
 
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
   
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -94,7 +93,7 @@ rfcavity::rfcavity( std::string const& name,
                     double const& Q,      // Quality factor 
                     double const& R       // shunt impedance 
                   ) 
-:   bmlnElmnt( name, l, GeV*1.0e-9 ) ,
+:   BmlnElmnt( name, l, GeV*1.0e-9 ) ,
     f_( f),
     phi_s_(phis),
     sin_phi_s_(sin(phis)),
@@ -102,15 +101,14 @@ rfcavity::rfcavity( std::string const& name,
     R_(R),
     h_(-1.0)
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rfcavity::rfcavity( rfcavity const& o ) 
-:   bmlnElmnt( o ),
+:   BmlnElmnt( o ),
     f_(o.f_),
     phi_s_(o.phi_s_),
     sin_phi_s_(o.sin_phi_s_),
@@ -133,7 +131,7 @@ rfcavity::~rfcavity()
 rfcavity& rfcavity::operator=( rfcavity const& rhs) 
 {
   if ( this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   f_         = rhs.f_;
   phi_s_     = rhs.phi_s_;
   sin_phi_s_ = rhs.sin_phi_s_;
@@ -191,7 +189,7 @@ istream& rfcavity::readFrom(istream& is)
      >> R_
      >> h_;
   sin_phi_s_ = sin(phi_s_);
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return is;
 }
 
@@ -234,20 +232,6 @@ bool    rfcavity::isPassive() const
 bool    rfcavity::isDriftSpace() const 
 {
   return false;
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-double rfcavity::getReferenceTime()    const 
-{
-  double value = 0;
-
-  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    value += (*it)->getReferenceTime();
-  }
-
-  return value;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -296,7 +280,6 @@ void rfcavity::setPhi( double const& angle )
 void rfcavity::setQ( double const& Q )
 {
   Q_     = Q;
-  propagator_->setup(*this);
   propagator_->setAttribute(*this, "QFACTOR", Q_ );
 
 };
@@ -373,13 +356,7 @@ double const& rfcavity::harmon() const
 
 void rfcavity::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
 {               
-  if ( !(bml_) ) {
-    bmlnElmnt::propagateReference( particle,initialBRho, scaling);
-    return;
-  }
-  bml_->propagateReference(particle,initialBRho, scaling );
-
-  return;
+  propagator_->propagateReference(particle, initialBRho, scaling );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -390,7 +367,7 @@ void rfcavity::propagateReference( Particle& particle, double initialBRho, bool 
 // **************************************************
 
 thinrfcavity::thinrfcavity(std::string const& name) 
- :   bmlnElmnt(name, 0.0, 0.0),
+ :   BmlnElmnt(name, 0.0, 0.0),
     f_( 0.0 ), 
     phi_s_( 0.0 ),
     sin_phi_s_( 0.0 ),
@@ -398,8 +375,7 @@ thinrfcavity::thinrfcavity(std::string const& name)
     R_( 0.0 ),
     h_( -1.0 )
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
   
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -412,7 +388,7 @@ thinrfcavity::thinrfcavity(std::string const& name,
                    	   double const& Q,          // Quality factor 
                    	   double const& R           // shunt impedance 
                    	   ) 
-    :   bmlnElmnt( name, 0.0, gevs*1.0e-9 ), 
+    :   BmlnElmnt( name, 0.0, gevs*1.0e-9 ), 
 	f_(f),
 	phi_s_( phis),
 	sin_phi_s_( sin(phis) ),
@@ -420,15 +396,14 @@ thinrfcavity::thinrfcavity(std::string const& name,
 	R_( R ),
         h_( -1.0 )
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinrfcavity::thinrfcavity( thinrfcavity const& o ) 
-:   bmlnElmnt( o ), 
+:   BmlnElmnt( o ), 
     f_( o.f_ ),
     phi_s_( o.phi_s_ ),
     sin_phi_s_( o.sin_phi_s_ ),
@@ -448,7 +423,7 @@ thinrfcavity::~thinrfcavity()
 thinrfcavity& thinrfcavity::operator=( thinrfcavity const& rhs) 
 {
   if ( this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   f_         = rhs.f_;
   phi_s_     = rhs.phi_s_;
   sin_phi_s_ = rhs.sin_phi_s_;

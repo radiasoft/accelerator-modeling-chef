@@ -34,6 +34,7 @@
 **************************************************************************
 **************************************************************************
 *************************************************************************/
+
 #include <boost/bind.hpp>
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/PhysicsConstants.h>
@@ -56,13 +57,26 @@ using FNAL::pcout;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::setup( bmlnElmnt& elm) 
+WakeKick::Propagator::Propagator(WakeKick const& elm, int nsamples, double interval)
+  :  nsamples_(nsamples), 
+     interval_(interval),
+     lwake_( nsamples_,  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true), 
+     twake_( nsamples_,  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true),
+     BasePropagator()
+{ 
+  ctor(elm); 
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void WakeKick::Propagator::ctor( BmlnElmnt const& elm) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-WakeKick::Propagator* WakeKick::Propagator::Clone() const
+WakeKick::Propagator* WakeKick::Propagator::clone() const
 { 
   return new WakeKick::Propagator(*this);
 }
@@ -75,11 +89,12 @@ WakeKick::Propagator* WakeKick::Propagator::Clone() const
 //       The wakefunction is *truncated* at 0.5*interval, i.e. for z > 0.5*interval the samples are 0. 
 //----------------------------------------------------------------------------------------------------
  
-WakeKick::Propagator::Propagator( int nsamples, double const& interval)
+WakeKick::Propagator::Propagator( int nsamples, double interval)
   :  nsamples_(nsamples), 
      interval_(interval),
      lwake_( nsamples_,  boost::bind<double>( ShortRangeLWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true), 
-     twake_( nsamples_,  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true)
+     twake_( nsamples_,  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  interval_/(nsamples_-1),  0.5*interval_ ), true),
+     BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -90,7 +105,8 @@ WakeKick::Propagator::Propagator( WakeKick::Propagator const& other )
  : nsamples_(other.nsamples_), 
    interval_(other.interval_),
    lwake_(other.lwake_), 
-   twake_(other.twake_) 
+   twake_(other.twake_), 
+   BasePropagator(other)
 {}
 
 
@@ -104,14 +120,14 @@ WakeKick::Propagator::Propagator( WakeKick::Propagator const& other )
 //       length was set a-priori in such a way that this condition is met.  
 //----------------------------------------------------------------------------------------------
 
-void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  BmlnElmnt const& arg, ParticleBunch& bunch )
 {
 
   WakeKick const& elm = static_cast<WakeKick const&>(arg); 
 
   BunchProjector projector(bunch, interval_, nsamples_);
 
-  const double bunch_length = ( (--bunch.end() )->get_cdt() - bunch.begin()->get_cdt() );
+  const double bunch_length = ( (--bunch.end() )->cdt() - bunch.begin()->cdt() );
 
   bool interval_has_changed = false;
 
@@ -182,8 +198,8 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bun
 
   double  const binsize  = interval_/(nsamples_-1);
   double  const cdt_min =  projector.cdt_min(); 
-  double  const p0      =  bunch.begin()->ReferenceMomentum();      // in  [GeV/c] 
-  double  const charge  =  bunch.begin()->Charge();                 // particle charge in C
+  double  const p0      =  bunch.begin()->refMomentum();      // in  [GeV/c] 
+  double  const charge  =  bunch.begin()->charge();           // particle charge in C
 
   double const bunch_charge = ( bunch.Intensity() * charge * 1.0e12 );     // in pC. wake is assumed to be in V/pC/m [ integrated     
   double const coeff        = ( 1.0e-9 * bunch_charge /p0 )* binsize;      // converts kick to [GeV/c] / p0 
@@ -195,7 +211,7 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bun
 
   for ( ParticleBunch::iterator it = bunch.begin(); it != bunch.end(); ++it )
    {
-      Vector& state         =  it->State();
+      Vector& state         =  it->state();
 
       int ibin = int( (state[2] - cdt_min) / binsize ); 
        
@@ -216,7 +232,7 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bun
       // **** apply the longitudinal wake 
       //------------------------------------------------------
 
-      double npz =  it->get_npz() + dpz_vec[ibin];   
+      double npz =  it->npz() + dpz_vec[ibin];   
       state[5]   =  sqrt( npz*npz + state[3]*state[3] + state[4]*state[4] ) - 1.0 ;
   }   
 
@@ -226,7 +242,7 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const& arg, ParticleBunch& bun
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void WakeKick::Propagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& bunch )
+void WakeKick::Propagator::operator()(  BmlnElmnt const& elm, JetParticleBunch& bunch )
 {
   // does nothing for the moment
 }
@@ -234,7 +250,7 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::operator()(  bmlnElmnt const&  elm,     Particle& p  )
+void WakeKick::Propagator::operator()(  BmlnElmnt const&  elm,     Particle& p  )
 {
   // does nothing for the moment
 }
@@ -242,7 +258,7 @@ void WakeKick::Propagator::operator()(  bmlnElmnt const&  elm,     Particle& p  
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void WakeKick::Propagator::operator()(  bmlnElmnt const&  elm,  JetParticle& p)
+void WakeKick::Propagator::operator()(  BmlnElmnt const&  elm,  JetParticle& p)
 {
   // does nothing for the moment
 }

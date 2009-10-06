@@ -66,20 +66,18 @@ using namespace std;
 // **************************************************
 
 vkick::vkick() 
-: bmlnElmnt()
+: BmlnElmnt()
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vkick::vkick( std::string const& n ) 
-  : bmlnElmnt(n, 0.0, 0.0) 
+  : BmlnElmnt(n, 0.0, 0.0) 
 {   
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -89,17 +87,16 @@ vkick::vkick( std::string const& n )
 // indicates length.
 
 vkick::vkick( std::string const& n, double const& k ) 
-  : bmlnElmnt(n, 0.0, k) 
+  : BmlnElmnt(n, 0.0, k) 
 { 
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vkick::vkick( vkick const& x )
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 
@@ -107,10 +104,9 @@ vkick::vkick( vkick const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 vkick::vkick( std::string const& n, double const& l, double const& s ) 
-: bmlnElmnt(n,l,s) 
+: BmlnElmnt(n,l,s) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -120,7 +116,7 @@ vkick::vkick( std::string const& n, double const& l, double const& s )
 vkick&  vkick::operator=( vkick const& rhs) {
 
   if ( &rhs == this ) return *this;  
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this; 
 }
 
@@ -170,7 +166,7 @@ std::pair<ElmPtr,ElmPtr>  vkick::split( double const& pc ) const
  
  double length   = length_;
 
- std:pair<ElmPtr,ElmPtr> elms = bmlnElmnt::split(pc);
+ std:pair<ElmPtr,ElmPtr> elms = BmlnElmnt::split(pc);
 
  elms.first->setLength(length*pc);
  elms.second->setLength(length*(1.0-pc));
@@ -216,20 +212,18 @@ void vkick::accept( ConstBmlVisitor& v ) const
 //   class hkick
 // **************************************************
 
-hkick::hkick() : bmlnElmnt()
+hkick::hkick() : BmlnElmnt()
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hkick::hkick( std::string const& n ) 
- :bmlnElmnt(n, 0.0, 0.0) 
+ :BmlnElmnt(n, 0.0, 0.0) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -239,27 +233,25 @@ hkick::hkick( std::string const& n )
 // indicates length.
 
 hkick::hkick( std::string const& n, double const& k ) 
-: bmlnElmnt( n, 0.0, k)
+: BmlnElmnt( n, 0.0, k)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hkick::hkick( hkick const& x ) 
-: bmlnElmnt( x )
+: BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 hkick::hkick( std::string const& n, double const& l, double const& s ) 
-: bmlnElmnt(n,l,s) 
+: BmlnElmnt(n,l,s) 
 { 
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -269,7 +261,7 @@ hkick::hkick( std::string const& n, double const& l, double const& s )
 hkick&  hkick::operator=( hkick const& rhs) 
 {
   if ( &rhs == this ) return *this;  
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this; 
 }
 
@@ -318,7 +310,7 @@ std::pair<ElmPtr,ElmPtr>  hkick::split( double const& pc ) const
  
  double length   = length_;
 
- std:pair<ElmPtr,ElmPtr> elms = bmlnElmnt::split(pc);
+ std:pair<ElmPtr,ElmPtr> elms = BmlnElmnt::split(pc);
 
  elms.first->setLength(length*pc);
  elms.second->setLength(length*(1.0-pc));
@@ -366,20 +358,18 @@ void hkick::accept( ConstBmlVisitor& v ) const
 // ************************************************
 
 kick::kick() 
-  : bmlnElmnt("",0.0, 0.0), vh_ratio_(0.0)
+  : BmlnElmnt("",0.0, 0.0), vh_ratio_(0.0)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( std::string const& s ) 
-  : bmlnElmnt(s), vh_ratio_(0.0) 
+  : BmlnElmnt(s), vh_ratio_(0.0) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -387,10 +377,9 @@ kick::kick( std::string const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick(std::string const& s, double const& hStrength, double const& vStrength) 
-  : bmlnElmnt(s, 0.0, hStrength ),  vh_ratio_( (hStrength != 0.0) ? vStrength/hStrength: vStrength )
+  : BmlnElmnt(s, 0.0, hStrength ),  vh_ratio_( (hStrength != 0.0) ? vStrength/hStrength: vStrength )
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -399,17 +388,16 @@ kick::kick(std::string const& s, double const& hStrength, double const& vStrengt
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( std::string const& s, double const& lng, double const& hStrength, double const& vStrength ) 
-: bmlnElmnt( s, lng, hStrength ), vh_ratio_( ( hStrength != 0.0) ? vStrength/ hStrength : vStrength )
+: BmlnElmnt( s, lng, hStrength ), vh_ratio_( ( hStrength != 0.0) ? vStrength/ hStrength : vStrength )
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 kick::kick( kick const& x )
-  : bmlnElmnt (x), vh_ratio_(x.vh_ratio_)
+  : BmlnElmnt (x), vh_ratio_(x.vh_ratio_)
 { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -425,7 +413,7 @@ kick&  kick::operator=( kick const& rhs) {
 
   if ( &rhs == this ) return *this;  
 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   vh_ratio_ = rhs.vh_ratio_;
 
@@ -528,7 +516,7 @@ std::pair<ElmPtr,ElmPtr>  kick::split( double const& pc ) const
  
  double length   = length_;
 
- std:pair<ElmPtr,ElmPtr> elms = bmlnElmnt::split(pc);
+ std:pair<ElmPtr,ElmPtr> elms = BmlnElmnt::split(pc);
 
  elms.first->setLength(length*pc);
  elms.second->setLength(length*(1.0-pc));

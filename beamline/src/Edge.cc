@@ -41,7 +41,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Edge.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/EdgePropagators.h>
@@ -55,20 +55,18 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Edge::Edge() 
- : bmlnElmnt( "", 0.0, 0.0 ) 
+ : BmlnElmnt( "", 0.0, 0.0 ) 
 {
-  propagator_ = PropagatorPtr( new Propagator()); 
-  propagator_->setup(*this); 
+  propagator_ = PropagatorPtr( new Propagator(*this) ); 
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Edge::Edge( std::string const& n, double const& strength ) 
-  : bmlnElmnt(n, 0.0, strength) 
+  : BmlnElmnt(n, 0.0, strength) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this); 
+  propagator_ = PropagatorPtr( new Propagator(*this) ); 
 }
 
 
@@ -76,13 +74,13 @@ Edge::Edge( std::string const& n, double const& strength )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Edge::Edge( Edge const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Edge* Edge::Clone() const 
+Edge* Edge::clone() const 
 {  
   return new Edge( *this ); 
 }
@@ -99,7 +97,7 @@ Edge::~Edge()
 Edge& Edge::operator=(Edge const& rhs)
 {
   if (this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this;
 }
 

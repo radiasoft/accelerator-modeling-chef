@@ -40,7 +40,7 @@
 ******
 ******  Major revision 
 ****** 
-******  - use covariant return types for Clone()
+******  - use covariant return types for clone()
 ******  - eliminated ConvertToXXX() type conversion functions; 
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
@@ -70,6 +70,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Matrix.h>
+#include <beamline/PhaseSpaceIndexing.h>
 #include <mxyzptlk/Mapping.h>
 #include <mxyzptlk/Jet.h>
 #include <mxyzptlk/JetVector.h>
@@ -116,7 +117,7 @@ typedef boost::shared_ptr<JetAntiMuon>           JetAntiMuonPtr;
 typedef boost::shared_ptr<JetAntiMuon const>     ConstJetAntiMuonPtr;
 
 
-class JetParticle {
+class JetParticle : public PhaseSpaceIndexing {
 
   friend class Particle;
   friend class jetparticle_core_access;
@@ -131,7 +132,7 @@ protected:
   double      p_;        // reference momentum in GeV / c
   double      gamma_;    // reference gamma
   double      beta_;     // normalized reference velocity = v/c
-  double      bRho_;     // normalized reference momentum / charge
+  double      brho_;     // normalized reference momentum / charge
                          //                               = beta*gamma
   Mapping     state_;
                       // state_[0] = x
@@ -156,7 +157,7 @@ public:
   virtual ~JetParticle();
   void     dtor();
 
-  virtual JetParticle* Clone(void* p =0 ) const;
+  virtual JetParticle* clone(void* p =0 ) const;
 
   // Phase space indices
 
@@ -175,60 +176,58 @@ public:
   bool   isLost()     const;
   void   setLost( bool set);                
 
-  void SetReferenceEnergy(   double const& EnergyGeV );
-  void SetReferenceMomentum( double const& momentumGeV_c);
+  void setRefEnergy(   double const& EnergyGeV );
+  void setRefMomentum( double const& momentumGeV_c);
 
   double setWeight( double const& );       // Returns previous value.
 
   void     setState( Vector  const& );    // sets the state to the identity Map. Vector elements define ref point. 
 
-  Mapping&       State();
-  Mapping const& State() const;
+  Mapping&       state();
+  Mapping const& state() const;
 
-  Jet get_x()     const;
-  Jet get_y()     const;
-  Jet get_cdt()   const;
-  Jet get_npx()   const;
-  Jet get_npy()   const;
-  Jet get_npz()   const;
-                        
-                        
-  Jet get_ndp()   const;
+  Jet x()     const;
+  Jet y()     const;
+  Jet cdt()   const;
+  Jet npx()   const;
+  Jet npy()   const;
+  Jet npz()   const;
+  Jet ndp()   const;
 
-  void set_x   ( Jet const& u );
-  void set_y   ( Jet const& u );
-  void set_cdt ( Jet const& u );
-  void set_npx ( Jet const& u );
-  void set_npy ( Jet const& u );
-  void set_ndp ( Jet const& u );
+  void x   ( Jet const& u );
+  void y   ( Jet const& u );
+  void cdt ( Jet const& u );
+  void npx ( Jet const& u );
+  void npy ( Jet const& u );
+  void ndp ( Jet const& u );
 
 
   std::string getTag();                         
   void        setTag(std::string const& tag);     
 
 
-  Jet           Energy()               const;
-  Jet           KineticEnergy()        const;
-  Jet           Momentum()             const;
-  Jet           NormalizedMomentum()   const;
-  double const& Mass()                 const;
-  double const& ReferenceBRho()        const;
-  double const& ReferenceBeta()        const;
-  double const& ReferenceGamma()       const;
-  Jet           Gamma()                const;
+  Jet           energy()               const;
+  Jet           kineticEnergy()        const;
+  Jet           momentum()             const;
+  Jet           normalizedMomentum()   const;
+  double const& mass()                 const;
+  double const& refBrho()              const;
+  double const& refBeta()              const;
+  double const& refGamma()             const;
+  Jet           gamma()                const;
   double        pn()                   const;
-  double const& ReferenceMomentum()    const;
-  double        ReferenceEnergy()      const; 
-  double const& Charge()               const;
+  double const& refMomentum()    const;
+  double        refEnergy()      const; 
+  double const& charge()               const;
 
-  JetVector VectorBeta()     const;
-  JetVector VectorMomentum() const;
-  JetVector NormalizedVectorMomentum() const;
-  Jet Beta()                 const;
-  Jet BetaX()                const;
-  Jet BetaY()                const;
-  Jet BetaZ()                const;
-  Jet BRho()                 const; 
+  JetVector vectorBeta()     const;
+  JetVector vectorMomentum() const;
+  JetVector normalizedVectorMomentum() const;
+  Jet beta()                 const;
+  Jet betaX()                const;
+  Jet betaY()                const;
+  Jet betaZ()                const;
+  Jet brho()                 const; 
 
  };
 
@@ -244,7 +243,7 @@ public:
 
  ~JetProton();
 
-  JetProton* Clone(void* p=0)             const;
+  JetProton* clone(void* p=0)             const;
 };
 
 class DLLEXPORT  JetAntiProton : public JetParticle {
@@ -259,7 +258,7 @@ class DLLEXPORT  JetAntiProton : public JetParticle {
 
  ~JetAntiProton();
 
-  JetAntiProton* Clone(void* p=0)             const;
+  JetAntiProton* clone(void* p=0)             const;
 };
 
 class DLLEXPORT  JetElectron : public JetParticle {
@@ -274,7 +273,7 @@ public:
 
   ~JetElectron();
 
-  JetElectron* Clone(void* p=0)             const;
+  JetElectron* clone(void* p=0)             const;
 };
 
 class DLLEXPORT  JetPositron : public JetParticle {
@@ -289,7 +288,7 @@ public:
 
  ~JetPositron();
 
-  JetPositron* Clone(void* p=0)             const;
+  JetPositron* clone(void* p=0)             const;
 };
 
 class DLLEXPORT  JetMuon : public JetParticle {
@@ -304,7 +303,7 @@ public:
 
   ~JetMuon();
 
-  JetMuon* Clone(void* p=0)             const;
+  JetMuon* clone(void* p=0)             const;
 };
 
 class DLLEXPORT  JetAntiMuon : public JetParticle {
@@ -321,7 +320,7 @@ class DLLEXPORT  JetAntiMuon : public JetParticle {
 
  ~JetAntiMuon();
 
-  JetAntiMuon* Clone(void* p=0)             const;
+  JetAntiMuon* clone(void* p=0)      const;
 };
 
 //-------------------------------------------------------------------------------------------
@@ -336,7 +335,7 @@ class jetparticle_core_access
 
  protected:
 
-  static Mapping& State(JetParticle &p) { return p.State(); } 
+  static Mapping& state(JetParticle &p) { return p.state(); } 
 
 };
 
@@ -344,53 +343,53 @@ class jetparticle_core_access
 // --------------------------------------------Jet Particle inline members -------------------------------------------------------------
 
 
-  inline int JetParticle::xIndex()     { return 0; }
-  inline int JetParticle::yIndex()     { return 1; }
-  inline int JetParticle::cdtIndex()   { return 2; }
-  inline int JetParticle::npxIndex()   { return 3; }
-  inline int JetParticle::npyIndex()   { return 4; }
-  inline int JetParticle::ndpIndex()   { return 5; }
+  inline int JetParticle::xIndex()     { return i_x;   }
+  inline int JetParticle::yIndex()     { return i_y;   }
+  inline int JetParticle::cdtIndex()   { return i_cdt; }
+  inline int JetParticle::npxIndex()   { return i_npx; }
+  inline int JetParticle::npyIndex()   { return i_npy; }
+  inline int JetParticle::ndpIndex()   { return i_ndp; }
 
   inline int JetParticle::psd()      const   { return JetParticle::PSD; }
 
 
-  inline Jet JetParticle::get_x()     const { return state_[0]; }
-  inline Jet JetParticle::get_y()     const { return state_[1]; }
-  inline Jet JetParticle::get_cdt()   const { return state_[2]; }
-  inline Jet JetParticle::get_npx()   const { return state_[3]; }
-  inline Jet JetParticle::get_npy()   const { return state_[4]; }
-  inline Jet JetParticle::get_ndp()   const { return state_[5]; }
-  inline Jet JetParticle::get_npz()   const { return sqrt( ( 1.0 + state_[5] )*( 1.0 + state_[5] ) 
-                                                       - state_[3]*state_[3] - state_[4]*state_[4] ); }
+  inline Jet JetParticle::x()     const { return state_[i_x  ]; }
+  inline Jet JetParticle::y()     const { return state_[i_y  ]; }
+  inline Jet JetParticle::cdt()   const { return state_[i_cdt]; }
+  inline Jet JetParticle::npx()   const { return state_[i_npx]; }
+  inline Jet JetParticle::npy()   const { return state_[i_npy]; }
+  inline Jet JetParticle::ndp()   const { return state_[i_ndp]; }
+  inline Jet JetParticle::npz()   const { return sqrt( ( 1.0 + state_[i_ndp] )*( 1.0 + state_[i_ndp] ) 
+                                                       - state_[i_npx]*state_[i_npx] - state_[i_npy]*state_[i_npy] ); }
 
 
-  inline void JetParticle::set_x   ( Jet const& u )  { state_[0] = u; }
-  inline void JetParticle::set_y   ( Jet const& u )  { state_[1] = u; }
-  inline void JetParticle::set_cdt ( Jet const& u )  { state_[2] = u; }
-  inline void JetParticle::set_npx ( Jet const& u )  { state_[3] = u; }
-  inline void JetParticle::set_npy ( Jet const& u )  { state_[4] = u; }
-  inline void JetParticle::set_ndp ( Jet const& u )  { state_[5] = u; }
+  inline void JetParticle::x   ( Jet const& u )  { state_[i_x  ] = u; }
+  inline void JetParticle::y   ( Jet const& u )  { state_[i_y  ] = u; }
+  inline void JetParticle::cdt ( Jet const& u )  { state_[i_cdt] = u; }
+  inline void JetParticle::npx ( Jet const& u )  { state_[i_npx] = u; }
+  inline void JetParticle::npy ( Jet const& u )  { state_[i_npy] = u; }
+  inline void JetParticle::ndp ( Jet const& u )  { state_[i_ndp] = u; }
 
 
-  inline Jet           JetParticle::Energy()             const { Jet p  = Momentum(); return sqrt( p*p + m_*m_ ); }
-  inline Jet           JetParticle::KineticEnergy()      const { return Energy() - m_;                            }
-  inline Jet           JetParticle::Momentum()           const { return p_ * (1.0 + state_[5]);                   } 
-  inline Jet           JetParticle::NormalizedMomentum() const { return (1.0 + state_[5]) ;                       }
-  inline double const& JetParticle::Mass()               const { return m_;                                       }
-  inline double const& JetParticle::ReferenceBRho()      const { return bRho_;                                    }
-  inline double const& JetParticle::ReferenceBeta()      const { return beta_;                                    }
-  inline Jet           JetParticle::Beta()               const { return Momentum() / Energy();                    }
+  inline Jet           JetParticle::energy()             const { Jet p  = momentum(); return sqrt( p*p + m_*m_ ); }
+  inline Jet           JetParticle::kineticEnergy()      const { return energy() - m_;                            }
+  inline Jet           JetParticle::momentum()           const { return p_ * (1.0 + state_[5]);                   } 
+  inline Jet           JetParticle::normalizedMomentum() const { return (1.0 + state_[5]) ;                       }
+  inline double const& JetParticle::mass()               const { return m_;                                       }
+  inline double const& JetParticle::refBrho()            const { return brho_;                                    }
+  inline double const& JetParticle::refBeta()            const { return beta_;                                    }
+  inline Jet           JetParticle::beta()               const { return momentum() / energy();                    }
   inline double        JetParticle::pn()                 const { return beta_*gamma_;                             }
-  inline Jet           JetParticle::BetaX()              const { return (get_npx()*ReferenceMomentum())/Energy(); }
-  inline Jet           JetParticle::BetaY()              const { return (get_npy()*ReferenceMomentum())/Energy(); }
-  inline Jet           JetParticle::BetaZ()              const { return (get_npz()*ReferenceMomentum())/Energy(); }
-  inline double const& JetParticle::ReferenceGamma()     const { return gamma_;                                   }
-  inline Jet           JetParticle::Gamma()              const { return Energy() / m_;                            }
-  inline double const& JetParticle::ReferenceMomentum()  const { return p_;                                       }
-  inline double        JetParticle::ReferenceEnergy()    const { return sqrt( p_*p_-m_*m_);                       } 
+  inline Jet           JetParticle::betaX()              const { return (npx()*refMomentum())/energy(); }
+  inline Jet           JetParticle::betaY()              const { return (npy()*refMomentum())/energy(); }
+  inline Jet           JetParticle::betaZ()              const { return (npz()*refMomentum())/energy(); }
+  inline double const& JetParticle::refGamma()           const { return gamma_;                                   }
+  inline Jet           JetParticle::gamma()              const { return energy() / m_;                            }
+  inline double const& JetParticle::refMomentum()        const { return p_;                                       }
+  inline double        JetParticle::refEnergy()          const { return sqrt( p_*p_-m_*m_);                       } 
 
-  inline double const& JetParticle::Charge()             const { return q_;                                       }
-  inline Jet           JetParticle::BRho()               const { return bRho_*( 1.0 + state_[5] );                }
+  inline double const& JetParticle::charge()             const { return q_;                                       }
+  inline Jet           JetParticle::brho()               const { return brho_*( 1.0 + state_[5] );                }
 
 
   inline bool          JetParticle:: isLost()                  const   { return lost_; } 
@@ -399,12 +398,12 @@ class jetparticle_core_access
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-  inline JetParticle*     JetParticle::Clone(void* p)    const { return p ?  new (p)     JetParticle(*this)  : new   JetParticle( *this ); }
-  inline JetProton*         JetProton::Clone(void* p)    const { return p ?  new  (p)     JetProton( *this ) : new     JetProton( *this );}
-  inline JetAntiProton* JetAntiProton::Clone(void* p)    const { return p ?  new  (p) JetAntiProton( *this ) : new JetAntiProton( *this );}
-  inline JetElectron*     JetElectron::Clone(void* p)    const { return p ?  new  (p)   JetElectron( *this ) : new   JetElectron( *this );}
-  inline JetPositron*     JetPositron::Clone(void* p)    const { return p ?  new  (p)   JetPositron( *this ) : new   JetPositron( *this );}
-  inline JetMuon*             JetMuon::Clone(void* p)    const { return p ?  new  (p)       JetMuon( *this ) : new       JetMuon( *this );}
-  inline JetAntiMuon*     JetAntiMuon::Clone(void* p)    const { return p ?  new  (p)   JetAntiMuon( *this ) : new   JetAntiMuon( *this );}
+  inline JetParticle*     JetParticle::clone(void* p)    const { return p ?  new (p)     JetParticle(*this)  : new   JetParticle( *this ); }
+  inline JetProton*         JetProton::clone(void* p)    const { return p ?  new  (p)     JetProton( *this ) : new     JetProton( *this );}
+  inline JetAntiProton* JetAntiProton::clone(void* p)    const { return p ?  new  (p) JetAntiProton( *this ) : new JetAntiProton( *this );}
+  inline JetElectron*     JetElectron::clone(void* p)    const { return p ?  new  (p)   JetElectron( *this ) : new   JetElectron( *this );}
+  inline JetPositron*     JetPositron::clone(void* p)    const { return p ?  new  (p)   JetPositron( *this ) : new   JetPositron( *this );}
+  inline JetMuon*             JetMuon::clone(void* p)    const { return p ?  new  (p)       JetMuon( *this ) : new       JetMuon( *this );}
+  inline JetAntiMuon*     JetAntiMuon::clone(void* p)    const { return p ?  new  (p)   JetAntiMuon( *this ) : new   JetAntiMuon( *this );}
 
 #endif // JETPARTICLE_H

@@ -48,7 +48,7 @@
 #define SROT_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -59,7 +59,7 @@ typedef boost::shared_ptr<srot>             SRotPtr;
 typedef boost::shared_ptr<srot const>  ConstSRotPtr;
 
 
-class DLLEXPORT srot : public bmlnElmnt {
+class DLLEXPORT srot : public BmlnElmnt {
 
   class Propagator;
 
@@ -70,7 +70,7 @@ public:
   srot( std::string const& name, double const& strength); // rotation angle in radians 
   srot( srot const& );
 
-  srot* Clone() const { return new srot( *this ); }
+  srot* clone() const { return new srot( *this ); }
 
  ~srot();
 

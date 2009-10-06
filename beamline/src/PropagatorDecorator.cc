@@ -44,13 +44,13 @@ PropagatorDecorator::PropagatorDecorator( PropagatorPtr propagator)
 PropagatorDecorator::PropagatorDecorator( PropagatorDecorator const& o)
   : propagator_(o.propagator_)
 {
-    propagator_ = PropagatorPtr( propagator_->Clone() );
+    propagator_ = PropagatorPtr( propagator_->clone() );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-PropagatorDecorator* PropagatorDecorator::Clone() const
+PropagatorDecorator* PropagatorDecorator::clone() const
 { 
   return new PropagatorDecorator(*this);
 }
@@ -64,15 +64,15 @@ PropagatorDecorator::~PropagatorDecorator()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  PropagatorDecorator::setup( bmlnElmnt& elm)
+void  PropagatorDecorator::ctor( BmlnElmnt const& elm)
 {
-  return propagator_->setup(elm);
+  return propagator_->ctor(elm);
 }
  
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
  
-void PropagatorDecorator::setAttribute( bmlnElmnt& elm, std::string const& name, 
+void PropagatorDecorator::setAttribute( BmlnElmnt& elm, std::string const& name, 
                                                          boost::any const& value )
 {
   return propagator_->setAttribute( elm, name, value );
@@ -81,7 +81,7 @@ void PropagatorDecorator::setAttribute( bmlnElmnt& elm, std::string const& name,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
+void  PropagatorDecorator::operator()(  BmlnElmnt const& elm,  Particle& p)
 {
   (*propagator_)(elm,p);
 } 
@@ -89,7 +89,7 @@ void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  Particle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  JetParticle& p) 
+void  PropagatorDecorator::operator()(  BmlnElmnt const& elm,  JetParticle& p) 
 {
   (*propagator_)(elm,p);
 } 
@@ -97,7 +97,7 @@ void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  JetParticle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  ParticleBunch& b)  
+void  PropagatorDecorator::operator()(  BmlnElmnt const& elm,  ParticleBunch& b)  
 {
   (*propagator_)(elm,b);
 } 
@@ -105,7 +105,7 @@ void  PropagatorDecorator::operator()(  bmlnElmnt const& elm,  ParticleBunch& b)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  PropagatorDecorator::operator()(  bmlnElmnt const& elm, JetParticleBunch& b)  
+void  PropagatorDecorator::operator()(  BmlnElmnt const& elm, JetParticleBunch& b)  
 {
   (*propagator_)(elm,b);
 } 
@@ -138,7 +138,7 @@ void  PropagatorDecorator::setAlignment( Vector const& translation, Vector const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void PropagatorDecorator::setAperture( bmlnElmnt::aperture_t type, double const& hor, double const& ver )
+void PropagatorDecorator::setAperture( BmlnElmnt::aperture_t type, double const& hor, double const& ver )
 {
   propagator_->setAperture( type, hor, ver );
 }
@@ -146,7 +146,7 @@ void PropagatorDecorator::setAperture( bmlnElmnt::aperture_t type, double const&
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-boost::tuple<bmlnElmnt::aperture_t, double, double>   PropagatorDecorator::aperture()   const
+boost::tuple<BmlnElmnt::aperture_t, double, double>   PropagatorDecorator::aperture()   const
 {
   return propagator_->aperture();
 } 

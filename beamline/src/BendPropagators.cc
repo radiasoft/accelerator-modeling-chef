@@ -51,14 +51,16 @@ using namespace PhysicsConstants;
 
 namespace {
 
+  typedef PhaseSpaceIndexing::index index; 
+
   std::complex<double> const complex_i(0,1.0);
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
@@ -70,7 +72,7 @@ void propagate( std::complex<double> const& propPhase,
  typedef typename PropagatorTraits<Particle_t>::Component_t          Component_t;
  typedef typename PropagatorTraits<Particle_t>::ComplexComponent_t   ComplexComponent_t;
 
- State_t& state = p.State();
+ State_t& state = p.state();
 
  static const double csq_red = PH_MKS_c * PH_MKS_c * 1.0e-9;
 
@@ -83,14 +85,14 @@ void propagate( std::complex<double> const& propPhase,
 
  Component_t beta_1 = E_factor * state[i_npx];
  Component_t beta_2 = E_factor * state[i_npy];
- Component_t beta_3 = E_factor *  p.get_npz();
+ Component_t beta_3 = E_factor *  p.npz();
 
  ComplexComponent_t ui  =   complex_i* state[i_x];
  ComplexComponent_t vui =   PH_MKS_c*beta_3 + complex_i*PH_MKS_c*beta_1;
 
  // Step 1.
 
- Component_t omega         = csq_red * elm.Strength() /  p.Energy();  // FIXME: fails when charge is not +1  
+ Component_t omega         = csq_red * elm.Strength() /  p.energy();  // FIXME: fails when charge is not +1  
  ComplexComponent_t bi     = ( complex_i*vui / omega ) - ui;
 
  // Step 2.
@@ -121,24 +123,35 @@ void propagate( std::complex<double> const& propPhase,
  state[i_npx]   =   imag( vuf )/( E_factor * PH_MKS_c );
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend const& elm, Particle& p ); 
-template void propagate( std::complex<double> const& propPhase, 
-                         std::complex<double> const& propTerm, double const& dphi, Bend const& elm, JetParticle& p ); 
-#endif
-//-----------------------------------------------------------------------------------
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Bend::Propagator* Bend::Propagator::Clone() const 
+Bend::Propagator::Propagator()
+ : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Bend::Propagator::Propagator(Bend const& elm)
+ : BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Bend::Propagator::Propagator(Bend::Propagator const& p)
+ : BasePropagator(p)
+ {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Bend::Propagator* Bend::Propagator::clone() const 
 {
   return new Propagator(*this);
 }
@@ -146,16 +159,16 @@ Bend::Propagator* Bend::Propagator::Clone() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::setup(bmlnElmnt& arg) 
+void Bend::Propagator::ctor(BmlnElmnt const& arg) 
 {
   
-  Bend& elm = static_cast<Bend&>(arg); 
+  Bend const& elm = static_cast<Bend const&>(arg); 
 
-  double& angle_       = Bend::bend_core_access::get_angle(elm);  
-  double& usAngle_     = Bend::bend_core_access::get_usAngle(elm); 
-  double& dsAngle_     = Bend::bend_core_access::get_dsAngle(elm); 
-  double& usFaceAngle_ = Bend::bend_core_access::get_usFaceAngle(elm); 
-  double& dsFaceAngle_ = Bend::bend_core_access::get_dsFaceAngle(elm); 
+  double angle_       = Bend::bend_core_access::get_angle(elm);  
+  double usAngle_     = Bend::bend_core_access::get_usAngle(elm); 
+  double dsAngle_     = Bend::bend_core_access::get_dsAngle(elm); 
+  double usFaceAngle_ = Bend::bend_core_access::get_usFaceAngle(elm); 
+  double dsFaceAngle_ = Bend::bend_core_access::get_dsFaceAngle(elm); 
 
   Bend::BendType bend_type = elm.getBendType();
 
@@ -193,15 +206,15 @@ void Bend::Propagator::setup(bmlnElmnt& arg)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  Bend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  Bend::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void Bend::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate(propPhase_, propTerm_, dphi_,  static_cast<Bend const&>(elm), p);
 }
@@ -209,7 +222,7 @@ void Bend::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Bend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void Bend::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
   ::propagate( propPhase_, propTerm_, dphi_, static_cast<Bend const&>(elm), p);
 }

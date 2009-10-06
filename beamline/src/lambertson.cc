@@ -65,21 +65,21 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb() 
-  : bmlnElmnt(), xSeptum_ (0.0), ExtBeamline_(), RefState_(6, 0.0)
+  : BmlnElmnt(), xSeptum_ (0.0), ExtBeamline_(), RefState_(6, 0.0)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( std::string const& n)
-  : bmlnElmnt( n ), xSeptum_(0.0), ExtBeamline_(), RefState_(6, 0.0)
+  : BmlnElmnt( n ), xSeptum_(0.0), ExtBeamline_(), RefState_(6, 0.0)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( std::string const& n, double const&x, BmlPtr& b, double* s)
-  : bmlnElmnt( n ), xSeptum_ (x), ExtBeamline_(b), RefState_(6, 0.0)
+  : BmlnElmnt( n ), xSeptum_ (x), ExtBeamline_(b), RefState_(6, 0.0)
 {
   for (int i =0; i < 6 ; ++i) RefState_[i] = s[i];
 }
@@ -88,7 +88,7 @@ thinLamb::thinLamb( std::string const& n, double const&x, BmlPtr& b, double* s)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( thinLamb const& x )  
-  : bmlnElmnt( x ), xSeptum_(x.xSeptum_), ExtBeamline_(x.ExtBeamline_),  RefState_(x.RefState_)
+  : BmlnElmnt( x ), xSeptum_(x.xSeptum_), ExtBeamline_(x.ExtBeamline_),  RefState_(x.RefState_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -103,7 +103,7 @@ thinLamb::~thinLamb()
 thinLamb& thinLamb::operator=( thinLamb const& rhs)
 {
   if ( this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   xSeptum_     =  rhs.xSeptum_;
   ExtBeamline_ =  rhs.ExtBeamline_;

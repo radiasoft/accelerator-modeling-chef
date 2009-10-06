@@ -41,12 +41,14 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index; 
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template <typename Particle_t>
@@ -58,7 +60,7 @@ void propagate( thinSeptum const& elm, Particle& p )
      typedef PropagatorTraits<Particle>::State_t       State_t;
      typedef PropagatorTraits<Particle>::Component_t   Component_t;
  
-     State_t& state = p.State();
+     State_t& state = p.state();
 
      Component_t kick = ( state[i_x] > elm.getWireX() ) ? 
                          elm.getPosStrength()/(1.0 + state[i_ndp]) :  elm.getNegStrength()/(1.0 + state[i_ndp]); 
@@ -73,7 +75,7 @@ void propagate( thinSeptum const& elm, JetParticle& p )
      typedef PropagatorTraits<JetParticle>::State_t       State_t;
      typedef PropagatorTraits<JetParticle>::Component_t   Component_t;
  
-     State_t& state = p.State();
+     State_t& state = p.state();
 
      Component_t kick = ( state[i_x].standardPart() > elm.getWireX() ) ? 
                          elm.getPosStrength()/(1.0 + state[i_ndp]) :  elm.getNegStrength()/(1.0 + state[i_ndp]); 
@@ -82,31 +84,43 @@ void propagate( thinSeptum const& elm, JetParticle& p )
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     thinSeptum const& elm,    Particle& p );
-template void propagate(     thinSeptum const& elm, JetParticle& p );
-
-#endif
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thinSeptum::Propagator::setup(bmlnElmnt& elm)
+thinSeptum::Propagator::Propagator()
+  :BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSeptum::Propagator::Propagator(thinSeptum const& elm)
+  : BasePropagator(elm)
+{}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSeptum::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thinSeptum::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void thinSeptum::Propagator::ctor(BmlnElmnt const& elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void thinSeptum::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate(static_cast<thinSeptum const&>(elm),p);
 }
@@ -114,7 +128,7 @@ void thinSeptum::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinSeptum::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void thinSeptum::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate(static_cast<thinSeptum const&>(elm),p);
 }

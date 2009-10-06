@@ -44,7 +44,7 @@
 ****** - new typesafe propagator scheme
 ****** Apr 2008        michelotti@fnal.gov
 ****** - changed signature of setStrength(..) to
-******   match that of the virtual bmlnElmnt method
+******   match that of the virtual BmlnElmnt method
 ****** May 2008 ostiguy@fnal
 ****** - proper, explicit assignment operator
 ****** - propagator moved (back) to base class
@@ -54,7 +54,7 @@
 #define SEXTUPOLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 
 class BmlVisitor;
@@ -70,7 +70,7 @@ typedef boost::shared_ptr<sextupole const>     ConstSextupolePtr;
 typedef boost::shared_ptr<thinSextupole const> ConstThinSextupolePtr;
 
 
-class DLLEXPORT sextupole : public bmlnElmnt {
+class DLLEXPORT sextupole : public BmlnElmnt {
 
   friend class elm_core_access;
   class Propagator;
@@ -81,7 +81,7 @@ public:
   sextupole( std::string const& name, double const& length, 
                                       double const& strength );
   sextupole( sextupole const& );
-  sextupole* Clone() const;
+  sextupole* clone() const;
 
  ~sextupole();
 
@@ -101,7 +101,7 @@ public:
 
 
 
-class DLLEXPORT thinSextupole : public bmlnElmnt {
+class DLLEXPORT thinSextupole : public BmlnElmnt {
   
   friend class elem_core_access;
 
@@ -114,7 +114,7 @@ public:
 
   thinSextupole( thinSextupole const& );
 
-  thinSextupole* Clone() const;
+  thinSextupole* clone() const;
  ~thinSextupole();
 
   thinSextupole& operator=( thinSextupole const& );

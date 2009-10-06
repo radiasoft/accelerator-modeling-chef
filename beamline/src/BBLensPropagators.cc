@@ -46,12 +46,12 @@ using namespace PhysicsConstants;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ int const  i_x   = Particle::i_x;
+ int const  i_y   = Particle::i_y;
+ int const  i_cdt = Particle::i_cdt;
+ int const  i_npx = Particle::i_npx;
+ int const  i_npy = Particle::i_npy;
+ int const  i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
@@ -63,7 +63,7 @@ void propagate( BBLens const& elm, Particle_t& p )
 
   if( elm.Strength() == 0.0 ) return;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
   
   double num = elm.getDistCharge();
  
@@ -72,40 +72,50 @@ void propagate( BBLens const& elm, Particle_t& p )
  
   State_t E  = elm.NormalizedEField( x, y );
 
-  State_t p_beta = p.VectorBeta();
+  State_t p_beta = p.vectorBeta();
 
   State_t K  = elm.Beta()^E;
           K  = p_beta^K;
           K  += E; 
  
-  Component_t pn =  p.Beta()*p.Gamma();
+  Component_t pn =  p.beta()*p.gamma();
 
-  K = - num*PH_MKS_rp*K / ( p.Beta()*pn );
+  K = - num*PH_MKS_rp*K / ( p.beta()*pn );
 
-  if( p.Charge()*num < 0.0 ) K = -K;  // ??? Check this!
+  if( p.charge()*num < 0.0 ) K = -K;  // ??? Check this!
 
   state[i_npx] += K[0];
   state[i_npy] += K[1];
 
 }
 
-//-----------------------------------------------------------------
-// Workaround for gcc < 4.2 bug 
-//-----------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( BBLens const& elm,    Particle& p );
-template void propagate( BBLens const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BBLens::Propagator* BBLens::Propagator::Clone() const
+BBLens::Propagator::Propagator()
+  : BasePropagator()
+{ }
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BBLens::Propagator::Propagator(BBLens const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BBLens::Propagator::Propagator(BBLens::Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BBLens::Propagator* BBLens::Propagator::clone() const
 { 
   return new Propagator(*this);
 }
@@ -113,13 +123,13 @@ BBLens::Propagator* BBLens::Propagator::Clone() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::setup( bmlnElmnt& elm)
+void BBLens::Propagator::ctor( BmlnElmnt const& elm)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void BBLens::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate( static_cast<BBLens const&>(elm), p );
 }
@@ -127,7 +137,7 @@ void BBLens::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BBLens::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void BBLens::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
   ::propagate( static_cast<BBLens const&>(elm), p );
 }

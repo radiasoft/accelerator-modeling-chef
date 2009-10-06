@@ -37,31 +37,31 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/beamline.h>
+#include <beamline/Drift.h>
 #include <beamline/sextupole.h>
-#include <beamline/drift.h>
 #include <beamline/SextupolePropagators.h>
 #include <iostream>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
-void propagate( sextupole const& elm, Particle_t&     p )
+void propagate( sextupole const& elm, Particle_t& p, BmlPtr bml)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
+  State_t& state = p.state();
 
   for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
@@ -81,11 +81,11 @@ void propagate( thinSextupole const& elm, Particle_t& p )
  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
- State_t& state = p.State();
+ State_t& state = p.state();
 
  if( elm.Strength() == 0.0 ) return;  
  
- double const k = elm.Strength() / p.ReferenceBRho();
+ double const k = elm.Strength() / p.refBrho();
 
  Component_t const& x = state[i_x];
  Component_t const& y = state[i_y];
@@ -95,66 +95,93 @@ void propagate( thinSextupole const& elm, Particle_t& p )
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(          sextupole const& elm,    Particle& p );
-template void propagate(          sextupole const& elm, JetParticle& p );
-template void propagate(      thinSextupole const& elm,    Particle& p );
-template void propagate(      thinSextupole const& elm, JetParticle& p );
-
-#endif
-
 } // namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Propagator::setup(bmlnElmnt& arg)
+sextupole::Propagator::Propagator ( int n)
+  : n_(n), BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sextupole::Propagator::Propagator ( sextupole const& elm, int n)
+  : n_(n), BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sextupole::Propagator::Propagator ( Propagator const& p)
+ : n_(p.n_), BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
+void sextupole::Propagator::ctor(BmlnElmnt const& arg)
 { 
 
- ElmPtr& elm = bmlnElmnt::core_access::get_ElmPtr(arg);
- BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
-
-
- bml = BmlPtr( new beamline );
- bml->append( DriftPtr( new drift( "", arg.Length()/ 2.0 ) ) );
- bml->append( elm =  ThinSextupolePtr( new thinSextupole( "", arg.Strength()* arg.Length()) ) );
- bml->append( DriftPtr( new drift( "", arg.Length()/ 2.0 ) ) );
+ bml_ = BmlPtr( new beamline );
+ bml_->append( DriftPtr( new Drift( "", arg.Length()/ 2.0 ) ) );
+ bml_->append( ThinSextupolePtr( new thinSextupole( "", arg.Strength()* arg.Length()) ) );
+ bml_->append( DriftPtr( new Drift( "", arg.Length()/ 2.0 ) ) );
 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void sextupole::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Propagator::operator()(bmlnElmnt const& elm, Particle& p)
+void sextupole::Propagator::operator()(BmlnElmnt const& elm, Particle& p)
 {
-  ::propagate(static_cast<sextupole const&>(elm), p);
+  ::propagate(static_cast<sextupole const&>(elm), p, bml_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::Propagator::operator()(bmlnElmnt const& elm, JetParticle& p)
+void sextupole::Propagator::operator()(BmlnElmnt const& elm, JetParticle& p)
 {
-  ::propagate(static_cast<sextupole const&>(elm), p);
+  ::propagate(static_cast<sextupole const&>(elm), p, bml_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinSextupole::Propagator::operator()(bmlnElmnt const& elm, Particle& p)
+thinSextupole::Propagator::Propagator ()
+  : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSextupole::Propagator::Propagator ( thinSextupole const& elm)
+  : BasePropagator(elm)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinSextupole::Propagator::Propagator ( Propagator const& p)
+ : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSextupole::Propagator::operator()(BmlnElmnt const& elm, Particle& p)
 {
   ::propagate(static_cast<thinSextupole const&>(elm), p);
 }
@@ -162,7 +189,7 @@ void thinSextupole::Propagator::operator()(bmlnElmnt const& elm, Particle& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinSextupole::Propagator::operator()(bmlnElmnt const& elm, JetParticle& p)
+void thinSextupole::Propagator::operator()(BmlnElmnt const& elm, JetParticle& p)
 {
   ::propagate(static_cast<thinSextupole const&>(elm), p);
 }

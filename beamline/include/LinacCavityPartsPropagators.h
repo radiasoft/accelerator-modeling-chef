@@ -26,7 +26,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -42,14 +42,18 @@ class LCavityUpstream::Propagator : public BasePropagator {
 
  public:
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator();
+  Propagator(LCavityUpstream const& elm);
+  Propagator(Propagator const&);
 
-  void       setup( bmlnElmnt& elm);
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  setAttribute ( bmlnElmnt& elm, std::string const& name, boost::any const& value );
+  void       ctor( BmlnElmnt const& elm);
 
-  void  operator()( bmlnElmnt const& elm,              Particle& p);
-  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
+  void  setAttribute ( BmlnElmnt& elm, std::string const& name, boost::any const& value );
+
+  void  operator()( BmlnElmnt const& elm,              Particle& p);
+  void  operator()( BmlnElmnt const& elm,           JetParticle& p);
 
 };
 
@@ -57,14 +61,18 @@ class LCavityDnstream::Propagator : public BasePropagator {
 
  public:
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator();
+  Propagator(LCavityDnstream const& elm);
+  Propagator(Propagator const&);
 
-  void       setup( bmlnElmnt& elm);
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  setAttribute ( bmlnElmnt& elm, std::string const& name, boost::any const& value );
+  void       ctor( BmlnElmnt const& elm);
+
+  void  setAttribute ( BmlnElmnt& elm, std::string const& name, boost::any const& value );
  
-  void  operator()( bmlnElmnt const& elm,              Particle& p);
-  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
+  void  operator()( BmlnElmnt const& elm,              Particle& p);
+  void  operator()( BmlnElmnt const& elm,           JetParticle& p);
 
 };
 

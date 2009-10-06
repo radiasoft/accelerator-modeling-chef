@@ -79,7 +79,7 @@ namespace {
 
 sector::sector( std::string const& n, std::vector<double> const& bH,  std::vector<double> const& aH,  std::vector<double> const& pH, 
                                std::vector<double> const& bV,  std::vector<double> const& aV,  std::vector<double> const& pV, double const& l  ) 
-  : bmlnElmnt( n, l ), 
+  : BmlnElmnt( n, l ), 
       mapType_(0),        
         myMap_(),
         betaH_(bH),     // 0 = entry;  1 = exit
@@ -133,7 +133,7 @@ sector::sector( std::string const& n, std::vector<double> const& bH,  std::vecto
 
 
  propagator_ = PropagatorPtr( new Propagator() );
- propagator_->setup(*this);
+ propagator_->ctor(*this);
 
 } // end function sector::sector( std::vector<double>& bH, ... )
 
@@ -142,7 +142,7 @@ sector::sector( std::string const& n, std::vector<double> const& bH,  std::vecto
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sector::sector( std::string const& n, Mapping const& m, double const& l, char mpt ) 
-  : bmlnElmnt( n, l, 0.0), 
+  : BmlnElmnt( n, l, 0.0), 
       mapType_(mpt),        
         myMap_(m),
         betaH_(),     
@@ -154,7 +154,7 @@ sector::sector( std::string const& n, Mapping const& m, double const& l, char mp
     mapMatrix_()
 {
  propagator_ = PropagatorPtr( new Propagator() );
- propagator_->setup(*this);
+ propagator_->ctor(*this);
  if( mpt == 0 ) { mapMatrix_ = myMap_.jacobian(); } 
 }
 
@@ -163,7 +163,7 @@ sector::sector( std::string const& n, Mapping const& m, double const& l, char mp
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sector::sector( std::string const& n, double const& l, char mpt ) 
-  :  bmlnElmnt( n, l, 0.0), 
+  :  BmlnElmnt( n, l, 0.0), 
       mapType_(mpt),        
         myMap_(),
         betaH_(),     
@@ -176,7 +176,7 @@ sector::sector( std::string const& n, double const& l, char mpt )
 
 {
  propagator_ = PropagatorPtr( new Propagator() );
- propagator_->setup(*this);
+ propagator_->ctor(*this);
 
  if( mpt == 0 ) { mapMatrix_ = myMap_.jacobian(); } 
 }
@@ -186,7 +186,7 @@ sector::sector( std::string const& n, double const& l, char mpt )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sector::sector( sector const& x )
-  :  bmlnElmnt(x),
+  :  BmlnElmnt(x),
       mapType_(x.mapType_),        
         myMap_(x.myMap_),
         betaH_(x.betaH_),     
@@ -211,7 +211,7 @@ sector::~sector()
 sector& sector::operator=( sector const& rhs)
 {
    if ( this == &rhs)  return *this;
-   bmlnElmnt::operator=(rhs);
+   BmlnElmnt::operator=(rhs);
       mapType_ = rhs.mapType_;
         myMap_ = rhs.myMap_;
         betaH_ = rhs.betaH_;

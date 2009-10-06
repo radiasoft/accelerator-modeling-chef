@@ -49,28 +49,21 @@ using FNAL::pcout;
 //       excitation !
 //-----------------------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------------------
-// Workaround for g++ < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-#endif
-
 namespace {
+
  struct  LWakeOrder {
 
   typedef  Particle const& first_argument_type;
   typedef  Particle const& second_argument_type;
   typedef  bool     result_type;
 
-  bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
+  inline bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
    {
-     return  ( lhs.get_cdt() < rhs.get_cdt() );
+     return  ( lhs.cdt() < rhs.cdt() );
    }
  };
 
-}
+} // namespace
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -83,8 +76,8 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, int nsamples )
 
    bunch.sort( (LWakeOrder()) );
 
-   cdt_min_     =    (bunch.begin()  )->get_cdt(); 
-   cdt_max_     =    ( --bunch.end() )->get_cdt();  
+   cdt_min_     =    (bunch.begin()  )->cdt(); 
+   cdt_max_     =    ( --bunch.end() )->cdt();  
   
    populateHistograms( bunch, cdt_min_, cdt_max_, nsamples);  
 }
@@ -100,15 +93,15 @@ BunchProjector::BunchProjector( ParticleBunch& bunch, double const& length, int 
 
    bunch.sort( (LWakeOrder()) );
   
-   cdt_min_     =    (bunch.begin())->get_cdt(); 
+   cdt_min_     =    (bunch.begin())->cdt(); 
    cdt_max_     =    cdt_min_ + length;
   
-   if (( (--bunch.end())->get_cdt() - bunch.begin()->get_cdt() ) > length ) {
+   if (( (--bunch.end())->cdt() - bunch.begin()->cdt() ) > length ) {
 
      (*pcout) << "*** WARNING ***: BunchProjector: Sampled region is smaller than total bunch length." << std::endl;
      (*pcout) << "*** WARNING ***: BunchProjector: Sampled region width is " << length <<  std::endl;
      (*pcout) << "*** WARNING ***: BunchProjector: Bunch length is " 
-              <<  ( (--bunch.end())->get_cdt() - bunch.begin()->get_cdt() ) <<  std::endl;
+              <<  ( (--bunch.end())->cdt() - bunch.begin()->cdt() ) <<  std::endl;
    }
 
    populateHistograms( bunch, cdt_min_, cdt_min_ + length, nsamples);  
@@ -137,10 +130,10 @@ void BunchProjector::populateHistograms( ParticleBunch& bunch, double const& smi
 
        position  += binsize; 
 
-       while (  itb->get_cdt() <=  position )  { 
+       while (  itb->cdt() <=  position )  { 
       
-         xsum += itb->get_x();
-         ysum += itb->get_y();
+         xsum += itb->x();
+         ysum += itb->y();
    
          ++nslice;
 

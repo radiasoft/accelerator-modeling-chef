@@ -68,10 +68,9 @@ using namespace std;
 // **************************************************
 
 ThinPole::ThinPole( int pole)
-  : bmlnElmnt( "", 0.0, 0.0 ), pole_(pole)
+  : BmlnElmnt( "", 0.0, 0.0 ), pole_(pole)
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
 
 
@@ -80,19 +79,18 @@ ThinPole::ThinPole( int pole)
 
 
 ThinPole::ThinPole( std::string const& name, double const& integrated_strength, int pole)
-  : bmlnElmnt( name, 0.0, integrated_strength ), pole_(pole)
+  : BmlnElmnt( name, 0.0, integrated_strength ), pole_(pole)
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ThinPole::ThinPole( ThinPole const& x )
-  : bmlnElmnt( x ),  pole_(x.pole_)
+  : BmlnElmnt( x ),  pole_(x.pole_)
 { 
-  propagator_ = PropagatorPtr( x.propagator_->Clone() ) ;
+  propagator_ = PropagatorPtr( x.propagator_->clone() ) ;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -107,7 +105,7 @@ ThinPole::~ThinPole()
 ThinPole& ThinPole::operator=(ThinPole const& rhs)
 {
   if ( this == &rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   pole_ = rhs.pole_;
   return *this;
 }

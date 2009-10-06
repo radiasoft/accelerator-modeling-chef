@@ -47,26 +47,28 @@ namespace {
   std::complex<double> toComplex( double const& re, double const& im )
   { return std::complex<double>(re,im); }
 
-  JetC toComplex( Jet const& re, Jet const& im )
+  inline JetC toComplex( Jet const& re, Jet const& im )
   { return  re + complex_i*im; }
 
   template<typename T>
-  T local_pow(T const& value, int n );
+  inline T local_pow(T const& value, int n );
 
   template<>
-  JetC local_pow( JetC const& value, int n ) 
+  inline JetC local_pow( JetC const& value, int n ) 
   { return pow(value, n); }
 
   template<>
-  std::complex<double> local_pow( std::complex<double> const& value, int n ) 
+  inline std::complex<double> local_pow( std::complex<double> const& value, int n ) 
   { return std::pow(value, n); }
   
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+ 
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
   template<typename Particle_t>
   void propagate( thinMultipole const& elm, Particle_t & p ) 
@@ -79,7 +81,7 @@ namespace {
    typedef typename PropagatorTraits<Particle_t>::Component_t          Component_t;
    typedef typename PropagatorTraits<Particle_t>::ComplexComponent_t   ComplexComponent_t;
 
-   State_t& state = p.State();
+   State_t& state = p.state();
 
    if( elm.Strength() == 0.0 ) return; 
 
@@ -88,7 +90,7 @@ namespace {
 
 
      int                  const n =    it->first;
-     std::complex<double> const k =  - it->second / p.ReferenceBRho();
+     std::complex<double> const k =  - it->second / p.refBrho();
  
 
 
@@ -103,31 +105,37 @@ namespace {
    }
   }
 
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(          thinMultipole const& elm,    Particle& p );
-template void propagate(          thinMultipole const& elm, JetParticle& p );
-
-#endif
-
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinMultipole::Propagator::setup( bmlnElmnt& elm) 
+thinMultipole::Propagator::Propagator()
+  : BasePropagator()
+{}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinMultipole::Propagator::Propagator( thinMultipole const& elm) 
+  : BasePropagator(elm)
+{}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinMultipole::Propagator::Propagator( Propagator const& p) 
+  : BasePropagator(p)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinMultipole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void thinMultipole::Propagator::ctor( BmlnElmnt const& elm) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinMultipole::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate( static_cast<thinMultipole const&>(elm), p);
 }
@@ -135,7 +143,7 @@ void thinMultipole::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinMultipole::Propagator::operator()(  bmlnElmnt const& elm, JetParticle&     p ) 
+void thinMultipole::Propagator::operator()(  BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate( static_cast<thinMultipole const&>(elm), p);
 }

@@ -49,7 +49,7 @@
 #include <beamline/CF_sbend.h>
 #include <beamline/combinedFunction.h>
 #include <beamline/decapole.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/decapole.h>
 #include <beamline/Edge.h>
 #include <beamline/gkick.h>

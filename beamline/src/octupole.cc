@@ -63,7 +63,7 @@
 #include <beamline/BmlVisitor.h>
 #include <beamline/octupole.h>
 #include <beamline/OctupolePropagators.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/Alignment.h>
 
 using namespace std;
@@ -79,20 +79,18 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 octupole::octupole() 
- : bmlnElmnt("", 1.0, 0.0) 
+ : BmlnElmnt("", 1.0, 0.0) 
 {
-  propagator_ = PropagatorPtr( new Propagator());  
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 octupole::octupole( std::string const& n, double const& l, double const& s ) 
-: bmlnElmnt( n, l, s ) 
+: BmlnElmnt( n, l, s ) 
 { 
-  propagator_ = PropagatorPtr( new Propagator() );  
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -100,7 +98,7 @@ octupole::octupole( std::string const& n, double const& l, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 octupole::octupole( octupole const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 
@@ -112,7 +110,7 @@ octupole& octupole::operator=( octupole const& rhs)
 
   if (& rhs == this) return *this;
 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   return *this;
 
@@ -191,31 +189,29 @@ void octupole::accept( ConstBmlVisitor& v ) const
 // **************************************************
 
 thinOctupole::thinOctupole () 
-: bmlnElmnt( "", 0.0, 0.0 ) 
+: BmlnElmnt( "", 0.0, 0.0 ) 
 {
  // The strength is to be interpreted as
  // (1/3!)*B'''l  in  Tesla-meters^-2
-  propagator_ = PropagatorPtr( new Propagator() );  
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinOctupole::thinOctupole ( std::string const& n, double const& s ) 
- : bmlnElmnt( n, 0.0, s ) 
+ : BmlnElmnt( n, 0.0, s ) 
 {
  // The strength is to be interpreted as
  // (1/3!)*B'''l  in  Tesla-meters^-2
-  propagator_ = PropagatorPtr( new Propagator() );  
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinOctupole::thinOctupole( thinOctupole const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -224,7 +220,7 @@ thinOctupole::thinOctupole( thinOctupole const& x )
 thinOctupole& thinOctupole::operator=( thinOctupole const& rhs)
 {
   if (&rhs == this) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this;
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

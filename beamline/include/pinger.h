@@ -50,12 +50,12 @@
 #define PINGER_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
 
-class DLLEXPORT Pinger : public bmlnElmnt {
+class DLLEXPORT Pinger : public BmlnElmnt {
 
 protected:
 
@@ -69,7 +69,7 @@ public:
   Pinger( std::string const& name);                                       // Assumes zero, horizontal kick 
   Pinger( std::string const& name, double const& kick_rad, double const& direction_rad=0, int ntrns= -1);
   Pinger( Pinger const& );
-  Pinger* Clone() const { return new Pinger( *this ); }
+  Pinger* clone() const { return new Pinger( *this ); }
 
  ~Pinger(); 
 
@@ -112,13 +112,13 @@ class DLLEXPORT HPinger : public Pinger {
   HPinger( std::string const& name, double const& kick_rad = 0.0, int count = -1);
   HPinger( HPinger const& );
 
-  HPinger* Clone() const { return new HPinger( *this ); }
+  HPinger* clone() const { return new HPinger( *this ); }
 
  ~HPinger();
 
   HPinger& operator=( HPinger const& rhs); 
 
-  const char* Type()      const;
+  char const* Type()      const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -135,13 +135,13 @@ class DLLEXPORT VPinger : public Pinger {
 
   VPinger( VPinger const& );
 
-  VPinger* Clone() const { return new VPinger( *this ); }
+  VPinger* clone() const { return new VPinger( *this ); }
 
  ~VPinger();
 
   VPinger& operator=( VPinger const& rhs); 
 
-  const char* Type() const;
+  char const* Type() const;
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;

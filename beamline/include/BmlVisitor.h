@@ -69,7 +69,7 @@
 // Predefined classes ...
 
 class beamline;
-class bmlnElmnt;
+class BmlnElmnt;
 class combinedFunction;
 class hkick;
 class octupole;
@@ -83,7 +83,7 @@ class Monitor;
 class HMonitor;
 class VMonitor;
 class marker;
-class drift;
+class Drift;
 class rbend;
 class sbend;
 class sector;
@@ -121,7 +121,7 @@ public:
 
   virtual void visit( beamline&      x);
 
-  virtual void visit( bmlnElmnt&     x) {}
+  virtual void visit( BmlnElmnt&     x) {}
 
   virtual void visit( hkick&         x );
 
@@ -147,7 +147,7 @@ public:
 
   virtual void visit( marker&        x ); 
 
-  virtual void visit( drift&         x ) ;
+  virtual void visit( Drift&         x ) ;
 
   virtual void visit( rbend&         x ) ;
 
@@ -225,7 +225,7 @@ public:
 
   virtual void visit( beamline      const& x );
 
-  virtual void visit( bmlnElmnt     const& x ) {}
+  virtual void visit( BmlnElmnt     const& x ) {}
 
   virtual void visit( hkick         const& x );
 
@@ -251,7 +251,7 @@ public:
 
   virtual void visit( marker        const& x );
 
-  virtual void visit( drift         const& x ) ;
+  virtual void visit( Drift         const& x ) ;
 
   virtual void visit( rbend         const& x ) ;
 

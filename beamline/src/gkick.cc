@@ -81,7 +81,7 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 gkick::gkick() 
-  : bmlnElmnt(), 
+  : BmlnElmnt(), 
   dx_   ( 0.0 ),     
   dxp_  ( 0.0 ),   
   dy_   ( 0.0 ),    
@@ -93,8 +93,7 @@ gkick::gkick()
   v_    ( 0.0 ),  
   t_    ( 0.0 )
 {
-  propagator_ = PropagatorPtr(new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr(new Propagator(*this) );
 
   setStrength(1.0); // the strength is used here only as a momentum dependent 
                     // scaling factor for linacs.
@@ -104,7 +103,7 @@ gkick::gkick()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 gkick::gkick( gkick const& x )
-  : bmlnElmnt( x ),
+  : BmlnElmnt( x ),
     dx_   ( x.dx_  ),     
     dxp_  ( x.dxp_ ),   
     dy_   ( x.dy_  ),    
@@ -124,7 +123,7 @@ gkick::gkick( gkick const& x )
 gkick&  gkick::operator=( gkick const& rhs) {
 
   if ( &rhs == this ) return *this;  
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   dx_   = rhs.dx_;     
   dxp_  = rhs.dxp_;   

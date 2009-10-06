@@ -62,7 +62,7 @@
 #define RBEND_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class rbend;
 
@@ -72,7 +72,7 @@ typedef boost::shared_ptr<rbend const> ConstRBendPtr;
 class BmlVisitor;
 class ConstBmlVisitor;
 
-class DLLEXPORT rbend : public bmlnElmnt
+class DLLEXPORT rbend : public BmlnElmnt
 {
 
   class    Propagator;
@@ -124,7 +124,7 @@ class DLLEXPORT rbend : public bmlnElmnt
   rbend( rbend const& );
  ~rbend();
 
-  rbend* Clone() const { return new rbend( *this ); }
+  rbend* clone() const { return new rbend( *this ); }
 
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
@@ -189,10 +189,10 @@ class rbend::rbend_core_access {
 
  public:
 
-  static double&                    get_usAngle( rbend& o)      { return o.usAngle_;     } 
-  static double&                    get_dsAngle( rbend& o)      { return o.dsAngle_;     }
-  static double&                    get_usFaceAngle( rbend& o ) { return o.usFaceAngle_; }
-  static double&                    get_dsFaceAngle( rbend& o ) { return o.dsFaceAngle_; }
+  static double                    get_usAngle( rbend const& o)      { return o.usAngle_;     } 
+  static double                    get_dsAngle( rbend const& o)      { return o.dsAngle_;     }
+  static double                    get_usFaceAngle( rbend const& o ) { return o.usFaceAngle_; }
+  static double                    get_dsFaceAngle( rbend const& o ) { return o.dsFaceAngle_; }
 
 };
 

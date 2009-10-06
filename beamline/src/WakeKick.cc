@@ -53,17 +53,16 @@ using namespace std;
 
 
 WakeKick::WakeKick( std::string const& name )
-  : bmlnElmnt(name, 0.0, 0.0)
+  : BmlnElmnt(name, 0.0, 0.0)
 { 
-   propagator_ = PropagatorPtr( new Propagator( 256, 12 * 300.0e-6 ) );    
-   propagator_->setup(*this);  
+  propagator_ = PropagatorPtr( new Propagator(*this, 256, 12 * 300.0e-6 ) );    
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 WakeKick::WakeKick( WakeKick const& x )
-  : bmlnElmnt(x)
+  : BmlnElmnt(x)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -78,7 +77,7 @@ WakeKick::~WakeKick()
 WakeKick& WakeKick::operator=( WakeKick const& rhs) 
 { 
   if ( this == & rhs) return *this;
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   return *this;
 }
 

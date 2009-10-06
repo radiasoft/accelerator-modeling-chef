@@ -69,37 +69,34 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( std::string const& n )
-: bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
+: BmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( std::string const& n, double const& sP, double const& sN, double const& xw)
-  : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+  : BmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
-  : bmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+  : BmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( thinSeptum const& x ) 
-  : bmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
+  : BmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
     xWire_(x.xWire_)
 {}
 
@@ -111,7 +108,7 @@ thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
 
   if ( &rhs == this ) return *this;
 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   strengthPos_ =  rhs.strengthPos_;
   strengthNeg_ =  rhs.strengthNeg_;

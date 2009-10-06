@@ -90,9 +90,9 @@ JetParticle::JetParticle( double const& mass, double const& charge, double const
     q_(charge),
     m_(mass),         
     p_( momentum ),         
-gamma_(ReferenceEnergy()/m_),     
+gamma_(refEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
- bRho_(p_ / (q_/PH_MKS_e * PH_CNV_brho_to_p ))      
+ brho_(p_ / (q_/PH_MKS_e * PH_CNV_brho_to_p ))      
 {                          
 
   state_ = Mapping( "id", Jet__environment::topEnv() );    
@@ -118,9 +118,9 @@ JetParticle::JetParticle( double const& mass, double const& charge, double const
     q_(charge),
     m_(mass),         
     p_( momentum ),         
-gamma_(ReferenceEnergy()/m_),     
+gamma_(refEnergy()/m_),     
  beta_(sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) ) ),      
-bRho_(p_ /(q_/PH_MKS_e*PH_CNV_brho_to_p ) ),
+brho_(p_ /(q_/PH_MKS_e*PH_CNV_brho_to_p ) ),
  state_(state_)
 {                          
 
@@ -145,7 +145,7 @@ JetParticle::JetParticle( Particle const& u , EnvPtr<double> const& pje)
     p_(u.p_),         
 gamma_(u.gamma_),     
  beta_(u.beta_),      
- bRho_(u.bRho_),
+ brho_(u.brho_),
  state_(  u.state_.Dim() )
 {
    int dim =  u.state_.Dim();       
@@ -168,7 +168,7 @@ JetParticle::JetParticle(JetParticle const& u)
     p_(u.p_),         
 gamma_(u.gamma_),     
  beta_(u.beta_),      
- bRho_(u.bRho_),      
+ brho_(u.brho_),      
 state_(u.state_) 
 {}
 
@@ -185,7 +185,7 @@ JetParticle& JetParticle::operator=(JetParticle const& u)
   q_     = u.q_;
   p_     = u.p_;
   m_     = u.m_;
-  bRho_  = u.bRho_;
+  brho_  = u.brho_;
   beta_  = u.beta_;
   gamma_ = u.gamma_;
   state_ = u.state_;
@@ -242,7 +242,7 @@ void   JetParticle::setState( Vector  const& u ) {    // sets the state to the i
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Mapping& JetParticle::State() 
+Mapping& JetParticle::state() 
 {
   return state_;
 } 
@@ -250,7 +250,7 @@ Mapping& JetParticle::State()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Mapping const& JetParticle::State() const 
+Mapping const& JetParticle::state() const 
 {
   return state_;
 } 
@@ -258,13 +258,13 @@ Mapping const& JetParticle::State() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetParticle::SetReferenceEnergy( double const& energy ) {
+void JetParticle::setRefEnergy( double const& energy ) {
 
  if( energy < m_ ) {
   ostringstream uic;
-  uic  << "Energy, " << ReferenceEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
+  uic  << "Energy, " << refEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
   throw(  GenericException( __FILE__, __LINE__, 
-         "void JetParticle::SetReferenceEnergy( double )", 
+         "void JetParticle::SetrefEnergy( double )", 
          uic.str().c_str() ) );
  }
 
@@ -272,39 +272,39 @@ void JetParticle::SetReferenceEnergy( double const& energy ) {
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
  p_     = beta_*energy;
 
- bRho_  = p_ / ( q_/PH_MKS_e* PH_CNV_brho_to_p );
+ brho_  = p_ / ( q_/PH_MKS_e* PH_CNV_brho_to_p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void JetParticle::SetReferenceMomentum( double const& p ) 
+void JetParticle::setRefMomentum( double const& p ) 
 {
  p_       = p;
- bRho_    = p_ / ( q_/PH_MKS_e*PH_CNV_brho_to_p);
- gamma_   = ReferenceEnergy() / m_;
+ brho_    = p_ / ( q_/PH_MKS_e*PH_CNV_brho_to_p);
+ gamma_   = refEnergy() / m_;
  beta_    = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetVector JetParticle::VectorBeta() const
+JetVector JetParticle::vectorBeta() const
 {
-  return VectorMomentum()/Energy();
+  return vectorMomentum()/energy();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetVector JetParticle::VectorMomentum() const
+JetVector JetParticle::vectorMomentum() const
 {
 
  JetVector ret(3, state_.Env());
 
- ret[0] = p_ * state_[3];  // px
- ret[1] = p_ * state_[4];  
- ret[2] = p_ * get_npz();
+ ret[0] = p_ * state_[i_npx];  // px
+ ret[1] = p_ * state_[i_npy];  
+ ret[2] = p_ * npz();
 
  return ret;
 }
@@ -312,13 +312,13 @@ JetVector JetParticle::VectorMomentum() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-JetVector JetParticle::NormalizedVectorMomentum() const
+JetVector JetParticle::normalizedVectorMomentum() const
 {
  JetVector ret(3, state_.Env());
 
- ret[0] = state_[3];  // px
- ret[1] = state_[4];  
- ret[2] = get_npz();
+ ret[0] = state_[i_npx];  // px
+ ret[1] = state_[i_npy];  
+ ret[2] = npz();
  
  return ret; 
 }

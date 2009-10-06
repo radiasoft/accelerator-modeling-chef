@@ -61,7 +61,7 @@
 #define SBEND_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -72,7 +72,7 @@ typedef boost::shared_ptr<sbend>            SBendPtr;
 typedef boost::shared_ptr<sbend const> ConstSBendPtr;
 
 
-class DLLEXPORT sbend : public bmlnElmnt {
+class DLLEXPORT sbend : public BmlnElmnt {
 
   class Propagator;
   class MADPropagator;
@@ -94,7 +94,7 @@ class DLLEXPORT sbend : public bmlnElmnt {
 
   sbend( sbend const& );
 
-  sbend* Clone() const { return new sbend( *this ); }
+  sbend* clone() const { return new sbend( *this ); }
 
  ~sbend();
 
@@ -155,11 +155,11 @@ class sbend::sbend_core_access {
 
  public:
 
-  static double&                    get_angle( sbend& o )       { return o.angle_;       }
-  static double&                    get_usAngle( sbend& o)      { return o.usAngle_;     } 
-  static double&                    get_dsAngle( sbend& o)      { return o.dsAngle_;     }
-  static double&                    get_usFaceAngle( sbend& o)  { return o.usFaceAngle_; }
-  static double&                    get_dsFaceAngle( sbend& o)  { return o.dsFaceAngle_; }
+  static double                    get_angle( sbend const& o )       { return o.angle_;       }
+  static double                    get_usAngle( sbend const& o)      { return o.usAngle_;     } 
+  static double                    get_dsAngle( sbend const& o)      { return o.dsAngle_;     }
+  static double                    get_usFaceAngle( sbend const& o)  { return o.usFaceAngle_; }
+  static double                    get_dsFaceAngle( sbend const& o)  { return o.dsFaceAngle_; }
 
 };
    

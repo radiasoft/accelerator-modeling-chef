@@ -40,7 +40,7 @@
 ******
 ******  Major revision 
 ****** 
-******  - use covariant return types for Clone()
+******  - use covariant return types for clone()
 ******  - eliminated ConvertToXXX() type conversion functions; 
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
@@ -68,6 +68,7 @@
 #include <basic_toolkit/globaldefs.h>
 #include <basic_toolkit/VectorD.h>
 #include <basic_toolkit/Matrix.h>
+#include <beamline/PhaseSpaceIndexing.h>
 #include <boost/shared_ptr.hpp>
 #include <gms/FastAllocator.h>
 
@@ -115,16 +116,11 @@ typedef boost::shared_ptr<AntiMuon const>     ConstAntiMuonPtr;
 
 class particle_core_access; 
 
+class DLLEXPORT Particle : public PhaseSpaceIndexing  {
 
-class DLLEXPORT Particle {
 
   friend class JetParticle;
   friend class particle_core_access;  
-
-public:
-
-  enum PhaseSpaceIndex { i_x   = 0, i_y   = 1, i_cdt =  2, 
-                         i_npx = 3, i_npy = 4, i_ndp =  5 };
 
 protected:
 
@@ -136,7 +132,7 @@ protected:
   double      p_;          // reference momentum in GeV / c
   double      gamma_;      // reference gamma
   double      beta_;       // normalized reference velocity = v/c
-  double      bRho_;       // normalized reference momentum / charge
+  double      brho_;       // normalized reference momentum / charge
   Vector      state_;      
 
 
@@ -152,7 +148,7 @@ public:
   virtual ~Particle();
   void     dtor();
 
-  virtual Particle* Clone( void* p=0) const;
+  virtual Particle* clone( void* p=0) const;
 
   Particle&    operator=(Particle const&);
 
@@ -165,53 +161,53 @@ public:
   bool isLost() const;
   void setLost( bool );
 
-  void SetReferenceEnergy(   double const& energyGeV     );
-  void SetReferenceMomentum( double const& momentumGeV_c );
+  void setRefEnergy(   double const& energyGeV     );
+  void setRefMomentum( double const& momentumGeV_c );
 
   double setWeight( double const&);       // Returns previous value.
 
   void setStateToZero();
 
-  double get_x()     const;
-  double get_y()     const;
-  double get_cdt()   const;
-  double get_npx()   const;
-  double get_npy()   const;
-  double get_npz()   const;
-  double get_ndp()   const;
+  double x()     const;
+  double y()     const;
+  double cdt()   const;
+  double npx()   const;
+  double npy()   const;
+  double npz()   const;
+  double ndp()   const;
 
-  void set_x   ( double u );
-  void set_y   ( double u );
-  void set_cdt ( double u );
-  void set_npx ( double u );
-  void set_npy ( double u );
-  void set_ndp ( double u );
+  void   x   ( double u );
+  void   y   ( double u );
+  void   cdt ( double u );
+  void   npx ( double u );
+  void   npy ( double u );
+  void   ndp ( double u );
 
-  Vector&       State();
-  Vector const& State()                    const;
+  Vector&       state();
+  Vector const& state()                    const;
 
-  double        Energy()                   const;
-  double        KineticEnergy()            const;
-  double        Momentum()                 const;
-  double        NormalizedMomentum()       const;
-  double const& Mass()                     const;
-  double        Gamma()                    const;
-  double        Beta()                     const;
-  double        BetaX()                    const;
-  double        BetaY()                    const;
-  double        BetaZ()                    const;
+  double        energy()                   const;
+  double        kineticEnergy()            const;
+  double        momentum()                 const;
+  double        normalizedMomentum()       const;
+  double const& mass()                     const;
+  double        gamma()                    const;
+  double        beta()                     const;
+  double        betaX()                    const;
+  double        betaY()                    const;
+  double        betaZ()                    const;
   double        pn()                       const;
-  double const& ReferenceBRho()            const;
-  double const& ReferenceBeta()            const;
-  double const& ReferenceGamma()           const;
-  double const& ReferenceMomentum()        const;
-  double        ReferenceEnergy()          const;
-  double const& Weight()                   const;
-  double const& Charge()                   const;
-  Vector        VectorBeta()               const;
-  Vector        VectorMomentum()           const;
-  Vector        NormalizedVectorMomentum() const;
-  double        BRho()                     const;
+  double const& refBrho()            const;
+  double const& refBeta()            const;
+  double const& refGamma()           const;
+  double const& refMomentum()        const;
+  double        refEnergy()          const;
+  double const& weight()                   const;
+  double const& charge()                   const;
+  Vector        vectorBeta()               const;
+  Vector        vectorMomentum()           const;
+  Vector        normalizedVectorMomentum() const;
+  double        brho()                     const;
 
 
   std::string const&  getTag() const;                         
@@ -237,7 +233,7 @@ public:
 
   Proton&   operator=(Proton const&);
 
-  Proton*   Clone(void* p=0)  const;
+  Proton*   clone(void* p=0)  const;
 
 };
 
@@ -254,7 +250,7 @@ public:
 
   AntiProton&   operator=(AntiProton const&);
 
-  AntiProton*    Clone(void* p=0) const;
+  AntiProton*    clone(void* p=0) const;
 };
 
 
@@ -272,7 +268,7 @@ public:
   Electron&   operator=(Electron const&);
 
 
-  Electron*    Clone(void* p=0) const;
+  Electron*    clone(void* p=0) const;
 };
 
 class DLLEXPORT  Positron : public Particle {
@@ -288,7 +284,7 @@ public:
 
   Positron&   operator=(Positron const&);
 
-  Positron*    Clone(void* p=0) const;
+  Positron*    clone(void* p=0) const;
 };
 
 class DLLEXPORT Muon : public Particle {
@@ -304,7 +300,7 @@ public:
 
   Muon&   operator=(Muon const&);
 
-  Muon*    Clone(void* p=0) const;
+  Muon*    clone(void* p=0) const;
 };
 
 class DLLEXPORT  AntiMuon : public Particle {
@@ -320,7 +316,7 @@ public:
 
   AntiMuon&   operator=(AntiMuon const&);
 
-  AntiMuon*    Clone(void* p=0) const;
+  AntiMuon*    clone(void* p=0) const;
 };
 
 
@@ -336,7 +332,7 @@ class particle_core_access
 
  protected:
 
-  static Vector& State(Particle &p) { return p.State(); } 
+  static Vector& state(Particle &p) { return p.state(); } 
 
 };
 
@@ -345,46 +341,46 @@ class particle_core_access
 
   inline int  Particle::psd()          { return Particle::PSD; }
 
-  inline double  Particle::get_x()     const { return state_[i_x  ]; }
-  inline double  Particle::get_y()     const { return state_[i_y  ]; }
-  inline double  Particle::get_cdt()   const { return state_[i_cdt]; }
-  inline double  Particle::get_npx()   const { return state_[i_npx]; }
-  inline double  Particle::get_npy()   const { return state_[i_npy]; }
-  inline double  Particle::get_ndp()   const { return state_[i_ndp]; }
+  inline double  Particle::x()     const { return state_[i_x  ]; }
+  inline double  Particle::y()     const { return state_[i_y  ]; }
+  inline double  Particle::cdt()   const { return state_[i_cdt]; }
+  inline double  Particle::npx()   const { return state_[i_npx]; }
+  inline double  Particle::npy()   const { return state_[i_npy]; }
+  inline double  Particle::ndp()   const { return state_[i_ndp]; }
 
-  inline double  Particle::get_npz()   const { return sqrt( ( 1.0 + state_[i_ndp] )*( 1.0 + state_[i_ndp] ) 
+  inline double  Particle::npz()   const { return sqrt( ( 1.0 + state_[i_ndp] )*( 1.0 + state_[i_ndp] ) 
                                             - state_[i_npx]*state_[i_npx] - state_[i_npy]*state_[i_npy] );      }   
 
 
-  inline void  Particle::set_x   ( double u )  { state_[i_x  ] = u; }
-  inline void  Particle::set_y   ( double u )  { state_[i_y  ] = u; }
-  inline void  Particle::set_cdt ( double u )  { state_[i_cdt] = u; }
-  inline void  Particle::set_npx ( double u )  { state_[i_npx] = u; }
-  inline void  Particle::set_npy ( double u )  { state_[i_npy] = u; }
-  inline void  Particle::set_ndp ( double u )  { state_[i_ndp] = u; }
+  inline void  Particle::x   ( double u )  { state_[i_x  ] = u; }
+  inline void  Particle::y   ( double u )  { state_[i_y  ] = u; }
+  inline void  Particle::cdt ( double u )  { state_[i_cdt] = u; }
+  inline void  Particle::npx ( double u )  { state_[i_npx] = u; }
+  inline void  Particle::npy ( double u )  { state_[i_npy] = u; }
+  inline void  Particle::ndp ( double u )  { state_[i_ndp] = u; }
 
-  inline Vector&       Particle::State()       { return state_; } 
-  inline Vector const& Particle::State() const { return state_; } 
+  inline Vector&       Particle::state()       { return state_; } 
+  inline Vector const& Particle::state() const { return state_; } 
 
-  inline double         Particle::Momentum()                 const   { return p_ * ( 1.0 + state_[i_ndp] );  }
-  inline double         Particle::Energy()                   const   { double p = Momentum(); 
+  inline double         Particle::momentum()                 const   { return p_ * ( 1.0 + state_[i_ndp] );  }
+inline double           Particle::energy()                   const   { double p = momentum(); 
                                                                        return sqrt( p*p + m_*m_ );       }
-  inline double         Particle::KineticEnergy()            const   { return Energy() - m_;             }
-  inline double         Particle::NormalizedMomentum()       const   { return ( 1.0 + state_[i_ndp] );   }
-  inline double  const& Particle::Mass()                     const   { return m_;                        }
-  inline double         Particle::Gamma()                    const   { return Energy() / m_;             }
-  inline double         Particle::Beta()                     const   { return Momentum() / Energy();     }
+  inline double         Particle::kineticEnergy()            const   { return energy() - m_;             }
+  inline double         Particle::normalizedMomentum()       const   { return ( 1.0 + state_[i_ndp] );   }
+  inline double  const& Particle::mass()                     const   { return m_;                        }
+  inline double         Particle::gamma()                    const   { return energy() / m_;             }
+  inline double         Particle::beta()                     const   { return momentum() / energy();     }
   inline double         Particle::pn()                       const   { return beta_*gamma_;              } 
-  inline double         Particle::BetaX()                    const   { return (get_npx()*ReferenceMomentum())/Energy(); }
-  inline double         Particle::BetaY()                    const   { return (get_npy()*ReferenceMomentum())/Energy(); }
-  inline double         Particle::BetaZ()                    const   { return (get_npz()*ReferenceMomentum())/Energy(); }
-  inline double  const& Particle::ReferenceBRho()            const   { return bRho_;                     }
-  inline double  const& Particle::ReferenceBeta()            const   { return beta_;                     }
-  inline double  const& Particle::ReferenceGamma()           const   { return gamma_;                    }
-  inline double  const& Particle::ReferenceMomentum()        const   { return p_;                        }
-  inline double         Particle::ReferenceEnergy()          const   { return sqrt(p_*p_ + m_*m_);       }
-  inline double  const& Particle::Charge()                   const   { return q_;                        }
-  inline double         Particle::BRho()                     const   { return bRho_*( 1.0 + state_[i_ndp] ); }
+  inline double         Particle::betaX()                    const   { return (npx()*refMomentum())/energy(); }
+  inline double         Particle::betaY()                    const   { return (npy()*refMomentum())/energy(); }
+  inline double         Particle::betaZ()                    const   { return (npz()*refMomentum())/energy(); }
+  inline double  const& Particle::refBrho()                  const   { return brho_;                     }
+  inline double  const& Particle::refBeta()                  const   { return beta_;                     }
+  inline double  const& Particle::refGamma()                 const   { return gamma_;                    }
+  inline double  const& Particle::refMomentum()              const   { return p_;                        }
+  inline double         Particle::refEnergy()                const   { return sqrt(p_*p_ + m_*m_);       }
+  inline double  const& Particle::charge()                   const   { return q_;                        }
+  inline double         Particle::brho()                     const   { return brho_*( 1.0 + state_[i_ndp] ); }
 
   inline bool           Particle:: isLost()                  const   { return lost_; } 
   inline void           Particle:: setLost( bool set)                { lost_ = set;  } 

@@ -50,7 +50,7 @@
 #define BBLENS_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <vector>
 
 class BmlVisitor;
@@ -83,7 +83,7 @@ struct EVector_t<double> {
   typedef std::complex<double>   ComplexComponentType;
 }; 
 
-class DLLEXPORT BBLens : public bmlnElmnt {
+class DLLEXPORT BBLens : public BmlnElmnt {
 
   class Propagator;
 
@@ -103,7 +103,7 @@ public:
         );
   BBLens( BBLens const& );
 
-  BBLens* Clone() const { return new BBLens( *this ); }
+  BBLens* clone() const { return new BBLens( *this ); }
 
  ~BBLens();
 

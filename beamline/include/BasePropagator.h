@@ -43,7 +43,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <basic_toolkit/VectorFwd.h>
 #include <mxyzptlk/JetVectorFwd.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
+#include <beamline/BmlPtr.h>
 
 class BasePropagator;
 typedef boost::shared_ptr<BasePropagator> PropagatorPtr; 
@@ -85,30 +86,42 @@ class BasePropagator {
  public:
   
    BasePropagator(); 
+   BasePropagator( BmlnElmnt      const&  ); 
    BasePropagator( BasePropagator const& o); 
 
    BasePropagator& operator=( BasePropagator const& o); 
 
-   virtual  BasePropagator* Clone() const    = 0;
+   virtual  BasePropagator* clone() const    = 0;
    virtual ~BasePropagator();
 
-   virtual void  setup( bmlnElmnt& );
+   virtual void  ctor ( BmlnElmnt const& );
   
-   virtual void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value );
+   virtual void   setReferenceTime( double ct);
+   virtual double getReferenceTime() const; 
+   virtual void   propagateReference( Particle& particle, double initialBRho, bool scaling ); 
+   virtual void   setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value );
 
-   virtual void  operator()(  bmlnElmnt const& elm,         Particle& p) = 0; 
-   virtual void  operator()(  bmlnElmnt const& elm,      JetParticle& p) = 0; 
-   virtual void  operator()(  bmlnElmnt const& elm,    ParticleBunch& b);  
-   virtual void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
+   virtual void  operator()(  BmlnElmnt const& elm,         Particle& p) = 0; 
+   virtual void  operator()(  BmlnElmnt const& elm,      JetParticle& p) = 0; 
+   virtual void  operator()(  BmlnElmnt const& elm,    ParticleBunch& b);  
+   virtual void  operator()(  BmlnElmnt const& elm, JetParticleBunch& b);  
+
+   virtual  bool isComposite() const; 
 
    virtual  bool hasAlignment() const; 
    virtual  void setAlignment( Vector const& translation, Vector const& rotation, bool relative=false);
 
    virtual  bool hasAperture()   const; 
-   virtual  void setAperture( bmlnElmnt::aperture_t, double const& hor, double const& ver );
+   virtual  void setAperture( BmlnElmnt::aperture_t, double const& hor, double const& ver );
 
-   virtual  boost::tuple<bmlnElmnt::aperture_t, double, double>  aperture()   const; 
+   virtual  boost::tuple<BmlnElmnt::aperture_t, double, double>  aperture()   const; 
    virtual  boost::tuple<Vector,Vector>                         alignment()   const; 
+
+ protected:
+
+   mutable double  ctRef_;     // (normalized) time required for a reference particle to cross
+
+   BmlPtr bml_;
 
 };
 

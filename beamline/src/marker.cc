@@ -62,20 +62,18 @@ using namespace std;
 //   class marker 
 // **************************************************
 
-marker::marker() : bmlnElmnt() 
+marker::marker() : BmlnElmnt() 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 marker::marker( std::string const& n ) 
-  : bmlnElmnt(n) 
+  : BmlnElmnt(n) 
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -83,7 +81,7 @@ marker::marker( std::string const& n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 marker::marker( marker const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 
@@ -94,7 +92,7 @@ marker&  marker::operator=( marker const& rhs)
 {
   if ( &rhs == this ) return *this;
   
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   return *this;
 }

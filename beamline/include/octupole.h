@@ -53,7 +53,7 @@
 #define OCTUPOLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/Particle.h>
 
 class BmlVisitor;
@@ -73,7 +73,7 @@ typedef boost::shared_ptr<octupole const >     ConstOctupolePtr;
 typedef boost::shared_ptr<thinOctupole const>  ConstThinOctupolePtr;
 
 
-class DLLEXPORT octupole : public bmlnElmnt {
+class DLLEXPORT octupole : public BmlnElmnt {
 
   class Propagator;
 
@@ -83,7 +83,7 @@ public:
   octupole( std::string const& name, double const& length,    double const& strength);
 
   octupole( octupole const& );
-  octupole* Clone() const { return new octupole( *this ); }
+  octupole* clone() const { return new octupole( *this ); }
 
   octupole& operator=( octupole const& rhs);
 
@@ -104,7 +104,7 @@ public:
 };
 
 
-class DLLEXPORT thinOctupole : public bmlnElmnt {
+class DLLEXPORT thinOctupole : public BmlnElmnt {
 
   class Propagator;
 
@@ -114,7 +114,7 @@ public:
   thinOctupole( std::string const& name,  double const& strength );
   thinOctupole( thinOctupole const& );
 
-  thinOctupole* Clone() const { return new thinOctupole( *this ); }
+  thinOctupole* clone() const { return new thinOctupole( *this ); }
 
   thinOctupole& operator=( thinOctupole const& rhs);
 

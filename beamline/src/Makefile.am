@@ -30,13 +30,15 @@ include source_files
 AM_CPPFLAGS = $(LOCALDEFS) $(BOOST_INC) -I$(top_srcdir)/../include 
 AM_CXXFLAGS = $(OPTFLAGS)  $(TEMPLATEFLAGS)
 
+# --param max-inline-insns-auto=0
+
 if !IMPLICIT_TEMPLATES
 LTCXXCOMPILE_TEMPLATES = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(OPTFLAGS)  --param max-inline-insns-auto=0  $(CXXFLAGS)  
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(OPTFLAGS) -fno-inline $(CXXFLAGS)  
 
 CXXCOMPILE_TEMPLATES = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(OPTFLAGS)  --param max-inline-insns-auto=0  $(CXXFLAGS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(OPTFLAGS) -fno-inline $(CXXFLAGS) 
 
 else
 

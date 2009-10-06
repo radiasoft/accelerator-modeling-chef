@@ -72,36 +72,34 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 Solenoid::Solenoid()
-:  bmlnElmnt("", 1.0, 0.0), 
+:  BmlnElmnt("", 1.0, 0.0), 
    inEdge_(true), outEdge_(true)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Solenoid::Solenoid( const char* n, double const& l, double const& s )
-:   bmlnElmnt(n,l,s),
+:   BmlnElmnt(n,l,s),
     inEdge_(true), outEdge_(true)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Solenoid::Solenoid( Solenoid const& x )
-:   bmlnElmnt(x),
+:   BmlnElmnt(x),
     inEdge_(x.inEdge_), outEdge_(x.outEdge_)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Solenoid* Solenoid::Clone() const 
+Solenoid* Solenoid::clone() const 
 { 
   return new Solenoid( *this ); 
 
@@ -118,7 +116,7 @@ Solenoid::~Solenoid()
 Solenoid& Solenoid::operator=( Solenoid const& rhs)
 {
   if ( &rhs == this ) return *this; 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   inEdge_  = rhs.inEdge_;
   outEdge_ = rhs.outEdge_;
   return *this; 
@@ -133,14 +131,14 @@ std::pair<ElmPtr,ElmPtr> Solenoid::split( double const& pc ) const
     ostringstream uic;
     uic  << "pc = " << pc << ": this should be within [0,1].";
     throw( GenericException( __FILE__, __LINE__, 
-           "void Solenoid::Split( double const&, bmlnElmnt**, bmlnElmnt** ) const", 
+           "void Solenoid::Split( double const& pc) const", 
            uic.str().c_str() ) );
   }
 
   // We assume "strength" means field, not field*length_.
   // --------------------------------------------------
  
-   SolenoidPtr s_a( (Clone()) );
+   SolenoidPtr s_a( (clone()) );
    s_a->setLength( pc  *length_ );
 
    s_a->inEdge_   = inEdge_;    
@@ -148,7 +146,7 @@ std::pair<ElmPtr,ElmPtr> Solenoid::split( double const& pc ) const
 
    s_a->rename(  Name() + std::string("_1") );
   
-   SolenoidPtr s_b( (Clone()) ); 
+   SolenoidPtr s_b( (clone()) ); 
 
    s_b->setLength( ( 1.0 - pc )*length_ );
 

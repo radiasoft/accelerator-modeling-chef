@@ -42,19 +42,19 @@ public:
   ApertureDecorator( ApertureDecorator const& o );   
  ~ApertureDecorator();
 
-  ApertureDecorator* Clone() const;
+  ApertureDecorator* clone() const;
 
-  void  operator()(  bmlnElmnt const& elm,         Particle& p);
-  void  operator()(  bmlnElmnt const& elm,      JetParticle& p); 
+  void  operator()(  BmlnElmnt const& elm,         Particle& p);
+  void  operator()(  BmlnElmnt const& elm,      JetParticle& p); 
 
   bool hasAperture() const;
-  void setAperture( bmlnElmnt::aperture_t const, double const& hor, double const& ver );
+  void setAperture( BmlnElmnt::aperture_t const, double const& hor, double const& ver );
 
  private:
   
   bool  lost ( double const& x, double const& y) const;
 
-  bmlnElmnt::aperture_t type_;
+  BmlnElmnt::aperture_t type_;
   double                hor_;
   double                ver_;
 

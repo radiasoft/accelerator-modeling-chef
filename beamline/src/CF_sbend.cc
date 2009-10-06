@@ -96,7 +96,7 @@ using FNAL::pcerr;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::CF_sbend()
-  : bmlnElmnt( "", 0.0, 0.0), 
+  : BmlnElmnt( "", 0.0, 0.0), 
           angle_(0.0),       
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
@@ -104,8 +104,7 @@ CF_sbend::CF_sbend()
         dsAngle_(0.0),
      multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); 
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this,1 ));
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -115,7 +114,7 @@ CF_sbend::CF_sbend( std::string const& name,
                     double const&        lng,  // length     [ meter    ]
                     double const&        fld,  // field      [ tesla    ]
                     double const&        ang )
-  : bmlnElmnt( name, lng, fld ),
+  : BmlnElmnt( name, lng, fld ),
         angle_(ang),
   usFaceAngle_(0.0),
   dsFaceAngle_(0.0),
@@ -124,8 +123,7 @@ CF_sbend::CF_sbend( std::string const& name,
    multipoles_(4,std::complex<double>(0.0,0.0) )
 {
 
-  propagator_ = PropagatorPtr( new Propagator(1) ); 
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this, 1) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -138,7 +136,7 @@ CF_sbend::CF_sbend( std::string const& name,
                     double const&        ang,  // bend angle [ radians ]
                     double const&        us,   // upstream edge angle [radians]
                     double const&        ds)   // downstream edge angle [radians]
-: bmlnElmnt( name, lng, fld ),
+: BmlnElmnt( name, lng, fld ),
        angle_(ang),
  usFaceAngle_(us),
  dsFaceAngle_(ds),
@@ -146,15 +144,14 @@ CF_sbend::CF_sbend( std::string const& name,
      dsAngle_(-ds),
   multipoles_(4, std::complex<double>(0.0,0.0) ) 
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); 
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this,1) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CF_sbend::CF_sbend( CF_sbend const& x )
-  : bmlnElmnt( x ),
+  : BmlnElmnt( x ),
         angle_(x.angle_),
   usFaceAngle_(x.usFaceAngle_),
   dsFaceAngle_(x.dsFaceAngle_),
@@ -175,7 +172,7 @@ CF_sbend::~CF_sbend()
 CF_sbend& CF_sbend::operator=(CF_sbend const& rhs)
 {
   if (this == &rhs) return *this;
-  bmlnElmnt:operator=(rhs);
+  BmlnElmnt:operator=(rhs);
   angle_       = rhs.angle_;
   usFaceAngle_ = rhs.usFaceAngle_;
   dsFaceAngle_ = rhs.dsFaceAngle_;
@@ -189,7 +186,7 @@ CF_sbend& CF_sbend::operator=(CF_sbend const& rhs)
 
 double CF_sbend::setEntryAngle( Particle const& p )
 {
-  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -198,7 +195,7 @@ double CF_sbend::setEntryAngle( Particle const& p )
 
 double CF_sbend::setExitAngle( Particle const& p )
 {
-  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -209,7 +206,7 @@ double CF_sbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = usAngle_;
   usAngle_   = phi;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -220,7 +217,7 @@ double CF_sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
   dsAngle_   = phi;  
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -230,7 +227,7 @@ double CF_sbend::setExitAngle( double const& phi /* radians */ )
 void CF_sbend::setOctupole( double const& pole )
 {
   multipoles_[3] = pole;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -239,7 +236,7 @@ void CF_sbend::setOctupole( double const& pole )
 void CF_sbend::setSextupole( double const& pole )
 {
   multipoles_[2] = pole;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -268,7 +265,7 @@ void CF_sbend::setQuadrupole( double const& pole)
 {
 
   multipoles_[1] = pole;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 
 }
 
@@ -278,6 +275,7 @@ void CF_sbend::setQuadrupole( double const& pole)
 int CF_sbend::setDipoleField( double const& value)
 {
 
+#if 0
   for ( beamline::iterator it  = bml_->begin(); 
 	                   it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<sbend>(*it) ) { 
@@ -285,6 +283,7 @@ int CF_sbend::setDipoleField( double const& value)
     }
   }
 
+#endif
   setStrength( value ); 
 
   return 0;
@@ -332,7 +331,7 @@ double CF_sbend::getDipoleField() const
 void CF_sbend::propagateReference( Particle& p, double initialBRho, bool scaling )
 {
   setEntryAngle(p);
-  bmlnElmnt::propagateReference(p,initialBRho, scaling);
+  BmlnElmnt::propagateReference(p,initialBRho, scaling);
   setExitAngle(p);
 }
 
@@ -341,6 +340,8 @@ void CF_sbend::propagateReference( Particle& p, double initialBRho, bool scaling
 
 std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
 {
+
+#if 0
   // Preliminary tests ...
   // -----------------------------
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
@@ -440,6 +441,8 @@ std::pair<ElmPtr,ElmPtr> CF_sbend::split( double const& pc ) const
   p_b->rename( ident_ + string("_2"));
 
   return std::make_pair(p_a,p_b);
+#endif
+  return std::make_pair(ElmPtr(), ElmPtr());
 }
 
 

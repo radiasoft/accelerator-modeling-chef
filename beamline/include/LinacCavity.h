@@ -43,12 +43,12 @@
 #ifndef LINACCAVITY_H
 #define LINACCAVITY_H
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/WakeKick.h>
 #include <beamline/WakeKickPropagator.h>
 #include <beamline/ParticleFwd.h>
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
@@ -62,7 +62,7 @@ typedef boost::shared_ptr<LinacCavity const> ConstLinacCavityPtr;
 
 //-------------------------------------------------------------------------------
 
-class LinacCavity: public bmlnElmnt {
+class LinacCavity: public BmlnElmnt {
 
   class Propagator;
 
@@ -77,7 +77,7 @@ public:
 
   LinacCavity( LinacCavity const& );
 
-  LinacCavity* Clone() const { return new LinacCavity( *this ); }
+  LinacCavity* clone() const { return new LinacCavity( *this ); }
  ~LinacCavity();
 
   LinacCavity& operator=(LinacCavity const& o);
@@ -93,12 +93,10 @@ public:
   double const&    radialFrequency() const;
   void                 setPhi( double const& radians);  
 
-  double          getReferenceTime() const;  
-
   void accept( BmlVisitor&      v ); 
   void accept( ConstBmlVisitor& v ) const; 
 
-  const char* Type()     const;
+  char const* Type()     const;
   bool    isMagnet()     const;
   bool    isThin()       const;
   bool    isPassive()    const;

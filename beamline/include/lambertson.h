@@ -52,7 +52,7 @@
 
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <vector>
 
 class BmlVisitor;
@@ -62,7 +62,7 @@ class    thinLamb;
 typedef  boost::shared_ptr<thinLamb>            ThinLambPtr;
 typedef  boost::shared_ptr<thinLamb const> ConstThinLambPtr;
 
-class DLLEXPORT thinLamb : public bmlnElmnt {
+class DLLEXPORT thinLamb : public BmlnElmnt {
 
   class Propagator;
 
@@ -80,7 +80,7 @@ public:
   
   thinLamb( thinLamb const& );
 
-  thinLamb* Clone() const { return new thinLamb( *this ); }
+  thinLamb* clone() const { return new thinLamb( *this ); }
 
  ~thinLamb();
   

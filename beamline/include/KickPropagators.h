@@ -27,7 +27,7 @@
 ****** 
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -44,12 +44,16 @@ class kick::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+  Propagator();
+  Propagator(kick const& elm);
+  Propagator(Propagator const& p);
 
-  void  operator()(  bmlnElmnt const& elm,             Particle& p);
-  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,             Particle& p);
+  void  operator()(  BmlnElmnt const& elm,          JetParticle& p);
 
 };
 
@@ -57,23 +61,33 @@ class hkick::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator();
+  Propagator(hkick const& elm);
+  Propagator(Propagator const& p);
+
+  Propagator* clone() const { return new Propagator(*this); }
  
-  void  setup( bmlnElmnt& elm ); 
+  void  ctor( BmlnElmnt const& elm ); 
  
-  void  operator()(  bmlnElmnt const& elm,             Particle& p);
-  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,             Particle& p);
+  void  operator()(  BmlnElmnt const& elm,          JetParticle& p);
 
 };
 
 class vkick::Propagator: public BasePropagator {
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+ public:
 
-  void  operator()(  bmlnElmnt const& elm,             Particle& p);
-  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
+  Propagator();
+  Propagator(vkick const& elm);
+  Propagator(Propagator const& p);
+
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,             Particle& p);
+  void  operator()(  BmlnElmnt const& elm,          JetParticle& p);
 
 };
 

@@ -54,7 +54,7 @@
 #define MONITOR_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <boost/function.hpp>
 
 class BmlVisitor;
@@ -72,7 +72,7 @@ typedef boost::shared_ptr<VMonitor>       VMonitorPtr;
 typedef boost::shared_ptr<VMonitor const> ConstVMonitorPtr;
 
 
-class DLLEXPORT MonitorBase: public bmlnElmnt {
+class DLLEXPORT MonitorBase: public BmlnElmnt {
 
  protected :
 
@@ -136,7 +136,7 @@ class DLLEXPORT HMonitor : public MonitorBase {
   HMonitor( std::string const& name, double const& length); 
   HMonitor( HMonitor const& );
 
-  HMonitor* Clone() const  { return new HMonitor( *this ); }
+  HMonitor* clone() const  { return new HMonitor( *this ); }
 
  ~HMonitor();
 
@@ -164,7 +164,7 @@ class DLLEXPORT VMonitor : public MonitorBase{
   VMonitor( std::string const& name, double const& length); 
   VMonitor( VMonitor const& );
 
-  VMonitor* Clone() const  { return new VMonitor( *this ); }
+  VMonitor* clone() const  { return new VMonitor( *this ); }
 
  ~VMonitor();
 
@@ -183,16 +183,16 @@ class DLLEXPORT VMonitor : public MonitorBase{
 
 class DLLEXPORT Monitor : public MonitorBase {
 
-  class Propagator; 
-
  public:
+
+  class Propagator; 
 
   Monitor();
   Monitor( std::string const& name );
   Monitor( std::string const& name, double const& length);
   Monitor( Monitor const& );
 
-  Monitor* Clone() const  { return new Monitor( *this ); }
+  Monitor* clone() const  { return new Monitor( *this ); }
 
  ~Monitor();
 
@@ -210,7 +210,7 @@ class DLLEXPORT Monitor : public MonitorBase {
   double    npy()                const;
   void   setNpy( double const& ) const;
 
-  const char* Type()     const;
+  char const* Type()     const;
 };
 
 

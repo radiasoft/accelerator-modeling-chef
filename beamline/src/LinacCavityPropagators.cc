@@ -53,23 +53,23 @@ using FNAL::pcout;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+ 
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 template<typename Particle_t>
-void propagate( LinacCavity const& elm, Particle_t&  p)
+void propagate( LinacCavity const& elm, Particle_t&  p, BmlPtr bml )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  State_t& state = p.state();
 
   for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
@@ -81,42 +81,50 @@ void propagate( LinacCavity const& elm, Particle_t&  p)
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( LinacCavity const& elm,    Particle& p );
-template void propagate( LinacCavity const& elm, JetParticle& p );
-
-#endif
-
-//-----------------------------------------------------------------------------------
-
 } // namespace
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::setup( bmlnElmnt& arg ) 
+LinacCavity::Propagator::Propagator()
+    : BasePropagator()
+  {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LinacCavity::Propagator::Propagator(LinacCavity const& elm)
+    : BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LinacCavity::Propagator::Propagator(Propagator const& p)
+    : BasePropagator(p)
+  {}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::ctor( BmlnElmnt const& arg ) 
 {
  
-  LinacCavity& elm = static_cast< LinacCavity&>(arg);
+  LinacCavity const& elm = static_cast< LinacCavity const&>(arg);
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-  ElmPtr& wk  = bmlnElmnt::core_access::get_ElmPtr(elm);
-  
-  bml = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
+  bml_ = BmlPtr(new beamline("LINACCAVITY_INTERNALS") );
 
-  bml->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   elm.Length()/2.0,   elm.frequency(), 
+  bml_->append( LCavityUpstreamPtr( new LCavityUpstream( "LC-upstream",   elm.Length()/2.0,   elm.frequency(), 
                                                                          elm.Strength()/2.0, elm.phi() )   )  );
-  wk = WakeKickPtr( new WakeKick ( "WAKE" ) ); 
+  wake_ = WakeKickPtr( new WakeKick ( "WAKE" ) ); 
  
-  if ( elm.wakeOn()) bml->append(wk); 
+  if ( elm.wakeOn()) bml_->append(wake_); 
 
-  bml->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", elm.Length()/2.0, elm.frequency(), 
+  bml_->append( LCavityDnstreamPtr( new LCavityDnstream( "LC-downstream", elm.Length()/2.0, elm.frequency(), 
                                                                          elm.Strength()/2.0, elm.phi() )   )  );
 
 }
@@ -126,9 +134,7 @@ void LinacCavity::Propagator::setup( bmlnElmnt& arg )
 bool LinacCavity::Propagator::wakeIsOn( LinacCavity const& arg ) const
 {
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( const_cast<LinacCavity&>(arg) );
-
-  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) {
+  for ( beamline::const_iterator it = bml_->begin(); it != bml_->end(); ++it ) {
     if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) return true; 
   }
   
@@ -139,38 +145,36 @@ bool LinacCavity::Propagator::wakeIsOn( LinacCavity const& arg ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LinacCavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  LinacCavity::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
   if ( name == "STRENGTH" ) { 
-     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-     (bml->front())->setStrength( elm.Strength()/2.0 ); 
-     (bml->back() )->setStrength( elm.Strength()/2.0 ); 
+
+     (bml_->front())->setStrength( elm.Strength()/2.0 ); 
+     (bml_->back() )->setStrength( elm.Strength()/2.0 ); 
      return;
   }
   if ( name == "LENGTH" ) { 
-     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-     (bml->front())->setLength( elm.Length()/2.0 ); 
-     (bml->back() )->setLength( elm.Length()/2.0 ); 
+
+     (bml_->front())->setLength( elm.Length()/2.0 ); 
+     (bml_->back() )->setLength( elm.Length()/2.0 ); 
      return;
   }
   if ( name == "FREQUENCY" ) { 
-     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-     dynamic_pointer_cast<LCavityUpstream>(bml->front())->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
-     dynamic_pointer_cast<LCavityDnstream>(bml->back() )->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
+
+     dynamic_pointer_cast<LCavityUpstream>(bml_->front())->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
+     dynamic_pointer_cast<LCavityDnstream>(bml_->back() )->setFrequency(  static_cast<LinacCavity&>(elm).frequency() ); 
      return;
   }
 
   if ( name == "PHASE" ) { 
-     BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-     dynamic_pointer_cast<LCavityUpstream>(bml->front())->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
-     dynamic_pointer_cast<LCavityDnstream>(bml->back() )->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
+
+     dynamic_pointer_cast<LCavityUpstream>(bml_->front())->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
+     dynamic_pointer_cast<LCavityDnstream>(bml_->back() )->setPhi( static_cast<LinacCavity&>(elm).phi() ); 
      return;
   }
 
   if ( name == "WAKEON" ) { 
 
-     BmlPtr& bml  = bmlnElmnt::core_access::get_BmlPtr(elm);
-     ElmPtr& wake = bmlnElmnt::core_access::get_ElmPtr(elm);
   
      bool wakeon =   static_cast<LinacCavity&>(elm).wakeOn();
 
@@ -181,12 +185,12 @@ void  LinacCavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& 
      if ( (!set) && (!wakeon) ) return; // wake is already unset just return
  
      if ( set ) {
-       beamline::iterator it = bml->begin(); 
-       bml->putBelow( it, wake);
+       beamline::iterator it = bml_->begin(); 
+       bml_->putBelow( it, wake_);
      }
      else {
-      for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
-         if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml->erase(it); } 
+      for ( beamline::iterator it = bml_->begin(); it != bml_->end(); ++it ) {
+         if ( boost::dynamic_pointer_cast<WakeKick>(*it) ) { it = bml_->erase(it); } 
        } 
      }
      return;
@@ -197,27 +201,25 @@ void  LinacCavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void LinacCavity::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
-  ::propagate( static_cast<LinacCavity const&>(elm),p);
+  ::propagate( static_cast<LinacCavity const&>(elm),p, bml_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void LinacCavity::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 {
-  ::propagate( static_cast< LinacCavity const&>(elm),p);
+  ::propagate( static_cast< LinacCavity const&>(elm),p, bml_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b ) 
+void LinacCavity::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& b ) 
 {
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it) {
+  for ( beamline::const_iterator it = bml_->begin(); it != bml_->end(); ++it) {
     (*it)->localPropagate(b); 
   }
 }
@@ -226,11 +228,9 @@ void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& b ) 
+void LinacCavity::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch& b ) 
 {
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr(elm);
-
-  for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it) {
+  for ( beamline::const_iterator it = bml_->begin(); it != bml_->end(); ++it) {
     (*it)->localPropagate(b); 
   }
 
@@ -239,4 +239,29 @@ void LinacCavity::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double  LinacCavity::Propagator::getReferenceTime() const 
+{
 
+  ctRef_ = 0.0;
+
+  for ( beamline::const_iterator it  = bml_->begin(); 
+                                 it != bml_->end(); ++it ) {
+        
+    ctRef_  += (*it)->getReferenceTime();
+  }
+
+  return ctRef_;
+
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void LinacCavity::Propagator::propagateReference( Particle& particle, double initialBRho, bool scaling ) 
+{               
+  if ( bml_) {
+    bml_->propagateReference(particle, initialBRho, scaling );
+  }
+
+  return;
+}

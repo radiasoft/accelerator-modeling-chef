@@ -44,19 +44,21 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
-bool betaParallelTest( double const&  betaParallel ) {
+inline bool betaParallelTest( double const&  betaParallel ) {
     return (betaParallel <= 0.0); 
 }
 
-bool betaParallelTest( Jet const&   betaParallel ) {
+inline bool betaParallelTest( Jet const&   betaParallel ) {
     return (betaParallel.standardPart() )<= 0.0; 
 }
 
@@ -82,7 +84,7 @@ void processFrame( Frame const& frm,  Particle_t & p )
   }
 
    
-  State_t&  state = p.State();
+  State_t&  state = p.state();
 
 
   // Yaw -------------------------------------
@@ -101,7 +103,7 @@ void processFrame( Frame const& frm,  Particle_t & p )
     // Coordinate transformation.
 
     State_t r        ( state[i_x]*e_1 + state[i_y]*e_2 );
-    State_t dummy    ( p.VectorBeta() );
+    State_t dummy    ( p.vectorBeta() );
     State_t beta     ( dummy[0]*e_1 + dummy[1]*e_2 + dummy[2]*e_3 );
   
     Component_t tau   = ( - r[2] / beta[2] );
@@ -154,7 +156,7 @@ void propagate( Slot const& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
   typedef typename PropagatorTraits<Particle_t>::Vector_t         Vector_t;
  
-  State_t& state = p.State();
+  State_t& state = p.state();
 
  //----------------------------------------
  // Transform to Input Frame 
@@ -173,7 +175,7 @@ void propagate( Slot const& elm, Particle_t& p )
   r[0] = state[i_x];
   r[1] = state[i_y];
 
-  Vector_t beta ( p.VectorBeta() );
+  Vector_t beta ( p.vectorBeta() );
 
   Vector q    = outframe.getOrigin();
   Vector u_1  = outframe.getAxis(0);
@@ -202,7 +204,7 @@ void propagate( Slot const& elm, Particle_t& p )
 
   // Momentum transformation
 
-  Vector_t momntm = ( p.NormalizedVectorMomentum() );
+  Vector_t momntm = ( p.normalizedVectorMomentum() );
 
   state[ i_npx ] = momntm*u_1;
   state[ i_npy ] = momntm*u_2;
@@ -215,30 +217,39 @@ void propagate( Slot const& elm, Particle_t& p )
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(  Slot const& elm,    Particle& p );
-template void propagate(  Slot const& elm, JetParticle& p );
-
-#endif
-
-
 } // anonymous namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::setup( bmlnElmnt& elm)
+Slot::Propagator::Propagator()
+  : BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+Slot::Propagator::Propagator(Slot const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Slot::Propagator::Propagator( Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Slot::Propagator::ctor( BmlnElmnt const& elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Slot::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate(static_cast<Slot const&>(elm),p);
 }
@@ -246,7 +257,7 @@ void Slot::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void Slot::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate(static_cast<Slot const&>(elm),p);
 }

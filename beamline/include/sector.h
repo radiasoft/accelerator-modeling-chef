@@ -51,7 +51,7 @@
 
 #include <vector>
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 
@@ -63,7 +63,7 @@ typedef boost::shared_ptr<sector>       SectorPtr;
 typedef boost::shared_ptr<sector const> ConstSectorPtr;
 
 
-class DLLEXPORT sector : public bmlnElmnt {
+class DLLEXPORT sector : public BmlnElmnt {
 
   class Propagator;
  
@@ -81,7 +81,7 @@ public:
 
   sector( sector const& );
 
-  sector* Clone() const { return new sector( *this ); }
+  sector* clone() const { return new sector( *this ); }
 
  ~sector();
 

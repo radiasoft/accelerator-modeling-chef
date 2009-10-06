@@ -32,23 +32,23 @@
 #include <beamline/ApertureDecorator.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  int const i_x   = Particle::i_x;
+  int const i_y   = Particle::i_y;
+  int const i_cdt = Particle::i_cdt;
+  int const i_npx = Particle::i_npx;
+  int const i_npy = Particle::i_npy;
+  int const i_ndp = Particle::i_ndp;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ApertureDecorator::ApertureDecorator( PropagatorPtr p )
-  : PropagatorDecorator(p), type_(bmlnElmnt::infinite), hor_(0.0), ver_(0.0)
+  : PropagatorDecorator(p), type_(BmlnElmnt::infinite), hor_(0.0), ver_(0.0)
 {}   
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -61,7 +61,7 @@ ApertureDecorator::ApertureDecorator( ApertureDecorator const& o)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-ApertureDecorator* ApertureDecorator::Clone() const
+ApertureDecorator* ApertureDecorator::clone() const
 { 
   return new ApertureDecorator(*this);
 }
@@ -87,9 +87,9 @@ bool  ApertureDecorator::lost ( double const& x, double const& y) const
 {
   switch ( type_ ) {
 
-    case bmlnElmnt::elliptical : return ( (x*x) + (y*y) > 1.0 );
+    case BmlnElmnt::elliptical : return ( (x*x) + (y*y) > 1.0 );
                                  break;
-    case bmlnElmnt::rectangular: return ( (abs(x) > 1.0) || (abs(y) > 1.0) );  
+    case BmlnElmnt::rectangular: return ( (abs(x) > 1.0) || (abs(y) > 1.0) );  
                                  break;
     default:                     return false;
                
@@ -99,7 +99,7 @@ bool  ApertureDecorator::lost ( double const& x, double const& y) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ApertureDecorator::setAperture( bmlnElmnt::aperture_t type, double const& hor, 
+void ApertureDecorator::setAperture( BmlnElmnt::aperture_t type, double const& hor, 
                                                                  double const& ver )
 {
   type_ = type;
@@ -110,9 +110,9 @@ void ApertureDecorator::setAperture( bmlnElmnt::aperture_t type, double const& h
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ApertureDecorator::operator()( bmlnElmnt const& elm,         Particle& p)
+void ApertureDecorator::operator()( BmlnElmnt const& elm,         Particle& p)
 {
-  Vector& state = p.State();
+  Vector& state = p.state();
   
   double xn = state[i_x]/hor_;
   double yn = state[i_y]/ver_;
@@ -141,10 +141,10 @@ void ApertureDecorator::operator()( bmlnElmnt const& elm,         Particle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ApertureDecorator::operator()( bmlnElmnt const& elm,      JetParticle& p)
+void ApertureDecorator::operator()( BmlnElmnt const& elm,      JetParticle& p)
 {
  
-  Mapping& state = p.State();
+  Mapping& state = p.state();
   
   double xn = state[i_x].standardPart()/hor_;
   double yn = state[i_y].standardPart()/ver_;

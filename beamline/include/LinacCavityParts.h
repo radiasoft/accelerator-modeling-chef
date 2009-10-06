@@ -40,7 +40,7 @@
 #ifndef LINACCAVITYPARTS_H
 #define LINACCAVITYPARTS_H
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
@@ -58,7 +58,7 @@ typedef boost::shared_ptr<LCavityDnstream  const>    ConstLCavityDnstreamPtr;
 
 //-------------------------------------------------------------------------------
 
-class LCavityUpstream: public bmlnElmnt {
+class LCavityUpstream: public BmlnElmnt {
 
   class Propagator;
 
@@ -73,7 +73,7 @@ public:
 
   LCavityUpstream( LCavityUpstream const& );
 
-  LCavityUpstream* Clone() const;
+  LCavityUpstream* clone() const;
  ~LCavityUpstream();
 
   LCavityUpstream& operator=(  LCavityUpstream const& rhs);
@@ -104,7 +104,7 @@ public:
 
 //-------------------------------------------------------------------------------
 
-class LCavityDnstream: public bmlnElmnt {
+class LCavityDnstream: public BmlnElmnt {
 
   class Propagator;
 
@@ -118,7 +118,7 @@ public:
 
   LCavityDnstream( LCavityDnstream const& );
 
-  LCavityDnstream* Clone() const;
+  LCavityDnstream* clone() const;
  ~LCavityDnstream();
 
   LCavityDnstream& operator=(  LCavityDnstream const& rhs);

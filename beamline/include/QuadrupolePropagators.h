@@ -27,7 +27,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******
 **************************************************************************
 *************************************************************************/
@@ -43,17 +43,18 @@ class quadrupole::Propagator: public BasePropagator {
 
  public:
 
-  Propagator ( int n): n_(n) {}
-  Propagator ( Propagator const& o ): BasePropagator(), n_(o.n_) {}
+  Propagator ( int n=4);
+  Propagator ( quadrupole const& elm, int n=4);
+  Propagator ( Propagator const& o );
 
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator* clone() const;
 
-  void  setup(bmlnElmnt& elm); 
+  void  ctor(BmlnElmnt const& elm); 
 
-  void  setAttribute(  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+  void  setAttribute(  BmlnElmnt& elm, std::string const& name, boost::any const& value ); 
  
-  void  operator()( bmlnElmnt const& elm,             Particle& p);
-  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
+  void  operator()( BmlnElmnt const& elm,             Particle& p);
+  void  operator()( BmlnElmnt const& elm,          JetParticle& p);
 
  private:
 
@@ -67,10 +68,14 @@ class thinQuad::Propagator: public BasePropagator {
 
 public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator ();
+  Propagator ( thinQuad const& elm);
+  Propagator ( Propagator const& o );
 
-  void  operator()( bmlnElmnt const& elm,              Particle& p);
-  void  operator()( bmlnElmnt const& elm,           JetParticle& p);
+  Propagator* clone() const { return new Propagator(*this); }
+
+  void  operator()( BmlnElmnt const& elm,              Particle& p);
+  void  operator()( BmlnElmnt const& elm,           JetParticle& p);
 
 };
 
@@ -80,14 +85,18 @@ class quadrupole::MADPropagator: public BasePropagator {
 
  public:
 
-  MADPropagator* Clone() const { return new MADPropagator(*this); }
+  MADPropagator ();
+  MADPropagator ( quadrupole const& elm);
+  MADPropagator ( MADPropagator const& o );
 
-  void  setup(bmlnElmnt& elm); 
+  MADPropagator* clone() const { return new MADPropagator(*this); }
 
-  void  setAttribute(  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+  void  ctor(BmlnElmnt const& elm); 
+
+  void  setAttribute(  BmlnElmnt& elm, std::string const& name, boost::any const& value ); 
  
-  void  operator()( bmlnElmnt const& elm,             Particle& p);
-  void  operator()( bmlnElmnt const& elm,          JetParticle& p);
+  void  operator()( BmlnElmnt const& elm,             Particle& p);
+  void  operator()( BmlnElmnt const& elm,          JetParticle& p);
 
 };
 

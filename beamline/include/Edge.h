@@ -37,7 +37,7 @@
 #define EDGE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -47,7 +47,7 @@ class Edge;
 typedef boost::shared_ptr<Edge>              EdgePtr; 
 typedef boost::shared_ptr<Edge const>   ConstEdgePtr; 
 
-class DLLEXPORT Edge : public bmlnElmnt {
+class DLLEXPORT Edge : public BmlnElmnt {
 
   class Propagator;  
 
@@ -57,7 +57,7 @@ public:
   Edge( std::string const& name, double const& strength );    
   Edge( Edge const& );
 
-  Edge* Clone() const;
+  Edge* clone() const;
 
  ~Edge();
 

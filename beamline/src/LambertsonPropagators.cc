@@ -119,23 +119,12 @@ void propagate( thinLamb const& elm, ParticleBunch& p)
   *******************/
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( thinLamb const& elm,    Particle& p );
-template void propagate( thinLamb const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
-
 } // anonymous namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( bmlnElmnt const& elm,    Particle& p ) 
+void thinLamb::Propagator::operator()( BmlnElmnt const& elm,    Particle& p ) 
 { 
   ::propagate(static_cast<thinLamb const&>(elm),p);
 }
@@ -143,7 +132,7 @@ void thinLamb::Propagator::operator()( bmlnElmnt const& elm,    Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p ) 
+void thinLamb::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p ) 
 { 
   ::propagate(static_cast<thinLamb const&>(elm),p);
 }
@@ -151,7 +140,7 @@ void thinLamb::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( bmlnElmnt const& elm,  ParticleBunch& b ) 
+void thinLamb::Propagator::operator()( BmlnElmnt const& elm,  ParticleBunch& b ) 
 { 
   ::propagate(static_cast<thinLamb const&>(elm),b);
 }
@@ -159,7 +148,7 @@ void thinLamb::Propagator::operator()( bmlnElmnt const& elm,  ParticleBunch& b )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinLamb::Propagator::operator()( bmlnElmnt const& elm,  JetParticleBunch& b ) 
+void thinLamb::Propagator::operator()( BmlnElmnt const& elm,  JetParticleBunch& b ) 
 { 
   ::propagate(static_cast<thinLamb const&>(elm),b);
 }

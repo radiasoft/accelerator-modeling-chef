@@ -53,7 +53,7 @@
 #ifndef RFCAVITY_H
 #define RFCAVITY_H
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <basic_toolkit/MathConstants.h>
 
 class BmlVisitor;
@@ -70,7 +70,7 @@ typedef boost::shared_ptr<thinrfcavity>            ThinRFCavityPtr;
 typedef boost::shared_ptr<thinrfcavity const> ConstThinRFCavityPtr;
 
 
-class rfcavity : public bmlnElmnt {
+class rfcavity : public BmlnElmnt {
 
  class Propagator;
      
@@ -87,7 +87,7 @@ public:
           );
   rfcavity( rfcavity const& );
 
-  rfcavity* Clone() const { return new rfcavity( *this ); }
+  rfcavity* clone() const { return new rfcavity( *this ); }
  ~rfcavity();
 
   rfcavity& operator=( rfcavity const& rhs);
@@ -103,8 +103,6 @@ public:
   bool    isPassive()    const;
   bool    isDriftSpace() const;
  
-  double getReferenceTime()           const;
-
   double const&  phi()                const;
   double const&  frequency()          const;
   double const&  Q()                  const;
@@ -148,7 +146,7 @@ private:
 //---------------------------------------------------------------------------------------
 
 
-class thinrfcavity : public bmlnElmnt {
+class thinrfcavity : public BmlnElmnt {
 
   class Propagator;
 
@@ -163,7 +161,7 @@ public:
                 double const&    // R shunt impedance
                 );
   thinrfcavity( thinrfcavity const& );
-  thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
+  thinrfcavity* clone() const { return new thinrfcavity( *this ); }
 
  ~thinrfcavity();
 

@@ -26,7 +26,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -44,10 +44,14 @@ class thinDecapole::Propagator: public BasePropagator {
 
 public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator();
+  Propagator(thinDecapole const& elm);
+  Propagator(Propagator const& p);
+
+  Propagator* clone() const { return new Propagator(*this); }
   
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
 
 };
 

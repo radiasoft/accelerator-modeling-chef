@@ -52,25 +52,25 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 template<typename Particle_t>
-void propagate( CF_rbend const& elm, Particle_t&  p)
+void propagate( CF_rbend const& elm, Particle_t&  p, BmlPtr bml)
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   Component_t cdt_in = state[i_cdt];
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
   for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
@@ -79,27 +79,39 @@ void propagate( CF_rbend const& elm, Particle_t&  p)
   state[i_cdt] -= elm.getReferenceTime(); 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( CF_rbend& elm,    Particle& p );
-template void propagate( CF_rbend& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
-
 } // namespace
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::setup( bmlnElmnt& arg ) 
+CF_rbend::Propagator::Propagator ( int n)
+   : n_(n), BasePropagator()
+ {}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CF_rbend::Propagator::Propagator ( CF_rbend const& elm, int n)
+   : n_(n), BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+CF_rbend::Propagator::Propagator ( Propagator const& p)
+   : n_(p.n_), BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_rbend::Propagator::ctor( BmlnElmnt const& arg ) 
 {
 
-  CF_rbend& elm = static_cast<CF_rbend&>(arg);
+  CF_rbend const& elm = static_cast<CF_rbend const&>(arg);
 
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
@@ -129,7 +141,6 @@ void CF_rbend::Propagator::setup( bmlnElmnt& arg )
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
 
-  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(elm);
   bml_ = BmlPtr( new beamline("CF_RBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {
@@ -167,25 +178,25 @@ void CF_rbend::Propagator::setup( bmlnElmnt& arg )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  CF_rbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  CF_rbend::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+ ctor(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
+void CF_rbend::Propagator::operator()( BmlnElmnt const& elm, Particle& p )
 { 
-  ::propagate( static_cast<CF_rbend const&>(elm), p);
+  ::propagate( static_cast<CF_rbend const&>(elm), p, bml_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+void CF_rbend::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p )
 { 
-  ::propagate(  static_cast<CF_rbend const&>(elm), p);
+  ::propagate(  static_cast<CF_rbend const&>(elm), p, bml_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

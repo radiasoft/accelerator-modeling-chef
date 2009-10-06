@@ -37,7 +37,7 @@
 ******
 ****** - refactored. Eliminated complex virtual inheritance scheme.
 ******   and all references to functors defined as nested classes in
-******   bmlnElmnt and beamline classes.
+******   BmlnElmnt and beamline classes.
 ******
 **************************************************************************
 *************************************************************************/
@@ -46,7 +46,7 @@
 #define BMLEXPTREE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <boost/function.hpp>
 #include <ostream>
 
@@ -58,7 +58,7 @@ public:
   virtual  BoolNode* Clone()                 const = 0;
   virtual ~BoolNode() {}
 
-  virtual  bool evaluate( bmlnElmnt const& ) const = 0;
+  virtual  bool evaluate( BmlnElmnt const& ) const = 0;
   virtual  void writeTo( std::ostream& )     const = 0;
   virtual  bool isNull()                     const { return false;               }
 };
@@ -70,7 +70,7 @@ public:
   BoolNullNode() {}
  ~BoolNullNode() {}
 
-  bool evaluate( bmlnElmnt const& ) const { return false;              }
+  bool evaluate( BmlnElmnt const& ) const { return false;              }
   void writeTo( std::ostream& )     const {}
   BoolNode* Clone()                 const { return new BoolNullNode(); } 
   bool isNull()                     const { return true;               }
@@ -82,15 +82,15 @@ class DLLEXPORT BoolEndNode : public BoolNode {
 
 public: 
 
-  BoolEndNode( boost::function<bool( bmlnElmnt const& )>  discriminator );
+  BoolEndNode( boost::function<bool( BmlnElmnt const& )>  discriminator );
   BoolEndNode( BoolEndNode const& );
 
-  bool evaluate( bmlnElmnt const& ) const;
+  bool evaluate( BmlnElmnt const& ) const;
 
 protected:
 
   BoolEndNode& operator=( BoolEndNode const& x );
-  boost::function<bool( bmlnElmnt const& )> discriminator_;
+  boost::function<bool( BmlnElmnt const& )> discriminator_;
 
 };
 
@@ -119,7 +119,7 @@ class DLLEXPORT AndNode : public BoolOpNode {
   ~AndNode();
    AndNode* Clone()                    const { return new AndNode( *this ); }
 
-   bool evaluate( bmlnElmnt const& )   const;
+   bool evaluate( BmlnElmnt const& )   const;
    void writeTo( std::ostream& os )    const;
 };
 
@@ -131,7 +131,7 @@ class DLLEXPORT OrNode : public BoolOpNode {
    ~OrNode();
    OrNode* Clone()                    const { return new OrNode( *this ); }
 
-   bool evaluate( bmlnElmnt const& )  const;
+   bool evaluate( BmlnElmnt const& )  const;
    void writeTo( std::ostream& os )   const;
 };
 
@@ -145,7 +145,7 @@ class DLLEXPORT NotNode : public BoolOpNode {
   ~NotNode();
    NotNode* Clone()                    const { return new NotNode( *this ); }
 
-   bool evaluate( bmlnElmnt const& )   const;
+   bool evaluate( BmlnElmnt const& )   const;
    void writeTo( std::ostream& os )    const;
 };
 
@@ -262,7 +262,7 @@ public:
 
  TypeIs( const char* x );
 
- bool operator()( bmlnElmnt const& x ) const;
+ bool operator()( BmlnElmnt const& x ) const;
  void writeTo( std::ostream& os )            const;
 
 private:
@@ -277,7 +277,7 @@ class NameIs {
 
   NameIs( const char* x );
 
-  bool operator()( bmlnElmnt const& x ) const;
+  bool operator()( BmlnElmnt const& x ) const;
   void writeTo( std::ostream& os )      const;
 
  private:
@@ -290,7 +290,7 @@ class LengthIs {
 
  public:
    LengthIs( double l );
-   bool operator()( bmlnElmnt const& x ) const;
+   bool operator()( BmlnElmnt const& x ) const;
    void writeTo( std::ostream& os )           const;
 
  private:
@@ -303,7 +303,7 @@ class LengthLess {
 
  public: 
   LengthLess( double l );
-  bool operator()( bmlnElmnt const& x ) const;
+  bool operator()( BmlnElmnt const& x ) const;
   void writeTo( std::ostream& os )           const;
 
  private:
@@ -316,7 +316,7 @@ class LengthMore {
 
  public:
    LengthMore( double l );
-   bool operator()( bmlnElmnt const& x )   const;
+   bool operator()( BmlnElmnt const& x )   const;
    void writeTo( std::ostream& os )             const;
 
  private:
@@ -328,7 +328,7 @@ class StrengthIs {
 
  public:
    StrengthIs( double s );
-   bool operator()( bmlnElmnt const& x ) const;
+   bool operator()( BmlnElmnt const& x ) const;
    void writeTo( std::ostream& os )           const;
  
  private:
@@ -342,7 +342,7 @@ class StrengthLess {
 
  public:
    StrengthLess( double s );
-   bool operator()(bmlnElmnt const& x ) const;
+   bool operator()(BmlnElmnt const& x ) const;
  
  private:
 
@@ -354,7 +354,7 @@ class StrengthMore {
 
  public:
    StrengthMore( double s );
-   bool operator()( bmlnElmnt const& x ) const;
+   bool operator()( BmlnElmnt const& x ) const;
  
  private:
 

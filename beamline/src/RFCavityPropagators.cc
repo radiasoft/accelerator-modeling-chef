@@ -22,7 +22,7 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Authors:   Jean-Francois Ostiguy  ostiguy@fnal.gov
-******             Leo Michelotti         michelotti@fnal.gov                                    
+******             Leo Michelotti         michelotti@fnal.gov
 ******             
 ****** REVISION HISTORY:
 ******
@@ -42,7 +42,7 @@
 #include <beamline/RFCavityPropagators.h>
 #include <beamline/beamline.h>
 #include <beamline/rfcavity.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 
 using namespace PhysicsConstants;
 using FNAL::pcerr;
@@ -50,12 +50,14 @@ using FNAL::pcout;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 
@@ -67,17 +69,17 @@ void propagate( thinrfcavity const& elm, Particle_t&  p)
 
   if( elm.Strength() == 0.0 ) return;
 
-  double const m       = p.Mass();
+  double const m       = p.mass();
   double const phi_s   = elm.phi(); 
   double const wrf     = elm.frequency()*2.0*M_PI; 
 
-  State_t& state = p.State(); 
+  State_t& state = p.state(); 
   
-  Component_t E = p.Energy() + elm.Strength()*sin( phi_s + state[i_cdt] * wrf / PH_MKS_c );
+  Component_t E = p.energy() + elm.Strength()*sin( phi_s + state[i_cdt] * wrf / PH_MKS_c );
 
-  double oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + elm.Strength()*sin(phi_s) );
-  double newRefP = p.ReferenceMomentum();
+  double oldRefP = p.refMomentum();
+  p.setRefEnergy( p.refEnergy() + elm.Strength()*sin(phi_s) );
+  double newRefP = p.refMomentum();
 
   state[i_npx] *= ( oldRefP / newRefP );
   state[i_npy] *= ( oldRefP / newRefP );
@@ -90,86 +92,124 @@ void propagate( thinrfcavity const& elm, Particle_t&  p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( rfcavity const& elm, Particle_t&  p)
+void propagate( rfcavity const& elm, Particle_t&  p, BmlPtr bml)
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  State_t& state = p.state();
 
   for ( beamline::const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(         rfcavity const& elm,    Particle& p );
-template void propagate(         rfcavity const& elm, JetParticle& p );
-template void propagate(     thinrfcavity const& elm,    Particle& p );
-template void propagate(     thinrfcavity const& elm, JetParticle& p );
-
-#endif
-
-
 } // namespace
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::Propagator::setup( bmlnElmnt& elm)
-{
-
-  rfcavity& cav = static_cast<rfcavity&>(elm);
-
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
-
-  bml = BmlPtr(new beamline(""));
-  bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
-  bml->append( ElmPtr(new thinrfcavity( "", cav.frequency(), cav.Strength()*1.0e-9, cav.phi(), cav.Q(), cav.R() )));
-  bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  rfcavity::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
-{ 
-  setup(elm);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
-{
-  ::propagate(static_cast<rfcavity const&>(elm), p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void rfcavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
-{
-  ::propagate(static_cast<rfcavity const&>(elm), p);
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void thinrfcavity::Propagator::setup( bmlnElmnt& elm)
+rfcavity::Propagator::Propagator()
+  : BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
+rfcavity::Propagator::Propagator(rfcavity const& elm)
+  : BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+rfcavity::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::Propagator::ctor( BmlnElmnt const& elm)
+{
+
+  rfcavity const& cav = static_cast<rfcavity const&>(elm);
+
+
+  bml_ = BmlPtr(new beamline(""));
+  bml_->append( ElmPtr(new Drift( "", elm.Length()/2.0 ) ) );
+  bml_->append( ElmPtr(new thinrfcavity( "", cav.frequency(), cav.Strength()*1.0e-9, cav.phi(), cav.Q(), cav.R() )));
+  bml_->append( ElmPtr(new Drift( "", elm.Length()/2.0 ) ) );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double rfcavity::Propagator::getReferenceTime() const 
+{
+  double value = 0;
+
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    value += (*it)->getReferenceTime();
+  }
+
+  return value;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  rfcavity::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
+{ 
+  ctor(elm);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::Propagator::operator()( BmlnElmnt const& elm, Particle& p)
+{
+  ::propagate(static_cast<rfcavity const&>(elm), p, bml_);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void rfcavity::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p)
+{
+  ::propagate(static_cast<rfcavity const&>(elm), p, bml_);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinrfcavity::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinrfcavity::Propagator::Propagator(thinrfcavity const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinrfcavity::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::Propagator::ctor( BmlnElmnt const& elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::Propagator::operator()( BmlnElmnt const& elm, Particle& p)
 {
   ::propagate(static_cast<thinrfcavity const&>(elm), p);
 }
@@ -177,12 +217,11 @@ void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thinrfcavity::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
+void thinrfcavity::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p)
 {
   ::propagate(static_cast<thinrfcavity const&>(elm), p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 

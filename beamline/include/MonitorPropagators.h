@@ -27,7 +27,7 @@
 ****** 
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******                                                                
 **************************************************************************
 *************************************************************************/
@@ -51,14 +51,18 @@ class HMonitor::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+  Propagator();
+  Propagator(HMonitor const& elm);
+  Propagator(Propagator const& p);
 
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
-  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
-  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,       ParticleBunch& p);
+  void  operator()(  BmlnElmnt const& elm,    JetParticleBunch& p);
 
 };
 
@@ -66,14 +70,18 @@ class VMonitor::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+  Propagator();
+  Propagator(VMonitor const& elm);
+  Propagator(Propagator const& p);
 
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
-  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
-  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,       ParticleBunch& p);
+  void  operator()(  BmlnElmnt const& elm,    JetParticleBunch& p);
 
 };
 
@@ -82,14 +90,18 @@ class Monitor::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+  Propagator();
+  Propagator(Monitor const& elm);
+  Propagator(Propagator const& p);
 
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
-  void  operator()(  bmlnElmnt const& elm,       ParticleBunch& p);
-  void  operator()(  bmlnElmnt const& elm,    JetParticleBunch& p);
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,       ParticleBunch& p);
+  void  operator()(  BmlnElmnt const& elm,    JetParticleBunch& p);
 
 };
 

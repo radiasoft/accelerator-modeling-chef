@@ -52,7 +52,7 @@ using FNAL::pcout;
 Bend::Bend( const char* n, double const& l, double const& s, double const& alpha, 
                            double const& usAngle,     double const& dsAngle, 
                            double const& usFaceAngle, double const& dsFaceAngle, Bend::BendType bend_type) 
-  : bmlnElmnt( n, l, s ),
+  : BmlnElmnt( n, l, s ),
     angle_(alpha),
     usAngle_(usAngle),
     dsAngle_(dsAngle),
@@ -60,8 +60,7 @@ Bend::Bend( const char* n, double const& l, double const& s, double const& alpha
     dsFaceAngle_(dsFaceAngle),
     type_(bend_type)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -69,7 +68,7 @@ Bend::Bend( const char* n, double const& l, double const& s, double const& alpha
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Bend::Bend( Bend const& x )
-:   bmlnElmnt( x ),      
+:   BmlnElmnt( x ),      
       angle_(x.angle_),
     usAngle_(x.usAngle_),
     dsAngle_(x.dsAngle_),
@@ -77,7 +76,7 @@ usFaceAngle_(x.usFaceAngle_),
 dsFaceAngle_(x.dsFaceAngle_),
        type_(x.type_)
 {
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 
@@ -94,7 +93,7 @@ Bend& Bend::operator=(Bend const& rhs)
 {
   if (this == &rhs) return *this;
 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
   angle_       = rhs.angle_;
   usAngle_     = rhs.usAngle_;
   dsAngle_     = rhs.dsAngle_;

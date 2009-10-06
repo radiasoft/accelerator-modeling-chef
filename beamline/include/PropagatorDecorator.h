@@ -43,24 +43,24 @@ public:
   PropagatorDecorator( PropagatorDecorator const& o);   
  ~PropagatorDecorator();
 
-  PropagatorDecorator* Clone() const;
+  PropagatorDecorator* clone() const;
 
-  void  setup( bmlnElmnt& );
+  void  ctor ( BmlnElmnt const& );
  
-  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value );
+  void  setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value );
 
-  void  operator()(  bmlnElmnt const& elm,         Particle& p);
-  void  operator()(  bmlnElmnt const& elm,      JetParticle& p); 
-  void  operator()(  bmlnElmnt const& elm,    ParticleBunch& b);  
-  void  operator()(  bmlnElmnt const& elm, JetParticleBunch& b);  
+  void  operator()(  BmlnElmnt const& elm,         Particle& p);
+  void  operator()(  BmlnElmnt const& elm,      JetParticle& p); 
+  void  operator()(  BmlnElmnt const& elm,    ParticleBunch& b);  
+  void  operator()(  BmlnElmnt const& elm, JetParticleBunch& b);  
 
   bool hasAlignment() const;
   bool hasAperture()  const;
 
   void  setAlignment( Vector const& translation, Vector const& rotation);
-  void   setAperture( bmlnElmnt::aperture_t type, double const& hor, double const& ver );
+  void   setAperture( BmlnElmnt::aperture_t type, double const& hor, double const& ver );
 
-  boost::tuple<bmlnElmnt::aperture_t, double, double>  aperture()   const; 
+  boost::tuple<BmlnElmnt::aperture_t, double, double>  aperture()   const; 
   boost::tuple<Vector,Vector>                         alignment()   const; 
 
  protected:

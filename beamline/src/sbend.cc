@@ -83,15 +83,14 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend() 
-  : bmlnElmnt( "", 0.0, 0.0),
+  : BmlnElmnt( "", 0.0, 0.0),
         angle_(0.0),
   usFaceAngle_(0.0),
   dsFaceAngle_(0.0),
       usAngle_(0.0),
       dsAngle_(0.0)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -100,7 +99,7 @@ sbend::sbend()
 
 
 sbend::sbend( std::string const& n, double const& l, double const& s, double const& alpha ) 
-  : bmlnElmnt( n, l, s ),
+  : BmlnElmnt( n, l, s ),
           angle_(alpha),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
@@ -129,8 +128,7 @@ sbend::sbend( std::string const& n, double const& l, double const& s, double con
    angle_ = - angle_;
  }
 
-  propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+ propagator_ =  PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -140,7 +138,7 @@ sbend::sbend( std::string const& n, double const& l, double const& s, double con
 
 sbend::sbend( std::string const& n, double const& l, double const& s, double const& alpha, 
               double const& usfaceangle, double const& dsfaceangle )
-  :    bmlnElmnt( n, l, s),
+  :    BmlnElmnt( n, l, s),
              angle_(alpha),
        usFaceAngle_( usfaceangle ),
        dsFaceAngle_( dsfaceangle ),
@@ -210,8 +208,7 @@ sbend::sbend( std::string const& n, double const& l, double const& s, double con
    }
  }
 
-  propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+ propagator_ =  PropagatorPtr( new Propagator(*this) );
 
 }
 
@@ -219,14 +216,14 @@ sbend::sbend( std::string const& n, double const& l, double const& s, double con
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 sbend::sbend( sbend const& x )
-  :  bmlnElmnt( x ),
+  :  BmlnElmnt( x ),
         angle_(x.angle_),
   usFaceAngle_(x.usFaceAngle_),
   dsFaceAngle_(x.dsFaceAngle_),
       usAngle_(x.usAngle_),
       dsAngle_(x.dsAngle_)
 {
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -240,7 +237,7 @@ sbend::~sbend()
 
 double sbend::setEntryAngle( Particle const& p )
 {
-  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -249,7 +246,7 @@ double sbend::setEntryAngle( Particle const& p )
 
 double sbend::setExitAngle( Particle const& p )
 {
-  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -260,7 +257,7 @@ double sbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret  = usAngle_;
   usAngle_    = phi;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -271,7 +268,7 @@ double sbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
   dsAngle_   = phi;  
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -486,7 +483,7 @@ double sbend::getExitFaceAngle() const
 void sbend::propagateReference( Particle& p, double initialBRho, bool scaling) 
 {
    setEntryAngle( p );
-   bmlnElmnt::propagateReference( p, initialBRho, scaling);
+   BmlnElmnt::propagateReference( p, initialBRho, scaling);
    setExitAngle( p );
 } 
 

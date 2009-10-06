@@ -32,10 +32,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-class bmlnElmnt;
+class BmlnElmnt;
 
-typedef boost::shared_ptr<bmlnElmnt>             ElmPtr;
-typedef boost::shared_ptr<bmlnElmnt const>  ConstElmPtr;
+typedef boost::shared_ptr<BmlnElmnt>             ElmPtr;
+typedef boost::shared_ptr<BmlnElmnt const>  ConstElmPtr;
 
 
 #endif //  ELMPTR_H

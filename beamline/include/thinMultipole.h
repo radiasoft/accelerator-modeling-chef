@@ -36,7 +36,7 @@
 #define THINMULTIPOLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <map>
 
 class BmlVisitor;
@@ -47,7 +47,7 @@ class thinMultipole;
 typedef boost::shared_ptr<thinMultipole>            ThinMultipolePtr;
 typedef boost::shared_ptr<thinMultipole const> ConstThinMultipolePtr;
 
-class DLLEXPORT thinMultipole : public bmlnElmnt {
+class DLLEXPORT thinMultipole : public BmlnElmnt {
 
   class Propagator;
  
@@ -59,7 +59,7 @@ public:
   thinMultipole( std::string const& name ); 
   thinMultipole( thinMultipole const& );
 
-  thinMultipole* Clone() const { return new thinMultipole( *this ); }
+  thinMultipole* clone() const { return new thinMultipole( *this ); }
 
  ~thinMultipole();
 

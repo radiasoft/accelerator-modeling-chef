@@ -43,10 +43,10 @@ public:
   AlignmentDecorator( AlignmentDecorator const& o );   
  ~AlignmentDecorator();
 
-  AlignmentDecorator* Clone() const;
+  AlignmentDecorator* clone() const;
 
-  void  operator()(  bmlnElmnt const& elm,         Particle& p);
-  void  operator()(  bmlnElmnt const& elm,      JetParticle& p); 
+  void  operator()(  BmlnElmnt const& elm,         Particle& p);
+  void  operator()(  BmlnElmnt const& elm,      JetParticle& p); 
 
   bool hasAlignment() const; 
   void setAlignment( Vector const& offset, Vector const& angles, bool relative=false);

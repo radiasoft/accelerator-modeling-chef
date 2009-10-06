@@ -38,27 +38,7 @@ template <typename Particle_t>
 class TBunch;
 typedef TBunch<Particle> ParticleBunch;
 
-
-//----------------------------------------------------------------------------------
-// Workaround for g++ < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
 #include <beamline/Particle.h>
-
-struct  LWakeOrder {
-  typedef  Particle const& first_argument_type;
-  typedef  Particle const& second_argument_type;
-  typedef  bool     result_type;
-
-  bool operator()( Particle const&  lhs,  Particle const&  rhs ) const
-   { 
-     return  ( lhs.get_cdt() < rhs.get_cdt() );  
-   }
-};
-#endif
-
-// -----------------------------------------------------------------------------------
 
 class BunchProjector {
 

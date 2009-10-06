@@ -40,7 +40,7 @@
 ******
 ******  Major revision 
 ****** 
-******  - use covariant return types for Clone()
+******  - use covariant return types for clone()
 ******  - eliminated ConvertToXXX() type conversion functions; 
 ******    use explicit mixed type constructors instead.
 ******  - take max advantage of constructor member initialization (useful 
@@ -95,9 +95,9 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
       q_(charge),   
       m_(mass), 
       p_(momentum ), 
-  gamma_(ReferenceEnergy()/m_), 
+  gamma_(refEnergy()/m_), 
    beta_( sqrt( 1.0 - 1.0 / (gamma_*gamma_)) ), 
-   bRho_(  p_/ ( q_/PH_MKS_e* PH_CNV_brho_to_p ) ), 
+   brho_(  p_/ ( q_/PH_MKS_e* PH_CNV_brho_to_p ) ), 
   state_(PSD)
 
 
@@ -107,7 +107,7 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
  if( momentum < 0.0 ) {
   ostringstream uic;
   uic  << "Momentum, " << momentum << " GeV, is <= 0.0";
-  uic  << "Energy, " << ReferenceEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
+  uic  << "Energy, " << refEnergy() << " GeV, is less than mass, " << m_ << " GeV.";
   throw(  GenericException( __FILE__, __LINE__, 
          "Particle::Particle( double, double )", 
           uic.str().c_str() ) );
@@ -125,9 +125,9 @@ Particle::Particle( double const& mass, double const& charge, double const& mome
       q_(charge),   
       m_(mass), 
       p_( momentum ), 
-  gamma_( ReferenceEnergy()/m_ ), 
+  gamma_( refEnergy()/m_ ), 
    beta_( sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) )), 
-   bRho_( p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p )), 
+   brho_( p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p )), 
   state_(PSD)
 
 {
@@ -156,7 +156,7 @@ Particle::Particle( Particle const& u )
       p_(u.p_), 
   gamma_(u.gamma_), 
    beta_(u.beta_), 
-   bRho_(u.bRho_), 
+   brho_(u.brho_), 
   state_(u.state_)
 { }
 
@@ -172,7 +172,7 @@ Particle::Particle( JetParticle const& u )
      p_(u.p_), 
  gamma_(u.gamma_), 
   beta_(u.beta_), 
-  bRho_(u.bRho_)
+  brho_(u.brho_)
 {
   state_ = u.state_.standardPart();
 
@@ -181,7 +181,7 @@ Particle::Particle( JetParticle const& u )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Particle* Particle::Clone( void* p) const  
+Particle* Particle::clone( void* p) const  
 { 
    return p ? new (p) Particle(*this) : new Particle(*this); 
 }
@@ -212,7 +212,7 @@ Particle& Particle::operator=( Particle const& p )
   q_     = p.q_;
   p_     = p.p_;
   m_     = p.m_;
-  bRho_  = p.bRho_;
+  brho_  = p.brho_;
   beta_  = p.beta_;
   gamma_ = p.gamma_;
   state_ = p.state_;  
@@ -231,32 +231,32 @@ void Particle::setStateToZero() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Particle::SetReferenceEnergy( double const& energy ) 
+void Particle::setRefEnergy( double const& energy ) 
 {
 
   if( energy < m_ ) {
     ostringstream uic;
     uic  << "Energy, " << energy << " GeV, is less than mass, " << m_ << " GeV.";
     throw( GenericException( __FILE__, __LINE__, 
-         "void Particle::SetReferenceEnergy( double )", 
+         "void Particle::setRefEnergy( double )", 
          uic.str().c_str() ) );
   }
 
  gamma_ = energy / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
  p_     = energy * beta_;
- bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
+ brho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Particle::SetReferenceMomentum( double const& p ) 
+void Particle::setRefMomentum( double const& p ) 
 {
 
  p_     = p;
- bRho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
- gamma_ = ReferenceEnergy() / m_;
+ brho_  = p_ / ( q_/PH_MKS_e * PH_CNV_brho_to_p );
+ gamma_ = refEnergy() / m_;
  beta_  = sqrt( 1.0 - 1.0 / ( gamma_*gamma_ ) );
 }
 
@@ -264,21 +264,21 @@ void Particle::SetReferenceMomentum( double const& p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector Particle::VectorBeta() const
+Vector Particle::vectorBeta() const
 {
- return VectorMomentum()/Energy();
+ return vectorMomentum()/energy();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector Particle::VectorMomentum() const
+Vector Particle::vectorMomentum() const
 {
- Vector ret(3);
+  Vector ret = normalizedVectorMomentum();
 
- ret[0] = p_ * state_[3];
- ret[1] = p_ * state_[4];
- ret[2] = p_ * get_npz();
+  ret[0] *= p_; 
+  ret[1] *= p_; 
+  ret[2] *= p_; 
 
  return ret;
 }
@@ -286,14 +286,14 @@ Vector Particle::VectorMomentum() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Vector Particle::NormalizedVectorMomentum() const
+Vector Particle::normalizedVectorMomentum() const
 {
 
  Vector ret(3);
 
- ret[0] = state_[3];
- ret[1] = state_[4];
- ret[2] = get_npz();
+ ret[0] = state_[i_npx];
+ ret[1] = state_[i_npy];
+ ret[2] = npz();
 
  return ret;
 
@@ -357,7 +357,7 @@ Proton::Proton( JetProton const &p )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Proton*           Proton::Clone(void* p)  const 
+Proton*           Proton::clone(void* p)  const 
 { 
   return p ? new(p) Proton( *this )     : new Proton(*this );     
 }
@@ -428,7 +428,7 @@ AntiProton::AntiProton( JetAntiProton const& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiProton*   AntiProton::Clone(void* p)    const 
+AntiProton*   AntiProton::clone(void* p)    const 
 { 
   return p ? new(p) AntiProton( *this ) : new AntiProton(*this);  
 }
@@ -498,7 +498,7 @@ Electron::Electron( JetElectron const& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Electron*       Electron::Clone(void* p)    const 
+Electron*       Electron::clone(void* p)    const 
 { 
   return p ? new(p) Electron( *this )   : new Electron( *this );  
 }
@@ -563,7 +563,7 @@ Positron::Positron( JetPositron const& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Positron*       Positron::Clone(void* p)    const 
+Positron*       Positron::clone(void* p)    const 
 { 
    return p ? new(p) Positron( *this ) : new Positron(*this) ;   
 }
@@ -626,7 +626,7 @@ Muon::Muon(JetMuon const& p): Particle(p) {}
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-Muon*  Muon::Clone(void* p)  const 
+Muon*  Muon::clone(void* p)  const 
 { 
   return p ? new(p) Muon( *this ) : new Muon( *this );      
 }
@@ -691,7 +691,7 @@ AntiMuon::AntiMuon( JetAntiMuon const & p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-AntiMuon* AntiMuon::Clone(void* p) const 
+AntiMuon* AntiMuon::clone(void* p) const 
 { 
   return p ? new(p) AntiMuon( *this )   : new AntiMuon( *this );  
 }

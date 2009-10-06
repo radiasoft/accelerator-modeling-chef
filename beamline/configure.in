@@ -42,10 +42,10 @@ AC_ARG_ENABLE([implicit-templates],
        [TEMPLATEFLAGS=""],
        [LOCALDEFS="-DBASICTOOLKIT_EXPLICIT_TEMPLATES -DMXYZPTLK_EXPLICIT_TEMPLATES -DBEAMLINE_EXPLICIT_TEMPLATES ${LOCALDEFS}";TEMPLATEFLAGS="-fno-implicit-templates"] ) 
 
-if test "x${val_debugging}" = "xyes"; then
+if test "x${enable_debugging}" = "xyes"; then
    OPTFLAGS="-pipe -g3 -O0"
 else
-   OPTFLAGS="-pipe -g -O3 -mtune=pentium4"
+   OPTFLAGS="-pipe -g -O3 -mtune=pentium4 --param max-inline-insns-auto=0"
 fi
 
 # Checks for header files.
@@ -86,7 +86,7 @@ fi
 if test ${BOOST_INC}; then BOOST_INC="-I${BOOST_INC}"; fi
 #-------------------------------------------------------------------------
 
-AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "x${val_implicit_templates}" = "xyes")
+AM_CONDITIONAL(IMPLICIT_TEMPLATES, test "x${enable_implicit_templates}" = "xyes")
 
 AC_SUBST(OPTFLAGS)
 AC_SUBST(TEMPLATEFLAGS)

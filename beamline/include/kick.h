@@ -51,7 +51,7 @@
 #define KICK_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -69,7 +69,7 @@ typedef boost::shared_ptr<kick>        KickPtr;
 typedef boost::shared_ptr<kick const>  ConstKickPtr;
 
 
-class DLLEXPORT hkick : public bmlnElmnt {
+class DLLEXPORT hkick : public BmlnElmnt {
 
   class Propagator;
 
@@ -82,7 +82,7 @@ public:
   hkick( std::string const& name,  double const& length, double const& kick);     // kick size in radians
   hkick( hkick const& );
 
-  hkick* Clone() const { return new hkick( *this ); }
+  hkick* clone() const { return new hkick( *this ); }
 
   hkick& operator=( hkick const& rhs);
 
@@ -104,7 +104,7 @@ public:
 
 
 
-class DLLEXPORT vkick : public bmlnElmnt {
+class DLLEXPORT vkick : public BmlnElmnt {
 
   class Propagator;
 
@@ -116,7 +116,7 @@ public:
   vkick( std::string const&,double const& length, double const& kick );       // kick size in radians
   vkick( vkick const& );
 
-  vkick* Clone() const { return new vkick( *this ); }
+  vkick* clone() const { return new vkick( *this ); }
 
   vkick& operator=( vkick const& rhs);
 
@@ -136,7 +136,7 @@ public:
 };
 
 
-class DLLEXPORT kick : public bmlnElmnt {
+class DLLEXPORT kick : public BmlnElmnt {
 
   class Propagator;
 
@@ -149,7 +149,7 @@ public:
 
   kick( kick const& );
 
-  kick* Clone() const { return new kick( *this ); }
+  kick* clone() const { return new kick( *this ); }
 
   kick& operator=( kick const& rhs);
 

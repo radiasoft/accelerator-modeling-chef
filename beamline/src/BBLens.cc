@@ -79,7 +79,7 @@ BBLens::BBLens( std::string const&   nm,
                 double const&        s,
                 double const&        gmm, 
                 double const* emt )
-  : bmlnElmnt( nm, l, s ), num_(s), gamma_(gmm), sigmas_(3,0.0)
+  : BmlnElmnt( nm, l, s ), num_(s), gamma_(gmm), sigmas_(3,0.0)
 {
   if( ( fabs( gamma_ - 1.0 ) < 0.001 ) || 
       ( gamma_ < 1.0  ) 
@@ -98,8 +98,7 @@ BBLens::BBLens( std::string const&   nm,
 
   useRound = 1;
 
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 
 }
 
@@ -107,7 +106,7 @@ BBLens::BBLens( std::string const&   nm,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BBLens::BBLens( BBLens const& x )
-: bmlnElmnt( x ), 
+: BmlnElmnt( x ), 
   gamma_(x.gamma_), num_(x.num_),  useRound( x.useRound),  sigmas_(x.sigmas_)
 {
   for( int i=0; i<3; ++i ) emittance_[i] = x.emittance_[i];
@@ -128,7 +127,7 @@ BBLens& BBLens::operator=( BBLens const& rhs)
 {
   if ( &rhs == this) return *this;
 
-  bmlnElmnt::operator=(rhs);
+  BmlnElmnt::operator=(rhs);
 
   std::copy( &rhs.emittance_[0], &rhs.emittance_[2]+1,  &emittance_[0]);   // One sigma (noninvariant) emittance_ / pi
 

@@ -27,7 +27,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ****** 
 ******                                                                
 **************************************************************************
@@ -50,14 +50,18 @@ class marker::Propagator: public BasePropagator {
 
  public:
 
-  Propagator* Clone() const { return new Propagator(*this); }
- 
-  void  setup( bmlnElmnt& elm ); 
+  Propagator();
+  Propagator(marker     const& elm);
+  Propagator(Propagator const& p);
 
-  void  operator()(  bmlnElmnt const& elm,             Particle& p);
-  void  operator()(  bmlnElmnt const& elm,          JetParticle& p);
-  void  operator()(  bmlnElmnt const& elm,        ParticleBunch& p);
-  void  operator()(  bmlnElmnt const& elm,     JetParticleBunch& p);
+  Propagator* clone() const { return new Propagator(*this); }
+ 
+  void  ctor( BmlnElmnt const& elm ); 
+
+  void  operator()(  BmlnElmnt const& elm,             Particle& p);
+  void  operator()(  BmlnElmnt const& elm,          JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,        ParticleBunch& p);
+  void  operator()(  BmlnElmnt const& elm,     JetParticleBunch& p);
 
 };
 

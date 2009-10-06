@@ -55,7 +55,7 @@
 #define QUADRUPOLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 
 class BmlVisitor;
@@ -70,7 +70,7 @@ typedef boost::shared_ptr<quadrupole const> ConstQuadrupolePtr;
 typedef boost::shared_ptr<thinQuad const>   ConstThinQuadPtr; 
 
 
-class DLLEXPORT quadrupole : public bmlnElmnt {
+class DLLEXPORT quadrupole : public BmlnElmnt {
 
   class    Propagator;  
   class MADPropagator;  
@@ -85,7 +85,7 @@ public:
   quadrupole( std::string const& name, double const& length, double const& strength );
   quadrupole( quadrupole const& );
 
-  quadrupole* Clone() const;
+  quadrupole* clone() const;
 
  ~quadrupole();
 
@@ -112,7 +112,7 @@ public:
 
 //-------------------------------------------------------------------------------
 
-class DLLEXPORT thinQuad : public bmlnElmnt {
+class DLLEXPORT thinQuad : public BmlnElmnt {
 
   class    Propagator;  
   class MADPropagator;  
@@ -125,7 +125,7 @@ public:
   thinQuad( std::string const& name, double const& integrated_strength );    // B'L in Tesla; + = horizontally focussing
   thinQuad( thinQuad const& );
 
-  thinQuad* Clone() const;
+  thinQuad* clone() const;
 
  ~thinQuad();
 

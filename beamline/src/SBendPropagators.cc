@@ -48,12 +48,14 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 template <typename T>
 inline double toDouble( T const& );
@@ -69,16 +71,13 @@ inline double toDouble( double const& value) { return value; }
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename Particle_t>
-void propagate( sbend const& elm, Particle_t&     p )
+void propagate( sbend const& elm, Particle_t& p, BmlPtr bml )
 {
   
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
-
-
-  BmlPtr const& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
+  State_t& state = p.state();
 
   for ( beamline:: const_iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
@@ -97,14 +96,14 @@ void mad_propagate( sbend const& elm, Particle_t& p, double n )
   typedef typename PropagatorTraits<Particle_t>::State_t     State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
-  double const rho = toDouble(p.BRho())/elm.Strength();
+  double const rho = toDouble(p.brho())/elm.Strength();
   
   double const h      = 1.0/rho;          // curvature
   double const length = elm.Length();         
-  double const gamma  =  toDouble(p.Gamma());
-  double const beta   =  toDouble(p.Beta() );
+  double const gamma  =  toDouble(p.gamma());
+  double const beta   =  toDouble(p.beta() );
 
   double const angle   = elm.getBendAngle();
 
@@ -167,8 +166,8 @@ void mad_propagate( sbend const& elm, Particle_t& p, double n )
 
   // Finally .. the mapping ...............................
 
-  State_t const& inState  = p.State();
-  State_t        outState( p.State().Dim() ); 
+  State_t const& inState  = p.state();
+  State_t        outState( p.state().Dim() ); 
 
   for(  int i=0; i<BMLN_dynDim; ++i  ) {
     outState[i] = 0.0;
@@ -186,58 +185,58 @@ void mad_propagate( sbend const& elm, Particle_t& p, double n )
 
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     sbend const& elm,    Particle& p );
-template void propagate(     sbend const& elm, JetParticle& p );
-template void mad_propagate( sbend const& elm, Particle_t& p, double const& n )
-template void mad_propagate( sbend const& elm, Particle_t& p, double const& n )
-template double standardPart( double const& value);
-template double standardPart( Jet    const& value);
-
-#endif
-
 }// namespace
 
 
+
+sbend::Propagator::Propagator()
+  : BasePropagator()
+{}
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::setup( bmlnElmnt& arg )
+sbend::Propagator::Propagator( sbend const& elm )
+  : BasePropagator(elm)
+{ 
+  ctor(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sbend::Propagator::Propagator( Propagator const& p )
+  : BasePropagator(p)
+{}
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void sbend::Propagator::ctor( BmlnElmnt const& arg )
 { 
   
-  sbend& elm = static_cast<sbend&>(arg);
+  sbend const& elm = static_cast<sbend const&>(arg);
 
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm); 
-  bml = BmlPtr( new beamline("SBEND_PRIVATE") );
+  bml_ = BmlPtr( new beamline("SBEND_PRIVATE") );
  
-  double& angle_       = sbend::sbend_core_access::get_angle(elm);  
-  double& usAngle_     = sbend::sbend_core_access::get_usAngle(elm); 
-  double& dsAngle_     = sbend::sbend_core_access::get_dsAngle(elm); 
-  double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(elm); 
-  double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(elm); 
+  double angle_       = sbend::sbend_core_access::get_angle(elm);  
+  double usAngle_     = sbend::sbend_core_access::get_usAngle(elm); 
+  double dsAngle_     = sbend::sbend_core_access::get_dsAngle(elm); 
+  double usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(elm); 
+  double dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(elm); 
 
   double str = arg.Strength();
 
   if (elm.hasUpstreamEdge() ) {
     EdgePtr uedge( new Edge("",  tan(usAngle_) * str ) );
-    bml->append( uedge );
+    bml_->append( uedge );
   }
 
   BendPtr  bend( new Bend( "", elm.Length(),  str, angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
-  bml->append( bend  );
+  bml_->append( bend  );
 
   if ( elm.hasDownstreamEdge() ) {
     EdgePtr dedge( new Edge( "", -tan(dsAngle_)* str ) );
-    bml->append( dedge );
+    bml_->append( dedge );
   }
 
 }
@@ -246,46 +245,67 @@ void sbend::Propagator::setup( bmlnElmnt& arg )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  sbend::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  sbend::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
+void sbend::Propagator::operator()( BmlnElmnt const& elm, Particle& p)
 {
-  ::propagate( static_cast<sbend const&>(elm), p);
+  ::propagate( static_cast<sbend const&>(elm), p, bml_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
+void sbend::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p)
 {
-  ::propagate( static_cast<sbend const&>(elm), p);
+  ::propagate( static_cast<sbend const&>(elm), p, bml_);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void  sbend::MADPropagator::setup( bmlnElmnt& elm )
+sbend::MADPropagator::MADPropagator()
+  : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sbend::MADPropagator::MADPropagator( sbend const& elm )
+  : BasePropagator(elm)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sbend::MADPropagator::MADPropagator( MADPropagator const& p )
+  : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  sbend::MADPropagator::ctor( BmlnElmnt const& elm )
 { }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  sbend::MADPropagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  sbend::MADPropagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p)
+void sbend::MADPropagator::operator()( BmlnElmnt const& elm, Particle& p)
 {
   ::mad_propagate<sbend,Particle>( static_cast<sbend const&>(elm), p,  0.0);
 }
@@ -293,7 +313,7 @@ void sbend::MADPropagator::operator()( bmlnElmnt const& elm, Particle& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::MADPropagator::operator()( bmlnElmnt const& elm, JetParticle& p)
+void sbend::MADPropagator::operator()( BmlnElmnt const& elm, JetParticle& p)
 {
   ::mad_propagate<sbend,JetParticle>( static_cast<sbend const&>(elm), p,  0.0);
 }

@@ -53,10 +53,10 @@
 template <typename Particle_t>
 OpticalStateAdaptor<Particle_t>::OpticalStateAdaptor( Particle_t& p)
   :  state_is_valid_(true), particle_(p), 
-     optical_state_( p.State().begin(), p.State().end() )
+     optical_state_( p.state().begin(), p.state().end() )
 {
 
-  Component_t npz    = p.get_npz();
+  Component_t npz    = p.npz();
 
   optical_state_[3] /= npz;
   optical_state_[4] /= npz;
@@ -99,7 +99,7 @@ template <typename Particle_t>
 void OpticalStateAdaptor<Particle_t>::sync() 
 {
 
-  State_t& state     =  particle_.State();
+  State_t& state     =  particle_.state();
   
   std::copy( &optical_state_[0],  &optical_state_[0]+state.Dim(), &state[0]); 
 

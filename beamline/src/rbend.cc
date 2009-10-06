@@ -110,30 +110,28 @@ using FNAL::pcerr;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend()
-  : bmlnElmnt( "", 1.0, 0.0 ),
+  : BmlnElmnt( "", 1.0, 0.0 ),
     angle_(0.0),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
     usAngle_(Math_TWOPI),  // uninitialized        
     dsAngle_(-Math_TWOPI)  // uninitialized
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle) 
-  : bmlnElmnt( n, l, s ),
+  : BmlnElmnt( n, l, s ),
     angle_(bendangle), 
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
     usAngle_(bendangle/2.0),
     dsAngle_(-bendangle/2.0)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -141,7 +139,7 @@ rbend::rbend( std::string const& n, double const& l, double const& s, double con
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle, double const& entryangle ) 
-  : bmlnElmnt( n, l, s),
+  : BmlnElmnt( n, l, s),
     angle_(bendangle), 
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
@@ -166,15 +164,14 @@ rbend::rbend( std::string const& n, double const& l, double const& s, double con
    }
  }
 
-  propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+ propagator_ =  PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rbend::rbend( std::string const& n, double const& l, double const& s, double const& bendangle, double const& us, double const& ds )
-  : bmlnElmnt( n, l, s),
+  : BmlnElmnt( n, l, s),
     angle_(bendangle), 
     usFaceAngle_(us),
     dsFaceAngle_(ds),
@@ -215,8 +212,7 @@ rbend::rbend( std::string const& n, double const& l, double const& s, double con
    }
  }
 
-  propagator_ =  PropagatorPtr( new Propagator());
-  propagator_->setup(*this);
+ propagator_ =  PropagatorPtr( new Propagator(*this) );
 
 }
 
@@ -227,7 +223,7 @@ rbend::rbend( std::string const& n, double const& l, double const& s, double con
 rbend::rbend( std::string const& n, double const& l, double const& s,           double const& bendangle, 
                                               double const& entry_angle, 
                                               double const& us,          double const& ds )
-  : bmlnElmnt( n, l, s),
+  : BmlnElmnt( n, l, s),
     angle_(bendangle),
     usFaceAngle_(us), 
     dsFaceAngle_(ds),
@@ -284,8 +280,7 @@ rbend::rbend( std::string const& n, double const& l, double const& s,           
    }
  }
 
-  propagator_ =  PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+ propagator_ =  PropagatorPtr( new Propagator(*this) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -293,7 +288,7 @@ rbend::rbend( std::string const& n, double const& l, double const& s,           
 
 
 rbend::rbend( rbend const& x )
-  : bmlnElmnt(x ),
+  : BmlnElmnt(x ),
     angle_(x.angle_),
     usFaceAngle_(x.usFaceAngle_), dsFaceAngle_(x.dsFaceAngle_),
     usAngle_(x.usAngle_),         dsAngle_(x.dsAngle_)
@@ -420,7 +415,7 @@ std::pair<ElmPtr,ElmPtr> rbend::split( double const& pc ) const
 
 void rbend::setPoleFaceAngle( Particle const& p )
 {
-  double psi = asin( (Strength()*length_) / (2.0*p.ReferenceBRho()) );
+  double psi = asin( (Strength()*length_) / (2.0*p.refBrho()) );
   // i.e., sin( psi ) = (l/2) / rho
   //                  = Bl/(2*Brho)
   //                  = 1/2 symmetric bend angle
@@ -433,7 +428,7 @@ void rbend::setPoleFaceAngle( Particle const& p )
 
 double rbend::setEntryAngle( Particle const& p )
 {
-  return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setEntryAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -442,7 +437,7 @@ double rbend::setEntryAngle( Particle const& p )
 
 double rbend::setExitAngle( Particle const& p )
 {
-  return setExitAngle( atan2( p.get_npx(), p.get_npz() ) );
+  return setExitAngle( atan2( p.npx(), p.npz() ) );
   // i.e. tan(phi) = px/pz, where pz = longitudinal momentum
 }
 
@@ -453,7 +448,7 @@ double rbend::setEntryAngle( double const& phi /* radians */ )
 {
   double ret = usAngle_;
   usAngle_   = phi;
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -464,7 +459,7 @@ double rbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
   dsAngle_   = phi;  
-  propagator_->setup(*this);
+  propagator_->ctor(*this);
   return ret;
 }
 
@@ -496,8 +491,8 @@ void rbend::propagateReference( Particle& p, double initialBRho, bool scaling)
   setExitAngle(p);
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ostream& rbend::writeTo(ostream& os)
 {

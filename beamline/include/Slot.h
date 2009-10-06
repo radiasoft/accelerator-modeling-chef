@@ -53,7 +53,7 @@
 #define SLOT_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <basic_toolkit/Frame.h>
 
 class BmlVisitor;
@@ -63,7 +63,7 @@ class Slot;
 
 typedef boost::shared_ptr<Slot> SlotPtr;
  
-class DLLEXPORT Slot : public bmlnElmnt {
+class DLLEXPORT Slot : public BmlnElmnt {
 
   class Propagator;
 
@@ -78,7 +78,7 @@ class DLLEXPORT Slot : public bmlnElmnt {
 
    ~Slot();
  
-   Slot* Clone() const
+   Slot* clone() const
      { return new Slot( *this ); }
 
    Slot& operator=( Slot const& other); 
@@ -100,7 +100,7 @@ class DLLEXPORT Slot : public bmlnElmnt {
    bool         isPassive()    const;
    bool         isDriftSpace() const;
 
-   const char*  Type()      const;
+   char const*  Type()      const;
 
    int  setInFrame( Frame const& );
    int setOutFrame( Frame const& );

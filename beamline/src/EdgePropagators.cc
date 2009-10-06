@@ -39,17 +39,19 @@
 #include <beamline/beamline.h>
 #include <beamline/Edge.h>
 #include <beamline/EdgePropagators.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <iostream>
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template <typename Particle_t>
@@ -61,34 +63,44 @@ void propagate( Edge const& elm, Particle_t & p )
  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
- State_t& state = p.State();
+ State_t& state = p.state();
 
  if( elm.Strength() == 0.0 ) return; 
  
- double const k = ( p.Charge() > 0.0 ) ? ( elm.Strength() / p.ReferenceBRho()) : (-elm.Strength() / p.ReferenceBRho() ) ;
+ double const k = ( elm.Strength() / p.refBrho());
 
  state[i_npy] -=  k * state[i_y];
 
- 
-}
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( Edge const& elm,    Particle& p );
-template void propagate( Edge const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
+ }
 
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Edge::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+Edge::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Edge::Propagator::Propagator(Edge const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Edge::Propagator::Propagator(Edge::Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void Edge::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate(static_cast<Edge const&>(elm),p);
 }
@@ -96,7 +108,7 @@ void Edge::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Edge::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void Edge::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate(static_cast<Edge const&>(elm),p);
 }

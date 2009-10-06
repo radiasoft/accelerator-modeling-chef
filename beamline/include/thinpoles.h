@@ -36,7 +36,7 @@
 ******  Dec 2006 - Feb 2007  Jean-Francois Ostiguy
 ******                       ostiguy@fnal.gov
 ******
-******  - Clone() using covariant return type
+******  - clone() using covariant return type
 ******  - adapted to new beamline container based on shared_ptr
 ******  - member signatures based on reference types.
 ******
@@ -56,7 +56,7 @@
 #define THINPOLES_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -83,7 +83,7 @@ typedef boost::shared_ptr<thin18pole>              Thin18polePtr;
 typedef boost::shared_ptr<thin18pole const>   ConstThin18polePtr;
 
 
-class DLLEXPORT ThinPole : public bmlnElmnt {
+class DLLEXPORT ThinPole : public BmlnElmnt {
 
 protected:
 
@@ -95,7 +95,7 @@ public:
   ThinPole( std::string const& name, double const& integrated_strength, int pole);
   ThinPole( ThinPole const& );
 
-  ThinPole* Clone() const = 0;
+  ThinPole* clone() const = 0;
 
  ~ThinPole();
 
@@ -129,7 +129,7 @@ public:
   thin2pole( std::string const& name, double const& integrated_strength);
   thin2pole( thin2pole const& );
 
-  thin2pole* Clone() const { return new thin2pole( *this ); }
+  thin2pole* clone() const { return new thin2pole( *this ); }
 
  ~thin2pole();
 
@@ -153,7 +153,7 @@ public:
   thin12pole();
   thin12pole( std::string const& name, double const& strength);
   thin12pole( thin12pole const& );
-  thin12pole* Clone() const { return new thin12pole( *this ); }
+  thin12pole* clone() const { return new thin12pole( *this ); }
 
  ~thin12pole();
 
@@ -176,7 +176,7 @@ public:
   thin14pole();
   thin14pole( std::string const& name, double const& strength);
   thin14pole( thin14pole const& );
-  thin14pole* Clone() const { return new thin14pole( *this ); }
+  thin14pole* clone() const { return new thin14pole( *this ); }
 
  ~thin14pole();
 
@@ -200,7 +200,7 @@ public:
 
   thin16pole( std::string const& name, double const& strength );
   thin16pole( thin16pole const & );
-  thin16pole* Clone() const { return new thin16pole( *this ); }
+  thin16pole* clone() const { return new thin16pole( *this ); }
 
  ~thin16pole();
 
@@ -223,7 +223,7 @@ public:
   thin18pole();
   thin18pole( std::string const& name, double const&  strength );
   thin18pole( thin18pole const& );
-  thin18pole* Clone() const { return new thin18pole( *this ); }
+  thin18pole* clone() const { return new thin18pole( *this ); }
 
  ~thin18pole();
 

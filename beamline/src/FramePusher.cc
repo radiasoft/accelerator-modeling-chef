@@ -64,7 +64,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/FramePusher.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/sbend.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/rbend.h>
@@ -109,7 +109,7 @@ FramePusher::~FramePusher()
 
 // Visiting functions
 
-void FramePusher::visit( bmlnElmnt const& x )
+void FramePusher::visit( BmlnElmnt const& x )
 {
   if( x.Length() > 0.0 ) {
     frame_.translate( (x.Length())*frame_.getzAxis() );

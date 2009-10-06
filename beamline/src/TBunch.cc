@@ -71,12 +71,14 @@ using FNAL::pcerr;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const&   i_x     = Particle::i_x; 
-  Particle::PhaseSpaceIndex const&   i_y     = Particle::i_y; 
-  Particle::PhaseSpaceIndex const&   i_cdt   = Particle::i_cdt; 
-  Particle::PhaseSpaceIndex const&   i_npx   = Particle::i_npx; 
-  Particle::PhaseSpaceIndex const&   i_npy   = Particle::i_npy; 
-  Particle::PhaseSpaceIndex const&   i_ndp   = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const   i_x     = Particle::i_x; 
+  index const   i_y     = Particle::i_y; 
+  index const   i_cdt   = Particle::i_cdt; 
+  index const   i_npx   = Particle::i_npx; 
+  index const   i_npy   = Particle::i_npy; 
+  index const   i_ndp   = Particle::i_ndp;
 
 }
 
@@ -103,9 +105,9 @@ Matrix  TBunch<Particle>::sigmas( std::vector<double> const&  dispersion) const
 
  for ( TBunch<Particle>::const_iterator it = begin(); it != end(); ++it ) { 
 
-     Vector state = it->State();
+     Vector state = it->state();
 
-     double const npz = it->get_npz();
+     double const npz = it->npz();
    
     // correct for correlation due to dispersive effect 
 
@@ -132,9 +134,9 @@ Matrix  TBunch<Particle>::sigmas( std::vector<double> const&  dispersion) const
 
  for ( TBunch<Particle>::const_iterator it = begin(); it != end(); ++it ) { 
 
-     Vector state = it->State();
+     Vector state = it->state();
 
-     double const npz = it->get_npz();
+     double const npz = it->npz();
    
     // correct for correlation due to dispersive effect 
 
@@ -200,9 +202,9 @@ std::vector<double>  TBunch<Particle>::emittances( std::vector<double> const&  d
 
   for ( TBunch<Particle>::const_iterator it = begin(); it != end(); ++it ) { 
 
-     Vector state = it->State();
+     Vector state = it->state();
 
-     double const npz = it->get_npz();
+     double const npz = it->npz();
    
     // correct for correlation due to dispersive effect 
 
@@ -272,7 +274,7 @@ void  TBunch<Particle>::populateParGaussian( PhaseSpaceProjection psid, double s
 
   for ( iterator it  = bunch_.begin(); it != bunch_.end(); ++it ) {
 
-    Vector& state = it->State(); 
+    Vector& state = it->state(); 
 
     double a     = sqrt( -2.0 * log( rnd()) );
 
@@ -312,7 +314,7 @@ void TBunch<Particle>::populateParGaussianAlt( PhaseSpaceProjection psid, double
 
   for ( iterator it  = bunch_.begin(); it != bunch_.end(); ++it ) {
 
-    Vector& state = it->State(); 
+    Vector& state = it->state(); 
 
     double u0 = nrnd();
     double v0 = nrnd();
@@ -477,7 +479,7 @@ void TBunch<Particle>::populateParBinomial (PhaseSpaceProjection psid, double M,
     double u     = a*cos(alpha);
     double v     = a*sin(alpha);
 
-    Vector& state = it->State(); 
+    Vector& state = it->state(); 
  
     state[0+psid]   = xlim*u;
     state[3+psid]   = xplim*(u*sn + v*cs ); 

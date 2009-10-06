@@ -26,7 +26,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -44,20 +44,28 @@ class LinacCavity::Propagator : public BasePropagator {
 
  public:
  
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator();
+  Propagator(LinacCavity const& elm);
+  Propagator(Propagator const& p);
 
-  void       setup( bmlnElmnt& elm);
 
-  void  setAttribute (  bmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  operator()( bmlnElmnt const& elm,         Particle& p );
-  void  operator()( bmlnElmnt const& elm,      JetParticle& p );
-  void  operator()( bmlnElmnt const& elm,    ParticleBunch& b ); 
-  void  operator()( bmlnElmnt const& elm, JetParticleBunch& b );   
+  void       ctor( BmlnElmnt const& elm);
+
+  double getReferenceTime() const; 
+  void   propagateReference( Particle& particle, double initialBRho, bool scaling ); 
+  void   setAttribute (  BmlnElmnt& elm, std::string const& name, boost::any const& value ); 
+
+  void  operator()( BmlnElmnt const& elm,         Particle& p );
+  void  operator()( BmlnElmnt const& elm,      JetParticle& p );
+  void  operator()( BmlnElmnt const& elm,    ParticleBunch& b ); 
+  void  operator()( BmlnElmnt const& elm, JetParticleBunch& b );   
 
  private:
 
   bool    wakeIsOn(   LinacCavity const& elm  ) const;
+  ElmPtr  wake_;
 
 };
 

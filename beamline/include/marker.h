@@ -50,7 +50,7 @@
 #define MARKER_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -61,7 +61,7 @@ typedef boost::shared_ptr<marker>        MarkerPtr;
 typedef boost::shared_ptr<marker const>  ConstMarkerPtr;
 
 
-class DLLEXPORT marker : public bmlnElmnt {
+class DLLEXPORT marker : public BmlnElmnt {
 
   class Propagator;
 
@@ -71,7 +71,7 @@ public:
   marker( std::string const& name); 
   marker( marker const& );
 
-  marker* Clone() const { return new marker( *this ); }
+  marker* clone() const { return new marker( *this ); }
 
  ~marker();
 

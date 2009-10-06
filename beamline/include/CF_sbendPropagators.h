@@ -26,7 +26,7 @@
 ******
 ******  May 2008 ostiguy@fnal.gov
 ******  - propagator moved (back) to base class
-******  - generic type bmlnElmnt used as function argument 
+******  - generic type BmlnElmnt used as function argument 
 ******
 ******
 **************************************************************************
@@ -43,16 +43,18 @@ class CF_sbend::Propagator: public BasePropagator {
 
 public:
 
-  Propagator ( int n=1) : n_(n) {}
+  Propagator ( int n=1);
+  Propagator ( CF_sbend const& elm, int n=1);
+  Propagator ( Propagator const& p);
   
-  Propagator* Clone() const { return new Propagator(*this); }
+  Propagator* clone() const { return new Propagator(*this); }
 
-  void  setup( bmlnElmnt& elm ); 
+  void  ctor( BmlnElmnt const& elm ); 
 
-  void  setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value); 
+  void  setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value); 
 
-  void  operator()(  bmlnElmnt const& elm,            Particle& p);
-  void  operator()(  bmlnElmnt const& elm,         JetParticle& p);
+  void  operator()(  BmlnElmnt const& elm,            Particle& p);
+  void  operator()(  BmlnElmnt const& elm,         JetParticle& p);
 
  private:
 

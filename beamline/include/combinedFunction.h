@@ -41,7 +41,7 @@
 ****** - new typesafe propagators
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified signature of setLength method to conform
-******   to the virtual method in base class bmlnElmnt.
+******   to the virtual method in base class BmlnElmnt.
 ****** - added placeholder setStrength method.
 ****** May 2008 ostiguy@fnal
 ****** - proper, explicit assignment operator
@@ -54,7 +54,7 @@
 #define COMBINED_FUNCTION_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/Alignment.h>
 #include <beamline/ParticleFwd.h>
 
@@ -69,7 +69,7 @@ class BmlVisitor;
 class ConstBmlVisitor;
 
 
-class DLLEXPORT combinedFunction : public bmlnElmnt {
+class DLLEXPORT combinedFunction : public BmlnElmnt {
    
   class Propagator;
 
@@ -82,11 +82,11 @@ public:
   
  ~combinedFunction();
 
-  combinedFunction* Clone() const { return new combinedFunction( *this ); }
+  combinedFunction* clone() const { return new combinedFunction( *this ); }
 
   std::pair<ElmPtr,ElmPtr> split( double const& pct) const;
 
-  void append(bmlnElmnt&);
+  void append(BmlnElmnt&);
 
   double AdjustPosition( Particle    const& );
   double AdjustPosition( JetParticle const& );
@@ -94,7 +94,7 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
   
-  void setField( boost::function<bool(bmlnElmnt const&)>, double );
+  void setField( boost::function<bool(BmlnElmnt const&)>, double );
 
   void setField( WHICH_MULTIPOLE, double field );
 
@@ -115,7 +115,7 @@ public:
 
 private:
 
-  bool hasMultipole( bmlnElmnt const& elm, WHICH_MULTIPOLE mult ) const;  
+  bool hasMultipole( BmlnElmnt const& elm, WHICH_MULTIPOLE mult ) const;  
   std::istream& readFrom(std::istream&);
   std::ostream& writeTo(std::ostream&);
 };

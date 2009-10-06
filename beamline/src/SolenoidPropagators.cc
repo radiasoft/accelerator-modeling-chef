@@ -57,12 +57,14 @@
 
 namespace {
 
- Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
- Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
- Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
- Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
- Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
- Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+ 
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
 template <typename Particle_t>
@@ -77,7 +79,7 @@ void propagate( Solenoid const& elm, Particle_t & p )
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
   
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   Component_t& x   = state[i_x  ];
   Component_t& y   = state[i_y  ];
@@ -90,7 +92,7 @@ void propagate( Solenoid const& elm, Particle_t & p )
   // Entry edge effect
   // -----------------
 
-  double const edgeKick = elm.Strength() / ( 2.0* p.ReferenceBRho() );
+  double const edgeKick = elm.Strength() / ( 2.0* p.refBrho() );
 
   if( elm.hasInEdge() ) {
     npx += edgeKick*y;
@@ -101,8 +103,8 @@ void propagate( Solenoid const& elm, Particle_t & p )
   // Body field
   // -----------
 
-  Component_t dtheta =   ( elm.Strength() * elm.Length() / p.ReferenceBRho() ) 
-                 / p.get_npz();
+  Component_t dtheta =   ( elm.Strength() * elm.Length() / p.refBrho() ) 
+                 / p.npz();
   
   Component_t sn = sin(dtheta);
   Component_t cs = cos(dtheta);
@@ -121,7 +123,7 @@ void propagate( Solenoid const& elm, Particle_t & p )
       ++counter;
     }
     else {
-      throw bmlnElmnt::GenericException( __FILE__, __LINE__, 
+      throw BmlnElmnt::GenericException( __FILE__, __LINE__, 
             "void Solenoid::localPropagate( Particle& p )",
             "Too many iterations to normalize cosine." );
     }
@@ -156,26 +158,15 @@ void propagate( Solenoid const& elm, Particle_t & p )
   // It's about time
   // Assumes pre-registration via RefRegVisitor
   // 
-  // NOTE: p.get_npz() is non-negative by definition.
+  // NOTE: p.npz() is non-negative by definition.
   // NOTE: I may want to change this some day.
   // -----------------------------------------------
 
   Component_t duration =   elm.Length() 
-                   / ( p.get_npz() * p.ReferenceMomentum() / p.Energy() );
+                   / ( p.npz() * p.refMomentum() / p.energy() );
 
   cdt += ( duration - elm.getReferenceTime() );
 }
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(   Solenoid const& elm,    Particle& p );
-template void propagate(   Solenoid const& elm, JetParticle& p );
-
-#endif
 
 } // anonymous namespace
 
@@ -183,7 +174,28 @@ template void propagate(   Solenoid const& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::setup( bmlnElmnt& arg) 
+Solenoid::Propagator::Propagator() 
+  : BasePropagator() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Solenoid::Propagator::Propagator( Solenoid const& elm) 
+  : BasePropagator(elm) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Solenoid::Propagator::Propagator( Propagator const& p) 
+  : BasePropagator(p) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Solenoid::Propagator::ctor( BmlnElmnt const& arg) 
 {
   // empty for the moment ...
 }
@@ -191,15 +203,15 @@ void Solenoid::Propagator::setup( bmlnElmnt& arg)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  Solenoid::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  Solenoid::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
+void Solenoid::Propagator::operator()( BmlnElmnt const& elm, Particle& p )
 {
   ::propagate( static_cast<Solenoid const&>(elm), p);
 }
@@ -207,7 +219,7 @@ void Solenoid::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Solenoid::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+void Solenoid::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p )
 {
   ::propagate( static_cast<Solenoid const&>(elm), p);
 }

@@ -37,7 +37,7 @@
 ****** 
 ****** Jan 2009  ostiguy@fnal.gov
 ****** - refactored: redundant class alignmentData has been eliminated
-****** - added support for pitch angle
+****** - added support for (small) pitch angle
 ******
 **************************************************************************
 *************************************************************************/
@@ -49,7 +49,7 @@
 #include <iomanip>
 
 #include <beamline/Alignment.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <basic_toolkit/VectorD.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>

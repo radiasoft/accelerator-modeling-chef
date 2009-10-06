@@ -49,7 +49,7 @@
 #define SEPTUM_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -60,7 +60,7 @@ typedef boost::shared_ptr<thinSeptum>             ThinSeptumPtr;
 typedef boost::shared_ptr<thinSeptum const>  ConstThinSeptumPtr;
 
 
-class DLLEXPORT thinSeptum : public bmlnElmnt{
+class DLLEXPORT thinSeptum : public BmlnElmnt{
 
   class Propagator; 
 
@@ -79,7 +79,7 @@ public:
   
   thinSeptum( thinSeptum const& );
 
-  thinSeptum* Clone() const { return new thinSeptum( *this ); }
+  thinSeptum* clone() const { return new thinSeptum( *this ); }
 
   thinSeptum& operator=( thinSeptum const& rhs);
 

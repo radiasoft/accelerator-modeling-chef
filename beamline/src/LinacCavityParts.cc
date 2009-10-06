@@ -41,30 +41,28 @@
 #include <beamline/LinacCavityParts.h>
 #include <beamline/BmlVisitor.h>
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityUpstream::LCavityUpstream( std::string const& name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
-  : bmlnElmnt(name,length, volts ), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+  : BmlnElmnt(name,length, volts ), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityUpstream::LCavityUpstream( LCavityUpstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
+  : BmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
 
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LCavityUpstream* LCavityUpstream::Clone() const 
+LCavityUpstream* LCavityUpstream::clone() const 
 { 
   return new LCavityUpstream( *this ); 
 }
@@ -82,7 +80,7 @@ LCavityUpstream& LCavityUpstream::operator=(  LCavityUpstream const& rhs)
 {
   if (this == &rhs) return *this;
 
-  bmlnElmnt::operator=( rhs);
+  BmlnElmnt::operator=( rhs);
 
   w_rf_   = rhs.w_rf_;
   phi_s_  = rhs.phi_s_;
@@ -194,23 +192,22 @@ void  LCavityUpstream::setPhi( double const& radians)
 
 LCavityDnstream::LCavityDnstream( std::string const&  name, double const& length, double const& rfreq,         
                                                       double const& volts,  double const& phis)
-  : bmlnElmnt(name,length, volts), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
+  : BmlnElmnt(name,length, volts), w_rf_(2.0*M_PI*rfreq), phi_s_(phis)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LCavityDnstream::LCavityDnstream( LCavityDnstream const& o)
-  : bmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
+  : BmlnElmnt(o), w_rf_(o.w_rf_), phi_s_(o.phi_s_)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-LCavityDnstream* LCavityDnstream::Clone() const 
+LCavityDnstream* LCavityDnstream::clone() const 
 { 
   return new LCavityDnstream( *this ); 
 }
@@ -229,7 +226,7 @@ LCavityDnstream& LCavityDnstream::operator=(  LCavityDnstream const& rhs)
 {
   if (this == &rhs) return *this;
 
-  bmlnElmnt::operator=( rhs);
+  BmlnElmnt::operator=( rhs);
 
   w_rf_   = rhs.w_rf_;
   phi_s_  = rhs.phi_s_;

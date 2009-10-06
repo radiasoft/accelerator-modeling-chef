@@ -66,39 +66,39 @@ using namespace PhysicsConstants;
 
 namespace { // anonymous namespace
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
 
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
   enum Position_t { upstream, downstream }; 
 
-
   template<typename Component_t>
-  double toDouble( Component_t const& val );
+  inline double toDouble( Component_t const& val );
 
   template<>
-  double toDouble( Jet const& val ) { return val.standardPart(); }
+  inline double toDouble( Jet const& val ) { return val.standardPart(); }
 
   template<>
-  double toDouble( double const& val ) { return val; }
+  inline double toDouble( double const& val ) { return val; }
 
 
 // ------------------------------------------------------------------------------
 
 
 template<typename Particle_t>
-void driftpropagate( typename PropagatorTraits<Particle_t>::Component_t const& length, bmlnElmnt const& elm, Particle_t& p )
+void driftpropagate( typename PropagatorTraits<Particle_t>::Component_t const& length, BmlnElmnt const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-     State_t& state = p.State();
+     State_t& state = p.state();
 
-     Component_t npz = p.get_npz();
+     Component_t npz = p.npz();
 
      Component_t xpr = state[i_npx] / npz ;
      Component_t ypr = state[i_npy] / npz ;
@@ -106,7 +106,7 @@ void driftpropagate( typename PropagatorTraits<Particle_t>::Component_t const& l
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-     state[i_cdt ] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/p.Beta(); 
+     state[i_cdt ] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/p.beta(); 
 
      return;      
 }
@@ -125,9 +125,9 @@ void edge_focusing_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
-  Component_t k   = sign * eE_z/p.ReferenceMomentum() / ( 2.0*p.BetaZ() );
+  Component_t k   = sign * eE_z/p.refMomentum() / ( 2.0*p.betaZ() );
 
   state[i_npx] += k*state[i_x];  
   state[i_npy] += k*state[i_y];
@@ -143,15 +143,15 @@ void acceleration_kick( Particle_t& p,  typename PropagatorTraits<Particle_t>::C
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  double const m          = p.Mass();
+  double const m          = p.mass();
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
-  Component_t E  = p.Energy() + onaxisEnergyGain;
+  Component_t E  = p.energy() + onaxisEnergyGain;
 
-  double oldRefP = p.ReferenceMomentum();
-  p.SetReferenceEnergy( p.ReferenceEnergy() + referenceEnergyGain );
-  double newRefP = p.ReferenceMomentum();
+  double oldRefP = p.refMomentum();
+  p.setRefEnergy( p.refEnergy() + referenceEnergyGain );
+  double newRefP = p.refMomentum();
 
   state[i_npx] *= ( oldRefP / newRefP );
   state[i_npy] *= ( oldRefP / newRefP );
@@ -180,7 +180,7 @@ void propagate( Element_t const& elm, Particle_t& p )
   double const phi_s      = elm.phi();
   double const w_rf       = elm.radialFrequency();
  
-  State_t& state = p.State();
+  State_t& state = p.state();
   
   if( strength == 0.0) { 
     ::driftpropagate( length, elm, p ); 
@@ -194,16 +194,16 @@ void propagate( Element_t const& elm, Particle_t& p )
 
   // this defined here and used later for ct correction  
  
-  Component_t    const E_i                 = p.Energy();
-  Component_t    const pz_i                = p.get_npz() * p.ReferenceMomentum();
+  Component_t    const E_i                 = p.energy();
+  Component_t    const pz_i                = p.npz() * p.refMomentum();
 
 
   if ( position == upstream ) { ::edge_focusing_kick( p, eE_z, -1.0 ); }
 
-  Component_t xp0 = state[i_npx]/p.get_npz();
-  Component_t yp0 = state[i_npy]/p.get_npz();
+  Component_t xp0 = state[i_npx]/p.npz();
+  Component_t yp0 = state[i_npy]/p.npz();
 
-  Component_t w = onaxisEnergyGain/ p.Energy();
+  Component_t w = onaxisEnergyGain/ p.energy();
 
   w = ( norm(w) > 1.0e-10 ) ? log(1.0 + w )/ w : 1.0;
 
@@ -227,56 +227,51 @@ void propagate( Element_t const& elm, Particle_t& p )
 
   // Fix the time calculation
 
-  state[i_cdt] +=  (length * (( p.get_npz() * p.ReferenceMomentum() - pz_i ) / (p.Energy() - E_i) ) - elm.getReferenceTime() );
+  state[i_cdt] +=  (length * (( p.npz() * p.refMomentum() - pz_i ) / (p.energy() - E_i) ) - elm.getReferenceTime() );
  
 
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void driftpropagate( Component_t length, bmlnElmnt& elm, Particle& p );
-template void driftpropagate( Component_t length, bmlnElmnt& elm, JetParticle& p );
-
-template void propagate<LCavityUpstream, Particle,      upstream>( LCavityUpstream& elm,    Particle& p );
-template void propagate<LCavityUpstream, JetParticle,   upstream>( LCavityUpstream& elm, JetParticle& p );
-template void propagate<LCavityDnstream, Particle,    downstream>( LCavityDnstream& elm,    Particle& p );
-template void propagate<LCavityDnstream, JetParticle, downstream>( LCavityDnstream& elm, JetParticle& p );
-template void edge_focusing_kick<Particle>   (    Particle& p,  typename PropagatorTraits<Particle>::Component_t const& eE_z, 
-						                                                     double const& sign );
-template void edge_focusing_kick<JetParticle>( JetParticle& p,  typename PropagatorTraits<JetParticle>::Component_t const& eE_z, 
-                                                  double const& sign );
-template void acceleration_kick<Particle>( Particle& p,  typename PropagatorTraits<Particle>::Component_t const& onaxisEnergyGain, 
-                                          double const& referenceEnergyGain )
-template void acceleration_kick<JetParticle>( JetParticle& p,  typename PropagatorTraits<JetParticle>::Component_t const& onaxisEnergyGain, 
-                                          double const& referenceEnergyGain )
-
-#endif
-//-----------------------------------------------------------------------------------
-
-
 } // anonymous namespace
 
+LCavityUpstream::Propagator::Propagator()
+  :BasePropagator()
+{}
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::setup(  bmlnElmnt& elm )
+LCavityUpstream::Propagator::Propagator(LCavityUpstream const& elm)
+  :BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LCavityUpstream::Propagator::Propagator(Propagator const& p)
+  :BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityUpstream::Propagator::ctor(  BmlnElmnt const& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  LCavityUpstream::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::operator()(  bmlnElmnt const& elm, Particle& p )
+void  LCavityUpstream::Propagator::operator()(  BmlnElmnt const& elm, Particle& p )
 {
   ::propagate<LCavityUpstream,  Particle, upstream>( static_cast<LCavityUpstream const&>(elm), p );  
 }
@@ -284,7 +279,7 @@ void  LCavityUpstream::Propagator::operator()(  bmlnElmnt const& elm, Particle& 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityUpstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+void  LCavityUpstream::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p )
 {
   ::propagate<LCavityUpstream, JetParticle, upstream>( static_cast<LCavityUpstream const&>(elm), p);  
 }
@@ -293,21 +288,44 @@ void  LCavityUpstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void  LCavityDnstream::Propagator::setup(  bmlnElmnt& elm )
+LCavityDnstream::Propagator::Propagator()
+  :BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LCavityDnstream::Propagator::Propagator(LCavityDnstream const& elm)
+  : BasePropagator(elm)
+{
+  ctor(elm);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+LCavityDnstream::Propagator::Propagator(Propagator const& p)
+ : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  LCavityDnstream::Propagator::ctor(  BmlnElmnt const& elm )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::Propagator::setAttribute( bmlnElmnt& elm, std::string const& name, boost::any const& value )
+void  LCavityDnstream::Propagator::setAttribute( BmlnElmnt& elm, std::string const& name, boost::any const& value )
 { 
-  setup(elm);
+  ctor(elm);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
+void  LCavityDnstream::Propagator::operator()( BmlnElmnt const& elm, Particle& p )
 {
   ::propagate<LCavityDnstream, Particle, downstream>( static_cast<LCavityDnstream const&>(elm), p);  
 }
@@ -315,7 +333,7 @@ void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, Particle& p
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  LCavityDnstream::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+void  LCavityDnstream::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p )
 {
   ::propagate<LCavityDnstream, JetParticle, downstream>( static_cast<LCavityDnstream const&>(elm), p);  
 }

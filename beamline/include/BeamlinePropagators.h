@@ -40,15 +40,19 @@ class beamline::Propagator: public BasePropagator {
 
  public:
 
-  Propagator (): BasePropagator() {}
-  Propagator ( Propagator const& o ): BasePropagator(o) {}
+  Propagator ();
+  Propagator ( beamline   const& elm );
+  Propagator ( Propagator const& o   );
 
-  Propagator* Clone() const;
+  Propagator* clone() const;
 
-  void  operator()( bmlnElmnt const& elm,                  Particle& p);
-  void  operator()( bmlnElmnt const& elm,               JetParticle& p);
-  void  operator()( bmlnElmnt const& elm,             ParticleBunch& p);
-  void  operator()( bmlnElmnt const& elm,          JetParticleBunch& p);
+  double       getReferenceTime()  const;
+  void         setReferenceTime( double );
+
+  void  operator()( BmlnElmnt const& elm,                  Particle& p);
+  void  operator()( BmlnElmnt const& elm,               JetParticle& p);
+  void  operator()( BmlnElmnt const& elm,             ParticleBunch& p);
+  void  operator()( BmlnElmnt const& elm,          JetParticleBunch& p);
 
  
 };

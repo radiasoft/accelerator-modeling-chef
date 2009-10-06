@@ -43,12 +43,14 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+  
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
@@ -57,7 +59,7 @@ void propagate( Pinger const& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   if ( elm.isArmed() && elm.countdown() ) {
       state[i_npx] += cos( elm.getKickDirection()) * elm.Strength();
@@ -76,7 +78,7 @@ void propagate_bunch( Pinger const& elm, TBunch<Particle_t>& b )
 
       for ( typename TBunch<Particle_t>::iterator it = b.begin(); it != b.end(); ++it ) {
 
-        State_t& state = it->State();
+        State_t& state = it->state();
         state[i_npx] += cos(elm.getKickDirection())* elm.Strength();
         state[i_npy] += sin(elm.getKickDirection())* elm.Strength();
 
@@ -84,32 +86,39 @@ void propagate_bunch( Pinger const& elm, TBunch<Particle_t>& b )
   }
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     Pinger const& elm,    Particle& p );
-template void propagate(     Pinger const& elm, JetParticle& p );
-template void propagate_bunch( Pinger const& elm, TBunch<Particle>& b );
-template void propagate_bunch( Pinger const& elm, TBunch<JetParticle>& b );
-
-#endif
-
 } // namespace
 
  
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::setup( bmlnElmnt& elm)
+Pinger::Propagator::Propagator()
+  : BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+Pinger::Propagator::Propagator( Pinger const& elm)
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Pinger::Propagator::Propagator( Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+void Pinger::Propagator::ctor( BmlnElmnt const& elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Pinger::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
   ::propagate(static_cast<Pinger const&>(elm),p );
 }
@@ -117,7 +126,7 @@ void Pinger::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void Pinger::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ::propagate(static_cast<Pinger const&>(elm),p);
 }
@@ -125,7 +134,7 @@ void Pinger::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b ) 
+void Pinger::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& b ) 
 {
   ::propagate_bunch(static_cast<Pinger const&>(elm),b);
 }
@@ -133,7 +142,7 @@ void Pinger::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& b )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Pinger::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch&     b ) 
+void Pinger::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch&     b ) 
 {
   ::propagate_bunch(static_cast<Pinger const&>(elm),b);
 }

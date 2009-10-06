@@ -35,30 +35,32 @@
 *************************************************************************/
 
 #include <beamline/DriftPropagators.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 
 namespace {
+  
+ typedef PhaseSpaceIndexing::index index; 
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
-void propagate( drift const& elm, Particle_t& p )
+void propagate( Drift const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-     State_t& state = p.State();
+     State_t& state = p.state();
 
-     Component_t npz = p.get_npz();
+     Component_t npz = p.npz();
 
      Component_t xpr = state[i_npx] / npz;
      Component_t ypr = state[i_npy] / npz;
@@ -68,49 +70,35 @@ void propagate( drift const& elm, Particle_t& p )
 
      Component_t D = elm.Length()*sqrt( 1.0 + xpr*xpr + ypr*ypr ); 
 
-     state[i_cdt] += ( D / p.Beta() ) - elm.getReferenceTime();
+     state[i_cdt] += ( D / p.beta() ) - elm.getReferenceTime();
 }
-
-template<typename Particle_t>
-void mad_propagate( drift const& elm, Particle_t& p )
-{
-     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
- 
-     State_t& state = p.State();
-
-     Component_t npz = p.get_npz();
-
-     Component_t xpr = state[i_npx] / npz;
-     Component_t ypr = state[i_npy] / npz;
-
-     double const length =  elm.Length(); 
-
-     state[i_x]   += length * state[i_npx];
-     state[i_y]   += length * state[i_npy];
-     state[i_cdt] += length /(p.Beta()*p.Gamma()*p.Gamma() ) * state[i_ndp];
-
-     state[i_cdt] -= elm.getReferenceTime();
-}
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(     drift const& elm,    Particle& p );
-template void propagate(     drift const& elm, JetParticle& p );
-template void mad_propagate( drift const& elm,    Particle& p );
-template void mad_propagate( drift const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
-} // namespace
+} // namepace 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-drift::Propagator* drift::Propagator::Clone() const
+Drift::Propagator::Propagator()
+ : BasePropagator() 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Drift::Propagator::Propagator(Drift const& elm)
+ : BasePropagator(elm) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Drift::Propagator::Propagator(Drift::Propagator const& p )
+ : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Drift::Propagator* Drift::Propagator::clone() const
 {
   return new Propagator(*this); 
 }
@@ -118,17 +106,17 @@ drift::Propagator* drift::Propagator::Clone() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void drift::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+void Drift::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
- ::propagate(static_cast<drift const&>(elm),p);
+ ::propagate(static_cast<Drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void drift::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void Drift::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
- ::propagate(static_cast<drift const&>(elm),p);
+ ::propagate(static_cast<Drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -138,7 +126,52 @@ void drift::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p )
 // ****   MAD style optical propagator ***** 
 
 
-MADDriftPropagator* MADDriftPropagator::Clone() const
+namespace {
+
+template<typename Particle_t>
+void mad_propagate( Drift const& elm, Particle_t& p )
+{
+     typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
+     typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
+ 
+     State_t& state = p.state();
+
+     Component_t npz = p.npz();
+
+     Component_t xpr = state[i_npx] / npz;
+     Component_t ypr = state[i_npy] / npz;
+
+     double const length =  elm.Length(); 
+
+     state[i_x]   += length * state[i_npx];
+     state[i_y]   += length * state[i_npy];
+     state[i_cdt] += length /(p.beta()*p.gamma()*p.gamma() ) * state[i_ndp];
+
+     state[i_cdt] -= elm.getReferenceTime();
+}
+
+} // namespace
+
+
+MADDriftPropagator::MADDriftPropagator(): BasePropagator()
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+MADDriftPropagator::MADDriftPropagator(Drift const& elm) : BasePropagator(elm)  
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+MADDriftPropagator::MADDriftPropagator(MADDriftPropagator const& p) : BasePropagator(p)  
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||
+
+MADDriftPropagator* MADDriftPropagator::clone() const
 {
   return new MADDriftPropagator(*this); 
 }
@@ -146,17 +179,17 @@ MADDriftPropagator* MADDriftPropagator::Clone() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void MADDriftPropagator::operator()( bmlnElmnt const& elm, Particle& p )  
+void MADDriftPropagator::operator()( BmlnElmnt const& elm, Particle& p )  
 {
- ::mad_propagate(static_cast<drift const&>(elm),p);
+ ::mad_propagate(static_cast<Drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void MADDriftPropagator::operator()( bmlnElmnt const& elm, JetParticle& p )
+void MADDriftPropagator::operator()( BmlnElmnt const& elm, JetParticle& p )
 {  
- ::mad_propagate(static_cast<drift const&>(elm),p);
+ ::mad_propagate(static_cast<Drift const&>(elm),p);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

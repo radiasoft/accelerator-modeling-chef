@@ -56,7 +56,7 @@
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
 #include <beamline/quadrupole.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/QuadrupolePropagators.h>
@@ -73,22 +73,18 @@ using FNAL::pcout;
 // **************************************************
 
 quadrupole::quadrupole()
-  :  bmlnElmnt( "", 1.0, 0.0 )
+  :  BmlnElmnt( "", 1.0, 0.0 )
 {
-    propagator_ = PropagatorPtr( new Propagator( 4 ) );     
-    // propagator_ = PropagatorPtr( new MADPropagator() );     
-    propagator_->setup(*this);
+   propagator_ = PropagatorPtr( new Propagator( *this, 4 ) );     
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::quadrupole( std::string const& n, double const& l, double const& s )
-  : bmlnElmnt( n, l, s)
+  : BmlnElmnt( n, l, s)
 {
-    propagator_ = PropagatorPtr( new Propagator(4) );     
-    // propagator_ = PropagatorPtr( new MADPropagator() );     
-    propagator_->setup(*this);
+    propagator_ = PropagatorPtr( new Propagator(*this, 4) );     
 }
 
 
@@ -96,13 +92,13 @@ quadrupole::quadrupole( std::string const& n, double const& l, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 quadrupole::quadrupole( quadrupole const& x ) 
-  : bmlnElmnt(x)
+  : BmlnElmnt(x)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-quadrupole* quadrupole::Clone() const 
+quadrupole* quadrupole::clone() const 
 { 
   return new quadrupole( *this ); 
 }
@@ -120,7 +116,7 @@ quadrupole& quadrupole::operator=( quadrupole const& o)
 {
   if ( this == &o ) return *this; 
 
-  bmlnElmnt::operator=(o);
+  BmlnElmnt::operator=(o);
 
   return (*this);
 }
@@ -203,20 +199,18 @@ void quadrupole::accept( ConstBmlVisitor& v ) const {
 // **************************************************
 
 thinQuad::thinQuad() 
- : bmlnElmnt( "", 0.0, 0.0 ) // length, strength
+ : BmlnElmnt( "", 0.0, 0.0 ) // length, strength
 {
-  propagator_ = PropagatorPtr( new Propagator() ); 
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( std::string const& n, double const& s ) 
-  : bmlnElmnt(n, 0.0, s) 
+  : BmlnElmnt(n, 0.0, s) 
 {
-  propagator_ = PropagatorPtr( new Propagator() ); 
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 
@@ -224,13 +218,13 @@ thinQuad::thinQuad( std::string const& n, double const& s )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinQuad::thinQuad( thinQuad const& x ) 
-  : bmlnElmnt( x )
+  : BmlnElmnt( x )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinQuad* thinQuad::Clone() const 
+thinQuad* thinQuad::clone() const 
 {  
   return new thinQuad( *this ); 
 }
@@ -248,7 +242,7 @@ thinQuad& thinQuad::operator=( thinQuad const& o)
 {
   if ( this == &o ) return *this; 
 
-  bmlnElmnt::operator=(o);
+  BmlnElmnt::operator=(o);
 
   return (*this);
 

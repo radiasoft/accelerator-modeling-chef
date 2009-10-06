@@ -45,24 +45,26 @@
 namespace {
 
   template<typename T>
-  T local_pow(T const& value, int n );
+  inline T local_pow(T const& value, int n );
 
   template<>
-  JetC local_pow( JetC const& value, int n ) 
+  inline JetC local_pow( JetC const& value, int n ) 
   { return pow(value, n); }
 
   template<>
-  std::complex<double> local_pow( std::complex<double> const& value, int n ) 
+  inline std::complex<double> local_pow( std::complex<double> const& value, int n ) 
   { return std::pow(value, n); }
   
   std::complex<double> const complex_i(0.0,1.0);
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template<typename Element_t, typename Particle_t>
@@ -73,9 +75,9 @@ void propagate( Element_t const& elm, Particle_t& p )
  
   if (elm.Strength() == 0.0 ) return;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
-  double const angle =  elm.Strength()/p.ReferenceBRho();
+  double const angle =  elm.Strength()/p.refBrho();
 
   state[i_npx]  -= angle;
 
@@ -83,7 +85,7 @@ void propagate( Element_t const& elm, Particle_t& p )
  // thin2pole rotates the reference frame 
  //----------------------------------------
  
-  state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
+  state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.npz();
 
 }
 
@@ -101,9 +103,9 @@ void propagate( int n, Element_t& elm, Particle_t& p )
  
   if(elm.Strength() == 0.0)  return;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
-  double const k = elm.Strength()/p.ReferenceBRho();
+  double const k = elm.Strength()/p.refBrho();
  
   ComplexComponent_t z( state[i_x] +  complex_i*state[i_y] );
  
@@ -113,33 +115,39 @@ void propagate( int n, Element_t& elm, Particle_t& p )
   state[i_npy] += k * imag(z);
 }
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate(        ThinPole const& elm,      Particle& p );
-template void propagate(        ThinPole const& elm,   JetParticle& p );
-template void propagate( int n, ThinPole const& elm,      Particle& p );
-template void propagate( int n, ThinPole const& elm,   JetParticle& p );
-
-#endif
-
-
 } // anonymous namespace
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::setup( bmlnElmnt& elm) 
+ThinPole::Propagator::Propagator()
+ : BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::operator()( bmlnElmnt const& elm, Particle& p ) 
+ThinPole::Propagator::Propagator(ThinPole const& elm)
+ : BasePropagator(elm)
+{}
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ThinPole::Propagator::Propagator(Propagator const& p)
+ : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ThinPole::Propagator::ctor( BmlnElmnt const& elm) 
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void ThinPole::Propagator::operator()( BmlnElmnt const& elm, Particle& p ) 
 {
    ThinPole const& tp = static_cast<ThinPole const&>(elm);
   (tp.getPole() == 2) ? ::propagate(tp,p) : ::propagate(tp.getPole()/2-1,tp,p);
@@ -148,7 +156,7 @@ void ThinPole::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::Propagator::operator()( bmlnElmnt const& elm, JetParticle&     p ) 
+void ThinPole::Propagator::operator()( BmlnElmnt const& elm, JetParticle&     p ) 
 {
   ThinPole const& tp = static_cast<ThinPole const&>(elm);
   (tp.getPole() == 2) ? ::propagate(elm,p) : ::propagate(tp.getPole()/2-1,elm,p);

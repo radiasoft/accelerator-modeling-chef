@@ -32,7 +32,8 @@
 #include <beamline/ParticleBunch.h>
 #include <beamline/TBunch.h>
 #include <beamline/BasePropagator.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
+#include <beamline/beamline.h>
 #include <iostream>
 
 
@@ -40,13 +41,30 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BasePropagator::BasePropagator()
+  : ctRef_(0.0)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+BasePropagator::BasePropagator( BmlnElmnt const& elm )
+  : ctRef_(0.0)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void  BasePropagator::ctor( BmlnElmnt const& elm) 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BasePropagator::BasePropagator( BasePropagator const& o)
-{}
+  : ctRef_(o.ctRef_)
+{
+  if( o.bml_ ) { bml_ = BmlPtr(o.bml_->clone()); }
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -66,13 +84,7 @@ BasePropagator::~BasePropagator() {};
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  BasePropagator::setup( bmlnElmnt& elm) 
-{ }
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void  BasePropagator::operator()(  bmlnElmnt const& elm,    ParticleBunch& b) 
+void  BasePropagator::operator()(  BmlnElmnt const& elm,    ParticleBunch& b) 
 {
  for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {  
     (*this)( elm, *it ); 
@@ -82,7 +94,7 @@ void  BasePropagator::operator()(  bmlnElmnt const& elm,    ParticleBunch& b)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  BasePropagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& b)  
+void  BasePropagator::operator()(  BmlnElmnt const& elm, JetParticleBunch& b)  
 {
  for (  JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {  
     (*this)( elm, *it ); 
@@ -92,18 +104,45 @@ void  BasePropagator::operator()(  bmlnElmnt const& elm, JetParticleBunch& b)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void   BasePropagator::setAttribute( bmlnElmnt& elm, std::string const& attribute, boost::any const& value )
+void   BasePropagator::setReferenceTime( double ct ) 
+{
+  ctRef_ = ct;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double BasePropagator::getReferenceTime() const 
+{
+  return ctRef_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void   BasePropagator::setAttribute( BmlnElmnt& elm, std::string const& attribute, boost::any const& value )
 { 
   // default: the propagator reconstructs itself.  
  
-   setup( elm ); 
+     ctor( elm ); 
 
   // if this member is overriden in a derived class, the code should 
-  // call setup() for any attribute change that is not explicitly handled.
+  // call ctor() for any attribute change that is not explicitly handled.
 
   // std::cout << "element   " << elm.Type() << "  " << elm.Name() << std::endl;   
   // std::cout << "attribute " << attribute << " has been modified." << std::endl;   
 } 
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool BasePropagator::isComposite() const
+{ 
+ return bml_;
+} 
+ 
+
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -131,7 +170,7 @@ void BasePropagator::setAlignment( Vector const& translation, Vector const& rota
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BasePropagator::setAperture( bmlnElmnt::aperture_t const, double const& hor, double const& ver )
+void BasePropagator::setAperture( BmlnElmnt::aperture_t const, double const& hor, double const& ver )
 {
   /** do nothing **/ 
 }
@@ -139,10 +178,10 @@ void BasePropagator::setAperture( bmlnElmnt::aperture_t const, double const& hor
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-boost::tuple<bmlnElmnt::aperture_t, double, double>  BasePropagator::aperture()   const
+boost::tuple<BmlnElmnt::aperture_t, double, double>  BasePropagator::aperture()   const
 {
   /** do nothing **/ 
-  return boost::tuple<bmlnElmnt::aperture_t, double, double>(bmlnElmnt::infinite, 0.0, 0.0);
+  return boost::tuple<BmlnElmnt::aperture_t, double, double>(BmlnElmnt::infinite, 0.0, 0.0);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -154,5 +193,10 @@ boost::tuple<Vector,Vector>  BasePropagator::alignment()   const
   return boost::tuple<Vector,Vector>(Vector(),Vector());
 }
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void BasePropagator::propagateReference( Particle& particle, double initialBRho, bool scaling )
+{}
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

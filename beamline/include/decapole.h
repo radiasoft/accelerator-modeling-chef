@@ -51,7 +51,7 @@
 #define DECAPOLE_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BmlVisitor;
 class ConstBmlVisitor;
@@ -62,7 +62,7 @@ typedef boost::shared_ptr<thinDecapole>            ThinDecapolePtr;
 typedef boost::shared_ptr<thinDecapole const> ConstThinDecapolePtr;
 
 
-class DLLEXPORT thinDecapole : public bmlnElmnt {
+class DLLEXPORT thinDecapole : public BmlnElmnt {
 
   class Propagator;
 
@@ -72,7 +72,7 @@ public:
   thinDecapole( std::string const& name, double const& strength);
   thinDecapole( thinDecapole const& );
 
-  thinDecapole* Clone() const;
+  thinDecapole* clone() const;
 
  ~thinDecapole();
 

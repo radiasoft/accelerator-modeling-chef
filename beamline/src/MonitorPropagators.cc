@@ -36,24 +36,26 @@
 #include <beamline/TBunch.h>
 
 namespace {
+  
+  typedef PhaseSpaceIndexing::index index;
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
-void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
+void driftpropagate( double const& length, BmlnElmnt const& elm, Particle_t& p )
 {
      typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
      typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-     State_t& state = p.State();
+     State_t& state = p.state();
 
-     Component_t npz = p.get_npz();
+     Component_t npz = p.npz();
 
      Component_t xpr = state[i_npx] / npz;
      Component_t ypr = state[i_npy] / npz;
@@ -61,7 +63,7 @@ void driftpropagate( double const& length, bmlnElmnt const& elm, Particle_t& p )
      state[i_x] += length* xpr;
      state[i_y] += length* ypr;
 
-     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/ p.Beta(); 
+     state[i_cdt] += length*sqrt( 1.0 + xpr*xpr + ypr*ypr )/ p.beta(); 
 }
 
 
@@ -85,7 +87,7 @@ double setMonitorState( Monitor const& elm,  Particle_t const& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-  State_t const& state = p.State();
+  State_t const& state = p.state();
 
   elm.setHposition( toDouble(state[i_x]) );
         elm.setNpx( toDouble(state[i_npx]) );
@@ -101,7 +103,7 @@ double setMonitorState( VMonitor const& elm,  Particle_t const& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-  State_t const& state = p.State();
+  State_t const& state = p.state();
   elm.setVposition( toDouble(state[i_y]) );
   elm.setNpy( toDouble(state[i_npy]) );
 }
@@ -114,7 +116,7 @@ double setMonitorState( HMonitor const& elm,  Particle_t const& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-  State_t const& state = p.State();
+  State_t const& state = p.state();
   elm.setHposition( toDouble(state[i_x]) );
   elm.setNpx( toDouble(state[i_npx]) );
 }
@@ -128,11 +130,11 @@ void propagate( Element_t const& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
  
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   if( elm.Length() > 0.0 ) {
      ::driftpropagate( elm.Length() * elm.getDriftFraction(),       elm, p ); 
-    ::setMonitorState( elm, p);    
+     ::setMonitorState( elm, p);    
      ::driftpropagate( elm.Length() * (1.0-elm.getDriftFraction()), elm, p ); 
   } 
   else {
@@ -271,127 +273,156 @@ void propagate( VMonitor const& elm, JetParticleBunch& b )
 }
 
 
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void driftpropagate( double const& length, bmlnElmnt const& elm, Particle& p );
-template void driftpropagate( double const& length, bmlnElmnt const& elm, JetParticle& p );
-
-template void propagate( Monitor  const& elm,    Particle& p );
-template void propagate( Monitor  const& elm, JetParticle& p );
-template void propagate( HMonitor const& elm,    Particle& p );
-template void propagate( HMonitor const& elm, JetParticle& p );
-template void propagate( VMonitor const& elm,    Particle& p );
-template void propagate( VMonitor const& elm, JetParticle& p );
-
-template void propagate( Monitor  const& elm,    ParticleBunch& b );
-template void propagate( Monitor  const& elm, JetParticleBunch& b );
-template void propagate( HMonitor const& elm,    ParticleBunch& b );
-template void propagate( HMonitor const& elm, JetParticleBunch& b );
-template void propagate( VMonitor const& elm,    ParticleBunch& b );
-template void propagate( VMonitor const& elm, JetParticleBunch& b );
-
-template double setMonitorState( Monitor& elm,  Particle     const& p );
-template double setMonitorState( Monitor& elm,  JetParticle  const& p );
-template double setMonitorState( HMonitor& elm,  Particle    const& p );
-template double setMonitorState( HMonitor& elm,  JetParticle const& p );
-template double setMonitorState( VMonitor& elm,  Particle    const& p );
-template double setMonitorState( VMonitor& elm,  JetParticle const& p );
-
-#endif
-
-//-----------------------------------------------------------------------------------
-
 } // anonymous namespace
 
 
-void Monitor::Propagator::setup( bmlnElmnt& elm) 
+Monitor::Propagator::Propagator()
+  : BasePropagator()
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Monitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
-{
-  ::propagate( static_cast<Monitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
-{
-  ::propagate( static_cast<Monitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Monitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
-{
-  ::propagate( static_cast<Monitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void Monitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
-{
-  ::propagate( static_cast<Monitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void VMonitor::Propagator::setup( bmlnElmnt& elm) 
+Monitor::Propagator::Propagator(Monitor const& elm)
+  : BasePropagator(elm)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void VMonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
-{
-  ::propagate( static_cast<VMonitor const&>(elm),p);
-}
-
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void VMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
-{
-  ::propagate( static_cast<VMonitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void VMonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
-{
-  ::propagate( static_cast<VMonitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void VMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
-{
-  ::propagate( static_cast<VMonitor const&>(elm),p);
-}
-
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-void HMonitor::Propagator::setup( bmlnElmnt& elm) 
+Monitor::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void HMonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p) 
+void Monitor::Propagator::ctor( BmlnElmnt const& elm) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void Monitor::Propagator::operator()( BmlnElmnt const& elm, Particle& p) 
+{
+  ::propagate( static_cast<Monitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Monitor::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p) 
+{
+  ::propagate( static_cast<Monitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Monitor::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& p) 
+{
+  ::propagate( static_cast<Monitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void Monitor::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch& p) 
+{
+  ::propagate( static_cast<Monitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+VMonitor::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+VMonitor::Propagator::Propagator(VMonitor const& elm)
+  : BasePropagator(elm)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+VMonitor::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void VMonitor::Propagator::ctor( BmlnElmnt const& elm) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void VMonitor::Propagator::operator()( BmlnElmnt const& elm, Particle& p) 
+{
+  ::propagate( static_cast<VMonitor const&>(elm),p);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void VMonitor::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p) 
+{
+  ::propagate( static_cast<VMonitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void VMonitor::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& p) 
+{
+  ::propagate( static_cast<VMonitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void VMonitor::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch& p) 
+{
+  ::propagate( static_cast<VMonitor const&>(elm),p);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+HMonitor::Propagator::Propagator()
+  : BasePropagator()
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+HMonitor::Propagator::Propagator(HMonitor const& elm)
+  : BasePropagator(elm)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+HMonitor::Propagator::Propagator(Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void HMonitor::Propagator::ctor( BmlnElmnt const& elm) 
+{}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void HMonitor::Propagator::operator()( BmlnElmnt const& elm, Particle& p) 
 {
   ::propagate( static_cast<HMonitor const&>(elm),p);
 }
@@ -399,7 +430,7 @@ void HMonitor::Propagator::operator()( bmlnElmnt const& elm, Particle& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void HMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p) 
+void HMonitor::Propagator::operator()( BmlnElmnt const& elm, JetParticle& p) 
 {
   ::propagate( static_cast<HMonitor const&>(elm),p);
 }
@@ -407,7 +438,7 @@ void HMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticle& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void HMonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p) 
+void HMonitor::Propagator::operator()( BmlnElmnt const& elm, ParticleBunch& p) 
 {
   ::propagate( static_cast<HMonitor const&>(elm),p);
 }
@@ -415,7 +446,7 @@ void HMonitor::Propagator::operator()( bmlnElmnt const& elm, ParticleBunch& p)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void HMonitor::Propagator::operator()( bmlnElmnt const& elm, JetParticleBunch& p) 
+void HMonitor::Propagator::operator()( BmlnElmnt const& elm, JetParticleBunch& p) 
 {
   ::propagate( static_cast<HMonitor const&>(elm),p);
 }

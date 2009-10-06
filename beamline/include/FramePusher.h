@@ -69,7 +69,7 @@ class FramePusher : public ConstBmlVisitor
   FramePusher( FramePusher const& );
  ~FramePusher();
 
-  void visit( bmlnElmnt const& );
+  void visit( BmlnElmnt const& );
 
   void visit( Slot      const& );
   void visit( sbend     const& );

@@ -50,7 +50,7 @@
 #define CIRCUIT_H
 
 #include <basic_toolkit/globaldefs.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <string>
 #include <list>
 

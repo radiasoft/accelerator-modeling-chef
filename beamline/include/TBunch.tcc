@@ -97,7 +97,7 @@ std::istream& operator >>( std::istream &is, TBunch<Particle_t>& bunch)
 
 template <typename Particle_t>
 TBunch<Particle_t>::TBunch(Particle_t const& p, int nparticles, double const& intensity)
-: reference_(  p.Clone() ), intensity_( intensity ), bunch_(),
+: reference_(  p.clone() ), intensity_( intensity ), bunch_(),
   pool_( sizeof(Particle) , max( 128, (nparticles*110/100) ))  
 {
 
@@ -107,7 +107,7 @@ TBunch<Particle_t>::TBunch(Particle_t const& p, int nparticles, double const& in
  // from a dedicated pool with a 10% reserve for more particles. 
  // Note that if new particles are appended, the pool capacity will automatically 
  // grow when reserve is exhausted.
- // The argument of the Particle Clone() function is the address used by 
+ // The argument of the Particle clone() function is the address used by 
  // (placement) new when instantiating the cloned particle.
  // 
  // Note: space for a minimum of 128 particles is allways allocated.  
@@ -115,7 +115,7 @@ TBunch<Particle_t>::TBunch(Particle_t const& p, int nparticles, double const& in
   
   for (int i =0; i< nparticles; ++i )
   {
-    bunch_.push_back(  p.Clone(pool_.malloc()) ); 
+    bunch_.push_back(  p.clone(pool_.malloc()) ); 
   }
 
 }
@@ -278,7 +278,7 @@ void TBunch<Particle_t>::clear()
 template <typename Particle_t>
 void TBunch<Particle_t>::append( Particle_t const& x )
 {
-  bunch_.push_back(  x.Clone(pool_.malloc()) ); 
+  bunch_.push_back(  x.clone(pool_.malloc()) ); 
 }
 
 
@@ -334,7 +334,7 @@ template <typename Particle_t>
 void TBunch<Particle_t>::setReferenceParticle ( Particle_t const& p)
 {
   if (reference_) delete reference_;
-  reference_ = p.Clone(pool_.malloc());    // use Clone() to preserve dynamic type
+  reference_ = p.clone(pool_.malloc());    // use clone() to preserve dynamic type
 
 }
 

@@ -75,12 +75,14 @@ using FNAL::pcout;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index const i_x   = Particle::i_x;
+  index const i_y   = Particle::i_y;
+  index const i_cdt = Particle::i_cdt;
+  index const i_npx = Particle::i_npx;
+  index const i_npy = Particle::i_npy;
+  index const i_ndp = Particle::i_ndp;
 
 }
 
@@ -88,10 +90,9 @@ namespace {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot()
- : bmlnElmnt()
+ : BmlnElmnt()
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 
 }
 
@@ -99,17 +100,16 @@ Slot::Slot()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( std::string const& nm )
-: bmlnElmnt(nm)
+: BmlnElmnt(nm)
 {
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( std::string const& nm, Frame const& y )
-  : bmlnElmnt(nm), in_(), out_(y) 
+  : BmlnElmnt(nm), in_(), out_(y) 
 {
   if( !out_.isOrthonormal() )
   {
@@ -120,8 +120,7 @@ Slot::Slot( std::string const& nm, Frame const& y )
 
   length_ = out_.getOrigin().Norm();
 
-  propagator_ = PropagatorPtr( new Propagator() );
-  propagator_->setup(*this);
+  propagator_ = PropagatorPtr( new Propagator(*this) );
 
 }
 
@@ -130,7 +129,7 @@ Slot::Slot( std::string const& nm, Frame const& y )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( Slot const& x )
-  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ) 
+  : BmlnElmnt(x), in_( x.in_ ), out_( x.out_ ) 
 {}
 
 
@@ -149,7 +148,7 @@ Slot& Slot::operator=( Slot const& other)
 {
    if (this == &other) return *this;  
 
-   bmlnElmnt::operator=(other);
+   BmlnElmnt::operator=(other);
    
    in_  = other.in_;
    out_ = other.out_;
@@ -354,6 +353,7 @@ double Slot::OrbitLength( const Particle& x )
 
 ostream& Slot::writeTo ( ostream& os )
 {
+#if 0
   // Write out private attributes, which are the "in" and "out" Frame's.
   os << in_ ;
   if ( bml_ != NULL ) {
@@ -369,6 +369,7 @@ ostream& Slot::writeTo ( ostream& os )
     os << "no_slot_contents " << Name() << " 0 0 0 0 0\n";
   }
   os << out_ ;
+#endif
   return os;
 }
 
@@ -379,6 +380,7 @@ ostream& Slot::writeTo ( ostream& os )
 istream& Slot::readFrom( istream& is )
 {
   
+#if 0
   // ********* BROKEN ********************
 
   // First, get the "in" frame"
@@ -388,17 +390,17 @@ istream& Slot::readFrom( istream& is )
   char type[30], name[60];
   double Length, Strength, x, y, t;
 
-  // Now read in the bmlnElmnt, if there is one
+  // Now read in the BmlnElmnt, if there is one
 
   is >> type >> name >> Length >> Strength >> x >> y >> t;
   if ( strcasecmp(type, "slot_BEGIN") == 0 ) {
-    elm_ = ElmPtr( read_istream(is) );  // Recursively read the bmlnElmnt.
+    elm_ = ElmPtr( read_istream(is) );  // Recursively read the BmlnElmnt.
 
     if ( elm_  && strcasecmp(elm_->Type(), "beamline") == 0 ) 
 
       bml_ = BmlPtr( (beamline*) elm_.get() );
 
-    // The only element in this Slot is a single bmlnElmnt.  There is a 
+    // The only element in this Slot is a single BmlnElmnt.  There is a 
     // "slot_END" line to read in.
 
     is >> type >> name >> Length >> Strength >> x >> y >> t;
@@ -416,6 +418,8 @@ istream& Slot::readFrom( istream& is )
   // Finally, read in the "out" frame information.
   is >> out_;
   length_ = ( out_.getOrigin() - in_.getOrigin()) .Norm();
+
+#endif
 
   return is;
 }

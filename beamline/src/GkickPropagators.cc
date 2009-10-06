@@ -41,12 +41,14 @@
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+ index const i_x   = Particle::i_x;
+ index const i_y   = Particle::i_y;
+ index const i_cdt = Particle::i_cdt;
+ index const i_npx = Particle::i_npx;
+ index const i_npy = Particle::i_npy;
+ index const i_ndp = Particle::i_ndp;
 
 
 template<typename Particle_t>
@@ -56,51 +58,60 @@ void propagate( gkick const& elm, Particle_t& p )
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
-  State_t& state = p.State();
+  State_t& state = p.state();
 
   state[0] += elm.xOffset();
   state[1] += elm.yOffset();
 
-  Component_t npz = p.get_npz(); 
+  Component_t npz = p.npz(); 
     
   //------------------------------------------------------------------
   // dxp_ and dyp_ represent a change in *geometric* trajectory angle; 
   // This angle change is *not* momentum dependent ! 
   //------------------------------------------------------------------
 
-  Component_t xp =  p.get_npx()/npz + elm.xpOffset();  
-  Component_t yp =  p.get_npy()/npz + elm.ypOffset();
+  Component_t xp =  p.npx()/npz + elm.xpOffset();  
+  Component_t yp =  p.npy()/npz + elm.ypOffset();
 
-  Component_t pz = sqrt(1.0 - xp*xp -yp*yp )*p.Momentum(); 
+  Component_t pz = sqrt(1.0 - xp*xp -yp*yp )*p.momentum(); 
   
-  state[3] = xp * ( pz / p.ReferenceMomentum()) ;  
-  state[4] = yp * ( pz / p.ReferenceMomentum()) ; 
+  state[3] = xp * ( pz / p.refMomentum()) ;  
+  state[4] = yp * ( pz / p.refMomentum()) ; 
 }
-
-//----------------------------------------------------------------------------------
-// Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
-//----------------------------------------------------------------------------------
-#if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
-
-template void propagate( gkick const& elm,    Particle& p );
-template void propagate( gkick const& elm, JetParticle& p );
-
-#endif
-//-----------------------------------------------------------------------------------
-
 
 } // anonymous namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::setup( bmlnElmnt& elm )
+gkick::Propagator::Propagator()
+  : BasePropagator()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
+gkick::Propagator::Propagator( gkick const& elm )
+  : BasePropagator(elm)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+gkick::Propagator::Propagator( gkick::Propagator const& p)
+  : BasePropagator(p)
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void gkick::Propagator::ctor( BmlnElmnt const& elm )
+{}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void gkick::Propagator::operator()( BmlnElmnt const& elm, Particle& p )
 {
  ::propagate( static_cast<gkick const&>(elm), p);
 }
@@ -108,7 +119,7 @@ void gkick::Propagator::operator()( bmlnElmnt const& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void gkick::Propagator::operator()( bmlnElmnt const& elm,  JetParticle& p )
+void gkick::Propagator::operator()( BmlnElmnt const& elm,  JetParticle& p )
 {
   ::propagate( static_cast<gkick const&>(elm), p);
 }
