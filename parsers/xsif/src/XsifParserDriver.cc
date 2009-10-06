@@ -42,7 +42,7 @@
 #include <beamline/Particle.h>
 #include <beamline/Alignment.h>
 #include <beamline/beamline.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/beamline_elements.h>
 #include <cstdlib>
 #include <sstream>
@@ -523,10 +523,10 @@ BmlPtr XsifParserDriver::instantiateLine( xsif_yy::location const& yyloc, string
 
      if( (bml_it = m_lines.find(*it) )    !=  m_lines.end() ) {
   
-          bl->append( BmlPtr( bml_it->second->Clone() ));   
+          bl->append( BmlPtr( bml_it->second->clone() ));   
      } 
      else if ( (elm_it = m_elements.find(*it) ) !=  m_elements.end() ){ 
-          bl->append( ElmPtr( elm_it->second.elm->Clone() ));  
+          bl->append( ElmPtr( elm_it->second.elm->clone() ));  
      }
      else if( ( (*it)[0] == '-' ) && (( bml_it = m_lines.find( (*it).substr(1)) ) !=  m_lines.end() )) {   // a reversed line 
 
@@ -724,12 +724,12 @@ BmlPtr XsifParserDriver::expandLineMacro(xsif_yy::location const& yyloc, string 
      } 
      else if ( (bml_it = m_lines.find(*ite)) != m_lines.end() ) {   
 	
-       bl->append( BmlPtr( bml_it->second->Clone() ) );  // is cloning required here ????
+       bl->append( BmlPtr( bml_it->second->clone() ) );  // is cloning required here ????
 
      } 
      else if ( (elm_it = m_elements.find(*ite)) != m_elements.end() ) {   
 	
-       bl->append( ElmPtr( elm_it->second.elm->Clone() ) ); //  is cloning required here ????
+       bl->append( ElmPtr( elm_it->second.elm->clone() ) ); //  is cloning required here ????
 
      }
      else {
@@ -838,13 +838,13 @@ double  XsifParserDriver::getElmAttributeVal( xsif_yy::location const& yyloc, st
   double pc       = (pc_defined     = eval( string("PC"),         attributes, value) ) ? any_cast<double>(value) : 0.0; 
   double gamma    = (gamma_defined  = eval( string("GAMMA"),      attributes, value) ) ? any_cast<double>(value) : 1.0; 
 
-  if ( energy_defined ) { p->SetReferenceEnergy( energy );                        }
-  if ( gamma_defined )  { p->SetReferenceEnergy( p->ReferenceEnergy()*gamma );    } 
-  if ( pc_defined    )  { p->SetReferenceMomentum(pc);                            }
+  if ( energy_defined ) { p->setRefEnergy( energy );                        }
+  if ( gamma_defined )  { p->setRefEnergy( p->refEnergy()*gamma );    } 
+  if ( pc_defined    )  { p->setRefMomentum(pc);                            }
 
   
-   m_BRHO          = p->ReferenceBRho();
-   m_momentum      = p->ReferenceMomentum();
+   m_BRHO          = p->refBrho();
+   m_momentum      = p->refMomentum();
 
    Expression exp; exp.insert(ExprData(m_BRHO));
 
@@ -1092,12 +1092,12 @@ ElmPtr XsifParserDriver::make_drift(  ConstElmPtr& udelm, double const& BRHO, st
 {
  
    any value;
-   drift* elm = 0; 
+   Drift* elm = 0; 
 
    double length = 0.0;  bool attribute_length = false; 
    if ( eval( string("L"), attributes, value) )  { attribute_length = true; length = any_cast<double>(value); } 
    
-   elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();           
+   elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();           
 
    elm->rename( label.c_str() );
    if (  attribute_length ) elm->setLength( length );
@@ -1113,7 +1113,7 @@ ElmPtr XsifParserDriver::make_marker(   ConstElmPtr& udelm, double const& BRHO, 
 {
       marker* elm = 0;
 
-      elm = (udelm) ? dynamic_cast<marker*>( udelm->Clone() ) : new marker();  
+      elm = (udelm) ? dynamic_cast<marker*>( udelm->clone() ) : new marker();  
 
       elm->rename( label.c_str() );
 
@@ -1148,7 +1148,7 @@ ElmPtr  XsifParserDriver::make_sbend(   ConstElmPtr& udelm, double const& BRHO, 
   //--------------------------------------------------------------------- 
 
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
 
 
   double length = 0.0;  bool attribute_length = false;
@@ -1237,7 +1237,7 @@ ElmPtr  XsifParserDriver::make_rbend(    ConstElmPtr& udelm, double const& BRHO,
   //--------------------------------------------------------------------- 
 
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
 
   double length = 0.0;
   double angle  = 0.0;
@@ -1325,7 +1325,7 @@ ElmPtr  XsifParserDriver::make_quadrupole(    ConstElmPtr& udelm, double const& 
 
   
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
   Alignment aligner;
 
   double length   = 0.0;
@@ -1373,7 +1373,7 @@ ElmPtr  XsifParserDriver::make_sextupole(    ConstElmPtr& udelm,  double const& 
   //--------------------------------------------------------------------- 
 
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
   Alignment aligner;
 
   double length   = 0.0;
@@ -1422,7 +1422,7 @@ ElmPtr  XsifParserDriver::make_octupole(    ConstElmPtr& udelm,  double const& B
 
   
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
   Alignment aligner;
 
   double length   = 0.0;
@@ -1618,7 +1618,7 @@ ElmPtr  XsifParserDriver::make_hkicker(    ConstElmPtr& udelm, double const& BRH
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
   if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<hkick*>( udelm->Clone() ) : new hkick();
+  elm = (udelm) ? dynamic_cast<hkick*>( udelm->clone() ) : new hkick();
 
   elm->rename(label);
   if ( attribute_length)    elm->setLength(length);
@@ -1660,7 +1660,7 @@ ElmPtr  XsifParserDriver::make_vkicker(    ConstElmPtr& udelm, double const& BRH
   if ( eval( string("KICK"),        attributes, value) )    { attribute_kck    = true; kck     = any_cast<double>(value); }
   if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
                           
-  elm = (udelm) ? dynamic_cast<vkick*>( udelm->Clone() ) : new vkick();
+  elm = (udelm) ? dynamic_cast<vkick*>( udelm->clone() ) : new vkick();
 
   elm->rename(label);
   if ( attribute_length )    { elm->setLength(length); }
@@ -1706,7 +1706,7 @@ ElmPtr  XsifParserDriver::make_kicker(     ConstElmPtr& udelm, double const& BRH
   if ( eval( string("TILT"),        attributes, value) )    { attribute_tilt   = true; tilt    = value.empty() ? Math_PI/2.0 : any_cast<double>(value); } 
 
 
-  elm = (udelm) ? dynamic_cast<kick*>( udelm->Clone() ) : new kick();
+  elm = (udelm) ? dynamic_cast<kick*>( udelm->clone() ) : new kick();
 
   elm->rename(label);
   if ( attribute_length )   elm->setLength(length);
@@ -1781,7 +1781,7 @@ ElmPtr XsifParserDriver::make_lcavity(     ConstElmPtr& udelm, double const& BRH
   // NOTE: for a linac, PHI0=0 implies being on crest.  
   //--------------------------------------------------
 
-   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->Clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*Math_TWOPI, wakeon);
+   elm = (udelm) ? dynamic_cast<LinacCavity*>( udelm->clone() ) : new LinacCavity(  label.c_str(), length,  freq*1.0e6,  deltae*1.0e6, phi0*Math_TWOPI, wakeon);
 
    elm->rename( label.c_str() );
    elm->setLength(length);
@@ -1868,7 +1868,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("SHUNT"),    attributes, value) )    { attribute_shunt    = true;   shunt    = any_cast<double>(value); }
 
   
-  elm = (udelm) ? dynamic_cast<rfcavity*>( udelm->Clone() ) : new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*Math_PI), 0, shunt );
+  elm = (udelm) ? dynamic_cast<rfcavity*>( udelm->clone() ) : new rfcavity(  label.c_str(), length, 0, volt*1.0e6, lag*(2.0*Math_PI), 0, shunt );
 
   if (attribute_length ) { elm->setLength(length);        }
   if (attribute_volt   ) { elm->setStrength(volt*1.0e-3); } // MAD uses MeV, rfcavity expects GeV  
@@ -1932,7 +1932,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    { attribute_xrerr  = true; xrerr   = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    { attribute_yrerr  = true; yrerr   = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<Monitor*>( udelm->Clone() ) : new Monitor();
+  elm = (udelm) ? dynamic_cast<Monitor*>( udelm->clone() ) : new Monitor();
 
   elm->rename(label);
 
@@ -1978,7 +1978,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    { attribute_xrerr  = true; xrerr    = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    { attribute_yrerr  = true; yrerr    = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<HMonitor*>( udelm->Clone() ) : new HMonitor();
+  elm = (udelm) ? dynamic_cast<HMonitor*>( udelm->clone() ) : new HMonitor();
 
   elm->rename(label);
 
@@ -2024,7 +2024,7 @@ ElmPtr  XsifParserDriver::make_rfcavity(   ConstElmPtr& udelm,  double const& BR
   if ( eval( string("XRERR"),    attributes, value) )    {  attribute_xrerr  = true; xrerr    = any_cast<double>(value); }
   if ( eval( string("YRERR"),    attributes, value) )    {  attribute_yrerr  = true; yrerr    = any_cast<double>(value); }
 
-  elm = (udelm) ? dynamic_cast<VMonitor*>( udelm->Clone() ) : new VMonitor();
+  elm = (udelm) ? dynamic_cast<VMonitor*>( udelm->clone() ) : new VMonitor();
 
   elm->rename(label);
    
@@ -2045,15 +2045,15 @@ ElmPtr  XsifParserDriver::make_instrument(   ConstElmPtr& udelm, double const& B
 {
  
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;    bool attribute_length = false;
 
   if ( eval( string("L"),   attributes,  value) )    length   = any_cast<double>(value); 
  
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
-  elm = new drift();
+  elm = new Drift();
   elm->rename(label);
    
   if ( attribute_length ) elm->setLength( length );
@@ -2071,7 +2071,7 @@ ElmPtr  XsifParserDriver::make_ecollimator(    ConstElmPtr& udelm, double const&
 
   
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
 
@@ -2079,9 +2079,9 @@ ElmPtr  XsifParserDriver::make_ecollimator(    ConstElmPtr& udelm, double const&
 
    // elm = make_ecollimator(  label.c_str(), length );
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
-  elm = new drift();
+  elm = new Drift();
   elm->rename(label);
    
   if ( attribute_length ) elm->setLength( length );
@@ -2097,15 +2097,15 @@ ElmPtr  XsifParserDriver::make_rcollimator(    ConstElmPtr& udelm, double const&
 {
   
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0; bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )    { attribute_length = true; length   = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
-  elm = new drift();
+  elm = new Drift();
   elm->rename(label);
    
   if ( attribute_length ) elm->setLength( length );
@@ -2121,15 +2121,15 @@ ElmPtr  XsifParserDriver::make_yrot(     ConstElmPtr& udelm, double const& BRHO,
 {
   
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )     { attribute_length = true; length   = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
-  elm = new drift();
+  elm = new Drift();
   elm->rename(label);
    
   if ( attribute_length ) elm->setLength( length );
@@ -2145,13 +2145,13 @@ ElmPtr  XsifParserDriver::make_srot(    ConstElmPtr& udelm, double const& BRHO, 
 {
   
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double angle = 0.0;    bool attribute_angle  = false;  
 
   if ( eval( string( "ANGLE"),   attributes, value) )    { attribute_angle  = true; angle = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
   elm->rename( label.c_str() );
 
   elm->setTag("SROT");
@@ -2165,13 +2165,13 @@ ElmPtr  XsifParserDriver::make_beambeam(    ConstElmPtr& udelm, double const& BR
 {
   
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
   elm->rename( label.c_str() );
   if (attribute_length)  elm->setLength( length );
@@ -2189,13 +2189,13 @@ ElmPtr  XsifParserDriver::make_matrix(    ConstElmPtr& udelm, double const& BRHO
 
   
   any value;
-  drift* elm = 0;  
+  Drift* elm = 0;  
 
   double length = 0.0;  bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )    { attribute_length = true; length   = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
   elm->rename( label.c_str() );
   if (attribute_length)  elm->setLength( length );
@@ -2212,13 +2212,13 @@ ElmPtr  XsifParserDriver::make_lump(    ConstElmPtr& udelm, double const& BRHO, 
 {
 
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )    length   = any_cast<double>(value); 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
   elm->rename( label.c_str() );
   if (attribute_length)  elm->setLength( length );
@@ -2234,12 +2234,12 @@ ElmPtr  XsifParserDriver::make_wire(    ConstElmPtr& udelm, double const& BRHO, 
 {
 
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0;  bool attribute_length = false;
   if ( eval( string("L"),   attributes, value) )    { attribute_length = true; length   = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
   elm->rename(label.c_str() );
 
@@ -2254,13 +2254,13 @@ ElmPtr  XsifParserDriver::make_wire(    ConstElmPtr& udelm, double const& BRHO, 
 ElmPtr  XsifParserDriver::make_blmonitor(    ConstElmPtr& udelm, double const& BRHO, std::string const& label,  map<string,boost::any> const& attributes) 
 {
   any value;
-  drift* elm = 0;
+  Drift* elm = 0;
 
   double length = 0.0; bool attribute_length = false;
 
   if ( eval( string("L"),   attributes, value) )   { attribute_length = true; length  = any_cast<double>(value); } 
 
-  elm = (udelm) ? dynamic_cast<drift*>( udelm->Clone() ) : new drift();
+  elm = (udelm) ? dynamic_cast<Drift*>( udelm->clone() ) : new Drift();
 
   elm->rename( label.c_str());
 
@@ -2297,7 +2297,7 @@ ElmPtr  XsifParserDriver::make_gkick(    ConstElmPtr& udelm, double const& BRHO,
   //---------------------------------------------------------------------------
 
   any value;
-  bmlnElmnt* elm = 0;
+  BmlnElmnt* elm = 0;
 
   double length   = 0.0; bool attribute_length  = false;
   double dx       = 0.0; bool attribute_dx      = false;
@@ -2354,12 +2354,12 @@ ElmPtr XsifParserDriver::make_notimplemented( ConstElmPtr& udelm, double const& 
   // catchall for not implemented element types: substitute a DRIFT of length L (if this parameter is defined)
   //---------------------------------------------------------------------------------------------------------
    any value;					      
-   drift* elm = 0;				      
+   Drift* elm = 0;				      
 						      
    double length = 0.0;  bool attribute_length = false; 
    if ( eval( string("L"), attributes, value) )  { attribute_length = true; length = any_cast<double>(value); } 
    
-   elm = (udelm) ?  dynamic_cast<drift*>( udelm->Clone() ) : new drift();           
+   elm = (udelm) ?  dynamic_cast<Drift*>( udelm->clone() ) : new Drift();           
 
    elm->rename( label.c_str() );
    if (  attribute_length ) elm->setLength( length );
