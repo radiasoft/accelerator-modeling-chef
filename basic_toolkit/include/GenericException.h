@@ -38,13 +38,15 @@
 #define GENEXC_H
 
 #include <basic_toolkit/globaldefs.h>
+#include <boost/exception.hpp>
 
 #include <exception>
 #include <string>
 #include <sstream>
 
+struct exception_base: virtual std::exception, virtual boost::exception { };
 
-class DLLEXPORT GenericException : public std::exception
+class DLLEXPORT GenericException : virtual public exception_base
 {
 
  public:
@@ -62,7 +64,9 @@ class DLLEXPORT GenericException : public std::exception
   int             lineNumber() const throw();
 
  private:
+
   int lineno_;
+
 };
 
 #endif // GENEXC_H
