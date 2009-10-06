@@ -49,21 +49,21 @@
 ttMenu::ttMenu() {
   MENUFUNC menuNullFunc = 0;
   for( int i = 0; i < MAXMENUCHOICES; i++ ) menuFunction[i] = menuNullFunc;
-  promptMessage = "\0";
+  promptMessage = "";
   numChoices = 0;
 }
 
 void ttMenu::go() {
   int menuChoice = 0;
   this->print();
-  printf( "\n%s", promptMessage );
-  scanf( "%d", &menuChoice );
+  printf( "\n%s", promptMessage.c_str() );
+  int status = scanf( "%d", &menuChoice );
   getchar();
   while( ( menuChoice >= 0 )&& ( menuChoice <= numChoices ) ) {
     if( menuChoice == 0 ) this->print();
     else (*menuFunction[menuChoice])();
-    printf( "\n%s", promptMessage );
-    scanf( "%d", &menuChoice );
+    printf( "\n%s", promptMessage.c_str() );
+    status = scanf( "%d", &menuChoice );
     getchar();
     }
 }
@@ -71,11 +71,11 @@ void ttMenu::go() {
 void ttMenu::print() {
 int i = 0;
 printf( "\n" );
-while( ++i <= numChoices ) printf( "%2d) %s\n", i, menuMessage[i] );
-printf( "\n" );
+ while( ++i <= numChoices ) printf( "%2d) %s\n", i, menuMessage[i].c_str() );
+ printf( "\n" );
 }
 
-void ttMenu::setItem( char* message, MENUFUNC functionName ) {
+void ttMenu::setItem( std::string message, MENUFUNC functionName ) {
   if( numChoices < MAXMENUCHOICES - 2 ) {
     menuMessage[ ++numChoices ] = message;
     menuFunction[ numChoices ] = functionName;
@@ -87,12 +87,12 @@ void ttMenu::setOperation( int choice, MENUFUNC functionName ) {
     menuFunction[ choice ] = functionName;
 }
 
-void ttMenu::setMessage( int choice, char* message ) {
+void ttMenu::setMessage( int choice, std::string message ) {
   if( ( choice > 0 ) && ( choice <= numChoices ) )
     menuMessage[ choice ] = message;
 }
 
-void ttMenu::setPrompt( char* message ) {
+void ttMenu::setPrompt( std::string message ) {
   promptMessage = message;
 }
 
