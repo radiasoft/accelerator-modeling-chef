@@ -39,14 +39,29 @@
 #ifndef F2C_INCLUDE
 #define F2C_INCLUDE
 
-typedef long int integer;
+/*-------------------------------------------*/
+/* for amd64 x86_64 define LONG to *nothing* */
+/* for x86          define LONG to long      */
+/* gcc defines the symbol __amd64 for 64-bit 
+/* intel architecture.
+/* This is hackish. We need to get rid
+/* of f2c translated fortran -jfo
+/*-------------------------------------------*/
+#ifdef __amd64  
+#define LONG 
+#else
+#define LONG long
+#endif
+/*-------------------------------------------*/
+
+typedef LONG int integer;
 typedef char *address;
 typedef short int shortint;
 typedef float real;
 typedef double doublereal;
 typedef struct { real r, i; } complex;
 typedef struct { doublereal r, i; } doublecomplex;
-typedef long int logical;
+typedef LONG int logical;
 typedef short int shortlogical;
 typedef char logical1;
 typedef char integer1;
@@ -67,9 +82,9 @@ typedef short flag;
 typedef short ftnlen;
 typedef short ftnint;
 #else
-typedef long flag;
-typedef long ftnlen;
-typedef long ftnint;
+typedef LONG flag;
+typedef LONG ftnlen;
+typedef LONG ftnint;
 #endif
 
 /*external read, write*/
@@ -160,7 +175,7 @@ union Multitype {	/* for multiple entry points */
 
 typedef union Multitype Multitype;
 
-typedef long Long;	/* No longer used; formerly in Namelist */
+typedef LONG LONG;	/* No longer used; formerly in Namelist */
 
 struct Vardesc {	/* for Namelist */
 	char *name;
