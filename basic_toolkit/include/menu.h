@@ -36,6 +36,7 @@
 #ifndef MENU_HXX_LPJM
 #define MENU_HXX_LPJM
 
+#include <string>
 #include <basic_toolkit/globaldefs.h>
 
 typedef void (*MENUFUNC)();
@@ -44,16 +45,16 @@ typedef void (*MENUFUNC)();
 class DLLEXPORT ttMenu {
   int numChoices;
   MENUFUNC menuFunction[ MAXMENUCHOICES ];
-  char* menuMessage[ MAXMENUCHOICES ];
-  char* promptMessage;
+  std::string menuMessage[ MAXMENUCHOICES ];
+  std::string promptMessage;
 public:
   ttMenu();
   void go();
   void print();
-  void setItem( char*, MENUFUNC );
+  void setItem( std::string , MENUFUNC );
   void setOperation( int, MENUFUNC );
-  void setMessage( int, char* );
-  void setPrompt( char* );
+  void setMessage( int, std::string);
+  void setPrompt( std::string );
 } ;
 
 #endif // MENU_HXX_LPJM
