@@ -608,9 +608,6 @@ void TJL<T>::writeToFile( std::ofstream& outStr ) const
 
    outStr << "Weight: "   << p->weight_
           << "   Value: " << p->value_
-          << " || ";
-   outStr << "Addresse: " 
-          <<  ((int) p)
           << std::endl;
    outStr << "Index:  ";
 
