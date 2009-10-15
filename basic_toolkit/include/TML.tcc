@@ -30,14 +30,16 @@
 ******               
 ******   - refactored code to use single template parameter instead of two
 ******   - introduced implicit conversions 
-******   - using boost::intrusive_pointer for reference counting
-******   - eliminated access to internals of implementation class (TML) from class TMatrix.
+******   - use boost::intrusive_pointer for reference counting
+******   - eliminated private access to private internals of implementation 
+******     class (TML) from class TMatrix.
 ******   - eliminated separate MatrixC class implementation (used to be derived from Matrix<T1,T2>)
-******   - organized code to support both implicit and explicit template instantiations
+******   - organized code to support both implicit and explicit template 
+******     instantiations compilation models
 ******   - fixed incorrect complex version of eigenvalues/eigenvectors 
-******   - separated eigenvalue/eigenvector reordering function 
+******   - isolated eigenvalue/eigenvector reordering functionality 
 ******   - eliminated code that attempted to discriminate between objects allocated
-******     on the stack and objects allocated from the free store.
+******     on the stack and objects allocated on the free store.
 ****** 
 ******  November 2007  Leo Michelotti
 ******                 michelotti@fnal.gov
@@ -60,7 +62,7 @@
 ****** - fixed bug in copy constructor and operator=  
 ****** 
 ****** Aug 2008 ostiguy@fnal
-****** - added implmenetations for operator+=() and operator-=() 
+****** - added implementations for operator+=() and operator-=() 
 ******
 **************************************************************************
 *************************************************************************/
@@ -264,21 +266,25 @@ double TML<T>::maxNorm() const
 template<typename T>
 T TML<T>::determinant() const
 {
-  T det = T();
+
   if( nrows_ != ncols_) {
     throw( NotSquare( nrows_, ncols_, "TML<T>::determinant()" )  );
   }
-  else {
-    int* indx = new int[ncols_];  // create the "index vector
-                                  // see pp 38. in Numerical Recipes
 
-    // Perform the decomposition once
-    int d;
-    MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
-    try {
+  int indx[ncols_];  // create the "index vector" used to keep (row permutations)
+                     // see pp 38. in Numerical Recipes
+
+  int d = 1; // d is used as output parameter for lu_decompose.
+             // it is set to +-1 depending on whether the no of 
+             // row permutations is even or odd.
+
+  // Perform the decomposition once
+
+  MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
+  try {
       decomp = lu_decompose(indx,d);
-    }
-    catch( GenericException const& ge ) {
+      }
+      catch( GenericException const& ge ) {
       // The matrix is almost certainly singular.
       // This will set the returned value of the
       // determinant to zero.
@@ -287,14 +293,16 @@ T TML<T>::determinant() const
       }      
     }
 
-    // Finish calculating the determinant
-    det = d;
-    for(int i=0; i<ncols_ ; ++i)
+  // Finish calculating the determinant
+ 
+  T det(d);
+
+  for(int i=0; i<ncols_ ; ++i) {
       det *= decomp->mdata_[i][i];
-    delete [] indx;
   }
 
   return det;
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -307,18 +315,19 @@ MLPtr<T> TML<T>::inverse() const
   if( nrows_  != ncols_ ) {
     throw( NotSquare( nrows_, ncols_, "TML<T>::inverse()" )  );
   }
-  else {
-    MLPtr<T> Y( new TML<T>(nrows_, nrows_, T() ));   // create an identity matrix
-    for (int i=0; i< nrows_; ++i) (*Y)(i,i) = T(1.0);
 
-    int indx[ncols_];                                // create the "index vector"
-    MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );  // see Press & Flannery
+  MLPtr<T> Y( new TML<T>(nrows_, nrows_, T() ));   // create an identity matrix
+  for (int i=0; i< nrows_; ++i) (*Y)(i,i) = T(1.0);
 
-    // perform the decomposition once:
+  MLPtr<T> B( new TML<T>( ncols_, ncols_, T()) );  // see Press & Flannery
 
-    int d;
+  // perform the decomposition once:
 
-    MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
+
+  int indx[ncols_];                                // create the "index vector"
+  int d;
+
+  MLPtr<T> decomp( new TML<T>(nrows_,ncols_,T()) );
     try {
       decomp = lu_decompose(indx,d);
     }
@@ -347,6 +356,7 @@ MLPtr<T> TML<T>::inverse() const
     }
 
     // Finish calculating the inverse
+
     for(int col= 0; col< ncols_; ++col){
       B->copy_column(Y,col,0);
       decomp->lu_back_subst(indx,B);
@@ -354,8 +364,8 @@ MLPtr<T> TML<T>::inverse() const
     }
 
     return Y;
-  }
 }
+
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -369,9 +379,9 @@ T& TML<T>::operator()(int const& i, int const& j)
        throw( IndexRange( i, j, nrows_-1, ncols_-1,
                        "T& TML<T>::operator()(int i, int j)" ) );
   }
-  else { 
-    return mdata_[i][j]; 
-  }
+
+  return mdata_[i][j]; 
+ 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -387,9 +397,9 @@ T  TML<T>::operator()(int const& i, int const&  j) const
   { throw( IndexRange( i, j, nrows_-1, ncols_-1,
                        "T TML<T>::operator()(int i, int j) const" ) );
   }
-  else { 
-    return mdata_[i][j]; 
-  }
+ 
+  return mdata_[i][j]; 
+ 
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -401,28 +411,27 @@ T& TML<T>::operator()(int const& i)
   // This body must stay in synch with
   // T TMatrix<T>::operator()(int i) const
 
-  if( nrows_ == 1 ) {
-    if( i >= 0 && i < ncols_ ) {
-      return mdata_[0][i];
-    }
-    else {
-      throw( IndexRange( 0, i, 0, ncols_-1,
-                       "T& TML<T>::operator()(int i)" ) );
-    }
-  }
-  else if( ncols_== 1 ) {
-    if( i >= 0 && i < nrows_ ) {
-      return mdata_[i][0];
-    }
-    else {
-      throw( IndexRange( i, 0, nrows_-1, 0,
-                       "T& TML<T>::operator()(int i)" ) );
-    }
-  }
-  else {
+  if ( (nrows_ != 1) || (ncols_!= 1) ) {
     throw( NotVector( i, nrows_, ncols_,
                       "T& TML<T>::operator()(int i)" ) );
   }
+
+ 
+  if( (i < 0) || (i>= ncols_) ) {
+      throw( IndexRange( 0, i, 0, ncols_-1,
+                       "T& TML<T>::operator()(int i)" ) );
+  }
+
+   
+
+  if( (i < 0) || (i >= nrows_) ) {
+      throw( IndexRange( i, 0, nrows_-1, 0,
+                       "T& TML<T>::operator()(int i)" ) );
+  }
+
+  return ( nrows_ == 1 ) ? mdata_[0][i] : mdata_[i][0];
+
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -431,28 +440,27 @@ T& TML<T>::operator()(int const& i)
 template<typename T>
 T TML<T>::operator()(int const& i) const 
 {
-  if( nrows_ == 1 ) {
-    if( i >= 0 && i < ncols_ ) {
-      return mdata_[0][i];
-    }
-    else {
+  
+  if ( (nrows_!= 1) || (ncols_!= 1) ) {
+    throw( NotVector( i, nrows_, ncols_,
+                      "T& TML<T>::operator()(int i)" ) );
+  }
+
+ 
+  if( (i<0) || (i>= ncols_) ){
       throw( IndexRange( 0, i, 0, ncols_-1,
                        "T& TML<T>::operator()(int i)" ) );
-    }
   }
-  else if( ncols_ == 1 ) {
-    if( i >= 0 && i < nrows_ ) {
-      return mdata_[i][0];
-    }
-    else {
+
+   
+
+  if( (i<0) || (i>= nrows_) ) {
       throw( IndexRange( i, 0, nrows_-1, 0,
-                       "T& TMatrix<T>::operator()(int i)" ) );
-    }
+                       "T& TML<T>::operator()(int i)" ) );
   }
-  else {
-    throw( NotVector( i, nrows_, ncols_,
-                      "T& TMatrix<T>::operator()(int i)" ) );
-  }
+
+  return ( nrows_ == 1 ) ? mdata_[0][i] : mdata_[i][0];
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
