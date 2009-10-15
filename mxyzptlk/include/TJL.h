@@ -555,11 +555,9 @@ inline void TJL<T>::discardTJL( TJL<T>* p)
 template<typename T>
 inline TJLterm<T>* TJL<T>::storePtr( ) {
 
-  if ( (jltermStoreCurrentPtr_-jltermStore_) < jltermStoreCapacity_ ) 
-
-     return jltermStoreCurrentPtr_++;
-
-  growStore();
+  if ( (jltermStoreCurrentPtr_-jltermStore_) >= jltermStoreCapacity_ ) {
+   growStore();
+  }
 
   return jltermStoreCurrentPtr_++;
 }         
