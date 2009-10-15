@@ -42,47 +42,47 @@
 
 #include <beamline/beamline.h>
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_multipole( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_elseparator( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_instrument( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_ecollimator( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_rcollimator( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_yrot( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_beambeam( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_matrix( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }
 
-static inline bmlnElmnt*
+static inline BmlnElmnt*
 make_lump( const char* name, double length ) {
-  return new drift( name, length );
+  return new Drift( name, length );
 }

@@ -231,7 +231,7 @@ MAD8Factory::~MAD8Factory() {
   free(bel_arr_);  // memory allocated by call to bel_table_to_array in constructor
   free(bml_arr_);  // memory allocated by call to bml_table_to_array in constructor
 
-  // Note: the create_beamline function returns a Cloned() beamline and bmlnElmnts, 
+  // Note: the create_beamline function returns a cloned() beamline and BmlnElmnts, 
 
   //delete_bml_list();
   //delete_bel_list();
@@ -255,7 +255,7 @@ MAD8Factory::create_beamline( std::string bmlname) {   // DEPRECATED
  }  
  else
  {
-    return BmlPtr( bml->Clone() );
+    return BmlPtr( bml->clone() );
  }
 }
 
@@ -269,7 +269,7 @@ MAD8Factory::create_beamline( std::string bmlname, double brho   )
 
  BmlPtr bml = create_beamline_private(bmlname.c_str(), brho);
  
- if ( bml) return BmlPtr( bml->Clone() );  
+ if ( bml) return BmlPtr( bml->clone() );  
  
  throw GenericException(__FILE__, __LINE__, 
                                 "MAD8Factory::create_beamline( const char* bmlname, brho)",
@@ -366,7 +366,7 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
   switch ( bel->kind_ ) {
     case BEL_DRIFT: {
       double length = expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ );
-      lbel = ElmPtr( new drift( strip_final_colon( bel->name_ ).c_str(), length ) );
+      lbel = ElmPtr( new Drift( strip_final_colon( bel->name_ ).c_str(), length ) );
       break;
     }
     case BEL_MARKER: {
@@ -754,18 +754,6 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
       double volt   = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_VOLT], var_table_, bel_table_ );
       double lag    = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_LAG], var_table_, bel_table_ );
       double shunt  = expr_evaluate( mp_,  bel->params_[BEL_RFCAVITY_SHUNT], var_table_, bel_table_ );
-      // REMOVE: char   name[BEL_NAME_LENGTH];
-      
-      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
-      // REMOVE: // NOTE: I cannot set the frequency of the rf cavity from harmonic number
-      // REMOVE: // until the revolution frequency is known; i.e. until the beamline
-      // REMOVE: // model is instantiated.  Thus, the rf cavity must be completed
-      // REMOVE: // by a registration visitor before being used.
-      // REMOVE: thinrfcavity* rfcPtr = new thinrfcavity( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ), 0.0, volt*1.0e6, lag*2*M_PI, 0.0, shunt );
-      // REMOVE: rfcPtr->setHarmonicNumber( harmon );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*) rfcPtr );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
       
       lbel = ElmPtr ( new rfcavity( strip_final_colon( bel->name_ ).c_str(), 
                            length, 0, volt*1.0e6, lag*(2.0*M_PI), 0, shunt ) );
@@ -843,11 +831,6 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         lbel = ElmPtr( new HMonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
-      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new HMonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
-      
       break;
     }
     case BEL_VMONITOR: {
@@ -861,11 +844,6 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         lbel = ElmPtr( new VMonitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
-      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new VMonitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
-      
       break;
     }
     case BEL_MONITOR: {
@@ -879,12 +857,6 @@ MAD8Factory::beam_element_instantiate( beam_element* bel ) {
         lbel = ElmPtr( new Monitor( strip_final_colon( bel->name_ ).c_str() ) );
       }
 
-      // REMOVE: lbel = new beamline( strip_final_colon( bel->name_ ).c_str() );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "left" ), length/2.0 ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new monitor( add_str( name, strip_final_colon( bel->name_ ).c_str(), "center" ) ) );
-      // REMOVE: ((beamline*)lbel)->append( (bmlnElmnt*)new drift( add_str( name, strip_final_colon( bel->name_ ).c_str(), "right" ), length/2.0 ) );
-      
-      break;
     }
     case BEL_INSTRUMENT:
       lbel = ElmPtr( make_instrument( strip_final_colon( bel->name_ ).c_str(), expr_evaluate( mp_,  bel->length_, var_table_, bel_table_ ) ) );

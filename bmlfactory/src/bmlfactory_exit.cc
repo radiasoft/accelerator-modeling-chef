@@ -48,7 +48,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <bmlfactory/ParserException.h>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 
 extern "C" 
@@ -65,7 +65,7 @@ bmlfactory_exit(const char* filename, int lineno, const char* errmessage)
 }
 
 void 
-bmlfactory_parse_error(int inmemory, const char* input_filename, int input_file_lineno, const char* parser_message) 
+bmlfactory_parse_error(int inmemory, char const* input_filename, int input_file_lineno, const char* parser_message) 
 {
   std::stringstream errs;
   errs <<" The MAD parser encountered an error while parsing line ";
