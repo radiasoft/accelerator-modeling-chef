@@ -39,18 +39,19 @@
 #ifndef F2C_INCLUDE
 #define F2C_INCLUDE
 
-/*-------------------------------------------*/
-/* for amd64 x86_64 define LONG to *nothing* */
-/* for x86          define LONG to long      */
-/* gcc defines the symbol __amd64 _LP64 and _LLP64 
-/* for the 64-bit intel architectures.
-/* This is hackish and probably may not work 
-/* for all data models. 
-/* It should work for the LP64 and LLP64 data models.
-/* A better solution would be to get rid
-/* of f2c translated fortran 
-/* -jfo
-/*-------------------------------------------*/
+/*--------------------------------------------*/
+/* gcc defines the symbols __amd64, _LP64     */
+/* and _LLP64, _ILP64 and _SILP64             */ 
+/* for the 64-bit intel amd64/x86_64 archs.   */
+/* The fix below is hackish (and gcc specific)*/
+/* may not work for all data models.          */
+/* It should work for the LP64 and LLP64      */
+/* data models.                               */
+/*                                            */
+/* A better solution would be to get rid      */
+/* of all f2c translated fortran              */
+/* -jfo                                       */
+/*--------------------------------------------*/
 #ifdef _LP64 
 #define LONG 
 #else
