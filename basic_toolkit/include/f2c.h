@@ -42,14 +42,19 @@
 /*-------------------------------------------*/
 /* for amd64 x86_64 define LONG to *nothing* */
 /* for x86          define LONG to long      */
-/* gcc defines the symbol __amd64 for 64-bit 
-/* intel architecture.
-/* This is hackish. We need to get rid
-/* of f2c translated fortran -jfo
+/* gcc defines the symbol __amd64 _LP64 and _LLP64 
+/* for the 64-bit intel architectures.
+/* This is hackish and probably may not work 
+/* for all data models. 
+/* It should work for the LP64 and LLP64 data models.
+/* A better solution would be to get rid
+/* of f2c translated fortran 
+/* -jfo
 /*-------------------------------------------*/
-#ifdef __amd64  
+#ifdef _LP64 
 #define LONG 
 #else
+/* this should work for either LLP64 or 32-bit */
 #define LONG long
 #endif
 /*-------------------------------------------*/
@@ -175,7 +180,9 @@ union Multitype {	/* for multiple entry points */
 
 typedef union Multitype Multitype;
 
+#ifndef _LP64 
 typedef LONG LONG;	/* No longer used; formerly in Namelist */
+#endif
 
 struct Vardesc {	/* for Namelist */
 	char *name;
