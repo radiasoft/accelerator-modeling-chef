@@ -44,7 +44,7 @@
 #endif
 
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/beamline.h>
 
 using namespace std;

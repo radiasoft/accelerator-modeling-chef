@@ -120,7 +120,7 @@ void QuadEliminator::visit( beamline& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void QuadEliminator::visit( bmlnElmnt& x )
+void QuadEliminator::visit( BmlnElmnt& x )
 {
   if( !bml_ ) return;
 
@@ -140,7 +140,7 @@ void QuadEliminator::visit( bmlnElmnt& x )
 void QuadEliminator::visit( quadrupole& x )
 {
   if( !quadPtr_ ) {
-    quadPtr_ = QuadrupolePtr( x.Clone() );
+    quadPtr_ = QuadrupolePtr( x.clone() );
   }
 
   else if( ( quadPtr_->alignment() == x.alignment() ) &&
@@ -153,7 +153,7 @@ void QuadEliminator::visit( quadrupole& x )
 
   else {
      bml_->append( quadPtr_  );
-     quadPtr_ = QuadrupolePtr( x.Clone() );
+     quadPtr_ = QuadrupolePtr( x.clone() );
   }
 }
 

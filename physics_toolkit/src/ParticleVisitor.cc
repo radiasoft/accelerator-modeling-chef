@@ -61,7 +61,7 @@ ParticleVisitor::ParticleVisitor( Particle const& x)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ParticleVisitor::ParticleVisitor(ParticleVisitor const& x) 
- : BmlVisitor(), particle_(x.particle_), state_(particle_.State())
+ : BmlVisitor(), particle_(x.particle_), state_(particle_.state())
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -76,7 +76,7 @@ ParticleVisitor::~ParticleVisitor()
 void ParticleVisitor::setParticle(Particle const& x) {
 
   particle_ = x;
-  state_    = particle_.State();
+  state_    = particle_.state();
 
 }
 
@@ -85,8 +85,8 @@ void ParticleVisitor::setParticle(Particle const& x) {
 
 void ParticleVisitor::setState(Vector const& x) {
 
-  particle_.State() = x;
-  state_ = particle_.State();
+  particle_.state() = x;
+  state_ = particle_.state();
  
 }
 
@@ -95,7 +95,7 @@ void ParticleVisitor::setState(Vector const& x) {
 
 const Particle& ParticleVisitor::getParticle() 
 {
-  particle_.State() = state_;
+  particle_.state() = state_;
   return particle_;
 }
 

@@ -102,10 +102,10 @@ bool ElementTagVisitor::overlap(double x1, double x2, double y1, double y2) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ElementTagVisitor::visitBmlnElmnt( bmlnElmnt* e) { 
+void ElementTagVisitor::visit( BmlnElmnt& e) { 
    
-  double e_up   = any_cast<double>( (*e)[azimuth_up_tag_   ]   );  
-  double e_down = any_cast<double>( (*e)[azimuth_down_tag_ ] );
+  double e_up   = any_cast<double>( e[azimuth_up_tag_   ] );  
+  double e_down = any_cast<double>( e[azimuth_down_tag_ ] );
 
 
   // If the element is a match for the current interval
@@ -114,7 +114,7 @@ void ElementTagVisitor::visitBmlnElmnt( bmlnElmnt* e) {
 
   if ( overlap( e_up,  e_down,  loc_it_->azimuth_up,   loc_it_->azimuth_down ) ) {
 
-    (*e)[tag_name_] = loc_it_->label;
+    e[tag_name_] = loc_it_->label;
     
     ++loc_it_;
 
@@ -129,14 +129,14 @@ void ElementTagVisitor::visitBmlnElmnt( bmlnElmnt* e) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ElementTagVisitor::visitBeamline( beamline* e) {   
+void ElementTagVisitor::visit( beamline& e) {   
    
   // ... Start visiting from the origin marker  
   
 
-   for ( beamline::deep_iterator it  = e->deep_begin(); 
-                                 it != e->deep_end(); ++it ) {
-       visitBmlnElmnt( (*it).get() ); 
+   for ( beamline::deep_iterator it  = e.deep_begin(); 
+                                 it != e.deep_end(); ++it ) {
+     visit( (**it) ); 
 
    };
 

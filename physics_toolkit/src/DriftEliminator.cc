@@ -48,7 +48,7 @@
  * 
  * Source for class DriftEliminator
  * 
- * Concatenates drifts and removes passive
+ * Concatenates Drifts and removes passive
  * elements of zero length.
  * 
  * Leo Michelotti
@@ -66,7 +66,7 @@
 #include <physics_toolkit/DriftEliminator.h>
 
 #include <basic_toolkit/GenericException.h>
-#include <beamline/drift.h>
+#include <beamline/Drift.h>
 #include <beamline/beamline.h>
 
 using namespace std;
@@ -100,7 +100,7 @@ void DriftEliminator::visit( beamline& x )
   for ( beamline::const_deep_iterator it = x.deep_begin(); it != x.deep_end(); ++it ) {
      
     if ( !(*it)->isPassive() ) { 
-      if (length > 0.0 ) { bml->append( drift( "concat_drift", length ) ); length = 0.0; }
+      if (length > 0.0 ) { bml->append( Drift( "concat_drift", length ) ); length = 0.0; }
       bml->append( *it);
     }
     else {
@@ -108,9 +108,9 @@ void DriftEliminator::visit( beamline& x )
     }
   }
 
-  // Append final drift, if it exists.
+  // Append final Drift, if it exists.
 
-  if (length > 0.0 ) { bml->append( drift( "concat_drift", length ) ); length = 0.0; }
+  if (length > 0.0 ) { bml->append( Drift( "concat_drift", length ) ); length = 0.0; }
   x = *bml;
 }
 

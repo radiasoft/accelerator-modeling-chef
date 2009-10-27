@@ -62,9 +62,10 @@
 #include <beamline/BmlVisitor.h>
 
 class beamline;
-class drift;
+class Drift;
+
 typedef boost::shared_ptr<beamline> BmlPtr;
-typedef boost::shared_ptr<drift>    DriftPtr;
+typedef boost::shared_ptr<Drift>    DriftPtr;
 
 
 class DriftEliminator : public BmlVisitor

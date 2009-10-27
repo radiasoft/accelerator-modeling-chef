@@ -110,7 +110,7 @@ TuneAdjuster::~TuneAdjuster()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool TuneAdjuster::isaThinQuad( bmlnElmnt const& q ) const
+bool TuneAdjuster::isaThinQuad( BmlnElmnt const& q ) const
 {
   return ( 0 == strcmp( q.Type(), "thinQuad" ) );
 }
@@ -118,7 +118,7 @@ bool TuneAdjuster::isaThinQuad( bmlnElmnt const& q ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool TuneAdjuster::isaQuad( bmlnElmnt const& q ) const
+bool TuneAdjuster::isaQuad( BmlnElmnt const& q ) const
 {
   return ( 0 == strcmp( q.Type(), "quadrupole" ) );
 }
@@ -126,7 +126,7 @@ bool TuneAdjuster::isaQuad( bmlnElmnt const& q ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool TuneAdjuster::isQuadLike(  bmlnElmnt const& q ) const
+bool TuneAdjuster::isQuadLike(  BmlnElmnt const& q ) const
 {
   return ( isaQuad(q) || isaThinQuad(q) );
 }

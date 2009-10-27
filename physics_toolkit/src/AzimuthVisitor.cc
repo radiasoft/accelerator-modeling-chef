@@ -72,7 +72,7 @@ AzimuthVisitor::~AzimuthVisitor()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AzimuthVisitor::visit( bmlnElmnt& e) 
+void AzimuthVisitor::visit( BmlnElmnt& e) 
 { 
 
   e[azimuth_up_tag_]   = any(azimuth_); 

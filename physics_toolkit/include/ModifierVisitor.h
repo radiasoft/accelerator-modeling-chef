@@ -61,7 +61,7 @@
 #include <list>
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/BmlVisitor.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 class BoolNode;
 

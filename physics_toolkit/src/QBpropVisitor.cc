@@ -76,11 +76,11 @@ QBpropVisitor::~QBpropVisitor()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void QBpropVisitor::visit( bmlnElmnt& x )
+void QBpropVisitor::visit( BmlnElmnt& x )
 {
   double lng; 
   if( lng = x.Length() != 0.0 )  {
-     ( drift( "", lng ) ).propagate( particle_ );
+     ( Drift( "", lng ) ).propagate( particle_ );
   }
 }
 
@@ -95,7 +95,7 @@ void QBpropVisitor::visit( marker& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void QBpropVisitor::visit( drift& x )
+void QBpropVisitor::visit( Drift& x )
 {
   x.propagate( particle_ );
 }
@@ -175,7 +175,7 @@ void QBpropVisitor::visit( CF_rbend& x )
 
 Vector const& QBpropVisitor::State() const
 {
-  return particle_.State();
+  return particle_.state();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

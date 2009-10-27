@@ -85,7 +85,7 @@ class QuadEliminator : public BmlVisitor {
   ~QuadEliminator();
 
   void visit( beamline&    );
-  void visit( bmlnElmnt&   );
+  void visit( BmlnElmnt&   );
   void visit( quadrupole&  ); 
 
  private: 

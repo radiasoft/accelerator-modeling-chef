@@ -41,7 +41,7 @@
 #include <string>
 
 class beamline;
-class bmlnElmnt;
+class BmlnElmnt;
 
 
 class AzimuthVisitor: public BmlVisitor {
@@ -61,7 +61,7 @@ public:
   void      setOriginTag( std::string s )  {  origin_tag_          = s; }
 
   void visit( beamline&  e);   
-  void visit( bmlnElmnt& e); 
+  void visit( BmlnElmnt& e); 
 
 
 private:

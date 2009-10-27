@@ -101,7 +101,7 @@ int  ChromaticityAdjuster::numberOfCorrectors() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool ChromaticityAdjuster::isaThinSextupole( bmlnElmnt const& q ) const
+bool ChromaticityAdjuster::isaThinSextupole( BmlnElmnt const& q ) const
 {
   return ( 0 == strcmp( q.Type(), "thinSextupole" ) );
 }

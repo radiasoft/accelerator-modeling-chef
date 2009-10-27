@@ -130,7 +130,7 @@ class BmlUtil {
   // Streams the mapping as a sequence of Transport-like
   //   "matrix" coefficients.
 
-  static bool isSpace( bmlnElmnt const& );
+  static bool isSpace( BmlnElmnt const& );
   // Returns true if the argument refers to an element
   //   which acts like empty space: e.g. drifts, Slots, markers.
 

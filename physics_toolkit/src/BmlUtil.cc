@@ -61,12 +61,16 @@
 using namespace std;
 
 namespace {
- Particle::PhaseSpaceIndex const& i_x     = Particle::i_x;
- Particle::PhaseSpaceIndex const& i_npx   = Particle::i_npx;
- Particle::PhaseSpaceIndex const& i_y     = Particle::i_y;
- Particle::PhaseSpaceIndex const& i_npy   = Particle::i_npy;
- Particle::PhaseSpaceIndex const& i_cdt   = Particle::i_cdt;
- Particle::PhaseSpaceIndex const& i_ndp   = Particle::i_ndp;
+
+ typedef PhaseSpaceIndexing::index index;
+
+index const i_x     = Particle::i_x;
+index const i_npx   = Particle::i_npx;
+index const i_y     = Particle::i_y;
+index const i_npy   = Particle::i_npy;
+index const i_cdt   = Particle::i_cdt;
+index const i_ndp   = Particle::i_ndp;
+
 }
 
 using namespace std;
@@ -133,7 +137,7 @@ void BmlUtil::writeAsTransport( Mapping const& map )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool BmlUtil::isSpace( bmlnElmnt const&  x )
+bool BmlUtil::isSpace( BmlnElmnt const&  x )
 {
   return (    ( 0 == strcasecmp( "drift",  x.Type() ) )
            || ( 0 == strcasecmp( "marker", x.Type() ) ) 
@@ -176,7 +180,7 @@ int BmlUtil::makeCovariance( CSLattFuncs& w, Particle const& prtn,
   // Convert to action, in meters (crazy units):
   //   I1 and I2 are expectation values of action coordinates.
   const double mm_mr = 1.0e-6;
-  const double betaGamma = prtn.ReferenceBeta() * prtn.ReferenceGamma();
+  const double betaGamma = prtn.refBeta() * prtn.refGamma();
   double I1 = ( std::abs( eps_1 )/betaGamma ) * mm_mr / 2.0;
   double I2 = ( std::abs( eps_2 )/betaGamma ) * mm_mr / 2.0;
 
@@ -246,7 +250,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 {
 
   if( insertions.empty() || targets.empty() ) {
-    return  BmlPtr( bml.Clone() );
+    return  BmlPtr( bml.clone() );
   }
 
   if( percent < 0.0 ) { percent = 0.0; }
@@ -283,24 +287,24 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
 
       if( trg == (*it) ) {
         if( upstream ) {
-          ret->append( ElmPtr( ins->Clone() ) );
-          ret->append( ElmPtr( (*it)->Clone() )  );
+          ret->append( ElmPtr( ins->clone() ) );
+          ret->append( ElmPtr( (*it)->clone() )  );
         }
         else if( downstream ) {
-          ret->append( ElmPtr( (*it)->Clone() )  );
-          ret->append( ElmPtr( ins->Clone() ) );
+          ret->append( ElmPtr( (*it)->clone() )  );
+          ret->append( ElmPtr( ins->clone() ) );
         }
         else {
 
           std::pair<ElmPtr,ElmPtr> elms = (*it)->split( percent); 
-          ret->append( ElmPtr(elms.first->Clone()) );
-          ret->append( ElmPtr(ins->Clone()) );
-          ret->append( ElmPtr(elms.second->Clone()) );
+          ret->append( ElmPtr(elms.first->clone()) );
+          ret->append( ElmPtr(ins->clone()) );
+          ret->append( ElmPtr(elms.second->clone()) );
         }
       }
 
       else {
-        ret->append( ElmPtr( (*it)->Clone()) );
+        ret->append( ElmPtr( (*it)->clone()) );
         insertions.push_front( ins );
         targets.push_front( trg );
       }
@@ -309,7 +313,7 @@ BmlPtr    BmlUtil::cloneLineAndInsert( double                     percent,
   // If there are elements left over, handle them.
 
   for (  ; it != bml.end(); ++it ) {
-    ret->append( ElmPtr( (*it)->Clone() ) );
+    ret->append( ElmPtr( (*it)->clone() ) );
   }
 
   // Finished ...

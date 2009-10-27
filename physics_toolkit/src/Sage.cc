@@ -69,12 +69,14 @@ using namespace std;
 
 namespace {
 
- Particle::PhaseSpaceIndex const& i_x     = Particle::i_x;
- Particle::PhaseSpaceIndex const& i_npx   = Particle::i_npx;
- Particle::PhaseSpaceIndex const& i_y     = Particle::i_y;
- Particle::PhaseSpaceIndex const& i_npy   = Particle::i_npy;
- Particle::PhaseSpaceIndex const& i_cdt   = Particle::i_cdt;
- Particle::PhaseSpaceIndex const& i_ndp   = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+
+ index const i_x     = Particle::i_x;
+ index const i_npx   = Particle::i_npx;
+ index const i_y     = Particle::i_y;
+ index const i_npy   = Particle::i_npy;
+ index const i_cdt   = Particle::i_cdt;
+ index const i_ndp   = Particle::i_ndp;
 
 } // anonymous namespace
 
@@ -111,7 +113,7 @@ Sage::Sage(beamline const& bml, sqlite::connection& db )
      ringGapTolerance_(  defGapTol_ ), ringAngleTolerance_( defAngleTol_), db_(db)
 {
    
-  bml_ = BmlPtr( bml.Clone() ); 
+  bml_ = BmlPtr( bml.clone() ); 
 
   if( isRing_ ) {
       bml_->setLineMode( beamline::ring );

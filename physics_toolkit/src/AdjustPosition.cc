@@ -36,14 +36,14 @@
 *************************************************************************/
 
 #include <basic_toolkit/GenericException.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/Alignment.h>
 
 using namespace std;
 
-int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
+int AdjustPosition( BmlnElmnt* p_be, JetParticle const& arg_jp, char )
 {
   int ret   = 0;
 
@@ -53,10 +53,10 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
   JetParticle jetparticle(arg_jp);
   Particle    particle(arg_jp);
 
-  double x_i  = particle.get_x();
-  double xp_i = particle.get_npx();
+  double x_i  = particle.x();
+  double xp_i = particle.npx();
 
-  Vector inState(particle.State().Dim());
+  Vector inState(particle.state().Dim());
 
   int i = 0;
 
@@ -108,10 +108,10 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
   jetparticle.setState( inState );
   p_be->propagate( jetparticle );
 
-  m =  jetparticle.State().jacobian()[xp][x];
+  m =  jetparticle.state().jacobian()[xp][x];
   if( fabs(m) < 1.0e-12 ) {
     throw( GenericException( __FILE__, __LINE__, 
-           "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
+           "int AdjustPosition( BmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
            "Horrible, inexplicable error: multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
@@ -119,9 +119,9 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
   // Initialize the difference ...
   z          = x_i;
   inState[x] = z;
-  particle.State()= inState;
+  particle.state()= inState;
   p_be->propagate( particle );
-  f =  (particle.State())[xp] + xp_i;
+  f =  (particle.state())[xp] + xp_i;
 
   while( ( i < 5 ) || ( ( i < 15 ) && (fabs(f) > 1.0e-9) ) ) 
   {
@@ -135,21 +135,21 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
     jetparticle.setState(inState);
 
     p_be->propagate( jetparticle );
-    m = ( jetparticle.State().jacobian() )[xp][x];
+    m = ( jetparticle.state().jacobian() )[xp][x];
     if( fabs(m) < 1.0e-12 ) {
       ostringstream uic;
       uic  << "Horrible, inexplicable error at step "
            <<  i << ": multi-valued solution is suspected.";
       throw( GenericException( __FILE__, __LINE__, 
-             "int AdjustPosition( bmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
+             "int AdjustPosition( BmlnElmnt* p_be, const JetParticle& arg_jp, char )", 
              uic.str().c_str() ) );
     }
     m = 1.0 / m;
 
     // Recalculate difference ...
-    particle.State()= inState;
+    particle.state()= inState;
     p_be->propagate( particle );
-    f = ( particle.State() )[xp] + xp_i;
+    f = ( particle.state() )[xp] + xp_i;
   }
 
 
@@ -168,14 +168,14 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
     inState[x] = 0.0;
     double delta = 1.0e-4;           // step 0.1 mm
 
-    particle.State() = inState;
+    particle.state() = inState;
     p_be->propagate( particle );
-    double error = ( particle.State() )[xp] + xp_i;
+    double error = ( particle.state() )[xp] + xp_i;
 
     inState[x] = delta;
-    particle.State() = inState;
+    particle.state() = inState;
     p_be->propagate( particle );
-    f = ( particle.State() )[xp] + xp_i;
+    f = ( particle.state() )[xp] + xp_i;
 
     if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) ) 
           && ( fabs(error) < fabs(f) ) ) 
@@ -186,18 +186,18 @@ int AdjustPosition( bmlnElmnt* p_be, JetParticle const& arg_jp, char )
     inState[x] = 0.0;
     while( fabs(delta) > 0.9e-6 ) {
       inState[x] += delta;
-      particle.State() = inState;
+      particle.state() = inState;
       p_be->propagate( particle );
-      f = ( particle.State() )[xp] + xp_i;
+      f = ( particle.state() )[xp] + xp_i;
 
       while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) && 
              ( fabs(f) < fabs(error) ) )
       {
         error = f;
         inState[x] += delta;
-      	particle.State()= inState;
+      	particle.state()= inState;
       	p_be->propagate( particle );
-      	f = ( particle.State() )[xp] + xp_i;
+      	f = ( particle.state() )[xp] + xp_i;
       }
 
       inState[x] -= delta;

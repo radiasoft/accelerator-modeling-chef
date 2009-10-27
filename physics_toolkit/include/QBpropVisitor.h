@@ -55,8 +55,8 @@ struct QBpropVisitor : public ParticleVisitor
   QBpropVisitor( QBpropVisitor const& );
  ~QBpropVisitor();
 
-  void visit( bmlnElmnt&  );
-  void visit( drift&      );
+  void visit( BmlnElmnt&  );
+  void visit( Drift&      );
   void visit( rbend&      );
   void visit( sbend&      );
   void visit( sector&     );

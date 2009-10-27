@@ -101,9 +101,9 @@ public:
 
 private:
 
-  bool        isQuadLike  ( bmlnElmnt const& ) const;
-  bool        isaThinQuad ( bmlnElmnt const& ) const;
-  bool        isaQuad     ( bmlnElmnt const& ) const;
+  bool        isQuadLike  ( BmlnElmnt const& ) const;
+  bool        isaThinQuad ( BmlnElmnt const& ) const;
+  bool        isaQuad     ( BmlnElmnt const& ) const;
   bool        slotFound();
 
   std::vector<ElmPtr> correctors_;

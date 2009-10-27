@@ -13,7 +13,7 @@
 ******                                                                
 ******  Author:    Leo Michelotti                                     
 ******                                                                
-******             Fermilab                                           
+******             Fermilab                                         
 ******             P.O.Box 500                                        
 ******             Mail Stop 220                                      
 ******             Batavia, IL   60510                                
@@ -45,7 +45,7 @@
 ******      have DIFFERENT entry and exit edge angles.
 ******      : (the closed orbit gets distorted for some reason)
 ******    : (b) possibly, if an irregular bend is rolled.
-******    : (c) when a drift is both upstream and downstream of
+******    : (c) when a Drift is both upstream and downstream of
 ******      an irregular bend.
 ******      : (a ring does not close)
 ******
@@ -63,7 +63,7 @@
 /*
  *  DriftsToSlots
  *  
- *  Utility to replace all drifts with Slots when
+ *  Utility to replace all Drifts with Slots when
  *  they are either upstream and/or downstream
  *  of rbends of CF_rbends.
  *  
@@ -141,7 +141,7 @@ bool d2S_LookUpStream ( ElmPtr&              el2Ptr,
          0 != strcmp( el2Ptr->Type(), "sbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_sbend" )     ) 
   {
-    if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
+    if( 0 == strcmp( "Drift", el2Ptr->Type() ) ) {
       return false;
     }
 
@@ -193,7 +193,7 @@ bool d2S_LookDownStream ( ElmPtr&            el2Ptr,
          0 != strcmp( el2Ptr->Type(), "sbend"    )  &&
          0 != strcmp( el2Ptr->Type(), "CF_sbend" )     ) 
   {
-    if( 0 == strcmp( "drift", el2Ptr->Type() ) ) {
+    if( 0 == strcmp( "Drift", el2Ptr->Type() ) ) {
       return false;
     }
 
@@ -225,7 +225,7 @@ bool d2S_LookDownStream ( ElmPtr&            el2Ptr,
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool d2S_rbendLike( bmlnElmnt& x)
+bool d2S_rbendLike( BmlnElmnt& x)
 {
   if(0 == strcmp("rbend", x.Type())) {
     rbend const* bp = static_cast<rbend *>( &x );
@@ -254,7 +254,7 @@ bool d2S_rbendLike( bmlnElmnt& x)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool d2S_sbendLike( bmlnElmnt const& x )
+bool d2S_sbendLike( BmlnElmnt const& x )
 {
   if(0 == strcmp("sbend", x.Type())) {
     const sbend* bp = dynamic_cast<const sbend*>(&x);
@@ -292,7 +292,7 @@ beamline* DriftsToSlots( beamline const& argbml )
             "*** WARNING *** Original line will be returned.        \n"
             "*** WARNING ***                                        \n"
          << endl;
-    return original.Clone();  
+    return original.clone();  
   }
 
   // Bends with parallel faces should not be adjacent.
@@ -316,7 +316,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                 "\n*** WARNING *** Original line will be returned.        "
                 "\n*** WARNING ***                                        "
              << endl;
-        return  original.Clone();
+        return  original.clone();
       } else {
          prev_is_rbend_like  = true;
       }
@@ -342,7 +342,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                 "\n*** WARNING *** Original line will be returned.        "
                 "\n*** WARNING ***                                        "
              << endl;
-        return  original.Clone();
+        return  original.clone();
     }
   }
 
@@ -367,7 +367,7 @@ beamline* DriftsToSlots( beamline const& argbml )
               "*** WARNING *** Original line will be returned.        \n"
               "*** WARNING ***                                        \n"
            << endl;
-      return  original.Clone();
+      return  original.clone();
     }
   }
 
@@ -409,10 +409,10 @@ beamline* DriftsToSlots( beamline const& argbml )
     it2 = it;
     bool isLastPtr  = ( ( ++it2)  == flatRing.end()   );
 
-    // If the trial element is not a drift, just copy it ...
-    if( 0 !=  strcmp( elPtr->Type(), "drift" ) ) 
+    // If the trial element is not a Drift, just copy it ...
+    if( 0 !=  strcmp( elPtr->Type(), "Drift" ) ) 
     {
-      ret->append( ElmPtr( elPtr->Clone() ) );
+      ret->append( ElmPtr( elPtr->clone() ) );
     }
     // ... otherwise, begin processing ...
     else 
@@ -451,7 +451,7 @@ beamline* DriftsToSlots( beamline const& argbml )
              << "\n--- END EXCEPTION -----\n" 
              << endl;
         delete ret; ret=0;;
-        return original.Clone();
+        return original.clone();
       }
 
 
@@ -466,7 +466,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                << "\n*** WARNING: *** "
                << endl;
           delete ret; ret=0;;
-          return original.Clone();
+          return original.clone();
         }
       }
       if( isUpStream ) {
@@ -479,7 +479,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                << "\n*** WARNING: *** "
                << endl;
           delete ret; ret=0;;
-          return original.Clone();
+          return original.clone();
         }
       }
 
@@ -487,13 +487,13 @@ beamline* DriftsToSlots( beamline const& argbml )
       // There are four possibilities
       if( !isUpStream && !isDownStream )
       {
-        ret->append( ElmPtr(elPtr->Clone()) );
+        ret->append( ElmPtr(elPtr->clone()) );
       }
   
       else if( isUpStream && !isDownStream )
       {
         if( d2S_sbendLike( *c ) ) {
-          ret->append( ElmPtr( elPtr->Clone() ) );
+          ret->append( ElmPtr( elPtr->clone() ) );
         }
         else {
           // *** FIX ME *** DOES NOT WORK FOR ASYMMETRIC EDGE ANGLES ***
@@ -517,7 +517,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                  << "\n*** WARNING: *** "
                  << endl;
             delete ret; ret=0;;
-            return original.Clone();
+            return original.clone();
           }
           rollAngle = c->alignment().roll();
           arcFrame.reset();
@@ -548,7 +548,7 @@ beamline* DriftsToSlots( beamline const& argbml )
       else if( !isUpStream && isDownStream )
       {
         if( d2S_sbendLike( *a ) ) {
-          ret->append( ElmPtr( elPtr->Clone() ) );
+          ret->append( ElmPtr( elPtr->clone() ) );
         }
         else {
           // *** FIX ME *** DOES NOT WORK FOR ASYMMETRIC EDGE ANGLES ***
@@ -572,7 +572,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                  << "\n*** WARNING: *** "
                  << endl;
             delete ret; ret=0;;
-            return original.Clone();
+            return original.clone();
           }
           rollAngle = a->alignment().roll();
           arcFrame.reset(); 
@@ -603,7 +603,7 @@ beamline* DriftsToSlots( beamline const& argbml )
       else // isUpstream and isDownStream
       {
         if( d2S_sbendLike( *a ) && d2S_sbendLike( *c ) ) {
-          ret->append( ElmPtr( elPtr->Clone() ) );
+          ret->append( ElmPtr( elPtr->clone() ) );
         }
         else {
           // *** FIX ME *** THIS SECTION LOOKS WRONG!!! ***
@@ -628,7 +628,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                    << "\n*** WARNING: *** "
                    << endl;
               delete ret; ret=0;;
-              return original.Clone();
+              return original.clone();
             }
           }
           rollAngle = c->alignment().roll();
@@ -676,7 +676,7 @@ beamline* DriftsToSlots( beamline const& argbml )
                    << "\n*** WARNING: *** "
                    << endl;
               delete ret; ret=0;
-              return original.Clone();
+              return original.clone();
             }
           }
 

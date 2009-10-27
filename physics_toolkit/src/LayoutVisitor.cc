@@ -69,7 +69,7 @@
 
 #include <basic_toolkit/iosetup.h>
 #include <physics_toolkit/LayoutVisitor.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/quadrupole.h>
 #include <beamline/rbend.h>
 #include <beamline/sbend.h>
@@ -118,7 +118,7 @@ LayoutVisitor::~LayoutVisitor()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LayoutVisitor::setDiscriminator( boost::function< bool( bmlnElmnt&) > dsc, 
+void LayoutVisitor::setDiscriminator( boost::function< bool( BmlnElmnt&) > dsc, 
                                       double hght )
 {
   specialHeight_   = hght;
@@ -149,7 +149,7 @@ void LayoutVisitor::visit ( sector& )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LayoutVisitor::visit( bmlnElmnt& x )
+void LayoutVisitor::visit( BmlnElmnt& x )
 {
 
   if( !streamPtr_ ) { 
@@ -192,7 +192,7 @@ void LayoutVisitor::visit( quadrupole& x )
   }
 
   if( 0 == x.Strength() ) {
-    this->visit(static_cast<bmlnElmnt&>(x));
+    this->visit(static_cast<BmlnElmnt&>(x));
   }
   else if ( 0 < x.Strength() ) {
     (*streamPtr_) << s_ << "  " << baseline_ + quadHeight_ << endl;
@@ -212,7 +212,7 @@ void LayoutVisitor::visit( quadrupole& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LayoutVisitor::visit_bend( bmlnElmnt& x )
+void LayoutVisitor::visit_bend( BmlnElmnt& x )
 {
   if( !streamPtr_ ) { 
      errorCode_ = NOFILEOPENED;
@@ -298,7 +298,7 @@ void LayoutVisitor::visit( sextupole& x )
   }
 
    if( x.Strength() == 0.0 ) {
-     this->visit(static_cast<bmlnElmnt&>(x));
+     this->visit(static_cast<BmlnElmnt&>(x));
    }
    else if ( 0 < x.Strength() ) {
      (*streamPtr_) << s_ << "  " << baseline_ + sextHeight_ << endl;
@@ -369,7 +369,7 @@ int LayoutVisitor::getErrorCode() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LayoutVisitor::processSpecialElement( bmlnElmnt& x )
+void LayoutVisitor::processSpecialElement( BmlnElmnt& x )
 {
   (*streamPtr_) << s_ << "  " << baseline_ + specialHeight_ << endl;
   s_ += x.Length();

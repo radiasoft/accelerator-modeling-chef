@@ -68,7 +68,7 @@ class BendEliminator : public ConstBmlVisitor {
   ~BendEliminator();
 
   void visit( beamline   const&  );
-  void visit( bmlnElmnt  const&  );
+  void visit( BmlnElmnt  const&  );
   void visit( sbend      const&  ); 
   void visit( rbend      const&  ); 
 

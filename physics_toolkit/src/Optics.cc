@@ -74,12 +74,14 @@ using namespace std;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x    = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y    = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt  = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx  = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy  = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp  = Particle::i_ndp;
+ typedef PhaseSpaceIndexing::index index;
+
+ index const i_x    = Particle::i_x;
+ index const i_y    = Particle::i_y;
+ index const i_cdt  = Particle::i_cdt;
+ index const i_npx  = Particle::i_npx;
+ index const i_npy  = Particle::i_npy;
+ index const i_ndp  = Particle::i_ndp;
 
 }
 
@@ -204,11 +206,11 @@ static Matrix invjacobian ( JetParticle const& jp0, beamline const& bml, Vector 
 
   JetParticle jp = jp0;
 
-  jp.State() = Mapping("I", jp.State().Env() );
+  jp.state() = Mapping("I", jp.state().Env() );
     
   bml.propagate(jp);
 
-  M = jp.State().jacobian();
+  M = jp.state().jacobian();
 
   // some ugly index rearranging ... 
 
@@ -245,11 +247,11 @@ static Vector map ( Particle const& p0, beamline const& bml, Vector const& v0 )
 { 
    Particle   p = p0;
   
-   p.State() = v0;
+   p.state() = v0;
 
    bml.propagate(p);
 
-   Vector v = p.State() - v0;
+   Vector v = p.state() - v0;
  
    v[5] = 0.0;
 
@@ -278,8 +280,8 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
 
   // TURN RF OFF **** FIXME     
 
-   Jet__environment::pushEnv( jp.State().Env() );
-   JetC__environment::pushEnv( jp.State().Env() );
+   Jet__environment::pushEnv( jp.state().Env() );
+   JetC__environment::pushEnv( jp.state().Env() );
 
 
    JetParticle jpco(jp);
@@ -289,14 +291,14 @@ JetParticle find_closed_orbit( sqlite::connection& db, beamline const& bml, JetP
                          boost::function<double(Vector const& )>(&norm), 
                          boost::bind<Matrix>( &invjacobian, jpco,        boost::cref(bml), _1 )  ); 
 
-   Vector co = newton( Particle(jpco).State() );
+   Vector co = newton( Particle(jpco).state() );
    co[ i_cdt] = 0.0;
 
    jpco.setState( co );
     
    bml.propagate( jpco );
 
-   jpco.State()[ i_cdt ].setStandardPart(0.0);
+   jpco.state()[ i_cdt ].setStandardPart(0.0);
 
 
   /// ***** FIXME: NEED TO SET ENV REF TO that of closed orbit ! 
@@ -326,9 +328,9 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
   //------------------------------------ 
 
   Particle p(jp_arg); 
-  p.set_cdt(0.0);
-  JetParticle jp(p,jp_arg.State().Env());
-  jp.set_cdt(0.0);
+  p.cdt(0.0);
+  JetParticle jp(p,jp_arg.state().Env());
+  jp.cdt(0.0);
 
   std::ostringstream sql;
 
@@ -381,11 +383,11 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
       lng += (*it)->OrbitLength( p );
 
       cmd_elements.clear();
-      cmd_elements % ++iseq % (int) &(*it) % (*it)->Name() % (*it)->Type() % (*it)->Length() % (*it)->Strength();
+      cmd_elements % ++iseq % (int64_t) &(*it) % (*it)->Name() % (*it)->Type() % (*it)->Length() % (*it)->Strength();
       cmd_elements();
 
       cmd_corbit.clear();
-      cmd_corbit     %  iseq %  lng % p.get_x() %  p.get_y()  % p.Beta() % p.Gamma();  
+      cmd_corbit     %  iseq %  lng % p.x() %  p.y()  % p.beta() % p.gamma();  
       cmd_corbit();
   };
 
@@ -404,7 +406,7 @@ void orbit( sqlite::connection& db, beamline const& bml, JetParticle const& jp_a
 Vector tunes( sqlite::connection& db, JetParticle const& oneturnjp)
 {
 
-  MatrixD mtrx = oneturnjp.State().jacobian();
+  MatrixD mtrx = oneturnjp.state().jacobian();
 
   TVector<std::complex<double> > eigenvalues   = mtrx.Matrix::eigenValues();
   TMatrix<std::complex<double> > eigenvectors  = mtrx.Matrix::eigenVectors();
@@ -482,12 +484,12 @@ Vector periodicDispersion( sqlite::connection& db, JetParticle const& jp_arg )
 {
 
 
-   Jet__environment::pushEnv( jp_arg.State().Env()  );
-  JetC__environment::pushEnv( jp_arg.State().Env()  );
+   Jet__environment::pushEnv( jp_arg.state().Env()  );
+  JetC__environment::pushEnv( jp_arg.state().Env()  );
 
   JetParticle jp(jp_arg);
 
-  MatrixD mtrx  = jp.State().jacobian();
+  MatrixD mtrx  = jp.state().jacobian();
   
   // zero out row/col corresponding to cdt coordinate. 
 
@@ -546,7 +548,7 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
 
   JetParticle jp( (Particle(arg_jp)) ); // resets the state and keeps initial conditions
 
-  Mapping& state = jp.State();
+  Mapping& state = jp.state();
 
   IntArray exp_d(6);
   exp_d[5]  = 1;
@@ -558,7 +560,7 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
   state[i_npy].setWeightedDerivative( exp_d, eta0[4] );
  
 
-  const double start_momentum = jp.ReferenceMomentum();
+  const double start_momentum = jp.refMomentum();
 
   std::ostringstream sql;
 
@@ -588,7 +590,7 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
                                       it != bml.deep_end(); ++it ) {
 
       Jet   ndp   = state[i_ndp];   
-      double p0   = jp.ReferenceMomentum();
+      double p0   = jp.refMomentum();
 
       (*it)->propagate(jp);
      
@@ -606,7 +608,7 @@ int propagateDispersion( sqlite::connection& db, beamline const& bml, JetParticl
           // keep dp/p constant ...
 
          static double const eps =  10.0 * std::numeric_limits<double>::epsilon();
-	 if ( std::fabs(p0 - jp.ReferenceMomentum()) > eps ) { state[i_ndp] = ndp; } 
+	 if ( std::fabs(p0 - jp.refMomentum()) > eps ) { state[i_ndp] = ndp; } 
       } 
 
       else { 
@@ -637,11 +639,11 @@ Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle co
    
   double const dpp = 0.001;
 
-  Matrix oneturnmtrx = oneturnjp.State().jacobian();
+  Matrix oneturnmtrx = oneturnjp.state().jacobian();
 
   Particle p_off(oneturnjp);
 
-  Vector& state = p_off.State(); 
+  Vector& state = p_off.state(); 
   
   state[i_x  ] += eta[0]* dpp; 
   state[i_npx] += eta[1]* dpp; 
@@ -655,7 +657,7 @@ Vector chromaticity( sqlite::connection& db, beamline const& bml, JetParticle co
 
   bml.propagate(jp_off);
 
-  MatrixD oneturnmtrx_off  = jp_off.State().jacobian();
+  MatrixD oneturnmtrx_off  = jp_off.state().jacobian();
 
   Vector nu     = Optics::tunes( db, oneturnjp );
   Vector nu_off = Optics::tunes( db, jp_off    );
@@ -676,14 +678,14 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 {
   
   int ret = 0;
-  int const N = jparg.State().Dim();
+  int const N = jparg.state().Dim();
 
 
   //-------------------------------------
   // Create a new default Jet environment
   //-------------------------------------- 
  
-  Vector  rp = jparg.State().Env()->refPoint();
+  Vector  rp = jparg.state().Env()->refPoint();
    
   EnvPtr<double>                 env  = TJetEnvironment<double>::makeJetEnvironment(1, 6, 6,  rp);
   EnvPtr<std::complex<double> > envc  = env; // implicit conversion 
@@ -711,7 +713,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
   eta0[ i_ndp]  = 1.0;
 
 
-  double const momentum = jp.ReferenceMomentum();
+  double const momentum = jp.refMomentum();
 
   std::ostringstream sql;
 
@@ -765,7 +767,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
     (*it) -> propagate( jp);
 
-    MatrixD  mtrx = jp.State().jacobian();
+    MatrixD  mtrx = jp.state().jacobian();
  
     Vector eta    = mtrx*eta0;
  
@@ -776,7 +778,7 @@ int propagateCourantSnyder2D( sqlite::connection& db, beamline const& bml, JetPa
 
     // Allow for possible acceleration by scaling with momentum
 
-    double const scale =  jp.ReferenceMomentum()/momentum; 
+    double const scale =  jp.refMomentum()/momentum; 
 
     double betax =  scale * ( a*a*betax0 - 2.0*a*b*alphax0 + b*b*gamma_x0 );
 
@@ -856,13 +858,13 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
   //---------------------------------------------------------------
 
 
-   Jet__environment::pushEnv(  jp.State().Env() );
-  JetC__environment::pushEnv(  jp.State().Env() ); // implicit conversion 
+   Jet__environment::pushEnv(  jp.state().Env() );
+  JetC__environment::pushEnv(  jp.state().Env() ); // implicit conversion 
 
   JetParticle  jparticle(jp);
   Particle      particle(jp);
 
-  MatrixD mtrx = jp.State().jacobian();
+  MatrixD mtrx = jp.state().jacobian();
 
   Vector nu = tunes( db, jp); 
 
@@ -908,7 +910,7 @@ CSLattFuncs periodicCourantSnyder2D(  sqlite::connection& db, JetParticle const&
 MatrixC periodicEigenVectors( sqlite::connection& db, JetParticle const& oneturnjp )
 {
 
-  MatrixD mtrx = oneturnjp.State().jacobian();
+  MatrixD mtrx = oneturnjp.state().jacobian();
   
   //-------------------------------------------------
   // For a 4D solution with no dispersive effects 
@@ -993,7 +995,7 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
   double mu1 = 0.0;  // normalize integrated phase advances
   double mu2 = 0.0; 
   
-  double const momentum = jpart.ReferenceMomentum();
+  double const momentum = jpart.refMomentum();
  
   for (beamline::const_deep_iterator it  =  bml.deep_begin(); 
                                      it !=  bml.deep_end();  ++it) {
@@ -1001,14 +1003,14 @@ void propagateEigenVectors( sqlite::connection& db, beamline const& bml, JetPart
 
     be->propagate( jpart );
   
-    Matrix mtrx = jpart.State().jacobian();
+    Matrix mtrx = jpart.state().jacobian();
 
     MatrixC EN  = mtrx*EV0;          // propagate eigenvectors
     Vector eta  = mtrx*eta0;         // propagate dispersion               
    
     // allow for possible acceleration by scaling
 
-    double const scale = jpart.ReferenceMomentum()/momentum;
+    double const scale = jpart.refMomentum()/momentum;
 
 
     // --------------------------------------------------------
@@ -1062,13 +1064,13 @@ MatrixD periodicCovariance( sqlite::connection& db, JetParticle& jp, double eps1
   double const I3 = ( std::abs( eps3 )/betaGamma ) * mm_mr / 2.0; // WRONG UNITS ... FIXME !
 
 
-  TVector<std::complex<double> > eigenvalues   = jp.State().jacobian().Matrix::eigenValues();
-  MatrixC                        EV            = jp.State().jacobian().Matrix::eigenVectors();
+  TVector<std::complex<double> > eigenvalues   = jp.state().jacobian().Matrix::eigenValues();
+  MatrixC                        EV            = jp.state().jacobian().Matrix::eigenVectors();
 
   orderColumns( eigenvalues,  EV ); 
   EV = toNormalForm( EV, Matrix::j_ordering);
 
-  int n = jp.State().Dim();
+  int n = jp.state().Dim();
 
   MatrixD aa(n,n);
 
@@ -1137,7 +1139,7 @@ void propagateCovariance( sqlite::connection& db, beamline const& bml, JetPartic
   // Go through the line, element by element
   //-------------------------------------------
 
-  JetParticle jp( Particle(jparg), jp.State().Env() );
+  JetParticle jp( Particle(jparg), jp.state().Env() );
   
   int iseq = -1;
   for (beamline::const_deep_iterator it  = bml.deep_begin(); 
@@ -1146,7 +1148,7 @@ void propagateCovariance( sqlite::connection& db, beamline const& bml, JetPartic
  
     (*it)->propagate( jp );
   
-    Matrix M     =  jp.State().jacobian();
+    Matrix M     =  jp.state().jacobian();
     Matrix lcov  =  M * cov * M.transpose();
 
 
@@ -1219,7 +1221,7 @@ ETLattFuncs periodicETLatticeFunctions( sqlite::connection& db, beamline const& 
  double csH = cos( Math_TWOPI*nu[0]);
  double csV = cos( Math_TWOPI*nu[1]);
 
- Matrix mtrx = jp.State().jacobian();
+ Matrix mtrx = jp.state().jacobian();
 
  M[0][0] = mtrx[i_x  ][i_x   ];     n[0][0] = mtrx[i_x  ][i_y  ];
  M[0][1] = mtrx[i_x  ][i_npx ];     n[0][1] = mtrx[i_x  ][i_npy];
@@ -1319,7 +1321,7 @@ void propagateETLatticeFunctions(sqlite::connection& db, beamline const& bml, Je
   sqlite::command cmd_insert(db, sql.str());
 
   Particle    p(jparg);
-  JetParticle jp(p, jparg.State().Env() ); // identity mapping on closed orbit
+  JetParticle jp(p, jparg.state().Env() ); // identity mapping on closed orbit
 
   sqlite::execute(db, "BEGIN TRANSACTION", true);
 

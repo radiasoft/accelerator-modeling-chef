@@ -61,8 +61,8 @@ struct Location {
 
  ~ElementTagVisitor();
 
- virtual void visitBmlnElmnt( bmlnElmnt* e);
- virtual void visitBeamline( beamline* e);
+  void visit( BmlnElmnt& e);
+  void visit( beamline& e);
  
  bool overlap(double x1, double x2, double y1, double y2);
 

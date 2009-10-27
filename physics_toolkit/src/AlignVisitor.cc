@@ -75,7 +75,7 @@ AlignVisitor::~AlignVisitor()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AlignVisitor::visit( bmlnElmnt& q )
+void AlignVisitor::visit( BmlnElmnt& q )
 {
    
   // NOTE: The code below will not work when elements are 
@@ -100,7 +100,7 @@ void AlignVisitor::visit( bmlnElmnt& q )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void AlignVisitor::doAlign( bmlnElmnt& q )
+void AlignVisitor::doAlign( BmlnElmnt& q )
 {
   q.setAlignment(myAlign_);
 }

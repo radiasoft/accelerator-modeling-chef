@@ -160,7 +160,7 @@ void BendEliminator::visit( beamline const& x )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void BendEliminator::visit( bmlnElmnt const& x )
+void BendEliminator::visit( BmlnElmnt const& x )
 {
   if( bmlPtr_ )  {  // Not paranoia!
 
@@ -182,7 +182,7 @@ void BendEliminator::visit( bmlnElmnt const& x )
       build_rbend_ = false;
     }
 
-    bmlPtr_->append( ElmPtr( x.Clone() ) ); 
+    bmlPtr_->append( ElmPtr( x.clone() ) ); 
 
     if( not_started_ ) { not_started_ = false; }
   }

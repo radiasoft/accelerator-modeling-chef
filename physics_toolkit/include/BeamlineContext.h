@@ -72,7 +72,7 @@ class TuneAdjuster;
 class ConstBmlVisitor;
 class BmlVisitor;
 
-class bmlnElmnt;
+class BmlnElmnt;
 class quadrupole;
 class thinQuad;
 class sextupole;
@@ -96,7 +96,7 @@ class BeamlineContext: public beamline {
     BeamlineContext( Particle const&, beamline const& bml );
    ~BeamlineContext();
 
-    BeamlineContext* Clone() const;
+    BeamlineContext* clone() const;
 
     char const*  dbname() const;
 

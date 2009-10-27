@@ -81,7 +81,7 @@
 
 extern void      BeamlineSpitout( int, beamline const&, beamline::const_iterator &);
 extern beamline* DriftsToSlots( beamline const& argbml );
-extern bool      d2S_rbendLike( bmlnElmnt& x);
+extern bool      d2S_rbendLike( BmlnElmnt& x);
 
 using namespace std;
 using namespace boost;
@@ -99,14 +99,14 @@ static double const small_npy_err = 1.0e-9;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
-:   beamline(*bml.Clone()), particle_(0) ,particleBunchPtr_(0) , 
+:   beamline(*bml.clone()), particle_(0) ,particleBunchPtr_(0) , 
     initialCSLattFuncs_() , 
     eps1_(40.0), eps2_(40.0), refjp_(p),
     dbname_(),
     db_()
 {
 
-   particle_         = p.Clone();
+   particle_         = p.clone();
    particleBunchPtr_ = new ParticleBunch( *particle_);
 
 
@@ -114,7 +114,7 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
   // ----------------------------------
 
    particle_->setStateToZero();
-   particle_->SetReferenceMomentum( Momentum() );
+   particle_->setRefMomentum( Momentum() );
 
  
    //-------------------------------------------------------------------
@@ -177,8 +177,8 @@ BeamlineContext::BeamlineContext( Particle const& p, beamline const& bml )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 BeamlineContext::BeamlineContext( BeamlineContext const& o)
-:   beamline( *o.beamline::Clone()  ), 
-    particle_(o.particle_->Clone() ) ,
+:   beamline( *o.beamline::clone()  ), 
+    particle_(o.particle_->clone() ) ,
     particleBunchPtr_(0) , 
          initialCSLattFuncs_( o.initialCSLattFuncs_) , 
     eps1_(o.eps1_), 
@@ -210,7 +210,7 @@ BeamlineContext::BeamlineContext( BeamlineContext const& o)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-BeamlineContext* BeamlineContext::Clone() const
+BeamlineContext* BeamlineContext::clone() const
 { 
   return new BeamlineContext(*this);
 }
@@ -251,7 +251,7 @@ void BeamlineContext::saveDatabase( std::string const& dbname) const
 
 void BeamlineContext::setParticle( Particle const& p) 
 { 
-  particle_ = p.Clone();
+  particle_ = p.clone();
   clear();
 }
 
@@ -305,7 +305,7 @@ CSLattFuncs4D const& BeamlineContext::getInitialCS4D()
 
 Mapping const& BeamlineContext::getOneTurnMap()
 {
-  return refjp_.State();
+  return refjp_.state();
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -348,10 +348,10 @@ bool BeamlineContext::onTransClosedOrbit( Particle const& p ) const
   Particle probe(p);
   propagate( probe );
 
-  if(    ( abs( p.get_x()   - probe.get_x()  ) <  small_x_err   )
-      && ( abs( p.get_y()   - probe.get_y()  ) <  small_y_err   )
-      && ( abs( p.get_npx() - probe.get_npx()) <  small_npx_err )
-      && ( abs( p.get_npy() - probe.get_npy()) <  small_npy_err ) ) 
+  if(    ( abs( p.x()   - probe.x()  ) <  small_x_err   )
+      && ( abs( p.y()   - probe.y()  ) <  small_y_err   )
+      && ( abs( p.npx() - probe.npx()) <  small_npx_err )
+      && ( abs( p.npy() - probe.npy()) <  small_npy_err ) ) 
   {
     return true;
   }
@@ -400,7 +400,7 @@ void BeamlineContext::propagateReferenceOrbit()
 
    Particle p(*particle_); 
 
-   Vector& state = p.State();
+   Vector& state = p.state();
 
    state[0] =  initialCSLattFuncs_.orbit.x;
    state[3] =  initialCSLattFuncs_.orbit.xp;

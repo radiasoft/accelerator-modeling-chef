@@ -63,7 +63,7 @@
 #define LAYOUTVISITOR_H
 
 #include <beamline/BmlVisitor.h>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 
 #include <fstream>
 
@@ -74,7 +74,7 @@ class LayoutVisitor : public BmlVisitor {
   LayoutVisitor( double, double, double, double );
  ~LayoutVisitor();
 
-  void visit( bmlnElmnt&  );
+  void visit( BmlnElmnt&  );
   void visit( quadrupole& );
   void visit( rbend&      );
   void visit( sbend&      );
@@ -87,7 +87,7 @@ class LayoutVisitor : public BmlVisitor {
   int  openFile( const char* );
   int  closeFile();
 
-  void setDiscriminator( boost::function< bool( bmlnElmnt&) >, double = 0.0 );
+  void setDiscriminator( boost::function< bool( BmlnElmnt&) >, double = 0.0 );
 
   // Error codes
 
@@ -101,8 +101,8 @@ class LayoutVisitor : public BmlVisitor {
 
   std::ofstream * streamPtr_; 
 
-  void visit_bend( bmlnElmnt& );
-  void processSpecialElement( bmlnElmnt& );
+  void visit_bend( BmlnElmnt& );
+  void processSpecialElement( BmlnElmnt& );
 
   int  errorCode_;
 
@@ -113,7 +113,7 @@ class LayoutVisitor : public BmlVisitor {
   double sextHeight_;
   double specialHeight_;
 
-  boost::function< bool( bmlnElmnt&) > discriminator_; 
+  boost::function< bool( BmlnElmnt&) > discriminator_; 
 
 };
 

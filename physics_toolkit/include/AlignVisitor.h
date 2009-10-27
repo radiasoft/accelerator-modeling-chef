@@ -72,11 +72,11 @@ class AlignVisitor : public ModifierVisitor
 
  ~AlignVisitor();
 
-  void visit( bmlnElmnt& );
+  void visit( BmlnElmnt& );
 
  private:
 
-  void          doAlign( bmlnElmnt& );
+  void          doAlign( BmlnElmnt& );
 
   Alignment myAlign_;
 

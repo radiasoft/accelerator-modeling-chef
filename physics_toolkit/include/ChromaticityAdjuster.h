@@ -87,7 +87,7 @@ public:
 private:
 
   void  addCorrector_private(  ElmPtr x, double a, double b );
-  bool  isaThinSextupole(  bmlnElmnt const& ) const;
+  bool  isaThinSextupole(  BmlnElmnt const& ) const;
 
   std::vector<ElmPtr> correctors_;
 
