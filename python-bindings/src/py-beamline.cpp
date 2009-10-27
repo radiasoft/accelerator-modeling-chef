@@ -93,8 +93,8 @@ void (beamline::*accept1) (  BmlVisitor& )                         =  &beamline:
 int (beamline::*countHowMany1)()       const                       =  &beamline::countHowMany;
 int (beamline::*countHowManyDeeply1)() const                       =  &beamline::countHowManyDeeply;
 
-bmlnElmnt& beamline_front ( beamline& bml ) { return *bml.front(); }
-bmlnElmnt& beamline_back  ( beamline& bml ) { return *bml.back();  }
+BmlnElmnt& beamline_front ( beamline& bml ) { return *bml.front(); }
+BmlnElmnt& beamline_back  ( beamline& bml ) { return *bml.back();  }
 
 void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, double s, boost::python::list elements)
 {
@@ -124,7 +124,7 @@ void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, doubl
 
 void wrap_beamline() {
 
-class_<beamline, bases<bmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beamline", init<>() ); 
+class_<beamline, bases<BmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beamline", init<>() ); 
 
 beamline_.def( init<const char*>() );
 beamline_.def( init<const beamline& >() );

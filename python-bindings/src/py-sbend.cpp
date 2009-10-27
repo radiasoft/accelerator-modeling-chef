@@ -45,7 +45,7 @@ void wrap_sbend () {
   
 using namespace boost::python;
 
-class_<sbend, bases<bmlnElmnt>, SBendPtr >("sbend", init<char const*,    double const&,  double const&,  double const&>() )
+class_<sbend, bases<BmlnElmnt>, SBendPtr >("sbend", init<char const*,    double const&,  double const&,  double const&>() )
   .def(init<char const*,    double const&,  double const&,  double const&,  double const&,  double const&>() )
   .def("setBendAngle",      &sbend::setBendAngle            )
   .def("getBendAngle",      &sbend::getBendAngle,    return_value_policy<copy_const_reference>() )

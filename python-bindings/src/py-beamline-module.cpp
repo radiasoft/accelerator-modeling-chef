@@ -33,7 +33,7 @@
 
 using namespace boost::python;
 
-extern void wrap_bmlnelmnt();
+extern void wrap_BmlnElmnt();
 extern void wrap_beamline();
 extern void wrap_particle();
 extern void wrap_jetparticle();
@@ -43,7 +43,7 @@ extern void wrap_cf_rbend();
 extern void wrap_cf_sbend();
 extern void wrap_circuit();
 extern void wrap_decapole();
-extern void wrap_drift();
+extern void wrap_Drift();
 extern void wrap_fcircuit();
 extern void wrap_icircuit();
 extern void wrap_ioredirector();
@@ -70,7 +70,7 @@ extern void wrap_bmlvisitor();
 BOOST_PYTHON_MODULE( beamline ) 
 {
 
-wrap_bmlnelmnt();
+wrap_BmlnElmnt();
 wrap_beamline();
 wrap_particle();
 wrap_jetparticle();
@@ -79,7 +79,7 @@ wrap_bblens();
 wrap_cf_rbend();
 wrap_cf_sbend();
 wrap_decapole();
-wrap_drift();
+wrap_Drift();
 wrap_circuit();
 wrap_fcircuit();
 wrap_icircuit();

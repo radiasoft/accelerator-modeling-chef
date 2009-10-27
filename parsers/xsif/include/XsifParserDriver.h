@@ -50,7 +50,7 @@
 #include <beamline/LatticeFunctions.h>
 
 
-class bmlnElmnt; 
+class BmlnElmnt; 
 class beamline; 
 
 

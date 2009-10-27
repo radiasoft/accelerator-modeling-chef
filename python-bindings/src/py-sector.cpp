@@ -33,7 +33,7 @@ using namespace boost::python;
 
 void wrap_sector () {
 
- class_<sector, bases<bmlnElmnt>, SectorPtr >("sector") 
+ class_<sector, bases<BmlnElmnt>, SectorPtr >("sector") 
    .def( init<char const*>() )
    .def( init<char const*,     double const&>() )
    .def( init<char const*, Mapping const&,  double const&>() ) 

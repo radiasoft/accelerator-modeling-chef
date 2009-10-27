@@ -27,14 +27,14 @@
 *******************************************************************************/
 
 #include <boost/python.hpp>
-#include <beamline/bmlnElmnt.h>
-#include <beamline/drift.h>
+#include <beamline/BmlnElmnt.h>
+#include <beamline/Drift.h>
 
 using namespace boost::python;
 
-void wrap_drift () {
+void wrap_Drift () {
 
-class_<drift, bases<bmlnElmnt>, DriftPtr >("drift", init<>())
+class_<Drift, bases<BmlnElmnt>, DriftPtr >("Drift", init<>())
   .def(init<char const*, double>() );
  
 }

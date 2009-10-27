@@ -32,7 +32,7 @@ void wrap_septum () {
 using namespace boost::python;
 
 
-class_<thinSeptum, bases<bmlnElmnt> >("thinSeptum", init<char const*>() )
+class_<thinSeptum, bases<BmlnElmnt> >("thinSeptum", init<char const*>() )
   .def(init<char const*, double const&, double const&, double const&>() )
   .def(init<             double const&, double const&, double const&>() )
   .def("setStrengths",  &thinSeptum::setStrengths)

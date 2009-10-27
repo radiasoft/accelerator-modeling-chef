@@ -40,7 +40,25 @@ using namespace boost::python;
 
 namespace {
 
-Vector const& (Particle::*State_ptr)()       const      = &Particle::State;
+  Vector const& (Particle::*State_ptr)()       const      = &Particle::state;
+
+  double (Particle::*getX)()    const = &Particle::x; 
+  double (Particle::*getY)()    const = &Particle::y; 
+  double (Particle::*getCdt)()  const = &Particle::cdt; 
+
+  double (Particle::*getNpx)()  const = &Particle::npx; 
+  double (Particle::*getNpy)()  const = &Particle::npy; 
+  double (Particle::*getNdp)()  const = &Particle::ndp; 
+
+  void (Particle::*setX)(double)      = &Particle::x; 
+  void (Particle::*setY)(double)      = &Particle::y; 
+  void (Particle::*setCdt)(double)    = &Particle::cdt; 
+
+  void (Particle::*setNpx)(double)    = &Particle::npx; 
+  void (Particle::*setNpy)(double)    = &Particle::npy; 
+  void (Particle::*setNdp)(double)    = &Particle::ndp; 
+
+
 
 } // anonymous namespace
 
@@ -53,37 +71,36 @@ void wrap_particle () {
   class_<Particle, boost::noncopyable> Particle_("Particle", no_init ); 
   Particle_.def("psd",                  &Particle::psd)
   .staticmethod("psd")
-  .def("SetReferenceEnergy",   &Particle::SetReferenceEnergy)
-  .def("SetReferenceMomentum", &Particle::SetReferenceMomentum)
+  .def("setRefEnergy",         &Particle::setRefEnergy)
+  .def("setRefMomentum",       &Particle::setRefMomentum)
   .def("setStateToZero",       &Particle::setStateToZero)
-  
-  .def ("get_x",               &Particle::get_x)
-  .def ("get_y",               &Particle::get_y)
-  .def ("get_cdt",             &Particle::get_cdt)
-  .def ("get_npx",             &Particle::get_npx)
-  .def ("get_npy",             &Particle::get_npy)
-  .def ("get_ndp",             &Particle::get_ndp)
-  .def ("set_x",               &Particle::set_x)
-  .def ("set_y",               &Particle::set_y )
-  .def ("set_cdt",             &Particle::set_cdt)
-  .def ("set_npx",             &Particle::set_npx)
-  .def ("set_npy",             &Particle::set_npy)
-  .def ("set_ndp",             &Particle::set_ndp)
-  .def("State",                State_ptr, return_value_policy<copy_const_reference>() )
-  .def("Energy",               &Particle::Energy)
-  .def("KineticEnergy",        &Particle::KineticEnergy)
-  .def("Momentum",             &Particle::Momentum)
-  .def("NormalizedMomentum",   &Particle::NormalizedMomentum)
-  .def("Gamma",                &Particle::Gamma)
-  .def("Beta",                 &Particle::Beta)
-  .def("Mass",                 &Particle::Mass,             return_value_policy<copy_const_reference>() )
-  .def("ReferenceBRho",        &Particle::ReferenceBRho,    return_value_policy<copy_const_reference>() )
-  .def("ReferenceBeta",        &Particle::ReferenceBeta,    return_value_policy<copy_const_reference>() )
-  .def("ReferenceMomentum",    &Particle::ReferenceMomentum,return_value_policy<copy_const_reference>() )
+  .def("x",                    getX)
+  .def("y",                    getY)
+  .def("cdt",                  getCdt)
+  .def("npx",                  getNpx)
+  .def("npy",                  getNpy)
+  .def("ndp",                  getNdp)
+  .def("set_x",                setX)
+  .def("set_y",                setY )
+  .def("set_cdt",              setCdt)
+  .def("set_npx",              setNpx)
+  .def("set_npy",              setNpy)
+  .def("set_ndp",              setNdp)
+  .def("state",                State_ptr, return_value_policy<copy_const_reference>() )
+  .def("energy",               &Particle::energy)
+  .def("kineticEnergy",        &Particle::kineticEnergy)
+  .def("momentum",             &Particle::momentum)
+  .def("normalizedMomentum",   &Particle::normalizedMomentum)
+  .def("gamma",                &Particle::gamma)
+  .def("beta",                 &Particle::beta)
+  .def("mass",                 &Particle::mass,             return_value_policy<copy_const_reference>() )
+  .def("refBrho",              &Particle::refBrho,          return_value_policy<copy_const_reference>() )
+  .def("refBeta",              &Particle::refBeta,          return_value_policy<copy_const_reference>() )
+  .def("refMomentum",          &Particle::refMomentum,      return_value_policy<copy_const_reference>() )
   .def("pn",                   &Particle::pn)
-  .def("ReferenceEnergy",      &Particle::ReferenceEnergy )
-  .def("Charge",               &Particle::Charge,           return_value_policy<copy_const_reference>() )
-  .def("BRho",                 &Particle::BRho);
+  .def("refEnergy",            &Particle::refEnergy )
+  .def("charge",               &Particle::charge,           return_value_policy<copy_const_reference>() )
+  .def("brho",                 &Particle::brho);
 
 
   class_<Proton, bases<Particle> >("Proton", init<>() )
@@ -113,7 +130,7 @@ void wrap_particle () {
 
  scope scope_Particle = Particle_;
 
- enum_<Particle::PhaseSpaceIndex>("PhaseSpaceIndex")
+ enum_<Particle::index>("PhaseSpaceIndex")
     .value("xIndex",     Particle::i_x   )
     .value("yIndex",     Particle::i_y   )
     .value("cdtIndex",   Particle::i_cdt )

@@ -27,7 +27,7 @@
 
 #include <boost/python.hpp>
 
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <sqlite/connection.hpp>

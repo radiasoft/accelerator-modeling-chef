@@ -33,7 +33,7 @@ using namespace boost::python;
 
 void wrap_srot () {
   
-class_<srot, bases<bmlnElmnt>, SRotPtr >("srot", init<const char*>())
+class_<srot, bases<BmlnElmnt>, SRotPtr >("srot", init<const char*>())
   .def(init<const char*,double>())
   .def( "Type", &srot::Type);
 

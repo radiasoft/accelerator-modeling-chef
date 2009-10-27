@@ -38,9 +38,9 @@ using namespace boost::python;
 
 void wrap_octupole () {
  
-class_<octupole,     bases<bmlnElmnt>,     OctupolePtr >("octupole",     init<std::string const&, double const&, double const&>() );
+class_<octupole,     bases<BmlnElmnt>,     OctupolePtr >("octupole",     init<std::string const&, double const&, double const&>() );
  
-class_<thinOctupole, bases<bmlnElmnt>, ThinOctupolePtr >("thinOctupole", init<std::string const&, double const&>() );
+class_<thinOctupole, bases<BmlnElmnt>, ThinOctupolePtr >("thinOctupole", init<std::string const&, double const&>() );
  
 }
 

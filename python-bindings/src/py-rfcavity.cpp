@@ -33,7 +33,7 @@ using namespace boost::python;
 
 void wrap_rfcavity () {
   
-class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
+class_<rfcavity, bases<BmlnElmnt>, RFCavityPtr >("rfcavity")
   .def( init<const char*>() )
   .def( init<char*, double,double,double,double,double,double>() )    
   .def("frequency",          &rfcavity::frequency,       return_value_policy<copy_const_reference>())
@@ -48,7 +48,7 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def("R",                  &rfcavity::setR);
 
 
-class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<char *>() )
+class_<thinrfcavity, bases<BmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<char *>() )
   .def(init< char*,    double,   double, double, double, double> () )    
   .def("frequency",          &thinrfcavity::frequency,       return_value_policy<copy_const_reference>())
   .def("harmon",             &thinrfcavity::harmon,          return_value_policy<copy_const_reference>())

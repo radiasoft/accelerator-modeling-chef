@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 #include <boost/python.hpp>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/Particle.h>
 
@@ -57,7 +57,7 @@ double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rb
 
 void wrap_cf_rbend () {
 
-  class_<CF_rbend, bases<bmlnElmnt>, CFRbendPtr >("CF_rbend", init<const char*,  double const&,  double const&, double const&>() )
+  class_<CF_rbend, bases<BmlnElmnt>, CFRbendPtr >("CF_rbend", init<const char*,  double const&,  double const&, double const&>() )
   .def(init<const char*,  double const&,  double const&, double const&, double const& >() )
   .def(init<const char*,  double const&,  double const&, double const&, double const& , double const& >() )
   .def("setQuadrupole",           &CF_rbend::setQuadrupole)

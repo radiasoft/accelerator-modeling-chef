@@ -28,7 +28,7 @@
 #include <boost/python.hpp>
 
 #include <iostream>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/beamline.h>
 #include <beamline/LatticeFunctions.h>
 #include <beamline/Particle.h>

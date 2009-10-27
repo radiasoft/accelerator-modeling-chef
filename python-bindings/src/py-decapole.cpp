@@ -34,6 +34,6 @@ using namespace boost::python;
 
 void wrap_decapole () {
 
-  class_<thinDecapole, bases<bmlnElmnt>, ThinDecapolePtr >("thinDecapole", init<std::string const&, double const&>() );
+  class_<thinDecapole, bases<BmlnElmnt>, ThinDecapolePtr >("thinDecapole", init<std::string const&, double const&>() );
 
 }

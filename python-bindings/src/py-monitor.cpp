@@ -38,7 +38,7 @@ using namespace boost::python;
 
 void wrap_monitor () {
 
-class_<Monitor,  bases<bmlnElmnt>, MonitorPtr >("Monitor", init<>() )
+class_<Monitor,  bases<BmlnElmnt>, MonitorPtr >("Monitor", init<>() )
 .def( init<std::string const&>() )
 .def( init<std::string const&, double>() )
 .def("isEnabled",         &Monitor::isEnabled ) 
@@ -54,7 +54,7 @@ class_<Monitor,  bases<bmlnElmnt>, MonitorPtr >("Monitor", init<>() )
 .def("setNpx",            &Monitor::setNpx )
 .def("setNpy",            &Monitor::setNpy );
 
-class_<HMonitor, bases<bmlnElmnt>, HMonitorPtr >("HMonitor", init<>() )
+class_<HMonitor, bases<BmlnElmnt>, HMonitorPtr >("HMonitor", init<>() )
 .def( init<std::string const&>() )
 .def( init<std::string const&, double const&>() )
 .def("isEnabled",         &HMonitor::isEnabled )
@@ -66,7 +66,7 @@ class_<HMonitor, bases<bmlnElmnt>, HMonitorPtr >("HMonitor", init<>() )
 .def("setNpx",            &HMonitor::setNpx );
 
 
-class_<VMonitor,  bases<bmlnElmnt>, VMonitorPtr >("VMonitor", init<>() )
+class_<VMonitor,  bases<BmlnElmnt>, VMonitorPtr >("VMonitor", init<>() )
 .def( init<std::string const&>() )
 .def( init<std::string const&, double const&>() )
 .def("isEnabled",         &VMonitor::isEnabled )

@@ -40,8 +40,25 @@ using namespace boost::python;
 
 namespace {
 
-Vector  const& (   Particle::*State_ptr)()    const      = &Particle::State;
-Mapping const& (JetParticle::*JetState_ptr)() const      = &JetParticle::State;
+Vector  const& (   Particle::*State_ptr)()    const      = &Particle::state;
+Mapping const& (JetParticle::*JetState_ptr)() const      = &JetParticle::state;
+
+  Jet (JetParticle::*getX)()    const = &JetParticle::x; 
+  Jet (JetParticle::*getY)()    const = &JetParticle::y; 
+  Jet (JetParticle::*getCdt)()  const = &JetParticle::cdt; 
+
+  Jet (JetParticle::*getNpx)()  const = &JetParticle::npx; 
+  Jet (JetParticle::*getNpy)()  const = &JetParticle::npy; 
+  Jet (JetParticle::*getNdp)()  const = &JetParticle::ndp; 
+
+  void (JetParticle::*setX)(Jet const&)      = &JetParticle::x; 
+  void (JetParticle::*setY)(Jet const&)      = &JetParticle::y; 
+  void (JetParticle::*setCdt)(Jet const&)    = &JetParticle::cdt; 
+
+  void (JetParticle::*setNpx)(Jet const&)    = &JetParticle::npx; 
+  void (JetParticle::*setNpy)(Jet const&)    = &JetParticle::npy; 
+  void (JetParticle::*setNdp)(Jet const&)    = &JetParticle::ndp; 
+
 
 } // anonymous namespace
 
@@ -68,36 +85,36 @@ void wrap_jetparticle () {
   JetParticle_.def( "ndpIndex", &JetParticle::ndpIndex);
   JetParticle_.staticmethod("ndpIndex");  
 
-  JetParticle_.def("SetReferenceEnergy", &JetParticle::SetReferenceEnergy);
-  JetParticle_.def("State",    JetState_ptr,  return_value_policy<copy_const_reference>() );
+  JetParticle_.def("setREnergy", &JetParticle::setRefEnergy);
+  JetParticle_.def("state",       JetState_ptr,  return_value_policy<copy_const_reference>() );
 
-  JetParticle_.def("get_x",              &JetParticle::get_x);
-  JetParticle_.def("get_y",              &JetParticle::get_y);
-  JetParticle_.def("get_cdt",            &JetParticle::get_cdt);
-  JetParticle_.def("get_npx",            &JetParticle::get_npx);
-  JetParticle_.def("get_npy",            &JetParticle::get_npy);
-  JetParticle_.def("get_ndp",            &JetParticle::get_ndp);
+  JetParticle_.def("x",              getX);
+  JetParticle_.def("y",              getY);
+  JetParticle_.def("cdt",            getCdt);
+  JetParticle_.def("npx",            getNpx);
+  JetParticle_.def("npy",            getNpy);
+  JetParticle_.def("ndp",            getNdp);
 
-  JetParticle_.def("set_x",               &JetParticle::set_x);
-  JetParticle_.def("set_y",               &JetParticle::set_y);
-  JetParticle_.def("set_cdt",             &JetParticle::set_cdt);
-  JetParticle_.def("set_npx",             &JetParticle::set_npx);
-  JetParticle_.def("set_npy",             &JetParticle::set_npy);
-  JetParticle_.def("set_ndp",             &JetParticle::set_ndp);
+  JetParticle_.def("set_x",          setX);
+  JetParticle_.def("set_y",          setY);
+  JetParticle_.def("set_cdt",        setCdt);
+  JetParticle_.def("set_npx",        setNpx);
+  JetParticle_.def("set_npy",        setNpy);
+  JetParticle_.def("set_ndp",        setNdp);
 
-  JetParticle_.def("Energy",             &JetParticle::Energy);
-  JetParticle_.def("KineticEnergy",      &JetParticle::KineticEnergy);
-  JetParticle_.def("Momentum",           &JetParticle::Momentum);
-  JetParticle_.def("NormalizedMomentum", &JetParticle::NormalizedMomentum);
-  JetParticle_.def("Mass",               &JetParticle::Mass,              return_value_policy<copy_const_reference>() );
-  JetParticle_.def("ReferenceBRho",      &JetParticle::ReferenceBRho,     return_value_policy<copy_const_reference>() );
-  JetParticle_.def("ReferenceBeta",      &JetParticle::ReferenceBeta,     return_value_policy<copy_const_reference>() );
-  JetParticle_.def("ReferenceGamma",     &JetParticle::ReferenceGamma,    return_value_policy<copy_const_reference>() );
-  JetParticle_.def("Gamma",              &JetParticle::Gamma);
-  JetParticle_.def("ReferenceMomentum",  &JetParticle::ReferenceMomentum, return_value_policy<copy_const_reference>() );
+  JetParticle_.def("energy",             &JetParticle::energy);
+  JetParticle_.def("kineticEnergy",      &JetParticle::kineticEnergy);
+  JetParticle_.def("momentum",           &JetParticle::momentum);
+  JetParticle_.def("normalizedMomentum", &JetParticle::normalizedMomentum);
+  JetParticle_.def("mass",               &JetParticle::mass,              return_value_policy<copy_const_reference>() );
+  JetParticle_.def("refBrho",            &JetParticle::refBrho,           return_value_policy<copy_const_reference>() );
+  JetParticle_.def("refBeta",            &JetParticle::refBeta,           return_value_policy<copy_const_reference>() );
+  JetParticle_.def("refGamma",           &JetParticle::refGamma,          return_value_policy<copy_const_reference>() );
+  JetParticle_.def("gamma",              &JetParticle::gamma);
+  JetParticle_.def("refMomentum",        &JetParticle::refMomentum,       return_value_policy<copy_const_reference>() );
   JetParticle_.def("pn",                 &JetParticle::pn);
-  JetParticle_.def("ReferenceEnergy",    &JetParticle::ReferenceEnergy);
-  JetParticle_.def("Charge",             &JetParticle::Charge,            return_value_policy<copy_const_reference>() );
+  JetParticle_.def("refEnergy",          &JetParticle::refEnergy);
+  JetParticle_.def("charge",             &JetParticle::charge,            return_value_policy<copy_const_reference>() );
   
            //JetVector VectorBeta() const;
            //JetVector VectorMomentum() const;

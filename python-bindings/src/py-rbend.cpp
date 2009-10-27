@@ -50,7 +50,7 @@ void wrap_rbend () {
   
 using namespace boost::python;
 
-class_<rbend, bases<bmlnElmnt>, RBendPtr >("rbend", init<char const*,    double const&,  double const&,  double const&>() )
+class_<rbend, bases<BmlnElmnt>, RBendPtr >("rbend", init<char const*,    double const&,  double const&,  double const&>() )
   .def(init<char const*,    double const&,  double const&,  double const&,  double const&,  double const&>() )
   .def("getEntryAngle",     &rbend::getEntryAngle        )
   .def("getExitAngle",      &rbend::getExitAngle         )

@@ -37,17 +37,17 @@ using namespace boost::python;
 
 void wrap_thinpoles () {
 
-  class_<thin2pole,  bases<bmlnElmnt>, Thin2polePtr >("thin2pole",   init<std::string const&, double const&>() );
+  class_<thin2pole,  bases<BmlnElmnt>, Thin2polePtr >("thin2pole",   init<std::string const&, double const&>() );
 
-  class_<thin12pole, bases<bmlnElmnt>, Thin12polePtr >("thin12pole", init<std::string const&, double const&>() );
+  class_<thin12pole, bases<BmlnElmnt>, Thin12polePtr >("thin12pole", init<std::string const&, double const&>() );
 
-  class_<thin14pole, bases<bmlnElmnt>, Thin14polePtr >("thin14pole", init<std::string const&, double const&>() );
+  class_<thin14pole, bases<BmlnElmnt>, Thin14polePtr >("thin14pole", init<std::string const&, double const&>() );
 
-  class_<thin16pole, bases<bmlnElmnt>,Thin16polePtr  >("thin16pole", init<std::string const&, double const&>() );
+  class_<thin16pole, bases<BmlnElmnt>,Thin16polePtr  >("thin16pole", init<std::string const&, double const&>() );
 
-  class_<thin18pole, bases<bmlnElmnt>, Thin18polePtr >("thin18pole", init<std::string const&, double const&>() );
+  class_<thin18pole, bases<BmlnElmnt>, Thin18polePtr >("thin18pole", init<std::string const&, double const&>() );
 
-  class_<thinMultipole, bases<bmlnElmnt>, ThinMultipolePtr >("thinMultipole", init<std::string const& > () );
+  class_<thinMultipole, bases<BmlnElmnt>, ThinMultipolePtr >("thinMultipole", init<std::string const& > () );
 }
 
 

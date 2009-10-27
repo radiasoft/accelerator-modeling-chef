@@ -37,7 +37,7 @@ using namespace boost::python;
 
 void wrap_slot () {
   
-class_<Slot, bases<bmlnElmnt>, SlotPtr >("Slot")
+class_<Slot, bases<BmlnElmnt>, SlotPtr >("Slot")
   .def(init<const char*>())
   .def("makeUpstreamHorizontal",   &Slot::makeUpstreamHorizontal)
   .def("makeDownstreamHorizontal", &Slot::makeDownstreamHorizontal)

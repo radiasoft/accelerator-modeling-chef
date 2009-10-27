@@ -37,7 +37,7 @@ using namespace boost::python;
 
 void wrap_marker () {
 
- class_<marker, bases<bmlnElmnt>, MarkerPtr>("marker", init<>() )
+ class_<marker, bases<BmlnElmnt>, MarkerPtr>("marker", init<>() )
    .def(init<char* >());
  
 }

@@ -27,7 +27,7 @@
 ******************************************************************************/
 
 #include <boost/python.hpp>
-#include <beamline/bmlnElmnt.h>
+#include <beamline/BmlnElmnt.h>
 #include <beamline/CF_sbend.h>
 #include <beamline/Particle.h>
 
@@ -58,7 +58,7 @@ double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sb
 
 void wrap_cf_sbend () {
 
-  class_<CF_sbend, bases<bmlnElmnt>,CFSbendPtr>("CF_sbend", init<const char*, double const&, double const&, double const&>() )
+  class_<CF_sbend, bases<BmlnElmnt>,CFSbendPtr>("CF_sbend", init<const char*, double const&, double const&, double const&>() )
   .def(init<const char*, double const&, double const&, double const&, double const&, double const&>() )
   .def("setQuadrupole",           &CF_sbend::setQuadrupole   )
   .def("setSextupole",            &CF_sbend::setSextupole    )

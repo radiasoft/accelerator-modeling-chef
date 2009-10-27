@@ -39,19 +39,19 @@ using namespace boost::python;
 void wrap_kick () {
 
 
-class_<hkick, bases<bmlnElmnt>, HKickPtr >("hkick")
+class_<hkick, bases<BmlnElmnt>, HKickPtr >("hkick")
   .def(init<std::string const&>())
   .def(init<std::string const&,double const&>())
   .def(init<std::string const&,double const&, double const&>());
 
 
-class_<vkick, bases<bmlnElmnt>, VKickPtr >("vkick")
+class_<vkick, bases<BmlnElmnt>, VKickPtr >("vkick")
   .def(init<std::string const&>())
   .def(init<std::string const&,double const&>())
   .def(init<std::string const&,double const&, double const&>());
 
 
-class_<kick,bases<bmlnElmnt>, KickPtr >("kick")
+class_<kick,bases<BmlnElmnt>, KickPtr >("kick")
   .def(init<std::string const&>())
   .def(init<std::string const&,double const&, double const&, double const&>())
   .def(init<std::string const&,double const&, double const&, double const&>());

@@ -61,7 +61,7 @@ using namespace boost::python;
 
 void wrap_bblens () {
 
- class_<BBLens, bases<bmlnElmnt>, BBLensPtr >("BBLens") 
+ class_<BBLens, bases<BmlnElmnt>, BBLensPtr >("BBLens") 
    .def(init<std::string const&, double const&, double const&, double const&,  double const*>())
    //  .def("NormalizedEField",          &local_NormalizedEField)
    //.def("JetNormalizedEField",         &local_JetNormalizedEField)
