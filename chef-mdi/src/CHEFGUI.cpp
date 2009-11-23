@@ -2302,7 +2302,12 @@ void CHEFGUI::editPartAndSect()
       double s = 0.0;
 
       bmlPtr->insert( spaceCharge[0] );
-      bmlPtr->InsertElementsFromList( s, insl );
+      try {
+        bmlPtr->InsertElementsFromList( s, insl );
+      }
+      catch (GenericException& ge){
+        throw ge;
+      }
       bmlPtr->append( spaceCharge[numberOfSectors] );
 
 #endif

@@ -31,6 +31,7 @@
 
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/python/detail/api_placeholder.hpp>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
@@ -111,7 +112,12 @@ void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, doubl
     elm_list.push_back( std::make_pair(elm, s) );
   }
 
-   bml->InsertElementsFromList(particle, s, elm_list);
+  try {
+    bml->InsertElementsFromList(particle, s, elm_list);
+  }
+  catch (GenericException& ge){
+    throw ge;
+  }
 }
 
 

@@ -1815,7 +1815,12 @@ void CHEF::_editPartAndSect()
       slist removedElements;
     
       bmlPtr->insert( spaceCharge[0] );
-      bmlPtr->InsertElementsFromList( s, insl, removedElements );
+      try {
+        bmlPtr->InsertElementsFromList( s, insl, removedElements );
+      }
+      catch (GenericException& ge){
+        throw ge;
+      }
       bmlPtr->append( spaceCharge[numberOfSectors] );
     
       // Display and delete the removed elements
