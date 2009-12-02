@@ -3,13 +3,18 @@
 // File:          insertionTest_2.cc
 // Author:        Leo Michelotti
 //
-// Revision date: Wednesday.  April 23, 2008.  (original version)
-// *** WARNING *** UNFINISHED
+// Revision dates: 
+// --------------
+// Wednesday.  April 23, 2008.  (original version)
+// 
+// Friday.     November 20, 2009.
+// Added handling exceptions.
+// - lpjm
 //
 ////////////////////////////////////////////////////////////
 //
 // Tests usage of insertion lists
-// : i.e. of beamline::InsertElementsFromList(..)
+// : i.e. usage of beamline::InsertElementsFromList(..)
 //
 // ------------
 // COMMAND LINE
@@ -51,9 +56,19 @@ using namespace std;
 struct Options
 {
   bool valid;
+
   int  N;         // number of "cuts"
   long seed;
   bool s_option;
+
+  double pc;
+  double energy;
+  double brho;
+  double rho;
+  double bodyLength;
+  double arcLength;
+  double bendAngle;
+  double bendField;
 
   Options( int, char**, int=0 );
 };
@@ -64,7 +79,19 @@ Options::Options( int argc, char** argv, int lastargs )
   , N(3)
   , seed(11111)
   , s_option(true)
+  , pc(1000)
+  , bodyLength(2)
 {
+  Proton proton(100);
+  proton.SetReferenceMomentum(pc);
+
+  energy     = proton.ReferenceEnergy();
+  bendAngle  = M_TWOPI/774.0;
+  brho       = proton.ReferenceBRho();  // Tesla-meters
+  rho        = bodyLength / (2.0*sin( bendAngle/2.0 ));
+  arcLength  = rho*bendAngle;
+  bendField  = brho/rho;
+
   int limit = argc-lastargs;
   string s;
   int i = 1;
@@ -159,8 +186,6 @@ int main( int argc, char** argv )
     return 1;
   }
 
-  int ret = 0;
-
   srand48( myOptions.seed );
 
   BmlPtr myLine( randomLine() );
@@ -175,12 +200,14 @@ int main( int argc, char** argv )
          << endl;
   }
 
-  Proton proton( 1000.0 );
+  Proton proton( myOptions.energy );
   proton.set_npy(0.001);
   cout << "inState : " << proton.State() << endl;
   myLine->propagate( proton );
   cout << "outState: " << proton.State() << endl;
   proton.setStateToZero();
+
+  Vector testState( proton.State() );
 
   std::list<std::pair<ElmPtr,double> > myList;
   double ds = myLine->Length()/((double) (myOptions.N + 1));
@@ -192,16 +219,34 @@ int main( int argc, char** argv )
   
   s = 0;
   if( myOptions.s_option ) {
-    cout << "DGN: " << __FILE__ << "," << __LINE__
-         << ": myLine->InsertElementsFromList( proton, s, myList );" 
-         << endl;
-    myLine->InsertElementsFromList( proton, s, myList );
+    try { 
+      myLine->InsertElementsFromList( proton, s, myList ); 
+    }
+    catch (GenericException& ge){
+      cerr << "\n *** ERROR *** "
+              "\n *** ERROR *** Exception thrown by beamline::InsertElementsFromList"
+              "\n *** ERROR *** ---------------------------------------------\n"
+           << ge.what()
+           << "\n *** ERROR *** ---------------------------------------------"
+              "\n *** ERROR *** "
+           << endl;
+      return 2;
+    }
   }
   else {
-    cout << "DGN: " << __FILE__ << "," << __LINE__
-         << ": myLine->InsertElementsFromList( s, myList );" 
-         << endl;
-    myLine->InsertElementsFromList( s, myList );
+    try { 
+      myLine->InsertElementsFromList( s, myList );
+    }
+    catch (GenericException& ge){
+      cerr << "\n *** ERROR *** "
+              "\n *** ERROR *** Exception thrown by beamline::InsertElementsFromList"
+              "\n *** ERROR *** ---------------------------------------------\n"
+           << ge.what()
+           << "\n *** ERROR *** ---------------------------------------------"
+              "\n *** ERROR *** "
+           << endl;
+      return 2;
+    }
   }
 
   cout << "\n\nAFTER:\n" << endl;
@@ -221,5 +266,15 @@ int main( int argc, char** argv )
   cout << "outState: " << proton.State() << endl;
   proton.setStateToZero();
 
-  return ret;
+  for( int j = 0; j < testState.Dim(); ++j ) {
+    if( 1.0e-12 < std::abs( testState[j] - proton.State()[j] ) ) {
+      cerr << "\n *** ERROR *** "
+              "\n *** ERROR *** Splitting elements affected propagation."
+              "\n *** ERROR *** "
+           << endl;
+      return 3;
+    }
+  }
+
+  return 0;
 }

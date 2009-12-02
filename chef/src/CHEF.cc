@@ -1815,7 +1815,35 @@ void CHEF::_editPartAndSect()
       slist removedElements;
     
       bmlPtr->insert( spaceCharge[0] );
-      bmlPtr->InsertElementsFromList( s, insl, removedElements );
+      try {
+        bmlPtr->InsertElementsFromList( s, insl, removedElements );
+      }
+      catch (GenericException& ge){
+        std::ostringstream uic;
+        uic << __FILE__ << ", line " << __LINE__ << ": "
+            << "Exception was thrown by beamline::InsertElementsFromList(..).\n"
+               "The message was:\n"
+            << ge.what();
+
+        QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()), 
+                       QMessageBox::Critical, 
+                       QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        mb.show();
+        while(mb.isVisible()) { qApp->processEvents(); }
+
+        InsertionListElement* ptr_ile;
+        while( 0 != (ptr_ile = insl.Get()) ) {
+          delete ptr_ile;
+        }
+        for( int i = 0; i <= numberOfSectors; ++i ) {
+          delete spaceCharge[i];
+        }
+
+        bmlPtr->eliminate();
+        splitBmlPtr->eliminate();
+
+        return;
+      }
       bmlPtr->append( spaceCharge[numberOfSectors] );
     
       // Display and delete the removed elements

@@ -2277,6 +2277,7 @@ void CHEFGUI::editPartAndSect()
     numberOfSectors = (qle->text()).toInt( &ok);
 
 #if 0
+FIXME
     if( ok && ( numberOfSectors > 1 )) {
       // Insert equally spaced markers throughout
       // the bml model.
@@ -2301,7 +2302,35 @@ void CHEFGUI::editPartAndSect()
       double s = 0.0;
 
       bmlPtr->insert( spaceCharge[0] );
-      bmlPtr->InsertElementsFromList( s, insl );
+      try {
+        bmlPtr->InsertElementsFromList( s, insl );
+      }
+      catch (GenericException& ge){
+        std::ostringstream uic;
+        uic << __FILE__ << ", line " << __LINE__ << ": "
+            << "Exception was thrown by beamline::InsertElementsFromList(..).\n"
+               "The message was:\n"
+            << ge.what();
+
+        QMessageBox mb(QString("CHEF: ERROR"), QString(uic.str().c_str()), 
+                       QMessageBox::Critical, 
+                       QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
+        mb.show();
+        while(mb.isVisible()) { qApp->processEvents(); }
+
+        InsertionListElement* ptr_ile;
+        while( 0 != (ptr_ile = insl.Get()) ) {
+          delete ptr_ile;
+        }
+        for( int i = 0; i <= numberOfSectors; ++i ) {
+          delete spaceCharge[i];
+        }
+
+        // OBSOLETE bmlPtr->eliminate();
+        // OBSOLETE splitBmlPtr->eliminate();
+
+        return;
+      }
       bmlPtr->append( spaceCharge[numberOfSectors] );
 
 #endif
@@ -2336,6 +2365,7 @@ void CHEFGUI::editPartAndSect()
 
         JetParticle jetparticle(particle);
 #if 0
+FIXME
         splitBmlPtr->append( bmlPtr->MakeSector( *(spaceCharge[i]), *(spaceCharge[i+1]), order, *jpPtr  ) );
         splitBmlPtr->append( spaceCharge[i+1]->Clone() );
 #endif

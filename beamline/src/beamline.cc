@@ -36,15 +36,18 @@
 ****** Sep 2006    ostiguy@fnal.gov
 ****** - eliminated redundant (and dangerous) c-style hard casts
 ******   (dlist*) this  [ where this is a beamline * ]                    
+******
 ****** Oct 2006:   ostiguy@fnal.gov
 ****** - beamline: decoupled list container from public interface
-******             now using std::list<> instead of dlist                                                   
-****** - introduced new iterators with stl-compatible interface                                                                
+******             now using std::list<> instead of dlist
+****** - introduced new iterators with stl-compatible interface
 ****** - eliminated all references to old-style BeamlineIterator, 
 ******   DeepBeamlineIterator etc ..
+******
 ****** Jan-Mar 2007 ostiguy@fnal.gov
 ****** - added support for reference counted elements 
 ****** - eliminated unneeded dynamic casts             
+******
 ****** Sep 2007     ostiguy@fnal.gov
 ****** - new iterator based interface for misalignments and rotations.  
 ******   introducing a misalignments trough an entire beamline is now 
@@ -52,11 +55,23 @@
 ****** - refactored rotateRel(..) moveRel(..): eliminate duplicated code 
 ****** - eliminated find( ..):    use stl::algorithm instead 
 ****** - eliminated replace/deepReplace
+******
 ****** Mar 2008      ostiguy@fnal.gov
 ****** - introduced support for hierachical information ( i.e. an ElmPtr
 ******   can discover its parent )
+******
 ****** Apr 2008     michelotti@fnal.gov
 ****** - additional argument list for beamline::InsertElementsFromList(..)
+******
+****** Nov 2009     michelotti@fnal.gov
+****** - fixed error in beamline::InsertElementsFromList(..) triggered by
+******   trying to insert elements close to (i.e. within machine presision)
+******   but not exactly at the upstream or downstream end of an element.
+****** - added additional error checking and throwing exceptions
+******   to beamline::InsertElementsFromList(..)
+****** - thanks to Eric Stern for reporting the error, for his analysis
+******   of the circumstances that triggered it, and for testing the
+******   updated version.
 ******
 **************************************************************************
 *************************************************************************/
@@ -407,150 +422,243 @@ void beamline::InsertElementAt( double const& s_0, double const& s, ElmPtr q )
 
 void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList , boost::function<double(ElmPtr)> Length )
 {
-  
- static const ElmPtr null;
+  static const ElmPtr null;
+  double const fuzzTolerance = 1.0e-9;
 
- beamline::iterator bml_iter = begin();
+  beamline::iterator bml_iter = begin();
 
- ElmPtr  p_be   = ( bml_iter == end() ) ? null : *bml_iter;
+  ElmPtr  p_be   = ( bml_iter == end() ) ? null : *bml_iter;
 
- std::pair<ElmPtr,double>  p_ile = inList.front();  // top element; not removed
-
- bool   firstWarning = true;
-
- if( !p_be ) {
-  (*pcerr) << "\n*** WARNING *** "
-              "\n*** WARNING *** beamline::InsertElementsFromList(...)"
-              "\n*** WARNING *** The beamline is empty! "
-              "\n*** WARNING *** Nothing will be done. "
-              "\n*** WARNING *** "
-           << endl;
-  return;
- }
-
- if( ! (p_ile.first) ) {
-  (*pcerr) << "\n*** WARNING *** "
-              "\n*** WARNING *** beamline::InsertElementsFromList(...)"
-              "\n*** WARNING *** The list is empty! "
-              "\n*** WARNING *** Nothing will be done. "
-              "\n*** WARNING *** "
-       << endl;
-  return;
- }
-
-
- double localLength = 0;
-
- while( p_be && (p_ile.first) ) {
-
-  localLength = Length(p_be);
-
-  if( p_be->isBeamline() )  {
-
-    boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( s, inList, Length );
-
-    p_ile = inList.front();   // this may have changed
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter; 
+  // 
+  // First sanity check: if the invoking beamline is empty, we're finished.
+  // 
+  if( !p_be ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** beamline::InsertElementsFromList(...)"
+                "\n*** WARNING *** The beamline is empty! "
+                "\n*** WARNING *** Nothing will be done. "
+                "\n*** WARNING *** "
+             << endl;
+    return;
   }
 
-  else if ( s + localLength <= p_ile.second )  {
-    s += localLength;
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter;     
+  // 
+  // Second sanity check: if the insertion list is empty, we're finished.
+  // 
+  if( inList.empty() ) {
+    (*pcerr) << "\n*** WARNING *** "
+                "\n*** WARNING *** beamline::InsertElementsFromList(...)"
+                "\n*** WARNING *** The list is empty! "
+                "\n*** WARNING *** Nothing will be done. "
+                "\n*** WARNING *** "
+         << endl;
+    return;
   }
 
-  else if ( s == p_ile.second ) {
-    putAbove( bml_iter, p_ile.first );
-    inList.pop_front();             // removes top element
-    if (inList.empty() ) break;
-    p_ile = inList.front();         // accesses new top element
+  // 
+  // Loop through the insertion list and the beamline
+  // inserting elements as we go.
+  // 
 
-  }
+  double   localLength      = 0;
+  bool     firstWarning     = true;
+  double   last_insertion_s = 0;
 
-  else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
-    
-#if 0
-    BmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList, Length );
+  std::pair<ElmPtr,double>  p_ile = inList.front();  // top element; not removed
 
-    p_ile = inList.front();     // this may have changed
-
-    ++bml_iter; 
-    p_be = (bml_iter == end()) ? null : *bml_iter;     
-
-#endif
-    if( firstWarning ) {
-      (*pcerr) << "\n*** WARNING: FIXME !                           *** "
-                  "\n*** WARNING: Insertion into a combinedFunction *** "
-                  "\n*** WARNING: element will hide what is being   *** "
-                  "\n*** WARNING: inserted.                         *** "
-                  "\n*** WARNING:                                   *** "
-               << endl;
-      firstWarning = false;
+  while( p_be && (p_ile.first) ) 
+  {
+    // 
+    // Final sanity check: azimuth sequence must be non-negative and non-decreasing.
+    // This check could fail to capture an error under certain circumstances
+    // with nested beamlines. If so, the error will be captured later but with
+    // the wrong diagnostic message.
+    // 
+    if( p_ile.second < last_insertion_s ) {
+      ostringstream uic;
+      uic << "\n*** ERROR *** "
+             "\n*** ERROR *** Insertion list azimuth in wrong sequence."
+             "\n*** ERROR *** Test failed: " << p_ile.second << " < " << last_insertion_s
+          << "\n*** ERROR *** The element to be inserted was: "
+          << p_ile.first->Type() << " " << p_ile.first->Name()
+          << "\n*** ERROR *** ";
+      throw( GenericException( __FILE__, __LINE__, 
+             "void iefl(...)",
+             uic.str().c_str() ) );
+    }
+    else {
+      last_insertion_s = p_ile.second;
     }
 
-  }
 
-  else if ( ( p_ile.second > s ) && ( p_ile.second < s + localLength ) )  {
+    localLength = Length(p_be);
+
+    // 
+    // If there is a nested beamline, enter into it.
+    // 
+    if( typeid(*p_be) == typeid(beamline) )  {
+      boost::static_pointer_cast<beamline>(p_be)->InsertElementsFromList( s, inList, Length );
+      p_ile = inList.front();   // this may have changed!
+      ++bml_iter; 
+      p_be = (bml_iter == end()) ? null : *bml_iter; 
+    }
+
+    // 
+    // combinedFunction elements that are not used as a base class
+    // for inheritance are treated in a default manner.
+    // 
+    else if (  typeid(*p_be) == typeid(combinedFunction)  ) {
     
-    std::pair<ElmPtr,ElmPtr> selms = p_be->split( ( p_ile.second - s )/localLength );
+#if 0
+      BmlnElmnt::core_access::get_BmlPtr(*p_be)->InsertElementsFromList( s, inList, Length );
 
-    ElmPtr p_be_a =  selms.first;
-    ElmPtr p_be_b =  selms.second;
 
-    putAbove( bml_iter, p_be_a      );
-    putAbove( bml_iter, p_ile.first );
-    putAbove( bml_iter, p_be_b      );
 
-    s +=  Length(p_be_a) + Length(p_ile.first);
+      p_ile = inList.front();     // this may have changed
 
-    p_be = p_be_b;
+      ++bml_iter; 
+      p_be = (bml_iter == end()) ? null : *bml_iter;     
+#endif
+      if( firstWarning ) {
+        (*pcerr) << "\n*** WARNING:                                   *** "
+                    "\n*** WARNING: Insertion into a combinedFunction *** "
+                    "\n*** WARNING: element will hide what is being   *** "
+                    "\n*** WARNING: inserted.                         *** "
+                    "\n*** WARNING:                                   *** "
+                 << endl;
+        firstWarning = false;
 
-    bml_iter = erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+        ostringstream uic;
+        uic << "\n*** ERROR *** "
+               "\n*** ERROR *** FIXME / FIX ME"
+               "\n*** ERROR *** Pure combinedFunction elements are not handled"
+               "\n*** ERROR *** in this version."
+               "\n*** ERROR *** ";
+        throw( GenericException( __FILE__, __LINE__, 
+               "void beamline::InsertElementsFromList(...)",
+               uic.str().c_str() ) );
+      }
+    }
 
-    inList.pop_front();                       // removes top element
-    if (inList.empty() ) break;
-    p_ile = inList.front();                   // accesses new top element
+    // 
+    // If the requested azimuth has not yet been reached, move on.
+    // 
+    else if ( s + localLength <= p_ile.second )  {
+      s += localLength;
+      ++bml_iter;
+      p_be = (bml_iter == end()) ? null : *bml_iter;
+    }
 
-    --bml_iter;                               // now points to p_be_b 
+    // 
+    // If the requested azimuth has been reached "exactly,"
+    // insert element upstream of current element.
+    // 
+    else if ( std::abs(s - p_ile.second) < fuzzTolerance ) {
+      putAbove( bml_iter, p_ile.first );
+
+      // NOTE: behavior of beamline::putAbove means that 
+      // bml_iter still points to "current element" 
+      // -- i.e. downstream of inserted element.
+
+      // NOTE ALSO: s is not adjusted because it tracks azimuth
+      // with reference to the original beamline.
+
+      inList.pop_front();             // removes top element
+      if (inList.empty() ) break;
+      p_ile = inList.front();         // accesses new top element
+    }
+
+    // 
+    // If the requested azimuth is within the current element,
+    // split it and insert the element between the two pieces.
+    // 
+    else if ( ( s < p_ile.second ) && ( p_ile.second < s + localLength ) )  {
+      std::pair<ElmPtr,ElmPtr> selms = p_be->split( ( p_ile.second - s )/localLength );
+
+      ElmPtr p_be_a =  selms.first;
+      ElmPtr p_be_b =  selms.second;
+
+      putAbove( bml_iter, p_be_a      );
+      putAbove( bml_iter, p_ile.first );
+      putAbove( bml_iter, p_be_b      );
+
+      // SEE COMMENT ABOVE
+      s +=  Length(p_be_a);
+
+      p_be = p_be_b;
+
+      bml_iter = erase( bml_iter );    // bml_iter now points to element downstream of p_be_b !
+
+      inList.pop_front();              // removes top element
+      if (inList.empty() ) break;
+      p_ile = inList.front();          // accesses new top element
+
+      --bml_iter;                      // now points to p_be_b 
+    }
+
+    // 
+    // The current azimuth has gone past the requested azimuth.
+    // This should never happen!
+    // 
+    else if( p_ile.second < s ) {
+      ostringstream uic;
+      uic << "\n*** ERROR *** "
+             "\n*** ERROR *** While trying to insert "
+          << p_ile.first->Type() << "  " << p_ile.first->Name()
+          << " into beamline " << Name() 
+          << "\n*** ERROR *** we passed the requested azimuth, "
+          << p_ile.second << " meters."
+             "\n*** ERROR *** Currently, s = " << s << " meters."
+             "\n*** ERROR *** "
+             "\n*** ERROR *** This should not have happened!"
+             "\n*** ERROR *** Please alert michelotti@fnal.gov"
+             "\n*** ERROR *** ";
+      throw( GenericException( __FILE__, __LINE__, 
+             "void beamline::InsertElementsFromList(...)",
+             uic.str().c_str() ) );
+    }
+
+    // 
+    // And this DEFINITELY should never happen!!
+    // 
+    else {
+      ostringstream uic;
+      uic << "\n*** ERROR *** "
+             "\n*** ERROR *** While trying to insert "
+          << p_ile.first->Type() << "  " << p_ile.first->Name()
+          << " into beamline " << Name() 
+          << "\n*** ERROR *** the impossible occurred:"
+          << "\n*** ERROR *** no azimuth test was triggered."
+          << "\n*** ERROR *** Requested azimuth was "
+          << p_ile.second << " meters."
+             "\n*** ERROR *** Currently, s = " << s << " meters."
+             "\n*** ERROR *** "
+             "\n*** ERROR *** This DEFINITELY should not have happened!!"
+             "\n*** ERROR *** Please alert michelotti@fnal.gov"
+          << "\n*** ERROR *** ";
+      throw( GenericException( __FILE__, __LINE__, 
+             "void beamline::InsertElementsFromList(...)",
+             uic.str().c_str() ) );
+    }
   }
 
-  else {
-    (*pcerr) << "\n*** WARNING *** "
-                "\n*** WARNING *** beamline::InsertElementsFromList( s, list ) "
-                "\n*** WARNING *** The impossible has happened at "
-                "\n*** WARNING *** s = " << s
-             << "\n*** WARNING *** and element: " << p_be->Type() << "  " 
-                                                  << p_be->Name()
-             << "\n*** WARNING *** "
-             << endl;
-    (*pcerr) << "Here are the tests:\n";
-    (*pcerr) << "else if ( s + localLength <= p_ile.second )\n"
-         << "else if ( " << setprecision(10) << ( s + localLength )
-         << " <= "       << setprecision(10) << ( p_ile.second )
-         << " )\n";
-    (*pcerr) << "else if ( s == p_ile->second )\n"
-         << "else if ( " << setprecision(10) << s 
-         << " == "       << setprecision(10) << p_ile.second 
-         << " )\n";
-    (*pcerr) << "else if (  typeid(*p_be) == typeid(combinedFunction)  )\n"
-         << "else if (  "
-         << typeid(*p_be).name()
-         << " == "
-         << typeid(combinedFunction).name()
-         << "  )\n";
-    (*pcerr) << "else if ( ( s < p_ile->second ) && ( p_ile->second < s + localLength ) )\n"
-         << "else if ( ( " << setprecision(10) << s 
-         << " < "          << setprecision(10) << p_ile.second 
-         << " ) && ( "     << setprecision(10) << p_ile.second 
-         << " < "          << setprecision(10) << ( s + localLength )
-         << " ) )\n";
-
-    s += localLength;
-    ++bml_iter;
-    p_be =  ( bml_iter == end() ) ? null: *bml_iter;
+  // 
+  // Final insertions, in case we fell off the end of the beamline,
+  // which will happen if the final elements to be inserted come
+  // at the end.
+  // 
+  if( !(inList.empty()) && (p_ile.first) ) {  // Double test may be redundant.  
+                                              // Who cares?  Paranoia is useful.
+    while( std::abs(s - p_ile.second) < fuzzTolerance ) {
+      append( p_ile.first );          // element is appended at end.
+      inList.pop_front();             // removes top element from insertion list;
+                                      // inList need not be empty here!
+      if (inList.empty() ) break;
+      p_ile = inList.front();         // accesses new top element
+    }
   }
- }
+
+  // NOTE: inList need not be empty here either.
 }
 
 
@@ -564,7 +672,12 @@ namespace {
 
 void beamline::InsertElementsFromList( Particle const& particle, double& s, std::list<std::pair<ElmPtr,double> >& inList )
 { 
-  InsertElementsFromList(s, inList, boost::bind<double>( ::OrbitLength, _1, particle) );
+  try {
+    InsertElementsFromList(s, inList, boost::bind<double>( ::OrbitLength, _1, particle) );
+  }
+  catch (GenericException& ge){
+    throw ge;
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -572,7 +685,12 @@ void beamline::InsertElementsFromList( Particle const& particle, double& s, std:
 
 void beamline::InsertElementsFromList( double& s, std::list<std::pair<ElmPtr,double> >& inList )
 {
-  InsertElementsFromList( s, inList, boost::function<double(ElmPtr)>(&::Length) );
+  try {
+    InsertElementsFromList( s, inList, boost::function<double(ElmPtr)>(&::Length) );
+  }
+  catch (GenericException& ge){
+    throw ge;
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
