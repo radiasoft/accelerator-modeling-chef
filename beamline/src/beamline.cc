@@ -107,7 +107,7 @@ void iefl(  beamline* invoker
           , double& s
           , std::list<std::pair<ElmPtr,double> >& inList )
 {
-  ElmPtr const null;
+  static const ElmPtr null;
   double const fuzzTolerance = 1.0e-9;
 
   beamline::iterator bml_iter = invoker->begin();
