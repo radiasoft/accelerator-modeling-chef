@@ -20,16 +20,18 @@ LANGUAGE        = C++
 windows:CONFIG  += qt opengl x11 debug warn_on thread staticlib exceptions rtti
 unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
-HEADERS	+= ./include/Tracker.h \
+HEADERS += ./include/Orbit.h \
+           ./include/Tracker.h \
            ./include/DistributionWidget.h \
            ./include/PointEdit.h \
            ./include/QtMonitor.h \
            ./include/TrbWidget.h \
            ./include/RayTrace.h
 
-SOURCES += ./src/DistributionWidget.cc \
+SOURCES += ./src/Orbit.cc \
+           ./src/Tracker.cc \
+           ./src/DistributionWidget.cc \
            ./src/PointEdit.cc \
            ./src/QtMonitor.cc \
            ./src/TrbWidget.cc \
-           ./src/RayTrace.cc \
-           ./src/Tracker.cc
+           ./src/RayTrace.cc

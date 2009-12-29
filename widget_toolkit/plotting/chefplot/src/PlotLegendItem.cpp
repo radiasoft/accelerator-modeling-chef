@@ -46,12 +46,12 @@ PlotLegendItem::PlotLegendItem(const QwtSymbol& symbol, const QPen& curvePen,
 
 void   PlotLegendItem::toggleCurve(bool set) 
 {
+  #if 0
+  Plot* plot = dynamic_cast<Plot*>( parent()->parent()->parent()->parent() );
+  // FIXME !! plot->toggleCurve( curve_key_, set );
+  #endif
 
-   Plot* plot = dynamic_cast<Plot*>( parent()->parent()->parent()->parent() );
-
-   // FIXME !! plot->toggleCurve( curve_key_, set );
-
-   plot->replot();
-
+  QwtPlot* plot = dynamic_cast<QwtPlot*>( parent()->parent()->parent()->parent() );
+  plot->replot();
 }
 

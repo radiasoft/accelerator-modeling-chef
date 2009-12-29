@@ -34,7 +34,8 @@
 
 #include <iostream>
 #include <Plot.h>
-#include <PlotLegendItem.h>
+// REMOVE??? #include <PlotLegendItem.h>
+#include <qwt_legend_item.h>   // ADDED AS REPLACEMENT
 #include <PlotData.h>
 
 #include <qapplication.h>
