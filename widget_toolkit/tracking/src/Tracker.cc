@@ -19,20 +19,22 @@
 ******  is protected under the U.S.and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-****** REVISION HISTORY
-****** Mar 2007    ostiguy@fnal.gov
-****** -  - removed dependencies on dlist/slist
-****** - support for reference-counted elements and beamlines 
+******  (PARTIAL) REVISION HISTORY
+******  --------------------------
+******  May, 2001    michelotti@fnal.gov
+******  - Original version: part of AESOP
+******  
+******  March, 2007  ostiguy@fnal.gov
+******  - removed dependencies on dlist/slist
+******  support for reference-counted elements and beamlines 
 ******
+******  December, 2009  michelotti@fnal.gov
+******  - class Orbit removed to its own files in order to
+******  eliminate circular dependencies in widget_toolkit.
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -60,6 +62,7 @@
 #include <qpainter.h>
 
 #include "PointEdit.h"
+#include "Orbit.h"
 #include "Tracker.h"
 #include "TrbWidget.h"
 #include "beamline.h"
@@ -72,101 +75,6 @@
 // #undef connect
 
 using namespace std;
-
-// ---------------------------
-// Implementation: class Orbit
-// ---------------------------
-
-Orbit::Orbit( Vector const& x ) 
-:  mode(Orbit::points), red_(1), green_(1), blue_(1)
-{
-  history_.push_back( new Vector( x ) );
-}
-
-Orbit::Orbit( Vector const* x ) 
-: mode(Orbit::points), red_(1), green_(1), blue_(1)
-{
-  history_.push_back( new Vector( *x ) );
-}
-
-Orbit::Orbit( Orbit const& x ) 
-: mode(x.mode), red_(x.red_), green_(x.green_), blue_(x.blue_)
-{
-  for (std::list<Vector*>::const_iterator it  = x.history_.begin(); 
-       it != x.history_.end(); ++it ) {
-    history_.push_back( new Vector(**it) );
-  }
-
-}
-
-Orbit::~Orbit()
-{
-  for (std::list<Vector*>::iterator it  = history_.begin(); 
-       it != history_.end(); ++it ) {
-    delete (*it);
-  }
-  history_.clear();
-}
-
-
-Orbit::iterator Orbit::begin()
-{
-  return history_.begin();
-}
- 
-Orbit::const_iterator Orbit::begin() const
-{
-   return history_.begin();
-}
-
-Orbit::iterator Orbit::end()
-{
-  return history_.end();
-}
- 
-Orbit::const_iterator Orbit::end() const
-{
-   return history_.end();
-}
-
-
-void Orbit::add( Vector const& x ) 
-{
-  history_.push_back( new Vector( x ) );
-}
-
-void Orbit::add( Vector const* x ) 
-{
-  history_.push_back( new Vector( *x ) );
-}
-
-const Vector* Orbit::lastPoint()
-{
-  return history_.back();
-}
-
-const Vector* Orbit::firstPoint()
-{
-  return history_.front();
-}
-
-
-void Orbit::setColor( GLdouble r, GLdouble g, GLdouble b )
-{
-  if ( r < 0.0 )    red_ = 0.0;
-  else if( r > 1. ) red_ = 1.0;
-  else              red_ = r;
-
-  if( g < 0. )      green_ = 0.0;
-  else if( g > 1. ) green_ = 1.0;
-  else              green_ = g;
-
-  if( b < 0. )      blue_ = 0.0;
-  else if( b > 1. ) blue_ = 1.0;
-  else              blue_ = b;
-}
-
-
 
 // ---------------------------------------
 // Implementation: class OrbitTransformer
@@ -904,9 +812,7 @@ void DrawSpace::mousePressEvent( QMouseEvent* qme )
         for ( std::list<Orbit*>::iterator it  = _topTracker->orbits_.begin(); 
               it != _topTracker->orbits_.end(); ++it )
         {
-
           orbitPtr = *it;
-       
           for ( std::list<Vector*>::iterator oit   = orbitPtr->history_.begin();
                                              oit  != orbitPtr->history_.end(); ++oit ) {
             vec = *oit;

@@ -22,7 +22,8 @@ unix:CONFIG     += qt opengl x11 warn_on debug thread dll       rtti exceptions
 
 INCLUDEPATH += ../tracking/src/ui
 
-HEADERS	+= ./include/Tracker.h \
+HEADERS += ./include/Orbit.h \
+           ./include/Tracker.h \
            ./include/DistributionWidget.h \
            ./include/PointEdit.h \
            ./include/QtMonitor.h \
@@ -30,12 +31,13 @@ HEADERS	+= ./include/Tracker.h \
            ./include/RayTrace.h \
            ./include/RayTracerNew.h 
 
-SOURCES += ./src/DistributionWidget.cc \
+SOURCES += ./src/Orbit.cc \
+           ./src/Tracker.cc \
+           ./src/DistributionWidget.cc \
            ./src/PointEdit.cc \
            ./src/QtMonitor.cc \
            ./src/TrbWidget.cc \
            ./src/RayTrace.cc \
-           ./src/Tracker.cc \
            ./src/RayTracerNew.cc
 
 FORMS	+= ./src/RayTracerBase.ui 

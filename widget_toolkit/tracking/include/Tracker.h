@@ -20,26 +20,29 @@
 ******                                                                
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-****** REVISION HISTORY
-****** Mar 2007 ostiguy@fnal.gov
-****** - removed references to slist/dlist
-****** - support for reference counted elements and beamlines
+******  (PARTIAL) REVISION HISTORY
+******  --------------------------
+******  May, 2001       michelotti@fnal.gov
+******  - Original version: part of AESOP
+******  
+******  March, 2007     ostiguy@fnal.gov
+******  - removed references to slist/dlist
+******  - support for reference counted elements and beamlines
+******  
+******  December, 2009  michelotti@fnal.gov
+******  - class Orbit removed to its own files in order to
+******  eliminate circular dependencies in widget_toolkit.
+******  
 **************************************************************************
 *************************************************************************/
 
 
 // ************************************
 // 
-// File: Tracker.cc
+// File: Tracker.h
 // 
 // Author: Leo Michelotti
 // Date: May 24, 2001
@@ -72,51 +75,9 @@
 class DrawSpace;
 class Tracker;
 class PointEdit;
+class Orbit;
 
 typedef void (*DrawFunc) ( DrawSpace* );
-
-class Orbit
-{
-  public: 
-
-    Orbit( const Vector& );  // Arguments are always cloned.
-    Orbit( const Vector* );
-    Orbit( const Orbit& );   // Does a deep copy
-    ~Orbit();
-
-    void add( const Vector& );
-    void add( const Vector* );
-
-    const Vector* lastPoint();
-    const Vector* firstPoint();
-
-    GLdouble Red() const;
-    GLdouble Green() const;
-    GLdouble Blue() const;
-
-    void setColor( GLdouble, GLdouble, GLdouble );
-
-    enum RepStyle { points=0, lines } mode;
-
-    typedef std::list<Vector*>::iterator             iterator;  
-    typedef std::list<Vector*>::const_iterator const_iterator;  
-
-    iterator       begin();
-    const_iterator begin() const;
-
-    iterator       end();
-    const_iterator end()   const;
-
-
-    std::list<Vector*> history_;
-
-  private:
-
-    GLdouble           red_;
-    GLdouble           green_;
-    GLdouble           blue_;
-};
-
 
 class OrbitTransformer
 {
@@ -442,21 +403,6 @@ private:
 
 
 // Inlined functions
-
-inline GLdouble Orbit::Red() const
-{
-  return red_;
-}
-
-inline GLdouble Orbit::Green() const
-{
-  return green_;
-}
-
-inline GLdouble Orbit::Blue() const
-{
-  return blue_;
-}
 
 inline bool Tracker::isIterating()
 {
