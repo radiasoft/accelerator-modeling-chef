@@ -36,8 +36,6 @@
 #define PLOT_H
 
 #include <qwt_plot.h> 
-#include <qwt_legend.h> 
-#include <list>
 
 class QwtWheel;
 class QwtPlotItem;
