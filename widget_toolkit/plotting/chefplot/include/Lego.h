@@ -24,7 +24,7 @@
 
 #include <sqlite/connection.hpp>
 #include <qwidget.h>
-#include <beamline/beamline.h>
+#include <beamline/BmlPtr.h>
 #include <vector>
 
 class  QPainter;
