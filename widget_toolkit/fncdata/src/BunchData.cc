@@ -40,12 +40,14 @@ using namespace std;
 
 namespace {
 
-  Particle::PhaseSpaceIndex const& i_x   = Particle::i_x;
-  Particle::PhaseSpaceIndex const& i_y   = Particle::i_y;
-  Particle::PhaseSpaceIndex const& i_cdt = Particle::i_cdt;
-  Particle::PhaseSpaceIndex const& i_npx = Particle::i_npx;
-  Particle::PhaseSpaceIndex const& i_npy = Particle::i_npy;
-  Particle::PhaseSpaceIndex const& i_ndp = Particle::i_ndp;
+  typedef PhaseSpaceIndexing::index index;
+
+  index i_x   = Particle::i_x;
+  index i_y   = Particle::i_y;
+  index i_cdt = Particle::i_cdt;
+  index i_npx = Particle::i_npx;
+  index i_npy = Particle::i_npy;
+  index i_ndp = Particle::i_ndp;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -71,7 +73,7 @@ BunchData::BunchData( ParticleBunch const& b)
   for ( ParticleBunch::const_iterator it  = b.begin();
 	  it != b.end(); ++it ) {
      
-     Vector const& state = it->State(); 
+     Vector const& state = it->state(); 
 
      double   x = state[i_x]; 
      double   y = state[i_y]; 
