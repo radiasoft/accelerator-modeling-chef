@@ -27,6 +27,11 @@
 
 #include <qwt_legend_item.h> 
 
+class QWidget;
+class QPen;
+class QString;
+class QwtSymbol;
+
 class PlotLegendItem: public QwtLegendItem {
 
   Q_OBJECT
