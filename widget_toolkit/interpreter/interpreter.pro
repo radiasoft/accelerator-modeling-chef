@@ -14,7 +14,8 @@ include( ../../chef-config/config.pri )
 TEMPLATE	= lib
 LANGUAGE	= C++
 
-   unix:CONFIG	+= qt warn_on debug thread rtti exception dll
+#   unix:CONFIG	+= qt warn_on debug thread rtti exception dll
+   unix:CONFIG	+= qt warn_on thread rtti exception dll
 windows:CONFIG	+= qt warn_on debug thread rtti exceptions staticlib
 
 
