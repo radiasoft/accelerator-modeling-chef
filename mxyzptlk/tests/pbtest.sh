@@ -1,3 +1,3 @@
 #!/bin/csh
    
-pbtest >& pbtest.out
+./pbtest >& pbtest.out
