@@ -1,3 +1,3 @@
 #!/bin/csh
    
-evaltest >& evaltest.out
+./evaltest >& evaltest.out
