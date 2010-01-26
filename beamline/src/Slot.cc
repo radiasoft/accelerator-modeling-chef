@@ -1,52 +1,66 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
+******             of beamlines, storage rings, and
+******             synchrotrons.
 ******
 ******  File:      Slot.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******
+******             Implementation of class Slot
+******             - representing a region of free space connecting
+******               two completely general faces (Frames).
+******             - generalization of "drift," which connects parallel
+******               faces whose origins are incident on a normally
+******               intersecting line.
+******
+******  Author:    Leo Michelotti
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Copyright (c) 1998 Universities Research Association, Inc. / Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
 ******
+******
+****** ----------------
 ****** REVISION HISTORY
-******
+****** ----------------
+****** Jun 1998 (?)       michelotti@fnal.gov
+****** - original (working) version
+****** 
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
+****** - reduced src file coupling due to visitor interface.
 ******   visit() takes advantage of (reference) dynamic type.
 ****** - use std::string for string operations.
-******                                                                
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
 ****** - eliminated (unused) code for slots with embedded elements
-****** 
+******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - added placeholder Slot::setLength method
-****** 
+******
+****** Jan 2010           michelotti@fnal.gov
+****** - modified void Slot::Split(...) to forbid splitting "small" Slots,
+******   smallness being specified by new public static variable.
+****** - splitting previously worked correctly but led to confusion
+******   in certain applications (viz. Synergia) which created Mappings
+******   created between inserted markers which did not map 0->0.
+****** - done in conjunction with introduction of class DriftConverter
+******   in directory physics_toolkit.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -81,6 +95,11 @@ namespace {
   Particle::PhaseSpaceIndex const& i_ndp = Particle::ndpIndex;
 
 }
+
+
+double       Slot::minSplitLength         = 0.02; // meters
+double const Slot::minSplitLengthDefault  = 0.02; // meters
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -449,6 +468,19 @@ istream& Slot::readFrom( istream& is )
 
 void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 {
+  if( length_ <= Slot::minSplitLength ) {
+    ostringstream uic;
+    uic  << "\n*** ERROR *** "
+         << "\n*** ERROR *** File: " << " " << __FILE__ << ", line " << __LINE__ << ": "
+         << "\n*** ERROR *** Attempt to split a Slot with length <= "
+         << Slot::minSplitLength << " meter."
+         << "\n*** ERROR *** ";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const",
+           uic.str().c_str() ) );
+  }
+
+
   if( pct < 0.0 || 1.0 < pct ) {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void Slot::Split( double, ElmPtr&, ElmPtr& )"
