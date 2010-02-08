@@ -24,17 +24,17 @@
 ******  Author:    Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov                         
 ******                                                                
-******  Inspired by the code suggested in
-******  B. Karlsonn, "Beyond the C++ STL: An Introduction to Boost",
-******  Addisson-Wesley 2005.
-******
+******  Inspired by code suggested in
+******  B. Karlsonn, 
+****** "Beyond the C++ STL: An Introduction to Boost",
+******  Addison-Wesley 2005.
 ******
 ****** Note:
 ****** -----
 ******
-****** This version of the ReferenceCounter class uses the Curiously 
-****** Recurring Template idiom to provide compile-time polymorphism. 
-****** (needed for the dispose() function).
+****** This ReferenceCounter class uses the 
+****** Curiously Recurring Template idiom to provide compile-time 
+****** polymorphism for destruction (through the dispose() function).
 ******
 ****** A derived class DerivedClass should be declared as follows:
 ******
@@ -84,12 +84,14 @@ class DLLEXPORT ReferenceCounter {
 
  public:
 
-  ReferenceCounter( ): refcount_(0) {}
-  
-  // NOTE: a locking mechanism needs to be provided in
-  //       order to make the ref count manipulation
-  //       thread-safe. 
+  //--------------------------------------------------------
+  // NOTE: ReferenceCount is not thread safe. 
+  //       Thread safety would require a locking mechanism 
+  //       for refcount_
+  //--------------------------------------------------------
 
+  ReferenceCounter( ): refcount_(0) {}
+ 
   void dispose(){ return toDerivedClass().dispose(); }
 
   friend void intrusive_ptr_add_ref<>(ReferenceCounter* p);
@@ -111,21 +113,28 @@ class DLLEXPORT ReferenceCounter {
   
  protected:
 
-  // The intent of the definitions below is to
-  // make sure that copying of the reference count
-  // is only done in an explicit manner.
+  //---------------------------------------------------
+  // Assignment operator is a no-op operator. 
+  // This necessary for operations such as  
+  // std::swap(o1, o2) to work as expected.
+  //---------------------------------------------------
 
   ReferenceCounter& operator=( ReferenceCounter const&) {
     return *this;
   }
 
-  // Explicit destruction forbidden; 
+  // Explicit destruction is forbidden; 
+
   ~ReferenceCounter(){ }        
   
+  //-------------------------------------------------------- 
+  // Copy contruction of the reference count is forbidden. 
+  // since copying an object managed by a smart pointer 
+  // must produce a new object with a reference count of 1.
+  //---------------------------------------------------------
 
  private:
 
-  // Copy contruction forbidden
   ReferenceCounter(ReferenceCounter const&); 
  
 }; 
