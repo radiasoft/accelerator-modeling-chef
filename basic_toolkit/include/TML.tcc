@@ -1014,6 +1014,8 @@ template<typename T>
 TML<T>& TML<T>::operator=(TML<T> const& x) 
 {
   if( this == &x )  return *this;
+
+  ReferenceCounter<TML<T> >::operator=(x);
  
   //-----------------------------------------------------
   // if the LHS and RHS do not have the same dimensions, 
