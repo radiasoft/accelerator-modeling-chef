@@ -1169,6 +1169,8 @@ TJL<T>& TJL<T>::operator=( TJL<T> const& x )  {
 
  if( this == &x ) return *this;
 
+ ReferenceCounter<TJL<T> >::operator=(x);  
+
  TJLterm<T>* old_jltermStore = 0;
  clear(); 
 
@@ -1244,6 +1246,8 @@ TJL<T>& TJL<T>::operator=( TJL<T> const& x )  {
 
   weight_  = lhsmaxweight;
   accuWgt_ = std::min( x.accuWgt_, lhsmaxweight);
+
+ 
   return   *this;
 }
 
