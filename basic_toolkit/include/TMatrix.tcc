@@ -795,7 +795,7 @@ TMatrix<std::complex<double> > const TMatrix<T>::Rmatrix(int n)
    if ( n%2 != 0 ) {
       throw( GenericException( __FILE__,  __LINE__, 
                               "TMatrix<T>::RMatrix(int n) "
-                              "A Symplectic matrix must have even dimensionality.") );
+                              "A Symplectic matrix must have even dimensions.") );
    }     
   
    TMatrix<std::complex<double> > R(n,n);
