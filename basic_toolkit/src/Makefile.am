@@ -2,7 +2,7 @@
 lib_LTLIBRARIES		= libbasic_toolkit.la
 include source_files
 
-CPPFLAGS		     =  $(BOOST_INC) $(FFTW3_INC) -I$(top_srcdir)/../include 
+CPPFLAGS		     =  -I$(top_srcdir)/../include $(BOOST_INC) $(FFTW3_INC)
 libbasic_toolkit_la_LDFLAGS  =  $(FFTW3_LIB) -lfftw3 
 
 if IMPLICIT_TEMPLATES
