@@ -1,56 +1,59 @@
 /*************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
 ******  File:      bmlnElmnt.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Author:    Leo Michelotti
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - forbade negative length elements
-****** 
-****** Mar 2007           ostiguy@fnal.gov
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+****** ----------------
+****** REVISION HISTORY
+****** ----------------
+****** Mar 2007           Jean-Francois Ostiguy
+******                    ostiguy@fnal.gov
 ****** - support for reference counted elements
-****** - modified visitor to reduce src file coupling. 
+****** - modified visitor to reduce src file coupling.
 ******   visit() now takes advantage of (reference) dynamic type.
-****** - use std::string consistently for string operations. 
+****** - use std::string consistently for string operations.
 ******
 ****** Jul 2007           ostiguy@fnal.gov
 ****** - new, less memory-hungry PinnedFrameSet implementation
-******   
+******
 ****** Dec 2007           ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
-******                                                        
+******
 ****** Apr 2008           michelotti@fnal.gov
+****** - forbade negative length elements
 ****** - modified bmlnElmnt::setLength
-****** 
+******
+****** Apr 2010           michelotti@fnal.gov
+****** - removed internal Aperture pointer, pAperture_.  This
+******   concept was initiated by Oleg Krivosheev (c.1997-99), but
+******   was never implemented and, in the MAIN trunk, is now being
+******   replaced with an "ApertureDecorator."
+****** - removal is necessary, as aperture classes are now available
+******   as separate beamline elements via an updated header file,
+******   Aperture.h.  This may prove to be a temporary measure after
+******   the ApertureDecorator is fully realized.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -64,7 +67,6 @@
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
-#include <beamline/Aperture.h>
 #include <beamline/beamline.h>
 #include <beamline/BmlVisitor.h>
 #include <beamline/Alignment.h>
@@ -90,15 +92,15 @@ namespace {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 double PropagatorTraits<Particle>::norm(  PropagatorTraits<Particle>::Component_t const& comp)
-{ 
-  return std::abs(comp); 
-}   
+{
+  return std::abs(comp);
+}
 
 
 double PropagatorTraits<JetParticle>::norm(  PropagatorTraits<JetParticle>::Component_t const& comp)
-{ 
-  return std::abs( comp.standardPart() ); 
-}    
+{
+  return std::abs( comp.standardPart() );
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -121,7 +123,7 @@ bmlnElmnt::PinnedFrameSet::PinnedFrameSet( bmlnElmnt::PinnedFrameSet const& o)
 :   upStream_(0), downStream_(0)
 {
 
-  upStream_   =  o.upStream_   ?   new Frame( *(o.upStream_)   ) : 0; 
+  upStream_   =  o.upStream_   ?   new Frame( *(o.upStream_)   ) : 0;
   downStream_ =  o.downStream_ ?   new Frame( *(o.downStream_) ) : 0;
 
 }
@@ -132,8 +134,8 @@ bmlnElmnt::PinnedFrameSet::PinnedFrameSet( bmlnElmnt::PinnedFrameSet const& o)
 bmlnElmnt::PinnedFrameSet::~PinnedFrameSet()
 {
 
-  if (    upStream_ ) delete    upStream_; 
-  if (  downStream_ ) delete  downStream_; 
+  if (    upStream_ ) delete    upStream_;
+  if (  downStream_ ) delete  downStream_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -142,10 +144,10 @@ bmlnElmnt::PinnedFrameSet::~PinnedFrameSet()
 bmlnElmnt::PinnedFrameSet& bmlnElmnt::PinnedFrameSet::operator=( bmlnElmnt::PinnedFrameSet const& rhs)
 {
 
-  if (    upStream_ ) delete    upStream_; 
-  if (  downStream_ ) delete  downStream_; 
+  if (    upStream_ ) delete    upStream_;
+  if (  downStream_ ) delete  downStream_;
 
-  upStream_   =  rhs.upStream_   ?   new Frame( *(rhs.upStream_)   ) : 0; 
+  upStream_   =  rhs.upStream_   ?   new Frame( *(rhs.upStream_)   ) : 0;
   downStream_ =  rhs.downStream_ ?   new Frame( *(rhs.downStream_) ) : 0;
 
   return *this;
@@ -157,7 +159,7 @@ bmlnElmnt::PinnedFrameSet& bmlnElmnt::PinnedFrameSet::operator=( bmlnElmnt::Pinn
 
 Frame const& bmlnElmnt::PinnedFrameSet::upStream() const
 {
-  return  upStream_ ? (*upStream_) : Frame::identityFrame(); 
+  return  upStream_ ? (*upStream_) : Frame::identityFrame();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -165,23 +167,23 @@ Frame const& bmlnElmnt::PinnedFrameSet::upStream() const
 
 Frame const& bmlnElmnt::PinnedFrameSet::downStream() const
 {
-  return  downStream_ ? (*downStream_) : Frame::identityFrame(); 
+  return  downStream_ ? (*downStream_) : Frame::identityFrame();
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame) 
+void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame)
 {
-  upStream_ = ( &frame == &(Frame::identityFrame())) ? 0 : new Frame(frame);  
+  upStream_ = ( &frame == &(Frame::identityFrame())) ? 0 : new Frame(frame);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::PinnedFrameSet::downStream(Frame const& frame ) 
+void bmlnElmnt::PinnedFrameSet::downStream(Frame const& frame )
 {
-  upStream_ = ( &frame == & (Frame::identityFrame())) ? 0 : new Frame(frame);  
+  upStream_ = ( &frame == & (Frame::identityFrame())) ? 0 : new Frame(frame);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -198,7 +200,7 @@ void bmlnElmnt::PinnedFrameSet::reset()
 
 bool bmlnElmnt::PinnedFrameSet::altered()  const
 {
-  return ( ( &( upStream()   ) != &( Frame::identityFrame() ) ) | 
+  return ( ( &( upStream()   ) != &( Frame::identityFrame() ) ) |
            ( &( downStream() ) != &( Frame::identityFrame() ) ) ) ;
 }
 
@@ -213,21 +215,20 @@ bool bmlnElmnt::PinnedFrameSet::altered()  const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s) 
+bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)
 try
-  : ident_( n ? n: "NONAME"),      
+  : ident_( n ? n: "NONAME"),
     length_(l),
     strength_(s),
-    align_(0),   
-    iToField_(1.0),   
-    shuntCurrent_(0.0), 
-    bml_(),      
-    elm_(),    
+    align_(0),
+    iToField_(1.0),
+    shuntCurrent_(0.0),
+    bml_(),
+    elm_(),
     pinnedFrames_(),
     ctRef_(0.0),
     attributes_(),
-    tag_(), 
-    pAperture_(0),
+    tag_(),
     dataHook()
 {
   if( length_ < 0 ) {
@@ -235,8 +236,8 @@ try
     uic  << "Argument list "
          "( " << n << ", " << l << ", " << s << " )"
          " specifies a negative length.";
-    throw( GenericException( __FILE__, __LINE__, 
-           "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)", 
+    throw( GenericException( __FILE__, __LINE__,
+           "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)",
            uic.str().c_str() ) );
   }
 }
@@ -250,26 +251,23 @@ catch( GenericException const& ge )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::bmlnElmnt( bmlnElmnt const& a ) 
-  :                  ident_(a.ident_),      
-                    length_(a.length_),     
-                  strength_(a.strength_),  
-                     align_(0),   
-                  iToField_(a.iToField_),   
-              shuntCurrent_(a.shuntCurrent_), 
-                       bml_(),      
-                       elm_(),    
+bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
+  :                  ident_(a.ident_),
+                    length_(a.length_),
+                  strength_(a.strength_),
+                     align_(0),
+                  iToField_(a.iToField_),
+              shuntCurrent_(a.shuntCurrent_),
+                       bml_(),
+                       elm_(),
               pinnedFrames_(a.pinnedFrames_),
                      ctRef_(a.ctRef_),
                 attributes_(a.attributes_),
                        tag_(a.tag_),
-                 pAperture_(0),
                      dataHook()
 {
- pAperture_ = a.pAperture_ ? a.pAperture_->Clone()    : 0;
-     align_ = a.align_     ? new alignment(*a.align_) : 0;
-
-     init_internals(a.bml_, a.elm_); 
+  align_ = a.align_     ? new alignment(*a.align_) : 0;
+  init_internals(a.bml_, a.elm_);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -278,11 +276,11 @@ bmlnElmnt::bmlnElmnt( bmlnElmnt const& a )
 void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
 {
  // ---------------------------------------------------------------------------------
- // If neither the beamline or the "element of interest" elm_ are  defined, 
- // we are done, just return.  
+ // If neither the beamline or the "element of interest" elm_ are  defined,
+ // we are done, just return.
  //----------------------------------------------------------------------------------
 
- if ( (!bml ) && (!elm) ) return; 
+ if ( (!bml ) && (!elm) ) return;
 
  // ---------------------------------------------------------------------------------
  // If only the "element of interest" elm_ is defined, and the beamline bml_ is not,
@@ -290,62 +288,61 @@ void bmlnElmnt::init_internals( BmlPtr const& bml, ElmPtr const& elm )
  //----------------------------------------------------------------------------------
 
  if( !bml ) {
-    elm_ = (elm) ? ElmPtr(elm->Clone()) : ElmPtr(); 
+    elm_ = (elm) ? ElmPtr(elm->Clone()) : ElmPtr();
     return;
- } 
+ }
 
  // -------------------------------------------------------------------------------------------------------------------------
- // If we get here, the beamline bml_ is defined. The element of interest may or may not be defined. Typically, 
- // elm_ would be defined for elements modeled with a *single* thin kick in the middle, but not for elements 
- // modeled with multiple thin kicks. 
+ // If we get here, the beamline bml_ is defined. The element of interest may or may not be defined. Typically,
+ // elm_ would be defined for elements modeled with a *single* thin kick in the middle, but not for elements
+ // modeled with multiple thin kicks.
  //---------------------------------------------------------------------------------------------------------------------------
 
  bml_ = BmlPtr( bml->Clone() );
 
- if (!elm) return;  // there is no element of interest ... we are done 
+ if (!elm) return;  // there is no element of interest ... we are done
 
 
- beamline::iterator it  =   bml_->begin(); 
+ beamline::iterator it  =   bml_->begin();
 
- // find the position of the element of interest in the orginal beamline. The set the element of interest in the new one  
+ // find the position of the element of interest in the orginal beamline. The set the element of interest in the new one
  // to the element with the same position
 
  for (  beamline::iterator ita  = bml->begin(); ita != bml->end(); ++ita, ++it ) {
 
    if( (*ita) == elm ) { elm_ = (*it);  return; }  // element of interest found. All OK. We are done.
  }
-    
+
  //--------------------------------------------------------------------------------------------------------------------------
- // If we get here, this means that the element of interest exists, but was not found within the beamline.  
+ // If we get here, this means that the element of interest exists, but was not found within the beamline.
  // In that case, we simply clone the element.
  //--------------------------------------------------------------------------------------------------------------------------
 
  elm_ = ElmPtr( elm->Clone() );
-} 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )  
+bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
 {
     if ( &rhs == this ) return *this;
 
-    ident_        = rhs.ident_;      
-    length_       = rhs.length_;     
-    strength_     = rhs.strength_;  
-    align_        = rhs.align_ ? new alignment(*rhs.align_) : 0;  
-    iToField_     = rhs.iToField_;   
-    shuntCurrent_ = rhs.shuntCurrent_; 
-    bml_          = BmlPtr();      
-    elm_          = ElmPtr();    
+    ident_        = rhs.ident_;
+    length_       = rhs.length_;
+    strength_     = rhs.strength_;
+    align_        = rhs.align_ ? new alignment(*rhs.align_) : 0;
+    iToField_     = rhs.iToField_;
+    shuntCurrent_ = rhs.shuntCurrent_;
+    bml_          = BmlPtr();
+    elm_          = ElmPtr();
     pinnedFrames_ = rhs.pinnedFrames_;
     ctRef_        = rhs.ctRef_;
     attributes_   = rhs.attributes_;
     tag_          = rhs.tag_;
-    pAperture_    = rhs.pAperture_ ? rhs.pAperture_->Clone() : 0 ; 
     dataHook      = rhs.dataHook;
 
-    init_internals(rhs.bml_, rhs.elm_); 
+    init_internals(rhs.bml_, rhs.elm_);
 
     return *this;
 }
@@ -354,21 +351,19 @@ bmlnElmnt& bmlnElmnt::operator=( bmlnElmnt const& rhs )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bmlnElmnt::~bmlnElmnt() {
-
+bmlnElmnt::~bmlnElmnt()
+{
   dataHook.clear();
-
   if(align_)     delete align_;
-  if(pAperture_) delete pAperture_;
 }
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Begin: basic propagator functions
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-void bmlnElmnt::propagate( Particle& x ) 
+void bmlnElmnt::propagate( Particle& x )
 {
   if( !align_  ) {
     localPropagate  ( x );
@@ -440,14 +435,14 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setLength( double const& x ) 
+void bmlnElmnt::setLength( double const& x )
 {
   static bool firstTime = true;
   if( x < 0 ) {
     (*pcerr) << "*** WARNING *** "
               "\n*** WARNING *** bmlnElmnt::setLength"
               "\n*** WARNING *** Lengths must be positive."
-              "\n*** WARNING *** You have entered length " << x 
+              "\n*** WARNING *** You have entered length " << x
          <<                    " for " << Type() << "  " << Name()
          <<   "\n*** WARNING *** The absolute value will be used."
               "\n*** WARNING *** "
@@ -469,21 +464,21 @@ void bmlnElmnt::setLength( double const& x )
       (*pcerr) <<   "*** ERROR *** :"
                   "\n*** ERROR *** : " << __FILE__ << "," << __LINE__
                << "\n*** ERROR *** : void bmlnElmnt::setLength( double const& x )"
-                  "\n*** ERROR *** : Attempt made to zero the length of " 
+                  "\n*** ERROR *** : Attempt made to zero the length of "
                <<                    Type() << " " << Name()
-               <<                    ", whose current length is " 
+               <<                    ", whose current length is "
                <<                    length_
                << "\n*** ERROR *** : This is not allowed."
                << endl;
 
       ostringstream uic;
-      uic  << "Attempt made to zero the length of " 
+      uic  << "Attempt made to zero the length of "
            << Type() << " " << Name()
-           << ", whose current length is " 
+           << ", whose current length is "
            << length_
            << "\nThis is not allowed.";
-      throw( GenericException( __FILE__, __LINE__, 
-             "void bmlnElmnt::setLength( double const& x )", 
+      throw( GenericException( __FILE__, __LINE__,
+             "void bmlnElmnt::setLength( double const& x )",
              uic.str().c_str() ) );
     }
   }
@@ -514,9 +509,9 @@ void bmlnElmnt::setLength( double const& x )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setStrength( double const& s ) 
+void bmlnElmnt::setStrength( double const& s )
 {
-  strength_ = s - getShunt()*IToField(); 
+  strength_ = s - getShunt()*IToField();
 }
 
 
@@ -532,18 +527,18 @@ void bmlnElmnt::setCurrent( double const& I ) {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
-{ 
+{
  (*pcout) << setw(12) << s;
 
  s += const_cast<bmlnElmnt*>(this)->OrbitLength( prt );  // Kludge!!
 
- (*pcout) << setw(12) << s           
-                  << " : " 
-      << setw(10) << (int) this  
-      << setw(15) << ident_       
-      << setw(15) << Type()      
-      << setw(12) << length_      
-      << setw(12) << strength_    
+ (*pcout) << setw(12) << s
+                  << " : "
+      << setw(10) << (int) this
+      << setw(15) << ident_
+      << setw(15) << Type()
+      << setw(12) << length_
+      << setw(12) << strength_
       << setw(12) << shuntCurrent_
       << endl;
 }
@@ -552,7 +547,7 @@ void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::equivTo( bmlnElmnt const& x ) const 
+bool bmlnElmnt::equivTo( bmlnElmnt const& x ) const
 {
 
   if( typeid(*this) !=  typeid(x) ) {
@@ -879,14 +874,14 @@ void bmlnElmnt::realign()
                 "\n*** WARNING *** beamline, before shifting elements around, "
                 "\n*** WARNING *** and reuse it as needed."
                 "\n*** WARNING *** "
-             << endl; 
+             << endl;
     firstTime = false;
   }
   #endif
 
   # if 0
   THE ISSUES:
-    - if Slots have been introduced above and below the element, 
+    - if Slots have been introduced above and below the element,
     they must be returned to drifts, if possible
     - if they were originally Slots, then they have to be reset too.
 
@@ -914,7 +909,7 @@ void bmlnElmnt::markPins()
                 "\n*** WARNING *** This routine is not written."
                 "\n*** WARNING *** Nothing will happen."
                 "\n*** WARNING *** "
-             << endl; 
+             << endl;
     firstTime = false;
   }
   #endif
@@ -937,10 +932,10 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
 
   Vector const& state = prtcl.State();
 
-  if( ! pinnedFrames_.altered() ) 
+  if( ! pinnedFrames_.altered() )
   {
     std::copy ( state.begin(), state.end(), ret.begin() );
-    return; 
+    return;
   }
 
   //....................................................................................
@@ -958,7 +953,7 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
              << "\n*** WARNING *** This function will do nothing."
              << endl;
     std::copy ( state.begin(), state.end(), ret.begin() );
-    return; 
+    return;
   }
 
   //....................................................................................
@@ -969,11 +964,11 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
   // Load position and momentum vectors
 
   p[i_x  ] = state[i_x];
-  p[i_y  ] = state[i_y];   
+  p[i_y  ] = state[i_y];
   p[i_cdt] = 0.0;
 
-  v[i_x  ] = state[i_npx];  
-  v[i_y  ] = state[i_npy];  
+  v[i_x  ] = state[i_npx];
+  v[i_y  ] = state[i_npy];
   v[i_cdt] = prtcl.get_npz();
 
   if( (1.0 - pct) < 0.001 ) {  // *** Downstream end (default)
@@ -1003,7 +998,7 @@ void bmlnElmnt::loadPinnedCoordinates( Particle const& prtcl, Vector& ret, doubl
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool bmlnElmnt::setAlignment(alignmentData const& a) 
+bool bmlnElmnt::setAlignment(alignmentData const& a)
 {
   bool ret = true;
   alignment* nuAlignPtr = new alignment(a);
@@ -1017,7 +1012,7 @@ bool bmlnElmnt::setAlignment(alignmentData const& a)
   else if( hasParallelFaces() ) {
     align_ = nuAlignPtr;
   }
-  else 
+  else
   {
     if(    ( std::abs(a.tilt)                      < 1.0e-12 )
         || ( std::abs( M_PI   - std::abs(a.tilt) ) < 1.0e-9  )
@@ -1094,7 +1089,7 @@ void bmlnElmnt::enterLocalFrame( Particle& p ) const
     state[4]   = state[4] * cs - state[3] * sn;
     state[3]   = temp;
   }
- 
+
 }
 
 
@@ -1182,18 +1177,6 @@ void bmlnElmnt::leaveLocalFrame( JetParticle& p ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setAperture( Aperture* pAperture_in ) 
-{
-    //
-    // aperture = x;
-    //
-  pAperture_ = pAperture_in;
-}
-
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 double bmlnElmnt::getReferenceTime() const
 {
@@ -1215,18 +1198,8 @@ void bmlnElmnt::setReferenceTime( double const& x )
 
 void bmlnElmnt::rename( std::string n ) {
 
-  ident_ = (!n.empty()) ? n : string("NONAME"); 
+  ident_ = (!n.empty()) ? n : string("NONAME");
 
-}
-
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
-Aperture* bmlnElmnt::getAperture() {
-  Aperture* app = 0;
-  if(pAperture_ !=0)
-    app = pAperture_->Clone();
-  return app;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1239,8 +1212,8 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic  << "Requested percentage = " << pc << "; not within [0,1].";
-    throw( GenericException( __FILE__, __LINE__, 
-           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b )",
            uic.str().c_str() ) );
   }
 
@@ -1256,10 +1229,10 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   a->ident_ = ident_ + string("_1") ;
   b->ident_ = ident_ + string("_2") ;
-  
+
   //-----------------------------------------------------------------------------
-  //  strength_  is changed only when it represents the  
-  //  *integrated* strength. This is the case for thin (length_ == 0.0 elements) 
+  //  strength_  is changed only when it represents the
+  //  *integrated* strength. This is the case for thin (length_ == 0.0 elements)
   //-----------------------------------------------------------------------------
 
   a->strength_ = (length_ == 0.0) ? pc*strength_            : strength_;
@@ -1272,8 +1245,8 @@ void bmlnElmnt::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setShunt(double const& a) 
-{ 
+void bmlnElmnt::setShunt(double const& a)
+{
   // Set the value of the shunt, creating it if necessary
   setStrength( strength_ + ( shuntCurrent_ - a ) * IToField() );
   shuntCurrent_ = a;
@@ -1286,14 +1259,14 @@ void bmlnElmnt::setShunt(double const& a)
 ostream& operator<<(ostream& os, bmlnElmnt& b)
 {
   if ( &b ) {
-    os << OSTREAM_DOUBLE_PREC 
-       << b.Type() 
-       << " " 
-       << b.Name() 
-       << " " 
-       << OSTREAM_DOUBLE_PREC << b.Length() 
-       << " " 
-       << OSTREAM_DOUBLE_PREC << b.Strength() 
+    os << OSTREAM_DOUBLE_PREC
+       << b.Type()
+       << " "
+       << b.Name()
+       << " "
+       << OSTREAM_DOUBLE_PREC << b.Length()
+       << " "
+       << OSTREAM_DOUBLE_PREC << b.Strength()
        << " "
        << OSTREAM_DOUBLE_PREC << b.getReferenceTime()
        << " " ;
@@ -1316,9 +1289,9 @@ double bmlnElmnt::Length() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-boost::any& bmlnElmnt::operator[]( std::string const& s) 
+boost::any& bmlnElmnt::operator[]( std::string const& s)
 {
-  return attributes_[s.c_str()]; 
+  return attributes_[s.c_str()];
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1332,9 +1305,9 @@ bool  bmlnElmnt::attributeExists( std::string const& s ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void  bmlnElmnt::attributeClear( std::string const& s ) 
+void  bmlnElmnt::attributeClear( std::string const& s )
 {
-  attributes_.erase( s.c_str() ); 
+  attributes_.erase( s.c_str() );
 }
 
 
@@ -1377,11 +1350,11 @@ void  bmlnElmnt::acceptInner( ConstBmlVisitor& v ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::localPropagate( ParticleBunch& b ) 
+void bmlnElmnt::localPropagate( ParticleBunch& b )
 {
 
- for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {  
-    localPropagate( *it ); 
+ for (  ParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {
+    localPropagate( *it );
  }
 }
 
@@ -1389,19 +1362,19 @@ void bmlnElmnt::localPropagate( ParticleBunch& b )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::localPropagate( JetParticleBunch& b ) 
+void bmlnElmnt::localPropagate( JetParticleBunch& b )
 {
 
- for (  JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {  
-    localPropagate( *it ); 
+ for (  JetParticleBunch::iterator it = b.begin(); it != b.end(); ++it )  {
+    localPropagate( *it );
  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::setReferenceTime( Particle& particle) 
-{               
+void bmlnElmnt::setReferenceTime( Particle& particle)
+{
   setReferenceTime(0.0);
   propagate( particle );
   setReferenceTime( particle.get_cdt() );
