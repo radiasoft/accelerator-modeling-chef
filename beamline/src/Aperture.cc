@@ -50,7 +50,7 @@
 #include <beamline/Particle.h>
 #include <beamline/ParticleBunch.h>
 
-#include <Aperture.h>
+#include <beamline/Aperture.h>
 
 
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -65,17 +65,23 @@ bool isGone( Particle const& p )
 {
   for( int i = 0; i < 6; ++i ) {
     if( 0 == finite( p.State()[i] ) ) {
-      cout << "DGN: Will remove particle: infinite state detected: " << p.State()
+      #ifdef DIAGNOSTICS_ON
+      cout << "DGN: Will remove particle: infinite state detected: "
+           << p.State()
            << " : with tag: " << p.getTag()
            << endl;
+      #endif
       return true;
     }
   }
 
   if( std::string::npos != (p.getTag()).find("KILL") ) {
-    cout << "DGN: Will remove particle with tag: " << p.getTag() 
+    #ifdef DIAGNOSTICS_ON
+    cout << "DGN: Will remove particle with tag: "
+         << p.getTag() 
          << ": " << p.State()
          << endl;
+    #endif
     return true;
   }
 
@@ -104,13 +110,13 @@ bool isGone( Particle const& p )
 
 
 ThinAperture::ThinAperture( char const* nm )
-: bmlnElmnt( nm, 0.0, 0.0 )
+: bmlnElmnt( nm, 0.0, 0.0 ), killedList()
 {
 }
 
 
 ThinAperture::ThinAperture( ThinAperture const& x )
-: bmlnElmnt(x)
+: bmlnElmnt(x), killedList(x.killedList)
 {
 }
 
@@ -141,7 +147,15 @@ void ThinAperture::accept( ConstBmlVisitor& v ) const
 void ThinAperture::localPropagate( Particle& p )
 {
   if( ! contains( p ) ) {
-    p.setTag( p.getTag() + std::string(" / KILL: OUTSIDE APERTURE / ") );
+    p.setTag(   p.getTag() 
+              + std::string(" / KILL: OUTSIDE APERTURE ") 
+              + std::string( Name() )
+              + std::string(" / ")
+            );
+    killedList.push_back( ConstParticlePtr( p.Clone() ) );
+    // WARNING: at the single particle level, the particle will continue
+    // WARNING: to propagate and could, in principle, be killed by
+    // WARNING: more than one aperture.
   }
 }
 
@@ -155,10 +169,15 @@ void ThinAperture::localPropagate( ParticleBunch& bunch )
          ++it )
   {  
     if( ! contains( (*it) ) ) {
-      (*it).setTag( (*it).getTag() + std::string(" / KILL: OUTSIDE APERTURE / ") );
+      (*it).setTag(   (*it).getTag() 
+                    + std::string(" / KILL: OUTSIDE APERTURE ") 
+                    + std::string( Name() )
+                    + std::string(" / ")
+                  );
+
+      killedList.push_back( ConstParticlePtr( (*it).Clone() ) );
     }
   }
-
 
   // ... then remove them.
   // ---------------------
@@ -192,7 +211,7 @@ ThinStarAperture::ThinStarAperture( char const* nm )
 
 
 ThinStarAperture::ThinStarAperture( char const* nm, 
-                                    std::vector<std::pair<double, double> > vs /*[m]*/ )
+                                    std::vector<std::pair<double, double> > const& vs /*[m]*/ )
 : ThinAperture(nm)
 {
   if( vs.size() < 3 ) {
@@ -203,7 +222,7 @@ ThinStarAperture::ThinStarAperture( char const* nm,
           uic.str().c_str() ) );
   }
 
-  for( std::vector<std::pair<double, double> >::iterator it = vs.begin();
+  for( std::vector<std::pair<double, double> >::const_iterator it = vs.begin();
        it != vs.end();
        ++it ) 
   {
@@ -217,7 +236,7 @@ ThinStarAperture::ThinStarAperture( ThinStarAperture const& x )
   vertices_(x.vertices_)
 {
   #if 0
-  for( std::vector<std::complex<double> >::iterator it = x.vertices_.begin();
+  for( std::vector<std::complex<double> >::const_iterator it = x.vertices_.begin();
        it != x.vertices_.end();
        ++it ) {
     vertices_.push_back( (*it) );
@@ -243,7 +262,7 @@ const char* ThinStarAperture::Type() const
 }
 
 
-bool ThinStarAperture::contains( Particle const& prt )
+bool ThinStarAperture::contains( Particle const& prt ) const
 {
   std::complex<double> u( prt.get_x(), prt.get_y() );
 
@@ -278,11 +297,11 @@ bool ThinStarAperture::contains( Particle const& prt )
 
 
 ThinEllipticalAperture::ThinEllipticalAperture( char const* nm, 
-                                                double x_center,  // [m]
-                                                double y_center,
-                                                double width,     // {m]
-                                                double height,
-                                                double angle   )  // [rad]
+                                                double const& x_center,  // [m]
+                                                double const& y_center,
+                                                double const& width,     // {m]
+                                                double const& height,
+                                                double const& angle   )  // [rad]
 : ThinAperture(nm),
   cx_(x_center),
   cy_(y_center),
@@ -323,7 +342,7 @@ const char* ThinEllipticalAperture::Type() const
 }
 
 
-bool ThinEllipticalAperture::contains( Particle const& prt )
+bool ThinEllipticalAperture::contains( Particle const& prt ) const
 {
   double t;
   double x = prt.get_x() - cx_;
@@ -345,11 +364,11 @@ bool ThinEllipticalAperture::contains( Particle const& prt )
 // 
 
 ThinRectangularAperture::ThinRectangularAperture( char const* nm, 
-                                                double x_center,  // [m]
-                                                double y_center,
-                                                double width,     // {m]
-                                                double height,
-                                                double angle   )  // [rad]
+                                                double const& x_center,  // [m]
+                                                double const& y_center,
+                                                double const& width,     // {m]
+                                                double const& height,
+                                                double const& angle   )  // [rad]
 : ThinAperture(nm),
   cx_(x_center),
   cy_(y_center),
@@ -390,7 +409,7 @@ const char* ThinRectangularAperture::Type() const
 }
 
 
-bool ThinRectangularAperture::contains( Particle const& prt )
+bool ThinRectangularAperture::contains( Particle const& prt ) const
 {
   double t;
   double x = prt.get_x() - cx_;

@@ -59,6 +59,23 @@ class ConstBmlVisitor;
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+// NOTE: These classes and typedefs are predefined here
+// for consistency with other header files.
+
+class ThinAperture;
+class ThinStarAperture;
+class ThinRectangularAperture;
+class ThinEllipticalAperture;
+
+typedef boost::shared_ptr<ThinAperture>             ThinAperturePtr;
+typedef boost::shared_ptr<ThinStarAperture>         ThinStarAperturePtr;
+typedef boost::shared_ptr<ThinRectangularAperture>  ThinRectangularAperturePtr;
+typedef boost::shared_ptr<ThinEllipticalAperture>   ThinEllipticalAperturePtr;
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 class DLLEXPORT ThinAperture : public bmlnElmnt
 {
   public:
@@ -85,7 +102,9 @@ class DLLEXPORT ThinAperture : public bmlnElmnt
     // -----------------------------------------
 
   public:
-    virtual bool contains( Particle const& ) = 0;
+    virtual bool contains( Particle const& ) const = 0;
+
+    std::vector<ConstParticlePtr> killedList;
 };
 
 
@@ -97,16 +116,16 @@ class DLLEXPORT ThinStarAperture : public ThinAperture
   public:
     ThinStarAperture( char const* name = "" );
     ThinStarAperture( char const* name,
-                      std::vector<std::pair<double, double> > vertices /*[m]*/ );
+                      std::vector<std::pair<double, double> > const& vertices /*[m]*/ );
     ThinStarAperture( ThinStarAperture const& );
-    virtual ~ThinStarAperture();
+    ~ThinStarAperture();
 
   public:
     ThinStarAperture* Clone() const;
     const char*       Type()  const;
 
   public:
-    bool contains( Particle const& );
+    bool contains( Particle const& ) const;
 
   private:
     std::vector<std::complex<double> > vertices_;
@@ -119,21 +138,21 @@ class DLLEXPORT ThinStarAperture : public ThinAperture
 class DLLEXPORT ThinRectangularAperture : public ThinAperture
 {
   public:
-    ThinRectangularAperture( char const* name = "" , 
-                             double x_center  = 0.0,       // [m]
-                             double y_center  = 0.0,
-                             double width     = 0.05,      // {m]
-                             double height    = 0.05,
-                             double angle     = 0.0    );  // [rad]
+    ThinRectangularAperture( char const* name        = "" , 
+                             double const& x_center  = 0.0,       // [m]
+                             double const& y_center  = 0.0,
+                             double const& width     = 0.05,      // {m]
+                             double const& height    = 0.05,
+                             double const& angle     = 0.0    );  // [rad]
     ThinRectangularAperture( ThinRectangularAperture const& );
-    virtual ~ThinRectangularAperture();
+    ~ThinRectangularAperture();
 
   public:
     ThinRectangularAperture* Clone() const;
     const char*              Type()  const;
 
   public:
-    bool contains( Particle const& );
+    bool contains( Particle const& ) const;
 
   private:
     double cx_, cy_, dx_, dy_;
@@ -148,20 +167,20 @@ class DLLEXPORT ThinEllipticalAperture : public ThinAperture
 {
   public:
     ThinEllipticalAperture( char const* name = "" , 
-                            double x_center  = 0.0,       // [m]
-                            double y_center  = 0.0,
-                            double width     = 0.05,      // {m]
-                            double height    = 0.05,
-                            double angle     = 0.0    );  // [rad]
+                            double const& x_center  = 0.0,       // [m]
+                            double const& y_center  = 0.0,
+                            double const& width     = 0.05,      // {m]
+                            double const& height    = 0.05,
+                            double const& angle     = 0.0    );  // [rad]
     ThinEllipticalAperture( ThinEllipticalAperture const& );
-    virtual ~ThinEllipticalAperture();
+    ~ThinEllipticalAperture();
 
   public:
     ThinEllipticalAperture* Clone() const;
     const char*           Type()  const;
 
   public:
-    bool contains( Particle const& );
+    bool contains( Particle const& ) const;
 
   private:
     double cx_, cy_, dx_, dy_;
