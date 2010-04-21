@@ -5,7 +5,7 @@
 ******  Python bindings for mxyzpltk/beamline libraries 
 ******  
 ******                                    
-******  File:      py-aperture.h
+******  File:      py-aperture.cpp
 ******                                                                
 ******  Copyright (c) Universities Research Association, Inc./ Fermilab    
 ******                All Rights Reserved                             
@@ -22,28 +22,43 @@
 ******             Fermi National Laboratory, Batavia, IL   60510                                
 ******             ostiguy@fnal.gov                         
 ******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  April, 2010            michelotti@fnal.gov
+******  - rewritten to conform to updated beamline/include/Aperture.h.
+******  - removed "#ifdef 0" block that voided compilation of file.
+******
 ********************************************************************************
 ********************************************************************************
 *******************************************************************************/
 
-#include <beamline/Aperture.h>
 #include <boost/python.hpp>
+
+#include <beamline/Particle.h>
+#include <beamline/Aperture.h>
 
 using namespace boost::python;
 
-void wrap_aperture () {
+//----------------------------------------
+// wrapper code
+//----------------------------------------
 
-   /** this does nothing ***/
-   /** Aperture is currently a pure virtual class ***/
 
-#if 0
+void wrap_aperture () 
+{
+class_<ThinStarAperture>("ThinStarAperture", init<char const*>() )
+  .def(init<char const*, std::vector<std::pair<double, double> > >())
+  .def("Type", &ThinStarAperture::Type)
+  .def("contains", &ThinStarAperture::contains);
 
-class_<Aperture>("Aperture")
-  .def( "Type", &Aperture::Type );
- 
-#endif
+class_<ThinRectangularAperture>("ThinRectangularAperture", init<char const*>() )
+  .def(init<char const*, double const&, double const&, double const&, double const&, double const&>())
+  .def("Type", &ThinRectangularAperture::Type)
+  .def("contains", &ThinRectangularAperture::contains);
 
+class_<ThinEllipticalAperture>("ThinEllipticalAperture", init<char const*>() )
+  .def(init<char const*, double const&, double const&, double const&, double const&, double const&>())
+  .def("Type", &ThinEllipticalAperture::Type)
+  .def("contains", &ThinEllipticalAperture::contains);
 }
-
-
-
