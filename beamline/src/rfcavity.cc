@@ -1,48 +1,47 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
 ******  File:      rfcavity.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Author:    Leo Michelotti
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov       
 ******
-****** REVISION HISTORY:
-******                   
-****** April 2007  ostiguy@fnal.gov
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+****** 	Apr 2007    ostiguy@fnal.gov
+****** 	- support for reference counted elements
+****** 	- visitor interface takes advantage of compiler dynamic typing
+****** 	
+****** 	Dec 2007    ostiguy@fnal.gov
+****** 	- new typesafe propagators
 ******
-****** - support for reference counted elements 
-****** - visitor interface takes advantage of compiler dynamic typing
-******                                                                 
-****** Dec 2007    ostiguy@fnal.gov
-****** - new typesafe propagators
+****** 	Apr 2008    michelotti@fnal.gov
+****** 	- added placeholder rfcavity::setLength method
 ******
-****** Apr 2008    michelotti@fnal.gov
-****** - added placeholder rfcavity::setLength method
+****** 	Apr 2010    michelotti@fnal.gov
+****** 	- upgraded rfcavity::setStrength method to one that creates
+******    a new propagator functor.
+******    : memory leak test passed.
 ******
 **************************************************************************
 *************************************************************************/
@@ -66,7 +65,7 @@ using FNAL::pcerr;
 using FNAL::pcout;
 
 // **************************************************
-//   class rfcavity 
+//   class rfcavity
 // **************************************************
 
 rfcavity::rfcavity( const char* name_arg)
@@ -213,9 +212,12 @@ double rfcavity::getReferenceTime()    const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::setStrength( double const& strength)
+void rfcavity::setStrength( double const& sss)
 {
-  bmlnElmnt::setStrength(strength);
+  bmlnElmnt::setStrength(sss);
+
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
