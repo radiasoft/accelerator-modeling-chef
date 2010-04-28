@@ -215,8 +215,6 @@ double rfcavity::getReferenceTime()    const
 void rfcavity::setStrength( double const& sss)
 {
   bmlnElmnt::setStrength(sss);
-
-  propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
 }
 
