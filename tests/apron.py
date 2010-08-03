@@ -12,7 +12,7 @@ from physics_constants import *
 
 import math
 import sys
-import numarray
+import numpy
 import string
 
 accuracy_marker = marker("accuracy")
@@ -198,12 +198,12 @@ class Apron:
             kys.append(ky)
             ss.append(s)
             element.propagate(particle)
-        return (numarray.array(ss),numarray.array(kxs),numarray.array(kys))
+        return (numpy.array(ss),numpy.array(kxs),numpy.array(kys))
     
     def _convert_linear_maps(self, chef_linear_maps):
         linear_maps = []
         for chef_map in chef_linear_maps:
-            map = numarray.zeros((6,6),'d')
+            map = numpy.zeros((6,6),'d')
             for row in range(0,6):
                 for column in range(0,6):
                     map[row,column] = chef_map.get(row,column)
