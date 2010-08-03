@@ -1,11 +1,11 @@
-#! /bin/tcsh
+#!/bin/sh
 
-more header_files | tr " " "\n" > test.header_files.old
-setenv headername `basename $cwd`
+cat header_files | tr " " "\n" > test.header_files.old
+headername=`basename \`pwd\``
 echo includedir = \$\{prefix\}/include/$headername > header_files
-echo include_HEADERS = include/*.{h,icc,tcc} >> header_files
-unsetenv headername
-more header_files | tr " " "\n" > test.header_files.new
+headers=`find include -maxdepth 1 -name \*.h -o -name \*.tcc -o -name \*.icc`
+echo include_HEADERS = $headers >> header_files
+cat header_files | tr " " "\n" > test.header_files.new
 diff test.header_files.old test.header_files.new | sed "s/</Removed/g" | sed "s/>/Added/g"
 rm test.header_files.new
 rm test.header_files.old
