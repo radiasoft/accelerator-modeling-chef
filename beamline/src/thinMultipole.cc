@@ -30,6 +30,7 @@
 #include <beamline/ThinMultipolePropagators.h>
 #include <beamline/thinMultipole.h>
 #include <beamline/BmlVisitor.h>
+#include <stdio.h>
 
 using namespace std;
 
