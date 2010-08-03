@@ -38,9 +38,12 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def( init<char*, double,double,double,double,double,double>() )    
   .def("getPhi",             &rfcavity::getPhi,             return_value_policy<copy_const_reference>())
   .def("setPhi",             &rfcavity::setPhi)
+  .def("setRadialFrequency",             &rfcavity::setRadialFrequency)
+  .def("setFrequency",             &rfcavity::setFrequency)
   .def("getRadialFrequency", &rfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
   .def("getQ",               &rfcavity::getQ,               return_value_policy<copy_const_reference>())
   .def("getR",               &rfcavity::getR,               return_value_policy<copy_const_reference>())
+  .def("setStrength",             &rfcavity::setStrength)
   .def("Type",               &rfcavity::Type);
 
 
@@ -48,6 +51,8 @@ class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<ch
   .def(init< char*,    double,   double, double, double, double> () )    
   .def("getPhi",             &thinrfcavity::getPhi,             return_value_policy<copy_const_reference>())
   .def("setPhi",             &thinrfcavity::setPhi)
+  .def("setRadialFrequency",             &thinrfcavity::setRadialFrequency)
+  .def("setFrequency",             &thinrfcavity::setFrequency)
   .def("getRadialFrequency", &thinrfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
   .def("getQ",               &thinrfcavity::getQ,               return_value_policy<copy_const_reference>())
   .def("getR",               &thinrfcavity::getR,               return_value_policy<copy_const_reference>())
