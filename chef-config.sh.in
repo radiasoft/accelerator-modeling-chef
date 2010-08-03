@@ -1,0 +1,123 @@
+#!/bin/sh
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+includedir="@includedir@"
+libdir="@libdir@"
+glib_inc="@GLIB_INC@"
+glibconfig_inc="@GLIBCONFIG_INC@"
+glib_lib="@GLIB_LIB@"
+help ()
+{
+    echo "usage: chef-config [OPTION]"
+    echo ""
+    echo "known values for [OPTION] are:"
+    echo ""
+    echo "  --prefix            show chef installation prefix"
+    echo "  --includes          print include paths"
+    echo "  --includes_list     print semicolon-separated list of include paths"
+    echo "  --link              print library linking information"
+    echo "  --lib_dirs_list     print semicolon-separated list of library directories"
+    echo "  --libs_list         print semicolon-separated list of libraries"
+    echo "  --help              print this help and exit"
+    echo ""
+    echo "example: g++ \`chef-config --includes\` foo.cc \`chef-config --libs\`"
+    exit $1
+}
+
+prefix ()
+{
+    echo "$prefix"
+}
+
+includes ()
+{
+    echoval="-I$includedir"
+    if [ -n "$glib_inc" ]; then
+	echoval="$echoval -I$glib_inc"
+    fi
+    if [ -n "$glibconfig_inc" ]; then
+	echoval="$echoval -I$glibconfig_inc"
+    fi
+    echo "$echoval"
+}
+
+includes_list ()
+{
+    echoval="$includedir"
+    if [ -n "$glib_inc" ]; then
+	echoval="$echoval;$glib_inc"
+    fi
+    if [ -n "$glibconfig_inc" ]; then
+	echoval="$echoval;$glibconfig_inc"
+    fi
+    echo "$echoval"
+}
+
+link ()
+{
+    echoval="-L$libdir -lphysics_toolkit -lbeamline -lbmlfactory"
+    if [ -n "$glib_lib" ]; then
+	echoval="$echoval -L$glib_lib"
+    fi
+    echoval="$echoval -lglib-2.0 -lbasic_toolkit -lmxyzptlk"
+    echo "$echoval"
+}
+
+lib_dirs_list ()
+{
+    echoval="$libdir"
+    if [ -n "$glib_lib" ]; then
+	echoval="$echoval;$glib_lib"
+    fi
+    echo "$echoval"
+}
+
+libs_list ()
+{
+    echoval="physics_toolkit;beamline;bmlfactory;glib-2.0;basic_toolkit;mxyzptlk"
+    echo "$echoval"
+}
+
+error ()
+{
+    help 1
+}
+
+process_args () 
+{
+    while getopts "h-:" opt; do
+        if [ "$opt" = "-" ]; then
+            opt=$OPTARG
+        fi
+        case $opt in
+            h | help)
+                help 0
+                ;;
+            prefix)
+                prefix
+                ;;
+            includes)
+                includes
+                ;;
+            includes_list)
+                includes_list
+                ;;
+            link)
+                link
+                ;;
+            lib_dirs_list)
+                lib_dirs_list
+                ;;
+            libs_list)
+                libs_list
+                ;;
+            *)    
+                error
+                ;;
+        esac
+    done
+    shift `expr $OPTIND - 1`
+}
+
+process_args $*
+    

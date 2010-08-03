@@ -5,6 +5,13 @@ AC_CONFIG_SUBDIRS(basic_toolkit beamline bmlfactory parsers integrator mxyzptlk 
 
 AM_INIT_AUTOMAKE(fnal, 1.0, no-define)
 
-AC_CONFIG_FILES(Makefile)
+AC_ARG_VAR([GLIB_INC],    [GLIB include directory])dnl
+AC_SUBST(GLIB_INC)
+AC_ARG_VAR([GLIBCONFIG_INC],    [GLIB configuration include directory])dnl
+AC_SUBST(GLIBCONFIG_INC)
+AC_ARG_VAR([GLIB_LIB],    [GLIB library directory])dnl
+AC_SUBST(GLIB_LIB)
+
+AC_CONFIG_FILES([Makefile chef-config.sh])
 AC_OUTPUT(tests/Makefile tests/local_paths.py)
 
