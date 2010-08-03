@@ -81,7 +81,7 @@
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
 #include <boost/scoped_ptr.hpp>
-
+#include <string.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;

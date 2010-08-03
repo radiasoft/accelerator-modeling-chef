@@ -65,6 +65,7 @@
 #include <vector>
 #include <basic_toolkit/GenericException.h>
 #include <basic_toolkit/iosetup.h>
+#include <string.h>
 
 using std::cout;
 using std::endl;
