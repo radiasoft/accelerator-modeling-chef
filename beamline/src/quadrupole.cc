@@ -75,7 +75,7 @@ using FNAL::pcout;
 quadrupole::quadrupole()
   : bmlnElmnt( "", 1.0, 0.0 )
 {
-     propagator_ = PropagatorPtr( new Propagator( 4 ) );     
+     propagator_ = PropagatorPtr( new Propagator( 40 ) );     
      propagator_->setup(*this);
 }
 
@@ -85,7 +85,7 @@ quadrupole::quadrupole()
 quadrupole::quadrupole( const char* n, double const& l, double const& s )
   : bmlnElmnt( n, l, s)
 {
-     propagator_ = PropagatorPtr( new Propagator(4) );     
+     propagator_ = PropagatorPtr( new Propagator(40) );     
      propagator_->setup(*this);
 }
 
