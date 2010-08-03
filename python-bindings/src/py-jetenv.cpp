@@ -28,8 +28,7 @@
 
 #include <string>
 #include <iostream>
-#include <numarray/numarray.h>
-#include <numarray/libnumarray.h>
+#include <numpy/arrayobject.h>
 #include <python-bindings/py-exception.h>
 
 using namespace boost::python;

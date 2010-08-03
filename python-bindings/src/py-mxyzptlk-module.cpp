@@ -36,7 +36,7 @@ extern void wrap_mxyzptlk_coord();
 
 BOOST_PYTHON_MODULE(mxyzptlk)
 {
-
+  numeric::array::set_module_and_type( "numpy", "ndarray");
   wrap_mxyzptlk_jetenv();
   wrap_mxyzptlk_jetcenv();
   wrap_mxyzptlk_jet();
