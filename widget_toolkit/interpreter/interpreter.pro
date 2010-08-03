@@ -35,10 +35,11 @@ INCLUDEPATH += $$PYTHON_INC
 
 LIBS += -L../plotting/python-bindings/lib -lpychefplot -L$$CHEF_LIBDIR -lpybmlfactory -lpybeamline -lpyphysics_toolkit -lpymxyzptlk -lpybasic_toolkit  
 LIBS += -L$$FNAL_LIBDIR -lbmlfactory -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit 
-##LIBS += -L$$PYTHON_LIBDIR -lpython$$PYTHON_VERSION
-LIBS +=  $${PYTHON_LIBDIR}/libpython$${PYTHON_VERSION}.a 
+LIBS += -L$$PYTHON_LIBDIR -lpython$$PYTHON_VERSION
+# don't use the static libraries
+#LIBS +=  $${PYTHON_LIBDIR}/libpython$${PYTHON_VERSION}.a 
 #LIBS += -L$${BOOST_LIBDIR} -lboost_python-gcc-mt
-LIBS += -L$${BOOST_LIBDIR} -lboost_python-mt
+LIBS += -L$${BOOST_LIBDIR} -lboost_python$${BOOST_SUFFIX}-mt
 
 unix:LIBS  +=  -Wl,--export-dynamic -Wl,-rpath,$${CHEF_LIBDIR} -Wl,-rpath,$${FNAL_LIBDIR} -Wl,-rpath,$${GLIB_LIBDIR} -Wl,-rpath,$${BOOST_LIBDIR} 
 
