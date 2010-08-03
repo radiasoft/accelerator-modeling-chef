@@ -70,21 +70,9 @@ using FNAL::pcout;
 //*** Static member variable instantiations for the TJLterm class
 //---------------------------------------------------------------
 //
-// NOTE::
-// 
-//  __gnu_cxx::hash_map is an extension to the STL. 
-//  There is equivalent functionality in tr1 ...
-//  boost::hash<TJLterm<T>*> is used to get a portable
-//  pointer hash fnct. 
 
 template <typename T>
 boost::pool<>&  TJLterm<T>::ordered_memPool_ = *( new boost::pool<>( sizeof(TJLterm<T>), 2048 ));
-
-template <typename T>
-__gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >& TJLterm<T>::array_sizes_ = 
-* (new __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >()  );  
-
-
 
 
 // ***************************************************************

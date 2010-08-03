@@ -62,7 +62,6 @@
 #define TJLTERM_H
 
 #include <complex>
-#include <ext/hash_map>
 #include <ostream>
 #include <boost/functional/hash/hash.hpp>
 #include <boost/pool/pool.hpp>
@@ -135,9 +134,6 @@ class DLLEXPORT TJLterm
 
   static boost::pool<>&  ordered_memPool_;  // an ordered pool of TJLterms
   
-   // the sizes of the allocated arrays, indexed by their pointers (used for deallocation).    
-  static __gnu_cxx::hash_map< TJLterm<T>*, unsigned int, boost::hash<TJLterm<T>*> >&array_sizes_; 
- 
   // the declarations below are meant to prevent use of all forms of operator new[];
 
   static void* operator new[]( std::size_t size) throw (std::bad_alloc); 
