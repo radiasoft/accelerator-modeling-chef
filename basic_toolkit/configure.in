@@ -29,7 +29,7 @@ fi)
 
 ## do explicit template instantiation by default
 AC_ARG_ENABLE(implicit-templates, AC_HELP_STRING([--enable-implicit-templates],[ Enable implicit template instantiation for portability]), 
-	      CXXFLAGS="${CXXFLAGS}";implicit-templates=true,
+	      CXXFLAGS="${CXXFLAGS}";implicit_templates=true,
               CXXFLAGS="-DBASICTOOLKIT_EXPLICIT_TEMPLATES  -fno-implicit-templates ${CXXFLAGS}" )
 AM_CONDITIONAL(IMPLICIT_TEMPLATES, test x$implicit_templates = xtrue)
 

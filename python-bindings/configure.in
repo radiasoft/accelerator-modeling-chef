@@ -130,11 +130,13 @@ AC_C_INLINE
 #-----------------------------------------------------------------------------------------------------------
 # glib
 #-----------------------------------------------------------------------------------------------------------
+AC_ARG_VAR([GLIB_LIB],    [GLIB library directory])dnl
+AC_SUBST(GLIB_LIB)
 AC_ARG_VAR([GLIB_INC],    [GLIB include directory])dnl
 AC_CHECK_HEADER(glib.h,,[
 if test ${GLIB_INC} && test -r ${GLIB_INC}; then
         AC_MSG_RESULT([Location specified: ${GLIB_INC}])
-        GLIB_INC = "-I"${GLIB_INC} 
+        GLIB_INC="-I"${GLIB_INC} 
         AC_SUBST(GLIB_INC)
 else
 # Try to guess the location based on the location of gcc 
@@ -160,7 +162,7 @@ else
 		AC_MSG_ERROR([GLIB includes not found, please define GLIB_INC.]);
 		fi
         AC_MSG_RESULT([Header file located in $GLIB_INC])
-        GLIB_INC = "-I"${glib_inc} 
+        GLIB_INC="-I"${glib_inc} 
         AC_SUBST(GLIB_INC)
 	fi
 fi
@@ -242,6 +244,23 @@ else
           PYTHON_INC="-I"${PYTHON_INC}
           AC_SUBST(PYTHON_INC)
         fi
+fi
+])
+
+#-----------------------------------------------------------------------------------------------------------
+# numpy
+#-----------------------------------------------------------------------------------------------------------
+AC_ARG_VAR([NUMPY_INC],    [Numpy include directory])dnl
+AC_CHECK_HEADER( arrayobject.h,,[
+if test ${NUMPY_INC} && test -r ${NUMPY_INC}; then
+        AC_MSG_RESULT([Location specified: ${NUMPY_INC}])
+        NUMPY_INC="-I"${NUMPY_INC}
+        AC_SUBST(NUMPY_INC)
+else
+       NUMPY_INC=`python -c 'import numpy; print numpy.get_include()'`
+	   AC_MSG_RESULT([Header file located in $NUMPY_INC])
+          NUMPY_INC="-I"${NUMPY_INC}
+          AC_SUBST(NUMPY_INC)
 fi
 ])
 
