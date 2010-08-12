@@ -33,16 +33,21 @@
 ******  ----------------
 ******  REVISION HISTORY
 ******  ----------------
-******  April, 2010            michelotti@fnal.gov
+******  April, 2010            michelotti@fnal.gov   (lpjm)
 ******  - original version
 ******    : still a prototype; under development.
 ******    : three shapes recognized: rectangle, elliptic, and "star,"
 ******      specified by an arbitrary set of vertices.
 ******    : only removes particles from bunch.
+******  
+******  August 11, 2010        michelotti@fnal.gov   (lpjm)
+******  - removed inclusion of to ieeefp.h
+******    : at Eric Stern's request; no such file in Linux
+******    : originally there to make available "finite(double)" 
+******      on Solaris.  Replaces by "isnan(double)"
 ******
 **************************************************************************
 *************************************************************************/
-
 
 #include <basic_toolkit/MathConstants.h>
 #include <beamline/BmlVisitor.h>
@@ -63,7 +68,10 @@ namespace {
 bool isGone( Particle const& p )
 {
   for( int i = 0; i < 6; ++i ) {
-    if( 0 == finite( p.State()[i] ) ) {
+
+    // Detect infinite state
+
+    if( isnan( p.State()[i] ) ) {
       #ifdef DIAGNOSTICS_ON
       cout << "DGN: Will remove particle: infinite state detected: "
            << p.State()
@@ -73,6 +81,8 @@ bool isGone( Particle const& p )
       return true;
     }
   }
+
+  // Detect particle marked for removal
 
   if( std::string::npos != (p.getTag()).find("KILL") ) {
     #ifdef DIAGNOSTICS_ON
