@@ -112,7 +112,7 @@ Tracker::Tracker( RFMap* rfPtr, int theOrder )
   _penPtr = new QPen;
   _penPtr->setColor( white );
   _penPtr->setStyle ( SolidLine );
-  _penPtr->setWidth ( 10 );
+  _penPtr->setWidth ( 2 );
   
   _myWheel.setIncrement( 195.0 ); 
 
@@ -671,6 +671,7 @@ void Tracker::_cnvFromHViewRect( double a, double b )
 }
 
 
+#if 0
 void Tracker::_cnvFromHViewNorm( double a, double b )
 {
   // !!! ??? To be finished.
@@ -683,6 +684,33 @@ void Tracker::_cnvFromHViewNorm( double a, double b )
   _state(I_E)   = real(s(1,0));
   _makeNewOrbit();
 }
+#endif
+
+#if 1
+void Tracker::_cnvFromHViewNorm( double re_a, double im_a )
+{
+  static MatrixC u(DIM,1);
+  u(0) = std::complex<double>( re_a, im_a );
+  u(1) = conj( u(0) );
+
+  std::vector<std::complex<double> > a(DIM);
+  static int i, j;
+
+  for( i = _order - 2; i >= 0; --i ) {
+    for( j = 0; j < DIM; j++ ) {
+      a[j] = u(j);
+    }
+    for( j = 0; j < DIM; j++ ) {
+      u(j) = (_g[i](j))(a);
+    }
+  }
+
+  u = _E*u;
+
+  _state(I_PHI) = real(u(0));
+  _state(I_E)   = real(u(1));
+}
+#endif
 
 
 void Tracker::_cnvFromHViewActAng( double a, double b )
@@ -747,7 +775,7 @@ void Tracker::_iterate()
                          , int(255.0*_p_currOrb->Blue())  );
       localPen.setColor( orbitColor );
       localPen.setStyle ( SolidLine );
-      localPen.setWidth ( 10 );
+      localPen.setWidth ( 2 );
 
       if( _p_leftWindow->ViewIs(DrawSpace2D::drawH_ViewRect) ) {
         _p_leftWindow->mark( _state(I_PHI), _state(I_E), &localPen );
