@@ -859,6 +859,7 @@ void bmlnElmnt::realign()
 
   if( align_ ) { delete align_; align_ = 0; }
 
+#ifdef ENABLE_PEDANTIC_WARNINGS
   #if 1
   static bool firstTime = true;
   if( firstTime ) {
@@ -878,6 +879,7 @@ void bmlnElmnt::realign()
     firstTime = false;
   }
   #endif
+#endif
 
   # if 0
   THE ISSUES:
