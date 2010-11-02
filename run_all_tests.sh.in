@@ -1,0 +1,20 @@
+#!/bin/sh
+
+cd "`dirname $0`"
+INSTALLDIR=@prefix@
+export INSTALLDIR
+BOOST_INC="`grep 'BOOST_INC = ' physics_toolkit/Makefile | sed 's/BOOST_INC = -I//'`"
+export BOOST_INC
+/bin/rm -f */tests/*.tag
+for test_all in ./physics_toolkit/tests/test_all.sh \
+./beamline/tests/test_all.sh \
+./basic_toolkit/tests/test_all.sh \
+./mxyzptlk/tests/test_all.sh 
+do
+    echo "running test $test_all..."
+    olddir=`pwd`
+    cd `dirname $test_all`
+    ./test_all.sh
+    cd $olddir
+done
+echo "tests complete"
