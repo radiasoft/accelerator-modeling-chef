@@ -486,6 +486,7 @@ void bmlnElmnt::setLength( double const& x )
   else {
     length_ = newLength;
 
+#ifdef ENABLE_PEDANTIC_WARNINGS
     if( firstTime ) {
       (*pcerr) <<   "*** WARNING *** : "
                   "\n*** WARNING *** : " << __FILE__ << "," << __LINE__
@@ -502,6 +503,7 @@ void bmlnElmnt::setLength( double const& x )
                << endl;
       firstTime = false;
     }
+#endif
   }
 }
 
