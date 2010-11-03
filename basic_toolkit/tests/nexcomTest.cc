@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 extern char nexcom( int, int, int* );
 
@@ -26,7 +27,7 @@ int main( int argc, char** argv )
         cout << ", " << e[i];
       }
       cout << " )" << endl;
-    }  
+    }
     cout << "-----------------------------" << endl;
   }
   return 0;
