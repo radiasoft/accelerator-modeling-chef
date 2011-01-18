@@ -38,7 +38,7 @@
 ****** - Efficiency improvements
 ****** - Major memory management redesign. 
 ******  
-******  Sep-Dec 2005  ostiguy@fnal.gov
+****** Sep-Dec 2005  ostiguy@fnal.gov
 ******
 ****** - refactored code to use a single class template parameter
 ******   rather than two. Mixed mode operations now handled using 
@@ -65,10 +65,14 @@
 ****** - added get/setTermCoefficient to efficiently get/set a specific monomial
 ******   coefficient.
 ******
-******  Mar 2008 ostiguy@fnal
+****** Mar 2008 ostiguy@fnal
 ******  - Jet composition and evaluation code refactored and optimized. 
-******  August 2008 
+******
+****** August 2008 
 ******  - improved iterators 
+******
+****** Jan 2011  michelotti@fnal.gov
+****** - Jim Amundson discovered error in signatures of real and imag functions.
 ******
 **************************************************************************
 **************************************************************************
@@ -177,9 +181,8 @@ JLPtr<T> operator/(  JLPtr<T> const & x,    T const& y  );
 
 //..............................................................................................................................
 
-
-JLPtr<double> real(  TJL<std::complex<double> >* const& z ); 
-JLPtr<double> imag(  TJL<std::complex<double> >* const& z );
+JLPtr<double> real( JLPtr<std::complex<double> > const& z );
+JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
 
 // **********************************************************************************************************
 
