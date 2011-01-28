@@ -1,46 +1,50 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
-******                                    
-******  File:      normalForm.cc
-******  Version:   1.1
-******                                                                
-******  Copyright  Universities Research Association, Inc / Fermilab.   
-******             All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
-****** REVISION HISTORY
-****** 
-****** Mar 2007       ostiguy@fnal.gov
-****** -some efficiency improvements
-****** -use new style Jet iterators.
-****** Aug 2008       ostiguy@fnal
-****** - templated version of "shear" function 
 ******
-**************************************************************************
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes
+******             which facilitate calculations with the
+******             BEAMLINE class library.
+******
+******  File:      normalForm.cc
+******
+******  Copyright  Universities Research Association, Inc / Fermilab.
+******             All Rights Reserved
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  Usage, modification, and redistribution are subject to terms
+******  of the License supplied with this software.
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+****** REVISION HISTORY
+****** ----------------
+****** Mar 2007       ostiguy@fnal.gov
+****** - some efficiency improvements
+****** - use new style Jet iterators.
+******
+****** Aug 2008       ostiguy@fnal
+****** - templated version of "shear" function
+******
+****** Jan 2011       michelotti@fnal.gov
+****** - Eric Stern extended the algorithm
+******   from four to six dimensions by adopting
+******   the normalization and ordering procedures
+******   to the "longitudinal" sector.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -147,18 +151,22 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC& B,
  std::complex<double> cm0 = conj(m0);
  std::complex<double> m1  = B[1][1]/abs(B[1][1]);
  std::complex<double> cm1 = conj(m1);
+ std::complex<double> m2  = B[2][2]/abs(B[2][2]);
+ std::complex<double> cm2 = conj(m2);
 
  for( int i=0; i < 6; ++i) {
    B[i][0] *= cm0;
    B[i][3] *= m0;
    B[i][1] *= cm1;
    B[i][4] *= m1;
+   B[i][2] *= cm2;
+   B[i][5] *= m2;
  }
  if( imag(B[3][0]) > 0.0 ) {
    for( int i=0; i < 6; ++i) {
-     m0 = B[i][0];
-     B[i][0] = B[i][3];
-     B[i][3] = m0;
+     m0 = B[i][0];          // NOTE: the variable m0 is reused here and
+     B[i][0] = B[i][3];     // below as a dummy variable. This nullifies
+     B[i][3] = m0;          // its previous interpretation.
    }
  }
  if( imag(B[4][1]) > 0.0 ) {
@@ -166,6 +174,13 @@ void normalForm( Mapping const& theMapping, int maxOrder, MatrixC& B,
      m0 = B[i][1];
      B[i][1] = B[i][4];
      B[i][4] = m0;
+   }
+ }
+ if( imag(B[5][2]) > 0.0 ) {
+   for( int i = 0; i < 6; ++i) {
+     m0 = B[i][2];
+     B[i][2] = B[i][5];
+     B[i][5] = m0;
    }
  }
 
