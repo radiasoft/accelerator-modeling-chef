@@ -42,7 +42,7 @@ using namespace boost::python;
 
 extern void wrap_lattfuncsage();
 extern void wrap_beamlinecontext();
-
+extern void wrap_normalformsage();
 
 BOOST_PYTHON_MODULE( physics_toolkit )
 {
@@ -52,7 +52,8 @@ BOOST_PYTHON_MODULE( physics_toolkit )
   class_<DriftConverter>("DriftConverter", init<>())
     .def("convert", &DriftConverter::convert)
     ;
+
 wrap_lattfuncsage();
 wrap_beamlinecontext();
-
+wrap_normalformsage();
 }
