@@ -37,7 +37,7 @@ using namespace boost::python;
 			init<Mapping &, const Particle&, int>())
    .def(init<Mapping &, const Particle&>())
   .def( "cnvDataToNormalForm",&normalFormSage::cnvDataToNormalForm)
-  .def( "cnvDataFromNormalForm", &normalFormSage::cnvDataToNormalForm)
+  .def( "cnvDataFromNormalForm", &normalFormSage::cnvDataFromNormalForm)
    .def( "getNormalEigenvectors", &normalFormSage::getNormalEigenvectors, return_value_policy<reference_existing_object>())
     ;
 }
