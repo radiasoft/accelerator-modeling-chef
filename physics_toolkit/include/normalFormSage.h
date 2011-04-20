@@ -39,6 +39,7 @@
 #include <basic_toolkit/VectorD.h>
 #include <mxyzptlk/mxyzptlk.h>
 #include <beamline/Particle.h>
+#include <beamline/JetParticle.h>
 
 #define DIM    6
 #define I_X 0
@@ -51,7 +52,7 @@
 class normalFormSage
 {
  public:
-  normalFormSage( Mapping & Map, const Particle & pr, int theOrder = 1);
+  normalFormSage( Mapping & Map, const JetParticle & jpr, int theOrder = 1);
   ~normalFormSage();
 
   // The following variables are public just for convenience.

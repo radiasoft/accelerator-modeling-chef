@@ -1,6 +1,5 @@
 #include <physics_toolkit/normalFormSage.h>
 
-#define DEBUG 1
 
 extern void normalForm( const Mapping& theMapping, /* input */
                  int            maxOrder,   /* input */
@@ -14,7 +13,7 @@ extern void normalForm( const Mapping& theMapping, /* input */
 // Implementation: class normalFormSage
 // -----------------------------
 
-normalFormSage::normalFormSage( Mapping & Map, const Particle &pr, int theOrder)
+normalFormSage::normalFormSage( Mapping & Map, const JetParticle &jpr, int theOrder)
     :   _E(DIM,DIM)
     , _invE(DIM,DIM)
     , _XG(0)
@@ -30,105 +29,100 @@ normalFormSage::normalFormSage( Mapping & Map, const Particle &pr, int theOrder)
     , CanonToChef("id")
     , ChefToCanon("id")
 {
-#if !DEBUG
+
   _order = theOrder;
 
   // initialize _state to 0
   for (int ii=0; ii<DIM; ++ii) {
     _state(ii) = 0.0;
   }
-  // initialize normal form mappings
-  // save old environment
-  Jet__environment_ptr saved_env = Jet__environment::getLastEnv();
-  if( !_initialized ) {
-    double scale[]  = { 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3 };
-    // create new environment
-    Jet__environment::BeginEnvironment(_order);
-    coord x( 0.0 ), y(0.0), t(0.0), px(0.0), py(0.0), de(0.0);
-    _p_je = Jet__environment::EndEnvironment(scale);
-    JetC__environment::setLastEnv( _p_je ); 
-    Mapping M;
+  Jet x, y, t, px, py, de;
+
+  x = jpr.get_x();
+  y = jpr.get_y();
+  t = jpr.get_cdt();
+  px = jpr.get_npx();
+  py = jpr.get_npy();
+  de = jpr.get_ndp();
+
+  Mapping M;
   
-    M.SetComponent( I_X, x );
-    M.SetComponent( I_Y, y);
-    M.SetComponent( I_T, t);
-    M.SetComponent( I_PX, px);
-    M.SetComponent( I_PY, py);
-    M.SetComponent( I_DE, de);
+  M.SetComponent( I_X, x );
+  M.SetComponent( I_Y, y);
+  M.SetComponent( I_T, t);
+  M.SetComponent( I_PX, px);
+  M.SetComponent( I_PY, py);
+  M.SetComponent( I_DE, de);
   
-    MatrixD jac(DIM,DIM);
-    M = *_p_rf;
+  MatrixD jac(DIM,DIM);
+  M = *_p_rf;
   
-    jac = M.Jacobian();
+  jac = M.Jacobian();
 
-    _E = jac.eigenVectors();
-    _invE = _E.inverse();
+  _E = jac.eigenVectors();
+  _invE = _E.inverse();
 
-    // initialize the mappings that turn chef coordinates into a
-    // symplectic and canonical coordinate basis
+  // initialize the mappings that turn chef coordinates into a
+  // symplectic and canonical coordinate basis
 
-    double e0 = pr.ReferenceEnergy();
-    double pc0 = pr.ReferenceMomentum();
-    double pmass = pr.Mass();
+  double e0 = jpr.ReferenceEnergy();
+  double pc0 = jpr.ReferenceMomentum();
+  double pmass = jpr.Mass();
   
-    Jet realP, deltaE;
-    // first map chef variables to canonical variables
-    // change transverse momenta
-    ChefToCanon.SetComponent(I_PX, px*pc0/PH_MKS_c);
-    ChefToCanon.SetComponent(I_PY, py*pc0/PH_MKS_c) ;
-    // cdt -> -dt
-    ChefToCanon.SetComponent(I_T, -t/PH_MKS_c);
-    // convert dp/p to deltaE
-    realP = (1.0+de)*pc0 ;
-    deltaE = sqrt( realP*realP + pmass*pmass ) - e0;
-    ChefToCanon.SetComponent(I_DE, deltaE);
+  Jet realP, deltaE;
+  // first map chef variables to canonical variables
+  // change transverse momenta
+  ChefToCanon.SetComponent(I_PX, px*pc0/PH_MKS_c);
+  ChefToCanon.SetComponent(I_PY, py*pc0/PH_MKS_c) ;
+  // cdt -> -dt
+  ChefToCanon.SetComponent(I_T, -t/PH_MKS_c);
+  // convert dp/p to deltaE
+  realP = (1.0+de)*pc0 ;
+  deltaE = sqrt( realP*realP + pmass*pmass ) - e0;
+  ChefToCanon.SetComponent(I_DE, deltaE);
   
-    // map from canonical variables to chef variables
-    CanonToChef.SetComponent(I_T, -t*PH_MKS_c);
-    CanonToChef.SetComponent(I_PX, px*PH_MKS_c/pc0);
-    CanonToChef.SetComponent(I_PY, py*PH_MKS_c/pc0);
+  // map from canonical variables to chef variables
+  CanonToChef.SetComponent(I_T, -t*PH_MKS_c);
+  CanonToChef.SetComponent(I_PX, px*PH_MKS_c/pc0);
+  CanonToChef.SetComponent(I_PY, py*PH_MKS_c/pc0);
   
-    // convert deltaE to dp/p.  For the canonical particle, pz is
-    //    really deltaE.
-    Jet dp, realE;
-    realE = de+e0;
-    dp = sqrt(realE*realE - pmass*pmass) -  pc0;
-    CanonToChef.SetComponent(I_DE, dp/pc0);
+  // convert deltaE to dp/p.  For the canonical particle, pz is
+  //    really deltaE.
+  Jet dp, realE;
+  realE = de+e0;
+  dp = sqrt(realE*realE - pmass*pmass) -  pc0;
+  CanonToChef.SetComponent(I_DE, dp/pc0);
 
-    // The combined transformation that we will use for the normal form
-    // analysis is the one turn map of a canonical particle.  To get this,
-    // apply the maps that turns a canonical particle to a chef particle,
-    // one turn map of a chef particle, chef particle to canonical particle.
+  // The combined transformation that we will use for the normal form
+  // analysis is the one turn map of a canonical particle.  To get this,
+  // apply the maps that turns a canonical particle to a chef particle,
+  // one turn map of a chef particle, chef particle to canonical particle.
 
-    _canonMap = ChefToCanon(M(CanonToChef));
+  _canonMap = ChefToCanon(M(CanonToChef));
 
-    if( _XG ) { delete [] _XG;}
-    _XG = new CLieOperator [_order];
-    if( _T  ) { delete [] _T;}
-    _T  = new CLieOperator [_order];
+  if( _XG ) { delete [] _XG;}
+  _XG = new CLieOperator [_order];
+  if( _T  ) { delete [] _T;}
+  _T  = new CLieOperator [_order];
 
-    normalForm( _canonMap, _order, &_E, _XG, _T );
+  normalForm( _canonMap, _order, &_E, _XG, _T );
 
-    _invE = _E.inverse();
+  _invE = _E.inverse();
 
-    // Construct the transformations
-    MappingC id( "ident" );
-    if( _f  ) { delete [] _f; }
-    _f = new MappingC [ _order - 1 ];
-    if( _g  ) { delete [] _g; }
-    _g = new MappingC [ _order - 1 ];
-    for( int i = 0; i < _order - 1; i++ ) {
-      _f[i] = _T[i].expMap(-1.0,id);
-      _f[i] = _f[i].filter(0,i+2);
-      _g[i] = _T[i].expMap(1.0,id);
-      _g[i] = _g[i].filter(0,i+2);
-    }
-
-    _initialized = true;
+  // Construct the transformations
+  MappingC id( "ident" );
+  if( _f  ) { delete [] _f; }
+  _f = new MappingC [ _order - 1 ];
+  if( _g  ) { delete [] _g; }
+  _g = new MappingC [ _order - 1 ];
+  for( int i = 0; i < _order - 1; i++ ) {
+    _f[i] = _T[i].expMap(-1.0,id);
+    _f[i] = _f[i].filter(0,i+2);
+    _g[i] = _T[i].expMap(1.0,id);
+    _g[i] = _g[i].filter(0,i+2);
   }
-  // restore old environment
-  JetC__environment::setLastEnv(saved_env);
-#endif // !DEBUG
+
+  _initialized = true;
 }
 
 
@@ -145,9 +139,6 @@ normalFormSage::~normalFormSage()
 // nform are the (complex) normal form coordinates (output)
 void normalFormSage::cnvDataToNormalForm( const Vector &hform, VectorC &nform )
 {
-#if !DEBUG
-  Jet__environment_ptr saved_env = Jet__environment::getLastEnv();
-  JetC__environment::setLastEnv(_p_je);
   static MatrixC u(DIM,1);
   std::vector<std::complex<double> > a(DIM);
   static int i, j;
@@ -184,18 +175,12 @@ void normalFormSage::cnvDataToNormalForm( const Vector &hform, VectorC &nform )
   for (i=0; i<DIM; ++i) {
     nform(i) = u(i);
   }
-  JetC__environment::setLastEnv(saved_env);
-#endif // !DEBUG
 }
 
 // vec are normal form coordinates.  nform(i+3) is the conjugate of nform(i)
 void normalFormSage::cnvDataFromNormalForm( const VectorC &nform, Vector& hform )
 {
-#if !DEBUG
   static MatrixC u(DIM,1);
-
-  Jet__environment_ptr saved_env = Jet__environment::getLastEnv();
-  JetC__environment::setLastEnv(_p_je);
 
   for (int i=0; i<DIM; ++i) {
     u(i) = nform(i);
@@ -229,8 +214,6 @@ void normalFormSage::cnvDataFromNormalForm( const VectorC &nform, Vector& hform 
 
   // transform canonical to chef coordinates
   hform = CanonToChef(hsymp);
-  JetC__environment::setLastEnv(saved_env);
-#endif // !DEBUG
 }
 
 void normalFormSage::checkLinearNormalForm()
@@ -273,7 +256,6 @@ const MatrixC& normalFormSage::getNormalEigenvectors()
 //   a distribution of given second moments.  
 std::vector<double> normalFormSage::stationaryActions(const double stdx, const double stdy, const double stdz)
 {
-#if !DEBUG
   MatrixD bmom(3,3);
   int i,j;
   // matrix bmom(i,j) = 2*|B(i,j)|**2
@@ -299,9 +281,6 @@ std::vector<double> normalFormSage::stationaryActions(const double stdx, const d
     meanActions[i] = mact(i);
   }
 
-  return meanActions;
-#else // !DEBUG
-  std::vector<double> meanActions(3,1.0);
   return meanActions;
 }
 
