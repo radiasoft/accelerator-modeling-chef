@@ -166,8 +166,8 @@ JLPtr<T> operator/(  JLPtr<T> const & x,    T const& y  );
 //..............................................................................................................................
 
 
-JLPtr<double> real(  TJL<std::complex<double> >* const& z ); 
-JLPtr<double> imag(  TJL<std::complex<double> >* const& z );
+JLPtr<double> real( JLPtr<std::complex<double> > const& z ); 
+JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
 
 
 

@@ -150,7 +150,7 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::~TMapping<T>() 
+TMapping<T>::~TMapping() 
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
