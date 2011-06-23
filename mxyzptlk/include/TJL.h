@@ -65,6 +65,8 @@
 ****** - added get/setTermCoefficient to efficiently get/set a specific monomial
 ******   coefficient.
 ******
+****** Jan 2011  michelotti@fnal.gov
+****** - Jim Amundson discovered error in signatures of real and imag functions.
 ******  
 **************************************************************************
 **************************************************************************
@@ -165,11 +167,8 @@ JLPtr<T> operator/(  JLPtr<T> const & x,    T const& y  );
 
 //..............................................................................................................................
 
-
-JLPtr<double> real( JLPtr<std::complex<double> > const& z ); 
+JLPtr<double> real( JLPtr<std::complex<double> > const& z );
 JLPtr<double> imag( JLPtr<std::complex<double> > const& z );
-
-
 
 // **********************************************************************************************************
 

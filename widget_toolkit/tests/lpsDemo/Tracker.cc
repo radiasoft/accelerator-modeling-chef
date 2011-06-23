@@ -39,6 +39,10 @@
 //     and a program called fermiModel.cc
 //   * Still needs to be cleaned up.
 // 
+// Thursday. January 13, 2011.
+// * Corrected error in loop in function
+//   void Tracker::cnvDataToNormalForm( Vector& vec )
+// 
 ////////////////////////////////////////////////////////////
 
 
@@ -742,7 +746,7 @@ void Tracker::cnvDataToNormalForm( Vector& vec )
 
   u = _invE*u;
 
-  for( i = 0; i < _order - 2; i++ ) {
+  for( i = 0; i <= _order - 2; i++ ) {
     for( j = 0; j < DIM; j++ ) {
       a[j] = u(j);
     }
