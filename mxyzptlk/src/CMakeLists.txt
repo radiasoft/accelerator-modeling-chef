@@ -1,0 +1,10 @@
+set(SRCS EnvPtr.cc   TJetEnvironmentInstantiations.cc  TJLInstantiations.cc
+	 TemplateInstantiations.cc  TJetVector.cc      TJLterm.cc
+	 TJet.cc                    TJL1.cc            TJLtermInstantiations.cc
+	 TJetConversions.cc         TJL1Instantiations.cc   TLieOperator.cc
+	 TJetEnvironment.cc         TJL.cc              TMapping.cc
+)
+
+add_library(mxyzptlk SHARED ${SRCS})
+
+install(TARGETS mxyzptlk DESTINATION lib)
