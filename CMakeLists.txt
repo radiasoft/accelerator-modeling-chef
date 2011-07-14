@@ -63,12 +63,9 @@ file ( MAKE_DIRECTORY "${CHEF_SOURCE_DIR}/include" )
 ##
 configure_file(${CHEF_SOURCE_DIR}/chef-config.sh.in
                ${CHEF_BINARY_DIR}/chef-config.sh)
-install(FILES ${CHEF_BINARY_DIR}/chef-config.sh DESTINATION bin)
-# now copy the temporary into the final destination, setting the permissions
-#file(COPY ${CHEF_BINARY_DIR}/chef-config.sh
-#     DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-#     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-#     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
+install(FILES ${CHEF_BINARY_DIR}/chef-config.sh DESTINATION bin
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 ##
 # Add subdirectories
