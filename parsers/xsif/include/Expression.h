@@ -34,7 +34,7 @@
 #include <iostream>
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
-#include <sequential_tree.h>
+#include <parsers/xsif/tree-container/sequential_tree.h>
 
 //-----------------------------------------------------------------------
 // The following forward class declarations must appear _before_
