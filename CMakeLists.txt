@@ -54,11 +54,6 @@ include_directories(${GLIB2_INCLUDE_DIRS})
 include_directories("${CHEF_SOURCE_DIR}/include")
 
 ##
-# create an include directory for building
-##
-file ( MAKE_DIRECTORY "${CHEF_SOURCE_DIR}/include" )
-
-##
 # create links for include subdirectories
 ##
 add_custom_target(
