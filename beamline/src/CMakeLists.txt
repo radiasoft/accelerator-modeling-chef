@@ -27,6 +27,6 @@ set(SRCS alignment.cc                    gkick.cc                        read_is
 	 FramePusher.cc                  RBendPropagators.cc             WakeKickPropagators.cc
 )
 
-add_library(beamline SHARED ${SRCS})
+add_library(beamline ${SRCS})
 
 install(TARGETS beamline DESTINATION lib)

@@ -6,6 +6,7 @@ libdir="@libdir@"
 glib_inc="@GLIB_INC@"
 glibconfig_inc="@GLIBCONFIG_INC@"
 glib_lib="@GLIB_LIB@"
+parsers=@BUILD_PARSER_MODULES@
 help ()
 {
     echo "usage: chef-config [OPTION]"
@@ -55,7 +56,10 @@ includes_list ()
 
 link ()
 {
-    echoval="-L$libdir -lphysics_toolkit -lbeamline -lbmlfactory"
+    echoval="-L$libdir -lphysics_toolkit -lbeamline"
+    if [ $parsers -ne 0 ]; then
+        echoval="$echoval -lbmlfactory"
+    fi
     if [ -n "$glib_lib" ]; then
 	echoval="$echoval -L$glib_lib"
     fi
@@ -74,7 +78,11 @@ lib_dirs_list ()
 
 libs_list ()
 {
-    echoval="physics_toolkit;beamline;bmlfactory;glib-2.0;basic_toolkit;mxyzptlk"
+    echoval="physics_toolkit;beamline"
+    if [ $parsers -ne 0 ]; then
+        echoval="$echoval;bmlfactory"
+    fi
+    echoval="$echoval;glib-2.0;basic_toolkit;mxyzptlk"
     echo "$echoval"
 }
 

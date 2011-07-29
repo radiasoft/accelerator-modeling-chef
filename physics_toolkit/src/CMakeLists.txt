@@ -10,6 +10,6 @@ set(SRCS AdjustPosition.cc        ConvertToTunes.cc     FPSolver.cc            Q
 	 ClosedOrbitSage.cc       FindCovariance.cc     ParticleVisitor.cc
 )
 
-add_library(physics_toolkit SHARED ${SRCS})
+add_library(physics_toolkit ${SRCS})
 
 install(TARGETS physics_toolkit DESTINATION lib)

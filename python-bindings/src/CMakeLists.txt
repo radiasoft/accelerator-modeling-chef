@@ -21,8 +21,10 @@ set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
 	 py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp)
 add_library(pybeamline SHARED ${SRCS3})
 
-set(SRCS4 py-bmlfactory-module.cpp)
-add_library(pybmlfactory SHARED ${SRCS4})
+if (BUILD_PARSER_MODULES)
+  set(SRCS4 py-bmlfactory-module.cpp)
+  add_library(pybmlfactory SHARED ${SRCS4})
+endif ()
 
 set(SRCS5 py-physicstoolkit-module.cpp
           py-lattfuncsage.cpp py-beamlinecontext.cpp)
@@ -31,5 +33,7 @@ add_library(pyphysics_toolkit SHARED ${SRCS5})
 install(TARGETS pybasic_toolkit DESTINATION lib)
 install(TARGETS pymxyzptlk DESTINATION lib)
 install(TARGETS pybeamline DESTINATION lib)
-install(TARGETS pybmlfactory DESTINATION lib)
+if (BUILD_PARSER_MODULES)
+  install(TARGETS pybmlfactory DESTINATION lib)
+endif()
 install(TARGETS pyphysics_toolkit DESTINATION lib)

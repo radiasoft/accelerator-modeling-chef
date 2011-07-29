@@ -6,7 +6,7 @@ set(SRCS Barnacle.cc erf.cc iosetup.cc OutputFormat.cc TML.cc
          Distribution.cc GenericException.cc nearint.c TemplateInstantiations.cc
          d_sign.c IntArray.cc nexcom.cc TMatrix.cc)
 
-add_library(basic_toolkit SHARED ${SRCS})
+add_library(basic_toolkit ${SRCS})
 target_link_libraries(basic_toolkit ${FFTW3_LIBRARIES})
 
 install(TARGETS basic_toolkit DESTINATION lib)

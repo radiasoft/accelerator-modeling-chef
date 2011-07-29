@@ -17,6 +17,6 @@ set(SRCS Expression.cc XSIFFactory.cc XsifParserDriver.cc
          ${BISON_XsifParser_OUTPUTS} ${FLEX_XsifScanner_OUTPUTS}
 )
 
-add_library(xsifparser SHARED ${SRCS})
+add_library(xsifparser ${SRCS})
 
 install(TARGETS xsifparser DESTINATION lib)

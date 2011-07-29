@@ -22,6 +22,6 @@ set(SRCS beam_element.c  bmlfactory_exit.cc  const_table.c
          ${FLEX_MadScanner_OUTPUTS}
 )
 
-add_library(bmlfactory SHARED ${SRCS})
+add_library(bmlfactory ${SRCS})
 
 install(TARGETS bmlfactory DESTINATION lib)

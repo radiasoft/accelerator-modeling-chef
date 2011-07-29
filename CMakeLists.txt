@@ -53,6 +53,54 @@ include_directories(${GLIB2_INCLUDE_DIRS})
 
 include_directories("${CHEF_SOURCE_DIR}/include")
 
+# Set defaults for building parsers (build parsers by default).
+if (NOT DEFINED BUILD_PARSER_MODULES)
+  if (NOT $ENV{BUILD_PARSER_MODULES} STREQUAL "")
+    set (BUILD_PARSER_MODULES $ENV{BUILD_PARSER_MODULES})
+  else ()
+    set (BUILD_PARSER_MODULES TRUE)
+  endif ()
+endif ()
+
+if (NOT BUILD_PARSER_MODULES)
+  message (STATUS "Not building parser modules")
+endif ()
+
+# Set defaults for building python bindings (build bindings by default).
+if (NOT DEFINED BUILD_PYTHON_BINDINGS)
+  if (NOT $ENV{BUILD_PYTHON_BINDINGS} STREQUAL "")
+    set (BUILD_PYTHON_BINDINGS $ENV{BUILD_PYTHON_BINDINGS})
+  else ()
+    set (BUILD_PYTHON_BINDINGS TRUE)
+  endif ()
+endif ()
+
+if (NOT BUILD_PYTHON_BINDINGS)
+  message (STATUS "Not building python bindings")
+endif ()
+
+# Are we building shared or static (shared is the default)?
+if (NOT DEFINED BUILD_SHARED_LIBS)
+  if (NOT $ENV{BUILD_SHARED_LIBS} STREQUAL "")
+    set (BUILD_SHARED_LIBS $ENV{BUILD_SHARED_LIBS})
+  else ()
+    set (BUILD_SHARED_LIBS TRUE)
+  endif ()
+endif ()
+
+if (BUILD_SHARED_LIBS)
+  message (STATUS "Building shared libraries")
+else ()
+  message (STATUS "Building static libraries")
+endif ()
+
+# We should probably warn someone trying to build static libraries along with
+#  the parsers since it won't work with python. The parser libaries will still
+#  be build shared
+if ( (NOT BUILD_SHARED_LIBS) AND BUILD_PYTHON_BINDINGS )
+  message(WARNING "Static library build selected, ignored for parser modules")
+endif ()
+
 ##
 # create links for include subdirectories
 ##
@@ -76,10 +124,14 @@ install(FILES ${CHEF_BINARY_DIR}/chef-config.sh DESTINATION bin
 ##
 add_subdirectory(basic_toolkit)
 add_subdirectory(beamline)
-add_subdirectory(bmlfactory)
-add_subdirectory(parsers)
+if (BUILD_PARSER_MODULES)
+  add_subdirectory(bmlfactory)
+  add_subdirectory(parsers)
+endif ()
 add_subdirectory(integrator)
 add_subdirectory(mxyzptlk)
 add_subdirectory(physics_toolkit)
 add_subdirectory(gms)
-add_subdirectory(python-bindings)
+if (BUILD_PYTHON_BINDINGS)
+  add_subdirectory(python-bindings)
+endif ()

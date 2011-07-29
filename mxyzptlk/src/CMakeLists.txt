@@ -5,6 +5,6 @@ set(SRCS EnvPtr.cc   TJetEnvironmentInstantiations.cc  TJLInstantiations.cc
 	 TJetEnvironment.cc         TJL.cc              TMapping.cc
 )
 
-add_library(mxyzptlk SHARED ${SRCS})
+add_library(mxyzptlk ${SRCS})
 
 install(TARGETS mxyzptlk DESTINATION lib)
