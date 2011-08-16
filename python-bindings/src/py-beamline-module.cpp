@@ -2,25 +2,25 @@
 ********************************************************************************
 ********************************************************************************
 ******
-******  Python bindings for mxyzpltk/beamline libraries 
-******  
-******                                    
-******  File:      py-beamline-module.cpp
-******                                                                
-******  Copyright (c) Universities Research Association, Inc./ Fermilab    
-******                All Rights Reserved                             
+******  Python bindings for mxyzpltk/beamline libraries
 ******
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S.and Foreign Copyright Laws. 
-******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
-******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
-******             ostiguy@fnal.gov                         
+******
+******  File:      py-beamline-module.cpp
+******
+******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******                All Rights Reserved
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S.and Foreign Copyright Laws.
+******
+******  Author:    Jean-Francois Ostiguy
+******
+******             Fermi National Laboratory, Batavia, IL   60510
+******             ostiguy@fnal.gov
 ******
 ********************************************************************************
 ********************************************************************************
@@ -67,17 +67,17 @@ extern void wrap_srot();
 extern void wrap_thinpoles();
 extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
-extern void wrap_refregvisitor(); 
+extern void wrap_refregvisitor();
 extern void wrap_bmlvisitor();
 
-BOOST_PYTHON_MODULE( beamline ) 
+BOOST_PYTHON_MODULE( pybeamline )
 {
 
 wrap_bmlnelmnt();
 wrap_beamline();
 wrap_particle();
 wrap_jetparticle();
-wrap_bmlvisitor(); 
+wrap_bmlvisitor();
 wrap_aperture();
 wrap_bblens();
 wrap_cf_rbend();
@@ -102,7 +102,7 @@ wrap_slot();
 wrap_srot();
 wrap_thinpoles();
 wrap_lattfunc();
-wrap_refregvisitor(); 
+wrap_refregvisitor();
 wrap_mover();
 wrap_monitor();
 }

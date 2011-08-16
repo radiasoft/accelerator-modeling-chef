@@ -44,7 +44,7 @@ extern void wrap_lattfuncsage();
 extern void wrap_beamlinecontext();
 
 
-BOOST_PYTHON_MODULE( physics_toolkit )
+BOOST_PYTHON_MODULE( pyphysics_toolkit )
 {
 
   def("DriftsToSlots",DriftsToSlots,

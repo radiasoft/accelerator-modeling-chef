@@ -1,10 +1,10 @@
 #####################################################################
 #
-# CMakeLists.txt for chef 
+# CMakeLists.txt for chef
 #
 #####################################################################
 
-project(CHEF) 
+project(CHEF)
 
 # Required version
 cmake_minimum_required (VERSION 2.8)
@@ -23,6 +23,8 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 message(STATUS "PYTHON_INCLUDE_PATH = ${PYTHON_INCLUDE_PATH}")
+
+include(${CHEF_SOURCE_DIR}/CMake/AddPythonExtension.cmake)
 
 # boost
 set(Boost_USE_STATIC_LIBS OFF)
