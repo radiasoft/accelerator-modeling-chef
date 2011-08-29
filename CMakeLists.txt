@@ -81,6 +81,12 @@ if (NOT BUILD_PYTHON_BINDINGS)
   message (STATUS "Not building python bindings")
 endif ()
 
+if (BUILD_PYTHON_BINDINGS)
+    # numpy
+    find_package(NUMPY REQUIRED)
+    include_directories(${NUMPY_INCLUDE_DIR})
+endif()
+
 # Are we building shared or static (shared is the default)?
 if (NOT DEFINED BUILD_SHARED_LIBS)
   if (NOT $ENV{BUILD_SHARED_LIBS} STREQUAL "")
