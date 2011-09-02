@@ -38,7 +38,7 @@
 ****** ----------------
 ****** Jun 1998 (?)       michelotti@fnal.gov
 ****** - original (working) version
-****** 
+******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
 ****** - reduced src file coupling due to visitor interface.
@@ -130,12 +130,12 @@ Slot::Slot( char const* nm )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( char const* nm, Frame const& y )
-  : bmlnElmnt(nm), in_(), out_(y) 
+  : bmlnElmnt(nm), in_(), out_(y)
 {
   if( !out_.isOrthonormal() )
   {
     throw( GenericException( __FILE__, __LINE__,
-           "Slot::Slot( char const * nm, Frame const& y )", 
+           "Slot::Slot( char const * nm, Frame const& y )",
            "Current implementation requires that frames be orthonormal." ) );
   }
 
@@ -152,10 +152,10 @@ Slot::Slot( char const* nm, Frame const& y )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 Slot::Slot( Slot const& x )
-  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ), 
+  : bmlnElmnt(x), in_( x.in_ ), out_( x.out_ ),
     propagator_(x.propagator_->Clone() )
 {
-  align_ =  x.align_ ? new alignment(*x.align_) : 0; 
+  align_ =  x.align_ ? new alignment(*x.align_) : 0;
 }
 
 
@@ -178,9 +178,9 @@ void Slot::makeUpstreamHorizontal   ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  Vector driftOffset(3); 
+  Vector driftOffset(3);
   driftOffset(2) = lng;
-  
+
   out_.rotate( - ang, out_.getyAxis() );
   out_.translate( driftOffset );
 }
@@ -195,9 +195,9 @@ void Slot::makeDownstreamHorizontal ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  Vector driftOffset(3); 
+  Vector driftOffset(3);
   driftOffset(2) = lng;
-  
+
   out_.translate( driftOffset );
   out_.rotate( - ang, out_.getyAxis() );
 }
@@ -211,9 +211,9 @@ void Slot::makeUpstreamVertical   ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  Vector driftOffset(3); 
+  Vector driftOffset(3);
   driftOffset(2) = lng;
-  
+
   out_.rotate( - ang, out_.getxAxis() );
   out_.translate( driftOffset );
 }
@@ -228,9 +228,9 @@ void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
   in_.reset();
   out_.reset();
 
-  Vector driftOffset(3); 
+  Vector driftOffset(3);
   driftOffset(2) = lng;
-  
+
   out_.translate( driftOffset );
   out_.rotate( - ang, out_.getxAxis() );
 }
@@ -239,18 +239,18 @@ void Slot::makeDownstreamVertical ( double const& lng, double const& ang )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char*  Slot::Type()  const  
-{ 
-  return "Slot"; 
+const char*  Slot::Type()  const
+{
+  return "Slot";
 }
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-bool Slot::isMagnet()  const  
-{ 
-  return false; 
+bool Slot::isMagnet()  const
+{
+  return false;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -272,10 +272,10 @@ int Slot::setOutFrame( Frame const& frm )
 
 
   int ret = 0;
-  if( ret = frm.isOrthonormal() ) { out_ = frm; }   
+  if( ret = frm.isOrthonormal() ) { out_ = frm; }
   else {
     throw( GenericException( __FILE__, __LINE__,
-         " int Slot::setOutFrame( const Frame& frm )", 
+         " int Slot::setOutFrame( const Frame& frm )",
          "Current implementation requires that frames be orthonormal." ) );
   }
 }
@@ -296,7 +296,7 @@ void Slot::setLength( double const& )
   uic << "This operation is disallowed for Slots"
          "\nbecause of ambiguity.";
   throw( GenericException( __FILE__, __LINE__,
-         "void Slot::setLength( double const& )", 
+         "void Slot::setLength( double const& )",
          uic.str().c_str() ) );
 }
 
@@ -308,26 +308,26 @@ int Slot::checkFrame( Frame const& f ) const
   static const Frame zero;
   static const int y = 1;
   static const int z = 2;
- 
+
   int ret = 0;
 
   if( !f.isOrthonormal() ) {
     throw( GenericException( __FILE__, __LINE__,
-           " int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const",
            "Current implementation requires that frames be orthonormal." ) );
   }
 
   if( f.getOrigin() != zero.getOrigin() ) {
     throw( GenericException( __FILE__, __LINE__,
-           " int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const",
            "Current implementation requires no displacement of origin." ) );
   }
 
-  else if( (  f.getAxis(y) != zero.getAxis(y) ) && 
+  else if( (  f.getAxis(y) != zero.getAxis(y) ) &&
            (  f.getAxis(z) != zero.getAxis(z) )
          ) {
     throw( GenericException( __FILE__, __LINE__,
-           " int Slot::checkFrame( const Frame& f ) const", 
+           " int Slot::checkFrame( const Frame& f ) const",
            "Current implementation allows rotation about "
            "y or z axis, but not both." ) );
   }
@@ -340,6 +340,7 @@ int Slot::checkFrame( Frame const& f ) const
 
 double Slot::OrbitLength( const Particle& x )
 {
+#ifdef ENABLE_PEDANTIC_WARNINGS
   static bool firstTime = true;
 
   if( firstTime ) {
@@ -351,10 +352,12 @@ double Slot::OrbitLength( const Particle& x )
               "*** WARNING *** orbit length.                   \n"
               "*** WARNING ***                                 \n"
            << endl;
-  }    
+  }
+#endif //ENABLE_PEDANTIC_WARNINGS
+
   return length_;
 }
- 
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -431,11 +434,11 @@ istream& Slot::readFrom( istream& is )
   if ( strcasecmp(type, "slot_BEGIN") == 0 ) {
     elm_ = ElmPtr( read_istream(is) );  // Recursively read the bmlnElmnt.
 
-    if ( elm_  && strcasecmp(elm_->Type(), "beamline") == 0 ) 
+    if ( elm_  && strcasecmp(elm_->Type(), "beamline") == 0 )
 
       bml_ = BmlPtr( (beamline*) elm_.get() );
 
-    // The only element in this Slot is a single bmlnElmnt.  There is a 
+    // The only element in this Slot is a single bmlnElmnt.  There is a
     // "slot_END" line to read in.
 
     is >> type >> name >> Length >> Strength >> x >> y >> t;
@@ -443,7 +446,7 @@ istream& Slot::readFrom( istream& is )
       ostringstream uic;
       uic << "Expecting \"slot_END\" but got " << type;
       throw( GenericException( __FILE__, __LINE__,
-             "istream& Slot::readFrom( istream& is )", 
+             "istream& Slot::readFrom( istream& is )",
              uic.str().c_str() ) );
     }
   } else {
@@ -454,7 +457,7 @@ istream& Slot::readFrom( istream& is )
     // Skip the next line--it is not "slot_BEGIN" (assume it is "slot_empty")
     ;
   }
-    
+
   // Finally, read in the "out" frame information.
   is >> out_;
   length_ = ( out_.getOrigin() - in_.getOrigin()) .Norm();
@@ -475,7 +478,7 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
          << "\n*** ERROR *** Attempt to split a Slot with length <= "
          << Slot::minSplitLength << " meter."
          << "\n*** ERROR *** ";
-    throw( GenericException( __FILE__, __LINE__, 
+    throw( GenericException( __FILE__, __LINE__,
            "void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
   }
@@ -484,16 +487,16 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
   if( pct < 0.0 || 1.0 < pct ) {
     (*pcerr) << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void Slot::Split( double, ElmPtr&, ElmPtr& )"
-         << "\n*** WARNING *** Function called with first argument = " 
+         << "\n*** WARNING *** Function called with first argument = "
          << pct <<             ", outside [0,1]."
-         << "\n*** WARNING *** Null pointers are being returned." 
+         << "\n*** WARNING *** Null pointers are being returned."
          << endl;
     a = ElmPtr();
     b = ElmPtr();
     return;
   }
 
-  
+
   if( pct == 0.0 ) {
      a = MarkerPtr( new marker( "Null Slot" ) );
      b =   SlotPtr( new Slot( *this ) );
@@ -525,7 +528,7 @@ void Slot::Split( double const& pct, ElmPtr& a, ElmPtr& b ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void Slot::accept( BmlVisitor& v ) 
+void Slot::accept( BmlVisitor& v )
 {
  v.visit(*this);
 }
