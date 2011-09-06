@@ -121,11 +121,22 @@ add_custom_target(
 ##
 # Install chef-config.sh
 ##
+# We need to set some variables here so that the substitution goes smoothly.
+# NB: We could use cmake variables inside of chef-config.sh.in, however,
+#     that would break an autotools build
+set ( prefix "${CMAKE_INSTALL_PREFIX}" )
+set ( exec_prefix "${prefix}/bin" )
+set ( includedir "${prefix}/include" )
+set ( libdir "${prefix}/lib" )
 configure_file(${CHEF_SOURCE_DIR}/chef-config.sh.in
                ${CHEF_BINARY_DIR}/chef-config.sh)
 install(FILES ${CHEF_BINARY_DIR}/chef-config.sh DESTINATION bin
         PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
                     GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+unset ( prefix )
+unset ( exec_prefix )
+unset ( includedir )
+unset ( libdir )
 
 ##
 # Add subdirectories
