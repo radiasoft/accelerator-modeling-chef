@@ -1,51 +1,53 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
 ******  File:      thinpoles.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******                                                                
-****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
+******  Author:    Leo Michelotti
 ******
-****** - support for reference counted elements
-****** - reduced src file coupling due to visit() member. 
-******   visit() now uses reference argument
-****** - fixed problem with thin2pole which did not  
-******   rotate the coordinates, contrary to the 
-******   convention adopted by other codes.
-****** Dec 2007           ostiguy@fnal.gov
-****** - new type safe propagators
-****** - common base class for all thin poles
+******             Fermilab
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
+******  REVISION HISTORY
+******
+******  Mar 2007             ostiguy@fnal.gov
+******
+******  - support for reference counted elements
+******  - reduced src file coupling due to visit() member.
+******    visit() now uses reference argument
+******  - fixed problem with thin2pole which did not
+******    rotate the coordinates, contrary to the
+******    convention adopted by other codes.
+******
+******  Dec 2007             ostiguy@fnal.gov
+******  - new type safe propagators
+******  - common base class for all thin poles
+******
+******  Jul 2011             michelotti@fnal.gov
+******  - class ThinPole extended to permit arbitrary
+******    collection of normal and skew multipoles
+******
 **************************************************************************
 *************************************************************************/
 
@@ -53,18 +55,23 @@
 #include <config.h>
 #endif
 
+#include <basic_toolkit/iosetup.h>
+#include <basic_toolkit/GenericException.h>
 #include <beamline/ThinPolesPropagators.h>
 #include <beamline/thinpoles.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
+
 
 // **************************************************
-//   class ThinPole 
+//   class ThinPole
 // **************************************************
 
-ThinPole::ThinPole( int pole)
-  : bmlnElmnt( "", 0.0, 0.0 ), pole_(pole)
+ThinPole::ThinPole( int pole )
+: bmlnElmnt( "", 0.0, 0.0 ), pole_(pole), simple_(true)
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
@@ -74,20 +81,50 @@ ThinPole::ThinPole( int pole)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
-ThinPole::ThinPole( const char* name, double const& integrated_strength, int pole)
-  : bmlnElmnt( name, 0.0, integrated_strength ), pole_(pole)
+ThinPole::ThinPole( const char* name,
+                    double const& integrated_strength,
+                    int pole )
+: bmlnElmnt( name, 0.0, integrated_strength ), pole_(pole), simple_(true)
 {
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+ThinPole::ThinPole( char const* name,
+                    double const& integrated_strength_normalization,
+                    std::vector<std::complex<double> > const& multipoles )
+: bmlnElmnt( name, 0.0, integrated_strength_normalization ),
+  pole_(2*(multipoles.size())),   // NOTE: not 2*(multipoles.size()+1)
+  c_(multipoles),                 // because indexing starts with zero
+  simple_(false)
+{
+  propagator_ = PropagatorPtr(new Propagator() );
+  propagator_->setup(*this);
+
+  if( c_.size() < 2 ) {
+    ostringstream uic;
+    uic  << "Size of multipole array = " << c_.size() << ", less than 2.";
+    throw GenericException( __FILE__, __LINE__,
+          "ThinPole::ThinPole( name, integrated_strength_normalization, multipoles )",
+          uic.str().c_str() );
+    (*pcerr) << "\n*** ERROR *** "
+                "\n*** ERROR *** " << "Size of multipole array, "
+                                   << c_.size()
+                                   << "is less than 2."
+             << "\n*** ERROR *** "
+             << endl;
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 ThinPole::ThinPole( ThinPole const& x )
-  : bmlnElmnt( x ),  pole_(x.pole_)
-{ 
+: bmlnElmnt( x ),  pole_(x.pole_), c_(x.c_), simple_(x.simple_)
+{
   propagator_ = PropagatorPtr( x.propagator_->Clone() ) ;
 }
 
@@ -116,14 +153,13 @@ char const* ThinPole::Type() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void ThinPole::accept( BmlVisitor& v ) 
+void ThinPole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-
 
 void ThinPole::accept( ConstBmlVisitor& v ) const
 {
@@ -132,9 +168,26 @@ void ThinPole::accept( ConstBmlVisitor& v ) const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 int ThinPole::getPole() const
 {
   return pole_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+std::vector<std::complex<double> > const& ThinPole::getMultipoleCoefficients() const
+{
+  return c_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool ThinPole::isSimple() const
+{
+  return simple_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -174,7 +227,7 @@ void ThinPole::localPropagate(JetParticleBunch& b)
 
 
 // **************************************************
-//   class thin2pole 
+//   class thin2pole
 // **************************************************
 
 thin2pole::thin2pole()
@@ -208,14 +261,14 @@ thin2pole::~thin2pole()
 
 const char* thin2pole::Type() const
 {
-  return "thin2pole"; 
+  return "thin2pole";
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void thin2pole::accept( BmlVisitor& v ) 
+void thin2pole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
@@ -234,10 +287,10 @@ void thin2pole::accept( ConstBmlVisitor& v ) const
 
 
 // **************************************************
-//   class thin12pole 
+//   class thin12pole
 // **************************************************
 
-thin12pole::thin12pole () 
+thin12pole::thin12pole ()
   : ThinPole(12)
 {}
 
@@ -245,37 +298,37 @@ thin12pole::thin12pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-thin12pole::thin12pole ( const char* n, double const& s ) 
-: ThinPole( n, s, 12 ) 
+thin12pole::thin12pole ( const char* n, double const& s )
+: ThinPole( n, s, 12 )
 {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin12pole::thin12pole( thin12pole const& x ) 
+thin12pole::thin12pole( thin12pole const& x )
 : ThinPole( x )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin12pole::~thin12pole() 
+thin12pole::~thin12pole()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-const char* thin12pole::Type() const 
-{ 
-  return "thin12pole"; 
+const char* thin12pole::Type() const
+{
+  return "thin12pole";
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thin12pole::accept( BmlVisitor& v ) 
+void thin12pole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
@@ -292,48 +345,48 @@ void thin12pole::accept( ConstBmlVisitor& v ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
-//   class thin14pole 
+//   class thin14pole
 // **************************************************
 
-thin14pole::thin14pole () 
+thin14pole::thin14pole ()
 : ThinPole(14)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin14pole::thin14pole ( const char* n, double const& s ) 
-  : ThinPole( n, s,14 ) 
+thin14pole::thin14pole ( const char* n, double const& s )
+  : ThinPole( n, s,14 )
 {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin14pole::thin14pole( thin14pole const& x ) 
+thin14pole::thin14pole( thin14pole const& x )
   : ThinPole( x )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin14pole::~thin14pole() 
+thin14pole::~thin14pole()
 {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* thin14pole::Type() const 
-{ 
-  return "thin14pole"; 
+const char* thin14pole::Type() const
+{
+  return "thin14pole";
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thin14pole::accept( BmlVisitor& v ) 
+void thin14pole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
@@ -350,17 +403,17 @@ void thin14pole::accept( ConstBmlVisitor& v ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 // **************************************************
-//   class thin16pole 
+//   class thin16pole
 // **************************************************
 
-thin16pole::thin16pole () 
+thin16pole::thin16pole ()
   : ThinPole(16)
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin16pole::thin16pole ( const char* n, double const& s ) 
+thin16pole::thin16pole ( const char* n, double const& s )
   : ThinPole( n, s, 16 )
 {}
 
@@ -368,28 +421,28 @@ thin16pole::thin16pole ( const char* n, double const& s )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin16pole::thin16pole( thin16pole const& x ) 
+thin16pole::thin16pole( thin16pole const& x )
 : ThinPole( x )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin16pole::~thin16pole() 
+thin16pole::~thin16pole()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* thin16pole::Type() const 
-{ 
-  return "thin16pole"; 
+const char* thin16pole::Type() const
+{
+  return "thin16pole";
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thin16pole::accept( BmlVisitor& v ) 
+void thin16pole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
@@ -403,10 +456,10 @@ void thin16pole::accept( ConstBmlVisitor& v ) const
 }
 
 // **************************************************
-//   class thin18pole 
+//   class thin18pole
 // **************************************************
 
-thin18pole::thin18pole () 
+thin18pole::thin18pole ()
   : ThinPole(18)
 {}
 
@@ -414,36 +467,36 @@ thin18pole::thin18pole ()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin18pole::thin18pole ( const char* n, double const& s ) 
+thin18pole::thin18pole ( const char* n, double const& s )
   : ThinPole( n, s, 18 )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin18pole::thin18pole( thin18pole const& x ) 
+thin18pole::thin18pole( thin18pole const& x )
 : ThinPole( x )
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thin18pole::~thin18pole() 
+thin18pole::~thin18pole()
 {}
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* thin18pole::Type() const 
-{ 
-  return "thin18pole"; 
+const char* thin18pole::Type() const
+{
+  return "thin18pole";
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void thin18pole::accept( BmlVisitor& v ) 
+void thin18pole::accept( BmlVisitor& v )
 {
   v.visit(*this);
 }
