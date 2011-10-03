@@ -10,8 +10,9 @@ project(CHEF)
 cmake_minimum_required (VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CHEF_SOURCE_DIR}/CMake")
 
-add_definitions(-g -O2 -pipe -fpermissive -Wno-deprecated
-                -DBOOST_PYTHON_NO_PY_SIGNATURES) #jfa (1st line) and goldy
+add_definitions(-Wno-deprecated -DBOOST_PYTHON_NO_PY_SIGNATURES)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fpermissive)
+
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ##
@@ -53,7 +54,7 @@ include(FindPkgConfig)
 pkg_check_modules(GLIB2 glib-2.0)
 include_directories(${GLIB2_INCLUDE_DIRS})
 
-include_directories("${CHEF_SOURCE_DIR}/include")
+include_directories(BEFORE "${CHEF_SOURCE_DIR}/include")
 
 # Set defaults for building parsers (build parsers by default).
 if (NOT DEFINED BUILD_PARSER_MODULES)
