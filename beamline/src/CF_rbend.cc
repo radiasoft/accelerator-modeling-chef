@@ -1,50 +1,50 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
-******  File:      CF_rbend.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
+******  File:      CF_rbend.cc
+******
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
+******
+******  Author:    Leo Michelotti
+******
+******             Fermilab
+******             P.O.Box 500
+******             Mail Stop 220
+******             Batavia, IL   60510
+******
+******             Phone: (630) 840 4956
+******             Email: michelotti@fnal.gov
+******
 ****** REVISION HISTORY
 ******
 ****** Mar 2007           ostiguy@fnal.gov
 ****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
+****** - reduced src file coupling due to visitor interface.
 ******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-******     
+****** - use std::string for string operations.
+******
 ****** Aug 2007           ostiguy@fnal.gov
 ****** - composite structure based on regular beamline
-******     
+******
 ****** Dec                ostiguy@fnal.gov
 ****** - new typesafe propagator architecture
-******     
+******
 ****** Apr 2008           michelotti@fnal.gov
 ****** - modified setStrength method
 ****** - added placeholder setLength method
@@ -53,7 +53,7 @@
 ******   in order to conform with usage in other bend constructors.
 ****** - corrected rbend::Split
 ******   : including adding methods to nullify edge effects
-****** 
+******
 *************************************************************************
 *************************************************************************/
 
@@ -98,7 +98,7 @@ CF_rbend::CF_rbend()
     dsAngle_(-M_TWOPI),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); 
+  propagator_ = PropagatorPtr( new Propagator(1) );
   propagator_->setup(*this);
 }
 
@@ -109,7 +109,7 @@ CF_rbend::CF_rbend()
 CF_rbend::CF_rbend( const char*   nm,   // name
                     double const& lng,  // length      [ meter    ]
                     double const& fld   // field       [ tesla    ]
-                     )  
+                     )
   : bmlnElmnt( nm, lng, fld ),
     usFaceAngle_(0.0),
     dsFaceAngle_(0.0),
@@ -117,7 +117,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
     dsAngle_(-M_TWOPI),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
+  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
@@ -137,7 +137,7 @@ CF_rbend::CF_rbend( char const*   nm,   // name
        dsAngle_(-ang/2.0),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
+  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
@@ -158,7 +158,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
        dsAngle_(-M_TWOPI),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
+  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
@@ -180,7 +180,7 @@ CF_rbend::CF_rbend( const  char*   nm,   // name
     dsAngle_(-((ang/2.0) + ds)),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles  
+  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
@@ -209,19 +209,19 @@ CF_rbend::~CF_rbend()
 
 CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 {
-  if ( &rhs == this ) return *this; 
-              
+  if ( &rhs == this ) return *this;
+
   bmlnElmnt::operator=( rhs );
 
-  usFaceAngle_ =  rhs.usFaceAngle_;  
+  usFaceAngle_ =  rhs.usFaceAngle_;
   dsFaceAngle_ =  rhs.dsFaceAngle_;
 
   usAngle_     =  rhs.usAngle_;
   dsAngle_     =  rhs.dsAngle_;
 
   propagator_  =  rhs.propagator_;
- 
-  bml_       =  BmlPtr( rhs.bml_->Clone() );  
+
+  bml_       =  BmlPtr( rhs.bml_->Clone() );
 
   return *this;
 }
@@ -298,7 +298,7 @@ double CF_rbend::setEntryAngle( double const& phi )
 double CF_rbend::setExitAngle( double const& phi /* radians */ )
 {
   double ret = dsAngle_;
-  dsAngle_ = phi;  
+  dsAngle_ = phi;
   propagator_->setup(*this);
   return ret;
 }
@@ -310,21 +310,21 @@ double CF_rbend::setExitAngle( double const& phi /* radians */ )
 int CF_rbend::setOctupole( double const& arg_x )
 {
   int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
+  for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( ( boost::dynamic_pointer_cast<thinOctupole const>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
+
+  for ( beamline::iterator it  = bml_->begin();
 	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
+    if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
   }
   return 0;
- 
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -333,21 +333,21 @@ int CF_rbend::setOctupole( double const& arg_x )
 int CF_rbend::setSextupole( double const& arg_x )
 {
   int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
+  for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( ( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
+
+  for ( beamline::iterator it  = bml_->begin();
 	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) { 
+    if ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
   }
   return 0;
- 
+
 }
 
 
@@ -356,7 +356,7 @@ int CF_rbend::setSextupole( double const& arg_x )
 
 bool CF_rbend::hasParallelFaces() const
 {
-  return (    (std::abs(usFaceAngle_) < 1.0e-9) 
+  return (    (std::abs(usFaceAngle_) < 1.0e-9)
            && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
 
@@ -366,7 +366,7 @@ bool CF_rbend::hasParallelFaces() const
 
 bool CF_rbend::hasStandardFaces() const
 {
-  return (    (std::abs(usFaceAngle_) < 1.0e-9) 
+  return (    (std::abs(usFaceAngle_) < 1.0e-9)
            && (std::abs(dsFaceAngle_) < 1.0e-9) );
 }
 
@@ -378,16 +378,16 @@ int CF_rbend::setQuadrupole( double const& arg_x )
 {
 
   int counter = 0;
-  for ( beamline::const_iterator it  = bml_->begin(); 
+  for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( ( boost::dynamic_pointer_cast<thinQuad const>(*it) ) ) ++counter;
   }
 
   if (counter==0) return 1;
- 
-  for ( beamline::iterator it  = bml_->begin(); 
+
+  for ( beamline::iterator it  = bml_->begin();
 	                   it != bml_->end(); ++it ) {
-    if ( boost::dynamic_pointer_cast<thinQuad>(*it) ) { 
+    if ( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
   }
@@ -400,12 +400,12 @@ int CF_rbend::setQuadrupole( double const& arg_x )
 
 int CF_rbend::setDipoleField( double const& arg_x )
 {
- 
-  strength_ = arg_x; 
- 
-  for ( beamline::iterator it  = bml_->begin(); 
+
+  strength_ = arg_x;
+
+  for ( beamline::iterator it  = bml_->begin();
 	                   it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<rbend>(*it) ) { 
+    if( boost::dynamic_pointer_cast<rbend>(*it) ) {
      (*it)->setStrength( arg_x );
    }
   }
@@ -416,38 +416,38 @@ int CF_rbend::setDipoleField( double const& arg_x )
 
 // REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // REMOVE: //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-// REMOVE: 
+// REMOVE:
 // REMOVE: void CF_rbend::setStrength( double const& s )
 // REMOVE: {
-// REMOVE: 
+// REMOVE:
 // REMOVE:   double ratio = (strength_ != 0.0) ? s/strength_ : 0.0;
-// REMOVE:  
+// REMOVE:
 // REMOVE:   CFRbendPtr q;
-// REMOVE: 
-// REMOVE:   for ( beamline::iterator it  = bml_->begin(); 
+// REMOVE:
+// REMOVE:   for ( beamline::iterator it  = bml_->begin();
 // REMOVE:                            it != bml_->end(); ++it ) {
-// REMOVE:     
+// REMOVE:
 // REMOVE:     if ( ratio != 0.0  ) {
 // REMOVE:          (*it)->setStrength( ratio * (*it)->Strength() );
-// REMOVE:     } 
+// REMOVE:     }
 // REMOVE:     else {
 // REMOVE:       if ( q = boost::dynamic_pointer_cast<CF_rbend>(*it) ) q->setStrength(s);
 // REMOVE:     }
-// REMOVE:    
+// REMOVE:
 // REMOVE:   }
-// REMOVE: 
-// REMOVE:   strength_ = s; 
+// REMOVE:
+// REMOVE:   strength_ = s;
 // REMOVE: }
-// REMOVE: 
-// REMOVE: 
+// REMOVE:
+// REMOVE:
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::setStrength( double const& s ) 
+void CF_rbend::setStrength( double const& s )
 {
   if( strength_ == 0 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::setStrength( double const& s )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "void CF_rbend::setStrength( double const& s )",
            "Cannot set strength of CF_rbend when initial strength is zero."
            "\nCurrent version has no way of accessing attributes of edges." ) );
   }
@@ -456,7 +456,7 @@ void CF_rbend::setStrength( double const& s )
   bmlnElmnt::setStrength(s);
   double ratio = strength_ / oldStrength;
 
-  if( bml_) 
+  if( bml_)
   {
     for ( beamline::iterator it  = bml_->begin();
                              it != bml_->end(); ++it ) {
@@ -468,8 +468,8 @@ void CF_rbend::setStrength( double const& s )
     }
   }
   else {
-    throw( GenericException( __FILE__, __LINE__, 
-           "void sbend::setStrength( double const& s )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "void sbend::setStrength( double const& s )",
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
 }
@@ -481,18 +481,18 @@ void CF_rbend::setLength( double const& )
 {
   ostringstream methodIdent;
   methodIdent << "void " << Type() << "::setLength( double const& )";
-  
+
   (*pcerr) <<   "*** ERROR ****: "
               "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
-           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )" 
-              "\n*** ERROR ****: Resetting the length of " 
+           << "\n*** ERROR ****: void " << Type() << "::setLength( double const& )"
+              "\n*** ERROR ****: Resetting the length of "
            << Type() << " is not allowed in this version."
-              "\n*** ERROR ****: " 
+              "\n*** ERROR ****: "
            << std::endl;
 
   ostringstream uic;
   uic << "Resetting the length of " << Type() << " is not allowed in this version.";
-  throw( GenericException( __FILE__, __LINE__, 
+  throw( GenericException( __FILE__, __LINE__,
            methodIdent.str().c_str(),
            uic.str().c_str() ) );
 }
@@ -506,7 +506,7 @@ double CF_rbend::getOctupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it  = bml_->begin(); 
+  for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
       strength += (*it)->Strength();
@@ -525,7 +525,7 @@ double CF_rbend::getSextupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it = bml_->begin(); 
+  for ( beamline::const_iterator it = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
       strength += (*it)->Strength();
@@ -543,7 +543,7 @@ double CF_rbend::getQuadrupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it  = bml_->begin(); 
+  for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
        strength += (*it)->Strength();
@@ -572,20 +572,20 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
     ostringstream uic;
     uic << "Requested percentage = " << pc << "; should be in [0,1].";
-    throw( GenericException( __FILE__, __LINE__, 
-           "void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "void CF_rbend::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )",
            uic.str().c_str() ) );
   }
 
   alignmentData ald( Alignment() );
-  if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
+  if(    ( 0. != ald.xOffset || 0. != ald.yOffset )
       && ( !hasParallelFaces()                    ) ) {
     ostringstream uic;
     uic  <<   "Not allowed to displace an rbend with non-parallel faces";
             "\nwith an Alignment struct.  That rolls are allowed in such"
             "\ncases is only a matter of courtesy. This is NOT encouraged!";
-    throw( GenericException( __FILE__, __LINE__, 
-           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
+    throw( GenericException( __FILE__, __LINE__,
+           "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
   }
 
@@ -673,13 +673,13 @@ void CF_rbend::nullExitEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << endpoint->Type() << " " << endpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__,
                "void CF_rbend::nullExitEdge()",
                uic.str().c_str() ) );
     }
   }
   else {
-    throw GenericException( __FILE__, __LINE__, 
+    throw GenericException( __FILE__, __LINE__,
       "void CF_rbend::nullExitEdge()",
       "An impossibility: internal beamline is null.");
   }
@@ -704,13 +704,13 @@ void CF_rbend::nullEntryEdge()
       ostringstream uic;
       uic  <<   "Internal beamline ends in unrecognized element "
            << startpoint->Type() << " " << startpoint->Name();
-      throw( GenericException( __FILE__, __LINE__, 
+      throw( GenericException( __FILE__, __LINE__,
                "void CF_rbend::nullExitEdge()",
                uic.str().c_str() ) );
     }
   }
   else {
-    throw GenericException( __FILE__, __LINE__, 
+    throw GenericException( __FILE__, __LINE__,
       "void CF_rbend::nullExitEdge()",
       "An impossibility: internal beamline is null.");
   }
@@ -719,17 +719,17 @@ void CF_rbend::nullEntryEdge()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::peekAt( double& s, Particle const& prt ) 
+void CF_rbend::peekAt( double& s, Particle const& prt )
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );
- (*pcout) << setw(12) << s           
-                  << " : " 
-      << setw(10) << (int) this  
-      << setw(15) << ident_       
-      << setw(15) << Type()      
-      << setw(12) << length_      
-      << setw(12) << strength_    
+ (*pcout) << setw(12) << s
+                  << " : "
+      << setw(10) << this
+      << setw(15) << ident_
+      << setw(15) << Type()
+      << setw(12) << length_
+      << setw(12) << strength_
       << setw(12) << ((this->getQuadrupole())/length_)
       << setw(12) << (2.0*(this->getSextupole())/length_)
       << setw(12) << (6.0*(this->getOctupole())/length_)
@@ -746,8 +746,8 @@ ostream& CF_rbend::writeTo( ostream& os )
   int n = bml_->countHowMany();
 
   if( 0 != n%12 ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "ostream& CF_rbend::writeTo( ostream& os )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "ostream& CF_rbend::writeTo( ostream& os )",
            "Unexpected number of blocks." ) );
   }
 
@@ -779,7 +779,7 @@ istream& CF_rbend::readFrom( istream& is )
      >> dsFaceAngle_
      >> usAngle_
      >> dsAngle_
-     >> quadStrength 
+     >> quadStrength
      >> sextStrength
      >> octStrength;
 
@@ -794,9 +794,9 @@ istream& CF_rbend::readFrom( istream& is )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-const char* CF_rbend::Type() const  
-{ 
-  return "CF_rbend"; 
+const char* CF_rbend::Type() const
+{
+  return "CF_rbend";
 }
 
 
@@ -825,8 +825,8 @@ double CF_rbend::OrbitLength( Particle const& p )
 
 double CF_rbend::AdjustPosition( Particle const& p )
 {
-  // This probably won't work properly ... 
-  // because the current env may not be appropriate 
+  // This probably won't work properly ...
+  // because the current env may not be appropriate
 
   JetParticle jetparticle(p);
   return AdjustPosition( jetparticle );
@@ -839,8 +839,8 @@ double CF_rbend::AdjustPosition( Particle const& p )
 double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 {
   if( ( 0.0 != usFaceAngle_ ) || ( 0.0 != dsFaceAngle_ ) ) {
-    throw( GenericException( __FILE__, __LINE__, 
-           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
+    throw( GenericException( __FILE__, __LINE__,
+           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )",
            "In this version: only implemented for parallel faces." ) );
   }
 
@@ -851,24 +851,24 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
   Mapping& jetstate =  jetparticle.State();
   Vector&     state =     particle.State();
- 
-  Jet__environment_ptr env = jetstate.Env(); 
+
+  Jet__environment_ptr env = jetstate.Env();
 
   Vector    instate =     state;
 
   const double x_i  = state[x];
-  const double xp_i = state[xp]; 
+  const double xp_i = state[xp];
 
   // Initialize the derivative...
 
-  jetparticle.setState(instate); 
+  jetparticle.setState(instate);
 
   propagate(jetparticle);
 
   double m = jetstate.Jacobian()( xp, x );
   if( fabs(m) < 1.0e-12 ) {
-     throw( GenericException( __FILE__, __LINE__, 
-           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
+     throw( GenericException( __FILE__, __LINE__,
+           "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )",
            "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
   }
   m = 1.0 / m;
@@ -883,25 +883,25 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
   double f = state[xp] + xp_i;
 
   int i = 0;
-  while( ( i < 5 ) || ( ( i < 15 ) && (fabs(f) > 1.0e-9) ) ) 
+  while( ( i < 5 ) || ( ( i < 15 ) && (fabs(f) > 1.0e-9) ) )
   {
     i++;
 
     // One Newton's step ...
     z -= m*f;
-    
+
     instate[x] = z;
-    state      = instate; 
+    state      = instate;
 
     // Recalculate inverse derivative ...
 
-    jetparticle.setState(instate); 
+    jetparticle.setState(instate);
     propagate( jetparticle );
- 
+
     m =  (jetstate.Jacobian())( xp, x );
     if( fabs(m) < 1.0e-12 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )", 
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::AdjustPosition( const JetParticle& arg_jp )",
              "Horrible, inexplicable error: a multi-valued solution is suspected." ) );
     }
     m = 1.0 / m;
@@ -924,7 +924,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
             "*** WARNING *** CF_rbend::AdjustPosition             \n"
             "*** WARNING *** No convergence within 15 Newton      \n"
             "*** WARNING *** iterations for magnet "
-         <<                               this->Name() 
+         <<                               this->Name()
          <<                           ". Proceeding to find       \n"
             "*** WARNING *** best solution by stepping.           \n"
             "*** WARNING ***                                      \n"
@@ -940,15 +940,15 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
     instate[x] = delta;
     state      = instate;
-    
+
     propagate( particle );
 
     f = state[xp] + xp_i;
 
-    if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) ) 
-          && ( fabs(error) < fabs(f) ) ) 
+    if(      ( ( f >= 0.0 && error >= 0.0 ) || ( f <= 0.0 && error <= 0.0 ) )
+          && ( fabs(error) < fabs(f) ) )
     {
-      delta = - delta;                 
+      delta = - delta;
     }
 
     instate[x]  = 0.0;
@@ -962,7 +962,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
       f = state[xp] + xp_i;
 
-      while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) && 
+      while( ( ( f <= 0.0 && error <= 0.0 ) || ( f >= 0.0 && error >= 0.0 ) ) &&
              ( fabs(f) < fabs(error) ) )
       {
         error = f;
@@ -993,13 +993,13 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 
     z = state[x];
 
-  } // if 
+  } // if
 
 
   // Set the alignment of the internal beamline.
   // this->align_->getAlignment().xOffset -= z;
 
-  alignmentData v; 
+  alignmentData v;
 
   if ( align_ ) {
      v = align_->getAlignment();
@@ -1021,7 +1021,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double const& CF_rbend::getBendAngle() const 
+double const& CF_rbend::getBendAngle() const
 {
   return angle_;
 }
@@ -1061,10 +1061,10 @@ double CF_rbend::getExitAngle() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::accept( BmlVisitor& v ) 
+void CF_rbend::accept( BmlVisitor& v )
 {
   v.visit(*this);
-} 
+}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1072,7 +1072,7 @@ void CF_rbend::accept( BmlVisitor& v )
 void CF_rbend::accept( ConstBmlVisitor& v ) const
 {
   v.visit(*this);
-} 
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

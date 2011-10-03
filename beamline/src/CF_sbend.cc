@@ -177,7 +177,7 @@ void CF_sbend::peekAt( double& s, Particle const& prt )
  s += OrbitLength( prt );
  (*pcout) << setw(12) << s
                   << " : "
-      << setw(10) << (int) this
+      << setw(10) << this
       << setw(15) << ident_
       << setw(15) << Type()
       << setw(12) << length_

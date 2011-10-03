@@ -536,7 +536,7 @@ void bmlnElmnt::peekAt( double& s, const Particle& prt ) const
 
  (*pcout) << setw(12) << s
                   << " : "
-      << setw(10) << (int) this
+      << setw(10) << this
       << setw(15) << ident_
       << setw(15) << Type()
       << setw(12) << length_
