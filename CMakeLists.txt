@@ -10,8 +10,7 @@ project(CHEF)
 cmake_minimum_required (VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CHEF_SOURCE_DIR}/CMake")
 
-add_definitions(-Wno-deprecated -DBOOST_PYTHON_NO_PY_SIGNATURES)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fpermissive)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fpermissive -Wno-deprecated -DBOOST_PYTHON_NO_PY_SIGNATURES")
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
