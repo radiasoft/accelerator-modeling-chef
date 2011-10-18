@@ -1588,7 +1588,7 @@ void BeamlineContext::addHTuneCorrector( ElmPtr x )
 void BeamlineContext::addHTuneCorrector( QuadrupolePtr x ) 
 {
   if( !p_ta_ ) p_ta_ = new TuneAdjuster( p_bml_ );
-    
+
   p_ta_->addCorrector( x, 1.0, 0.0 );
 }
 
