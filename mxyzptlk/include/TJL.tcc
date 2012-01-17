@@ -62,6 +62,15 @@
 ****** - monomial multiplication handled via a lookup-table.
 ****** - added STL compatible monomial term iterators    
 ****** - added get/setTermCoefficient() to get/set specific monomial coefficient
+****** 
+****** Jan 2011 michelotti@fnal.gov
+****** - BUG FIX: a line was missing from 
+******   JLPtr<T> TJL<T>::filter( int const& wgtLo, int const& wgtHi ) const 
+******   Because of this, polynomial weights were not being carried correctly
+******   for degree one problems.  In turn, this adversely affected degree one
+******   polynomial evaluation.
+****** - NOTE: Searching for this (kind of) error in other parts of mxyzptlk
+******   remains to be done.
 ******
 **************************************************************************
 *************************************************************************/
@@ -1017,6 +1026,7 @@ JLPtr<T> TJL<T>::filter( int const& wgtLo, int const& wgtHi ) const
    if( (wgt < 2) && (wgt >= wgtLo) && ( wgt <= wgtHi ) ) {
      int indy = p->offset_;
      z->jltermStore_[indy].value_ = p->value_;
+     upperWgt = std::max(  wgt, upperWgt); 
    }
    else if( ( wgt >= wgtLo ) && ( wgt <= wgtHi ) ) {
      z->append(*p);
