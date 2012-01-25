@@ -69,7 +69,8 @@ class normalFormSage
   void      cnvDataToNormalForm( const Vector& , VectorC&);
   void      cnvDataFromNormalForm( const VectorC&, Vector& );
   const MatrixC&  getNormalEigenvectors(void);
-  void       checkLinearNormalForm();
+  bool       checkLinearNormalForm();
+  bool       checkLinearNormalForm(double toler);
   Mapping   getCanonMap();
   bool      isIterating();
   Mapping   CanonToChef;

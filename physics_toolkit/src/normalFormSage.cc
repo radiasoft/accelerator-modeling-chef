@@ -216,29 +216,40 @@ void normalFormSage::cnvDataFromNormalForm( const VectorC &nform, Vector& hform 
   hform = CanonToChef(hsymp);
 }
 
-void normalFormSage::checkLinearNormalForm()
+bool normalFormSage::checkLinearNormalForm()
+{
+  const double default_toler = 1.0e-8;
+  return normalFormSage::checkLinearNormalForm(default_toler);
+}
+
+bool normalFormSage::checkLinearNormalForm(double toler)
 {
   // _E is the linear normal form matrix.  According to the Theory and
   // Praxis of Linear Normal Forms, when _E is properly constructed,
   // _E' * J * _E = i J, or i * _E' * J * _E * J is the identity
-  // maxtrix.  This routine checks this condition.
+  // matrix.  This routine checks this condition.  Returns true
+  // if check works.
   std::complex<double> complex_i(0.0,1.0); // i
   MatrixD J("J", DIM);
   MatrixC NE = (_E.transpose() * J * _E * J) * complex_i;
+  bool checkOK = true;
 
   for (int i=0; i<DIM; ++i) {
     for (int j = 0; j<DIM; ++j) {
       if (i==j) {
-	if (std::abs(NE(i,j)-1.0) > 1.0e-8) {
-	  std::cout << "Error, element "<< i << "," << j << " of iB'*J*B is not unity: " << NE(i,j) << std::endl;
+	if (std::abs(NE(i,j)-1.0) > toler) {
+	  checkOK = false;
+	  // std::cout << "Error, element "<< i << "," << j << " of iB'*J*B is not unity: " << NE(i,j) << std::endl;
 	}
       } else {
-	if (std::abs(NE(i,j)) > 1.0e-8) {
-	  std::cout << "Error, element " << i << "," << j << " iB'*J*B is not 0: " << NE(i,j) << std::endl;
+	if (std::abs(NE(i,j)) > toler) {
+	  checkOK = false;
+	  // std::cout << "Error, element " << i << "," << j << " iB'*J*B is not 0: " << NE(i,j) << std::endl;
 	}
       }
     }
   }
+  return checkOK;
 }
 
 // return the mapping that was used by the sage to contruct the normal form
