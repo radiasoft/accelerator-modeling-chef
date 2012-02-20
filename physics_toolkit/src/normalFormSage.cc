@@ -181,7 +181,11 @@ void normalFormSage::cnvDataToNormalForm( const Vector &hform, VectorC &nform )
 void normalFormSage::cnvDataFromNormalForm( const VectorC &nform, Vector& hform )
 {
   static MatrixC u(DIM,1);
-
+  static int nwarnings=0;
+  static int nagthreshold=NAG;
+  static int warningsdecade=0;
+  static bool throttled=false;
+  
   for (int i=0; i<DIM; ++i) {
     u(i) = nform(i);
   }
@@ -204,11 +208,52 @@ void normalFormSage::cnvDataFromNormalForm( const VectorC &nform, Vector& hform 
   u = _E*u;
 
   Vector hsymp(DIM);
+  const double small_thresh = 5.0e-11;
+  //  const double small_thresh = 1.0e-12;
   for (i=0; i<DIM; ++i) {
-    if (std::abs(imag(u(i))) > 1.0e-8) {
-      cout << "error, imaginary part of human form coordinate not 0" << endl;
-      cout << u << endl;
+    // imaginary part of u(i) should be small.
+    if (std::abs(real(u(i))) > small_thresh) {
+      // if the real part is non-zero, the imaginary part should
+      // be a small fraction of it.
+      if (std::abs(imag(u(i))/real(u(i))) > small_thresh) {
+	++nwarnings;
+	if (!throttled) {
+	  cout << "error, imaginary part of human form coordinate relatively large" << endl;
+	  cout << u << endl;
+	} else if (nwarnings%nagthreshold == 0) { // throttled, but maybe we'll nag
+	  cout << "error, imaginary part of human form coordinate, " << nwarnings << " times." << endl;
+	  ++warningsdecade;
+	  if (warningsdecade == 9) {
+	    nagthreshold *= 10;
+	    warningsdecade = 0;
+	  }
+	}
+	if (nwarnings >= THROTTLE) {
+	  throttled = true;
+	}
+      }
+    } else {
+      // the absolute value of the real part is small, the imaginary part
+      // should be similarly small
+      if (std::abs(imag(u(i))) > small_thresh) {
+	++nwarnings;
+	if (!throttled) {
+	  cout << "error, real and imaginary parts of human form coordinate both real and similarly small" << endl;
+	  cout << u << endl;
+	} else if (nwarnings%nagthreshold == 0) { // throttled, but maybe we'll nag
+	  cout << "error, imaginary part of human form coordinate, " << nwarnings << " times." << endl;
+	  ++warningsdecade;
+	  if (warningsdecade == 9) {
+	    nagthreshold *= 10;
+	    warningsdecade = 0;
+	  }
+	}
+	if (nwarnings >= THROTTLE) {
+	  throttled = true;
+	}
+      }
     }
+      
     hsymp(i) = real(u(i));
   }
 

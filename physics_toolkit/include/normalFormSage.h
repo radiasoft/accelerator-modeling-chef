@@ -49,6 +49,9 @@
 #define I_PY 4
 #define I_DE 5
 
+#define THROTTLE 10
+#define NAG 1000
+
 class normalFormSage
 {
  public:
