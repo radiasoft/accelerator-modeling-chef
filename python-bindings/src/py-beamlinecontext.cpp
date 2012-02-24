@@ -80,6 +80,17 @@ boost::python::list getDispersionArray_wrap(BeamlineContext& obj )
   return  dispersion_list;
 }
 
+void (BeamlineContext::*addHTuneCorrectorQuadrupolePtr) (QuadrupolePtr) = &BeamlineContext::addHTuneCorrector;
+
+void (BeamlineContext::*addHTuneCorrectorThinQuadPtr)   (ThinQuadPtr)   = &BeamlineContext::addHTuneCorrector;
+
+void (BeamlineContext::*addHTuneCorrectorElmnPtr)       (ElmPtr)        = &BeamlineContext::addHTuneCorrector;                 // Used by  GUI. MUST go away !
+
+void (BeamlineContext::*addVTuneCorrectorQuadrupolePtr) (QuadrupolePtr) = &BeamlineContext::addVTuneCorrector;
+
+void (BeamlineContext::*addVTuneCorrectorThinQuadPtr)   (ThinQuadPtr)   = &BeamlineContext::addVTuneCorrector;
+
+void (BeamlineContext::*addVTuneCorrectorElmnPtr)       (ElmPtr)        = &BeamlineContext::addVTuneCorrector;                 // Used by  GUI. MUST go away !
 
 } // anonymous namespace
 
@@ -94,7 +105,7 @@ void wrap_beamlinecontext() {
 using namespace boost::python;
 
  class_<BeamlineContext, boost::noncopyable> ( "BeamlineContext", init<Particle const&, boost::shared_ptr<beamline> >() )
- .def( "assign",                         &BeamlineContext::assign )                         
+ .def( "assign",                         &BeamlineContext::assign )
  .def( "writeTree",                      &BeamlineContext::writeTree )
  .def( "name",                           &BeamlineContext::name)                             // const char* name() const;
  .def( "peekAt",                         &BeamlineContext::peekAt)                           // void peekAt( double& s, const Particle& ) const;
@@ -110,16 +121,32 @@ using namespace boost::python;
  .def( "getHorizontalEigenTune",         &BeamlineContext::getHorizontalEigenTune)             //double getHorizontalEigenTune()
  .def( "getVerticalEigenTune",           &BeamlineContext::getVerticalEigenTune)               // double getVerticalEigenTune()
 
-.def("getTwissArray",                    &getTwissArray_wrap       )
-.def("getETArray",                       &getETArray_wrap          )  
-.def("getCovarianceArray",               &getCovarianceArray_wrap  ) 
-.def("getDispersionArray",               &getDispersionArray_wrap  )
-.def("changeTunesBy",                    &BeamlineContext::changeTunesBy)                       // int changeTunesBy( double, double );
+ .def("getTwissArray",                    &getTwissArray_wrap       )
+ .def("getETArray",                       &getETArray_wrap          )  
+ .def("getCovarianceArray",               &getCovarianceArray_wrap  ) 
+ .def("getDispersionArray",               &getDispersionArray_wrap  )
 
-.def("isRing",                           &BeamlineContext::isRing)
-.def("isTreatedAsRing",                  &BeamlineContext::isTreatedAsRing)
-.def("handleAsRing",                     &BeamlineContext::handleAsRing)
-.def("handleAsLine",                     &BeamlineContext::handleAsLine)
+ .def("changeTunesBy",                    &BeamlineContext::changeTunesBy)                       // int changeTunesBy( double, double );
+
+ .def("isRing",                           &BeamlineContext::isRing)
+ .def("isTreatedAsRing",                  &BeamlineContext::isTreatedAsRing)
+ .def("handleAsRing",                     &BeamlineContext::handleAsRing)
+ .def("handleAsLine",                     &BeamlineContext::handleAsLine)
+
+ .def("reset",                            &BeamlineContext::reset)
+// .def("OKAY",                             &BeamlineContext::OKAY)
+
+ .def("addHTuneCorrectorQuadrupolePtr",    addHTuneCorrectorQuadrupolePtr)
+ .def("addHTuneCorrectorThinQuadPtr",      addHTuneCorrectorThinQuadPtr  )
+ .def("addHTuneCorrectorElmnPtr",          addHTuneCorrectorElmnPtr      )
+
+ .def("addVTuneCorrectorQuadrupolePtr",    addVTuneCorrectorQuadrupolePtr)
+ .def("addVTuneCorrectorThinQuadPtr",      addVTuneCorrectorThinQuadPtr  )
+ .def("addVTuneCorrectorElmnPtr",          addVTuneCorrectorElmnPtr      )
+
+// .def("addHTuneCorrector",                &BeamlineContext::addHTuneCorrector)                   // int addHTuneCorrector( const bmlnElmnt* );
+// .def("addVTuneCorrector",                &BeamlineContext::addVTuneCorrector)                   // int addVTuneCorrector( const bmlnElmnt* );
+
 ;
 
 }

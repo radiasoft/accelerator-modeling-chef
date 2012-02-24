@@ -50,7 +50,8 @@ Vector const& (Particle::*State_void)()       const      = &Particle::State;
 
 void wrap_particle () {
 
-  class_<Particle, boost::noncopyable> Particle_("Particle", no_init ); 
+  //  class_<Particle, boost::noncopyable> Particle_("Particle", no_init ); 
+  class_<Particle> Particle_("Particle", no_init ); 
   Particle_.def("psd",                  &Particle::psd)
   .staticmethod("psd")
   .def("SetReferenceEnergy",   &Particle::SetReferenceEnergy)
