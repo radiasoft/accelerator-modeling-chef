@@ -1,13 +1,41 @@
-set(SRCS AdjustPosition.cc        ConvertToTunes.cc     FPSolver.cc            QBpropVisitor.cc
-	 AlignVisitor.cc          CovarianceSage.cc     JacobianVisitor.cc     QuadEliminator.cc
-	 AzimuthVisitor.cc        DispersionSage.cc     JetParticleVisitor.cc  Sage.cc
-	 BeamlineContext.cc       DriftConverter.cc     LattFuncSage.cc        SurveyMatcher.cc
-	 BeamlineSpitout.cc       DriftEliminator.cc    LayoutVisitor.cc       TemplateInstantiations.cc
-	 beamline_twiss.cc        DriftsToSlots.cc      LBSage.cc              TransitionVisitor.cc
-	 BendEliminator.cc        EdwardsTeng.cc        MatrixCalcVisitor.cc   TuneAdjuster.cc
-	 BmlUtil.cc               EdwardsTengSage.cc    ModifierVisitor.cc
-	 ChromaticityAdjuster.cc  ElementTagVisitor.cc  normalForm.cc
-	 ClosedOrbitSage.cc       FindCovariance.cc     ParticleVisitor.cc
+set(SRCS AdjustPosition.cc
+         AlignVisitor.cc
+         AzimuthVisitor.cc
+         BeamlineContext.cc
+         BeamlineSpitout.cc
+         beamline_twiss.cc
+         BendEliminator.cc
+         BmlUtil.cc
+         ChromaticityAdjuster.cc
+         ClosedOrbitSage.cc
+         ConvertToTunes.cc
+         CovarianceSage.cc
+         DispersionSage.cc
+         DriftConverter.cc
+         DriftEliminator.cc
+         DriftsToSlots.cc
+         EdwardsTeng.cc
+         EdwardsTengSage.cc
+         ElementTagVisitor.cc
+         FindCovariance.cc
+         FPSolver.cc
+         JacobianVisitor.cc
+         JetParticleVisitor.cc
+         LattFuncSage.cc
+         LayoutVisitor.cc
+         LBSage.cc
+         MatrixCalcVisitor.cc
+         ModifierVisitor.cc
+         normalForm.cc
+         normalFormSage.cc
+         ParticleVisitor.cc
+         QBpropVisitor.cc
+         QuadEliminator.cc
+         Sage.cc
+         SurveyMatcher.cc
+         TemplateInstantiations.cc
+         TransitionVisitor.cc
+         TuneAdjuster.cc
 )
 
 add_library(physics_toolkit ${SRCS})
