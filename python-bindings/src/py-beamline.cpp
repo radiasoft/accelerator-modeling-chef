@@ -106,7 +106,7 @@ void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, doubl
   std::list<std::pair<ElmPtr,double> > elm_list;
 
   for (int i=0; i<nelms; ++i) { 
-    boost::python::tuple tp  = extract<boost::python::tuple>(elements.pop(0));
+    boost::python::tuple tp  = extract<boost::python::tuple>(elements.pop(0L));
     ElmPtr elm               = extract<ElmPtr>(tp[0]);
     double                s   = extract<double>(tp[1]);       
     elm_list.push_back( std::make_pair(elm, s) );
