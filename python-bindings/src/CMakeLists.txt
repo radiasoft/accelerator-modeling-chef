@@ -36,7 +36,7 @@ if (BUILD_PARSER_MODULES)
 endif ()
 
 set(SRCS5 py-physicstoolkit-module.cpp
-          py-lattfuncsage.cpp py-beamlinecontext.cpp)
+          py-lattfuncsage.cpp py-beamlinecontext.cpp py-normalformsage.cpp)
 add_python_extension(pyphysics_toolkit SHARED ${SRCS5})
 target_link_libraries(pyphysics_toolkit ${CHEF_LIBRARIES} ${Boost_LIBRARIES})
 
