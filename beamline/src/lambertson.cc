@@ -49,7 +49,9 @@
 
 
 #include <iomanip>
+#include <beamline/Particle.h>
 #include <beamline/lambertson.h>
+#include <beamline/LambertsonPropagators.h>
 #include <beamline/BmlVisitor.h>
 
 using namespace std;
@@ -62,17 +64,22 @@ using namespace std;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb() 
- : bmlnElmnt(), xSeptum_ (0.0), ExtBeamline_()
+ : bmlnElmnt(), turnNumber_(0), xSeptum_ (0.0), ExtBeamline_()
 {
- for (int i =0; i < 6 ; ++i) RefState_[i] = 0.0;
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+
+  for (int i =0; i < 6 ; ++i) RefState_[i] = 0.0;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( char const* n)
-  : bmlnElmnt( n ), xSeptum_(0.0), ExtBeamline_()
+  : bmlnElmnt( n ), turnNumber_(0), xSeptum_(0.0), ExtBeamline_()
 {
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
 
   for (int i =0; i < 6 ; ++i) RefState_[i] = 0.0;
 }
@@ -81,8 +88,11 @@ thinLamb::thinLamb( char const* n)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( char const* n, double const&x, BmlPtr& b, double* s)
-  : bmlnElmnt( n ), xSeptum_ (x), ExtBeamline_(b)
+  : bmlnElmnt(n), turnNumber_(0), xSeptum_ (x), ExtBeamline_(b)
 {
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+
   for (int i =0; i < 6 ; ++i) RefState_[i] = s[i];
 }
 
@@ -90,8 +100,11 @@ thinLamb::thinLamb( char const* n, double const&x, BmlPtr& b, double* s)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( double const& x, BmlPtr& b, double* s)
-  : bmlnElmnt( ), xSeptum_(x), ExtBeamline_(b)
+  : bmlnElmnt( ), turnNumber_(0), xSeptum_(x), ExtBeamline_(b)
 {
+  propagator_ = PropagatorPtr( new Propagator() );
+  propagator_->setup(*this);
+
   for (int i =0; i < 6 ; i++ ) RefState_[i] = s[i];
 }
 
@@ -99,9 +112,29 @@ thinLamb::thinLamb( double const& x, BmlPtr& b, double* s)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinLamb::thinLamb( thinLamb const& x ) 
-  : bmlnElmnt( x ), xSeptum_(x.xSeptum_), ExtBeamline_(x.ExtBeamline_)
+  : bmlnElmnt( x ), turnNumber_(x.turnNumber_), xSeptum_(x.xSeptum_), 
+    propagator_(x.propagator_->Clone()), ExtBeamline_(x.ExtBeamline_)
 {
-  for (int i =0; i < 6 ; ++i) RefState_[i] = x.RefState_[i];
+  for (int i =0; i < 6 ; ++i) { RefState_[i] = x.RefState_[i]; }
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+thinLamb& thinLamb::operator=( thinLamb const& rhs )
+{
+  if ( &rhs == this ) return *this;
+
+  bmlnElmnt::operator=(rhs);
+
+  turnNumber_  = rhs.turnNumber_;
+  xSeptum_     = rhs.xSeptum_;
+  ExtBeamline_ = rhs.ExtBeamline_;
+  propagator_  = PropagatorPtr( rhs.propagator_->Clone() );
+
+  for (int i =0; i < 6 ; ++i) { RefState_[i] = rhs.RefState_[i]; }
+
+  return *this;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -112,24 +145,42 @@ thinLamb::~thinLamb()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool thinLamb::toGo( Particle const& p )
+{
+  if( std::string("KILL") == p.getTag() ) {
+    cout << "DGN: " << __FILE__ << "," << __LINE__
+         << ": LAMBERTSON: Am now eliminating particle with state = "
+         << p.State()
+         << endl;
+  }
+  return ( std::string("KILL") == p.getTag() );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinLamb::setSeptum( double const& x) {
  xSeptum_ = x;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinLamb::setBeamline( BmlPtr& b) {
  ExtBeamline_ = b;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinLamb::setRefState( const double* x) {
   for (int i =0; i < 6 ; i++ ) RefState_[i] = x[i];
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinLamb::getRefState( double* x) {
   for (int i =0; i < 6 ; i++ ) x[i] = RefState_[i];
 }
@@ -137,6 +188,7 @@ void thinLamb::getRefState( double* x) {
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 const char* thinLamb::Type() const 
 { 
   return "thinLamb"; 
@@ -144,14 +196,32 @@ const char* thinLamb::Type() const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-bool     thinLamb::isMagnet() const
+
+int thinLamb::passages() const
 {
-  return false;
+  return turnNumber_;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinLamb::resetPassNumber( int n )
+{
+  turnNumber_ = n;
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+bool thinLamb::isMagnet() const
+{
+  return true;
 }
 
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 ostream& thinLamb::writeTo(ostream& os) 
 {
   os << OSTREAM_DOUBLE_PREC << xSeptum_;
@@ -164,6 +234,7 @@ ostream& thinLamb::writeTo(ostream& os)
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 istream& thinLamb::readFrom(istream& is) 
 {
   is >> xSeptum_;
@@ -175,6 +246,7 @@ istream& thinLamb::readFrom(istream& is)
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void thinLamb::accept( BmlVisitor& v )            
 { 
   v.visit( *this ); 

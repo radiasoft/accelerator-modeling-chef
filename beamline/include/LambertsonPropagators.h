@@ -27,11 +27,14 @@
 ******
 **************************************************************************
 *************************************************************************/
+
 #ifndef  LAMBERTSONPROPAGATORS_H
 #define  LAMBERTSONPROPAGATORS_H
 
+#include <beamline/ParticleBunch.h>
 #include <beamline/lambertson.h>
 
+#if 0
 template<typename Particle_t>
 class TBunch;
 
@@ -40,6 +43,7 @@ class JetParticle;
 
 typedef TBunch<Particle>       ParticleBunch;
 typedef TBunch<JetParticle> JetParticleBunch;
+#endif
 
 
 class thinLamb::Propagator : public BasePropagator<thinLamb> {
@@ -48,14 +52,13 @@ class thinLamb::Propagator : public BasePropagator<thinLamb> {
  
   Propagator* Clone() const { return new Propagator(*this); }
 
+  void  setup( thinLamb& elm ); 
+
   void  operator()( thinLamb& elm,              Particle&  p);
   void  operator()( thinLamb& elm,           JetParticle&  p);
-  void  operator()( thinLamb& elm,         ParticleBunch&  b);
-  void  operator()( thinLamb& elm,      JetParticleBunch&  b);
+//  void  operator()( thinLamb& elm,         ParticleBunch&  b);
+//  void  operator()( thinLamb& elm,      JetParticleBunch&  b);
 
 };
 
 #endif //  LAMBERTSONPROPAGATORS_H
-
-
-

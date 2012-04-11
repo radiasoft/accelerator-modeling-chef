@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -49,9 +49,15 @@
 #endif
 
 #include <iomanip>
+#include <fstream>
+#include <sstream>
+#include <ctime>
+
 #include <beamline/SeptumPropagators.h>
 #include <beamline/septum.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Particle.h>
+#include <beamline/ParticleBunch.h>
 
 
 using namespace std;
@@ -65,7 +71,9 @@ using namespace std;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( char const* n )
-: bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0)
+  : bmlnElmnt( n ), strengthPos_(0.0), strengthNeg_(0.0), xWire_(0.0),
+    numberKicked_(0), numberBadHits_(0), numberBackHits_(0), numberOutGap_(0),
+    wireWidth_(0.0), gap_(0.0), turnNumber_(0), reportNumber_(0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -75,7 +83,9 @@ thinSeptum::thinSeptum( char const* n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, double const& xw)
-  : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+  : bmlnElmnt( n ), strengthPos_(sP), strengthNeg_(sN), xWire_(xw),
+    numberKicked_(0), numberBadHits_(0), numberBackHits_(0), numberOutGap_(0),
+    wireWidth_(0.0), gap_(0.0), turnNumber_(0), reportNumber_(0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -85,7 +95,9 @@ thinSeptum::thinSeptum( char const* n, double const& sP, double const& sN, doubl
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
-  : bmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw)
+  : bmlnElmnt(), strengthPos_(sP), strengthNeg_(sN), xWire_(xw),
+    numberKicked_(0), numberBadHits_(0), numberBackHits_(0), numberOutGap_(0),
+    wireWidth_(0.0), gap_(0.0), turnNumber_(0), reportNumber_(0)
 {
   propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
@@ -96,23 +108,31 @@ thinSeptum::thinSeptum( double const& sP, double const& sN, double const& xw)
 
 thinSeptum::thinSeptum( thinSeptum const& x ) 
   : bmlnElmnt( x ), strengthPos_(x.strengthPos_), strengthNeg_(x.strengthNeg_),
-    xWire_(x.xWire_), propagator_(x.propagator_->Clone() )
+    xWire_(x.xWire_), propagator_(x.propagator_->Clone() ),
+    numberKicked_(x.numberKicked_), numberBadHits_(x.numberBadHits_), numberBackHits_(x.numberBackHits_), numberOutGap_(x.numberOutGap_),
+    wireWidth_(x.wireWidth_), gap_(x.gap_), turnNumber_(x.turnNumber_), reportNumber_(x.reportNumber_)
 {}
 
-
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
-
+thinSeptum& thinSeptum::operator=( thinSeptum const& rhs )
+{
   if ( &rhs == this ) return *this;
 
   bmlnElmnt::operator=(rhs);
 
-  strengthPos_ =  rhs.strengthPos_;
-  strengthNeg_ =  rhs.strengthNeg_;
-  xWire_       =  rhs.xWire_;
-  propagator_  =  PropagatorPtr( rhs.propagator_->Clone() );
+  strengthPos_    = rhs.strengthPos_;
+  strengthNeg_    = rhs.strengthNeg_;
+  xWire_          = rhs.xWire_;
+  numberKicked_   = rhs.numberKicked_;
+  numberBadHits_  = rhs.numberBadHits_;
+  numberBackHits_ = rhs.numberBackHits_;
+  numberOutGap_   = rhs.numberOutGap_;
+  wireWidth_      = rhs.wireWidth_;
+  gap_            = rhs.gap_;
+  turnNumber_     = rhs.turnNumber_;
+  propagator_     = PropagatorPtr( rhs.propagator_->Clone() );
 
   return *this;
 }
@@ -120,7 +140,8 @@ thinSeptum& thinSeptum::operator=( thinSeptum const& rhs) {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-thinSeptum::~thinSeptum() {
+thinSeptum::~thinSeptum() 
+{
 }
 
 
@@ -128,15 +149,41 @@ thinSeptum::~thinSeptum() {
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinSeptum::setStrengths( double const& sPos, double const& sNeg ) {
- strengthPos_ = sPos;
- strengthNeg_ = sNeg;
+  strengthPos_ = sPos;
+  strengthNeg_ = sNeg;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void thinSeptum::setWire( double const& x) {
- xWire_ = x;
+  xWire_ = x;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::setWireWidth( double const& x) {
+  if( 0.0 < x ) { wireWidth_ = x; }
+  if( gap_ < wireWidth_ ) { gap_ = wireWidth_; }
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::setGap( double const& x ) {
+  if( 0.0 < x ) { gap_ = x; }
+  if( gap_ < wireWidth_ ) { wireWidth_ = gap_; }
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinSeptum::setReportNumber( int const& x ) {
+  if( 0 <= x ) { reportNumber_ = x; }
 }
 
 
@@ -209,8 +256,33 @@ void thinSeptum::localPropagate( JetParticle& p )
 
 void thinSeptum::localPropagate( ParticleBunch& b ) 
 { 
-   (*propagator_)(*this, b); 
+  turnNumber_++;
+  if( 0 < reportNumber_ ) {
+    if( turnNumber_ == reportNumber_ ) {
+      time_t encodedTime;
+      time( &encodedTime );
+      tm* timestamp = localtime( &encodedTime );
+      ostringstream namebuffer;
+      namebuffer << "septum_report_"
+                 << timestamp->tm_year + 1900
+                 << timestamp->tm_mon + 1
+                 << timestamp->tm_mday << '_'
+                 << timestamp->tm_hour << '_'
+                 << timestamp->tm_min  << ".dat";
+
+      ofstream dataStream( namebuffer.str().c_str() );
+      for( ParticleBunch::iterator it = b.begin();
+                                   it != b.end();
+                                   ++it                ) {
+        dataStream << (*it).get_x() << "  " << (*it).get_npx() << endl;
+      }
+      dataStream.close();
+    }
+  }
+
+  (*propagator_)(*this, b); 
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -218,5 +290,6 @@ void thinSeptum::localPropagate( JetParticleBunch& b )
 { 
    (*propagator_)(*this, b); 
 }
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

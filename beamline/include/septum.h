@@ -59,7 +59,8 @@ typedef boost::shared_ptr<thinSeptum>             ThinSeptumPtr;
 typedef boost::shared_ptr<thinSeptum const>  ConstThinSeptumPtr;
 
 
-class DLLEXPORT thinSeptum : public bmlnElmnt{
+class DLLEXPORT thinSeptum : public bmlnElmnt
+{
 
   class Propagator; 
 
@@ -88,6 +89,9 @@ public:
   
   void setStrengths( double const& sPos, double const& sNeg); 
   void setWire( double const& x); 
+  void setWireWidth( double const& x );
+  void setGap( double const& x );
+  void setReportNumber( int const& );
   
   double const& getPosStrength() { return strengthPos_; }
   double const& getNegStrength() { return strengthNeg_; }
@@ -104,6 +108,15 @@ public:
   bool    isMagnet() const;
   const char* Type() const;
 
+  int numberKicked_;  // ??? TODO: SHOULD BE PRIVATE ???
+  int numberBadHits_; // ??? TODO: SHOULD BE PRIVATE ???
+  int numberBackHits_;// ??? TODO: SHOULD BE PRIVATE ???
+  int numberOutGap_;  // ??? TODO: SHOULD BE PRIVATE ???
+  double wireWidth_;      // width of wire in meters  ??? TODO: SHOULD BE PRIVATE ???
+  double gap_;            // septum width in meters   ??? TODO: SHOULD BE PRIVATE ???
+  int    turnNumber_; // ??? TODO: SHOULD BE PRIVATE ???
+  int    reportNumber_;// ??? TODO: SHOULD BE PRIVATE ???
+
 private:
  
   thinSeptum();           // default constructor forbidden
@@ -114,7 +127,6 @@ private:
 
   PropagatorPtr  propagator_; 
   
-
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 

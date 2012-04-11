@@ -43,6 +43,7 @@
 ******
 **************************************************************************
 *************************************************************************/
+
 #ifndef LAMBERTSON_H
 #define LAMBERTSON_H
 
@@ -50,15 +51,16 @@
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 
-
 class BmlVisitor;
 class ConstBmlVisitor;
 
 class    thinLamb;
+
 typedef  boost::shared_ptr<thinLamb>            ThinLambPtr;
 typedef  boost::shared_ptr<thinLamb const> ConstThinLambPtr;
 
-class DLLEXPORT thinLamb : public bmlnElmnt {
+class DLLEXPORT thinLamb : public bmlnElmnt 
+{
 
   class Propagator;
 
@@ -71,20 +73,23 @@ public:
   // s  reference state for extraction beamline
 
   thinLamb();
+
   thinLamb( char const* name);      
   thinLamb( char const*  name, double const& septum_pos_x,  BmlPtr& b,  double* state );   
-  
   thinLamb(                    double const& septum_pos_x,  BmlPtr& b,  double* state );   
-  
   thinLamb( thinLamb const& );
 
   thinLamb* Clone() const { return new thinLamb( *this ); }
 
-  virtual ~thinLamb();
+  thinLamb& operator=( thinLamb const& rhs );
+
+  ~thinLamb();
   
   void setSeptum( double const& x); 
   void setBeamline( BmlPtr& b); 
   void setRefState( const double* s);
+
+  double const& getSeptum()       { return xSeptum_; }
 
   void getRefState( double* );
   
@@ -96,12 +101,21 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
+  static bool toGo( Particle const& );
+
   bool        isMagnet() const;
   const char* Type()     const;
 
+  int         passages() const;
+  void        resetPassNumber( int = 0 );
+
+  int       turnNumber_;    // number of passes of a bunch through the lambertson
+
 private:
 
+//  thinLamb();               // default constructor forbidden
 
+  //int       turnNumber_;    // number of passes of a bunch through the lambertson
   double    xSeptum_;       // position of Lambertson septum in meters.
   BmlPtr    ExtBeamline_;   // pointer to the beamline of extracted particles.
   double    RefState_[6];   // A particle in the "field" region
