@@ -103,7 +103,7 @@ CF_sbend::CF_sbend()
         dsAngle_(0.0),
      multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) );
+  propagator_ = PropagatorPtr( new Propagator(40) );
   propagator_->setup(*this);
 }
 
@@ -122,7 +122,7 @@ CF_sbend::CF_sbend( const char*          nm,   // name
       dsAngle_(0.0),
    multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) );
+  propagator_ = PropagatorPtr( new Propagator(40) );
   propagator_->setup(*this);
 }
 
@@ -144,7 +144,7 @@ CF_sbend::CF_sbend( const char*   nm,   // name
      dsAngle_(-ds),
   multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) );
+  propagator_ = PropagatorPtr( new Propagator(40) );
   propagator_->setup(*this);
 }
 
