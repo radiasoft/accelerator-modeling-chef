@@ -72,7 +72,7 @@ void propagate( srot& elm, Particle_t& p )
   state[i_y]  = result[1];
 
   result[2] = state[i_npx] * cs + state[i_npy] * sn;
-  result[3] = state[i_npy] * cs - state[i_npy] * sn;
+  result[3] = state[i_npy] * cs - state[i_npx] * sn;
 
   state[i_npx]  = result[2];
   state[i_npy]  = result[3];
