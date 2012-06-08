@@ -157,7 +157,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
                                 it != myBeamlinePtr_->deep_end(); ++it )
   {
     if(         ( dynamic_cast<rfcavity*>( (*it).get() ) )
-	     || ( dynamic_cast<rfcavity*>( (*it).get() ) ) )
+	     || ( dynamic_cast<thinrfcavity*>( (*it).get() ) ) )
     {
       strengthData sd;
       sd.address = (*it);

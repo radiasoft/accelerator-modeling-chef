@@ -695,6 +695,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
       ret = 10; return ret;
    }
 
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -751,11 +752,11 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
-         ret = 13; return ret;
+          ret = 13; return ret;
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
-
+  
   double csV = real( lambda(0) );
   double snV = sqrt( 1.0 - csV*csV );
 
@@ -784,7 +785,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::TuneCalc" << endl;
     (*pcout).flush();
   }
-
+  
   return ret;
 }
 
@@ -898,7 +899,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
-    if ( stand_alone_disp_calc ) { 
+    if ( stand_alone_disp_calc ) {     	
        LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_npx );
@@ -911,10 +912,23 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        lf_it->dispersion.hor = d( i_x  );
        lf_it->dPrime.hor     = d( i_npx );
        lf_it->dispersion.ver = d( i_y  );
-       lf_it->dPrime.ver     = d( i_npy );
+       lf_it->dPrime.ver     = d( i_npy );      
+       if( localData_ ) {
+		BarnacleList::iterator bit;
+        	if( (bit = (*it)->dataHook.find("Dispersion") )==  (*it)->dataHook.end() ) {
+          		(*it)->dataHook.insert( Barnacle( "Dispersion", *lf_it) );
+        	}
+        	else {
+          		bit->info = *lf_it;
+        	}
+	}
+       
+       
+       
        ++lf_it;
+      
     }
-
+    	
   }  
 
 

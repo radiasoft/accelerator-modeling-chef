@@ -190,6 +190,8 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
 
   myBeamlinePtr_->dataHook.eraseAll( "Ring" );
   myBeamlinePtr_->eraseBarnacles( "Ring" );
+  myBeamlinePtr_->eraseBarnacles( "Dispersion" );
+   myBeamlinePtr_->eraseBarnacles( "Twiss" ); 
 
   // 
 
@@ -199,7 +201,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
 
   // Calculate current lattice functions
   LattFuncSage lfs( myBeamlinePtr_ );
- 
+  lfs.attachLocalData(true);
   myBeamlinePtr_->propagate(jpr);
 
 
@@ -225,7 +227,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     gotBetas      = false;
 
     BarnacleList::iterator ptr = correctors_[j]->dataHook.find( "Dispersion" );
-    if( ptr ==  correctors_[j]->dataHook.end() ) { 
+    if( ptr ==  correctors_[j]->dataHook.end() ) {     	
       ptr = correctors_[j]->dataHook.find( "Twiss" );
     }
 
@@ -244,7 +246,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
       beta(1,j) = - boost::any_cast<LattFuncSage::lattFunc>(ptr->info).beta.ver * dsp;
       gotBetas = true;
     }
-
+   
     if( !(gotBetas && gotDispersion) ) {
       throw( GenericException( __FILE__, __LINE__, 
              "int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetParticle& jp )", 
@@ -269,7 +271,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
     if( isaThinSextupole(**it) ) {
       (*it)->setStrength( (*it)->Strength() + w(j,0) );
     }
-    else {
+    else {	
       (*it)->setStrength( (*it)->Strength() + (w(j,0)/(*it)->Length()) );
     }
   }
