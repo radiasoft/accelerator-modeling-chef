@@ -681,7 +681,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
    MatrixC lambda = M.eigenValues();
 
-   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+   /* if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -692,15 +692,28 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "\n"
            << "*** ERROR ***                                     \n"
            << endl;
-      ret = 10; return ret;
-   }
+       ret = 10; return ret;
+   } */
 
+  
+   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+      (*pcout) << "\n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING *** LattFuncSage::TuneCalc              \n"
+           << "*** WARRNING *** The lattice is linearly unstable.   \n"
+           << "*** WARRNING *** horizontal lambda has magnitude = "
+           << abs(lambda(0))
+           << "\n"
+           << "*** WARRNING ***                                     \n"
+           << endl;      
+   }
   
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  /* if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
@@ -709,8 +722,18 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
   	ret = 11; return ret;
-  }
+  } */
   
+  
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
+  	(*pcout) << "\n"
+  	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
+  	     << "*** WARRNING *** Conjugacy condition has been violated\n"
+  	     << "*** WARRNING *** The lattice may be linearly unstable.\n"
+  	     << "*** WARRNING *** Eigenvalues =                        \n"
+  	     << "*** WARRNING *** " << lambda << endl;  	
+  }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -728,7 +751,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
    M( 1, 1 ) = mtrx( i_npy, i_npy );
 
    lambda = M.eigenValues();
-   if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+  /*  if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -740,11 +763,26 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "*** ERROR ***                                     \n"
            << endl;
        ret = 12; return ret;
+  } */
+  
+  if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+      (*pcout) << "\n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING *** LattFuncSage::TuneCalc              \n"
+           << "*** WARRNING *** The lattice is linearly unstable.   \n"
+           << "*** WARRNING *** vertical lambda has magnitude = "
+           << abs(lambda(0))
+           << "\n"
+           << "*** WARRNING ***                                     \n"
+           << endl;      
   }
+
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+ /*  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
@@ -753,6 +791,16 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
           ret = 13; return ret;
+  } */
+   
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
+  	(*pcout) << "\n"
+  	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
+  	     << "*** WARRNING *** Conjugacy condition has been violated\n"
+  	     << "*** WARRNING *** The lattice may be linearly unstable.\n"
+  	     << "*** WARRNING *** Eigenvalues =                        \n"
+  	     << "*** WARRNING *** " << lambda << endl;         
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
