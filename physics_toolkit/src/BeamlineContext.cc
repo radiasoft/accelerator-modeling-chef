@@ -146,7 +146,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
 
    particle_->setStateToZero();
    particle_->SetReferenceEnergy( p_bml_->Energy() );
-
+  
  
    //-------------------------------------------------------------------
    // Determine if some elements have faces that are not perpendicular 
@@ -1012,6 +1012,7 @@ void BeamlineContext::createClosedOrbit()
    particle_->setStateToZero();
    co_part_ = *particle_;
 
+  
   if( onTransClosedOrbit( co_part_ ) ) 
   {
     // Instantiate jetparticle_ on the closed orbit
@@ -1020,19 +1021,20 @@ void BeamlineContext::createClosedOrbit()
     co_part_        = *particle_;
     jetparticle_    = JetParticle( co_part_);
     p_bml_->propagate( jetparticle_ );
+    
   }
   else 
   {
     // Instantiate jetparticle_ 
     // and use a ClosedOrbitSage
-
+  
     jetparticle_ = JetParticle( *particle_);
     p_cos_   = new ClosedOrbitSage( p_bml_ );
-
+       
     int err;
 
     if( ( err = p_cos_->findClosedOrbit( jetparticle_ ) ) ) {
-
+    
       delete p_cos_; p_cos_ = 0;
 
       ostringstream uic;
@@ -1042,12 +1044,9 @@ void BeamlineContext::createClosedOrbit()
              "void BeamlineContext::_createClosedOrbit()", 
              uic.str().c_str() ) );
     }
-
-
-    co_part_ = Particle(jetparticle_);
-
+     co_part_ = Particle(jetparticle_);        
   }
-
+ 
 
   // As a final step, register the closed orbit particle
   //   to initialize the reference times correctly
@@ -1066,14 +1065,12 @@ void BeamlineContext::createClosedOrbit()
   // ... Note: this method does not reset Jet::_lastEnv;
   // ...       thus the (possible) necessity of the next line.
   Jet__environment::setLastEnv(pje);
-
-  jetparticle_ = JetParticle(co_part_);
-
+  jetparticle_ = JetParticle(co_part_);  
   p_bml_->propagate( jetparticle_ );
-
 
   // Before returning, restore Jet__environment::_lastEnv
   Jet__environment::setLastEnv(storedEnv);
+  hasRefParticle_=true;
 }
 
 
@@ -1095,8 +1092,6 @@ void BeamlineContext::deleteClosedOrbit()
 
 void BeamlineContext::createTunes()
 {
-
-
   if( !closed_orbit_computed_) {
     try {
       createClosedOrbit(); 
@@ -1127,7 +1122,6 @@ void BeamlineContext::createTunes()
   }
     
   tunes_ = LattFuncSage::tunes( any_cast<LattFuncSage::tunes>( p_bml_->dataHook.find("Tunes")->info ) );
-
   p_bml_->dataHook.eraseAll( "Tunes" );
   
   tunes_computed_ = true;
@@ -1165,7 +1159,7 @@ double BeamlineContext::getVerticalFracTune()
 
 void BeamlineContext::createEigentunes()
 {
-
+	
   if( !closed_orbit_computed_ ) {
     try {
       createClosedOrbit(); 
@@ -1178,9 +1172,9 @@ void BeamlineContext::createEigentunes()
   // At this point, jet_part's state is that after one-turn on the
   //   closed orbit. It's environment is centered on the closed
   //   orbit and may be out of synch with the current environment.
+  
 
-
-  int ets_result = EdwardsTengSage::eigenTuneCalc( jetparticle_, eigentunes_ );
+  int ets_result = EdwardsTengSage::eigenTuneCalc( jetparticle_, eigentunes_ );   
 
   if( 0 != ets_result ) {
     ostringstream uic;
@@ -1190,8 +1184,7 @@ void BeamlineContext::createEigentunes()
            "void BeamlineContext::_createEigenTunes()", 
            uic.str().c_str() ) );
   }
-
-  eigentunes_computed_ = true;
+  eigentunes_computed_ = true; 
 }
 
 
@@ -1270,8 +1263,7 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
 {
 
-  if( !p_ets_ ) createETS();
-  
+  if( !p_ets_ ) createETS();  
   if( !eigentunes_computed_ ) createEigentunes();
 
 
@@ -1285,15 +1277,12 @@ std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
     EnvPtr<double>                 storedEnv  = Jet__environment::getLastEnv();
     EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
 
-     Jet__environment::setLastEnv( jetparticle_.State().Env() );
+    Jet__environment::setLastEnv( jetparticle_.State().Env() );
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ) ; // implicit conversion 
 
     JetParticle tmp_jetpart(jetparticle_);
-
     tmp_jetpart.State() =  Mapping("identity", jetparticle_.State().Env() );
-
-    int errorFlag = p_ets_->doCalc(tmp_jetpart );
- 
+    int errorFlag = p_ets_->doCalc(tmp_jetpart ); 
     edwardstengFuncsCalcd_ = ( 0 == errorFlag ); // SHOULD THROW EXCEPTION IF THIS FAILS
 
     // Restore current environment
@@ -1429,9 +1418,8 @@ std::vector<LBSage::Info> const& BeamlineContext::getLBArray()
 
     Jet__environment::setLastEnv ( jetparticle_.State().Env() );
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
-
+ 
     LBFuncsCalcd_ = ( 0 == p_lbs_->doCalc( jetparticle_ ) );
-
     // Restore current environment
     Jet__environment::setLastEnv( storedEnv );
     JetC__environment::setLastEnv( storedEnvC );
@@ -1761,8 +1749,11 @@ int BeamlineContext::changeChromaticityBy( double dh, double dv )
   dummyParticle.setStateToZero();
   dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
   JetParticle  jp(dummyParticle);
+  
 
   p_ca_->changeChromaticityBy( dh, dv, jp );
+     
+
 
   deleteLFS();
 

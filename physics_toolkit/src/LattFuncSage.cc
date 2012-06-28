@@ -74,6 +74,7 @@
 #include <beamline/rbend.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/Slot.h>
+#include <beamline/srot.h>
 
 using namespace std;
 
@@ -304,13 +305,15 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
     double alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
                     *( jp.ReferenceMomentum()/momentum );
+		    
+    psi_x    =  (( psi_x = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_x : 2*M_PI + psi_x;	///??? AM    
 
+  
     a = mtrx( i_y,    i_y   );
     b = mtrx( i_y,    i_npy );
     c = mtrx( i_npy,  i_y   );
     d = mtrx( i_npy,  i_npy );
 
-    psi_x    =  (( psi_x = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_x : 2*M_PI + psi_x;
 
     double beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
                     *( jp.ReferenceMomentum()/momentum );
@@ -318,7 +321,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     double alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
                     *( jp.ReferenceMomentum()/momentum );
 
-    psi_y    =  (( psi_y = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_y : 2*M_PI + psi_y;
+    psi_y    =  (( psi_y = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_y : 2*M_PI + psi_y; ///??? AM  
 
     // Output
 
@@ -511,10 +514,11 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
   {
     ElmPtr lbe = (*it);
-
+   
     bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) && 
                       (   typeid(*lbe) != typeid(CF_rbend) ) && 
                       (   typeid(*lbe) != typeid(Slot)     ) &&
+		      (   typeid(*lbe) != typeid(srot)     ) &&		   
                       (     (*lbe).hasStandardFaces()      )  );
 
     // bool is_regular = true;
@@ -533,7 +537,8 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
    
     if ( is_regular ) {
        t = atan2(mtrx(0,3),tb);
-       while(t < oldpsiH) t += M_TWOPI;
+       // while(t < oldpsiH) t += M_TWOPI; // numerical round off errors introduce unphisical jumps in phase 
+       while(t < oldpsiH*(1.-1.e-4)) t += M_TWOPI;
        psi_x = oldpsiH = t;
      }
      else { 
@@ -548,7 +553,8 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
    
      if ( is_regular ) {
        t = atan2(mtrx(1,4),tb);
-       while(t < oldpsiV) t += M_TWOPI;
+      // while(t < oldpsiV) t += M_TWOPI; // numerical round off errors introduce unphisical jumps in phase 
+       while(t < oldpsiV*(1.-1.e-4)) t += M_TWOPI;
        psi_y = oldpsiV = t;
      } 
      else { 
