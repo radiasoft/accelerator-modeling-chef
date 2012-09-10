@@ -74,6 +74,7 @@
 #include <beamline/rbend.h>
 #include <beamline/CF_rbend.h>
 #include <beamline/Slot.h>
+#include <beamline/srot.h>
 
 using namespace std;
 
@@ -304,13 +305,15 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
     double alpha_x = ( - a*c*beta_x_0 + (a*d+b*c)*alpha_x_0 - d*b*gamma_x_0 )
                     *( jp.ReferenceMomentum()/momentum );
+		    
+    psi_x    =  (( psi_x = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_x : 2*M_PI + psi_x;	///??? AM    
 
+  
     a = mtrx( i_y,    i_y   );
     b = mtrx( i_y,    i_npy );
     c = mtrx( i_npy,  i_y   );
     d = mtrx( i_npy,  i_npy );
 
-    psi_x    =  (( psi_x = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_x : 2*M_PI + psi_x;
 
     double beta_y =  ( a*a*beta_y_0 - 2.0*a*b*alpha_y_0 + b*b*gamma_y_0 )
                     *( jp.ReferenceMomentum()/momentum );
@@ -318,7 +321,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     double alpha_y = ( - a*c*beta_y_0 + (a*d+b*c)*alpha_y_0 - d*b*gamma_y_0 )
                     *( jp.ReferenceMomentum()/momentum );
 
-    psi_y    =  (( psi_y = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_y : 2*M_PI + psi_y;
+    psi_y    =  (( psi_y = atan( (d-a)/(d+a)) ) > 0.0 ) ?  psi_y : 2*M_PI + psi_y; ///??? AM  
 
     // Output
 
@@ -511,10 +514,11 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
   {
     ElmPtr lbe = (*it);
-
+   
     bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) && 
                       (   typeid(*lbe) != typeid(CF_rbend) ) && 
                       (   typeid(*lbe) != typeid(Slot)     ) &&
+		      (   typeid(*lbe) != typeid(srot)     ) &&		   
                       (     (*lbe).hasStandardFaces()      )  );
 
     // bool is_regular = true;
@@ -533,7 +537,8 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
    
     if ( is_regular ) {
        t = atan2(mtrx(0,3),tb);
-       while(t < oldpsiH) t += M_TWOPI;
+       // while(t < oldpsiH) t += M_TWOPI; // numerical round off errors introduce unphisical jumps in phase 
+       while(t < oldpsiH*(1.-1.e-4)) t += M_TWOPI;
        psi_x = oldpsiH = t;
      }
      else { 
@@ -548,7 +553,8 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
    
      if ( is_regular ) {
        t = atan2(mtrx(1,4),tb);
-       while(t < oldpsiV) t += M_TWOPI;
+      // while(t < oldpsiV) t += M_TWOPI; // numerical round off errors introduce unphisical jumps in phase 
+       while(t < oldpsiV*(1.-1.e-4)) t += M_TWOPI;
        psi_y = oldpsiV = t;
      } 
      else { 
@@ -681,7 +687,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
    MatrixC lambda = M.eigenValues();
 
-   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+   /* if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -692,14 +698,28 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "\n"
            << "*** ERROR ***                                     \n"
            << endl;
-      ret = 10; return ret;
-   }
+       ret = 10; return ret;
+   } */
 
+  
+   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+      (*pcout) << "\n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING *** LattFuncSage::TuneCalc              \n"
+           << "*** WARRNING *** The lattice is linearly unstable.   \n"
+           << "*** WARRNING *** horizontal lambda has magnitude = "
+           << abs(lambda(0))
+           << "\n"
+           << "*** WARRNING ***                                     \n"
+           << endl;      
+   }
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  /* if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
@@ -708,8 +728,18 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
   	ret = 11; return ret;
-  }
+  } */
   
+  
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
+  	(*pcout) << "\n"
+  	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
+  	     << "*** WARRNING *** Conjugacy condition has been violated\n"
+  	     << "*** WARRNING *** The lattice may be linearly unstable.\n"
+  	     << "*** WARRNING *** Eigenvalues =                        \n"
+  	     << "*** WARRNING *** " << lambda << endl;  	
+  }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -727,7 +757,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
    M( 1, 1 ) = mtrx( i_npy, i_npy );
 
    lambda = M.eigenValues();
-   if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+  /*  if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
       (*pcout) << "\n"
            << "*** ERROR ***                                     \n"
            << "*** ERROR ***                                     \n"
@@ -739,11 +769,26 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
            << "*** ERROR ***                                     \n"
            << endl;
        ret = 12; return ret;
+  } */
+  
+  if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+      (*pcout) << "\n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING ***                                     \n"
+           << "*** WARRNING *** LattFuncSage::TuneCalc              \n"
+           << "*** WARRNING *** The lattice is linearly unstable.   \n"
+           << "*** WARRNING *** vertical lambda has magnitude = "
+           << abs(lambda(0))
+           << "\n"
+           << "*** WARRNING ***                                     \n"
+           << endl;      
   }
+
+  
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+ /*  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
   	(*pcout) << "\n"
   	     << "*** ERROR *** LattFuncSage::TuneCalc               \n"
@@ -751,11 +796,21 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** The lattice may be linearly unstable.\n"
   	     << "*** ERROR *** Eigenvalues =                        \n"
   	     << "*** ERROR *** " << lambda << endl;
-         ret = 13; return ret;
+          ret = 13; return ret;
+  } */
+   
+  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  {
+  	(*pcout) << "\n"
+  	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
+  	     << "*** WARRNING *** Conjugacy condition has been violated\n"
+  	     << "*** WARRNING *** The lattice may be linearly unstable.\n"
+  	     << "*** WARRNING *** Eigenvalues =                        \n"
+  	     << "*** WARRNING *** " << lambda << endl;         
   }
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
-
+  
   double csV = real( lambda(0) );
   double snV = sqrt( 1.0 - csV*csV );
 
@@ -784,7 +839,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
     (*pcout) << "LattFuncSage -- Leaving LattFuncSage::TuneCalc" << endl;
     (*pcout).flush();
   }
-
+  
   return ret;
 }
 
@@ -898,7 +953,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
-    if ( stand_alone_disp_calc ) { 
+    if ( stand_alone_disp_calc ) {     	
        LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_npx );
@@ -911,10 +966,23 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        lf_it->dispersion.hor = d( i_x  );
        lf_it->dPrime.hor     = d( i_npx );
        lf_it->dispersion.ver = d( i_y  );
-       lf_it->dPrime.ver     = d( i_npy );
+       lf_it->dPrime.ver     = d( i_npy );      
+       if( localData_ ) {
+		BarnacleList::iterator bit;
+        	if( (bit = (*it)->dataHook.find("Dispersion") )==  (*it)->dataHook.end() ) {
+          		(*it)->dataHook.insert( Barnacle( "Dispersion", *lf_it) );
+        	}
+        	else {
+          		bit->info = *lf_it;
+        	}
+	}
+       
+       
+       
        ++lf_it;
+      
     }
-
+    	
   }  
 
 

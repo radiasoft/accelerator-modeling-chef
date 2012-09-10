@@ -157,7 +157,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
                                 it != myBeamlinePtr_->deep_end(); ++it )
   {
     if(         ( dynamic_cast<rfcavity*>( (*it).get() ) )
-	     || ( dynamic_cast<rfcavity*>( (*it).get() ) ) )
+	     || ( dynamic_cast<thinrfcavity*>( (*it).get() ) ) )
     {
       strengthData sd;
       sd.address = (*it);
@@ -169,6 +169,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
 
 
   int i, ret;
+  
 
   // If the calculation is forced, calculate the closed orbit.
   if( forced_ )
@@ -180,7 +181,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
 
   // If not, check to see if the Particle is on a transverse closed orbit.
   else
-  {
+  { 
     myBeamlinePtr_->propagate( prt );
     // *** CHANGE ***
     // *** CHANGE *** See above re tolerances
@@ -196,6 +197,7 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
     }
   }
 
+
   if( verbose_ ) {
     *outputStreamPtr_ << "ClosedOrbitSage --- Closed orbit successfully calculated."
          << endl;
@@ -209,11 +211,10 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
          << endl;
   }
 
+ 
   prt = Particle(jp);
-
-  RefRegVisitor registrar( prt );
+  RefRegVisitor registrar( prt );  
   myBeamlinePtr_->accept( registrar );
-
 
   // Useful Particle and Vector
   // containing the closed orbit.
@@ -222,6 +223,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
   prt.set_cdt(0.0);
 
   Jet__environment::setLastEnv( Jet__environment::getApproxJetEnvironment(Jet__environment::getLastEnv()->maxWeight(), prt.State() ));
+  
+ 
 
   bool newcoords = false;
   coord*  tmpcoord[BMLN_dynDim];
@@ -248,8 +251,8 @@ int ClosedOrbitSage::findClosedOrbit( JetParticle& jp )
   }
 
   JetParticle jpr2Ptr(prt, Jet__environment::getLastEnv() );
-
   myBeamlinePtr_->propagate( jpr2Ptr );
+  
 
   // Reset the argument to this second JetParticle
 
@@ -299,8 +302,7 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
       << "ClosedOrbitSage --- Starting calculation of closed orbit."
       << endl;
   }
-
-
+  
   FPSolver fp( myBeamlinePtr_ );
 
 #if 0
@@ -363,7 +365,7 @@ int ClosedOrbitSage::invokeFPSolver( JetParticle& jp )
          << endl;
 
     if( verbose_ ) {
-      *outputStreamPtr_ << "ClosedOrbitSage -- Leaving ClosedOrbitSage::invokeFPSolver with error"
+      *outputStreamPtr_ << "ClosedOrbitSage -- Leaving  ClosedOrbitSage::invokeFPSolver with error"
                         << endl;
     }
 
