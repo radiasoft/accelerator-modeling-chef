@@ -88,6 +88,7 @@ bmlnElmnt* read_istream(istream& is)
   rbend                 * rbendPtr;
   sbend                 * sbendPtr;
   sector                * sectorPtr;
+  septum                * septumPtr;
   sextupole             * sextupolePtr;
   srot                  * srotPtr;
   thin12pole            * pole12Ptr;
@@ -210,6 +211,10 @@ bmlnElmnt* read_istream(istream& is)
     else
     { sbendPtr = new sbend(name, length, strength, - 1.0 /* Dummy large angle */ ); }
     element = sbendPtr;
+  }
+  else if( strcasecmp(type,           "e_septum") == 0 ) {
+    septumPtr = new septum(name, length);
+    element = septumPtr;
   }
   else if( strcasecmp(type,             "sextupole") == 0 ) {
     sextupolePtr = new sextupole(name, length, strength);

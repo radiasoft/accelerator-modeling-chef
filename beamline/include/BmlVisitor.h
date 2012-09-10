@@ -98,6 +98,7 @@ class thin18pole;
 class thinMultipole;
 class sextupole;
 class BBLens;
+class septum;
 class thinSeptum;
 class thinLamb;
 class Pinger;
@@ -174,6 +175,8 @@ public:
   virtual void visit( sextupole&     x ); 
 
   virtual void visit( BBLens&        x ); 
+
+  virtual void visit( septum&        x );
 
   virtual void visit( thinSeptum&    x ); 
 
@@ -272,6 +275,8 @@ public:
   virtual void visit( sextupole     const& x ); 
 
   virtual void visit( BBLens        const& x ); 
+
+  virtual void visit( septum        const& x );
 
   virtual void visit( thinSeptum    const& x ); 
 

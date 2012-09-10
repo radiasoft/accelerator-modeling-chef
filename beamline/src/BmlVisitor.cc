@@ -166,6 +166,9 @@ void BmlVisitor::visit( sextupole& x )
 void BmlVisitor::visit( BBLens& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
+void BmlVisitor::visit( septum& x )
+               {visit( static_cast<bmlnElmnt&>(x) ); }
+
 void BmlVisitor::visit( thinSeptum& x ) 
                {visit( static_cast<bmlnElmnt&>(x) ); }
 
@@ -286,6 +289,9 @@ void ConstBmlVisitor::visit( sextupole const& x )
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
 void ConstBmlVisitor::visit( BBLens const& x ) 
+               {visit( static_cast<bmlnElmnt const&>(x) ); }
+
+void ConstBmlVisitor::visit( septum const& x )
                {visit( static_cast<bmlnElmnt const&>(x) ); }
 
 void ConstBmlVisitor::visit( thinSeptum const& x ) 

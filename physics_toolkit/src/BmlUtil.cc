@@ -131,6 +131,7 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
   if ( typeid(x) == typeid(LinacCavity)   )   { return true; }
   if ( typeid(x) == typeid(thinrfcavity)  )   { return true; }
   if ( typeid(x) == typeid(sector)        )   { return true; }
+  if ( typeid(x) == typeid(septum)        )   { return true; }
   if ( typeid(x) == typeid(thinSeptum)    )   { return true; }
   if ( typeid(x) == typeid(sextupole)     )   { return true; }
   if ( typeid(x) == typeid(thinSextupole) )   { return true; }

@@ -31,6 +31,15 @@ void wrap_septum () {
 
 using namespace boost::python;
 
+class_<septum, bases<bmlnElmnt> >("septum", init<char const*, double const&>() )
+  .def(init<char const*, double const&, double const&, double const&>() )
+  .def(init<char const*, double const&, double const&, double const&, double const&>() )
+  .def(init<char const*, double const&, double const&, double const&, double const&, double const&>() )
+  .def("setVoltage",       &septum::setVoltage)
+  .def("setGap",           &septum::setGap)
+  .def("setWire",          &septum::setWire)
+  .def("setWireWireWidth", &septum::setWireWidth)
+  .def("Type",             &septum::Type);
 
 class_<thinSeptum, bases<bmlnElmnt> >("thinSeptum", init<char const*>() )
   .def(init<char const*, double const&, double const&, double const&>() )
