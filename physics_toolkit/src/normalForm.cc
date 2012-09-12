@@ -150,8 +150,36 @@ void normalForm( const Mapping& theMapping, /* input */
  MatrixD  J( "J", 6 );
  MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
 
+
+ double min_diag = -1.0;
+ double max_nondiag = -1.0;
+ for (int i=0; i<6; ++i) {
+     double nxelem = abs(Nx(i,i));
+     if ((min_diag < 0.0) || (nxelem < min_diag)) {
+	 min_diag = nxelem;
+     }
+ }
+ for (int i=0; i<6; ++i) {
+     for (int j=0; j<6; ++j) {
+	 if (i != j) {
+	     double nxelem = abs(Nx(i,j));
+	     if ((max_nondiag < 0.0) || (nxelem > max_nondiag)) {
+		 max_nondiag = nxelem;
+	     }
+	 }
+     }
+ }
+
+ if ((max_nondiag/min_diag) > MLT1) {
+     std::cout << "something's wacko with the matrix" << std::endl;
+     std::cout << "maximum nondiag/minimum diag: " << max_nondiag/min_diag << std::endl;
+     std::cout << "Nx (should be diagonal)" << std::endl;
+     std::cout << Nx << std::endl;
+     std::cout.flush();
+ }
+
  for( int i=0; i < 6; ++i) {
-  Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );  
+     Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
                                        // ??? "abs" should not be necessary,
                                        // ??? but Holt is finding some
                                        // ??? counterexamples.(!!??)
@@ -159,21 +187,15 @@ void normalForm( const Mapping& theMapping, /* input */
                                        // ??? In principle, could get divide
                                        // ??? by zero here.
 
-  if( abs( ( (std::complex<double>) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+     if( abs( ( (std::complex<double>) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) {
+	 Nx(i,i) = 1.0;
+     }
 
-      /* CAUTION */   for( int j = 0; j < 6; j++ ) {
-      /* CAUTION */    if( j == i ) continue;
-      /* CAUTION */    else if( abs( Nx(i,j) ) > MLT1) {
-      /* CAUTION */     ostringstream uic;
-      /* CAUTION */     uic  << "Nondiagonal element in BJB^TJ; abs( Nx( " 
-                             << i << ", " << j << " ) ) = " 
-                             << abs(Nx(i,j));
-      /* CAUTION */     throw( GenericException( __FILE__, __LINE__, 
-      /* CAUTION */            "void normalForm( const Mapping& theMapping, /* input */", 
-      /* CAUTION */            uic.str().c_str() ) );
-      /* CAUTION */    }
-      /* CAUTION */    else Nx(i,j) = complex_0;
-      /* CAUTION */   }
+     for (int j=0; j<6; ++j) {
+	 if (i != j) {
+	     Nx(i,j) = complex_0;
+	 }
+     }
  }
 
  B = B*Nx;
