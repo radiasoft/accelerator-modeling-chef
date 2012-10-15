@@ -44,6 +44,20 @@
 ****** - forbade negative length elements
 ****** - modified bmlnElmnt::setLength
 ******
+****** May 2008           michelotti@fnal.gov
+****** - eliminated usage of bmlnElmnt::GenericException in
+******   favor of GenericException from basic_toolkit library
+******
+****** Dec 2008           michelotti@fnal.gov
+****** - fixed bug in bmlnElmnt::Split by reversing order of evaluation
+******   in two conditional expression statements. (i.e. '?' operator)
+******
+****** Mar 2009           michelotti@fnal.gov
+****** - in bmlnElmnt::init_internals: corrected argument of "if"
+******   in conditional statement.  Because of the behavior of
+******   ElmPtr, this change should be transparent.
+****** - other changes cosmetic.
+******
 ****** Apr 2010           michelotti@fnal.gov
 ****** - removed internal Aperture pointer, pAperture_.  This
 ******   concept was initiated by Oleg Krivosheev (c.1997-99), but
@@ -53,6 +67,10 @@
 ******   as separate beamline elements via an updated header file,
 ******   Aperture.h.  This may prove to be a temporary measure after
 ******   the ApertureDecorator is fully realized.
+******
+****** Oct 2012           michelotti@fnal.gov
+****** - fixed one-line bug (due to cutting and pasting) in 
+******   void bmlnElmnt::PinnedFrameSet::downStream( Frame const& frame )
 ******
 **************************************************************************
 *************************************************************************/
@@ -173,7 +191,7 @@ Frame const& bmlnElmnt::PinnedFrameSet::downStream() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame)
+void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame )
 {
   upStream_ = ( &frame == &(Frame::identityFrame())) ? 0 : new Frame(frame);
 }
@@ -181,9 +199,9 @@ void bmlnElmnt::PinnedFrameSet::upStream( Frame const& frame)
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void bmlnElmnt::PinnedFrameSet::downStream(Frame const& frame )
+void bmlnElmnt::PinnedFrameSet::downStream( Frame const& frame )
 {
-  upStream_ = ( &frame == & (Frame::identityFrame())) ? 0 : new Frame(frame);
+  downStream_ = ( &frame == & (Frame::identityFrame())) ? 0 : new Frame(frame);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
