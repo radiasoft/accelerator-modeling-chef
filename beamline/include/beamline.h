@@ -216,6 +216,7 @@ public:
   iterator moveRelZ( iterator pos, double const& dz);
   iterator    pitch( iterator pos, double const& angle, double const& rpos);
   iterator      yaw( iterator pos, double const& angle, double const& rpos);
+  iterator     yaw2( iterator pos, double const& angle, double const& rpos);
   iterator     roll( iterator pos, double const& angle, double const& rpos);
 
 
@@ -346,8 +347,9 @@ public:
 
 private:
 
-  iterator   moveRel(   int axis, double const& u,     iterator pos,             std::string invoker );
-  iterator rotateRel(   int axis, double const& angle, iterator pos, double pct, std::string invoker );
+  iterator    moveRel(   int axis, double const& u,     iterator pos,             std::string invoker );
+  iterator  rotateRel(   int axis, double const& angle, iterator pos, double pct, std::string invoker );
+  iterator rotateRel2(   int axis, double const& angle, iterator pos, double pct, std::string invoker );
 
   std::ostream&           writeTo(std::ostream&);
   friend std::istream& operator>>( std::istream&, beamline& );

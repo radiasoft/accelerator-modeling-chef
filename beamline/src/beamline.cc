@@ -1391,6 +1391,10 @@ beamline::iterator beamline::yaw(   beamline::iterator pos, double const& angle,
   return rotateRel( Frame::yAxisIndex(), angle, pos, pct, string("beamline::yaw"));
 }
 
+beamline::iterator beamline::yaw2(   beamline::iterator pos, double const& angle, double const& pct )
+{
+  return rotateRel2( Frame::yAxisIndex(), angle, pos, pct, string("beamline::yaw"));
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1558,6 +1562,209 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
    return it;
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+beamline::iterator beamline::rotateRel2(   int axis, double const& angle, iterator ipos, double pct, string invoker )
+{
+  //-----------------------------------------------------------------------------------------------
+  // Upon entry: axis            = rotation direction, expressed a unit vector
+  //             angle [radians] = displacement
+  //             pos             = iterator pointing to element to be translated
+  //             pct             = percentage downstream of element to serve
+  //                               as fixed point of the rotation
+  //             invoker         = name of calling routine (used in error messages)
+  //
+  // Upon exit:  element at pos will have been rotated along the direction "axis"
+  //             by adjusting its neighboring free-space elements.
+  //             The element at pos is not changed; only its neighbors are altered.
+  //
+  //             errorCode  = 0, nothing wrong
+  //                          2, |angle| < 1 nanoradian displacement
+  //                          3, the element pointed at by the iterator is a sector element
+  //-------------------------------------------------------------------------------------------------
+
+  //-----------------------------------------------------------------------------------------------------
+  //
+  //          ------------- ---------- ------------
+  //          UPSTREAM ELM |   ELM   | DWSTREAM ELM
+  //          ------------- ---------- ------------
+  //         F0            F1        F2           F3
+  //-----------------------------------------------------------------------------------------------------
+
+
+  // Argument filter
+
+  int errorCode = 0;
+  ElmPtr thePtr = *ipos;
+  ElmPtr sliceBeginPtr = *ipos;
+  ElmPtr sliceEndPtr = *ipos;
+  ElmPtr downStreamPtr, upStreamPtr;
+
+  if( pct < 0.0 || pct > 1.0 )       { pct = 0.5; }
+  if( std::abs(pct) < 1.0e-8 )       { pct = 0.0; }
+  if( std::abs(1.0 - pct) < 1.0e-8 ) { pct = 1.0; }
+
+  // Will not rotate anything less than 1 nanoradian.
+  if( std::abs(angle) < 1.0e-9 ) {
+    (*pcerr) << "\n*** ERROR *** "
+         << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** ERROR *** Called by " << invoker
+         << "\n*** ERROR *** Unable to perform operation on "
+         << thePtr->Type() << "  " << thePtr->Name() << "."
+         << "\n*** ERROR *** Requested rotation angle, "
+         << (1.0e9*angle)
+         << ", nanoradians is too small."
+            "\n*** ERROR *** Must be at least 1 nanoradian."
+            "\n*** ERROR *** "
+         << endl;
+    errorCode = 2;
+    return ipos;
+  }
+
+  // Check for a valid element
+  if( typeid(*thePtr) == typeid(sector) ) {
+    (*pcerr) << "\n*** ERROR *** "
+         << "\n*** ERROR *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** ERROR *** Called by " << invoker
+         << "\n*** ERROR *** Unable to perform rotation on "
+         << thePtr->Type() << "  " << thePtr->Name() << "."
+         << endl;
+    errorCode = 3;
+    return ipos;
+  }
+
+  beamline::iterator it = ipos;
+  beamline::iterator tmp_it  = ipos;
+
+  // finding downstream element
+  int downCount = 0;
+  double length = thePtr->Length();
+  if (tmp_it == end()) {
+      downStreamPtr = ElmPtr();
+  } else {
+      ++tmp_it;
+      while ((*tmp_it)->Type() != std::string("drift") && tmp_it != end()) {
+          if ((*tmp_it)->Type() == thePtr->Type()) {
+              sliceEndPtr = *tmp_it;
+              length += (*tmp_it)->Length();
+          }
+          if ((*tmp_it)->Type() == std::string("Slot")) break;
+          ++tmp_it;
+          downCount += 1;
+      }
+      downStreamPtr = (tmp_it != end()) ? *tmp_it : ElmPtr();
+  }
+  // finding upstream element
+  tmp_it = it;
+  int upCount = 0;
+  if (tmp_it == begin()) {
+      upStreamPtr = ElmPtr();
+  } else {
+      --tmp_it;
+      while ((*tmp_it)->Type() != std::string("drift") && tmp_it != begin()) {
+          if ((*tmp_it)->Type() == (*it)->Type()) sliceBeginPtr = *tmp_it;
+          if ((*tmp_it)->Type() == std::string("Slot")) break;
+          --tmp_it;
+          upCount += 1;
+      }
+      upStreamPtr = (tmp_it == begin()) ? ElmPtr() : *(tmp_it);
+      length += upStreamPtr->Length();
+  }
+
+  if ((typeid(*upStreamPtr) == typeid(Slot))
+          || (typeid(*downStreamPtr) == typeid(Slot))) {
+      ((*it)->pinnedFrames_).downStream((sliceBeginPtr->pinnedFrames_).downStream());
+      ((*it)->pinnedFrames_).upStream((sliceBeginPtr->pinnedFrames_).upStream());
+      return it;
+  }
+
+  Frame const frameZero;
+  Frame frameOne, frameTwo, frameThree;
+  Frame pinnedFrameOne, pinnedFrameTwo;
+
+  FramePusher fp( frameZero );
+
+  frameOne   =  upStreamPtr ? upStreamPtr->accept(fp),  fp.getFrame() : fp.getFrame();
+  frameTwo   =  ( thePtr->accept( fp ),  fp.getFrame() );
+
+  Vector newOrigin(3);
+  newOrigin[2] = length;
+  frameTwo.setOrigin(newOrigin);
+  frameThree =  downStreamPtr ? downStreamPtr->accept(fp), fp.getFrame() : fp.getFrame();
+  newOrigin[2] += downStreamPtr->Length();
+  frameThree.setOrigin(newOrigin);
+
+  pinnedFrameOne = ( (thePtr->pinnedFrames_).upStream()   ).patchedOnto( frameOne );
+  pinnedFrameTwo = ( (thePtr->pinnedFrames_).downStream() ).patchedOnto( frameTwo );
+
+  //...................................................
+  // Construct a Frame in between frameOne and frameTwo
+  //...................................................
+
+  Frame midFrame;
+  if     ( 0.0 == pct ) {
+      midFrame = frameOne;
+  } else if( 1.0 == pct ){
+      midFrame = frameTwo;
+  } else if(    typeid( *thePtr )  == typeid(Slot) || typeid( *thePtr )  == typeid(beamline) ) {
+      midFrame = Frame::tween( frameOne, frameTwo, pct );
+  } //else { // TODO
+  //    ElmPtr usHalfPtr, dsHalfPtr;
+  //    thePtr->Split( pct, usHalfPtr, dsHalfPtr );
+  //    FramePusher fp2( frameOne );
+  //    usHalfPtr->accept(fp2);
+  //    midFrame = fp2.getFrame();
+  //}
+
+  //...................................................
+  // !!! The next lines can be modified (maybe) to do pinned-referenced movements
+  // Do the rotation
+  //...................................................
+
+   Vector rotationAxis( midFrame.getAxis(axis) );
+   Frame uFrame( frameOne.relativeTo(midFrame) );
+   Frame dFrame( frameTwo.relativeTo(midFrame) );
+   uFrame.rotate( angle, rotationAxis, true );
+   dFrame.rotate( angle, rotationAxis, true );
+   frameOne = uFrame.patchedOnto(midFrame);
+   frameTwo = dFrame.patchedOnto(midFrame);
+   (thePtr->pinnedFrames_).upStream(   pinnedFrameOne.relativeTo( frameOne ) );
+   (thePtr->pinnedFrames_).downStream( pinnedFrameTwo.relativeTo( frameTwo ) );
+
+   // Reset upstream and downstream elements
+
+   SlotPtr sp;
+   if(  sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
+        sp->setInFrame( frameZero );
+        sp->setOutFrame( frameOne );
+        sp->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
+   }
+   if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
+        sp->setInFrame( frameZero );
+        sp->setOutFrame( frameThree.relativeTo(frameTwo) );
+        sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
+   }
+   if( typeid(*upStreamPtr) == typeid(drift) ) {
+        SlotPtr slotPtr( new Slot(upStreamPtr->Name().c_str(), frameOne ) );
+        slotPtr->setReferenceTime( upStreamPtr->getReferenceTime() );
+        slotPtr->pinnedFrames_.downStream ((thePtr->pinnedFrames_).upStream() );
+        for (int i = 0; i <= upCount; ++i) --it;
+        tmp_it = erase( it );
+        putAbove( tmp_it, slotPtr );
+        it = ipos;
+   }
+   if( typeid(*downStreamPtr) == typeid(drift) ) {
+       SlotPtr slotPtr( new Slot(downStreamPtr->Name().c_str(), frameThree.relativeTo(frameTwo) ) );
+       slotPtr->setReferenceTime( downStreamPtr->getReferenceTime() );
+       slotPtr->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );
+       for (int i = 0; i <= downCount; ++i) ++it;
+       tmp_it = erase( it );
+       putAbove( tmp_it, slotPtr );
+       it = ipos;
+   }
+   return it;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
