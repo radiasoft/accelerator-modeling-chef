@@ -64,19 +64,6 @@ void propagate( septum& elm, Particle& p )
   Component_t delta_x = zero;
 
   double const length = elm.Length();
-  //std::cout << "type = " << elm.Type()
-  //        << ", name = " << elm.Name()
-  //        << ", length = " << elm.Length()
-  //        << std::endl;
-  //std::cout << ", voltage = " << setprecision(6) << elm.getVoltage()
-  //        << ", gap = " << elm.getGap()
-  //        << ", wire = " << elm.getWireX()
-  //        << ", width = " << elm.getWireWidth()
-  //        << std::endl;
-  //std::cout << "x = " << setprecision(6) << x << ", y = " << y << ", cdt = " << state[i_cdt]
-  //        << ", npx = " << npx << ", npy = " << npy << ", dpop = "
-  //        << state[i_ndp] << std::endl << std::endl;
-
   bool is_finite = true;
   int i = 0;
   while( is_finite && (i < 6) ) {
@@ -87,21 +74,17 @@ void propagate( septum& elm, Particle& p )
     ++i;
   }
 
-  if( is_finite && (0.0 <= elm.getWireX()) ) {
-    if( x < - elm.getWireX() ) {
-      x += elm.getWireX();
+  if( is_finite && (0.0 >= elm.getWireX()) ) {
+    if( x < elm.getWireX() ) {
+      x -= elm.getWireX();
       if( x >= - elm.getWireWidth() ) {                // hitting wire
         elm.numberBadHits_++;
         p.setTag( p.getTag() + std::string(" / SEPTUM: WIRE HIT / ") );
+        kick = zero;
       }
       else {
         x += elm.getWireWidth();
         if( x > - elm.getGap() ) {                     // paritlce is kicked
-          //std::cout << "\nat element: " << elm.Name() << ": "
-          //        << elm.Type() << std::endl;
-          //std::cout << "kicked(before): "
-          //        << x - elm.getWireX() - elm.getWireWidth() << "  "
-          //        << npx << "  " << y << "  " << npy << std::endl;
           // unit_conversion: [N] = [kg m/s^2] to [Gev/c]
           double unit_conversion = PH_MKS_c / (1.0e9 * PH_MKS_e);
           kick = unit_conversion / p.ReferenceMomentum();
@@ -115,16 +98,7 @@ void propagate( septum& elm, Particle& p )
           // \delta_{t} = \delta_{z} / (\beta * c)
           kick *= length / (p.Beta() * PH_MKS_c);             // [sec]
           delta_x *= (length * length / 2.0) / (p.Beta() * PH_MKS_c);
-          //std::cout << "at element: " << elm.Name()
-          //        << ": length = " << length
-          //        << ", kick strength = " << kick 
-          //        << ", delta_x = " << delta_x << std::endl;
           double npz = p.get_npz();
-          //std::cout << "kicked(after): "
-          //        << x - elm.getWireX() - elm.getWireWidth()
-          //        + length * (npx + kick) / npz + delta_x / npz
-          //        << "  " << npx + kick << "  "
-          //        << y + length * npy / npz << "  " << npy << std::endl;
           elm.numberKicked_++;
           p.setTag( p.getTag() + std::string(" / SEPTUM: KICKED / ") );
         }
@@ -139,13 +113,14 @@ void propagate( septum& elm, Particle& p )
       delta_x = zero;
     }
   }
-  Component_t const x_entrance = state[i_x];
-  bool hit_septum = true;
-  if (x_entrance <= - elm.getWireX()) {
-      std::cout << "at element: " << elm.Name() 
-              << ": entrance: x = " << setprecision(8) << state[i_x]
-              << ", npx = " << state[i_npx] << std::endl;
-      hit_septum = false;
+  Component_t const xi = state[i_x];
+  Vector pinned_state(p.State());
+  if (xi <= elm.getWireX()) {
+      p.setTag( p.getTag() + std::string(" / SEPTUM: ENTER SEPTUM / ") );
+      elm.loadPinnedCoordinates(p, pinned_state);
+      std::cout << elm.Name() << ": entrance: " << setprecision(16)
+              << state[i_x] << "  " << pinned_state[3] << "  "
+              << state[i_y] << "  " << state[i_npy] << std::endl;
   }
   Component_t npz = p.get_npz();
   Component_t xpr = state[i_npx] / npz;
@@ -157,17 +132,20 @@ void propagate( septum& elm, Particle& p )
   state[i_npx] += kick;
   Component_t D = length * sqrt( 1.0 + xpr * xpr + ypr * ypr );
   state[i_cdt] += ( D / p.Beta() ) - elm.getReferenceTime();
-  if (state[i_x] <= - elm.getWireX()) {
-      if (!hit_septum) {
-          std::cout << "at element: " << elm.Name() 
-                  << ": exit    : x = " << setprecision(8) << state[i_x]
-                  << ", npx = " << state[i_npx] << std::endl;
-      } else {
-          std::cout << "at element: " << elm.Name()
-                  << ": hit septum plane: " 
-                  << " x = " << setprecision(8) << state[i_x]
-                  << ", npx = " << state[i_npx] << std::endl;
-      }
+
+  Component_t const xf = state[i_x];
+  if ((xi - elm.getWireX()) * (xf - elm.getWireX()) < 0.0) {
+      p.setTag(elm.Name() + std::string(" / SEPTUM: INTERSECT WIRE PLANE / "));
+      elm.loadPinnedCoordinates(p, pinned_state);
+      std::cout << elm.Name() << ": hit septum plane: " << setprecision(16)
+              << pinned_state[0] << "  " << pinned_state[3] << "  "
+              << pinned_state[1] << "  " << pinned_state[4] << std::endl;
+  } else if (xf <= elm.getWireX()) {
+      p.setTag(p.getTag() + std::string(" / SEPTUM: EXIT SEPTUM / ") );
+      elm.loadPinnedCoordinates(p, pinned_state);
+      std::cout << elm.Name() << ": exit    : " << setprecision(16)
+              << pinned_state[0] << "  " << pinned_state[3] << "  "
+              << pinned_state[1] << "  " << pinned_state[4] << std::endl;
   }
 }
 
@@ -185,7 +163,7 @@ void propagate( septum& elm, JetParticle& p )
 
   Component_t kick;
   Component_t delta_x;
-  if (state[i_x].standardPart() < - elm.getWireX()) {
+  if (state[i_x].standardPart() < elm.getWireX()) {
       double unit_conversion = PH_MKS_c / (1.0e9 * PH_MKS_e);
       kick = unit_conversion / p.ReferenceMomentum();
       delta_x = kick;
@@ -235,14 +213,6 @@ void propagate( thinSeptum& elm, Particle& p )
   Component_t npy = state[i_npy];
   Component_t kick = zero;
 
-  //std::cout << "type = " << elm.Type()
-  //        << ", name = " << elm.Name()
-  //        << ", length = " << elm.Length()
-  //        << std::endl;
-  //std::cout << "x = " << x << ", y = " << y << ", cdt = " << state[i_cdt]
-  //        << ", npx = " << npx << ", npy = " << npy << ", dpop = "
-  //        << state[i_ndp] << std::endl << std::endl;
-
   bool is_finite = true;
   int i = 0;
   while( is_finite && (i < 6) ) {
@@ -253,9 +223,9 @@ void propagate( thinSeptum& elm, Particle& p )
     ++i;
   }
 
-  if( is_finite && (0.0 <= elm.getWireX()) ) {
-    if( x < - elm.getWireX() ) {
-      x += elm.getWireX();
+  if( is_finite && (0.0 >= elm.getWireX()) ) {
+    if( x < elm.getWireX() ) {
+      x -= elm.getWireX();
       if( x >= - elm.getWireWidth() ) {
         elm.numberBadHits_++;
         p.setTag( p.getTag() + std::string(" / SEPTUM: WIRE HIT / ") );
@@ -267,10 +237,10 @@ void propagate( thinSeptum& elm, Particle& p )
           elm.numberKicked_++;
           p.setTag( p.getTag() + std::string(" / SEPTUM: KICKED / ") );
           std::cout << "kicked(before): "
-                  << x - elm.getWireX() - elm.getWireWidth() << "  "
+                  << x + elm.getWireX() - elm.getWireWidth() << "  "
                   << npx << "  " << y << "  " << npy << std::endl;
           std::cout << "kicked(after): "
-                  << x - elm.getWireX() - elm.getWireWidth() << "  "
+                  << x + elm.getWireX() - elm.getWireWidth() << "  "
                   << npx + kick << "  " << y << "  " << npy << std::endl;
         }
         else {
@@ -279,7 +249,7 @@ void propagate( thinSeptum& elm, Particle& p )
         }
       }
     }
-    //else if( x > 2.0*elm.getWireX() ) {
+    //else if( x < 2.0*elm.getWireX() ) {
     //  elm.numberBackHits_++;
     //  p.setTag( p.getTag() + std::string(" / SEPTUM: PIPE HIT / ") );
     //}
@@ -310,7 +280,7 @@ void propagate( thinSeptum& elm, JetParticle& p )
  
   State_t& state = p.State();
 
-  Component_t kick = ( state[i_x].standardPart() < - elm.getWireX() ) ?
+  Component_t kick = ( state[i_x].standardPart() < elm.getWireX() ) ?
                        elm.getNegStrength()/(1.0 + state[i_ndp]) :  elm.getPosStrength()/(1.0 + state[i_ndp]);
 
   state[3] += kick;
