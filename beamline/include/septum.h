@@ -122,7 +122,7 @@ private:
   septum();               // default constructor forbidden
 
   //double length_;         // length of septum element
-  double voltage_;        // voltage of septum wire/foil
+  double voltage_;        // voltage of septum wire/foil in kV
   double gap_;            // gap between wire and anode in meters
   double xWire_;          // position of wire septum in meters
   double wireWidth_;      // width of wire in meters
