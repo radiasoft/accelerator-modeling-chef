@@ -69,15 +69,16 @@ using FNAL::pcout;
 // **************************************************
 
 rfcavity::rfcavity( const char* name_arg)
-  :   bmlnElmnt(name_arg, 1.0, 0.0),
+: bmlnElmnt(name_arg, 1.0, 0.0),
   w_rf_(0.0),
   phi_s_(0.0),
   sin_phi_s_(0.0),
   Q_(0.0),
   R_(0.0),
-  h_(-1.0)
-
+  h_(-1.0),
+  my_harmonic_parameters_()
 {
+  my_harmonic_parameters_.push_back( multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
 }
@@ -93,15 +94,17 @@ rfcavity::rfcavity( const char* name_arg, // name
                     double const& Q_arg,      // Quality factor 
                     double const& R_arg       // shunt impedance 
                   ) 
-:   bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ) ,
-    w_rf_(MATH_TWOPI*f_arg),
-    phi_s_(phi_s_arg),
-    sin_phi_s_(sin(phi_s_arg)),
-    Q_(Q_arg), 
-    R_(R_arg),
-    h_(-1.0)
+: bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ),
+  w_rf_(MATH_TWOPI*f_arg),
+  phi_s_(phi_s_arg),
+  sin_phi_s_(sin(phi_s_arg)),
+  Q_(Q_arg), 
+  R_(R_arg),
+  h_(-1.0),
+  my_harmonic_parameters_()
 {
-  propagator_ = PropagatorPtr(new Propagator() );
+  my_harmonic_parameters_.push_back( multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
+  propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
 }
 
@@ -116,7 +119,8 @@ rfcavity::rfcavity( rfcavity const& x )
     Q_(x.Q_),
     R_(x.R_),
     h_(x.h_),
-    propagator_ (x.propagator_->Clone()) 
+    my_harmonic_parameters_( x.my_harmonic_parameters_ ),
+    propagator_ (x.propagator_->Clone())
 {}
 
 
@@ -339,6 +343,7 @@ void rfcavity::setPhi( double const& angle )
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void rfcavity::setQ( double const& Q )
 {
   Q_     = Q;
@@ -454,6 +459,16 @@ void rfcavity::localPropagate( JetParticleBunch& b)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void rfcavity::addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase )
+{
+  my_harmonic_parameters_.push_back( multiple_harmonic_parameters( harmonic, relativeStrength, phase ) );
+  propagator_->setup(*this);
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class thinrfcavity 
 // **************************************************
@@ -466,8 +481,10 @@ thinrfcavity::thinrfcavity(const char *name_arg)
   , Q_( 0.0 )
   , R_( 0.0 )
   , h_( -1.0 )
+  , my_harmonic_parameters_()
 {
-  propagator_ = PropagatorPtr(new Propagator() );
+  my_harmonic_parameters_.push_back( rfcavity::multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
+  propagator_ = PropagatorPtr( new Propagator() );
   propagator_->setup(*this);
 }
   
@@ -488,7 +505,9 @@ thinrfcavity::thinrfcavity(const char * name_arg, // name
   , Q_( Q_arg )
   , R_( R_arg )
   , h_( -1.0 )
+  , my_harmonic_parameters_()
 {
+  my_harmonic_parameters_.push_back( rfcavity::multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr(new Propagator() );
   propagator_->setup(*this);
 }
@@ -504,6 +523,7 @@ thinrfcavity::thinrfcavity( const thinrfcavity& x )
   , Q_( x.Q_ )
   , R_( x.R_ )
   , h_( x.h_ ), propagator_ (x.propagator_->Clone() )
+  , my_harmonic_parameters_( x.my_harmonic_parameters_ )
 {}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -621,6 +641,16 @@ void thinrfcavity::setRadialFrequencyRelativeTo( double const& omega )
   if( (omega > 0) && (h_>0) ) {
     w_rf_ = h_*omega;
   }
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase )
+{
+  my_harmonic_parameters_.push_back( rfcavity::multiple_harmonic_parameters( harmonic, relativeStrength, phase ) );
+  propagator_->setup(*this);  // Should be nothing to do here, I imagine.
 }
 
 
