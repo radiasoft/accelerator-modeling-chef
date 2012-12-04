@@ -66,8 +66,16 @@ void propagate( thinrfcavity& elm, Particle_t&  p)
   double const w_rf      = elm.getRadialFrequency(); 
 
   State_t& state = p.State(); 
-  
-  Component_t E = p.Energy() + elm.Strength()*sin( phi_s + state[i_cdt] * w_rf / PH_MKS_c );
+
+  Component_t phase_slip_argument = state[i_cdt] * w_rf / PH_MKS_c;
+  std::vector<rfcavity::multiple_harmonic_parameters> const & mhp = thinrfcavity::thinrfcavity_core_access::get_harmonics_data( elm );
+
+  Component_t strength_factor = Component_t(0.0);
+  for( int i = 0; i < mhp.size(); ++i ) {
+    strength_factor += mhp[i].relative_strength * sin( mhp[i].harmonic_multiple*(phi_s + phase_slip_argument) + mhp[i].phase_shift );
+  }
+
+  Component_t E = p.Energy() + elm.Strength()*strength_factor;
 
   double oldRefP = p.ReferenceMomentum();
   p.SetReferenceEnergy( p.ReferenceEnergy() + elm.Strength()*sin(phi_s) );
@@ -111,20 +119,39 @@ template void propagate(     thinrfcavity& elm, JetParticle& p );
 
 #endif
 
-
 } // namespace
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void rfcavity::Propagator::setup( rfcavity& elm)
+void rfcavity::Propagator::setup( rfcavity& rfc )
 {
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
-
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( rfc );
   bml = BmlPtr(new beamline(""));
-  bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
-  bml->append( ElmPtr(new thinrfcavity( "", elm.getRadialFrequency()/(2*M_PI), 1.0e9*(elm.Strength()), elm.getPhi(), elm.getQ(), elm.getR() )));
-  bml->append( ElmPtr(new drift( "", elm.Length()/2.0 ) ) );
+  // 
+  // -- First drift
+  // 
+  bml->append( ElmPtr(new drift( "", rfc.Length()/2.0 ) ) );
+
+  // 
+  // -- Thin cavity
+  // 
+  thinrfcavity* ptr_thin_rfc = new thinrfcavity( "", 
+                                                 rfc.getRadialFrequency()/(2*M_PI), 
+                                                 1.0e9*(rfc.Strength()), 
+                                                 rfc.getPhi(), 
+                                                 rfc.getQ(), 
+                                                 rfc.getR() );
+
+  thinrfcavity::thinrfcavity_core_access::get_harmonics_data( *ptr_thin_rfc ) 
+    = rfcavity    ::rfcavity_core_access::get_harmonics_data(           rfc );
+
+  bml->append( ElmPtr(ptr_thin_rfc) );
+
+  // 
+  // -- Second drift
+  // 
+  bml->append( ElmPtr(new drift( "", rfc.Length()/2.0 ) ) );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

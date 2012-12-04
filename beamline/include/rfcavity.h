@@ -89,7 +89,7 @@ public:
   rfcavity( rfcavity const& );
 
   rfcavity* Clone() const { return new rfcavity( *this ); }
- ~rfcavity();
+  ~rfcavity();
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
@@ -125,6 +125,22 @@ public:
   void            setStrength( double const& eV);  
   void              setLength( double const& );
 
+  void            addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase );
+
+  struct multiple_harmonic_parameters
+  {
+    double harmonic_multiple;
+    double relative_strength;
+    double phase_shift;
+
+    multiple_harmonic_parameters()
+    : harmonic_multiple(1), relative_strength(0.0), phase_shift(0.0) {}
+
+    multiple_harmonic_parameters( int const& n, double const& s, double const& phi )
+    : harmonic_multiple(n), relative_strength(s), phase_shift(phi) {}
+  };
+
+  class rfcavity_core_access;
 
 private:
 
@@ -132,20 +148,37 @@ private:
   std::istream& readFrom(std::istream&);
 
 
-  double w_rf_;                  // RF frequency [Hz]
-  double phi_s_;                 // synchronous phase
-  double sin_phi_s_;             // sine of synchronous phase
-  // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
-  double Q_;                     // quality factor
-  double R_;                     // shunt impedance
+  double w_rf_;                 // RF frequency [Hz]
+  double phi_s_;                // synchronous phase
+  double sin_phi_s_;            // sine of synchronous phase
+
+  // NOTE: The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
+
+  double Q_;                    // quality factor
+  double R_;                    // shunt impedance
 
   double h_;                    // harmonic number 
                                 //   = ratio cavity frequency to
                                 //     revolution frequency of a ring
                                 //   Note: this is *NOT* a cavity attribute,
                                 //   but is included for convenience.
+
+  std::vector<rfcavity::multiple_harmonic_parameters> my_harmonic_parameters_;
+
   PropagatorPtr  propagator_;
 };
+
+
+
+class rfcavity::rfcavity_core_access
+{
+ public:
+  static std::vector<rfcavity::multiple_harmonic_parameters>& get_harmonics_data( rfcavity& o ) 
+  {
+    return o.my_harmonic_parameters_;
+  }
+};
+
 
 
 class thinrfcavity : public bmlnElmnt {
@@ -167,13 +200,15 @@ public:
   thinrfcavity( thinrfcavity const& );
   thinrfcavity* Clone() const { return new thinrfcavity( *this ); }
 
- ~thinrfcavity();
+  ~thinrfcavity();
 
   double const& getPhi()              const; 
   double const& getRadialFrequency()  const; 
   double const& getQ()                const; 
   double const& getR()                const; 
   double const& getHarmonicNumber()   const; 
+
+  bool          isSingleMultiple()    const;
 
   void            setHarmonicNumber( int );
   void            setHarmonicNumber( double const& );
@@ -194,6 +229,9 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
+  void    addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase );
+
+  class thinrfcavity_core_access;
 
 private:
 
@@ -211,10 +249,27 @@ private:
                                  //     revolution frequency of a ring
                                  //   Note: this is *NOT* a cavity attribute,
                                  //   but is included for convenience.
+
+  std::vector<rfcavity::multiple_harmonic_parameters> my_harmonic_parameters_;
+
   PropagatorPtr  propagator_;
-
-
 };
+
+
+class thinrfcavity::thinrfcavity_core_access
+{
+ public:
+  static std::vector<rfcavity::multiple_harmonic_parameters>& get_harmonics_data( thinrfcavity& o ) 
+  {
+    return o.my_harmonic_parameters_;
+  }
+};
+
+
+inline bool thinrfcavity::isSingleMultiple() const
+{
+  return ( 1 == my_harmonic_parameters_.size() );
+}
 
 
 #endif // RFCAVITY_H
