@@ -22,9 +22,17 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Authors:   Jean-Francois Ostiguy  ostiguy@fnal.gov                                                  
-******             Leo Michelotti         michelotti@fnal.gov                                    
+******             Leo Michelotti         michelotti@fnal.gov
 ******             
-******                                                                
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  Feb 2009    michelotti@fnal.gov
+******  - fixed scale error in rfcavity::Propagator::setup
+******  
+******  Dec 2012    michelotti@fnal.gov
+******  - added functionality for multiple harmonics
+******    : simple-minded implementation; should be improved some day.
 ******   
 **************************************************************************
 *************************************************************************/
