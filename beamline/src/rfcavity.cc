@@ -28,21 +28,25 @@
 ******  ----------------
 ******  REVISION HISTORY
 ******  ----------------
-****** 	Apr 2007    ostiguy@fnal.gov
-****** 	- support for reference counted elements
-****** 	- visitor interface takes advantage of compiler dynamic typing
-****** 	
-****** 	Dec 2007    ostiguy@fnal.gov
-****** 	- new typesafe propagators
+******  Apr 2007    ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - visitor interface takes advantage of compiler dynamic typing
+******  
+******  Dec 2007    ostiguy@fnal.gov
+******  - new typesafe propagators
 ******
-****** 	Apr 2008    michelotti@fnal.gov
-****** 	- added placeholder rfcavity::setLength method
+******  Apr 2008    michelotti@fnal.gov
+******  - added placeholder rfcavity::setLength method
 ******
-****** 	Apr 2010    michelotti@fnal.gov
-****** 	- upgraded rfcavity::setStrength method to one that creates
+******  Apr 2010    michelotti@fnal.gov
+******  - upgraded rfcavity::setStrength method to one that creates
 ******    a new propagator functor.
 ******    : memory leak test passed.
 ******
+******  Dec 2012    michelotti@fnal.gov
+******  - added functionality for multiple harmonics
+******    : simple-minded implementation; should be improved some day.
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -492,12 +496,12 @@ thinrfcavity::thinrfcavity(const char *name_arg)
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinrfcavity::thinrfcavity(const char * name_arg, // name
-                   	   double const& f_arg,      // rf frequency 
-                   	   double const& eV_arg,     // rf voltage 
-                   	   double const& phi_s_arg,  // synchronous phase 
-                   	   double const& Q_arg,      // Quality factor 
-                   	   double const& R_arg       // shunt impedance 
-                   	   ) 
+                           double const& f_arg,      // rf frequency 
+                           double const& eV_arg,     // rf voltage 
+                           double const& phi_s_arg,  // synchronous phase 
+                           double const& Q_arg,      // Quality factor 
+                           double const& R_arg       // shunt impedance 
+                           ) 
 :   bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ) 
   , w_rf_( MATH_TWOPI*f_arg )
   , phi_s_( phi_s_arg )
