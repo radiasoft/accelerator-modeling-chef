@@ -110,6 +110,7 @@ namespace {
       ( mtrx( i_npy, i_npx ) != 0.0 )  ||
       ( mtrx( i_npx, i_npy ) != 0.0 )     )
   {
+#ifdef ENABLE_PEDANTIC_WARNINGS
     (*pcerr) << "*** WARNING ***                                 \n"
             "*** WARNING *** LattFuncSage::Slow_CS_Calc          \n"
             "*** WARNING *** Coupling detected. Calculation is   \n"
@@ -119,6 +120,7 @@ namespace {
             "*** WARNING *** instead.                            \n"
             "*** WARNING ***                                     \n"
          << endl;
+#endif // ENABLE_PEDANTIC_WARNINGS
      ret = true;
    }
 
