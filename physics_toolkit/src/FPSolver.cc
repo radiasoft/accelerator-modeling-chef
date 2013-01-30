@@ -313,10 +313,11 @@ int FPSolver::operator()( JetParticle& jp, const char*, FP_CRITFUNC Crit )
       (*pcerr) << "FPSolver: Result may not be reliable!! " << endl;
     }
 
+#ifdef ENABLE_PEDANTIC_WARNINGS
     (*pcerr) <<
          "FPSolver:: Convergence achieved after " << iterCount
                                                   << " iterations." << endl;
-
+#endif // ENABLE_PEDANTIC_WARNINGS
 
     // --- Store closed orbit if desired -------------------------------
 
@@ -429,10 +430,12 @@ int FPSolver::operator()( Particle& p, FP_CRITFUNC Crit )
     return 1;
   }
 
+#ifdef ENABLE_PEDANTIC_WARNINGS
   if( !jumpTest )
     (*pcerr) <<
       "FixedPoint:: Convergence achieved after " << iterCount
                                                  << " iterations." << endl;
+#endif // ENABLE_PEDANTIC_WARNINGS
 
   // --- Store closed orbit if desired -------------------------------
   double startLength( 0.0 );
@@ -558,10 +561,12 @@ void FPSolver::operator()( JetParticle& p, FP_CRITFUNC Crit )
       (*pcerr) << "FixedPoint:: Result may not be reliable!! " << endl;
   }
 
+#ifdef ENABLE_PEDANTIC_WARNINGS
   if( !jumpTest )
     (*pcerr) <<
       "FixedPoint:: Convergence achieved after " << iterCount
                                                  << " iterations." << endl;
+#endif // ENABLE_PEDANTIC_WARNINGS
 
   // --- Store closed orbit if desired -------------------------------
 
