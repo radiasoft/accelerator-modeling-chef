@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******  
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -43,9 +43,26 @@
 ****** - new typesafe propagators
 ****** - strength_ is now B*L (used to be kick angle) 
 ******   so that behavior is consistent with other magnets 
+****** 
+****** Jan 2008:          ostiguy@fnal.gov
+****** - kick now assumed to scale with momentum. the strength_
+******   data member is now the bend strength, _not_ the bend angle
+****** - change to implementation. The ratio between h
+******   and v strength is now stored in the general
+******   kick element so that RefRegVisitor can perform
+******   the scaling properly.
+****** 
+****** Mar 2013:          michelotti@fnal.gov
+****** - fixed an error discovered by Eric Stern:
+******   added member functions [h|v|]kick::Split(...).
+******   Previous usage of the default bmlnElmnt::Split(...)
+******   did not take into account that, unlike other elements,
+******   the strength_ attribute of a kick is (now) field x length,
+******   not just field. (See preceding note: Jan 2008.)
 ******  
 **************************************************************************
 *************************************************************************/
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -55,6 +72,7 @@
 #include <beamline/kick.h>
 #include <beamline/KickPropagators.h>
 #include <beamline/BmlVisitor.h>
+#include <beamline/Alignment.h>
 
 using namespace std;
 
@@ -148,6 +166,46 @@ bool vkick::isMagnet() const
   return true; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void vkick::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void vkick::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
+  }
+
+  a = VKickPtr( Clone() );
+  b = VKickPtr( Clone() );
+
+  a->setLength( pc        * length_ );
+  b->setLength( (1.0- pc) * length_ );
+
+
+  // We assume "strength" field*length_.  This is not normal,
+  // but the kicks are non-physical, fictitious elements.
+  // It is because of this that these lines are needed
+  // and using the default bmlnElmnt::Split method
+  // produces a wrong result.
+  // ------------------------
+  a->setStrength( pc        * strength_ );
+  b->setStrength( (1.0- pc) * strength_ );
+
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  // ------------------------------
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
+
+  // Rename
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -284,6 +342,46 @@ bool hkick::isMagnet() const
   return true; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void hkick::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void hkick::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
+  }
+
+  a = HKickPtr( Clone() );
+  b = HKickPtr( Clone() );
+
+  a->setLength( pc        * length_ );
+  b->setLength( (1.0- pc) * length_ );
+
+
+  // We assume "strength" field*length_.  This is not normal,
+  // but the kicks are non-physical, fictitious elements.
+  // It is because of this that these lines are needed
+  // and using the default bmlnElmnt::Split method
+  // produces a wrong result.
+  // ------------------------
+  a->setStrength( pc        * strength_ );
+  b->setStrength( (1.0- pc) * strength_ );
+
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  // ------------------------------
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
+
+  // Rename
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -492,6 +590,46 @@ bool kick::isMagnet() const
   return true; 
 }
 
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void kick::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
+{
+  if( ( pc <= 0.0 ) || ( pc >= 1.0 ) ) {
+    ostringstream uic;
+    uic  << "pc = " << pc << ": this should be within [0,1].";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void kick::Split( double const& pc, bmlnElmnt** a, bmlnElmnt** b )", 
+           uic.str().c_str() ) );
+  }
+
+  a = KickPtr( Clone() );
+  b = KickPtr( Clone() );
+
+  a->setLength( pc        * length_ );
+  b->setLength( (1.0- pc) * length_ );
+
+
+  // We assume "strength" field*length_.  This is not normal,
+  // but the kicks are non-physical, fictitious elements.
+  // It is because of this that these lines are needed
+  // and using the default bmlnElmnt::Split method
+  // produces a wrong result.
+  // ------------------------
+  a->setStrength( pc        * strength_ );
+  b->setStrength( (1.0- pc) * strength_ );
+
+
+  // Set the alignment struct
+  // : this is a STOPGAP MEASURE!!!
+  // ------------------------------
+  a->setAlignment( Alignment() );
+  b->setAlignment( Alignment() );
+
+  // Rename
+  a->rename( ident_ + string("_1") );
+  b->rename( ident_ + string("_2") );
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
