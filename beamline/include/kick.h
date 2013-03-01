@@ -37,9 +37,26 @@
 ****** Mar 2007:          ostiguy@fnal.gov
 ****** - use covariant return types
 ****** - support for reference counted elements
-****** Dec  2007:          ostiguy@fnal.gov
+****** 
+****** Dec 2007:          ostiguy@fnal.gov
 ****** - new typesafe propagators
-*****
+****** 
+****** Jan 2008:          ostiguy@fnal.gov
+****** - kick now assumed to scale with momentum. the strength_
+******   data member is now the bend strength, _not_ the bend angle
+****** - change to implementation. The ratio between h
+******   and v strength is now stored in the general
+******   kick element so that RefRegVisitor can perform
+******   the scaling properly.
+****** 
+****** Mar 2013:          michelotti@fnal.gov
+****** - fixed an error discovered by Eric Stern:
+******   added member functions [h|v|]kick::Split(...).
+******   Previous usage of the default bmlnElmnt::Split(...)
+******   did not take into account that, unlike other elements,
+******   the strength_ attribute of a kick is (now) field x length,
+******   not just field. (See preceding note: Jan 2008.)
+****** 
 **************************************************************************
 *************************************************************************/
 
@@ -98,6 +115,8 @@ public:
   void accept( BmlVisitor& v );
   void accept( ConstBmlVisitor& v ) const;
 
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
  private:
  
   PropagatorPtr propagator_;
@@ -136,6 +155,8 @@ public:
 
   const char* Type()       const;
   bool        isMagnet()   const;
+
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
  private:
 
@@ -182,6 +203,8 @@ public:
 
   const char* Type()       const;
   bool        isMagnet()   const;
+
+  void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
 private:
 
