@@ -94,8 +94,8 @@ const double BeamlineContext::smallClosedOrbitNPYError /*[rad]*/ = 1.0e-9;
 
 BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
 :   p_bml_(x)
-  , particle_(0)
-  , particleBunchPtr_(0)
+  , particlePtr_( w.Clone() )
+  , particleBunchRawPtr_(0)
   , p_lfs_(0)
   , p_ets_(0)
   , p_covs_(0)
@@ -126,9 +126,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   , initial_dispersion_set_(false)
   , initial_covariance_set_(false)
 {
-
-  particle_         = w.Clone();
-  particleBunchPtr_ = new ParticleBunch( *particle_);
+  particleBunchRawPtr_ = new ParticleBunch( *particlePtr_ );
 
 
   // If that succeeds, then continue 
@@ -144,8 +142,8 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
   // Initialize the internal particle
   // ----------------------------------
 
-   particle_->setStateToZero();
-   particle_->SetReferenceEnergy( p_bml_->Energy() );
+   particlePtr_->setStateToZero();
+   particlePtr_->SetReferenceEnergy( p_bml_->Energy() );
 
  
    //-------------------------------------------------------------------
@@ -176,7 +174,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
      if ( is_linac = (typeid(**it) == typeid(LinacCavity)) ) break;
    }
 
-   if ( is_linac) { RefRegVisitor( *particle_ ).visit( *p_bml_ ); } // scale magnet strengths  
+   if ( is_linac) { RefRegVisitor( *particlePtr_ ).visit( *p_bml_ ); } // scale magnet strengths  
 
 
    if( Sage::isRing( p_bml_) ) { handleAsRing(); }
@@ -191,11 +189,9 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
 
 BeamlineContext::~BeamlineContext()
 {
- 
   reset();
 
-  if( particleBunchPtr_ ) { delete particleBunchPtr_; particleBunchPtr_ = 0; }
-
+  if( particleBunchRawPtr_ ) { delete particleBunchRawPtr_; particleBunchRawPtr_ = 0; }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -213,7 +209,7 @@ void BeamlineContext::reset()
   if( p_ca_   ) { delete  p_ca_;  p_ca_ = 0; }
   if( p_ta_   ) { delete  p_ta_;  p_ta_ = 0; }
 
-  particle_->setStateToZero();
+  particlePtr_->setStateToZero();
 }
 
 
@@ -283,7 +279,7 @@ void BeamlineContext::handleAsLine()
 
 Vector const& BeamlineContext::getParticleState()  const  
 { 
-  return particle_->State();                          
+  return particlePtr_->State();                          
 }
 
 
@@ -292,7 +288,7 @@ Vector const& BeamlineContext::getParticleState()  const
 
 void BeamlineContext::loadParticleStateInto( Vector& s ) 
 { 
-  s = particle_->State();                  
+  s = particlePtr_->State();                  
 }
 
 
@@ -301,7 +297,7 @@ void BeamlineContext::loadParticleStateInto( Vector& s )
 
 double BeamlineContext::getParticle_x()       
 { 
- return   particle_->get_x();                        
+ return   particlePtr_->get_x();                        
 }
 
 
@@ -310,7 +306,7 @@ double BeamlineContext::getParticle_x()
 
 double BeamlineContext::getParticle_y()       
 { 
-  return  particle_->get_y();                         
+  return  particlePtr_->get_y();                         
 }
 
 
@@ -319,7 +315,7 @@ double BeamlineContext::getParticle_y()
 
 double BeamlineContext::getParticle_cdt()     
 { 
-  return  particle_->get_cdt();                       
+  return  particlePtr_->get_cdt();                       
 }
 
 
@@ -328,7 +324,7 @@ double BeamlineContext::getParticle_cdt()
 
 double BeamlineContext::getParticle_npx()     
 { 
-  return particle_->get_npx();                        
+  return particlePtr_->get_npx();                        
 }
 
 
@@ -337,7 +333,7 @@ double BeamlineContext::getParticle_npx()
 
 double BeamlineContext::getParticle_npy()     
 { 
-  return particle_->get_npy();                        
+  return particlePtr_->get_npy();                        
 }
 
 
@@ -346,7 +342,7 @@ double BeamlineContext::getParticle_npy()
 
 double BeamlineContext::getParticle_ndp()     
 { 
-  return  particle_->get_ndp();                       
+  return  particlePtr_->get_ndp();                       
 }
 
 
@@ -355,7 +351,7 @@ double BeamlineContext::getParticle_ndp()
 
 void BeamlineContext::setParticle_x( double u ) 
 { 
-  particle_->set_x(u);                              
+  particlePtr_->set_x(u);                              
 }
 
 
@@ -364,7 +360,7 @@ void BeamlineContext::setParticle_x( double u )
 
 void BeamlineContext::setParticle_y( double u ) 
 { 
-  particle_->set_y(u);                              
+  particlePtr_->set_y(u);                              
 }
 
 
@@ -373,7 +369,7 @@ void BeamlineContext::setParticle_y( double u )
 
 void BeamlineContext::setParticle_cdt( double u ) 
 { 
-  particle_->set_cdt(u);                          
+  particlePtr_->set_cdt(u);                          
 }
 
 
@@ -382,7 +378,7 @@ void BeamlineContext::setParticle_cdt( double u )
 
 void BeamlineContext::setParticle_npx( double u ) 
 { 
-  particle_->set_npx(u);                          
+  particlePtr_->set_npx(u);                          
 }
 
 
@@ -391,7 +387,7 @@ void BeamlineContext::setParticle_npx( double u )
 
 void BeamlineContext::setParticle_npy( double u ) 
 { 
-  particle_->set_npy(u);                          
+  particlePtr_->set_npy(u);                          
 }
 
 
@@ -400,7 +396,7 @@ void BeamlineContext::setParticle_npy( double u )
 
 void BeamlineContext::setParticle_ndp( double u ) 
 { 
-  particle_->set_ndp(u);                          
+  particlePtr_->set_ndp(u);                          
 }
 
 
@@ -974,7 +970,7 @@ int BeamlineContext::getReferenceParticle( Particle& x ) const
 Particle const& BeamlineContext::getParticle()
 {
  
-  return *particle_;
+  return *particlePtr_;
 
 }
 
@@ -984,7 +980,7 @@ Particle const& BeamlineContext::getParticle()
 
 void BeamlineContext::setParticleState( Vector const& s )
 {
-   particle_->State() = s;
+   particlePtr_->State() = s;
 }
 
 
@@ -1008,16 +1004,16 @@ void BeamlineContext::createClosedOrbit()
 
   // Eliminate previous information, if necessary
    deleteClosedOrbit();
-   particle_->SetReferenceEnergy( p_bml_->Energy() );
-   particle_->setStateToZero();
-   co_part_ = *particle_;
+   particlePtr_->SetReferenceEnergy( p_bml_->Energy() );
+   particlePtr_->setStateToZero();
+   co_part_ = *particlePtr_;
 
   if( onTransClosedOrbit( co_part_ ) ) 
   {
     // Instantiate jetparticle_ on the closed orbit
     // and propagate it once.
 
-    co_part_        = *particle_;
+    co_part_        = *particlePtr_;
     jetparticle_    = JetParticle( co_part_);
     p_bml_->propagate( jetparticle_ );
   }
@@ -1026,7 +1022,7 @@ void BeamlineContext::createClosedOrbit()
     // Instantiate jetparticle_ 
     // and use a ClosedOrbitSage
 
-    jetparticle_ = JetParticle( *particle_);
+    jetparticle_ = JetParticle( *particlePtr_);
     p_cos_   = new ClosedOrbitSage( p_bml_ );
 
     int err;
@@ -1246,7 +1242,7 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 
       if( initial_lattfunc_set_) {
 
-        int errorFlag = p_lfs_->pushCalc( *particle_, initialLattFunc_);
+        int errorFlag = p_lfs_->pushCalc( *particlePtr_, initialLattFunc_);
         normalLattFuncsCalcd_ = ( 0 == errorFlag );
       }
       else {
@@ -1285,7 +1281,7 @@ std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
     EnvPtr<double>                 storedEnv  = Jet__environment::getLastEnv();
     EnvPtr<std::complex<double> >  storedEnvC = JetC__environment::getLastEnv();
 
-     Jet__environment::setLastEnv( jetparticle_.State().Env() );
+    Jet__environment::setLastEnv( jetparticle_.State().Env() );
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ) ; // implicit conversion 
 
     JetParticle tmp_jetpart(jetparticle_);
@@ -1361,7 +1357,7 @@ std::vector<CovarianceSage::Info> const&  BeamlineContext::getCovarianceArray()
         Jet__environment::BeginEnvironment( 1 );
 
         for( int j = 0; j < n; j++ ) {
-          coordPtr[j] = new coord( particle_->State()[j] );
+          coordPtr[j] = new coord( particlePtr_->State()[j] );
         }
         JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
 
@@ -1494,7 +1490,7 @@ std::vector<DispersionSage::Info> const&  BeamlineContext::getDispersionArray()
        // ISSUE: the closed orbit should be defined for beamlines/Linac FIXME !
        //*************************************************************************
 
-        JetParticle jetparticle( *particle_ );
+        JetParticle jetparticle( *particlePtr_ );
         int errorFlag         =  p_dsps_->pushCalc( jetparticle, initialDispersion_ );
         dispersionFuncsCalcd_ = ( 0 == errorFlag );
 
@@ -1659,7 +1655,7 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
 {
   if( !p_ta_ ) return NO_TUNE_ADJUSTER;
  
-  Particle  dummyParticle( *particle_);
+  Particle  dummyParticle( *particlePtr_);
   dummyParticle.setStateToZero();
   dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
   JetParticle  jp(dummyParticle);
@@ -1673,7 +1669,7 @@ int BeamlineContext::changeTunesBy( double dnuh, double dnuv )
   deleteDSPS();
   deleteClosedOrbit();
 
-  particle_->setStateToZero();
+  particlePtr_->setStateToZero();
 
   return OKAY;
 }
@@ -1757,7 +1753,7 @@ int BeamlineContext::changeChromaticityBy( double dh, double dv )
   if( ! p_ca_ ) return NO_CHROMATICITY_ADJUSTER;
  
 
-  Particle dummyParticle( *particle_);
+  Particle dummyParticle( *particlePtr_);
   dummyParticle.setStateToZero();
   dummyParticle.SetReferenceEnergy( p_bml_->Energy() );
   JetParticle  jp(dummyParticle);

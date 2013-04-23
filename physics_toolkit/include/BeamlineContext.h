@@ -288,9 +288,10 @@ class BeamlineContext
     //   "mostly vertical."
 
  public:
-    Particle*             particle_;    // we use a ptr here in order to preserve info about the actual particle type     
-                                        // BAD !!! public beacsue of RayTrace::_pushParticle()':
-    ParticleBunch*        particleBunchPtr_;   // BAD!!!! Needed because of DistributionWidget  
+    ParticlePtr            particlePtr_;         // we use a ptr here in order to preserve info
+                                                 // about the actual particle type
+                                                 // BAD !!! public becasue of RayTrace::_pushParticle()':
+    ParticleBunch*         particleBunchRawPtr_; // BAD!!!! Needed because of DistributionWidget  
  private:
 
     Particle               co_part_; 
