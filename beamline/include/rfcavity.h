@@ -22,29 +22,27 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******  
 ******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** REVISION HISTORY
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  Mar 2007            ostiguy@fnal.gov
+******  - use covariant return types
+******  - support for reference counted elements
 ******
-****** Mar 2007            ostiguy@fnal.gov
+******  Dec 2007            ostiguy@fnal.gov
+******  - support for new style propagators
+******  - inner structure now based on hidden beamline object
 ******
-****** - use covariant return types
-****** - support for reference counted elements
+******  Apr 2008            michelotti@fnal.gov
+******  - added placeholder rfcavity::setLength method
 ******
-****** Dec 2007            ostiguy@fnal.gov
-****** - support for new style propagators
-****** - inner structure now based on hidden beamline object
-******
-****** Apr 2008            michelotti@fnal.gov
-****** - added placeholder rfcavity::setLength method
+******  Dec 2012    michelotti@fnal.gov
+******  - added functionality for multiple harmonics
+******    : simple-minded implementation; should be improved some day.
 ******
 **************************************************************************
 *************************************************************************/
