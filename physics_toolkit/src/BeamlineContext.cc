@@ -145,7 +145,6 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
    particlePtr_->setStateToZero();
    particlePtr_->SetReferenceEnergy( p_bml_->Energy() );
 
- 
    //-------------------------------------------------------------------
    // Determine if some elements have faces that are not perpendicular 
    // to the ref trajectory. Currently ***disabled*** because
@@ -1028,7 +1027,6 @@ void BeamlineContext::createClosedOrbit()
     int err;
 
     if( ( err = p_cos_->findClosedOrbit( jetparticle_ ) ) ) {
-
       delete p_cos_; p_cos_ = 0;
 
       ostringstream uic;
@@ -1038,10 +1036,7 @@ void BeamlineContext::createClosedOrbit()
              "void BeamlineContext::_createClosedOrbit()", 
              uic.str().c_str() ) );
     }
-
-
-    co_part_ = Particle(jetparticle_);
-
+     co_part_ = Particle(jetparticle_);        
   }
 
 
@@ -1067,9 +1062,9 @@ void BeamlineContext::createClosedOrbit()
 
   p_bml_->propagate( jetparticle_ );
 
-
   // Before returning, restore Jet__environment::_lastEnv
   Jet__environment::setLastEnv(storedEnv);
+  hasRefParticle_=true;
 }
 
 
@@ -1091,8 +1086,6 @@ void BeamlineContext::deleteClosedOrbit()
 
 void BeamlineContext::createTunes()
 {
-
-
   if( !closed_orbit_computed_) {
     try {
       createClosedOrbit(); 
@@ -1161,7 +1154,6 @@ double BeamlineContext::getVerticalFracTune()
 
 void BeamlineContext::createEigentunes()
 {
-
   if( !closed_orbit_computed_ ) {
     try {
       createClosedOrbit(); 
@@ -1265,11 +1257,8 @@ std::vector<LattFuncSage::lattFunc> const&  BeamlineContext::getTwissArray()
 
 std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
 {
-
   if( !p_ets_ ) createETS();
-  
   if( !eigentunes_computed_ ) createEigentunes();
-
 
   if( !edwardstengFuncsCalcd_ ) {
     // This is inefficient! jetparticle_ is already on the closed
@@ -1285,7 +1274,6 @@ std::vector<EdwardsTengSage::Info> const&  BeamlineContext::getETArray( )
     JetC__environment::setLastEnv( Jet__environment::getLastEnv() ) ; // implicit conversion 
 
     JetParticle tmp_jetpart(jetparticle_);
-
     tmp_jetpart.State() =  Mapping("identity", jetparticle_.State().Env() );
 
     int errorFlag = p_ets_->doCalc(tmp_jetpart );
@@ -1584,7 +1572,7 @@ void BeamlineContext::addHTuneCorrector( ElmPtr x )
 void BeamlineContext::addHTuneCorrector( QuadrupolePtr x ) 
 {
   if( !p_ta_ ) p_ta_ = new TuneAdjuster( p_bml_ );
-    
+
   p_ta_->addCorrector( x, 1.0, 0.0 );
 }
 
