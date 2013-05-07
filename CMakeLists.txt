@@ -30,7 +30,7 @@ include(${CHEF_SOURCE_DIR}/CMake/AddPythonExtension.cmake)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREAD ON)
 find_package(Boost 1.34.0
-             COMPONENTS python regex unit_test_framework serialization REQUIRED)
+             COMPONENTS python regex unit_test_framework serialization system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 message(STATUS "Boost_INCLUDE_DIRS = ${Boost_INCLUDE_DIRS}")
