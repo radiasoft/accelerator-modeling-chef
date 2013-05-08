@@ -30,9 +30,16 @@
 ******  - class ThinPole extended to permit arbitrary
 ******    collection of normal and skew multipoles
 ******
+******  May 2013             michelotti@fnal.gov
+******  - temporary workaround bypasses the usage of mxyzptlk's
+******    pow function, which produces small but acccumulating
+******    errors. The older version may be restored when (and if)
+******    pow is fixed.
+******
 **************************************************************************
 *************************************************************************/
 
+#include <basic_toolkit/GenericException.h>
 #include <beamline/thinpoles.h>
 #include <beamline/ThinPolesPropagators.h>
 #include <mxyzptlk/Jet.h>
@@ -46,9 +53,34 @@ namespace
   template<typename T>
   T local_pow(T const& value, int n );
 
+  // BYPASSED:                                              ???
+  // BYPASSED: until MXYZPTLK's pow function is fixed       ???
+  // BYPASSED:                                              ???
+  // BYPASSED: template<>                                   ???
+  // BYPASSED: JetC local_pow( JetC const& value, int n )   ???
+  // BYPASSED: { return pow(value, n); }                    ???
+  // BYPASSED:                                              ???
+
   template<>
   JetC local_pow( JetC const& value, int n )
-  { return pow(value, n); }
+  { 
+    if( 0 < n ) {
+      JetC ret( value );
+      if( 1 < n ) {
+        for( int i = 2; i <= n; ++i ) {
+          ret = ret * value;
+        }
+      }
+      return ret;
+    }
+    else {
+      ostringstream uic;
+      uic << "Integer argument n must be positive:  n = " << n;
+      throw( GenericException( __FILE__, __LINE__, 
+             "JetC local_pow( JetC const& value, int n )",
+             uic.str().c_str() ) );
+    }
+  }
 
   template<>
   std::complex<double> local_pow( std::complex<double> const& value, int n )
@@ -83,7 +115,6 @@ void simple_propagate( Element_t& elm, Particle_t& p )
  //----------------------------------------
 
   state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
-
 }
 
 
