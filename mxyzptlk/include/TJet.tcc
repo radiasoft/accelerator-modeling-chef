@@ -20,43 +20,46 @@
 ******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-******  Revision History:
-******
+******                                                                
+******  REVISION HISTORY
+******  ----------------
 ******  Feb 2005 - Jean-Francois Ostiguy
 ******             ostiguy@fnal.gov
 ******
-****** - Efficiency improvements.
-****** - new memory management scheme 
+******  - Efficiency improvements.
+******  - new memory management scheme 
 ****** 
 ******  Sep-Dec 2005  ostiguy@fnal.gov
 ******
-****** - refactored code to use a single class template parameter
-******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
-****** - reference counting now based on using boost::intrusive pointer
-****** - reference counted TJetEnvironment
-****** - centralized TJetEnvironment management
-****** - all implementation details now completely moved to TJL   
-****** - redesigned coordinate class Tcoord. New class Tparams for parameters
-****** - header files support for both explicit and implicit template instantiations
-******   (default for mxyzptlk = explicit)
-******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******  - refactored code to use a single class template parameter
+******    instead of two. Mixed mode operations now handled using 
+******    implicit conversion operators.
+******  - reference counting now based on using boost::intrusive pointer
+******  - reference counted TJetEnvironment
+******  - centralized TJetEnvironment management
+******  - all implementation details now completely moved to TJL   
+******  - redesigned coordinate class Tcoord. New class Tparams for parameters
+******  - header files support for both explicit and implicit template instantiations
+******    (default for mxyzptlk = explicit)
+******    for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******
-****** Mar 2007 ostiguy@fnal.gov  
-****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   to replace previous scheme based explicitly on monomial exponents tuple.
-****** - monomial multiplication now handled via a lookup-table.
-****** - added STL compatible monomial term iterators   
-******  
+******  Mar 2007 ostiguy@fnal.gov  
+******  - Introduced new compact monomial indexing scheme based on monomial ordering
+******    to replace previous scheme based explicitly on monomial exponents tuple.
+******  - monomial multiplication now handled via a lookup-table.
+******  - added STL compatible monomial term iterators   
+****** 
+******  May 2013  Leo Michelotti
+******            michelotti@fnal.gov
+****** 
+******  - reinstated "natural" evaluative member function taking
+******    simple argument (i.e. neither vector nor array), used
+******    when the number of coodinates is one.
+******  - this had existed in older versions of mxyzptlk, preceding
+******    the introduction of templates.
+******   
 **************************************************************************
 *************************************************************************/
 
@@ -1326,6 +1329,54 @@ template<typename T>
 T TJet<T>::operator() ( std::vector<T> const&  x ) const 
 {
  return jl_->operator()( x );
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+T TJet<T>::operator() ( T const& x ) const 
+{
+  std::vector<T> u( jl_->getEnv()->numVar(), T(0) );
+  u[0] = x;
+
+  return operator()( u );
+}
+
+
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+template<typename T>
+TJet<T> TJet<T>::operator() ( TJet<T> const& x ) const
+{
+  #if 0
+  std::vector<TJet<T> > u(  jl_->getEnv()->numVar(), TJet<T>() );
+  u[0] = x;
+
+  return operator()( u );
+  #endif
+
+  #if 1
+  (*pcerr) <<   "*** ERROR ****: "
+              "\n*** ERROR ****: "  << __FILE__ << "," << __LINE__
+           << "\n*** ERROR ****: TJet<T> TJet<T>::operator() ( TJet<T> const& x ) const"
+              "\n*** ERROR ****: This operator has been deprecated until"
+              "\n*** ERROR ****: the FIXME flag is removed from the header file, TJet.h"
+              "\n*** ERROR ****: To effect Jet composition, convert to Mappings first."
+              "\n*** ERROR ****: "
+           << std::endl;
+
+  ostringstream uic;
+  uic << "Method deprecated until FIXME flat is removed from header file, TJet.h"
+      << "\nTo effect Jet composition, convert to Mappings first.";
+  throw( GenericException( __FILE__, __LINE__, 
+           "TJet<T> TJet<T>::operator() ( TJet<T> const& x ) const",
+           uic.str().c_str() ) );
+  #endif
 }
 
 

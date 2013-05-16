@@ -13,24 +13,18 @@
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
+******  is protected under the U.S. and Foreign Copyright Laws. 
 ******                                                                
 ******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******  
-******  Revision History:
-******
+******  
+******  REVISION HISTORY
+******  ----------------
 ******  Feb-May 2005  Jean-Francois Ostiguy
 ******                ostiguy@fnal.gov
 ******
@@ -38,32 +32,42 @@
 ******  - New memory management scheme.
 ******
 ******  Sept-Dec 2005  ostiguy@fnal.gov
-******  
-****** - refactored code to use single class template parameter
-******   instead of two. Mixed mode operations now handled using 
-******   implicit conversion operators.
-****** - reference counting now based on using boost::intrusive pointer
-****** - reference counted TJetEnvironment
-****** - all implementation details now completely moved to TJL   
-****** - redesigned coordinate class Tcoord. New class Tparams for parameters
-****** - header files support for both explicit and implicit template instantiations
-******   (default for mxyzptlk = explicit)
-******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
+******   
+******  - refactored code to use single class template parameter
+******    instead of two. Mixed mode operations now handled using 
+******    implicit conversion operators.
+******  - reference counting now based on using boost::intrusive pointer
+******  - reference counted TJetEnvironment
+******  - all implementation details now completely moved to TJL   
+******  - redesigned coordinate class Tcoord. New class Tparams for parameters
+******  - header files support for both explicit and implicit template instantiations
+******    (default for mxyzptlk = explicit)
+******    for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES 
 ******
-****** Sep 2006 
+******  Sep 2006 
 ******
-****** - eliminated dlist representation for (non-zero) monomials.   
-****** - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
+******  - eliminated dlist representation for (non-zero) monomials.   
+******  - eliminated archaic "Reconstruct" members. Use placement new syntax instead. 
 ******
-****** Mar 2007 ostiguy@fnal.gov  
+******  Mar 2007 ostiguy@fnal.gov  
 ******
-****** - Introduced new compact monomial indexing scheme based on monomial ordering
-******   to replace previous scheme based explicitly on monomial exponents tuple.
-****** - monomial multiplication handled via a lookup-table.
-****** - added STL compatible monomial term iterators   
+******  - Introduced new compact monomial indexing scheme based on monomial ordering
+******    to replace previous scheme based explicitly on monomial exponents tuple.
+******  - monomial multiplication handled via a lookup-table.
+******  - added STL compatible monomial term iterators   
 ****** 
+******  May 2013  Leo Michelotti
+******            michelotti@fnal.gov
+****** 
+******  - reinstated "natural" evaluative member function taking
+******    simple argument (i.e. neither vector nor array), used
+******    when the number of coodinates is one.
+******  - this had existed in older versions of mxyzptlk, preceding
+******    the introduction of templates.
+******   
 **************************************************************************
 *************************************************************************/
+
 #ifndef TJET_H
 #define TJET_H
 
@@ -404,11 +408,12 @@ public:
                                    // argument is satisfied.
 
   T        operator() ( Vector const& ) const;
-  T        operator() ( std::vector<T>  const&)  const;	// multinomial evaluation of the Jet variable.
+  T        operator() ( std::vector<T>  const& ) const; // multinomial evaluation of the Jet variable.
+  T        operator() ( T const& ) const;               // Can be used when number of coordinates is one.
 
-  TJet     operator() (  TJetVector<T>        const&   )  const;       // Self explanatory ...
-  TJet     operator() ( std::vector<TJet<T> > const& y )  const;       // Self explanatory .    FIXME !     
-
+  TJet     operator() ( TJetVector<T>         const&   ) const;  // Self explanatory ...
+  TJet     operator() ( std::vector<TJet<T> > const& y ) const;  // Self explanatory .    FIXME !     
+  TJet     operator() ( TJet<T>               const&   ) const;  // Can be used when number of coordinates is one.
 
   TJet     D( IntArray const& ) const ;   // Performs differentiation of a Jet variable.
 
