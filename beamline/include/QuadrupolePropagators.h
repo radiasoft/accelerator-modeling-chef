@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Fermi Research Alliance / Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -25,9 +25,17 @@
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
+******  REVISION HISTORY
+******
+******  Dec 2007            ostiguy@fnal.gov
+******  - new typesafe propagator scheme
+******
+******  Jun 2013            michelotti@fnal.gov
+******  - added inline method to return number of thin quad kicks.
 ******
 **************************************************************************
 *************************************************************************/
+
 #ifndef  QUADRUPOLEPROPAGATORS_H
 #define  QUADRUPOLEPROPAGATORS_H
 
@@ -50,11 +58,22 @@ class quadrupole::Propagator: public BasePropagator<quadrupole> {
   void  operator()( quadrupole& elm,             Particle& p);
   void  operator()( quadrupole& elm,          JetParticle& p);
 
+  int numberOfKicks() const;
+
  private:
 
   int n_; // number of thin kicks 
  
 };
+
+
+inline int quadrupole::Propagator::numberOfKicks() const
+{
+  return n_;
+}
+
+
+
 
 //------------------------------------------------------------------  
 

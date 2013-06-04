@@ -1,51 +1,48 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
-******  File:      quadrupole.cc
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added quadrupole::setLength(..) method to override
-******   the base class implementation.
-****** 
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-****** 
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
-****** 
+******  BEAMLINE:  C++ objects for design and analysis
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
+******  File:      quadrupole.cc
+******
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
+******  of the License supplied with this software.
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
+******
+******  REVISION HISTORY
+******
+******  Apr 2008           michelotti@fnal.gov
+******  - added quadrupole::setLength(..) method to override
+******    the base class implementation.
+******
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface.
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations.
+******
+******  Dec 2007           ostiguy@fnal.gov
+******  - new typesafe propagators
+******
+******  Jun 2013           michelotti@fnal.gov
+******  - restored ability to change the number of thin
+******    quadrupole kicks within the propagator.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -82,8 +79,8 @@ quadrupole::quadrupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-quadrupole::quadrupole( const char* n, double const& l, double const& s )
-  : bmlnElmnt( n, l, s)
+quadrupole::quadrupole( const char* id, double const& l, double const& s )
+  : bmlnElmnt( id, l, s )
 {
      propagator_ = PropagatorPtr( new Propagator(40) );     
      propagator_->setup(*this);
@@ -210,6 +207,30 @@ void quadrupole::setLength( double const& l )
     }
   }
 }
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void quadrupole::setNumberOfKicks( int n )
+{
+  // This piece of code must mimic the body of the quadrupole constructor.
+  propagator_ = PropagatorPtr( new Propagator(n) );
+  propagator_->setup(*this);
+}
+
+
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+int quadrupole::numberOfKicks() const
+{
+  quadrupole::Propagator const* the_pointer = dynamic_cast<quadrupole::Propagator*>(propagator_.get());
+  return the_pointer->numberOfKicks();
+}
+
 
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
