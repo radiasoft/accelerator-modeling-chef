@@ -1,52 +1,50 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
+******
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and   
-******             synchrotrons.                      
-******                                    
+******             of beamlines, storage rings, and
+******             synchrotrons.
+******
 ******  File:      quadrupole.h
-******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******                                                                
-****** REVISION HISTORY
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added quadrupole::setLength(..) method to override
-******   the base class implementation.
-****** 
-****** Mar 2007           ostiguy@fnal.gov
-****** - covariant return types
-****** - support for reference counted elements
+******  Software and documentation created under U.S. Department of
+******  Energy Contract No. DE-AC02-76CH03000.  The U.S. Government
+******  retains a world-wide non-exclusive, royalty-free license to
+******  publish or reproduce documentation and software for
+******  U.S. Government purposes. This software is protected under the
+******  U.S. and Foreign Copyright Laws.
 ******
-****** December 2007       ostiguy@fnal.gov
-****** - new typesafe propagator scheme
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
+******
+******
+******  REVISION HISTORY
+******
+******  Apr 2008           michelotti@fnal.gov
+******  - added quadrupole::setLength(..) method to override
+******    the base class implementation.
+******
+******  Mar 2007           ostiguy@fnal.gov
+******  - covariant return types
+******  - support for reference counted elements
+******
+******  Dec 2007            ostiguy@fnal.gov
+******  - new typesafe propagator scheme
+******
+******  Jun 2013            michelotti@fnal.gov
+******  - restored ability to change the number of thin
+******    quadrupole kicks within the propagator.
 ******
 **************************************************************************
 *************************************************************************/
+
 #ifndef QUADRUPOLE_H
 #define QUADRUPOLE_H
 
@@ -84,11 +82,16 @@ public:
 
   quadrupole* Clone() const;
 
- ~quadrupole();
+  ~quadrupole();
 
-  void setStrength( double const& );
-  void setLength( double const& );
- 
+  void setStrength( double const& new_strength );
+  void setLength( double const& new_length );
+
+  void setNumberOfKicks( int n ); // Changes number of thin quad kicks
+                                  // in the propagator.
+  int numberOfKicks() const;      // Returns number of thin quad kicks
+                                  // in the propagator.
+
   void localPropagate(         Particle& b );   
   void localPropagate(      JetParticle& b );   
   void localPropagate(    ParticleBunch& b ); 
