@@ -8,23 +8,31 @@
 ******
 ******  File:      quadrupole.cc
 ******
-******  Copyright Universities Research Association, Inc./ Fermilab
-******            All Rights Reserved
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******
 ******  Software and documentation created under
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
 ******  The U.S. Government retains a world-wide non-exclusive,
 ******  royalty-free license to publish or reproduce documentation
 ******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******
+******
 ******  Author:    Leo Michelotti
 ******             Email: michelotti@fnal.gov
 ******
+******
+******  ----------------
 ******  REVISION HISTORY
+******  ----------------
 ******
 ******  Apr 2008           michelotti@fnal.gov
 ******  - added quadrupole::setLength(..) method to override
@@ -41,7 +49,13 @@
 ******
 ******  Jun 2013           michelotti@fnal.gov
 ******  - restored ability to change the number of thin
-******    quadrupole kicks within the propagator.
+******    quadrupole kicks within the (tandem) propagator.
+******
+******  Jun 2013            michelotti@fnal.gov
+******  - added method quadrupole::usePropagator, in conjunction
+******    with creation of new class YoshidaPropagator. Putting
+******    this here should be temporary. It logically belongs
+******    in class bmlnElmnt.
 ******
 **************************************************************************
 *************************************************************************/
@@ -344,6 +358,17 @@ void quadrupole::localPropagate( JetParticleBunch& b )
 { 
   (*propagator_)(*this, b);        
 }
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void quadrupole::usePropagator( PropagatorPtr& x )
+{
+  propagator_ = x;
+  propagator_->setup( *this );
+}
+
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
