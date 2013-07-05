@@ -40,7 +40,6 @@
 #define BEAMLINE_ITERATORS_H
 
 
-#include <boost/utility.hpp>
 
 //------------------------------------------------------------------------------  
 // STL compatible iterators for the beamline class ( author: ostiguy@fnal.gov)
