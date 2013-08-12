@@ -54,6 +54,8 @@
 #define BEAMLINE_H
 
 #include <list>
+#include <boost/utility.hpp>
+
 #include <basic_toolkit/globaldefs.h>
 #include <beamline/bmlnElmnt.h>
 #include <beamline/lattFunc.h>

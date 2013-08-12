@@ -68,8 +68,6 @@
 #include <config.h>
 #endif
 
-using namespace std;
-
 // allocate and deallocate are strings used 
 // int the stdlib headers. Unfortunately, they
 // are also used by the bmlfactory private block 

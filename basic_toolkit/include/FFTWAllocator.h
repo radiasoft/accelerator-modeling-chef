@@ -58,7 +58,7 @@
 
 
 template <typename T>
-class FFTWAllocator {
+class FFTWAllocator: public std::iterator<std::output_iterator_tag, T> {
 
  public:
  
