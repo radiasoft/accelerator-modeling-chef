@@ -1,30 +1,49 @@
 /*******************************************************************************
 ********************************************************************************
-********************************************************************************
 ******
 ******  Python bindings for mxyzpltk/beamline libraries
 ******
 ******
 ******  File:      py-beamline-module.cpp
 ******
-******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
 ******                All Rights Reserved
 ******
+******  Usage, modification, and redistribution are subject to terms
+******  of the License supplied with this software.
+******
 ******  Software and documentation created under
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
 ******  The U.S. Government retains a world-wide non-exclusive,
 ******  royalty-free license to publish or reproduce documentation
 ******  and software for U.S. Government purposes. This software
-******  is protected under the U.S.and Foreign Copyright Laws.
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******
 ******  Author:    Jean-Francois Ostiguy
 ******
 ******             Fermi National Laboratory, Batavia, IL   60510
 ******             ostiguy@fnal.gov
 ******
+******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******
+******  Jun 2013           michelotti@fnal.gov
+******                     Leo Michelotti
+******  - added wrap_yoshidapropagator(), for the initial
+******  implementation of YoshidaPropagator. This is a prototype
+******  version, primarily intended for further testing.  Use
+******  cautiously otherwise.  Planned future versions will have a
+******  different interface (esp. by using templates to expand the
+******  application beyond quadrupole to other beamline elements).
+******  
 ********************************************************************************
-********************************************************************************
-*******************************************************************************/
+********************************************************************************/
 
 #define BOOST_PYTHON_STATIC_MODULE
 
@@ -69,10 +88,10 @@ extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
 extern void wrap_refregvisitor();
 extern void wrap_bmlvisitor();
+extern void wrap_yoshidapropagator();
 
 BOOST_PYTHON_MODULE( pybeamline )
 {
-
 wrap_bmlnelmnt();
 wrap_beamline();
 wrap_particle();
@@ -105,5 +124,5 @@ wrap_lattfunc();
 wrap_refregvisitor();
 wrap_mover();
 wrap_monitor();
+wrap_yoshidapropagator();
 }
-

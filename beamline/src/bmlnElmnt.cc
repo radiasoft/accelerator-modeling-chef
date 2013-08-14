@@ -7,70 +7,81 @@
 ******
 ******  File:      bmlnElmnt.cc
 ******
-******  Author:    Leo Michelotti
-******             Phone: (630) 840 4956
-******             Email: michelotti@fnal.gov
-******
-******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
 ******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******
 ******  Software and documentation created under
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
 ******  The U.S. Government retains a world-wide non-exclusive,
 ******  royalty-free license to publish or reproduce documentation
 ******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******
-****** ----------------
-****** REVISION HISTORY
-****** ----------------
-****** Mar 2007           Jean-Francois Ostiguy
-******                    ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - modified visitor to reduce src file coupling.
-******   visit() now takes advantage of (reference) dynamic type.
-****** - use std::string consistently for string operations.
 ******
-****** Jul 2007           ostiguy@fnal.gov
-****** - new, less memory-hungry PinnedFrameSet implementation
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
 ******
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagator architecture
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - forbade negative length elements
-****** - modified bmlnElmnt::setLength
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  Mar 2007           Jean-Francois Ostiguy
+******                     ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - modified visitor to reduce src file coupling.
+******    visit() now takes advantage of (reference) dynamic type.
+******  - use std::string consistently for string operations.
 ******
-****** May 2008           michelotti@fnal.gov
-****** - eliminated usage of bmlnElmnt::GenericException in
-******   favor of GenericException from basic_toolkit library
+******  Jul 2007           ostiguy@fnal.gov
+******  - new, less memory-hungry PinnedFrameSet implementation
 ******
-****** Dec 2008           michelotti@fnal.gov
-****** - fixed bug in bmlnElmnt::Split by reversing order of evaluation
-******   in two conditional expression statements. (i.e. '?' operator)
+******  Dec 2007           ostiguy@fnal.gov
+******  - new typesafe propagator architecture
 ******
-****** Mar 2009           michelotti@fnal.gov
-****** - in bmlnElmnt::init_internals: corrected argument of "if"
-******   in conditional statement.  Because of the behavior of
-******   ElmPtr, this change should be transparent.
-****** - other changes cosmetic.
+******  Apr 2008           michelotti@fnal.gov
+******  - forbade negative length elements
+******  - modified bmlnElmnt::setLength
 ******
-****** Apr 2010           michelotti@fnal.gov
-****** - removed internal Aperture pointer, pAperture_.  This
-******   concept was initiated by Oleg Krivosheev (c.1997-99), but
-******   was never implemented and, in the MAIN trunk, is now being
-******   replaced with an "ApertureDecorator."
-****** - removal is necessary, as aperture classes are now available
-******   as separate beamline elements via an updated header file,
-******   Aperture.h.  This may prove to be a temporary measure after
-******   the ApertureDecorator is fully realized.
+******  May 2008           michelotti@fnal.gov
+******  - eliminated usage of bmlnElmnt::GenericException in
+******    favor of GenericException from basic_toolkit library
 ******
-****** Oct 2012           michelotti@fnal.gov
-****** - fixed one-line bug (due to cutting and pasting) in 
-******   void bmlnElmnt::PinnedFrameSet::downStream( Frame const& frame )
+******  Dec 2008           michelotti@fnal.gov
+******  - fixed bug in bmlnElmnt::Split by reversing order of evaluation
+******    in two conditional expression statements. (i.e. '?' operator)
+******
+******  Mar 2009           michelotti@fnal.gov
+******  - in bmlnElmnt::init_internals: corrected argument of "if"
+******    in conditional statement.  Because of the behavior of
+******    ElmPtr, this change should be transparent.
+******  - other changes cosmetic.
+******
+******  Apr 2010           michelotti@fnal.gov
+******  - removed internal Aperture pointer, pAperture_.  This
+******    concept was initiated by Oleg Krivosheev (c.1997-99), but
+******    was never implemented and, in the MAIN trunk, is now being
+******    replaced with an "ApertureDecorator."
+******  - removal is necessary, as aperture classes are now available
+******    as separate beamline elements via an updated header file,
+******    Aperture.h.  This may prove to be a temporary measure after
+******    the ApertureDecorator is fully realized.
+******
+******  Oct 2012           michelotti@fnal.gov
+******  - fixed one-line bug (due to cutting and pasting) in
+******    void bmlnElmnt::PinnedFrameSet::downStream( Frame const& frame )
+******
+******  Jun 2013           michelotti@fnal.gov
+******  - temporarily removing suppression of negative length
+******    elements in order to permit easy operation of new class
+******    YoshidaPropagator. Lifting this restriction is dangerous.
+******    A better solution needs to be found. (See the constructor)
 ******
 **************************************************************************
 *************************************************************************/
@@ -249,15 +260,26 @@ try
     tag_(),
     dataHook()
 {
+  #if 0
+        // This block of code was modified to allow negative length drifts
+        // only.  Previous code forbade all negative length elements.
+        // It compiles but does not link and load, presumably
+        // because the bmlnElmnt constructor has no connection with
+        // the derived class that invokes it.
+        //                                      ??? FIX THIS ???
+        //                                      -- Leo Michelotti
   if( length_ < 0 ) {
-    ostringstream uic;
-    uic  << "Argument list "
-         "( " << n << ", " << l << ", " << s << " )"
-         " specifies a negative length.";
-    throw( GenericException( __FILE__, __LINE__,
-           "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)",
-           uic.str().c_str() ) );
+    if( std::string(this->Type()) != std::string("drift") ) {
+      ostringstream uic;
+      uic  << "Argument list "
+           "( " << n << ", " << l << ", " << s << " )"
+           " specifies a negative length.";
+      throw( GenericException( __FILE__, __LINE__,
+             "bmlnElmnt::bmlnElmnt( const char*  n, double const& l, double const& s)",
+             uic.str().c_str() ) );
+    }
   }
+  #endif
 }
 catch( GenericException const& ge )
 {
