@@ -88,7 +88,7 @@ extern void wrap_beamlineiterator();
 extern void wrap_lattfunc();
 extern void wrap_refregvisitor();
 extern void wrap_bmlvisitor();
-extern void wrap_yoshidapropagator();
+// extern void wrap_yoshidapropagator();
 
 BOOST_PYTHON_MODULE( pybeamline )
 {
@@ -124,5 +124,5 @@ wrap_lattfunc();
 wrap_refregvisitor();
 wrap_mover();
 wrap_monitor();
-wrap_yoshidapropagator();
+//wrap_yoshidapropagator();
 }
