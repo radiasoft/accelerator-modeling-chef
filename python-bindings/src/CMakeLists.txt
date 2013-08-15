@@ -25,7 +25,7 @@ set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
           py-slot.cpp py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp
           py-decapole.cpp py-particle.cpp py-jetparticle.cpp py-lattfunc.cpp
           py-srot.cpp py-circuit.cpp py-fcircuit.cpp
-	 py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp)
+	 py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp py-yoshidapropagator.cpp)
 add_python_extension(pybeamline SHARED ${SRCS3})
 target_link_libraries(pybeamline ${CHEF_LIBRARIES} ${Boost_LIBRARIES})
 

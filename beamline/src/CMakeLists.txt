@@ -25,6 +25,7 @@ set(SRCS alignment.cc                    gkick.cc                        read_is
 	 EdgePropagators.cc              QuadrupolePropagators.cc        WakeFunctions.cc
 	 FCircuit.cc                     rbend.cc                        WakeKick.cc
 	 FramePusher.cc                  RBendPropagators.cc             WakeKickPropagators.cc
+	 YoshidaPropagator.cc
 )
 
 add_library(beamline ${SRCS})
