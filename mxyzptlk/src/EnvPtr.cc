@@ -31,7 +31,7 @@
 
 template<>
 template<>
-EnvPtr<double>::operator EnvPtr<std::complex<double> >()
+EnvPtr<double>::operator EnvPtr<std::complex<double> >() const
 {
   return TJetEnvironment<std::complex<double> >::makeJetEnvironment( EnvPtr<double>(*this) );
 }
