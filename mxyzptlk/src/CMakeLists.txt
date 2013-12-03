@@ -6,5 +6,6 @@ set(SRCS EnvPtr.cc   TJetEnvironmentInstantiations.cc  TJLInstantiations.cc
 )
 
 add_library(mxyzptlk ${SRCS})
+target_link_libraries(mxyzptlk basic_toolkit ${Boost_SYSTEM_LIBRARY})
 
 install(TARGETS mxyzptlk DESTINATION lib)

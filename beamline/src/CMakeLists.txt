@@ -29,5 +29,6 @@ set(SRCS alignment.cc                    gkick.cc                        read_is
 )
 
 add_library(beamline ${SRCS})
+target_link_libraries(beamline basic_toolkit mxyzptlk ${Boost_SYSTEM_LIBRARY} ${FFTW3_LIBRARIES})
 
 install(TARGETS beamline DESTINATION lib)
