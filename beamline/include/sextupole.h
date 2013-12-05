@@ -93,7 +93,7 @@ public:
   void setStrength( double const& );
   void setLength( double const& );
 
-  void setCurrent( double );
+  void setCurrent( double const& );
 
   void localPropagate(         Particle& p );
   void localPropagate(      JetParticle& p );

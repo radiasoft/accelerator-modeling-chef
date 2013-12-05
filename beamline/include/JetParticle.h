@@ -240,7 +240,8 @@ public:
 
  };
 
-struct DLLEXPORT  JetProton : public JetParticle {
+class DLLEXPORT  JetProton : public JetParticle {
+public:
   JetProton();
   JetProton( double    const&    EnergyGeV );
   JetProton( JetProton const& );
@@ -254,7 +255,8 @@ struct DLLEXPORT  JetProton : public JetParticle {
   JetProton* Clone(void* p=0)             const;
 };
 
-struct DLLEXPORT  JetAntiProton : public JetParticle {
+class DLLEXPORT  JetAntiProton : public JetParticle {
+public:
   JetAntiProton();
   JetAntiProton( double        const& EnergyGeV  );
   JetAntiProton( JetAntiProton const& );
@@ -268,7 +270,8 @@ struct DLLEXPORT  JetAntiProton : public JetParticle {
   JetAntiProton* Clone(void* p=0)             const;
 };
 
-struct DLLEXPORT  JetElectron : public JetParticle {
+class DLLEXPORT  JetElectron : public JetParticle {
+public:
   JetElectron();
   JetElectron( double      const& EnergyGeV );
   JetElectron( JetElectron const& );
@@ -282,7 +285,8 @@ struct DLLEXPORT  JetElectron : public JetParticle {
   JetElectron* Clone(void* p=0)             const;
 };
 
-struct DLLEXPORT  JetPositron : public JetParticle {
+class DLLEXPORT  JetPositron : public JetParticle {
+public:
   JetPositron();
   JetPositron( double      const& EnergyGeV );
   JetPositron( JetPositron const& );
@@ -296,7 +300,8 @@ struct DLLEXPORT  JetPositron : public JetParticle {
   JetPositron* Clone(void* p=0)             const;
 };
 
-struct DLLEXPORT  JetMuon : public JetParticle {
+class DLLEXPORT  JetMuon : public JetParticle {
+public:
   JetMuon();
   JetMuon( double  const& EnergyGeV);
   JetMuon( JetMuon const& );
@@ -310,7 +315,8 @@ struct DLLEXPORT  JetMuon : public JetParticle {
   JetMuon* Clone(void* p=0)             const;
 };
 
-struct DLLEXPORT  JetAntiMuon : public JetParticle {
+class DLLEXPORT  JetAntiMuon : public JetParticle {
+public:
 
   JetAntiMuon();
   JetAntiMuon( double      const& EnergyGeV  );

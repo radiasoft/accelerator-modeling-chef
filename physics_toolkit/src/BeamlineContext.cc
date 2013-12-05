@@ -156,7 +156,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
                                 it != p_bml_->deep_end(); ++it ) {
 
 
-     if ( convert_drifts_to_slots = d2S_rbendLike( **it ) ) break;
+     if ( (convert_drifts_to_slots = d2S_rbendLike( **it )) ) break;
    }
 
    // ***** if ( convert_drifts_to_slots ) { p_bml_ = BmlPtr( DriftsToSlots( *p_bml_ ) ); } ??? FIX ME ???
@@ -170,7 +170,7 @@ BeamlineContext::BeamlineContext( Particle const& w, BmlPtr x )
    for (beamline::deep_iterator it  = p_bml_->deep_begin();  
                                 it != p_bml_->deep_end(); ++it ) {
 
-     if ( is_linac = (typeid(**it) == typeid(LinacCavity)) ) break;
+     if ( (is_linac = (typeid(**it) == typeid(LinacCavity))) ) break;
    }
 
    if ( is_linac) { RefRegVisitor( *particlePtr_ ).visit( *p_bml_ ); } // scale magnet strengths  

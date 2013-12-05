@@ -50,7 +50,8 @@ typedef TJetVector<double> JetVector;
 typedef TMapping<double>   Mapping; 
 
 
-struct DLLEXPORT alignmentData {
+class DLLEXPORT alignmentData {
+public:
   double       xOffset;
   double       yOffset;
   double       tilt;

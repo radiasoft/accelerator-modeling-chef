@@ -74,7 +74,7 @@ sequential_tree<stored_type>::insert( const stored_type& element)
 {
 	// create a new tree_type object to hold the node object
 	sequential_tree<stored_type>* pNew_node; 
-	allocate_tree_type(pNew_node, tree_type(element));
+	this->allocate_tree_type(pNew_node, tree_type(element));
 	pNew_node->set_parent(this);
 
 	const size_type sz = basic_tree_type::children.size();
@@ -83,7 +83,7 @@ sequential_tree<stored_type>::insert( const stored_type& element)
 	const typename container_type::iterator it = basic_tree_type::children.insert(basic_tree_type::children.end(), pNew_node);
 
 	if ( sz == basic_tree_type::children.size() ) { // check for successful insertion
-		deallocate_tree_type(pNew_node);  // not successful.  delete new node and return end()
+		this->deallocate_tree_type(pNew_node);  // not successful.  delete new node and return end()
 		return iterator(basic_tree_type::children.end(), this);
 	}
 
@@ -115,7 +115,7 @@ void sequential_tree<stored_type>::push_back(const stored_type& element)
 {
 	// create a new tree_type object to hold the node object
 	sequential_tree<stored_type>* pNew_node; 
-	allocate_tree_type(pNew_node, tree_type(element));
+	this->allocate_tree_type(pNew_node, tree_type(element));
 	pNew_node->set_parent(this);
 
 	basic_tree_type::children.push_back(pNew_node);
@@ -202,7 +202,7 @@ void sequential_tree<stored_type>::clear()
 	const iterator it_end = end();
 	for ( ; it != it_end; ++it )
 	{
-		deallocate_tree_type(it.node()); // delete all child nodes
+		this->deallocate_tree_type(it.node()); // delete all child nodes
 	}
 	basic_tree_type::children.clear();  // and remove them from set
 }

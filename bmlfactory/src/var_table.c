@@ -565,7 +565,7 @@ var_remove_forward( variable*** var_arr,
         GList *tmp = g_list_find( var_list_ptr, list_ptr->data );
         if ( tmp != NULL ) {
           moved = TRUE;
-          g_list_remove_link( var_list_ptr, tmp );
+          GList *dummy = g_list_remove_link( var_list_ptr, tmp );
           tmp->next = var_list_ptr;
           tmp->prev = var_list_ptr->prev;
           if ( var_list_ptr->prev != NULL )

@@ -330,6 +330,16 @@ int LayoutVisitor::openFile( const char* fileName )
 
   // Record first point
   (*streamPtr_) << s_ << "  " << baseline_ << endl;
+
+  int ret;
+  if( streamPtr_ ) {
+    ret = OKAY;
+  }
+  else {
+    ret = NOFILEOPENED;
+  }
+
+  return ret;
 }
 
 

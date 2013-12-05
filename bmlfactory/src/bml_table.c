@@ -320,7 +320,7 @@ bml_remove_forward( beam_line*** bml_arr,
         GList *tmp = g_list_find( bml_list_ptr, list_ptr->data );
         if ( tmp != NULL ) {
           moved = TRUE;
-          g_list_remove_link( bml_list_ptr, tmp );
+          GList *dummy = g_list_remove_link( bml_list_ptr, tmp );
           tmp->next = bml_list_ptr;
           tmp->prev = bml_list_ptr->prev;
           if ( bml_list_ptr->prev != NULL )

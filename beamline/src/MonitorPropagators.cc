@@ -74,10 +74,10 @@ template<>
 double toDouble(Jet    const& value) { return value.standardPart(); }
 
 template<typename Elm_t, typename Particle_t>
-double setMonitorState( Elm_t elm,  Particle_t& p );
+void setMonitorState( Elm_t elm,  Particle_t& p );
 
 template<typename Particle_t>
-double setMonitorState( monitor& elm,  Particle_t& p )
+void setMonitorState( monitor& elm,  Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -91,7 +91,7 @@ double setMonitorState( monitor& elm,  Particle_t& p )
 }
 
 template<typename Particle_t>
-double setMonitorState( vmonitor & elm,  Particle_t& p )
+void setMonitorState( vmonitor & elm,  Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -102,7 +102,7 @@ double setMonitorState( vmonitor & elm,  Particle_t& p )
 }
 
 template<typename Particle_t>
-double setMonitorState( hmonitor & elm,  Particle_t& p )
+void setMonitorState( hmonitor & elm,  Particle_t& p )
 {
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
@@ -201,12 +201,12 @@ template void propagate( hmonitor& elm, JetParticleBunch& b );
 template void propagate( vmonitor& elm, ParticleBunch& b );
 template void propagate( vmonitor& elm, JetParticleBunch& b );
 
-template double setMonitorState( monitor& elm,  Particle& p );
-template double setMonitorState( monitor& elm,  JetParticle& p );
-template double setMonitorState( hmonitor& elm,  Particle& p );
-template double setMonitorState( hmonitor& elm,  JetParticle& p );
-template double setMonitorState( vmonitor& elm,  Particle& p );
-template double setMonitorState( vmonitor& elm,  JetParticle& p );
+template void setMonitorState( monitor& elm,  Particle& p );
+template void setMonitorState( monitor& elm,  JetParticle& p );
+template void setMonitorState( hmonitor& elm,  Particle& p );
+template void setMonitorState( hmonitor& elm,  JetParticle& p );
+template void setMonitorState( vmonitor& elm,  Particle& p );
+template void setMonitorState( vmonitor& elm,  JetParticle& p );
 
 #endif
 
