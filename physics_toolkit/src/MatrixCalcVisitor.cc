@@ -124,7 +124,7 @@ void MatrixCalcVisitor::visit( beamline& x )
   }
 
 
-  if( myBeamlinePtr_ = &x ) 
+  if( (myBeamlinePtr_ = &x) )
   {
     calcDone_ = 0;
 

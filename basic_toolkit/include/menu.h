@@ -45,6 +45,7 @@ class DLLEXPORT ttMenu {
   int numChoices;
   MENUFUNC menuFunction[ MAXMENUCHOICES ];
   char* menuMessage[ MAXMENUCHOICES ];
+  static char empty[];
   char* promptMessage;
 public:
   ttMenu();

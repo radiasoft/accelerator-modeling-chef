@@ -188,8 +188,8 @@ void RefRegVisitor::visit( beamline& x )
  
         cumulativeCdt +=(*it)->getReferenceTime();          
 
-        if ( rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it) )      { rfcavities.push_back(rfcavity_elm);         }
-        if ( thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it) )  { thinrfcavities.push_back(thinrfcavity_elm); }
+        if ( (rfcavity_elm     = boost::dynamic_pointer_cast<rfcavity>(*it)) )      { rfcavities.push_back(rfcavity_elm);         }
+        if ( (thinrfcavity_elm = boost::dynamic_pointer_cast<thinrfcavity>(*it)) )  { thinrfcavities.push_back(thinrfcavity_elm); }
 
      }
 

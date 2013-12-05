@@ -79,7 +79,7 @@ QBpropVisitor::~QBpropVisitor()
 void QBpropVisitor::visit( bmlnElmnt& x )
 {
   double lng; 
-  if( lng = x.Length() != 0.0 )  {
+  if( (lng = x.Length()) != 0.0 )  {
      ( drift( "", lng ) ).propagate( particle_ );
   }
 }

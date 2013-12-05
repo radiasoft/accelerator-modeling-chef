@@ -110,7 +110,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
   void accept(      BmlVisitor& v ); 
   void accept( ConstBmlVisitor& v ) const; 
   
-  void peekAt( double& s, const Particle& );
+  void peekAt( double& s, const Particle& ) const;
 
   const char* Type() const;
   bool isMagnet() const;

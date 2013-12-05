@@ -195,7 +195,7 @@ TMatrix<double> RandomOrthogonal::build()
   // if used many times in an application.
 
   int i, j, p;
-  double theta, cs, sn, tmp;
+  double theta, cs, sn;
   TMatrix<double> R( "I", _dim );
   TMatrix<double> U( "I", _dim );
   TMatrix<double> W( "I", _dim );

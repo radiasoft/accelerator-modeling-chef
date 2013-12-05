@@ -46,10 +46,12 @@
 
 /* --------------------------------------------------- */
 
+char ttMenu::empty[] = "\0";
+
 ttMenu::ttMenu() {
   MENUFUNC menuNullFunc = 0;
   for( int i = 0; i < MAXMENUCHOICES; i++ ) menuFunction[i] = menuNullFunc;
-  promptMessage = "\0";
+  promptMessage = empty;
   numChoices = 0;
 }
 
