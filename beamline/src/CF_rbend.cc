@@ -719,7 +719,7 @@ void CF_rbend::nullEntryEdge()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::peekAt( double& s, Particle const& prt ) 
+void CF_rbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );

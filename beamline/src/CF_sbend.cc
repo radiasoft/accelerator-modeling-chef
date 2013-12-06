@@ -9,7 +9,7 @@
 ******  File:      CF_sbend.cc
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -171,7 +171,7 @@ CF_sbend::~CF_sbend()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::peekAt( double& s, Particle const& prt ) 
+void CF_sbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );
