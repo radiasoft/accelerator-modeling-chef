@@ -74,7 +74,7 @@ private:
  
  std::vector<Location>&            locations_;
  std::vector<Location>::iterator   loc_it_;
- static const double               overlap_tolerance_ =  0.90;    
+ static const double               overlap_tolerance_;
  int                               ntags_; 
 
 

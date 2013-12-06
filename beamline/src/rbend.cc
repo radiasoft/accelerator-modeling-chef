@@ -433,9 +433,9 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if(    ( 0. != ald.xOffset || 0. != ald.yOffset ) 
       && ( !hasParallelFaces()                    ) ) {
     ostringstream uic;
-    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
-            "\nwith an Alignment struct.  That rolls are allowed in such"
-            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    uic  <<   "Not allowed to displace an rbend with non-parallel faces"
+         <<   "\nwith an Alignment struct.  That rolls are allowed in such"
+         <<   "\ncases is only a matter of courtesy. This is NOT encouraged!";
     throw( GenericException( __FILE__, __LINE__, 
            "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const", 
            uic.str().c_str() ) );

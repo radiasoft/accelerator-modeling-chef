@@ -63,7 +63,7 @@ struct array_of_tokens item;
   counter = 0;
   length = strspn( &line[place], " \t" );
   place = place + length;
-  while( sscanf( &line[place], "%s", &(item.piece[counter]) ) != EOF 
+  while( sscanf( &line[place], "%s", (char *)&(item.piece[counter]) ) != EOF
          && counter < maxtokens )
   {
     length = strlen( item.piece[counter] );

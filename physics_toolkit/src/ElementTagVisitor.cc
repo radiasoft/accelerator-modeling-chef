@@ -49,6 +49,7 @@ using std::string;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+const double ElementTagVisitor::overlap_tolerance_ =  0.90;
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

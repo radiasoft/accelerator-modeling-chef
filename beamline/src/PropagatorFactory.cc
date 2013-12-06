@@ -37,7 +37,7 @@ PropagatorFactory* PropagatorFactory::pInstance_ = 0;
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::CreateParticlePropagator(int id)
+PropagatorFactoryImpl::particle_propagator_t PropagatorFactoryImpl::CreateParticlePropagator(int id)
 {
 
 #if 0
@@ -58,7 +58,7 @@ PropagatorFactoryImpl::particle_propagator_t const&   PropagatorFactoryImpl::Cre
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-PropagatorFactoryImpl::jetparticle_propagator_t const& PropagatorFactoryImpl::CreateJetParticlePropagator( int id)
+PropagatorFactoryImpl::jetparticle_propagator_t PropagatorFactoryImpl::CreateJetParticlePropagator( int id)
 {
 #if 0
   std::map<int, jetparticle_propagator_t>::const_iterator it =  jetparticle_propagators_map_.find(id);

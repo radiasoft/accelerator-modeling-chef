@@ -28,6 +28,7 @@
 
 #include <string>
 #include <iostream>
+#define NPY_NO_DEPRECATED_API 7
 #include <numpy/arrayobject.h>
 #include <python-bindings/py-exception.h>
 
@@ -76,7 +77,7 @@ EnvPtr<double> makeJetEnvironment_4_local(int maxweight, int nvar, int spacedim,
   if ( std::string( extract<const char*>( ( refpt.type()).attr("name") ) ) != std::string( "Float64") ) 
     throw PyBindingsException("makeJetEnvironment:: reference pt data array must be of type Float64");  
       
-       return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim, reinterpret_cast<double*>(reinterpret_cast<PyArrayObject*>( refpt.ptr())->data ) );
+       return Jet__environment::makeJetEnvironment(maxweight, nvar, spacedim, reinterpret_cast<double*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>( refpt.ptr()))));
 }
 
 
