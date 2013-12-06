@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -173,7 +173,7 @@ void sextupole::setLength( double const& l )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sextupole::setCurrent( double s ) {
+void sextupole::setCurrent( double const& s ) {
  elm_->setCurrent( s );
 }
 
