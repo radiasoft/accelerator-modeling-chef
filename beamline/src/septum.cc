@@ -43,6 +43,10 @@
 ******  Dec 2007           ostiguy@fnal.gov
 ******  - new typesafe propagators
 ******
+******  Dec 2013           michelotti@fnal.gov
+******  - Chong Shik Park extended the septum considerably in conjunction
+******    with extraction studies for the Mu2e experiment.
+******
 **************************************************************************
 *************************************************************************/
 
