@@ -180,7 +180,7 @@ CF_rbend::CF_rbend( const  char*   nm,   // name
     dsAngle_(-((ang/2.0) + ds)),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
+  propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
