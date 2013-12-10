@@ -328,11 +328,10 @@ int LayoutVisitor::openFile( const char* fileName )
   }
   streamPtr_ = new ofstream( fileName );
 
-  // Record first point
-  (*streamPtr_) << s_ << "  " << baseline_ << endl;
-
   int ret;
   if( streamPtr_ ) {
+    // Record first point
+    (*streamPtr_) << s_ << "  " << baseline_ << endl;
     ret = OKAY;
   }
   else {
