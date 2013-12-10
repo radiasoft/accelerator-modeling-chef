@@ -812,7 +812,7 @@ bool CF_rbend::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_rbend::OrbitLength( Particle const& p )
+double CF_rbend::OrbitLength( Particle const& p ) const
 {
   double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / strength_;
   return tworho * asin( length_ / tworho );

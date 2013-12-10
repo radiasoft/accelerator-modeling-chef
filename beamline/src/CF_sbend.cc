@@ -764,7 +764,7 @@ bool CF_sbend::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_sbend::OrbitLength( Particle const& x )
+double CF_sbend::OrbitLength( Particle const& x ) const
 {
   return length_;
 }
