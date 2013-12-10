@@ -36,7 +36,7 @@
 //--------------------------------------------------------------------------------
 
 void
-(sextupole::*setCurrent_double)(double) = &sextupole::setCurrent;
+(sextupole::*setCurrent_double)(double const&) = &sextupole::setCurrent;
 void wrap_sextupole () {
   
 
