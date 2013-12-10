@@ -48,7 +48,7 @@
 
 #include <basic_toolkit/GenericException.h>
 #include <bmlfactory/ParserException.h>
-#include <strstream>
+#include <sstream>
 #include <iostream>
 
 extern "C" 

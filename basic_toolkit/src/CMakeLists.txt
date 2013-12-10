@@ -7,6 +7,6 @@ set(SRCS Barnacle.cc erf.cc iosetup.cc OutputFormat.cc TML.cc
          d_sign.c IntArray.cc nexcom.cc TMatrix.cc)
 
 add_library(basic_toolkit ${SRCS})
-target_link_libraries(basic_toolkit ${FFTW3_LIBRARIES})
+target_link_libraries(basic_toolkit ${Boost_SYSTEM_LIBRARY} ${FFTW3_LIBRARIES})
 
 install(TARGETS basic_toolkit DESTINATION lib)

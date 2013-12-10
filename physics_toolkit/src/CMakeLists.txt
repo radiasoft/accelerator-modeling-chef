@@ -39,5 +39,6 @@ set(SRCS AdjustPosition.cc
 )
 
 add_library(physics_toolkit ${SRCS})
+target_link_libraries(physics_toolkit beamline basic_toolkit mxyzptlk ${Boost_SYSTEM_LIBRARY})
 
 install(TARGETS physics_toolkit DESTINATION lib)

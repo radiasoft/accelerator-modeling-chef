@@ -68,6 +68,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <libgen.h>
 
 /* windows.h is required for WIN32 specific file io */
 #ifdef _WIN32

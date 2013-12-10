@@ -63,6 +63,7 @@
 
 #include <algorithm>
 #include<limits>
+#include <stdexcept>
 
 using namespace std;
 using FNAL::pcerr;
@@ -89,12 +90,10 @@ inline double SIGN( double const& a,double const& b)
 template<>
 void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) const
 {
-
-  double maxarg1, maxarg2;
   double c,f,h,s,x,y,z;
   double anorm=0.0,g=0.0,scale=0.0;
 
-  int flag,i,its,j,jj,k,l,nm;
+  int flag,i,its,j,jj,k,l,nm=0;
 
   // ----------------------------------------------------------------------------------------------------
   // IMPORTANT:
@@ -312,7 +311,7 @@ void TML<double>::SVD ( MLPtr<double>& UPtr,  Vector& W,  MLPtr<double>& VPtr ) 
       }
 
       if (its == 30) { 
-        throw( nrows_, ncols_, 
+        throw GenericMatrixException( nrows_, ncols_,
                "void TML<double>::SVD (  MLPtr<double>& U, Vector& W, MLPtr<double>& V) const",
                "No convergence in 30 SVDCMP iterations." );
       }

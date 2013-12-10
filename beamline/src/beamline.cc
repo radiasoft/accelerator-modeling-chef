@@ -577,7 +577,7 @@ double beamline::Energy() const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double beamline::OrbitLength( Particle const& x )
+double beamline::OrbitLength( Particle const& x ) const
 {
  double s = 0.0;
 

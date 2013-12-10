@@ -35,6 +35,8 @@
 // wrapper code
 //--------------------------------------------------------------------------------
 
+void
+(sextupole::*setCurrent_double)(double const&) = &sextupole::setCurrent;
 void wrap_sextupole () {
   
 
@@ -42,7 +44,7 @@ using namespace boost::python;
 
 
 class_<sextupole, bases<bmlnElmnt>, SextupolePtr >("sextupole", init<char*, double const&, double const&>() )
-  .def("setCurrent",         &sextupole::setCurrent)
+  .def("setCurrent",         setCurrent_double)
   .def("Type",               &sextupole::Type);
 
 class_<thinSextupole, bases<bmlnElmnt>, ThinSextupolePtr >("thinSextupole", init<char const*, double const&>() )

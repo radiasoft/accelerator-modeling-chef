@@ -260,7 +260,7 @@ bool Slot::isMagnet()  const
 {
 
   int ret = 0;
-  if ( ret = checkFrame( frm ) ) { in_ = frm; }
+  if ( (ret = checkFrame( frm )) ) { in_ = frm; }
   return ret;
 }
 
@@ -269,15 +269,15 @@ bool Slot::isMagnet()  const
 
 int Slot::setOutFrame( Frame const& frm )
 {
-
-
   int ret = 0;
-  if( ret = frm.isOrthonormal() ) { out_ = frm; }
+  if( (ret = frm.isOrthonormal()) ) { out_ = frm; }
   else {
+
     throw( GenericException( __FILE__, __LINE__,
          " int Slot::setOutFrame( const Frame& frm )",
          "Current implementation requires that frames be orthonormal." ) );
   }
+  return ret;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

@@ -10,7 +10,18 @@ project(CHEF)
 cmake_minimum_required (VERSION 2.8)
 set(CMAKE_MODULE_PATH "${CHEF_SOURCE_DIR}/CMake")
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fpermissive -Wno-deprecated -DBOOST_PYTHON_NO_PY_SIGNATURES")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -DBOOST_PYTHON_NO_PY_SIGNATURES")
+if(ENABLE_WARNINGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif(ENABLE_WARNINGS)
+
+if(WARNINGS_ARE_ERRORS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+endif(WARNINGS_ARE_ERRORS)
+
+if(EXTRA_CXX_FLAGS)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CXX_FLAGS}")
+endif(EXTRA_CXX_FLAGS)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -49,9 +60,11 @@ message(STATUS "CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
 
 # glib
-include(FindPkgConfig)
-pkg_check_modules(GLIB2 glib-2.0)
-include_directories(${GLIB2_INCLUDE_DIRS})
+if (BUILD_PARSER_MODULES)
+   include(FindPkgConfig)
+   pkg_check_modules(GLIB2 glib-2.0)
+   include_directories(${GLIB2_INCLUDE_DIRS})
+endif (BUILD_PARSER_MODULES)
 
 include_directories(BEFORE "${CHEF_SOURCE_DIR}/include")
 
@@ -114,7 +127,7 @@ endif ()
 ##
 add_custom_target(
         create_includedir ALL
-        COMMAND ./create_includedir.sh
+        COMMAND ${CHEF_SOURCE_DIR}/create_includedir.sh ${CHEF_SOURCE_DIR}
         COMMENT "running create_includedir.sh script"
 )
 

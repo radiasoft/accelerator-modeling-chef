@@ -35,16 +35,21 @@
 ******  REVISION HISTORY
 ******
 ******  Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations.
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface. 
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations.
 ******
 ******  Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
+******  - new typesafe propagators
 ******
 ******  Sep 2012           cspark@fnal.gov
 ****** - new class septum added for finite length
+******
+******  Dec 2013           michelotti@fnal.gov
+******  - Chong Shik Park extended the septum considerably in conjunction
+******    with extraction studies for the Mu2e experiment.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -227,7 +232,7 @@ bool septum::isMagnet() const
 
 istream& septum::readFrom(istream& is)
 {
-  is; // >> voltage_ >> gap_ >> xWire_ >> wireWidth_;
+  // is; // >> voltage_ >> gap_ >> xWire_ >> wireWidth_;
   return is;
 }
 
@@ -237,7 +242,7 @@ istream& septum::readFrom(istream& is)
 
 ostream& septum::writeTo(ostream& os)
 {
-  os; // << OSTREAM_DOUBLE_PREC << voltage_ << " " << gap_ << " " << xWire_ << " " << wireWidth_ << "\n";
+  //os; // << OSTREAM_DOUBLE_PREC << voltage_ << " " << gap_ << " " << xWire_ << " " << wireWidth_ << "\n";
   return os;
 }
 

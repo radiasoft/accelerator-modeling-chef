@@ -52,11 +52,11 @@ class  PropagatorFactory {
 
  public: 
 
- static PropagatorFactoryImpl& Instance() 
-    {
-      //if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
-      //return *pInstance_;
-    }
+// static PropagatorFactoryImpl& Instance()
+//    {
+//      //if (!pInstance_) { pInstance_ = new  PropagatorFactoryImpl(); }
+//      //return *pInstance_;
+//    }
  
  private:
 
@@ -79,17 +79,17 @@ class  PropagatorFactoryImpl {
 
  public:
 
- particle_propagator_t    const& CreateParticlePropagator(int id);
+ particle_propagator_t    CreateParticlePropagator(int id);
 
- jetparticle_propagator_t const& CreateJetParticlePropagator(int id);
+ jetparticle_propagator_t CreateJetParticlePropagator(int id);
 
  jetparticle_propagator_t const& ParticleBunchPropagator(int id);
 
  template <typename Propagator_t>
- particle_propagator_t const& RegisterParticlePropagator( int elm_type_id, Propagator_t prop);  
+ void RegisterParticlePropagator( int elm_type_id, Propagator_t prop);
 
  template <typename Propagator_t>
- jetparticle_propagator_t const& RegisterJetParticlePropagator( int elm_type_id, Propagator_t prop);  
+ void RegisterJetParticlePropagator( int elm_type_id, Propagator_t prop);
 
  bool    UnRegisterParticlePropagator( int elm_type_id );  
  bool UnRegisterJetParticlePropagator( int elm_type_id );  
@@ -106,23 +106,18 @@ class  PropagatorFactoryImpl {
 
 
 template <typename Propagator_t>
-PropagatorFactoryImpl::particle_propagator_t const&
+void
 PropagatorFactoryImpl::RegisterParticlePropagator( int elm_id, Propagator_t prop) 
 {  
-
-  return
-  particle_propagators_map_.insert( std::map<int, particle_propagator_t>::value_type( elm_id, particle_propagator_t(prop() ) ) ).second;
- 
+  particle_propagators_map_.insert( std::map<int, particle_propagator_t>::value_type( elm_id, particle_propagator_t(prop() ) ) );
 }
 
 
 template <typename Propagator_t>
-PropagatorFactoryImpl::jetparticle_propagator_t const&
+void
 PropagatorFactoryImpl::RegisterJetParticlePropagator( int elm_id, Propagator_t prop ) 
 {  
-
-  return
-  particle_propagators_map_.insert( std::map<int, jetparticle_propagator_t>::value_type( elm_id, jetparticle_propagator_t(prop())) ).second;
+  particle_propagators_map_.insert( std::map<int, jetparticle_propagator_t>::value_type( elm_id, jetparticle_propagator_t(prop())) );
  
 }
 

@@ -322,7 +322,7 @@ public:
 
   const char*  Type()                           const;
   bool         isMagnet()                       const;
-  double       OrbitLength( Particle const& );
+  double       OrbitLength( Particle const& ) const;
   bool         isFlat()                         const;
   LattRing     whatIsRing();
 

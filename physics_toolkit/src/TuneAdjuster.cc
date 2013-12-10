@@ -203,13 +203,13 @@ void TuneAdjuster::addCorrector( ElmPtr x, double a, double b ) {
   QuadrupolePtr pquad;
   ThinQuadPtr   ptquad;
 
-  if ( pquad  = boost::dynamic_pointer_cast<quadrupole>(x)  ) 
+  if ( (pquad  = boost::dynamic_pointer_cast<quadrupole>(x))  )
   {  
      addCorrector( pquad,  a, b );
      return;
   }
 
-  if ( ptquad = boost::dynamic_pointer_cast<thinQuad>(x)    ) 
+  if ( (ptquad = boost::dynamic_pointer_cast<thinQuad>(x))    )
      addCorrector( ptquad, a, b ); 
 
 }

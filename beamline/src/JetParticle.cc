@@ -123,7 +123,7 @@ gamma_(E_/m_),
  bRho_(p_ / PH_CNV_brho_to_p ),      
  pni2_(pn_ > 0.0 ? ( 1.0 / ( pn_*pn_) ) : 1.0e33),      
   wgt_(1.0),       
- state_(state_)
+ state_(state)
 {                          
 
  if( energy < mass ) {

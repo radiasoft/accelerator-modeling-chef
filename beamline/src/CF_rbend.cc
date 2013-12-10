@@ -180,7 +180,7 @@ CF_rbend::CF_rbend( const  char*   nm,   // name
     dsAngle_(-((ang/2.0) + ds)),
     multipoles_()
 {
-  propagator_ = PropagatorPtr( new Propagator(1) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
+  propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
 }
 
@@ -719,7 +719,7 @@ void CF_rbend::nullEntryEdge()
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_rbend::peekAt( double& s, Particle const& prt )
+void CF_rbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
  s += OrbitLength( prt );
@@ -812,7 +812,7 @@ bool CF_rbend::isMagnet() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double CF_rbend::OrbitLength( Particle const& p )
+double CF_rbend::OrbitLength( Particle const& p ) const
 {
   double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / strength_;
   return tworho * asin( length_ / tworho );
