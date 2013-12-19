@@ -150,13 +150,13 @@ void  ChromaticityAdjuster::addCorrector(  ElmPtr x, double a, double b )
   SextupolePtr     ps;  
   ThinSextupolePtr pts;  
 
-  if ( ps  = boost::dynamic_pointer_cast<sextupole>(x)     ) 
+  if ( (ps  = boost::dynamic_pointer_cast<sextupole>(x))     )
   {
       addCorrector_private( x, a, b );
       return;
   }
 
-  if ( pts = boost::dynamic_pointer_cast<thinSextupole>(x) ) 
+  if ( (pts = boost::dynamic_pointer_cast<thinSextupole>(x)) )
       addCorrector_private( x, a, b );
 
 }
@@ -190,6 +190,8 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
 
   myBeamlinePtr_->dataHook.eraseAll( "Ring" );
   myBeamlinePtr_->eraseBarnacles( "Ring" );
+  myBeamlinePtr_->eraseBarnacles( "Dispersion" );
+  myBeamlinePtr_->eraseBarnacles( "Twiss" ); 
 
   // 
 
@@ -199,7 +201,7 @@ int ChromaticityAdjuster::changeChromaticityBy ( double x, double y, const JetPa
 
   // Calculate current lattice functions
   LattFuncSage lfs( myBeamlinePtr_ );
- 
+  lfs.attachLocalData(true);
   myBeamlinePtr_->propagate(jpr);
 
 

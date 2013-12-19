@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -147,9 +147,11 @@ monitor::~monitor()
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 bool monitor::enable( bool set) 
 {
   enabled_= set;
+  return enabled_;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
