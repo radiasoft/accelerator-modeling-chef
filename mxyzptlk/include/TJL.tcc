@@ -90,7 +90,7 @@
 #include <basic_toolkit/utils.h>             // misc utils: nexcom(), bcfRec(), nearestInteger() ...  
 #include <basic_toolkit/GenericException.h>
 #include <boost/scoped_ptr.hpp>
-
+#include <string.h>
 
 using FNAL::pcerr;
 using FNAL::pcout;
@@ -491,15 +491,11 @@ int         old_jltermStoreCapacity   = 0;
 template<typename T>
 int TJL<T>::getCount() const { 
 
-  const double eps = mx_small_;
-
   // returns the "non-zero" term count 
 
   int count = count_;
 
   int lterms = myEnv_->numVar(); 
-
-  TJLterm<T> const * p =jltermStore_;
 
   //-----------------------------------------------------
   // add the non-zero *linear* terms, if any 
