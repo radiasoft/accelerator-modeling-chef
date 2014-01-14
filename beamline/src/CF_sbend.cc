@@ -177,7 +177,7 @@ void CF_sbend::peekAt( double& s, Particle const& prt ) const
  s += OrbitLength( prt );
  (*pcout) << setw(12) << s           
                   << " : " 
-      << setw(10) << (int) this  
+      << setw(10) << this  
       << setw(15) << ident_       
       << setw(15) << Type()      
       << setw(12) << length_      
@@ -629,6 +629,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     }
   }
 
+  #ifdef ENABLE_PEDANTIC_WARNINGS
   static bool firstTime = true;
   if( firstTime ) {
     firstTime = false;
@@ -641,6 +642,7 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
             "\n*** WARNING *** "
          << endl;
   }
+  #endif // ENABLE_PEDANTIC_WARNINGS
 
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "angle_" are private data members.
