@@ -61,9 +61,9 @@ link ()
         echoval="$echoval -lbmlfactory"
     fi
     if [ -n "$glib_lib" ]; then
-	echoval="$echoval -L$glib_lib"
+	echoval="$echoval -L$glib_lib -lglib-2.0"
     fi
-    echoval="$echoval -lglib-2.0 -lbasic_toolkit -lmxyzptlk"
+    echoval="$echoval -lbasic_toolkit -lmxyzptlk"
     echo "$echoval"
 }
 
@@ -82,7 +82,10 @@ libs_list ()
     if [ $parsers -ne 0 ]; then
         echoval="$echoval;bmlfactory"
     fi
-    echoval="$echoval;glib-2.0;basic_toolkit;mxyzptlk"
+    if [ -n "$glib_lib" ]; then
+        echoval="$echoval;glib-2.0"
+    fi
+    echoval="$echoval;basic_toolkit;mxyzptlk"
     echo "$echoval"
 }
 
