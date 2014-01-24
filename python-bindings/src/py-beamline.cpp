@@ -106,7 +106,7 @@ void InsertElementsFromList_wrap( beamline* bml, Particle const& particle, doubl
   std::list<std::pair<ElmPtr,double> > elm_list;
 
   for (int i=0; i<nelms; ++i) { 
-    boost::python::tuple tp  = extract<boost::python::tuple>(elements.pop(0));
+    boost::python::tuple tp  = extract<boost::python::tuple>(elements.pop(0L));
     ElmPtr elm               = extract<ElmPtr>(tp[0]);
     double                s   = extract<double>(tp[1]);       
     elm_list.push_back( std::make_pair(elm, s) );
@@ -134,31 +134,31 @@ class_<beamline, bases<bmlnElmnt>, boost::shared_ptr<beamline> >beamline_("beaml
 beamline_.def( init<const char*>() );
 beamline_.def( init<const beamline& >() );
 beamline_.def("__iter__", 
-    range< return_value_policy<reference_existing_object> >( &indirect_deep_begin, &indirect_deep_end) ); // default iterator
+              boost::python::range< return_value_policy<reference_existing_object> >( &indirect_deep_begin, &indirect_deep_end) ); // default iterator
 
 beamline_.def("iterator", 
-   range<return_value_policy<reference_existing_object> > (  &indirect_begin,      &indirect_end) );
+   boost::python::range<return_value_policy<reference_existing_object> > (  &indirect_begin,      &indirect_end) );
 
 beamline_.def("pre_order_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_pre_begin,  &indirect_pre_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_pre_begin,  &indirect_pre_end ) );
 
 beamline_.def("post_order_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_post_begin, &indirect_post_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_post_begin, &indirect_post_end ) );
 
 beamline_.def("deep_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_deep_begin, &indirect_deep_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_deep_begin, &indirect_deep_end ) );
 
 beamline_.def("reverse_iterator", 
-   range<return_value_policy<reference_existing_object> > (  &indirect_rbegin,      &indirect_rend) );
+   boost::python::range<return_value_policy<reference_existing_object> > (  &indirect_rbegin,      &indirect_rend) );
 
 beamline_.def("reverse_pre_order_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_rpre_begin,  &indirect_rpre_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_rpre_begin,  &indirect_rpre_end ) );
 
 beamline_.def("reverse_post_order_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_rpost_begin, &indirect_rpost_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_rpost_begin, &indirect_rpost_end ) );
 
 beamline_.def("reverse_deep_iterator", 
-    range<return_value_policy<reference_existing_object> >(  &indirect_rdeep_begin, &indirect_rdeep_end ) );
+    boost::python::range<return_value_policy<reference_existing_object> >(  &indirect_rdeep_begin, &indirect_rdeep_end ) );
 
  beamline_.def("clear",                  &beamline::clear);
  beamline_.def("insert",                 insert1);
