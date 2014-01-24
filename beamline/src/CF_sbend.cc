@@ -31,26 +31,32 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-****** REVISION HISTORY
+******  REVISION HISTORY
+******  
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface. 
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations. 
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
+******  Aug 2007           ostiguy@fnal.gov
+******  - composite structure based on regular beamline
 ******
-****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on regular beamline
+******  Dec 2007           ostiguy@fnal.gov
+******  - new typesafe propagator architecture  
 ******
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagator architecture  
+******  Apr 2008            michelotti@fnal.gov
+******  - modified setStrength method
+******  - added placeholder setLength method
+******  - modified sbend::Split
+******  - added member functions to nullify edge effects
+******    : used by modified sbend::Split
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - modified setStrength method
-****** - added placeholder setLength method
-****** - modified sbend::Split
-****** - added member functions to nullify edge effects
-******   : used by modified sbend::Split
+******  Jan 2014
+******  - added method CF_sbend::usePropagator, in conjunction
+******    with creation of new class CF_sbend_MADPropagator. Putting
+******    this here should be temporary. It logically belongs
+******    in class bmlnElmnt.
 ******
 **************************************************************************
 *************************************************************************/
@@ -224,6 +230,15 @@ void CF_sbend::localPropagate( JetParticleBunch& b )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void CF_sbend::usePropagator( PropagatorPtr& x )
+{
+  propagator_ = x;
+  propagator_->setup( *this );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double CF_sbend::setEntryAngle( Particle const& p )
 {
   return setEntryAngle( atan2( p.get_npx(), p.get_npz() ) );
@@ -276,7 +291,7 @@ int CF_sbend::setOctupole( double const& arg_x )
   if (counter==0) return 1;
  
   for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) { 
       (*it)->setStrength( arg_x/counter );
     }
@@ -344,7 +359,7 @@ int CF_sbend::setQuadrupole( double const& arg_x )
   if (counter==0) return 1;
  
   for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
    if( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
     (*it)->setStrength( arg_x/counter );
    }
@@ -360,7 +375,7 @@ int CF_sbend::setDipoleField( double const& arg_x )
 {
 
   for ( beamline::iterator it  = bml_->begin(); 
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<sbend>(*it) ) { 
      (*it)->setStrength( arg_x );
     }

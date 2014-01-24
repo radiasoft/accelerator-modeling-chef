@@ -33,22 +33,29 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-******    REVISION HISTORY
-****** Mar 2007            ostiguy@fnal.gov
-****** - use covariant return types
-****** - support for reference counted elements
-******                                                                
-****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on nested, regular reference counted
-******   beamline object
+******  REVISION HISTORY
+******  
+****** 	Mar 2007            ostiguy@fnal.gov
+****** 	- use covariant return types
+****** 	- support for reference counted elements
+****** 	                                                               
+****** 	Aug 2007           ostiguy@fnal.gov
+****** 	- composite structure based on nested, regular reference counted
+****** 	  beamline object
 ******
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators   
+****** 	Dec 2007           ostiguy@fnal.gov
+****** 	- new typesafe propagators   
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - added placeholder setLength method
-****** - added member functions to nullify edge effects
-******   : used by CF_sbend::Split
+****** 	Apr 2008           michelotti@fnal.gov
+****** 	- added placeholder setLength method
+****** 	- added member functions to nullify edge effects
+****** 	  : used by CF_sbend::Split
+******
+****** 	Jan 2014            michelotti@fnal.gov
+****** 	- added method CF_sbend::usePropagator, in conjunction
+******    with creation of new class CF_sbend_MADPropagator. Putting
+****** 	  this here should be temporary. It logically belongs
+****** 	  in class bmlnElmnt.
 ******
 **************************************************************************
 *************************************************************************/
@@ -178,6 +185,8 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   void nullExitEdge();
   void nullEntryEdge();
+
+  void usePropagator( PropagatorPtr& );
 
  private:
 
