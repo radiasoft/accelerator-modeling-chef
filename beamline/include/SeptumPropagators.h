@@ -37,6 +37,20 @@
 class Particle;
 class JetParticle;
 
+class septum::Propagator: public BasePropagator<septum> 
+{
+ public:
+
+  Propagator* Clone() const { return new Propagator(*this); }
+
+  void  setup( septum& elm );
+
+  void  operator()(  septum& elm,             Particle& p);
+  void  operator()(  septum& elm,          JetParticle& p);
+
+};
+
+
 class thinSeptum::Propagator: public BasePropagator<thinSeptum> {
 
  public:

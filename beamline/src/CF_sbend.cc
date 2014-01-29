@@ -180,7 +180,7 @@ CF_sbend::~CF_sbend()
 void CF_sbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
+ s += const_cast<CF_sbend*>(this)->OrbitLength( prt );  // Kludge!!
  (*pcout) << setw(12) << s           
                   << " : " 
       << setw(10) << this  

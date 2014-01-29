@@ -205,12 +205,12 @@ template ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int, BOOST_TYPE
 template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
 
 
-template class boost::function1<bool,   bmlnElmnt const*,   std::allocator<void> >;
-template class boost::function1<bool,   bmlnElmnt const&,   std::allocator<void> >;
-template class boost::function1<double, int,                std::allocator<void> >;
-template class boost::function1<void,   TBunch<Particle>&,  std::allocator<void> >;
-template class boost::function1<double, TJet<double> const&,std::allocator<void> >;
-template class boost::function1<double, double const&,      std::allocator<void> >;
+template class boost::function2<bool,   bmlnElmnt const*,   std::allocator<void> >;
+template class boost::function2<bool,   bmlnElmnt const&,   std::allocator<void> >;
+template class boost::function2<double, int,                std::allocator<void> >;
+template class boost::function2<void,   TBunch<Particle>&,  std::allocator<void> >;
+template class boost::function2<double, TJet<double> const&,std::allocator<void> >;
+template class boost::function2<double, double const&,      std::allocator<void> >;
 
   // we force instantiation of an anomymous function objects. In that case, this turns out to be easier that attempting to 
   // instantiatiate the right templates ...
@@ -298,6 +298,7 @@ template class BasePropagator<Slot>;
 template class BasePropagator<vmonitor>;
 template class BasePropagator<hmonitor>;
 template class BasePropagator<monitor>;
+template class BasePropagator<septum>;
 template class BasePropagator<thinSeptum>;
 template class BasePropagator<sector>;
 template class BasePropagator<srot>;
@@ -319,6 +320,7 @@ template class boost::detail::sp_counted_impl_p<hkick::Propagator>;
 template class boost::detail::sp_counted_impl_p<monitor::Propagator>;
 template class boost::detail::sp_counted_impl_p<BasePropagator<sector> >;
 template class boost::detail::sp_counted_impl_p<gkick::Propagator>;
+template class boost::detail::sp_counted_impl_p<septum::Propagator>;
 template class boost::detail::sp_counted_impl_p<thinSeptum::Propagator>;
 template class boost::detail::sp_counted_impl_p<ThinPole::Propagator>;
 template class boost::detail::sp_counted_impl_p<Pinger::Propagator>;
@@ -378,6 +380,7 @@ template class boost::detail::sp_counted_impl_p<BasePropagator<rfcavity> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<LCavityDnstream> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<BBLens> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<LCavityUpstream> >;
+template class boost::detail::sp_counted_impl_p<BasePropagator<septum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinSeptum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<ThinPole> >;
 

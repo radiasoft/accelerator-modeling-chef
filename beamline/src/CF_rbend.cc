@@ -714,7 +714,7 @@ void CF_rbend::nullEntryEdge()
 void CF_rbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
+ s += const_cast<CF_rbend*>(this)->OrbitLength( prt );  // Kludge!!
  (*pcout) << setw(12) << s
                   << " : "
       << setw(10) << this

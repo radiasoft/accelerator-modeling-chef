@@ -43,6 +43,9 @@
 ******  Dec 2007           ostiguy@fnal.gov
 ******  - new typesafe propagators
 ******
+******  Sep 2012           cspark@fnal.gov
+****** - new class septum added for finite length
+******
 ******  Dec 2013           michelotti@fnal.gov
 ******  - Chong Shik Park extended the septum considerably in conjunction
 ******    with extraction studies for the Mu2e experiment.
