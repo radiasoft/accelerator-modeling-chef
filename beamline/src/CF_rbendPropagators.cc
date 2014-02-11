@@ -33,11 +33,13 @@
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
 ******
-******  Feb 1014            michelotti@fnal.gov
+******  Feb 2014            michelotti@fnal.gov
 ******  - bug fix: added same "KLUDGE" that has been in place
 ******    in file CF_sbendPropagators.cc since (at least)
 ******    December, 2007.
 ******    : this should be "done right" in both files one day.
+******    : thanks to Eric Stern for drilling down the effects
+******      of this error through multiple layers of code.
 ******  
 **************************************************************************
 *************************************************************************/
