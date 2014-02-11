@@ -12,13 +12,17 @@
 ** Templated version.
 ** --- March 18, 2004
 **
+** Brought up to date (again)
+** --- October 15, 2009
+**
 */
 
 #include <mxyzptlk/Jet.h>
 
 using namespace std;
 
-Jet g( const Jet& x, int n ) {
+Jet g( const Jet& x, int n ) 
+{
   Jet z = 0.0;
   Jet term;
   term = x;
@@ -29,14 +33,22 @@ Jet g( const Jet& x, int n ) {
   return z;
 }
 
-main() {
- Jet__environment::BeginEnvironment( 6 );
- coord x(0.0), y(0.0), z(0.0);
- Jet__environment::EndEnvironment();
+int main() 
+{
+  Jet__environment::BeginEnvironment( 6 );
+  coord x(0.0), y(0.0), z(0.0);
+  Jet__environment::EndEnvironment();
 
- Jet a; 
- a = x*y + y*z + z*x;
- a.printCoeffs();
- ( g( a, 3 )*g( sin(a), 5 ) ).printCoeffs();
+  Jet a;
+  a = x*y + y*z + z*x;
 
+  cout << "Coefficients of xy + yz + zx\n"
+          "----------------------------\n" << endl;
+  a.printCoeffs();
+
+  cout << "\nCoefficients of calculated function\n"
+          "-----------------------------------\n" << endl;
+  ( g( a, 3 )*g( sin(a), 5 ) ).printCoeffs();
+
+  return 0;
 }
