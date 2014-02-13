@@ -1002,6 +1002,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
   // ??? not correct for elements whose faces are not
   // ??? parallel.
 
+  v.xOffset -= z;
   setAlignment( v );
 
   // ??? This will work only if the in and out faces
