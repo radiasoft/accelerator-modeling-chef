@@ -1,45 +1,39 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
-******                                                                
-******  File:      DispersionSage.h
-******  Version:   1.0
-******                                                                
-******  Copyright (c) 2004  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** June 2007          ostiguy@fnal.gov
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes
+******             which facilitate calculations with the
+******             BEAMLINE class library.
+******
+******  File:      DispersionSage.h
+******
+******  Copyright (c) 2004  Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
+******  of the License supplied with this software.
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******  URA/FNAL reserves all rights.
+******
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
+******
+******
+******  REVISION HISTORY
+******
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******
+******  June 2007          ostiguy@fnal.gov
 ******  - added new method to compute dispersion using AD
-******                                                                
+******
 **************************************************************************
 *************************************************************************/
 
@@ -48,15 +42,16 @@
 
 #include <physics_toolkit/Sage.h>
 
-class DispersionSage : public Sage {
+class DispersionSage : public Sage 
+{
 
-public: 
+public:
 
   // Substructs
 
-  struct GlobalInfo {
-
-    GlobalInfo(); 
+  struct GlobalInfo
+  {
+    GlobalInfo();
 
     struct Tunes {
       double hor;
@@ -69,8 +64,8 @@ public:
 
   };
 
-  struct Info {
-
+  struct Info
+  {
     Info();
 
     double arcLength;
@@ -97,7 +92,8 @@ public:
 
   };
 
-  struct Options {
+  struct Options
+  {
     Options();
     bool onClosedOrbit;   // Default: false
   };
@@ -119,9 +115,9 @@ public:
 
   // int fadCalc( const JetParticle*, beamline::Criterion& = beamline::yes ) const;
       // Assumes no vertical dispersion.
-      // Uses the 5x5 matrix formalism that 
+      // Uses the 5x5 matrix formalism that
       //   everyone knows and loves, ignoring the
-      //   closed orbit. 
+      //   closed orbit.
       // Attaches the lattRing "Ring" to the beamline
       //   but no information to the beamline elements.
       // The purpose is to provide a quick, first order
@@ -171,7 +167,7 @@ public:
 
   double              dpp_;    // used for dispersion calculations
   std::vector<Info>   calcs_;  // array of calculated results;
-  GlobalInfo          lr_;     
+  GlobalInfo          lr_;
   bool                ignoreErrors_;
 
 
