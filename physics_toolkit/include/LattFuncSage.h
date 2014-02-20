@@ -1,60 +1,59 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
-******  Version:   1.0                    
-******                                    
+******
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes
+******             which facilitate calculations with the
+******             BEAMLINE class library.
+******
 ******  File:      LattFuncSage.h
-******                                                                
-******  Copyright (c) 2001  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Usage, modification, and redistribution are subject to terms 
+******
+******  Copyright (c) 2001  Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******* U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******* The U.S. Government retains a world-wide non-exclusive, 
-******* royalty-free license to publish or reproduce documentation 
-******* and software for U.S. Government purposes. This software 
-******* is protected under the U.S. and Foreign Copyright Laws. 
-******* URA/FNAL reserves all rights.
-*******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******  URA/FNAL reserves all rights.
 ******
-****** - support for reference counted elements
-****** - Pass particles by reference
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
 ******
-****** Jan 2007           ostiguy@fnal.gov
-****** - eliminated obsolete, unused methodsto compute LF
-****** - eliminated unused data members
-****** 
-******                                                                
+******  REVISION HISTORY
+******
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - Pass particles by reference
+******
+******  Jan 2007           ostiguy@fnal.gov
+******  - eliminated obsolete, unused methodsto compute LF
+******  - eliminated unused data members
+******
+******  Feb 2014           michelotti@fnal.gov
+******  - added member function LattFuncSage::FourPointDisp_Calc(...)
+******    which uses a four-point algorithm written by James Amundson
+******    to evaluate dispersions and chromaticities. Compared to the
+******    two-point algorithm, error is reduced from O((dp/p)^2) to
+******    O((dp/p)^5).
+******
+******
 **************************************************************************
 *************************************************************************/
 
 
 /*
  *  File: LattFuncSage.h
- *  
+ *
  *  Implementation for a sage for computing
- *  traditional, and untraditional,  lattice 
+ *  traditional, and untraditional,  lattice
  *  functions.
- *  
+ *
  *  Leo Michelotti
  *  Nov. 19, 1998
  */
@@ -73,7 +72,7 @@ public:
 
  LattFuncSage( BmlPtr bml      );
  LattFuncSage( beamline const& );
-  
+
  struct tunes {
    double hor;
    double ver;
@@ -116,7 +115,7 @@ public:
      double hor;
      double ver;
    } psi;
- 
+
   };
 
 
@@ -134,16 +133,17 @@ public:
                // If default value is used for Sage::CRITFUNC, then
                // information is attached to all elements.
 
- int NewDisp_Calc   ( JetParticle const&, bool onClosedOrbit = false );
+ int FourPointDisp_Calc( JetParticle const&, bool onClosedOrbit = false );
+ int       NewDisp_Calc( JetParticle const&, bool onClosedOrbit = false );
 
  int pushCalc       ( Particle const &, LattFuncSage::lattFunc const& );
 
  void eraseAll();
 
- std::vector<lattFunc> const& getTwissArray();
+ std::vector<lattFunc> const& getTwissArray();    // !!! ??? VERY BADLY NAMED ??? !!!
  lattRing              const& getLattRing();
 
-  
+
  void   set_dpp( double );
  double get_dpp();
 
@@ -153,9 +153,9 @@ public:
 
 private:
 
- LattFuncSage( LattFuncSage const&); 
+ LattFuncSage( LattFuncSage const&);
 
- double                  dpp_;    
+ double                  dpp_;
  std::vector<lattFunc>   lfvec_;
  lattRing                lr_;
 
