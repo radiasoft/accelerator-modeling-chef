@@ -114,7 +114,8 @@ void simple_propagate( Element_t& elm, Particle_t& p )
  // thin2pole rotates the reference frame   ????????????????
  //----------------------------------------
 
-  state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
+  //state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
+
 }
 
 

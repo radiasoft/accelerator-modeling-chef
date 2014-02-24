@@ -393,6 +393,7 @@ class DLLEXPORT bmlnElmnt
 
   double const& IToField() const      { return iToField_;     }
   double const& getShunt() const      { return shuntCurrent_; }
+//  PinnedFrameSet                    pinnedFrames_;
 
 
 
