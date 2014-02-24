@@ -1,62 +1,60 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******                                                                
-******  PHYSICS TOOLKIT: Library of utilites and Sage classes         
-******             which facilitate calculations with the             
-******             BEAMLINE class library.                            
-******                                    
+******
+******  PHYSICS TOOLKIT: Library of utilites and Sage classes
+******             which facilitate calculations with the
+******             BEAMLINE class library.
+******
 ******  File:      LattFuncSage.cc
-******                                                                
-******  Copyright (c) 2001  Universities Research Association, Inc.   
-******                All Rights Reserved                             
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******
+******             Implementation of a sage for computing
+******             traditional, and untraditional,  lattice
+******             functions.
+******
+******  Copyright (c) 2001  Universities Research Association, Inc.
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+******  Author:    Leo Michelotti
+******             Email: michelotti@fnal.gov
+******
 ******  REVISION HISTORY
 ******
-******  Dec 2006 - Jean-Francois Ostiguy 
-******             ostiguy@fnal
-******    
-******  - interface based on Particle& rather than ptrs. 
+******   
+******  Nov 1998           Leo Michelotti
+******                     michelotti@fnal.gov
+******  - original version
+******
+******  Dec 2006           Jean-Francois Ostiguy
+******                     ostiguy@fnal.gov
+******  - interface based on Particle& rather than ptrs.
 ******    Stack allocated local Particle objects.
 ******  - changes to accomodate new boost::any based Barnacle objects.
 ******  - use new style STL-compatible beamline iterators
-******  - calcs_ array is now an STL vector. LF are now returned 
+******  - calcs_ array is now an STL vector. LF are now returned
 ******    by returning a const reference to the entire vector.
-******  - misc cleanup.  
+******  - misc cleanup.
+******
+******  Feb 2014           michelotti@fnal.gov
+******  - added member function LattFuncSage::FourPointDisp_Calc(...)
+******    which uses a four-point algorithm written by James Amundson
+******    to evaluate dispersions and chromaticities. Compared to the
+******    two-point algorithm, error is reduced from O((dp/p)^2) to
+******    O((dp/p)^5).
+******
 ******
 **************************************************************************
 *************************************************************************/
-
-/*
- *  File: LattFuncSage.cc
- *  
- *  Implementation for a sage for computing
- *  traditional, and untraditional,  lattice 
- *  functions.
- *  
- *  Leo Michelotti
- *  Nov. 19, 1998
- */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -75,13 +73,14 @@
 #include <beamline/CF_rbend.h>
 #include <beamline/Slot.h>
 
+#define DEFAULT_DPP 0.0005
+
 using namespace std;
 
 using FNAL::pcout;
 using FNAL::pcerr;
 
 extern int filterTransverseTunes( /* const */ MatrixD&, Vector& );
-
 
 namespace {
 
@@ -96,10 +95,10 @@ namespace {
 
 
  bool checkForCoupling ( Matrix const& mtrx)
- { 
-  
+ {
+
   bool ret = false;
- 
+
   if( ( mtrx( i_y,   i_x   ) != 0.0 )  ||
       ( mtrx( i_x,   i_y   ) != 0.0 )  ||
       ( mtrx( i_x,   i_npy ) != 0.0 )  ||
@@ -128,8 +127,8 @@ namespace {
 } // namespace
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 LattFuncSage::lattFunc::lattFunc() {
@@ -148,27 +147,27 @@ LattFuncSage::lattFunc::lattFunc() {
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LattFuncSage::LattFuncSage( BmlPtr x ) 
-  : Sage( x ), dpp_( 0.00005 )
+LattFuncSage::LattFuncSage( BmlPtr x )
+  : Sage( x ), dpp_( DEFAULT_DPP )
 {}
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-LattFuncSage::LattFuncSage( beamline const& x) 
-  : Sage( x ), dpp_( 0.00005 )
+LattFuncSage::LattFuncSage( beamline const& x)
+  : Sage( x ), dpp_( DEFAULT_DPP )
 {}
 
 
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 double LattFuncSage::get_dpp()
@@ -177,8 +176,8 @@ double LattFuncSage::get_dpp()
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void LattFuncSage::set_dpp( double x )
@@ -198,21 +197,21 @@ void LattFuncSage::set_dpp( double x )
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-std::vector<LattFuncSage::lattFunc> const& 
+std::vector<LattFuncSage::lattFunc> const&
  LattFuncSage::getTwissArray()
 {
- 
-  return  lfvec_; 
+
+  return  lfvec_;
 
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 LattFuncSage::lattRing const& LattFuncSage::getLattRing()
 {
@@ -220,8 +219,8 @@ LattFuncSage::lattRing const& LattFuncSage::getLattRing()
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& initialConditions )
 {
@@ -248,16 +247,16 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
     scale[i] = 0.001;
   }
 
-  std::vector<coord*>  coord_vec; 
+  std::vector<coord*>  coord_vec;
 
   Jet__environment::BeginEnvironment( 1 );
- 
+
   for( int i=0; i < N; ++i) {
     coord_vec.push_back(new coord( prt.State()[i] ) );
   }
 
-  JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion 
- 
+  JetC__environment::setLastEnv( Jet__environment::EndEnvironment(scale) ); // implicit conversion
+
 
   Particle    p0(prt);
   JetParticle jp(prt);
@@ -282,8 +281,8 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   double psi_y     = 0.0;
 
 
-  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
-                               it != myBeamlinePtr_->deep_end();  ++it) 
+  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin();
+                               it != myBeamlinePtr_->deep_end();  ++it)
 
   {
 
@@ -337,7 +336,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 
   } // end loop over the beamline elements ..............
 
-  
+
   // Clean up before exit
   Jet__environment::setLastEnv( storedEnv );
   JetC__environment::setLastEnv( storedEnvC );
@@ -345,7 +344,7 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
   for( std::vector<coord*>::iterator it = coord_vec.begin();  it != coord_vec.end(); ++it) {
     delete (*it);
   }
-  
+
   if( verbose_ ) {
     *outputStreamPtr_ << "LattFuncSage -- Leaving LattFuncSage::pushCalc" << endl;
     outputStreamPtr_->flush();
@@ -355,31 +354,31 @@ int LattFuncSage::pushCalc( Particle const& prt, LattFuncSage::lattFunc const& i
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void LattFuncSage::eraseAll() 
+void LattFuncSage::eraseAll()
 {
 
 
-  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin(); 
-                               it != myBeamlinePtr_->deep_end();  ++it ) { 
+  for (beamline::deep_iterator it =  myBeamlinePtr_->deep_begin();
+                               it != myBeamlinePtr_->deep_end();  ++it ) {
     (*it)->dataHook.eraseAll( "LattFuncSage" );
   }
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::CRITFUNC Crit )
 {
-  // PRECONDITIONS: 
+  // PRECONDITIONS:
   //    jp  is already on the closed orbit and its
   //        state is the one-turn map.
   //
   // *myBeamlinePtr_  is an uncoupled ring.
-  // 
+  //
   // POSTCONDITIONS:
   // On every element filtered by Crit is attached a lattFunc
   // Barnacle.
@@ -396,7 +395,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
   // Reset current environment
 
   Jet__environment::setLastEnv(  jp.State().Env() );
-  JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion 
+  JetC__environment::setLastEnv( Jet__environment::getLastEnv() ); // implicit conversion
 
   JetParticle  jparticle(jp);
   Particle      particle(jp);
@@ -409,7 +408,7 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 
   MatrixD mtrx = jp.State().Jacobian();
   ::checkForCoupling(mtrx);
-  
+
   // Calculate initial lattice functions ...
 
   // ... first horizontal
@@ -508,12 +507,12 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 
   lfvec_.clear();
 
-  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it) 
+  for( beamline::deep_iterator it = myBeamlinePtr_->deep_begin(); it != myBeamlinePtr_->deep_end(); ++it)
   {
     ElmPtr lbe = (*it);
 
-    bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) && 
-                      (   typeid(*lbe) != typeid(CF_rbend) ) && 
+    bool is_regular = ( ( typeid(*lbe) != typeid(rbend)    ) &&
+                      (   typeid(*lbe) != typeid(CF_rbend) ) &&
                       (   typeid(*lbe) != typeid(Slot)     ) &&
                       (     (*lbe).hasStandardFaces()      )  );
 
@@ -523,42 +522,42 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
     lbe -> propagate( jparticle );
 
     mtrx = jparticle.State().Jacobian();
-    
-  
+
+
     tb      = mtrx[0][0] * beta0H -  mtrx[0][3] * alpha0H;
     beta_x  = ( tb * tb + mtrx(0,3) * mtrx(0,3))/beta0H;
-   
+
     alpha_x = -1.0*(tb * (mtrx(3,0)*beta0H - mtrx(3,3)*alpha0H) +
    			     mtrx(0,3)*mtrx(3,3))/beta0H;
-   
+
     if ( is_regular ) {
        t = atan2(mtrx(0,3),tb);
        while(t < oldpsiH) t += M_TWOPI;
        psi_x = oldpsiH = t;
      }
-     else { 
+     else {
        psi_x = oldpsiH;
      }
 
      tb     = mtrx(1,1) * beta0V -  mtrx(1,4) * alpha0V;
      beta_y = (tb * tb + mtrx(1,4) * mtrx(1,4))/beta0V;
-   
+
      alpha_y = -1.0*(tb * (mtrx(4,1)*beta0V - mtrx(4,4)*alpha0V) +
    			     mtrx(1,4)*mtrx(4,4))/beta0V;
-   
+
      if ( is_regular ) {
        t = atan2(mtrx(1,4),tb);
        while(t < oldpsiV) t += M_TWOPI;
        psi_y = oldpsiV = t;
-     } 
-     else { 
+     }
+     else {
        psi_y = oldpsiV;
      }
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // Store the calculation if appropriate ...
-    if( ( !Crit ) || ( Crit( lbe ) ) ) 
+    if( ( !Crit ) || ( Crit( lbe ) ) )
     {
       LattFuncSage::lattFunc lf;
 
@@ -599,20 +598,20 @@ int LattFuncSage::CourantSnyderLatticeFunctions(  JetParticle const& jp, Sage::C
 }
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 {
   // This method does the following:
-  // 
+  //
   // (1) Puts  jp on the closed orbit by
   //     (1.a) instantiating a ClosedOrbitSage
   //     (1.b) invoking ClosedOrbitSage::findClosedOrbit.
   //     (1.c) Note: if forceClosedOrbitCalc is false, the
   //           ClosedOrbitSage first checks to see if *arg_jp
-  //           is already on a closed orbit. 
-  // 
+  //           is already on a closed orbit.
+  //
   // (2) Calculates tunes:
   //     (2.a) projects separately the x-x' and y-y' sectors
   //           of the one-turn matrix onto 2x2 matrices
@@ -621,9 +620,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   //     (2.c) stores the results on its beamline's dataHook
   //           with a Barnacle labelled "Tunes."
   //     (2.d) Note: this implicitly assumes an uncoupled machine!
-  // 
-  // (3) Upon returning, 
-  //     (3.a) jp is on the closed orbit 
+  //
+  // (3) Upon returning,
+  //     (3.a) jp is on the closed orbit
   //     (3.b) its state is the one-turn mapping.
   //     (3.c) the object's beamline contains a barnacle
   //           with the (uncoupled) tune information
@@ -665,10 +664,10 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
- 
+
   // .......... Calculating tunes .........................
   // .......... (lifted from EdwardsTeng) .................
-  
+
   MatrixD mtrx = jp.State().Jacobian();
 
   ::checkForCoupling(mtrx);
@@ -709,7 +708,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   	     << "*** ERROR *** " << lambda << endl;
   	ret = 11; return ret;
   }
-  
+
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -717,7 +716,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
    double snH = sqrt( 1.0 - csH*csH );
 
    if( M(0,1) < 0.0 ) snH = - snH;
-    
+
 
     // Calculation in vertical plane
 
@@ -761,7 +760,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
   if( M(0,1) < 0.0 ) snV = - snV;
 
-    
+
   // Attach data to the beamline
 
   LattFuncSage::tunes  lftunes;
@@ -775,7 +774,7 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
   myBeamlinePtr_->dataHook.eraseAll( "Tunes" );
   myBeamlinePtr_->dataHook.append( Barnacle( "Tunes", lftunes ) );
-  
+
 
   // :::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -790,8 +789,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
 
 
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 {
@@ -814,8 +814,8 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
     clsg.set_verbose();
   }
 
-  if( !onClosedOrbit ) { 
-    clsg.setForcedCalc(); 
+  if( !onClosedOrbit ) {
+    clsg.setForcedCalc();
     ret = clsg.findClosedOrbit( jp );
     clsg.unsetForcedCalc();
   }
@@ -850,7 +850,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   Particle tmp_p(jp);
   tmp_p.State()[i_ndp] = dpp;
-  jp = JetParticle(tmp_p); 
+  jp = JetParticle(tmp_p);
 
   clsg.setForcedCalc();
   ret = clsg.findClosedOrbit( jp );
@@ -885,7 +885,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
   Vector d( firstParticle.State().Dim() );
 
-  bool stand_alone_disp_calc = ( lfvec_.size() == 0 );   
+  bool stand_alone_disp_calc = ( lfvec_.size() == 0 );
 
   std::vector<LattFuncSage::lattFunc>::iterator lf_it =  lfvec_.begin();
 
@@ -898,7 +898,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
 
     d = ( secondParticle.State()  -  firstParticle.State() ) / dpp;
 
-    if ( stand_alone_disp_calc ) { 
+    if ( stand_alone_disp_calc ) {
        LattFuncSage::lattFunc lf;
        lf.dispersion.hor = d( i_x  );
        lf.dPrime.hor     = d( i_npx );
@@ -906,7 +906,7 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        lf.dPrime.ver     = d( i_npy );
        lf.arcLength        = lng;
        lfvec_.push_back(lf);
-    } 
+    }
     else {
        lf_it->dispersion.hor = d( i_x  );
        lf_it->dPrime.hor     = d( i_npx );
@@ -915,13 +915,13 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        ++lf_it;
     }
 
-  }  
+  }
 
 
   // Attach tune and chromaticity to the beamline ........
 
   Vector    firstNu(2), secondNu(2);
-  if( ( 0 == filterTransverseTunes( firstJacobian, firstNu   ) ) && 
+  if( ( 0 == filterTransverseTunes( firstJacobian, firstNu   ) ) &&
       ( 0 == filterTransverseTunes( secondJacobian, secondNu ) ) )
   {
     lr_.tune.hor = firstNu(0);
@@ -953,6 +953,221 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
   return ret;
 }
 
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+int LattFuncSage::FourPointDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
+{
+  if( verbose_ ) {
+    (*pcout) << "LattFuncSage -- Entering LattFuncSage::FourPointDisp_Calc" << endl;
+    (*pcout).flush();
+  }
+
+  int ret = 0;
+
+  // Preliminary steps ...
+
+  ClosedOrbitSage clsg( myBeamlinePtr_ );
+  if( verbose_ ) { clsg.set_verbose(); }
+
+  // Instantiate a JetParticle of the same species as the
+  // input argument. If necessary, calculate a closed orbit and
+  // put it on the closed orbit.
+  // ---------------------------------------------------------
+
+  JetParticle jp_co(arg_jp);
+
+  if( !onClosedOrbit ) {
+    clsg.setForcedCalc();
+    ret = clsg.findClosedOrbit( jp_co );
+    clsg.unsetForcedCalc();
+  }
+
+  if( ret == 0 ) {
+    if( verbose_ ) {
+      (*pcout) << "LattFuncSage -- Closed orbit successfully calculated." << endl;
+      (*pcout).flush();
+    }
+  }
+
+  else {
+    if( verbose_ ) {
+      (*pcout) << "LattFuncSage -- Closed orbit not successfully calculated." << endl;
+      (*pcout) << "LattFuncSage -- Leaving LattFuncSage::FourPointDisp_Calc" << endl;
+      (*pcout).flush();
+    }
+    return ret;
+  }
+
+  // Instantiate five particles of the same
+  // species as the argument and on the closed orbit.
+  // -----------------------------------------------
+
+  Particle firstParticle(jp_co);
+
+  Particle probes [] = { firstParticle,    // NOTE: all these are on the closed
+                         firstParticle,    //       orbit for dp/p = 0.  These
+                         firstParticle,    //       will be recalculated below.
+                         firstParticle,
+                         firstParticle  };
+
+  MatrixD firstJacobian  = jp_co.State().Jacobian();
+
+  MatrixD jacobians [] = { firstJacobian,
+                           firstJacobian,
+                           firstJacobian,
+                           firstJacobian,
+                           firstJacobian };
+
+
+  // Calculate the closed orbit for off-momentum particles ...
+  if( verbose_ ) {
+    (*pcout) << "LattFuncSage --- Starting calculation of offset closed orbit." << endl;
+    (*pcout).flush();
+  }
+
+  double const dpp_scale  = get_dpp();
+  double const dpp_center = probes[2].get_ndp();     // Usually, this is zero.
+  probes[0].set_ndp( dpp_center - 2.0*dpp_scale );
+  probes[1].set_ndp( dpp_center -     dpp_scale );
+  probes[3].set_ndp( dpp_center +     dpp_scale );
+  probes[4].set_ndp( dpp_center + 2.0*dpp_scale );
+
+
+  for( int i = 0; i < 5; ++i )
+  {
+    if( 2 != i )
+    {
+      JetParticle jp = JetParticle(probes[i]);
+
+      clsg.setForcedCalc();
+      ret = clsg.findClosedOrbit( jp );
+      clsg.unsetForcedCalc();
+
+      if( ret == 0 ) {
+        if( verbose_ ) {
+          (*pcout) << "LattFuncSage -- Offset closed orbit successfully calculated." << endl;
+          (*pcout).flush();
+        }
+      }
+      else {
+        if( verbose_ ) {
+          (*pcout) << "LattFuncSage -- Off-momentum closed orbit not successfully calculated." << endl;
+          (*pcout) << "LattFuncSage -- Leaving LattFuncSage::FourPointDisp_Calc" << endl;
+          (*pcout).flush();
+        }
+        return ret;
+      }
+
+      probes[i] = Particle(jp);
+      jacobians[i] = jp.State().Jacobian();
+    }
+  }
+
+  // Attach dispersion data wherever desired ...
+  if( verbose_ ) {
+    (*pcout) << "LattFuncSage --- Attaching dispersion data to the elements." << endl;
+    (*pcout).flush();
+  }
+
+
+  // Attach initial dispersion data to the beamline ...
+
+  bool stand_alone_disp_calc = ( lfvec_.size() == 0 );
+  std::vector<LattFuncSage::lattFunc>::iterator lf_it =  lfvec_.begin();
+  double lng = 0.0;
+
+  for( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
+                               it != myBeamlinePtr_->deep_end();
+                             ++it )
+  {
+    for( int i = 0; i < 5; ++i ) {
+      (*it)->propagate( probes[i] );
+    }
+
+    lng += (*it)->OrbitLength( firstParticle );  // DANGER HERE
+
+    Vector d_a = ( probes[3].State() - probes[1].State() ) / (2.0*dpp_scale);
+    Vector d_b = ( probes[4].State() - probes[0].State() ) / (4.0*dpp_scale);
+    Vector d   = ( 4.0*d_a - d_b )/3.0;
+
+    if ( stand_alone_disp_calc ) {
+       LattFuncSage::lattFunc lf;
+       lf.dispersion.hor = d[ i_x  ];
+       lf.dPrime.hor     = d[ i_npx ];
+       lf.dispersion.ver = d[ i_y  ];
+       lf.dPrime.ver     = d[ i_npy ];
+       lf.arcLength        = lng;
+       lfvec_.push_back(lf);
+    }
+    else {
+       lf_it->dispersion.hor = d[ i_x  ];
+       lf_it->dPrime.hor     = d[ i_npx ];
+       lf_it->dispersion.ver = d[ i_y  ];
+       lf_it->dPrime.ver     = d[ i_npy ];
+       ++lf_it;
+    }
+
+  }
+
+
+  // Attach tune and chromaticity to the beamline ........
+
+  Vector tunes(2);
+  Vector nu [] = { tunes,
+                   tunes,
+                   tunes,
+                   tunes,
+                   tunes };
+
+  for( int i = 0; i < 5; ++i )
+  {
+    if( 0 != filterTransverseTunes( jacobians[i], nu[i] ) )
+    {
+      (*pcerr) << "*** ERROR ***                                        \n"
+                  "*** ERROR *** File: " << __FILE__ << "; Line " << __LINE__ << "\n"
+                  "*** ERROR *** LattFuncSage::FourPointDisp_Calc                \n"
+                  "*** ERROR ***                                        \n"
+                  "*** ERROR *** Horrible error occurred while trying   \n"
+                  "*** ERROR *** to filter the tunes for dpp = "
+               << probes[i].get_ndp() << "\n"
+                  "*** ERROR ***                                        \n"
+               << endl;
+      ret = 111;
+
+      return ret;
+    }
+  }
+
+
+  lr_.tune.hor = nu[2][0];
+  lr_.tune.ver = nu[2][1];
+
+  { // horizontal
+    double a = ( nu[3][0] - nu[1][0] ) / (2.0*dpp_scale);
+    double b = ( nu[4][0] - nu[0][0] ) / (4.0*dpp_scale);
+
+    lr_.chromaticity.hor = ( 4.0*a - b )/3.0;
+  }
+
+  { // vertical
+    double a = ( nu[3][1] - nu[1][1] ) / (2.0*dpp_scale);
+    double b = ( nu[4][1] - nu[0][1] ) / (4.0*dpp_scale);
+
+    lr_.chromaticity.ver = ( 4.0*a - b )/3.0;
+  }
+
+
+  if( verbose_ ) {
+    (*pcout) << "LattFuncSage -- Leaving LattFuncSage::FourPointDisp_Calc" << endl;
+    (*pcout).flush();
+  }
+
+  return ret;
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
