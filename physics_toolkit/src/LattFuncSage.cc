@@ -642,6 +642,11 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   }
 
 
+  bool hsquelch = false;
+  bool vsquelch = false;
+  bool eigen1squelch = false;
+  bool eigen2squelch = false;
+
   int ret = 0;
 
 
@@ -704,7 +709,8 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
    } */
 
   
-   if( fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+   if( !hsquelch && fabs( abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+       hsquelch = true;
       (*pcout) << "\n"
            << "*** WARRNING ***                                     \n"
            << "*** WARRNING ***                                     \n"
@@ -733,8 +739,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   } */
   
   
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  if(!eigen1squelch &&  ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
+      eigen1squelch = true;
   	(*pcout) << "\n"
   	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
   	     << "*** WARRNING *** Conjugacy condition has been violated\n"
@@ -773,7 +780,8 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
        ret = 12; return ret;
   } */
   
-  if( std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+  if(!vsquelch &&  std::abs( std::abs(lambda(0)) - 1.0 ) > 1.0e-4 ) {
+      vsquelch = true;
       (*pcout) << "\n"
            << "*** WARRNING ***                                     \n"
            << "*** WARRNING ***                                     \n"
@@ -801,8 +809,9 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
           ret = 13; return ret;
   } */
    
-  if( ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
+  if( !eigen2squelch && ( std::abs( lambda(0) - conj( lambda(1) ) ) > 1.0e-4 ) )
   {
+      eigen2squelch = true;
   	(*pcout) << "\n"
   	     << "*** WARRNING *** LattFuncSage::TuneCalc               \n"
   	     << "*** WARRNING *** Conjugacy condition has been violated\n"

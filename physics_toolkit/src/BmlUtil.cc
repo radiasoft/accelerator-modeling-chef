@@ -57,6 +57,8 @@
 
 #include <physics_toolkit/BmlUtil.h>
 
+#define MLT1  1.0e-6
+
 using namespace std;
 using namespace boost;
 
@@ -212,29 +214,44 @@ void BmlUtil::normalize( MatrixC& B, Vector& normalizedPhase )
 
   const std::complex<double> complex_0(0.0,0.0);
   const std::complex<double> mi(0.,-1.);
+  static bool squelch = false;
 
   // Normalizing the linear normal form coordinates
 
   MatrixD  J( "J", 6 );
   MatrixC  Nx = ( B.transpose() * J * B * J ) * mi;
 
-  for( int i = 0; i < 6; i++ ) {
-   Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
-   if( abs( ( (std::complex<double> ) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
+  double min_diag = -1.0;
+  double max_nondiag = -1.0;
+  for (int i=0; i<6; ++i) {
+      double nxelem = abs(Nx(i,i));
+      if ((min_diag < 0.0) || (nxelem < min_diag)) {
+          min_diag = nxelem;
+      }
+  }
+  for (int i=0; i<6; ++i) {
+      for (int j=0; j<6; ++j) {
+          if (i != j) {
+              double nxelem = abs(Nx(i,j));
+              if ((max_nondiag < 0.0) || (nxelem > max_nondiag)) {
+                  max_nondiag = nxelem;
+              }
+          }
+      }
+  }
 
-       /* CAUTION */   for( int j = 0; j < 6; j++ ) {
-       /* CAUTION */    if( j == i ) continue;
-       /* CAUTION */    else if( abs( Nx(i,j) ) > BmlUtil::mlt1 ) {
-       /* CAUTION */          ostringstream uic;
-       /* CAUTION */          uic << "Nondiagonal element in BJB^TJ: abs( Nx( "
-                                  << i << ", " << j << " ) ) = "
-                                  << std::abs(Nx(i,j));
-       /* CAUTION */          throw( GenericException( __FILE__, __LINE__,
-       /* CAUTION */                 "void BmlUtil::normalize( MatrixC&, Vector& )",
-       /* CAUTION */                 uic.str().c_str() ) );
-       /* CAUTION */    }
-       /* CAUTION */    else Nx(i,j) = complex_0;
-       /* CAUTION */   }
+  if (!squelch && (max_nondiag/min_diag) > MLT1) {
+      squelch = true;
+      std::cout << "something's wacko with the matrix" << std::endl;
+      std::cout << "maximum nondiag/minimum diag: " << max_nondiag/min_diag << std::endl;
+      std::cout << "Nx (should be diagonal)" << std::endl;
+      std::cout << Nx << std::endl;
+      std::cout.flush();
+  }
+
+  for( int i = 0; i < 6; i++ ) {
+      Nx( i, i ) = 1.0 / sqrt( abs( Nx(i,i) ) );
+      if( abs( ( (std::complex<double> ) 1.0 ) - Nx(i,i) ) < 1.0e-10 ) Nx(i,i) = 1.0;
   }
 
   B = B*Nx;
