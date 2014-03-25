@@ -642,10 +642,10 @@ int LattFuncSage::TuneCalc( JetParticle& jp, bool forceClosedOrbitCalc )
   }
 
 
-  bool hsquelch = false;
-  bool vsquelch = false;
-  bool eigen1squelch = false;
-  bool eigen2squelch = false;
+  static bool hsquelch = false;
+  static bool vsquelch = false;
+  static bool eigen1squelch = false;
+  static bool eigen2squelch = false;
 
   int ret = 0;
 
