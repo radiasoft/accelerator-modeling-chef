@@ -249,7 +249,7 @@ int LBSage::doCalc( JetParticle const& jp)
     calcs_.back().alpha_1y = -2.0*real(temp);
     calcs_.back().u2       = -2.0*imag(temp);
 
-    temp = E2(i_npx,i_y)*E2(i_y,i_y);
+    temp = E2(i_npx,i_y)*E2(i_x,i_npy);
     calcs_.back().alpha_2x = -2.0*real(temp);
     calcs_.back().u3       = -2.0*imag(temp);
 
