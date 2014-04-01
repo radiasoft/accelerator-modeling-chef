@@ -32,9 +32,10 @@ using namespace boost::python;
 
 void wrap_quadrupole () {
 
-  class_<quadrupole, bases<bmlnElmnt>, QuadrupolePtr >("quadrupole", init<char*  ,  double, double>() );
+  class_<quadrupole, bases<bmlnElmnt>, QuadrupolePtr >quadrupole_("quadrupole", init<char*  ,  double, double>() );
 
   class_<thinQuad, bases<bmlnElmnt>, ThinQuadPtr >("thinQuad", init<char*, double>() );     // B'L in Tesla; + = horizontally focussing
- 
+  quadrupole_.def("numberOfKicks", &quadrupole::numberOfKicks);
+  quadrupole_.def("setNumberOfKicks", &quadrupole::setNumberOfKicks);
 }
 
