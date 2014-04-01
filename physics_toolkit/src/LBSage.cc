@@ -7,37 +7,60 @@
 ******             BEAMLINE class library.                            
 ******                                    
 ******  File:      LBSage.cc
-******  Version:   1.0
-******                                                                
-****** Copyright (c) Universities Research Association, Inc.
-******                All Rights Reserved
-******
-******  Usage, modification, and redistribution are subject to terms          
-******  of the License supplied with this software.
 ******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
+******  Copyright Universities Research Association, Inc./ Fermilab
+******            All Rights Reserved
 ******
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
+******  Usage, modification, and redistribution are subject to terms
+******  of the License supplied with this software.
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+******  Authors: Leo Michelotti        michelotti@fnal.gov
+******           Jean-Francois Ostiguy ostiguy@fnal.gov
+******
 ******                                                                
 ******  REVISION HISTORY
 ******
-******  Dec 2006 - Jean-Francois Ostiguy 
-******             ostiguy@fnal
-******    
+******  Aug 2004     michelotti@fnal.gov
+******  - original version
+******
+******  Jul 2005     michelotti@fnal.gov
+******  - added calculation of lattice functions
+******    alpha_1x and alpha_2y
+******
+******  Dec 2005     ostiguy@fnal.gov
+******  - For some reason, MatrixC::eigenvector() will be
+******    called if Matrix::eigenvector() is not explicitly
+******    specified (in LBSage::doCalc(...) ).  It is not
+******    clear wether this behavior is compliant or a
+******    compiler bug.
+******  - updated compiler directives and "cleaned up"
+******    miscellaneous other lines, e.g. replacing
+******    FNAL::Complex with std::complex<double>
+******
+******  Dec 2005     michelotti@fnal.gov
+******  - added calculations of alpha_1y and alpha_2x,
+******    which finished calculation of lattice functions in
+******    LBSage::doCalc, thereby correcting previous error
+******    of using a test that could be violated by
+******    coupled lattices.
+******  - more exceptions thrown.
+******
+******  Aug 2006     ostiguy@fnal.gov
+******  - change from #include<header.h> to #include<library/header.h>
+******    in base libraries.
+******  - preparation for symbol visibility attribute support
+******  - header cleanup
+******  - minor fixes to suppress warnings
+******  - replaced more GNU copyright headers
+******
+******  Dec 2006     ostiguy@fnal.gov
 ******  - interface based on Particle& rather than ptrs. 
 ******    Stack allocated local Particle objects.
 ******  - changes to accomodate new boost::any based Barnacle objects.
@@ -46,9 +69,21 @@
 ******    returning a const reference to the entire vector.
 ******  - misc cleanup.  
 ******
-****** Mar 2007     ostiguy@fnal.gov
-****** - added support for reference counted elements/beamlines
+******  Mar 2007     ostiguy@fnal.gov
+******  - added support for reference counted elements/beamlines
 ******
+******  Feb 2008     michelotti@fnal.gov
+******  - added calculation of normalized phase advance.
+******    Now storing calculated values of normalized phase in
+******    the nu_1 and nu_2 fields of LBSage::Info.
+******
+******  Apr 2014     michelotti@fnal.gov
+******  - bug fix: Eric Stern discovered an error in
+******    calculating "skewed lattice function" alpha_2x.
+******    Further review revealed that the calculation of
+******    alpha_1y was similarly incorrect. (The errors
+******    have existed since December, 2005; see above.)
+******    Two lines were rewritten to fix these.
 ******
 *************************************************************************
 *************************************************************************/
@@ -213,7 +248,7 @@ int LBSage::doCalc( JetParticle const& jp)
        calcs_.clear(); 
        throw GenericException( __FILE__, __LINE__, 
               "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
-			       "beta_1x is negative !. This error is likely due to an unstable lattice." );
+                               "beta_1x is negative !. This error is likely due to an unstable lattice." );
        return 1; 
     }
     temp = real(E2(i_y,i_y));
@@ -224,7 +259,7 @@ int LBSage::doCalc( JetParticle const& jp)
        calcs_.clear(); 
        throw GenericException( __FILE__, __LINE__, 
              "LBSage::doCalc(const JetParticle*, beamline::Criterion&)",
-			       "beta_2y is negative ! This error is likely due to an unstable lattice." );
+                               "beta_2y is negative ! This error is likely due to an unstable lattice." );
         return 2; 
      }
 
@@ -245,7 +280,7 @@ int LBSage::doCalc( JetParticle const& jp)
 
     // alpha_1y and alpha_2x
 
-    temp = E2(i_npy,i_x)*E2(i_y,i_x);
+    temp = E2(i_npy,i_x)*E2(i_y,i_npx);
     calcs_.back().alpha_1y = -2.0*real(temp);
     calcs_.back().u2       = -2.0*imag(temp);
 
