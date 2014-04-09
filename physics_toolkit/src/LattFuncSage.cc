@@ -977,9 +977,17 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        lf_it->dPrime.hor     = d( i_npx );
        lf_it->dispersion.ver = d( i_y  );
        lf_it->dPrime.ver     = d( i_npy );      
+       if( localData_ ) {
+	       BarnacleList::iterator bit;
+           if( (bit = (*it)->dataHook.find("Dispersion") )==  (*it)->dataHook.end() ) {
+               (*it)->dataHook.insert( Barnacle( "Dispersion", *lf_it) );
+           }
+           else {
+               bit->info = *lf_it;
+           }
+       }
        ++lf_it;
     }
-
   }  
 
 

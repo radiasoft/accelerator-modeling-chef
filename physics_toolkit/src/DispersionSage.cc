@@ -356,6 +356,8 @@ int DispersionSage::doCalc( JetParticle& jp )
   Jet__environment::setLastEnv( storedEnv );
 
 
+  // Attach initial dispersion data to the beamline ...
+
 
   // Attach dispersion data wherever desired ...
   if( verbose_ ) {
@@ -363,8 +365,7 @@ int DispersionSage::doCalc( JetParticle& jp )
     (*pcout).flush();
   }
 
-
-  // Attach initial dispersion data to the beamline ...
+  calcs_.clear();
 
   double lng = 0.0;
 
