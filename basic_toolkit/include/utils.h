@@ -71,11 +71,11 @@ and complex matrices from, translated from fortran using f2c.
 
 *****************************************************************************/   
 
-extern "C" { int rg_(int*, int*, double*, double*, double*, int*, double*,
+extern "C" { void rg_(int*, int*, double*, double*, double*, int*, double*,
                      int*, double*, int*); }
                                                  // Written in basic_toolkit/src/rg.c
 
-extern "C" { int cg_(int*, int*, double*, double*, double*, double*, int*,
+extern "C" { void cg_(int*, int*, double*, double*, double*, double*, int*,
                      double*, double*, double*, double*, double*, int*); }
                                                  // Written in basic_toolkit/src/cg.c
 
