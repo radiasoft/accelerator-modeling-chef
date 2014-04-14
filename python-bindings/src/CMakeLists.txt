@@ -25,8 +25,7 @@ set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
           py-slot.cpp py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp
           py-decapole.cpp py-particle.cpp py-jetparticle.cpp py-lattfunc.cpp
           py-srot.cpp py-circuit.cpp py-fcircuit.cpp
-          py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp
-          py-yoshidapropagator.cpp py-cf_sbend_madpropagator.cpp)
+	 py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp py-yoshidapropagator.cpp)
 add_python_extension(pybeamline SHARED ${SRCS3})
 target_link_libraries(pybeamline ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY})
 
@@ -37,7 +36,9 @@ if (BUILD_PARSER_MODULES)
 endif ()
 
 set(SRCS5 py-physicstoolkit-module.cpp
-          py-lattfuncsage.cpp py-beamlinecontext.cpp py-normalformsage.cpp)
+          py-lattfuncsage.cpp py-beamlinecontext.cpp 
+#          py-normalformsage.cpp
+	)
 add_python_extension(pyphysics_toolkit SHARED ${SRCS5})
 target_link_libraries(pyphysics_toolkit ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY})
 
