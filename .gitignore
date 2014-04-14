@@ -1,0 +1,17 @@
+*.o
+*.lo
+*.a
+*.la
+*.so
+
+*~
+
+cmake_install.cmake
+CMakeFiles
+Makefile
+CMakeCache.txt
+chef-config.sh
+install_manifest.txt
+.cproject
+.project
+.pydevproject
