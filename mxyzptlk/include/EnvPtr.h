@@ -28,9 +28,7 @@
 #ifndef ENVPTR_H
 #define ENVPTR_H
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <boost/intrusive_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>

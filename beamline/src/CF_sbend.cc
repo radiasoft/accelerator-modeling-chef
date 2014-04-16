@@ -70,9 +70,7 @@
 // NOTE: the signs of us and ds are as defined according to the MAD convention
 //----------------------------------------------------------------------------------------------
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <iomanip>
 

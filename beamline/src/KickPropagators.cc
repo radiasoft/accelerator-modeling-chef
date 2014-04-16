@@ -27,9 +27,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/Particle.h>

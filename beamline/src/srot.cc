@@ -43,9 +43,7 @@
 ****** - new typesafe propagators
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <beamline/SRotPropagators.h>
 #include <beamline/srot.h>

@@ -40,9 +40,7 @@
 *************************************************************************/
 #ifdef BASICTOOLKIT_EXPLICIT_TEMPLATES
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <complex>
 #include <iostream>

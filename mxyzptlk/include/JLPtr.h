@@ -28,9 +28,7 @@
 #ifndef JLPTR_H
 #define JLPTR_H
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <boost/intrusive_ptr.hpp>
 #include <basic_toolkit/globaldefs.h>

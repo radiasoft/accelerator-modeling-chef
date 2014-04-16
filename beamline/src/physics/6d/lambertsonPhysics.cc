@@ -34,9 +34,7 @@
 ******
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <beamline/Particle.h>
 #include <beamline/lambertson.h>
