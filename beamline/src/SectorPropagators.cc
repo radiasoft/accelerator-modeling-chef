@@ -41,9 +41,7 @@
 ******
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <beamline/SectorPropagators.h>
 #include <beamline/sector.h>

@@ -378,7 +378,7 @@ anonymous_line_declaration:
                                                                                               delete $<pstrvec>4;
                                                                                            }  
        |
-       '(' element_list ')' '*' 'XSIF_INT_VALUE'                                           { $<pstrvec>$ =
+       '(' element_list ')' '*' XSIF_INT_VALUE                                           { $<pstrvec>$ =
                                                                                              driver.instantiateAnonymousLine( yylloc, *$<pstrvec>2, $<ival>5 );
                                                                                              delete $<pstrvec>2;
                                                                                            } 

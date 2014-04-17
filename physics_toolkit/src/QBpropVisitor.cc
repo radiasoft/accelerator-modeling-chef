@@ -41,9 +41,7 @@
 ******                                                                
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <physics_toolkit/QBpropVisitor.h>
 #include <beamline/beamline_elements.h>

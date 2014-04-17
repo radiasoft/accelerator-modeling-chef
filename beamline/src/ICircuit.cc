@@ -41,9 +41,7 @@
 ****** - replaced c-style list with std::list 
 **************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <basic_toolkit/iosetup.h>
 #include <beamline/ICircuit.h>

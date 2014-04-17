@@ -58,9 +58,7 @@
 **                  December 1, 1998
 */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <basic_toolkit/iosetup.h>
 #include <mxyzptlk/LieOperator.h>

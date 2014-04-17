@@ -26,6 +26,12 @@
 ******
 ******  REVISION HISTORY
 ******
+******  Apr 2007             ostiguy@fnal.gov
+******  - fixed propagator for thin2pole which previously did not alter
+******    the reference frame.
+******  - efficiency improvements: get Particle/JetParticle states by reference. 
+******    avoid empty initializations.                                                              
+******
 ******  Jul 2011             michelotti@fnal.gov
 ******  - class ThinPole extended to permit arbitrary
 ******    collection of normal and skew multipoles
@@ -35,6 +41,17 @@
 ******    pow function, which produces small but acccumulating
 ******    errors. The older version may be restored when (and if)
 ******    pow is fixed.
+******  
+******  Feb 2014             michelotti@fnal.gov
+******  - using "#if 0" directive to remove the rotation that was
+******    added in April, 2007 in order to mimic the behavior of SLAC's
+******    ILC simulations. Like CERN (MAD), SLAC assumed coordinate
+******    systems follow the reference particle. In CHEF, local
+******    coordinates are pinned to hardware faces. Rotating the
+******    reference frame in the propagator violated CHEF's convention
+******    but was the easiest - and most computationally efficient - way
+******    to get around the difference. Thanks to Chong Shik Park for
+******    catching this code fragment.
 ******
 **************************************************************************
 *************************************************************************/
@@ -110,12 +127,21 @@ void simple_propagate( Element_t& elm, Particle_t& p )
 
   state[i_npx]  -= angle;
 
- //----------------------------------------
- // thin2pole rotates the reference frame   ????????????????
- //----------------------------------------
+  #if 0
+  //----------------------------------------
+  // thin2pole rotates the reference frame   ????????????????
+  //----------------------------------------
+  // This rotation was added in April, 2007, in order
+  // to mimic the behavior of SLAC's ILC simulations.
+  // Like MAD, SLAC assumed coordinate systems followed
+  // the reference particle. In CHEF, local coordinate
+  // systems are pinned to hardware faces. Making this
+  // change violated CHEF's convention but was the easiest
+  // way to get around the difference.
+  //----------------------------------------
 
-  //state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
-
+  state[i_npx]   = cos( angle )*state[i_npx] + sin( angle ) * p.get_npz();
+  #endif
 }
 
 

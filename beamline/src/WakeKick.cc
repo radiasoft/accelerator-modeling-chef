@@ -29,9 +29,7 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <beamline/WakeKick.h>
 #include <beamline/BmlVisitor.h>

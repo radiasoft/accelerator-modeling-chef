@@ -40,9 +40,7 @@
 *************************************************************************/
 #ifdef BASICTOOLKIT_EXPLICIT_TEMPLATES
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <complex>
 #include <iostream>
@@ -72,6 +70,7 @@
 #include <basic_toolkit/FFTFunctor.tcc>
 #include <basic_toolkit/ConvolutionFunctor.h>
 #include <basic_toolkit/ConvolutionFunctor.tcc>
+#include <boost/math/common_factor.hpp>
 
 using namespace std;
 using std::ostringstream;
@@ -91,10 +90,17 @@ template
 class boost::simple_segregated_storage<unsigned int>;
 
 template
+unsigned int boost::math::lcm<unsigned int>(unsigned int const&, unsigned int const&);
+
+template
+unsigned int boost::math::gcd<unsigned int>(unsigned int const&, unsigned int const&);
+#if 0
+template
 unsigned int boost::details::pool::lcm<unsigned int>(unsigned int const&, unsigned int const&);
 
 template
 unsigned int boost::details::pool::gcd<unsigned int>(unsigned int, unsigned int);
+#endif
 
 // ----------------------------------------------------------------------------
 // Instantiations related to Barnacle
@@ -475,6 +481,9 @@ boost::addressof(FFTFunctor<double, std::complex<double>, (transform_type)-1> co
 
 template class ConvolutionFunctor<double>;
 template class ConvolutionFunctor<std::complex<double> >;
+
+template class ConvolutionFunctorImpl<double>;
+template class ConvolutionFunctorImpl<std::complex<double> >;
 
 template class std::vector<double,               FFTWAllocator<double> >;
 template class std::vector<std::complex<double>, FFTWAllocator<std::complex<double> > >;

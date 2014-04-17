@@ -133,7 +133,7 @@ class DLLEXPORT TJLterm
   private:
 
   static boost::pool<>&  ordered_memPool_;  // an ordered pool of TJLterms
-
+  
   // the declarations below are meant to prevent use of all forms of operator new[];
 
   static void* operator new[]( std::size_t size) throw (std::bad_alloc);

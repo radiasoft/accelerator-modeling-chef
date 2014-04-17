@@ -22,44 +22,35 @@
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******
 ******  Author:    Leo Michelotti
-******
-******             Fermilab
-******             P.O.Box 500
-******             Mail Stop 220
-******             Batavia, IL   60510
-******
-******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
-****** REVISION HISTORY
+******  REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface.
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations.
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface.
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations.
 ******
-****** Aug 2007           ostiguy@fnal.gov
-****** - composite structure based on regular beamline
+******  Aug 2007           ostiguy@fnal.gov
+******  - composite structure based on regular beamline
 ******
-****** Dec                ostiguy@fnal.gov
-****** - new typesafe propagator architecture
+******  Dec                ostiguy@fnal.gov
+******  - new typesafe propagator architecture
 ******
-****** Apr 2008           michelotti@fnal.gov
-****** - modified setStrength method
-****** - added placeholder setLength method
-****** - changed interpretation of "ang" argument to
-******   two constructors from "entry angle" to "bend angle,"
-******   in order to conform with usage in other bend constructors.
-****** - corrected rbend::Split
-******   : including adding methods to nullify edge effects
+******  Apr 2008           michelotti@fnal.gov
+******  - modified setStrength method
+******  - added placeholder setLength method
+******  - changed interpretation of "ang" argument to
+******    two constructors from "entry angle" to "bend angle,"
+******    in order to conform with usage in other bend constructors.
+******  - corrected rbend::Split
+******    : including adding methods to nullify edge effects
 ******
 *************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <iomanip>
 
@@ -221,7 +212,7 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 
   propagator_  =  rhs.propagator_;
 
-  bml_       =  BmlPtr( rhs.bml_->Clone() );
+  bml_         =  BmlPtr( rhs.bml_->Clone() );
 
   return *this;
 }
@@ -318,13 +309,12 @@ int CF_rbend::setOctupole( double const& arg_x )
   if (counter==0) return 1;
 
   for ( beamline::iterator it  = bml_->begin();
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if ( boost::dynamic_pointer_cast<thinOctupole>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
   }
   return 0;
-
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -341,13 +331,13 @@ int CF_rbend::setSextupole( double const& arg_x )
   if (counter==0) return 1;
 
   for ( beamline::iterator it  = bml_->begin();
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if ( boost::dynamic_pointer_cast<thinSextupole>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
   }
-  return 0;
 
+  return 0;
 }
 
 
@@ -386,7 +376,7 @@ int CF_rbend::setQuadrupole( double const& arg_x )
   if (counter==0) return 1;
 
   for ( beamline::iterator it  = bml_->begin();
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if ( boost::dynamic_pointer_cast<thinQuad>(*it) ) {
       (*it)->setStrength( arg_x/counter );
     }
@@ -404,7 +394,7 @@ int CF_rbend::setDipoleField( double const& arg_x )
   strength_ = arg_x;
 
   for ( beamline::iterator it  = bml_->begin();
-	                   it != bml_->end(); ++it ) {
+                           it != bml_->end(); ++it ) {
     if( boost::dynamic_pointer_cast<rbend>(*it) ) {
      (*it)->setStrength( arg_x );
    }
@@ -581,9 +571,9 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   if(    ( 0. != ald.xOffset || 0. != ald.yOffset )
       && ( !hasParallelFaces()                    ) ) {
     ostringstream uic;
-    uic  <<   "Not allowed to displace an rbend with non-parallel faces";
-            "\nwith an Alignment struct.  That rolls are allowed in such"
-            "\ncases is only a matter of courtesy. This is NOT encouraged!";
+    uic  <<   "Not allowed to displace an rbend with non-parallel faces"
+         <<   "\nwith an Alignment struct.  That rolls are allowed in such"
+         <<   "\ncases is only a matter of courtesy. This is NOT encouraged!";
     throw( GenericException( __FILE__, __LINE__,
            "void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
            uic.str().c_str() ) );
@@ -594,11 +584,11 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
     firstTime = false;
     (*pcerr) << "\n"
             "\n*** WARNING ***"
-            "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
+         << "\n*** WARNING *** File: " << __FILE__ << ", Line: " << __LINE__
          << "\n*** WARNING *** void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const"
-            "\n*** WARNING *** The new, split elements must be commissioned with"
-            "\n*** WARNING *** RefRegVisitor before being used."
-            "\n*** WARNING *** "
+         << "\n*** WARNING *** The new, split elements must be commissioned with"
+         << "\n*** WARNING *** RefRegVisitor before being used."
+         << "\n*** WARNING *** "
          << endl;
   }
 
@@ -722,7 +712,7 @@ void CF_rbend::nullEntryEdge()
 void CF_rbend::peekAt( double& s, Particle const& prt ) const
 {
  (*pcout) << setw(12) << s;
- s += OrbitLength( prt );
+ s += const_cast<CF_rbend*>(this)->OrbitLength( prt );  // Kludge!!
  (*pcout) << setw(12) << s
                   << " : "
       << setw(10) << this
@@ -968,9 +958,9 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
         error = f;
         instate[x] +=  delta;
         state       = instate;
-      	propagate( particle );
+        propagate( particle );
 
-      	f = state[xp] + xp_i;
+        f = state[xp] + xp_i;
       }
 
       instate[x] +=  delta;
@@ -1010,6 +1000,7 @@ double CF_rbend::AdjustPosition( JetParticle const& arg_jp )
   // ??? not correct for elements whose faces are not
   // ??? parallel.
 
+  v.xOffset -= z;
   setAlignment( v );
 
   // ??? This will work only if the in and out faces

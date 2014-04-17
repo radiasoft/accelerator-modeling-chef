@@ -30,9 +30,7 @@
 *************************************************************************/
 
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 // This version of the LikeMAD propagators
 // was written by Mike Martens, who corrected

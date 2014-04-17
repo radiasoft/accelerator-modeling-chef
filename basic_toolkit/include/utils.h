@@ -40,26 +40,29 @@
 #include <basic_toolkit/globaldefs.h>
 #include <complex>
 
-class IntArray;
+class IntArray;                                  // From files basic_toolkit/include/IntArray.h
+                                                 // and basic_toolkit/src/IntArray.cc
 
+                                                 // Error functions
+                                                 // Written in basic_toolkit/src/erf.cc
 extern std::complex<double>  w(std::complex<double> const& z); 
 extern std::complex<double>  erf(  std::complex<double> const& z );
 extern std::complex<double>  erfc( std::complex<double> const& z ); 
 extern std::complex<double>  erfSeries( std::complex<double> const& z ); 
  
 extern bool nexcom( int, int, int* );            // Computes the next composition
-                                                 //  of an integer into a number of parts.
+extern bool nexcom( int, int, IntArray& );       //  of an integer into a number of parts.
                                                  //  Algorithm devised by Herbert Wilf.
-
-extern bool nexcom( int, int, IntArray& );       // Computes the next composition
-                                                 //  of an integer into a number of parts.
-                                                 //  Algorithm devised by Herbert Wilf.
+                                                 // Written in basic_toolkit/src/nexcom.cc
 
 extern "C" {int bcfRec( int, int ); }            // Recursive evaluation of binomial
-                                                 //  coefficient.
+                                                 //  coefficient.  (Worst way to do it!)
+                                                 // Written in basic_toolkit/src/binomcoeff_recursive.c
 
 extern "C" {int nearestInteger( double ); }      // Returns the integer nearest to its
                                                  //  double argument.
+                                                 // Written in basic_toolkit/src/nearint.c
+
 
 /************************************************************************** 
 
@@ -68,11 +71,13 @@ and complex matrices from, translated from fortran using f2c.
 
 *****************************************************************************/   
 
-extern "C" { void rg_(int*, int*, double*, double*,double*, int*, double*,
-                 int*, double*, int*); }
+extern "C" { void rg_(int*, int*, double*, double*, double*, int*, double*,
+                     int*, double*, int*); }
+                                                 // Written in basic_toolkit/src/rg.c
 
-extern "C" { void cg_(int*, int*, double*, double*,double*,double*, int*,
-                      double*,double*,double*, double*, double*,int*); }
+extern "C" { void cg_(int*, int*, double*, double*, double*, double*, int*,
+                     double*, double*, double*, double*, double*, int*); }
+                                                 // Written in basic_toolkit/src/cg.c
 
 
 

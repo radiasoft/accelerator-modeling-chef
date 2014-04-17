@@ -46,9 +46,7 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <math.h>
 
@@ -101,7 +99,7 @@ FPSolver::FPSolver( BmlPtr bml, int n )
 
   if( n <= 0 ||  (!bmLine_) ) {
     ostringstream uic;
-    uic << "Incorrect parameters: bml = " << bml.get()
+    uic << "Incorrect parameters: bml = " << (long) bml.get() 
         << " n = " << n;
     throw( GenericException( __FILE__, __LINE__,
            "FPSolver::FPSolver( BmlPtr bml, int n )",

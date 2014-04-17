@@ -27,8 +27,8 @@
 *****************************************************************************
 *****************************************************************************/
 
-#include <beamline/kick.h>
 #include <boost/python.hpp>
+#include <beamline/kick.h>
 
 using namespace boost::python;
 

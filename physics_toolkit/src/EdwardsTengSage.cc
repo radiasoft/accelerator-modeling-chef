@@ -66,9 +66,7 @@
 //          April 14, 2004
 //
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <iomanip>
 

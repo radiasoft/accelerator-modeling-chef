@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Fermi Research Alliance / Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -32,6 +32,14 @@
 ******  - bug fix: reduced length of separator element by two
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
+******
+******  Feb 2014            michelotti@fnal.gov
+******  - bug fix: added same "KLUDGE" that has been in place
+******    in file CF_sbendPropagators.cc since (at least)
+******    December, 2007.
+******    : this should be "done right" in both files one day.
+******    : thanks to Eric Stern for drilling down the effects
+******      of this error through multiple layers of code.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -96,6 +104,10 @@ template void propagate( CF_rbend& elm, JetParticle& p );
 void CF_rbend::Propagator::setup( CF_rbend& arg ) 
 {
 
+  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
+
+  if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
+
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
   //       the error when a magnet is split into 4 parts. See R. Talman 
@@ -128,7 +140,6 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
 
-  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
   bml_ = BmlPtr( new beamline("CF_RBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {

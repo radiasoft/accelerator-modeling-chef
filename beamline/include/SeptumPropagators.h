@@ -37,8 +37,8 @@
 class Particle;
 class JetParticle;
 
-class septum::Propagator: public BasePropagator<septum> {
-
+class septum::Propagator: public BasePropagator<septum> 
+{
  public:
 
   Propagator* Clone() const { return new Propagator(*this); }

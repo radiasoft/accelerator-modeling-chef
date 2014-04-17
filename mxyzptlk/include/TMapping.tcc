@@ -63,9 +63,7 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
@@ -150,7 +148,7 @@ TMapping<T>::TMapping( const char*, EnvPtr<T> const& pje  )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<typename T>
-TMapping<T>::~TMapping() 
+TMapping<T>::~TMapping()
 {}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

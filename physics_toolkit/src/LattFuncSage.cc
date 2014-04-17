@@ -56,9 +56,6 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <iomanip>
 
@@ -73,6 +70,8 @@
 #include <beamline/CF_rbend.h>
 #include <beamline/Slot.h>
 #include <beamline/srot.h>
+
+#define DEFAULT_DPP 0.0005
 
 #define DEFAULT_DPP 0.0005
 
@@ -988,7 +987,8 @@ int LattFuncSage::NewDisp_Calc( JetParticle const& arg_jp,  bool onClosedOrbit )
        }
        ++lf_it;
     }
-  }  
+
+  }
 
 
   // Attach tune and chromaticity to the beamline ........

@@ -64,9 +64,6 @@
 *     
 *****************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 // allocate and deallocate are strings used 
 // int the stdlib headers. Unfortunately, they

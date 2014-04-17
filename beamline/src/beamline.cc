@@ -2,20 +2,24 @@
 **************************************************************************
 **************************************************************************
 ******
-******  Beamline:  C++ objects for design and analysis
+******  BEAMLINE:  C++ objects for design and analysis
 ******             of beamlines, storage rings, and
 ******             synchrotrons.
 ******
 ******  File:      beamline.cc
 ******
-******  Copyright Universities Research Association, Inc./ Fermilab
-******            All Rights Reserved
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******
 ******  Software and documentation created under
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
 ******  The U.S. Government retains a world-wide non-exclusive,
 ******  royalty-free license to publish or reproduce documentation
 ******  and software for U.S. Government purposes. This software
@@ -23,51 +27,52 @@
 ******
 ******
 ******  Author:    Leo Michelotti
-******
-******             Fermilab
-******             P.O.Box 500
-******             Mail Stop 220
-******             Batavia, IL   60510
-******
-******             Phone: (630) 840 4956
 ******             Email: michelotti@fnal.gov
 ******
 ******
-****** Sep 2006    Jean-Francois Ostiguy ostiguy@fnal.gov
-****** - eliminated redundant (and dangerous) c-style hard casts
-******   (dlist*) this  [ where this is a beamline * ]
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
 ******
-****** Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
-****** - beamline: decoupled list container from public interface
-******             now using std::list<> instead of dlist
-****** - introduced new iterators with stl-compatible interface
-****** - eliminated all references to old-style BeamlineIterator,
-******   DeepBeamlineIterator etc ..
+****** 	Sep 2006    Jean-Francois Ostiguy ostiguy@fnal.gov
+****** 	- eliminated redundant (and dangerous) c-style hard casts
+****** 	  (dlist*) this  [ where this is a beamline * ]
 ******
-****** Jan-Mar 2007  ostiguy@fnal.gov
-****** - added support for reference counted elements
-****** - eliminated unneeded dynamic casts
+****** 	Oct 2006:  Jean-Francois Ostiguy  ostiguy@fnal.gov
+****** 	- beamline: decoupled list container from public interface
+****** 	            now using std::list<> instead of dlist
+****** 	- introduced new iterators with stl-compatible interface
+****** 	- eliminated all references to old-style BeamlineIterator,
+****** 	  DeepBeamlineIterator etc ..
 ******
-****** Sep 2007      ostiguy@fnal.gov
-****** - new iterator based interface for misalignments and rotations.
-******   introducing a misalignments trough an entire beamline is now
-******   a O(N) operation.
-****** - refactored rotateRel(..) moveRel(..): eliminate duplicated code
-****** - eliminated find( ..):    use stl::algorithm instead
-****** - eliminated replace/deepReplace
+****** 	Jan-Mar 2007  ostiguy@fnal.gov
+****** 	- added support for reference counted elements
+****** 	- eliminated unneeded dynamic casts
 ******
-****** Apr 2008     michelotti@fnal.gov
-****** - additional argument list for beamline::InsertElementsFromList(..)
+****** 	Sep 2007      ostiguy@fnal.gov
+****** 	- new iterator based interface for misalignments and rotations.
+****** 	  introducing a misalignments trough an entire beamline is now
+****** 	  a O(N) operation.
+****** 	- refactored rotateRel(..) moveRel(..): eliminate duplicated code
+****** 	- eliminated find( ..):    use stl::algorithm instead
+****** 	- eliminated replace/deepReplace
 ******
-****** Nov 2009     michelotti@fnal.gov
-****** - fixed error in void iefl(..) that was triggered by trying
-******   to insert elements close to (i.e. within machine presision)
-******   but not exactly at the upstream or downstream end of an element.
-****** - added additional error checking and throwing exceptions
-******   to iefl(..) and beamline::InsertElementsFromList(..)
-****** - thanks to Eric Stern for reporting the error, for his analysis
-******   of the circumstances that triggered it, and for testing the
-******   updated version of this file.
+****** 	Apr 2008     michelotti@fnal.gov
+****** 	- additional argument list for beamline::InsertElementsFromList(..)
+******
+****** 	Nov 2009     michelotti@fnal.gov
+****** 	- fixed error in void iefl(..) that was triggered by trying
+****** 	  to insert elements close to (i.e. within machine presision)
+****** 	  but not exactly at the upstream or downstream end of an element.
+****** 	- added additional error checking and throwing exceptions
+****** 	  to iefl(..) and beamline::InsertElementsFromList(..)
+****** 	- thanks to Eric Stern for reporting the error, for his analysis
+****** 	  of the circumstances that triggered it, and for testing the
+****** 	  updated version of this file.
+******
+****** 	Dec 2013     michelotti@fnal.gov
+****** 	- made changes suggested by Jim Amundson to reduce number
+****** 	  of compiler warnings. These should not alter behavior.
 ******
 **************************************************************************
 *************************************************************************/
@@ -1348,7 +1353,7 @@ beamline::iterator beamline::moveRel( int axis, double const& u, beamline::itera
       it = erase( --it );
       putAbove( it, slotPtr );
   }
-  else if( sp = boost::dynamic_pointer_cast<Slot>(upStreamPtr) ) {
+  else if( (sp = boost::dynamic_pointer_cast<Slot>(upStreamPtr)) ) {
     sp->setInFrame ( frameZero );
     sp->setOutFrame( frameOne );
     sp->pinnedFrames_.downStream ( (thePtr->pinnedFrames_).upStream() );  // ??? This is not quite right.
@@ -1363,7 +1368,7 @@ beamline::iterator beamline::moveRel( int axis, double const& u, beamline::itera
       putAbove( it, slotPtr );
       --it; --it;
    }
-   else if( sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr) ) {
+   else if( (sp = boost::dynamic_pointer_cast<Slot>(downStreamPtr)) ) {
       sp->setInFrame( frameZero );
       sp->setOutFrame( frameThree.relativeTo(frameTwo) );
       sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() ); // ??? This is not quite right.
@@ -1533,12 +1538,12 @@ beamline::iterator beamline::rotateRel(   int axis, double const& angle, iterato
 
    // Reset upstream and downstream elements
 
-   if(  sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr ) ) {
+   if(  (sp = boost::dynamic_pointer_cast<Slot>( upStreamPtr )) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameOne );
         sp->pinnedFrames_.downStream( (thePtr->pinnedFrames_).upStream() );
    }
-   if( sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr ) ) {
+   if( (sp = boost::dynamic_pointer_cast<Slot>( downStreamPtr )) ) {
         sp->setInFrame( frameZero );
         sp->setOutFrame( frameThree.relativeTo(frameTwo) );
         sp->pinnedFrames_.upStream( (thePtr->pinnedFrames_).downStream() );

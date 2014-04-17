@@ -43,9 +43,7 @@
 ******  - initialization optimizations
 ********************************************************************************
 *************************************************************************/
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 /*
  *  This "lattice function" method is based on

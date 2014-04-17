@@ -46,9 +46,7 @@
 ******     read/write of ".bml" files via stream operators.           ****
 ******                                                                ****/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <iomanip>
 #include <basic_toolkit/GenericException.h>

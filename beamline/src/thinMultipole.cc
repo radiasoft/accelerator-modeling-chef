@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 using namespace std;
+using FNAL::pcerr;
+using FNAL::pcout;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -44,11 +46,12 @@ thinMultipole::thinMultipole ()
  static bool firstCall = true;
 
  if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.                      " );
-   printf( "\n*** SORRY:                                       \n" );
+   (*pcerr) << "\n*** SORRY:                                         ";
+   (*pcerr) << "\n*** SORRY: class thinMultipole is not implemented. ";
+   (*pcerr) << "\n*** SORRY: A marker will be substituted            ";
+   (*pcerr) << "\n*** SORRY: for each instance.                      ";
+   (*pcerr) << "\n*** SORRY:                                       \n";
+   (*pcerr) << endl;   
    firstCall = false;
  }
 
@@ -64,11 +67,12 @@ thinMultipole::thinMultipole ( char const* name)
  static bool firstCall = true;
 
  if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.                      " );
-   printf( "\n*** SORRY:                                       \n" );
+   (*pcerr) << "\n*** SORRY:                                         ";
+   (*pcerr) << "\n*** SORRY: class thinMultipole is not implemented. ";
+   (*pcerr) << "\n*** SORRY: A marker will be substituted            ";
+   (*pcerr) << "\n*** SORRY: for each instance.                      ";
+   (*pcerr) << "\n*** SORRY:                                       \n";
+   (*pcerr) << endl;   
    firstCall = false;
  }
 
@@ -84,12 +88,13 @@ thinMultipole::thinMultipole ( const char* n, double const& s )
  static bool firstCall = true;
 
  if ( firstCall ) {
-   printf( "\n*** SORRY:                                         " );
-   printf( "\n*** SORRY: class thinMultipole is not implemented. " );
-   printf( "\n*** SORRY: A marker will be substituted            " );
-   printf( "\n*** SORRY: for each instance.   Length and tilt    " );
-   printf( "\n*** SORRY: information are being ignored.          " );
-   printf( "\n*** SORRY:                                       \n" );
+   (*pcerr) << "\n*** SORRY:                                         ";
+   (*pcerr) << "\n*** SORRY: class thinMultipole is not implemented. ";
+   (*pcerr) << "\n*** SORRY: A marker will be substituted            ";
+   (*pcerr) << "\n*** SORRY: for each instance.   Length and tilt    ";
+   (*pcerr) << "\n*** SORRY: information are being ignored.          ";
+   (*pcerr) << "\n*** SORRY:                                       \n";
+   (*pcerr) << endl;   
    firstCall = false;
  }
 }

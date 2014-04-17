@@ -183,7 +183,7 @@ struct ScratchArea {
 
   // factory functions -------------------------------------------
 
-  static void                       BeginEnvironment(int maxweight); 
+  static void        BeginEnvironment(int maxweight); 
   static EnvPtr<T>   EndEnvironment(double* scale=0);
 
   static EnvPtr<T>   makeJetEnvironment(int maxweight, int nvar, int spacedim, T* refpoints=0, double* scale=0);
@@ -254,8 +254,8 @@ struct ScratchArea {
    const IntArray& allZeroes() const                         { return scratch_->allZeroes_; }     
    int             maxTerms()  const                         { return scratch_->maxTerms_;}
 
-   static EnvPtr<T> const& getLastEnv()                  { return  lastEnv_; }
-   static EnvPtr<T>        setLastEnv( EnvPtr<T> pje)    { lastEnv_ = pje;  return pje;} 
+   static EnvPtr<T> const& getLastEnv();
+   static EnvPtr<T> const& setLastEnv( EnvPtr<T> const& pje);
 
   
    // debugging 
@@ -333,6 +333,20 @@ inline int  TJetEnvironment<T>::offsetIndex(IntArray const& exp) const
   return scratch_->offsetIndex(exp);
 }
 
+template <typename T>
+inline EnvPtr<T> const& TJetEnvironment<T>::getLastEnv()
+{ 
+  return  lastEnv_;
+}
+
+template <typename T>
+inline EnvPtr<T> const& TJetEnvironment<T>::setLastEnv( EnvPtr<T> const& pje)
+{ 
+  lastEnv_ = pje;
+  return lastEnv_;
+}
+
+  
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 

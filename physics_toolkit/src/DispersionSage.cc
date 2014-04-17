@@ -57,9 +57,7 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
@@ -356,7 +354,6 @@ int DispersionSage::doCalc( JetParticle& jp )
   Jet__environment::setLastEnv( storedEnv );
 
 
-  // Attach initial dispersion data to the beamline ...
 
 
   // Attach dispersion data wherever desired ...
@@ -365,7 +362,8 @@ int DispersionSage::doCalc( JetParticle& jp )
     (*pcout).flush();
   }
 
-  calcs_.clear();
+
+  // Attach initial dispersion data to the beamline ...
 
   double lng = 0.0;
 

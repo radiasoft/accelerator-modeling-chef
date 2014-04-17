@@ -6,40 +6,45 @@
 ******
 ******  File:      TML.cc
 ******
-******  Copyright (c) Universities Research Association, Inc.
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
 ******                All Rights Reserved
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
 ******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******
-******                                                                
-******  Author:    Leo Michelotti                                     
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******             Email: michelotti@fnal.gov                         
+******  Author:    Leo Michelotti
+******             michelotti@fnal.gov
 ****** 
-******  Revision (Sep 2005 - Dec 2005):
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  Sep-Dec 2005   Jean-Francois Ostiguy
+******                 ostiguy@fnal.gov
+******  
+******  - refactored code to use single template parameter instead of two
+******  - introduced implicit conversions
+******  - using boost::intrusive_pointer for reference counting
+******  - eliminated access to internals of implementation class (TML) from class TMatrix.
+******  - eliminated separate MatrixC class implementation (used to be derived from Matrix<T1,T2>)
+******  - organized code to support both implicit and explicit template instantiations
+******  - fixed incorrect complex version of eigenvalues/eigenvectors 
+******  - separated eigenvalue/eigenvector reordering function 
 ******
-******             Jean-Francois Ostiguy
-******             ostiguy@fnal.gov                                   
-******             
-******   - refactored code to use single template parameter instead of two
-******   - introduced implicit conversions 
-******   - using boost::intrusive_pointer for reference counting
-******   - eliminated access to internals of implementation class (TML) from class TMatrix.
-******   - eliminated separate MatrixC class implementation (used to be derived from Matrix<T1,T2>)
-******   - organized code to support both implicit and explicit template instantiations
-******   - fixed incorrect complex version of eigenvalues/eigenvectors 
-******   - separated eigenvalue/eigenvector reordering function 
+******  Dec 2013           michelotti@fnal.gov
+******  - incorporated change, introduced by Jim Amundson, which removes
+******    compiler warning: double use of "k++" within one line.
+******
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -157,7 +162,6 @@ MLPtr<double> real_part( MLPtr<std::complex<double> > const& x )
   double*               q = ret->mdata_[0];
 
   for(  int i=0; i< sz; ++i ) {
-   
       (*q) = std::real (*p);
       ++q; ++p;
   }
@@ -177,7 +181,6 @@ MLPtr<double> imag_part( MLPtr<std::complex<double> > const& z )
   double*               q =   x->mdata_[0];
 
   for(  int i=0; i< sz; ++i ) {
-   
       (*q) = std::imag(*p);
       ++q; ++p;
   }
@@ -191,7 +194,6 @@ MLPtr<double> imag_part( MLPtr<std::complex<double> > const& z )
 template<>
 MLPtr<std::complex<double> > TML<double>::eigenVectors()  const
 {
-
   double* wr = new double[ncols_];
   double* wi = new double[ncols_];
 
@@ -303,7 +305,6 @@ MLPtr<std::complex<double> > TML<double>::eigenValues() const
   double* b     = new double[nrows_*ncols_];
   double* c     = new double[nrows_*ncols_];
 
-  int oddEven   = nrows/2;
   int realCount = 0;
 
   MLPtr<std::complex<double> > eigenvectors(  new TML<std::complex<double> >(nrows_, ncols_, complex_0));
@@ -381,8 +382,8 @@ MLPtr<std::complex<double> > TML<double>::eigenValues() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const { 
-
+MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const 
+{
   int nm   = nrows_;
   int n    = ncols_;
   int matz = 1;       // eigenvectors needed ?
@@ -433,7 +434,8 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
  k = 0;
  for( i=0; i < nrows_; i++) {
     for( j=0; j< ncols_; j++) {
-      eigenvectors->mdata_[j][i] = std::complex<double>( cr[k++],ci[k++] );  // NOTE transposition
+      eigenvectors->mdata_[j][i] = std::complex<double>( cr[k],ci[k+1] );  // NOTE transposition
+      k += 2;
     }
   }
 
@@ -471,7 +473,7 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
        eigenvectors->switch_columns(1,i);
       eigenvalues->switch_columns(1,i);
       if((oddEven*2) == nm)
-	 eigenvectors->switch_columns(1+oddEven,oddEven+i);   
+	 eigenvectors->switch_columns(1+oddEven,oddEven+i);
         eigenvalues->switch_columns(1+oddEven,oddEven+i); 
     }
   }
@@ -483,8 +485,8 @@ MLPtr<std::complex<double> > TML<std::complex<double> >::eigenValues() const {
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 template<>
-MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const {
-
+MLPtr<std::complex<double> > TML<std::complex<double> >::eigenVectors() const
+{
   int nm   = nrows_;
   int n    = ncols_;
   int matz = 1;
@@ -593,10 +595,10 @@ TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigen
 // index 2: ct    ( =z only when beta=1)  
 // index 3: xp    (px/p)  
 // index 4: yp    (py/p)  
-// index 5: dp/p    
+// index 5: dp/p
 // 
 // The matrix of eigenvectors returned from the eigensolver is *not* not ordered
-// in a way consistent with the convention for phase space coordinates.    
+// in a way consistent with the convention for phase space coordinates.
 // 
 // Assuming A is real symplectic matrix, the eigenvalues and eigenvectors must obey the following constraints  
 // 
@@ -607,11 +609,11 @@ TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigen
 //  
 // consequences: pure real eigenvalues always appear in pairs: lambda and 1/lambda  
 //               pure imag eigenvalues always appear in quads: jlambda, -j/lambda, -jlambda, j/lambda (1/2 int resonance ?)
-//               complex conjugate pairs have corresponding complex conjugate eigenvectors.   
+//               complex conjugate pairs have corresponding complex conjugate eigenvectors.
 //
 // The code below reorders columns of the eigenvector and eigenvalue matrices of a *symplectic matrix* 
 // Assuming that  all the eigenvalues are complex (the most likely case) or that only one pair of eigenvalues is real.  
-// The latter case corresponds to a coasting beam, i.e. no RF.    
+// The latter case corresponds to a coasting beam, i.e. no RF.
 // 
 // In the general, stable case where all eigenvalues are complex, the column ordering 
 // produced by the eigensolver would be as follows
@@ -628,7 +630,7 @@ TML<std::complex<double> >::orderCoordinates(MLPtr<std::complex<double> >& eigen
 // lambda and lambda* must correspond to a couple of conjugate (in the Hamiltonian sense) variables
 // (x,xp). Similarly, lambda and 1/lambda  correspond to Hamiltonian conjugates.
 //
-// The goal is to get an ordering of the form   
+// The goal is to get an ordering of the form
 // 
 // 0:lambda_1, 1:lambda_2, 2:lambda_3, 3:lambda_1*, 4:lambda_2*, 5:lambda_3* )
 //
@@ -659,7 +661,7 @@ if(    (eigenvectors->nrows_ == PHASESPACE)
   if( std::imag(eigenvalues->mdata_[0][0]) == 0.0) {          //   0:real  1:?     2:?        3:?        4:?        5:? 
 //-------------------------------------------------------------
  
-    if( std::imag(eigenvalues->mdata_[0][1]) == 0.0)         {  //  0:real, 1:real, 2:complex, 3:complex, 4: complex, 5: complex          
+    if( std::imag(eigenvalues->mdata_[0][1]) == 0.0)         {  //  0:real, 1:real, 2:complex, 3:complex, 4: complex, 5: complex
         eigenvectors->switch_columns(0,2); 
         eigenvectors->switch_columns(1,4); 
         eigenvectors->switch_columns(4,5);
@@ -668,16 +670,16 @@ if(    (eigenvectors->nrows_ == PHASESPACE)
         eigenvalues->switch_columns(4,5);
 
      } else if( std::imag(eigenvalues->mdata_[0][3]) == 0.0) {   //  0:real, 1:complex, 2:complex, 3:real, 4: complex, 5: complex 
-        eigenvectors->switch_columns(2,3);                       
+        eigenvectors->switch_columns(2,3);
         eigenvectors->switch_columns(0,1);
         eigenvectors->switch_columns(2,4);
         eigenvectors->switch_columns(4,5);
-        eigenvalues->switch_columns(2,3);                       
+        eigenvalues->switch_columns(2,3);
         eigenvalues->switch_columns(0,1);
         eigenvalues->switch_columns(2,4);
         eigenvalues->switch_columns(4,5);
 
-     } else if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {   //   0:real, 1:complex, 2:complex, 3:complex, 4:complex, 5:real   
+     } else if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {   //   0:real, 1:complex, 2:complex, 3:complex, 4:complex, 5:real
         eigenvectors->switch_columns(2,3);
         eigenvectors->switch_columns(0,1);
         eigenvectors->switch_columns(1,2);
@@ -686,13 +688,13 @@ if(    (eigenvectors->nrows_ == PHASESPACE)
         eigenvalues->switch_columns(1,2);
      }
 //-------------------------------------------------------------
-  }   else if( std::imag(eigenvalues->mdata_[0][2]) == 0.0) {    //   0:complex, 1:complex, 2:real, 3:?,  4: ?,       5: ?    
+  }   else if( std::imag(eigenvalues->mdata_[0][2]) == 0.0) {    //   0:complex, 1:complex, 2:real, 3:?,  4: ?,       5: ?
 //-------------------------------------------------------------
 
-     if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {         //   0:complex, 1:complex, 2:real, 3:complex, 4: complex, 5: real    
+     if( std::imag(eigenvalues->mdata_[0][5]) == 0.0) {         //   0:complex, 1:complex, 2:real, 3:complex, 4: complex, 5: real
         eigenvectors->switch_columns(1,3);
         eigenvalues->switch_columns(1,3);
-     } else if( std::imag(eigenvalues->mdata_[0][3]) == 0.0) {  //   0:complex, 1:complex, 2:real, 3:real,    4: complex, 5: complex    
+     } else if( std::imag(eigenvalues->mdata_[0][3]) == 0.0) {  //   0:complex, 1:complex, 2:real, 3:real,    4: complex, 5: complex
         eigenvectors->switch_columns(4,5);
         eigenvectors->switch_columns(1,5);
         eigenvectors->switch_columns(3,5);
@@ -704,7 +706,7 @@ if(    (eigenvectors->nrows_ == PHASESPACE)
 //-------------------------------------------------------------
   } else if( std::imag(eigenvalues->mdata_[0][4]) == 0.0) {    //   0:complex, 1:complex, 2:complex, 3:complex, 4: real, 5: real
 //-------------------------------------------------------------
-    
+
       eigenvectors->switch_columns(3,4);
       eigenvectors->switch_columns(1,2);
       eigenvectors->switch_columns(2,3);

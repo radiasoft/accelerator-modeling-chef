@@ -75,9 +75,7 @@
 **************************************************************************
 *************************************************************************/
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
+
 
 #include <complex>
 #include <iomanip>
@@ -491,15 +489,11 @@ int         old_jltermStoreCapacity   = 0;
 template<typename T>
 int TJL<T>::getCount() const { 
 
-  const double eps = mx_small_;
-
   // returns the "non-zero" term count 
 
   int count = count_;
 
   int lterms = myEnv_->numVar(); 
-
-  TJLterm<T> const * p =jltermStore_;
 
   //-----------------------------------------------------
   // add the non-zero *linear* terms, if any 
@@ -981,6 +975,7 @@ T TJL<T>::operator()( Vector const& x ) const
   return this->operator()( newarg );
 }
 
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -997,8 +992,11 @@ double TJL<T>::maxAbs( ) const {
  return maxabs;
 
 }
+
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 JLPtr<T> TJL<T>::filter( int const& wgtLo, int const& wgtHi ) const 
@@ -1020,28 +1018,29 @@ JLPtr<T> TJL<T>::filter( int const& wgtLo, int const& wgtHi ) const
  int      wgt = 0;
  int upperWgt = 0;
  
- for ( TJLterm<T> const *p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
+ for ( TJLterm<T> const *p = jltermStore_; p < jltermStoreCurrentPtr_; ++p ) {
 
    wgt = p->weight_;
    if( (wgt < 2) && (wgt >= wgtLo) && ( wgt <= wgtHi ) ) {
-     int indy = p->offset_;
-     z->jltermStore_[indy].value_ = p->value_;
-     upperWgt = std::max(  wgt, upperWgt); 
+     z->jltermStore_[p->offset_].value_ = p->value_;
+     upperWgt = std::max( wgt, upperWgt ); 
    }
    else if( ( wgt >= wgtLo ) && ( wgt <= wgtHi ) ) {
      z->append(*p);
-     upperWgt = std::max(  wgt, upperWgt); 
+     upperWgt = std::max( wgt, upperWgt ); 
    }
  }
  
- z->weight_  = upperWgt;             // ??? Where is the copy of the re
+ z->weight_  = upperWgt;             // ??? Where is the copy of the
  z->accuWgt_ = accuWgt_;             // ??? reference point???
 
  return z;
 }
 
+
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 JLPtr<T> TJL<T>::filter( bool (*f) ( IntArray const& index, T const& ) ) const 
@@ -1049,25 +1048,35 @@ JLPtr<T> TJL<T>::filter( bool (*f) ( IntArray const& index, T const& ) ) const
 
  JLPtr<T> z( TJL<T>::makeTJL(myEnv_) );
 
- int nv = myEnv_->numVar();
+ int      wgt = 0;
+ int upperWgt = 0;
+ 
+ for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p ) {
 
- for ( TJLterm<T>* p = jltermStore_; p < jltermStoreCurrentPtr_; ++p) {
+   if( (*f)(  myEnv_->exponents(p->offset_), p->value_ ) ) {
 
-  if( (*f)(  myEnv_->exponents(p->offset_), p->value_ ) ) {
-
-     if( p->weight_ < 2 ) {
+     wgt = p->weight_;
+     if( wgt < 2 ) {
        z->jltermStore_[p->offset_].value_ = p->value_;
      }
      else {
-         z->append(*p);
+       z->append(*p);
      }
-  }
+     upperWgt = std::max( wgt, upperWgt ); 
+
+   }
  }
+
+ z->weight_  = upperWgt;             // ??? Where is the copy of the
+ z->accuWgt_ = accuWgt_;             // ??? reference point???
+
  return z;
 }
 
+
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 template<typename T>
 JLPtr<T> TJL<T>::truncMult( JLPtr<T> const& v, const int& wl ) const 

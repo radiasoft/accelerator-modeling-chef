@@ -205,12 +205,12 @@ template ConvolutionFunctorImpl<double>::ConvolutionFunctorImpl( int, BOOST_TYPE
 template ConvolutionFunctor<double>::ConvolutionFunctor( int, BOOST_TYPEOF(  boost::bind<double>( ShortRangeTWakeFunction(),  _1,  0.0,  0.0 )), bool);
 
 
-template class boost::function1<bool,   bmlnElmnt const*,   std::allocator<void> >;
-template class boost::function1<bool,   bmlnElmnt const&,   std::allocator<void> >;
-template class boost::function1<double, int,                std::allocator<void> >;
-template class boost::function1<void,   TBunch<Particle>&,  std::allocator<void> >;
-template class boost::function1<double, TJet<double> const&,std::allocator<void> >;
-template class boost::function1<double, double const&,      std::allocator<void> >;
+template class boost::function2<bool,   bmlnElmnt const*,   std::allocator<void> >;
+template class boost::function2<bool,   bmlnElmnt const&,   std::allocator<void> >;
+template class boost::function2<double, int,                std::allocator<void> >;
+template class boost::function2<void,   TBunch<Particle>&,  std::allocator<void> >;
+template class boost::function2<double, TJet<double> const&,std::allocator<void> >;
+template class boost::function2<double, double const&,      std::allocator<void> >;
 
   // we force instantiation of an anomymous function objects. In that case, this turns out to be easier that attempting to 
   // instantiatiate the right templates ...

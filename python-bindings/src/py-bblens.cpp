@@ -25,13 +25,12 @@
 *********************************************************************************
 *********************************************************************************
 ********************************************************************************/
+#include <boost/python.hpp>
 
 #include <beamline/Particle.h>
 #include <beamline/JetParticle.h>
 #include <beamline/ParticleBunch.h>
 #include <beamline/BBLens.h>
-
-#include <boost/python.hpp>
 
 //-------------------------------------------------------------------------------
 // local code and definitions
