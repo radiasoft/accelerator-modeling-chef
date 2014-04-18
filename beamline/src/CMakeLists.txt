@@ -13,7 +13,8 @@ set(SRCS alignment.cc                    gkick.cc                        read_is
 	 CF_rbend.cc                     marker.cc                       Slot.cc
 	 CF_rbendPropagators.cc          MarkerPropagators.cc            SlotPropagators.cc
 	 CF_sbend.cc                     monitor.cc                      Solenoid.cc
-	 CF_sbendPropagators.cc          MonitorPropagators.cc           SolenoidPropagators.cc
+	 CF_sbendPropagators.cc          CF_sbend_MADPropagator.cc
+	 MonitorPropagators.cc           SolenoidPropagators.cc
 	 circuit.cc                      mover.cc                        srot.cc
 	 combinedFunction.cc             octupole.cc                     SRotPropagators.cc
 	 CombinedFunctionPropagators.cc  OctupolePropagators.cc          TBunch.cc

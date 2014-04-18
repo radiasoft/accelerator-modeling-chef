@@ -53,6 +53,6 @@ using namespace boost::python;
 void wrap_cf_sbend_madpropagator() 
 {
   class_<BasePropagator<CF_sbend>, boost::noncopyable >("BasePropagator_CF_sbend", no_init);
-  class_<CF_sbend_MADPropagator, bases<BasePropagator<CF_sbend> >, CF_sbend_MADPropagatorPtr >("CF_sbend_MADPropagator", init<int>() );
+  class_<CF_sbend_MADPropagator, bases<BasePropagator<CF_sbend> >, CF_sbend_MADPropagatorPtr >("CF_sbend_MADPropagator", init< >() );
 }
 
