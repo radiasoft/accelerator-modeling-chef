@@ -19,7 +19,8 @@ target_link_libraries(pymxyzptlk ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_L
 
 set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
           py-bblens.cpp py-bmlnelmnt.cpp py-beamline.cpp py-drift.cpp
-          py-sbend.cpp py-cf_sbend.cpp py-cf_rbend.cpp py-lambertson.cpp
+          py-sbend.cpp py-cf_sbend.cpp py-cf_sbend_madpropagator.cpp
+          py-cf_rbend.cpp py-lambertson.cpp
           py-mover.cpp py-marker.cpp py-monitor.cpp py-quadrupole.cpp
           py-octupole.cpp py-sextupole.cpp py-septum.cpp py-sector.cpp
           py-slot.cpp py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp
