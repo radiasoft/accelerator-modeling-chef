@@ -53,6 +53,6 @@ using namespace boost::python;
 void wrap_yoshidapropagator() 
 {
   class_<BasePropagator<quadrupole>, boost::noncopyable >("BasePropagator_quadrupole", no_init);
-  class_<YoshidaPropagator, bases<BasePropagator<quadrupole> >, YoshidaPropagatorPtr >("YoshidaPropagator", init<int>() );
+  class_<YoshidaPropagator, bases<BasePropagator<quadrupole> >, YoshidaPropagatorPtr >("YoshidaPropagator", init<int, int>() );
 }
 
