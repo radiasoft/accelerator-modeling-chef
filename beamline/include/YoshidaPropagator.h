@@ -63,8 +63,8 @@ class YoshidaPropagator : public BasePropagator<quadrupole>
  public:
 
   // ctors
-  YoshidaPropagator( int order = 3 );  // Number of thin kicks will be 3^order
-                                       // e.g. by default, 3^3 = 27 thin kicks
+  YoshidaPropagator( int order = 3, int steps = 1 );  // Number of thin kicks will be 3^order
+                                                      // e.g. by default, 3^3 = 27 thin kicks
   YoshidaPropagator( YoshidaPropagator const& ); // Should not be necessary
 
   ~YoshidaPropagator() {}
@@ -81,6 +81,7 @@ class YoshidaPropagator : public BasePropagator<quadrupole>
  private:
 
   int    order_;
+  int    steps_;
   double accum_az_;
   double accum_kick_;
   double prev_az_;

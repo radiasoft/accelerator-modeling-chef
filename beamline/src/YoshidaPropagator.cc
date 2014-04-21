@@ -105,8 +105,9 @@ using FNAL::pcout;
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-YoshidaPropagator::YoshidaPropagator( int n )
+YoshidaPropagator::YoshidaPropagator( int n, int steps )
 : order_(n),
+  steps_(steps),
   accum_az_(0.0),
   accum_kick_(0.0),
   prev_az_(0.0),
@@ -115,14 +116,28 @@ YoshidaPropagator::YoshidaPropagator( int n )
   if( order_ < 0 ) {
     (*pcerr) << "*** ERROR *** "
              << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
-             << "\nYoshidaPropagator constructor called with negative argument = "
+             << "\nYoshidaPropagator constructor called with negative order argument = "
              << order_
              << endl;
 
     ostringstream uic;
-    uic  << "Constructor called with negative argument = " << order_;
+    uic  << "Constructor called with negative order argument = " << order_;
     throw( GenericException( __FILE__, __LINE__,
-           "YoshidaPropagator::YoshidaPropagator( int n )",
+           "YoshidaPropagator::YoshidaPropagator( int order, int steps )",
+           uic.str().c_str() ) );
+  }
+
+  if( steps_ < 0 ) {
+    (*pcerr) << "*** ERROR *** "
+             << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
+             << "\nYoshidaPropagator constructor called with negative steps argument = "
+             << steps_
+             << endl;
+
+    ostringstream uic;
+    uic  << "Constructor called with negative steps argument = " << steps_;
+    throw( GenericException( __FILE__, __LINE__,
+           "YoshidaPropagator::YoshidaPropagator( int order, int steps )",
            uic.str().c_str() ) );
   }
 }
@@ -199,25 +214,27 @@ void YoshidaPropagator::setup( quadrupole& arg)
   // Apply modified Yoshida algorithm
   // using recursive method generate_map_
   // --------------------------------
-  accum_az_   = 0.0;
   accum_kick_ = 0.0;
-  prev_az_    = 0.0;
 
   my_beamline_ptr_ = BmlPtr( new beamline );
 
-  generate_map_( order_, arg.Length(), arg.Strength() );
+  for( int step = 0 ; step < steps_ ; ++step ) {
+    accum_az_   = 0.0;
+    prev_az_    = 0.0;
+    generate_map_( order_, arg.Length()/steps_, arg.Strength() );
 
 
-  // A final drift must be added to get the particle
-  // to the end of the element.
-  // --------------------------
-  my_beamline_ptr_->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
+    // A final drift must be added to get the particle
+    // to the end of the step.
+    // --------------------------
+    my_beamline_ptr_->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
+  }
   prev_az_ = accum_az_;
 
 
   // Test before returning
   // ---------------------
-  if( 1.0e-12 < abs( accum_az_ - arg.Length() ) )
+  if( 1.0e-12 < abs( accum_az_ - arg.Length()/steps_ ) )
   {
     (*pcerr) << "*** ERROR *** "
              << "\n*** ERROR *** " << __FILE__ << ", " << __LINE__
