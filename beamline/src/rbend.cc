@@ -396,12 +396,23 @@ const char* rbend::Type() const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-double rbend::OrbitLength( Particle const& x )
+double rbend::OrbitLength( Particle const& x ) const
 {
   // Computes arclength of orbit assuming a symmetric bend.
   // WARNING: This is not the true arclength under all conditions.
   double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength_;
   return tworho * asin( length_ / tworho );
+}
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double rbend::OrbitLength( Particle const& x )
+{
+    // Computes arclength of orbit assuming a symmetric bend.
+    // WARNING: This is not the true arclength under all conditions.
+    double tworho = 2.0 * ( x.Momentum() / PH_CNV_brho_to_p ) / strength_;
+    return tworho * asin( length_ / tworho );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

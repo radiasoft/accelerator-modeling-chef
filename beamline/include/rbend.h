@@ -170,6 +170,7 @@ class DLLEXPORT rbend : public bmlnElmnt
   const char* Type() const;
   bool isMagnet() const;
 
+  double OrbitLength( Particle const& ) const;
   double OrbitLength( Particle const& );
     // Computes arclength of orbit assuming a symmetric bend.
     // WARNING: This is not the true arclength under all conditions.

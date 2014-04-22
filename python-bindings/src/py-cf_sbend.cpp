@@ -45,6 +45,7 @@ double (CF_sbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_sb
 double (CF_sbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_sbend::setExitAngle;
 double (CF_sbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_sbend::setExitAngle;
 
+double (CF_sbend::*OrbitLength_nonconst)           (const Particle &  ) = &CF_sbend::OrbitLength;
 // The following functions exist in the header file CF_sbend.h but currently have no implementation.
 
 //double (CF_sbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_sbend::AdjustPosition;
@@ -81,7 +82,7 @@ void wrap_cf_sbend () {
   .def("hasStandardFaces",        &CF_sbend::hasStandardFaces) 
 //.def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
 //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
-  .def("OrbitLength",             &CF_sbend::OrbitLength);
+  .def("OrbitLength",             OrbitLength_nonconst);
 
 }
 

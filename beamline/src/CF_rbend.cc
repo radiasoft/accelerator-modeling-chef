@@ -812,6 +812,16 @@ double CF_rbend::OrbitLength( Particle const& p ) const
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double CF_rbend::OrbitLength( Particle const& p )
+{
+    double tworho = 2.0 * ( p.Momentum() / PH_CNV_brho_to_p ) / strength_;
+    return tworho * asin( length_ / tworho );
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
 double CF_rbend::AdjustPosition( Particle const& p )
 {

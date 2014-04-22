@@ -118,6 +118,7 @@ class DLLEXPORT Slot : public bmlnElmnt
    Frame const& getOutFrame() const
      { return out_; }
 
+   double OrbitLength( Particle const& ) const;
    double OrbitLength( Particle const& );
 
 

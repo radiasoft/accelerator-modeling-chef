@@ -336,24 +336,33 @@ int Slot::checkFrame( Frame const& f ) const
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+double Slot::OrbitLength( const Particle& x ) const
+{
+  return length_;
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 double Slot::OrbitLength( const Particle& x )
 {
 #ifdef ENABLE_PEDANTIC_WARNINGS
-  static bool firstTime = true;
-
-  if( firstTime ) {
-      firstTime = false;
-      (*pcerr) << "*** WARNING ***                                 \n"
-              "*** WARNING *** Slot::OrbitLength               \n"
-              "*** WARNING *** Returning the design length of  \n"
-              "*** WARNING *** empty slots rather then the     \n"
-              "*** WARNING *** orbit length.                   \n"
-              "*** WARNING ***                                 \n"
-           << endl;
-  }
+    static bool firstTime = true;
+    
+    if( firstTime ) {
+        firstTime = false;
+        (*pcerr) << "*** WARNING ***                                 \n"
+                    "*** WARNING *** Slot::OrbitLength               \n"
+                    "*** WARNING *** Returning the design length of  \n"
+                    "*** WARNING *** empty slots rather then the     \n"
+                    "*** WARNING *** orbit length.                   \n"
+                    "*** WARNING ***                                 \n"
+                 << endl;
+    }
 #endif //ENABLE_PEDANTIC_WARNINGS
-
-  return length_;
+    
+    return length_;
 }
 
 

@@ -44,6 +44,8 @@ double (CF_rbend::*setEntryAngleParticle_Ptr)   (const Particle&      ) = &CF_rb
 double (CF_rbend::*setExitAngleDouble_Ptr)      (double const&        ) = &CF_rbend::setExitAngle;
 double (CF_rbend::*setExitAngleParticle_Ptr)    (const Particle&      ) = &CF_rbend::setExitAngle;
 
+double (CF_rbend::*OrbitLength_nonconst)        (const Particle &     ) = &CF_rbend::OrbitLength;
+
 // The following functions exist in the header file CF_rbend.h but currently have no implementation.
 
 //double (CF_rbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_rbend::AdjustPosition;
@@ -80,7 +82,7 @@ void wrap_cf_rbend () {
   .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
     //  .def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
     //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
-  .def("OrbitLength",             &CF_rbend::OrbitLength);
+  .def("OrbitLength",             OrbitLength_nonconst);
 
 }
 

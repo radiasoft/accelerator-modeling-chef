@@ -50,6 +50,7 @@ void   (bmlnElmnt::* leaveLocalFrame_jetparticle)(  JetParticle& )  const =  &bm
 void   (bmlnElmnt::* localPropagate_particle)    (     Particle& )        =  &bmlnElmnt::localPropagate; 
 void   (bmlnElmnt::* localPropagate_jetparticle) (  JetParticle& )        =  &bmlnElmnt::localPropagate; 
 void   (bmlnElmnt::* setReferenceTime_double   ) ( double const& )        =  &bmlnElmnt::setReferenceTime;
+double (bmlnElmnt::* OrbitLength_nonconst )      ( const Particle& )      =  &bmlnElmnt::OrbitLength;
 
 }
 
@@ -74,7 +75,7 @@ void wrap_bmlnelmnt() {
     .def("setReferenceTime",              setReferenceTime_double )
     .def("Current",                       &bmlnElmnt::Current     )
     .def("Type",                          &bmlnElmnt::Type        )
-    .def("OrbitLength",                   &bmlnElmnt::OrbitLength )
+    .def("OrbitLength",                   OrbitLength_nonconst    )
     .def("Split",                         &bmlnElmnt::Split       )
     .def_readwrite("dataHook",            &bmlnElmnt::dataHook);
 }  

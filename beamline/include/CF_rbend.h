@@ -125,6 +125,7 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   bool isMagnet() const;
   
   double OrbitLength( const Particle& ) const;
+  double OrbitLength( const Particle& );
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
     // WARNING: After the Split function is used, the new elements 
     // must be commissioned with RefRegVisitor.

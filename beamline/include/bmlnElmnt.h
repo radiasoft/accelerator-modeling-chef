@@ -385,6 +385,7 @@ class DLLEXPORT bmlnElmnt
   virtual const char*  Type()                   const = 0;
 
 
+  virtual double OrbitLength( Particle const& ) const { return length_; }
   virtual double OrbitLength( Particle const& ) { return length_; }
                                    // Returns length of design orbit
                                    // segment through the element.
