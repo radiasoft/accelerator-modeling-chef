@@ -56,26 +56,26 @@
 #ifndef PHYSC_H
 #define PHYSC_H
 
-#define PDG 2012
+#define PDG_VERSION 2012
 
 #define PH_NORM_h          4.13566733e-24     /* Planck's constant [ GeV-sec ]       */
 #define PH_NORM_hbar       6.58211899e-25     /* Planck's constant [ twopi GeV-sec ] */
 
-#if PDG == 2012
+#if PDG_VERSION == 2012
 #define PH_NORM_me         0.510998928e-3      /* Mass of electron  [GeV/c^2]         */
 #define PH_NORM_mmu        0.1056583715        /* mass of muon      [GeV/c^2]         */
 #define PH_MKS_e           1.602176565e-19    /* Proton charge     [Coulombs]        */
 #define PH_NORM_mp         0.938272046         /* Mass of proton    [GeV/c^2]        */
 
 #else
-#if PDG == 2010 // use PDG 2010 values
+#if PDG_VERSION == 2010 // use PDG_VERSION 2010 values
 
 #define PH_NORM_mp         0.938272013         /* Mass of proton    [GeV/c^2]        */
 #define PH_NORM_me         0.510998910e-3     /* Mass of electron  [GeV/c^2]         */
 #define PH_NORM_mmu        0.105658367        /* mass of muon      [GeV/c^2]         */
 #define PH_MKS_e           1.602176487e-19    /* Proton charge     [Coulombs]        */
 #else
-#if PDG == 2008 // use PDG 2008 value
+#if PDG_VERSION == 2008 // use PDG_VERSION 2008 value
 
 #define PH_NORM_mp         0.938272013         /* Mass of proton    [GeV/c^2]        */
 #define PH_NORM_me         0.510998910e-3     /* Mass of electron  [GeV/c^2]         */
@@ -83,7 +83,7 @@
 #define PH_MKS_e           1.602176487e-19    /* Proton charge     [Coulombs]        */
 
 #else
-#if PDG == -1 // legacy
+#if PDG_VERSION == -1 // legacy
 
 #define PH_NORM_mp         0.93827203         /* Mass of proton    [GeV/c^2]         */
 #define PH_NORM_me         0.51099892e-3      /* Mass of electron  [GeV/c^2]         */
@@ -91,7 +91,7 @@
 #define PH_MKS_e           1.602176487e-19    /* Proton charge     [Coulombs]        */
 
 #else // legacy
-#error "No selection for physicsl_constants PDG set"
+#error "No selection for physicsl_constants PDG_VERSION set"
 
 #endif // legacy
 #endif // 2008
