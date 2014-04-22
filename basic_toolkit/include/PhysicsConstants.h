@@ -56,8 +56,7 @@
 #ifndef PHYSC_H
 #define PHYSC_H
 
-// use 2010 values for now
-#define PDG 2010
+#define PDG 2012
 
 #define PH_NORM_h          4.13566733e-24     /* Planck's constant [ GeV-sec ]       */
 #define PH_NORM_hbar       6.58211899e-25     /* Planck's constant [ twopi GeV-sec ] */
