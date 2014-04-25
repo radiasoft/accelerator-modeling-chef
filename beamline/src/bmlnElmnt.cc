@@ -478,20 +478,10 @@ void bmlnElmnt::propagate( JetParticleBunch& x )
 void bmlnElmnt::setLength( double const& x )
 {
   static bool firstTime = true;
-  if( x < 0 ) {
-    (*pcerr) << "*** WARNING *** "
-              "\n*** WARNING *** bmlnElmnt::setLength"
-              "\n*** WARNING *** Lengths must be positive."
-              "\n*** WARNING *** You have entered length " << x
-         <<                    " for " << Type() << "  " << Name()
-         <<   "\n*** WARNING *** The absolute value will be used."
-              "\n*** WARNING *** "
-         << endl;
-  }
-  double newLength = std::abs(x);
+  double newLength = x;
 
-  if( length_ > 0 ) {
-    if( newLength > 0 ) {
+  if( length_ != 0 ) {
+    if( newLength != 0 ) {
       // ??? I am unsure whether it is better to do this      ???
       // ??? here or to zero ctRef_ and REQUIRE another pass  ???
       // ??? with the RefRegVisitor to set it correctly.      ???
@@ -502,9 +492,9 @@ void bmlnElmnt::setLength( double const& x )
     }
     else {
       (*pcerr) <<   "*** ERROR *** :"
-                  "\n*** ERROR *** : " << __FILE__ << "," << __LINE__
+               <<   "\n*** ERROR *** : " << __FILE__ << "," << __LINE__
                << "\n*** ERROR *** : void bmlnElmnt::setLength( double const& x )"
-                  "\n*** ERROR *** : Attempt made to zero the length of "
+               <<   "\n*** ERROR *** : Attempt made to zero the length of "
                <<                    Type() << " " << Name()
                <<                    ", whose current length is "
                <<                    length_
