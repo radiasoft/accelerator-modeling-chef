@@ -205,8 +205,8 @@ void propagate( CF_sbend& elm, Particle_t& p, double[7][7] const re_, double[7][
 
 #if (__GNUC__ == 3) ||  ((__GNUC__ == 4) && (__GNUC_MINOR__ < 2 ))
 
-template void propagate( CF_sbend& elm,    Particle& p );
-template void propagate( CF_sbend& elm, JetParticle& p );
+template void propagate( CF_sbend& elm,    Particle& p, CF_sbend_MADPropagator const* ptr_mlp );
+template void propagate( CF_sbend& elm, JetParticle& p, CF_sbend_MADPropagator const* ptr_mlp );
 
 #endif
 
