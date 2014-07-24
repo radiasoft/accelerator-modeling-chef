@@ -8,28 +8,30 @@
 ******                                    
 ******  File:      rfcavity.h
 ******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
+******  Copyright Fermi Research Alliance LLC / Fermilab
 ******            All Rights Reserved                             
 ******                                                                
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
 ******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359.
 ******  The U.S. Government retains a world-wide non-exclusive, 
 ******  royalty-free license to publish or reproduce documentation 
 ******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws. 
+******                                                                
 ******  
-******  Author:    Leo Michelotti                                     
+******  Author:    Leo Michelotti
 ******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
+******             Email: michelotti@fnal.gov
 ******                                                                
-******                                                                
+******             
 ******  ----------------
 ******  REVISION HISTORY
 ******  ----------------
-******  Mar 2007            ostiguy@fnal.gov
+******  Mar 2007            Jean-Francois Ostiguy
+******                      ostiguy@fnal.gov
 ******  - use covariant return types
 ******  - support for reference counted elements
 ******
@@ -40,9 +42,14 @@
 ******  Apr 2008            michelotti@fnal.gov
 ******  - added placeholder rfcavity::setLength method
 ******
-******  Dec 2012    michelotti@fnal.gov
+******  Dec 2012            michelotti@fnal.gov
 ******  - added functionality for multiple harmonics
 ******    : simple-minded implementation; should be improved some day.
+******
+******  Jul 2014            michelotti@fnal.gov
+******  - added functionality for cavity with frequency not
+******    multiple of the principal harmonic
+******    : to simulate slip stacking.
 ******
 **************************************************************************
 *************************************************************************/
@@ -117,6 +124,7 @@ public:
   void setFrequencyRelativeTo( double const& );
   void     setRadialFrequency( double const& );
   void  setRadialFrequencyRelativeTo( double const& );
+  void  setDisplacedFrequency( double const& freq /* Hz */, double const& ref_rev_period /* sec */ );
   void                 setPhi( double const& radians);  
   void                   setQ( double const& Q);
   void                   setR( double const& R);
@@ -124,6 +132,8 @@ public:
   void              setLength( double const& );
 
   void            addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase );
+
+  void             turnUpdate();
 
   struct multiple_harmonic_parameters
   {
@@ -145,8 +155,8 @@ private:
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
-
   double w_rf_;                 // RF frequency [Hz]
+  double initial_w_rf_;         // for use by cavities with displaced frequency
   double phi_s_;                // synchronous phase
   double sin_phi_s_;            // sine of synchronous phase
 
@@ -154,7 +164,6 @@ private:
 
   double Q_;                    // quality factor
   double R_;                    // shunt impedance
-
   double h_;                    // harmonic number 
                                 //   = ratio cavity frequency to
                                 //     revolution frequency of a ring
@@ -162,6 +171,9 @@ private:
                                 //   but is included for convenience.
 
   std::vector<rfcavity::multiple_harmonic_parameters> my_harmonic_parameters_;
+
+  double displaced_phase_slip_;
+  double cumulative_displaced_phase_slip_;
 
   PropagatorPtr  propagator_;
 };
@@ -214,6 +226,7 @@ public:
   void       setFrequencyRelativeTo( double const& );
   void           setRadialFrequency( double const& );
   void setRadialFrequencyRelativeTo( double const& );
+  void        setDisplacedFrequency( double const& freq /* Hz */, double const& ref_rev_period /* sec */ );
   void                       setPhi( double const& );  // radians
 
   char const* Type() const;
@@ -229,6 +242,8 @@ public:
 
   void    addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase );
 
+  void             turnUpdate();
+
   class thinrfcavity_core_access;
 
 private:
@@ -236,19 +251,25 @@ private:
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
 
-  double w_rf_;                  // RF frequency [Hz]
-  double phi_s_;                 // synchronous phase
-  double sin_phi_s_;             // sine of synchronous phase
-  // The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
-  double Q_;                     // quality factor
-  double R_;                     // shunt impedance
-  double h_;                     // harmonic number 
-                                 //   = ratio cavity frequency to
-                                 //     revolution frequency of a ring
-                                 //   Note: this is *NOT* a cavity attribute,
-                                 //   but is included for convenience.
+  double w_rf_;                 // RF frequency [Hz]
+  double initial_w_rf_;         // for use by cavities with displaced frequency
+  double phi_s_;                // synchronous phase
+  double sin_phi_s_;            // sine of synchronous phase
+
+  // NOTE: The max energy gain per turn [GeV] is represented by bmlnELmnt::strength
+
+  double Q_;                    // quality factor
+  double R_;                    // shunt impedance
+  double h_;                    // harmonic number 
+                                //   = ratio cavity frequency to
+                                //     revolution frequency of a ring
+                                //   Note: this is *NOT* a cavity attribute,
+                                //   but is included for convenience.
 
   std::vector<rfcavity::multiple_harmonic_parameters> my_harmonic_parameters_;
+
+  double displaced_phase_slip_;
+  double cumulative_displaced_phase_slip_;
 
   PropagatorPtr  propagator_;
 };
@@ -260,6 +281,10 @@ class thinrfcavity::thinrfcavity_core_access
   static std::vector<rfcavity::multiple_harmonic_parameters>& get_harmonics_data( thinrfcavity& o ) 
   {
     return o.my_harmonic_parameters_;
+  }
+  static double get_cumulative_displaced_phase_slip( thinrfcavity& o )
+  {
+    return o.cumulative_displaced_phase_slip_;
   }
 };
 

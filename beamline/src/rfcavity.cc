@@ -47,10 +47,13 @@
 ******  - added functionality for multiple harmonics
 ******    : simple-minded implementation; should be improved some day.
 ****** 
+******  Jul 2014    michelotti@fnal.gov
+******  - added functionality for cavity with frequency not
+******    multiple of the principal harmonic
+******    : to simulate slip stacking.
+******
 **************************************************************************
 *************************************************************************/
-
-
 
 #include <iomanip>
 #include <basic_toolkit/GenericException.h>
@@ -73,12 +76,15 @@ using FNAL::pcout;
 rfcavity::rfcavity( const char* name_arg)
 : bmlnElmnt(name_arg, 1.0, 0.0),
   w_rf_(0.0),
+  initial_w_rf_(0.0),
   phi_s_(0.0),
   sin_phi_s_(0.0),
   Q_(0.0),
   R_(0.0),
   h_(-1.0),
-  my_harmonic_parameters_()
+  my_harmonic_parameters_(),
+  displaced_phase_slip_(0.0),
+  cumulative_displaced_phase_slip_(0.0)
 {
   my_harmonic_parameters_.push_back( multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr(new Propagator() );
@@ -98,12 +104,15 @@ rfcavity::rfcavity( const char* name_arg, // name
                   ) 
 : bmlnElmnt( name_arg, lng_arg, eV_arg*1.0e-9 ),
   w_rf_(MATH_TWOPI*f_arg),
+  initial_w_rf_( w_rf_ ),
   phi_s_(phi_s_arg),
   sin_phi_s_(sin(phi_s_arg)),
   Q_(Q_arg), 
   R_(R_arg),
   h_(-1.0),
-  my_harmonic_parameters_()
+  my_harmonic_parameters_(),
+  displaced_phase_slip_(0.0),
+  cumulative_displaced_phase_slip_(0.0)
 {
   my_harmonic_parameters_.push_back( multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr( new Propagator() );
@@ -114,16 +123,20 @@ rfcavity::rfcavity( const char* name_arg, // name
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 rfcavity::rfcavity( rfcavity const& x ) 
-:   bmlnElmnt( x ),
-    w_rf_(x.w_rf_),
-    phi_s_(x.phi_s_),
-    sin_phi_s_(x.sin_phi_s_),
-    Q_(x.Q_),
-    R_(x.R_),
-    h_(x.h_),
-    my_harmonic_parameters_( x.my_harmonic_parameters_ ),
-    propagator_ (x.propagator_->Clone())
-{}
+: bmlnElmnt( x ),
+  w_rf_(x.w_rf_),
+  initial_w_rf_(x.initial_w_rf_),
+  phi_s_(x.phi_s_),
+  sin_phi_s_(x.sin_phi_s_),
+  Q_(x.Q_),
+  R_(x.R_),
+  h_(x.h_),
+  my_harmonic_parameters_( x.my_harmonic_parameters_ ),
+  propagator_ (x.propagator_->Clone()),
+  displaced_phase_slip_(x.displaced_phase_slip_),
+  cumulative_displaced_phase_slip_(x.cumulative_displaced_phase_slip_)
+{
+}
 
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -263,7 +276,6 @@ void rfcavity::setHarmonicNumber( double const& n )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-
 void rfcavity::setHarmonicNumber( int n )
 {
   setHarmonicNumber( static_cast<double>(n) );
@@ -278,6 +290,10 @@ void rfcavity::setFrequency( double const& f )
     w_rf_ = MATH_TWOPI*f;
   }
 
+  initial_w_rf_ = w_rf_;
+  displaced_phase_slip_ = 0.0;
+  cumulative_displaced_phase_slip_ = 0.0;
+
   ThinRFCavityPtr q;
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
@@ -288,16 +304,56 @@ void rfcavity::setFrequency( double const& f )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void rfcavity::setDisplacedFrequency( double const& f, double const& T )
+{
+  if( w_rf_ <= 0.0 ) {
+    ostringstream uic;
+    uic << "w_rf_ = " << w_rf_ << " indicates not set previously.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+  if( initial_w_rf_ <= 0.0 ) {
+    ostringstream uic;
+    uic << "Initial w_rf_ = " << initial_w_rf_ << "; something went horribly wrong.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+  if( T <= 0.0 ) {
+    ostringstream uic;
+    uic << "The fiducial revolution time must be positive! What are you thinking??";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+
+  if( f > 0.0 ) { w_rf_ = MATH_TWOPI*f; }
+
+  displaced_phase_slip_ = ( w_rf_ - initial_w_rf_ )*T;
+  while( M_PI < displaced_phase_slip_    ) { displaced_phase_slip_ -= M_TWOPI; }
+  while( displaced_phase_slip_ <= - M_PI ) { displaced_phase_slip_ += M_TWOPI; }
+
+  cumulative_displaced_phase_slip_ = 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 void rfcavity::setFrequencyRelativeTo( double const& f )
 {
-  ThinRFCavityPtr q;
-
   if( (0 < f) && (0 < h_) ) {
     w_rf_ = MATH_TWOPI*h_*f;
   }
 
+  initial_w_rf_ = w_rf_;
+  displaced_phase_slip_ = 0.0;
+  cumulative_displaced_phase_slip_ = 0.0;
+
+  ThinRFCavityPtr q;
+
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
-    if( (q =boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setFrequencyRelativeTo( f );  
+    if( (q =boost::dynamic_pointer_cast<thinrfcavity>(*it) )) { q->setFrequencyRelativeTo( f ); }
   }
 }
 
@@ -311,6 +367,9 @@ void rfcavity::setRadialFrequency( double const& omega )
   if( omega > 0 ) {
     w_rf_ = omega;
   }
+
+  initial_w_rf_ = w_rf_;
+
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
     if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) q->setRadialFrequency( w_rf_ );  
   }
@@ -326,6 +385,8 @@ void rfcavity::setRadialFrequencyRelativeTo( double const& omega )
   if( (omega >0 ) && (h_ > 0) ) {
     w_rf_ = h_*omega;
   }
+
+  initial_w_rf_ = w_rf_;
 
   for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
     if( (q=boost::dynamic_pointer_cast<thinrfcavity>(*it))) q->setRadialFrequency( w_rf_);
@@ -471,19 +532,39 @@ void rfcavity::addHarmonic( int const& harmonic, double const& relativeStrength,
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void rfcavity::turnUpdate()
+{
+  cumulative_displaced_phase_slip_ += displaced_phase_slip_;
+  while( M_PI < cumulative_displaced_phase_slip_    ) { cumulative_displaced_phase_slip_ -= M_TWOPI; }  // Hopelessly
+  while( cumulative_displaced_phase_slip_ <= - M_PI ) { cumulative_displaced_phase_slip_ += M_TWOPI; }  // paranoid way
+                                                                                                          // of doing this.
+
+  ThinRFCavityPtr q;
+  for( beamline::iterator it = bml_->begin(); it != bml_->end();  ++it ) {
+    if( (q = boost::dynamic_pointer_cast<thinrfcavity>(*it) )) { q->turnUpdate(); }
+  }
+}
+
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 // **************************************************
 //   class thinrfcavity 
 // **************************************************
 
 thinrfcavity::thinrfcavity(const char *name_arg) 
-:   bmlnElmnt(name_arg, 0.0, 0.0)
-  , w_rf_( 0.0 )
-  , phi_s_( 0.0 )
-  , sin_phi_s_( 0.0 )
-  , Q_( 0.0 )
-  , R_( 0.0 )
-  , h_( -1.0 )
-  , my_harmonic_parameters_()
+: bmlnElmnt(name_arg, 0.0, 0.0),
+  w_rf_( 0.0 ),
+  initial_w_rf_(0.0),
+  phi_s_( 0.0 ),
+  sin_phi_s_( 0.0 ),
+  Q_( 0.0 ),
+  R_( 0.0 ),
+  h_( -1.0 ),
+  my_harmonic_parameters_(),
+  displaced_phase_slip_(0.0),
+  cumulative_displaced_phase_slip_(0.0)
 {
   my_harmonic_parameters_.push_back( rfcavity::multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr( new Propagator() );
@@ -500,14 +581,17 @@ thinrfcavity::thinrfcavity(const char * name_arg, // name
                            double const& Q_arg,      // Quality factor 
                            double const& R_arg       // shunt impedance 
                            ) 
-:   bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ) 
-  , w_rf_( MATH_TWOPI*f_arg )
-  , phi_s_( phi_s_arg )
-  , sin_phi_s_( sin(phi_s_) )
-  , Q_( Q_arg )
-  , R_( R_arg )
-  , h_( -1.0 )
-  , my_harmonic_parameters_()
+: bmlnElmnt( name_arg, 0.0, eV_arg*1.0e-9 ),
+  w_rf_( MATH_TWOPI*f_arg ),
+  initial_w_rf_( w_rf_ ),
+  phi_s_( phi_s_arg ),
+  sin_phi_s_( sin(phi_s_) ),
+  Q_( Q_arg ),
+  R_( R_arg ),
+  h_( -1.0 ),
+  my_harmonic_parameters_(),
+  displaced_phase_slip_(0.0),
+  cumulative_displaced_phase_slip_(0.0)
 {
   my_harmonic_parameters_.push_back( rfcavity::multiple_harmonic_parameters( 1, 1.0, 0.0 ) );
   propagator_ = PropagatorPtr(new Propagator() );
@@ -518,15 +602,20 @@ thinrfcavity::thinrfcavity(const char * name_arg, // name
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 thinrfcavity::thinrfcavity( const thinrfcavity& x ) 
-:   bmlnElmnt( x ) 
-  , w_rf_( x.w_rf_ )
-  , phi_s_( x.phi_s_ )
-  , sin_phi_s_( x.sin_phi_s_ )
-  , Q_( x.Q_ )
-  , R_( x.R_ )
-  , h_( x.h_ ), propagator_ (x.propagator_->Clone() )
-  , my_harmonic_parameters_( x.my_harmonic_parameters_ )
-{}
+: bmlnElmnt( x ),
+  w_rf_( x.w_rf_ ),
+  initial_w_rf_(x.initial_w_rf_),
+  phi_s_( x.phi_s_ ),
+  sin_phi_s_( x.sin_phi_s_ ),
+  Q_( x.Q_ ),
+  R_( x.R_ ),
+  h_( x.h_ ), 
+  propagator_ (x.propagator_->Clone() ),
+  my_harmonic_parameters_( x.my_harmonic_parameters_ ),
+  displaced_phase_slip_(x.displaced_phase_slip_),
+  cumulative_displaced_phase_slip_(x.cumulative_displaced_phase_slip_)
+{
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -611,11 +700,50 @@ void thinrfcavity::setFrequency( double const& f )
   if( f > 0 ) {
     w_rf_ = MATH_TWOPI*f;
   }
+
+  initial_w_rf_ = w_rf_;
+  displaced_phase_slip_ = 0.0;
+  cumulative_displaced_phase_slip_ = 0.0;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
+void thinrfcavity::setDisplacedFrequency( double const& f, double const& T )
+{
+  if( w_rf_ <= 0.0 ) {
+    ostringstream uic;
+    uic << "w_rf_ = " << w_rf_ << " indicates not set previously.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+  if( initial_w_rf_ <= 0.0 ) {
+    ostringstream uic;
+    uic << "Initial w_rf_ = " << initial_w_rf_ << "; something went horribly wrong.";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+  if( T <= 0.0 ) {
+    ostringstream uic;
+    uic << "The fiducial revolution time must be positive! What are you thinking??";
+    throw( GenericException( __FILE__, __LINE__, 
+           "void rfcavity::setDisplacedFrequency( double const&, double const& )",
+           uic.str().c_str() ) );
+  }
+
+  if( f > 0.0 ) { w_rf_ = MATH_TWOPI*f; }
+
+  displaced_phase_slip_ = ( w_rf_ - initial_w_rf_ )*T;
+  while( M_PI < displaced_phase_slip_    ) { displaced_phase_slip_ -= M_TWOPI; }
+  while( displaced_phase_slip_ <= - M_PI ) { displaced_phase_slip_ += M_TWOPI; }
+
+  cumulative_displaced_phase_slip_ = 0.0;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
 void thinrfcavity::setFrequencyRelativeTo( double const& f )
@@ -623,6 +751,10 @@ void thinrfcavity::setFrequencyRelativeTo( double const& f )
   if( (f > 0) && (h_ > 0) ) {
     w_rf_ = MATH_TWOPI*h_*f;
   }
+
+  initial_w_rf_ = w_rf_;
+  displaced_phase_slip_ = 0.0;
+  cumulative_displaced_phase_slip_ = 0.0;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -633,6 +765,8 @@ void thinrfcavity::setRadialFrequency( double const& omega )
   if( omega > 0 ) {
     w_rf_ = omega;
   }
+
+  initial_w_rf_ = w_rf_;
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -643,6 +777,8 @@ void thinrfcavity::setRadialFrequencyRelativeTo( double const& omega )
   if( (omega > 0) && (h_>0) ) {
     w_rf_ = h_*omega;
   }
+
+  initial_w_rf_ = w_rf_;
 }
 
 
@@ -754,6 +890,16 @@ void thinrfcavity::localPropagate( ParticleBunch& b)
 void thinrfcavity::localPropagate( JetParticleBunch& b) 
 {
   (*propagator_)(*this, b);
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void thinrfcavity::turnUpdate()
+{
+  cumulative_displaced_phase_slip_ += displaced_phase_slip_;
+  while( M_PI < cumulative_displaced_phase_slip_    ) { cumulative_displaced_phase_slip_ -= M_TWOPI; }  // Hopelessly
+  while( cumulative_displaced_phase_slip_ <= - M_PI ) { cumulative_displaced_phase_slip_ += M_TWOPI; }  // paranoid way
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
