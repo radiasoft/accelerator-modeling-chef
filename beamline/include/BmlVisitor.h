@@ -108,6 +108,7 @@ class kick;
 class Slot;
 class CF_rbend;
 class CF_sbend;
+class nonLinearLens;
 
 // ---------------------------
 
@@ -198,6 +199,7 @@ public:
 
   virtual void visit( CF_sbend&      x);
 
+  virtual void visit( nonLinearLens& x);
 
 protected:
 
@@ -297,6 +299,8 @@ public:
   virtual void visit( CF_rbend      const& x);
 
   virtual void visit( CF_sbend      const& x);
+
+  virtual void visit( nonLinearLens const& x);
 
 protected:
 

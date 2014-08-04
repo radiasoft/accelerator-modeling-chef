@@ -142,6 +142,7 @@ bool BmlUtil::isKnown( bmlnElmnt const& x )
   if ( typeid(x) == typeid(thin16pole)    )   { return true; }
   if ( typeid(x) == typeid(thin18pole)    )   { return true; }
   if ( typeid(x) == typeid(thinMultipole) )   { return true; }
+  if ( typeid(x) == typeid(nonLinearLens) )   { return true; }
 
   return false;
 }

@@ -308,6 +308,7 @@ template class BasePropagator<rfcavity>;
 template class BasePropagator<thinrfcavity>;
 template class BasePropagator<LinacCavity>;
 template class BasePropagator<BBLens>;
+template class BasePropagator<nonLinearLens>;
 
 template class boost::detail::sp_counted_impl_p<Slot::Propagator>;
 template class boost::detail::sp_counted_impl_p<kick::Propagator>;
@@ -346,6 +347,7 @@ template class boost::detail::sp_counted_impl_p<Bend::Propagator>;
 template class boost::detail::sp_counted_impl_p<CF_sbend::Propagator>;
 template class boost::detail::sp_counted_impl_p<CF_rbend::Propagator>;
 template class boost::detail::sp_counted_impl_p<Solenoid::Propagator>;
+template class boost::detail::sp_counted_impl_p<nonLinearLens::Propagator>;
 
 template class boost::detail::sp_counted_impl_p<BasePropagator<Edge> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinOctupole> >;
@@ -383,6 +385,7 @@ template class boost::detail::sp_counted_impl_p<BasePropagator<LCavityUpstream> 
 template class boost::detail::sp_counted_impl_p<BasePropagator<septum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<thinSeptum> >;
 template class boost::detail::sp_counted_impl_p<BasePropagator<ThinPole> >;
+template class boost::detail::sp_counted_impl_p<BasePropagator<nonLinearLens> >;
 
 namespace {
   std::list<std::pair<int, std::complex<double> > > dummy_list;

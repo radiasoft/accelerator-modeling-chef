@@ -199,6 +199,8 @@ void BmlVisitor::visit( CF_rbend& x)
 void BmlVisitor::visit( CF_sbend& x)
 		 {visit( static_cast<bmlnElmnt&>(x));  }
 
+void BmlVisitor::visit( nonLinearLens& x)
+                 {visit( static_cast<bmlnElmnt&>(x));  }
 
 //---------------------------------------------------------------------------------
 
@@ -324,3 +326,5 @@ void ConstBmlVisitor::visit( CF_rbend const& x)
 void ConstBmlVisitor::visit( CF_sbend const& x)
 		 {visit( static_cast<bmlnElmnt const&>(x));  }
 
+void ConstBmlVisitor::visit( nonLinearLens const& x)
+                 {visit( static_cast<bmlnElmnt const&>(x));  }
