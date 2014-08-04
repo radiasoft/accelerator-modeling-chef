@@ -16,7 +16,7 @@ libpybeamline_la_SOURCES          =   py-beamline-module.cpp py-aperture.cpp py-
                                       py-quadrupole.cpp py-octupole.cpp py-sextupole.cpp py-septum.cpp py-sector.cpp py-slot.cpp \
                                       py-rbend.cpp py-rfcavity.cpp py-thinpoles.cpp py-decapole.cpp py-particle.cpp  py-jetparticle.cpp \
                                       py-lattfunc.cpp py-srot.cpp py-circuit.cpp py-fcircuit.cpp py-icircuit.cpp \
-                                      py-refregvisitor.cpp py-bmlvisitor.cpp
+                                      py-refregvisitor.cpp py-bmlvisitor.cpp py-nonlinearlens.cpp
 
 libpybmlfactory_la_SOURCES        =   py-bmlfactory-module.cpp 
 
