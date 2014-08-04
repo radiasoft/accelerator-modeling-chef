@@ -111,6 +111,7 @@ bmlnElmnt* read_istream(istream& is)
   Slot                  * slot;
   CF_rbend              * cfRbendPtr;
   CF_sbend              * cfSbendPtr;
+  nonLinearLens         * nonLinearLensPtr;
 
   const double MIN_ANGLE = 2.0E-9;
   const int SIZE=80;
@@ -299,6 +300,10 @@ bmlnElmnt* read_istream(istream& is)
     else
     { cfSbendPtr = new CF_sbend(name, length, strength, -1.0 /* Dummy large angle */ ); }
     element = cfSbendPtr;
+  }
+  else if( strcasecmp(type,               "nllens") == 0 ) {
+    nonLinearLensPtr = new nonLinearLens(name, length, strength);
+    element = nonLinearLensPtr;
   }
   else {
     (*pcerr) << "\n **** WARNING **** read_istream(istream&): Unknown element type \"" << type << "\" "
