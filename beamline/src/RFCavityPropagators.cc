@@ -34,6 +34,11 @@
 ******  - added functionality for multiple harmonics
 ******    : simple-minded implementation; should be improved some day.
 ******   
+******  Jul 2014    michelotti@fnal.gov
+******  - added functionality for cavity with frequency not
+******    multiple of the principal harmonic
+******    : to simulate slip stacking.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -72,10 +77,12 @@ void propagate( thinrfcavity& elm, Particle_t&  p)
   double const m         = p.Mass();
   double const phi_s     = elm.getPhi(); 
   double const w_rf      = elm.getRadialFrequency(); 
+  double const anh_phase = thinrfcavity::thinrfcavity_core_access::get_cumulative_displaced_phase_slip( elm );
 
   State_t& state = p.State(); 
 
-  Component_t phase_slip_argument = state[i_cdt] * w_rf / PH_MKS_c;
+  Component_t phase_slip_argument = ( state[i_cdt] * w_rf / PH_MKS_c ) + anh_phase;
+
   std::vector<rfcavity::multiple_harmonic_parameters> const & mhp = thinrfcavity::thinrfcavity_core_access::get_harmonics_data( elm );
 
   Component_t strength_factor = Component_t(0.0);
