@@ -127,6 +127,8 @@ class DLLEXPORT Slot : public bmlnElmnt
    static double const minSplitLengthDefault;
 
 
+  void usePropagator( PropagatorPtr& );
+
  private:
    Frame in_;
    Frame out_;

@@ -71,12 +71,12 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  private:
-  
-    PropagatorPtr propagator_;
- 
-  //std::vector< std::pair<int, std::complex<double> > terms_;
+  void usePropagator( PropagatorPtr& );
 
-} ;
+ private:
+  
+  PropagatorPtr propagator_;
+
+};
 
 #endif // THINMULTIPOLE_H

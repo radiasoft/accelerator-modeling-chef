@@ -196,6 +196,8 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
   // Returns the dipole field,
   // NOT the integrated dipole field.
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   double  angle_;           // total bend angle  [ radians ]

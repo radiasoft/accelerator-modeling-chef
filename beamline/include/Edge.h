@@ -11,6 +11,7 @@
 ******
 **************************************************************************
 *************************************************************************/
+
 #ifndef EDGE_H
 #define EDGE_H
 
@@ -51,6 +52,8 @@ public:
 
   bool        isMagnet()   const;
   char const* Type()       const;
+
+  void usePropagator( PropagatorPtr& );
 
  private:
 

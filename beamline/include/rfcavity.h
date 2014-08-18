@@ -150,6 +150,8 @@ public:
 
   class rfcavity_core_access;
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   std::ostream& writeTo(std::ostream&);
@@ -245,6 +247,8 @@ public:
   void             turnUpdate();
 
   class thinrfcavity_core_access;
+
+  void usePropagator( PropagatorPtr& );
 
 private:
 

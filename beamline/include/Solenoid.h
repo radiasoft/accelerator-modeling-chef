@@ -96,12 +96,14 @@ public:
   bool hasInEdge()   const;
   bool hasOutEdge()  const;
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   bool          inEdge_;
   bool          outEdge_;
-  PropagatorPtr propagator_;
 
+  PropagatorPtr propagator_;
 };
 
 

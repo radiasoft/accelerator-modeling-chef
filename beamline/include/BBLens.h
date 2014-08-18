@@ -135,6 +135,7 @@ public:
 
   Vector Beta();
   
+  void usePropagator( PropagatorPtr& );
 
 private:
 

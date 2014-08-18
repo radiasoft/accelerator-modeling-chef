@@ -87,6 +87,8 @@ public:
   const char* Type() const;
   bool isMagnet()    const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   PropagatorPtr   propagator_;
