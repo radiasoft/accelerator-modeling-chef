@@ -126,6 +126,8 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   bool hasMultipole( ElmPtr elm, WHICH_MULTIPOLE mult );  

@@ -182,6 +182,8 @@ class DLLEXPORT rbend : public bmlnElmnt
   void setStrength( double const& );
   void setLength( double const& );
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   double   angle_;

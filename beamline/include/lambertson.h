@@ -111,6 +111,8 @@ public:
 
   int       turnNumber_;    // number of passes of a bunch through the lambertson
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
 //  thinLamb();               // default constructor forbidden

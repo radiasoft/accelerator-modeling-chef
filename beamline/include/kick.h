@@ -117,6 +117,8 @@ public:
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
  
   PropagatorPtr propagator_;
@@ -157,6 +159,8 @@ public:
   bool        isMagnet()   const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
+  void usePropagator( PropagatorPtr& );
 
  private:
 
@@ -205,6 +209,8 @@ public:
   bool        isMagnet()   const;
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
+
+  void usePropagator( PropagatorPtr& );
 
 private:
 

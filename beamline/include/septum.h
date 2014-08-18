@@ -118,6 +118,8 @@ public:
   int turnNumber_;        // ??? TODO: SHOULD BE PRIVATE ???
   int reportNumber_;      // ??? TODO: SHOULD BE PRIVATE ???
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   septum();               // default constructor forbidden
@@ -192,6 +194,8 @@ public:
   int numberOutGap_;      // ??? TODO: SHOULD BE PRIVATE ???
   int turnNumber_;        // ??? TODO: SHOULD BE PRIVATE ???
   int reportNumber_;      // ??? TODO: SHOULD BE PRIVATE ???
+
+  void usePropagator( PropagatorPtr& );
 
 private:
  

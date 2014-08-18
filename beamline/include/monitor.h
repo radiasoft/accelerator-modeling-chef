@@ -133,6 +133,8 @@ protected:
   double        xrerr_;  // random relative error amplitude (gaussian distributed)
   double        yrerr_;  // random relative error amplitude (gaussian distributed)
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   double        driftFraction_;
@@ -167,6 +169,8 @@ class DLLEXPORT hmonitor : public monitor {
   const char* Type()     const;
   bool        isMagnet() const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   PropagatorPtr propagator_;
@@ -199,6 +203,8 @@ public:
 
   const char* Type()     const;
   bool        isMagnet() const;
+
+  void usePropagator( PropagatorPtr& );
 
  private:
 

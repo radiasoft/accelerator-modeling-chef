@@ -95,6 +95,8 @@ public:
   const char* Type() const;
   bool    isMagnet() const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   drift& operator=(drift const&); // not implemented yet
@@ -102,7 +104,7 @@ public:
   friend std::ostream& operator<<(std::ostream&, bmlnElmnt&);
   friend bmlnElmnt*    read_istream(std::istream&);
 
-  PropagatorPtr              propagator_; 
+  PropagatorPtr  propagator_; 
 };
 
 #endif // DRIFT_H
