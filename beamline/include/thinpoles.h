@@ -127,6 +127,8 @@ class DLLEXPORT ThinPole : public bmlnElmnt
   std::vector<std::complex<double> > const& getMultipoleCoefficients() const;
   bool isSimple() const;
 
+  void usePropagator( PropagatorPtr& );
+
  protected:
 
   int                                pole_;

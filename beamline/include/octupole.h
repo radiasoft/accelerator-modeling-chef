@@ -107,6 +107,8 @@ public:
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
 
   PropagatorPtr propagator_; 
@@ -141,6 +143,8 @@ public:
 
   const char* Type() const;
   bool isMagnet() const;
+
+  void usePropagator( PropagatorPtr& );
 
  private:
   

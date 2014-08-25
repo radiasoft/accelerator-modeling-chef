@@ -300,7 +300,7 @@ inline TJet<T> operator*( Vector const& x, TJetVector<T> const& y )
 { return y.operator*( x ); }
 
 template<typename T>
-TJetVector<T> operator*( Vector const& x,   TJet<T>      const& y )
+inline TJetVector<T> operator*( Vector const& x, TJet<T> const& y )
 { return operator*(y,x); }
 
 

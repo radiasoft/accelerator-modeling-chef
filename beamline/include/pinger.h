@@ -95,6 +95,8 @@ public:
   double const& getKickDirection()                { return kick_direction_; }
   void          setKickDirection(double const& k) { kick_direction_ = k; }
 
+  void usePropagator( PropagatorPtr& );
+
 protected:
 
   double        kick_direction_;	/* In which direction is the kick? */

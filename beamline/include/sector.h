@@ -106,6 +106,8 @@ public:
   bool        isMagnet() const;
   bool        isMatrix() const; 
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   double (*DeltaT)    ( double const& );

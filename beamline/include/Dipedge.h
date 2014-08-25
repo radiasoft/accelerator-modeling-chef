@@ -117,14 +117,17 @@ class DLLEXPORT Dipedge : public bmlnElmnt
   inline double        he()   const;
   inline double        sk1()  const;
 
+  void usePropagator( PropagatorPtr& );
+
  private:
-  PropagatorPtr propagator_;
   double h_; 
   double edge_;
   double fint_;
   double hgap_;
   double tilt_;
   double corr_;
+
+  PropagatorPtr propagator_;
 };
 
 

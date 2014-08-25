@@ -145,6 +145,8 @@ class DLLEXPORT sbend : public bmlnElmnt {
   void nullExitEdge();
   void nullEntryEdge();
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   double   angle_;

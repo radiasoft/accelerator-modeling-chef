@@ -72,6 +72,8 @@ public:
 
   void Split( double const&, ElmPtr&, ElmPtr& ) const;
 
+  void usePropagator( PropagatorPtr& );
+
 private:
 
   BendType type_;           // the type of bend ( type_sbend or type_rbend) 
