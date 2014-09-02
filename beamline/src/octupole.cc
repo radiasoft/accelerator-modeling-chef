@@ -257,7 +257,7 @@ void octupole::accept( ConstBmlVisitor& v ) const
 
 void octupole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -383,7 +383,7 @@ void thinOctupole::accept( ConstBmlVisitor& v ) const
 
 void thinOctupole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

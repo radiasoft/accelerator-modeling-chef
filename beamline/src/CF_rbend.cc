@@ -223,7 +223,7 @@ CF_rbend& CF_rbend::operator=( CF_rbend const& rhs)
 
 void CF_rbend::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

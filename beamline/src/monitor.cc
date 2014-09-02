@@ -310,7 +310,7 @@ void monitor::setNpy(double const& value  )
 
 void monitor::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -416,7 +416,7 @@ bool vmonitor::isMagnet() const
 
 void vmonitor::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -520,7 +520,7 @@ bool hmonitor::isMagnet() const
 
 void hmonitor::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

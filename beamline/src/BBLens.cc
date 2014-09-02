@@ -596,7 +596,7 @@ void BBLens::accept( ConstBmlVisitor& v ) const
 
 void BBLens::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
