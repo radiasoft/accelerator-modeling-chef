@@ -150,7 +150,7 @@ void thinMultipole::accept( ConstBmlVisitor& v ) const
 
 void thinMultipole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

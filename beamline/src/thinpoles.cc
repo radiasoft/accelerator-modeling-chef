@@ -194,7 +194,7 @@ bool ThinPole::isSimple() const
 
 void ThinPole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

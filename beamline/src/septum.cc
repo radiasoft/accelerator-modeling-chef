@@ -266,7 +266,7 @@ void septum::accept( ConstBmlVisitor& v ) const
 
 void septum::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -513,7 +513,7 @@ void thinSeptum::accept( ConstBmlVisitor& v ) const
 
 void thinSeptum::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

@@ -246,7 +246,7 @@ void sextupole::accept( ConstBmlVisitor& v ) const
 
 void sextupole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -367,7 +367,7 @@ void thinSextupole::accept( ConstBmlVisitor& v ) const
 
 void thinSextupole::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
