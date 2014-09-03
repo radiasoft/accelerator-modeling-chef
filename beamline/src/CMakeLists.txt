@@ -20,6 +20,8 @@ set(SRCS alignment.cc                    gkick.cc                        read_is
 	 CombinedFunctionPropagators.cc  OctupolePropagators.cc          TBunch.cc
 	 decapole.cc                     Particle.cc                     TemplateInstantiations.cc
 	 DecapolePropagators.cc          pinger.cc                       thinMultipole.cc
+   Dipedge.cc
+   DipedgePropagators.cc
 	 drift.cc                        PingerPropagators.cc            ThinMultipolesPropagators.cc
 	 DriftPropagators.cc             PropagatorFactory.cc            thinpoles.cc
 	 Edge.cc                         quadrupole.cc                   ThinPolesPropagators.cc
