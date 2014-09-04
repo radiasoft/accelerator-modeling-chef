@@ -50,6 +50,7 @@
 #include <beamline/srot.h>
 #include <beamline/monitor.h>
 #include <beamline/marker.h>
+#include <beamline/Dipedge.h>
 #include <beamline/drift.h>
 #include <beamline/rbend.h>
 #include <beamline/sbend.h>
