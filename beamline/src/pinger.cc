@@ -164,7 +164,7 @@ void  Pinger::accept( ConstBmlVisitor& v ) const
 
 void Pinger::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

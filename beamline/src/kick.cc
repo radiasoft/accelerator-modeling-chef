@@ -227,7 +227,7 @@ void vkick::accept( ConstBmlVisitor& v ) const
 
 void vkick::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -414,7 +414,7 @@ void hkick::accept( ConstBmlVisitor& v ) const
 
 void hkick::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
@@ -673,7 +673,7 @@ void kick::accept(ConstBmlVisitor& v) const
 
 void kick::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

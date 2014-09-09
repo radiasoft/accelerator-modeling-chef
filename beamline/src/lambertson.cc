@@ -264,7 +264,7 @@ void thinLamb::accept( ConstBmlVisitor& v ) const
 
 void thinLamb::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 

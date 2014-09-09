@@ -219,7 +219,7 @@ void Solenoid::accept( ConstBmlVisitor& v ) const
 
 void Solenoid::usePropagator( PropagatorPtr& x )
 {
-  propagator_ = x;
+  propagator_ = PropagatorPtr( x->Clone() );
   propagator_->setup( *this );
 }
 
