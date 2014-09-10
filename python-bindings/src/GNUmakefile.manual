@@ -105,6 +105,7 @@ OBJS_BEAMLINE = \
        py-rfcavity.o \
        py-thinpoles.o \
        py-decapole.o \
+       py-nonlinearlens.o \
        py-particle.o \
        py-beamlineiterator.o \
        py-lattfunc.o \

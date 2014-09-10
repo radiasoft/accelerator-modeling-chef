@@ -70,5 +70,6 @@
 #include <beamline/pinger.h>
 #include <beamline/Slot.h>
 #include <beamline/Solenoid.h>
+#include <beamline/nonLinearLens.h>
 
 #endif // BEAMLINE_ELEMENTS_H
