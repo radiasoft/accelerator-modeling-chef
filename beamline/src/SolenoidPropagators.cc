@@ -93,7 +93,20 @@ void propagate( Solenoid& elm, Particle_t & p )
 
   if( std::abs( elm.Strength() ) < smallest_nonzero_field )
   {
-    bmlnElmnt::core_access::get_ElmPtr(elm)->propagate( p );
+    // This first step is added to handle the bizarre, 
+    // remote possibility that the length of a Solenoid
+    // may be changed after instantiation.
+    // 
+    // It should be removed as soon as a sensible mechanism   ??? FIXME
+    // is put in place which adjusts to changes in beamline   ??? FIXME
+    // element attributes.                                    ??? FIXME
+
+    ElmPtr& elm_ptr = bmlnElmnt::core_access::get_ElmPtr(elm);
+    elm_ptr->setLength( elm.Length() );
+
+    // Traverse the drift.
+
+    elm_ptr->propagate( p );
 
     // NOTE: RefRegVisitor does not touch this element,
     // so this propagation should advance cdt, which now
