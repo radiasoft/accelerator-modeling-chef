@@ -566,8 +566,8 @@ ostream& operator<<( std::ostream & os, TVector<T> const& v )
     for ( ; it !=  v.theVector_.end()-1; ++it) {
       os << setw(q->width) 
          << setprecision(q->precision) 
-         << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
-         << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
+         << resetiosflags((std::ios::fmtflags) (014002 | 04)) 
+         << setiosflags((std::ios::fmtflags) (q->flags)) 
 //         << resetiosflags((014002 | 04)) 
 //         << setiosflags((q->flags)) 
          << (*it) << ", "
@@ -575,8 +575,8 @@ ostream& operator<<( std::ostream & os, TVector<T> const& v )
     }
     os << setw(q->width) 
        << setprecision(q->precision) 
-       << resetiosflags((std::_Ios_Fmtflags) (014002 | 04)) 
-       << setiosflags((std::_Ios_Fmtflags) (q->flags)) 
+       << resetiosflags((std::ios::fmtflags) (014002 | 04)) 
+       << setiosflags((std::ios::fmtflags) (q->flags)) 
 //       << resetiosflags((014002 | 04)) 
 //       << setiosflags((q->flags)) 
        <<  (*it) << " )";
