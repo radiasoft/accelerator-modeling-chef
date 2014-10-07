@@ -81,8 +81,10 @@ void propagate( nonLinearLens& elm, Particle_t& p )
   Component_t deta_dybar = 0.5 * ybar * (1.0 / sq_xpy - 1.0 / sq_xmy);
 
   Component_t xixi_m_etaeta = (xi * xi - eta * eta);
-  Component_t sq_xixi_m_1 = sqrt(xi * xi - 1.0);
+  // csp: avoid a zero argument on sqrt
+  Component_t sq_xixi_m_1 = (xi == 1.0) ? 0.0 : sqrt(xi * xi - 1.0);
   Component_t sq_1_m_etaeta = sqrt(1.0 - eta * eta);
+  // csp: avoid dividing by a zero
   Component_t singluar_term = (xi == 1.0) ? 0.0 : xi * xi / sq_xixi_m_1;
   Component_t d_hacn_xi = dcoeff_ + knll_ * log(xi + sq_xixi_m_1);
   Component_t b_acn_eta = bcoeff_ + knll_ * acos(eta);
@@ -94,8 +96,6 @@ void propagate( nonLinearLens& elm, Particle_t& p )
 
   state[i_npx] += (dU_dxi * dxi_dxbar + dU_deta * deta_dxbar) / cnll_;
   state[i_npy] += (dU_dxi * dxi_dybar + dU_deta * deta_dybar) / cnll_;
-
-  state[i_cdt] -= elm.getReferenceTime();
 }
 
 //----------------------------------------------------------------------------------
