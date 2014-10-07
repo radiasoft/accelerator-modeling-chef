@@ -77,8 +77,27 @@ nonLinearLens::nonLinearLens( const char* n, double const& k, double const& c, d
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 nonLinearLens::nonLinearLens( nonLinearLens const& x ) 
-  : bmlnElmnt(x), propagator_(PropagatorPtr(x.propagator_->Clone()))
+  : bmlnElmnt(x), knll_(x.knll_), cnll_(x.cnll_), bcoeff_(x.bcoeff_),
+    dcoeff_(x.dcoeff_), propagator_(PropagatorPtr(x.propagator_->Clone()))
 {}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+nonLinearLens& nonLinearLens::operator=( nonLinearLens const& rhs )
+{
+  if ( &rhs == this ) return *this;
+
+  bmlnElmnt::operator=(rhs);
+
+  knll_       = rhs.knll_;
+  cnll_       = rhs.cnll_;
+  bcoeff_     = rhs.bcoeff_;
+  dcoeff_     = rhs.dcoeff_;
+  propagator_ = PropagatorPtr( rhs.propagator_->Clone() );
+
+  return *this;
+}
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -174,6 +193,15 @@ void nonLinearLens::accept( BmlVisitor& v )
 
 void nonLinearLens::accept( ConstBmlVisitor& v ) const { 
   v.visit( *this ); 
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void nonLinearLens::usePropagator( PropagatorPtr& x )
+{
+  propagator_ = PropagatorPtr( x->Clone() );
+  propagator_->setup( *this );
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

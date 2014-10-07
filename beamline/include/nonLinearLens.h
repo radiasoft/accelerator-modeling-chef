@@ -80,6 +80,8 @@ public:
 
   nonLinearLens* Clone() const;
 
+  nonLinearLens& operator=( nonLinearLens const& rhs );
+
   ~nonLinearLens();
 
   // Modifiers
@@ -96,8 +98,8 @@ public:
 
   // Propagators
   // -----------
-  void localPropagate(         Particle& b );   
-  void localPropagate(      JetParticle& b );   
+  void localPropagate(         Particle& p );
+  void localPropagate(      JetParticle& p );
   void localPropagate(    ParticleBunch& b ); 
   void localPropagate( JetParticleBunch& b ); 
 
@@ -111,7 +113,7 @@ public:
   const char* Type() const;
   bool isMagnet() const;
 
-  //void usePropagator( PropagatorPtr& );
+  void usePropagator( PropagatorPtr& );
 
 private:
 
