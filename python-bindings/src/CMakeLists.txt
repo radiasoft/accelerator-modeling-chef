@@ -9,12 +9,12 @@ endif()
 
 set(SRCS1 py-basictoolkit-module.cpp py-barnacle.cpp
           py-vector.cpp  py-matrix.cpp)
-add_python_extension(pybasic_toolkit SHARED ${SRCS1})
+add_python_extension(pybasic_toolkit ${SRCS1})
 target_link_libraries(pybasic_toolkit ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY_PATH})
 
 set(SRCS2 py-mxyzptlk-module.cpp py-jetenv.cpp py-jet.cpp py-jetvector.cpp
           py-mapping.cpp py-coord.cpp)
-add_python_extension(pymxyzptlk SHARED ${SRCS2})
+add_python_extension(pymxyzptlk ${SRCS2})
 target_link_libraries(pymxyzptlk ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY_PATH})
 
 set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
@@ -28,18 +28,18 @@ set(SRCS3 py-beamline-module.cpp py-aperture.cpp py-kick.cpp
           py-srot.cpp py-circuit.cpp py-fcircuit.cpp
           py-icircuit.cpp py-refregvisitor.cpp py-bmlvisitor.cpp
           py-yoshidapropagator.cpp py-nonlinearlens.cpp)
-add_python_extension(pybeamline SHARED ${SRCS3})
+add_python_extension(pybeamline ${SRCS3})
 target_link_libraries(pybeamline ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY_PATH})
 
 if (BUILD_PARSER_MODULES)
   set(SRCS4 py-bmlfactory-module.cpp)
-  add_python_extension(pybmlfactory SHARED ${SRCS4})
+  add_python_extension(pybmlfactory ${SRCS4})
   target_link_libraries(pybmlfactory ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY_PATH})
 endif ()
 
 set(SRCS5 py-physicstoolkit-module.cpp
           py-lattfuncsage.cpp py-beamlinecontext.cpp py-normalformsage.cpp)
-add_python_extension(pyphysics_toolkit SHARED ${SRCS5})
+add_python_extension(pyphysics_toolkit ${SRCS5})
 target_link_libraries(pyphysics_toolkit ${CHEF_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARY_PATH})
 
 install(TARGETS pybasic_toolkit DESTINATION lib)
