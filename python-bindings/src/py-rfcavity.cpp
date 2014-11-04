@@ -53,7 +53,7 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def("getRadialFrequency", &rfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
   .def("getQ",               &rfcavity::getQ,               return_value_policy<copy_const_reference>())
   .def("getR",               &rfcavity::getR,               return_value_policy<copy_const_reference>())
-  .def("addHarmonic", &rfcavity::adddHarmonic)
+  .def("addHarmonic", &rfcavity::addHarmonic)
   .def("turnUpdate", &rfcavity::turnUpdate)
   .def("setStrength",             &rfcavity::setStrength)
   .def("Type",               &rfcavity::Type);
