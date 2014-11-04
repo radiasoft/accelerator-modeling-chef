@@ -53,6 +53,7 @@ class_<rfcavity, bases<bmlnElmnt>, RFCavityPtr >("rfcavity")
   .def("getRadialFrequency", &rfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
   .def("getQ",               &rfcavity::getQ,               return_value_policy<copy_const_reference>())
   .def("getR",               &rfcavity::getR,               return_value_policy<copy_const_reference>())
+  .def("addHarmonic", &rfcavity::adddHarmonic)
     .def("turnUpdate", &rfcavity::turnUpdate)
   .def("setStrength",             &rfcavity::setStrength)
   .def("Type",               &rfcavity::Type);
@@ -71,6 +72,7 @@ class_<thinrfcavity, bases<bmlnElmnt>, ThinRFCavityPtr >("thinrfcavity", init<ch
   .def("getRadialFrequency", &thinrfcavity::getRadialFrequency, return_value_policy<copy_const_reference>())
   .def("getQ",               &thinrfcavity::getQ,               return_value_policy<copy_const_reference>())
   .def("getR",               &thinrfcavity::getR,               return_value_policy<copy_const_reference>())
+  .def("addHarmonic", &thinrfcavity::addHarmonic)
     .def("turnUpdate", &thinrfcavity::turnUpdate)
   .def("Type",               &thinrfcavity::Type);
 
