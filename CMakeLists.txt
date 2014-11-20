@@ -30,15 +30,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 ##
 
 # python
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_PATH})
-message(STATUS "PYTHON_INCLUDE_PATH = ${PYTHON_INCLUDE_PATH}")
-# CMake does not provide the full path for the Python library.
-# PYTHON_LIBRARY_PATH is a workaround until a better solution is found.
-# We only need to link against Python on OSX; leave PYTHON_LIBRARY_PATH empty
-# by default.
-set(PYTHON_LIBRARY_PATH "")
+find_package(ConsistentPython)
+
+include_directories(${PYTHON_INCLUDE_DIR})
 
 include(${CHEF_SOURCE_DIR}/CMake/AddPythonExtension.cmake)
 
