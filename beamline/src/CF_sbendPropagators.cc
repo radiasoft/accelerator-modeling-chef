@@ -1,51 +1,38 @@
 /*************************************************************************
 **************************************************************************
 **************************************************************************
-******
+******                                                                
 ******  BEAMLINE:  C++ objects for design and analysis
-******             of beamlines, storage rings, and
-******             synchrotrons.
-******
+******             of beamlines, storage rings, and   
+******             synchrotrons.                      
+******                                    
 ******  File:      CF_sbendPropagators.cc
-******
-******  Copyright (c) Fermi Research Alliance, LLC
-******                Universities Research Association, Inc.
-******                Fermilab
-******                All Rights Reserved
-******
-******  Usage, modification, and redistribution are subject to terms
+******                                                                
+******  Copyright Fermi Research Alliance / Fermilab    
+******            All Rights Reserved                             
+*****
+******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
-******
-******  Software and documentation created under
-******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
-******  and No. DE-AC02-07CH11359.
-******
-******  The U.S. Government retains a world-wide non-exclusive,
-******  royalty-free license to publish or reproduce documentation
-******  and software for U.S. Government purposes. This software
+******  
+******  Software and documentation created under 
+******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
+******  The U.S. Government retains a world-wide non-exclusive, 
+******  royalty-free license to publish or reproduce documentation 
+******  and software for U.S. Government purposes. This software 
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******
-******
+******                                                                
+******                                                                
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******
-******  ----------------
-******  REVISION HISTORY
-******  ----------------
-******
+******  REVISION HISTORY:
+******  
 ******  Apr 2008            michelotti@fnal.gov
-******  - bug fix: changed arguments sent to sbend constructors
+******  - bug fix: changed arguments sent to sbend constructors 
 ******    in CF_sbend::Propagator::setup
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
-******
-******  Nov 2014            michelotti@fnal.gov
-******  - removed the "KLUDGE" that prevented the .setup routine
-******    from working more than once on the same or a cloned CF_sbend.
-******  - as a reminder, the issue of multiply redundant setups
-******    has never been handled satisfactorily.
-******
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -61,8 +48,8 @@
 #include <beamline/beamline.h>
 #include <iostream>
 
-namespace
-{
+namespace {
+
   Particle::PhaseSpaceIndex const& i_x   = Particle::xIndex;
   Particle::PhaseSpaceIndex const& i_y   = Particle::yIndex;
   Particle::PhaseSpaceIndex const& i_cdt = Particle::cdtIndex;
@@ -73,7 +60,7 @@ namespace
 template<typename Particle_t>
 void propagate( CF_sbend& elm, Particle_t&  p)
 {
-
+  
   typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
   typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
 
@@ -81,11 +68,11 @@ void propagate( CF_sbend& elm, Particle_t&  p)
 
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( elm );
 
-  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) {
+  for ( beamline::iterator it = bml->begin(); it != bml->end(); ++it ) { 
      (*it)->localPropagate( p );
   }
 
-  state[i_cdt] -= elm.getReferenceTime();
+  state[i_cdt] -= elm.getReferenceTime(); 
 }
 
 //----------------------------------------------------------------------------------
@@ -105,25 +92,27 @@ template void propagate( CF_sbend& elm, JetParticle& p );
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void CF_sbend::Propagator::setup( CF_sbend& arg )
+void CF_sbend::Propagator::setup( CF_sbend& arg ) 
 {
 
   BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
 
+  if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
+
   //----------------------------------------------------------------------------
-  // NOTE: the proportions below come from a quadrature rule meant to minimize
-  //       the error when a magnet is split into 4 parts. See R. Talman
-  //
+  // NOTE: the proportions below come from a quadrature rule meant to minimize 
+  //       the error when a magnet is split into 4 parts. See R. Talman 
+  //         
   // 2*6/15  *  (L/4) +   3*16/15 * (L/4)  = 60/15 * ( L/4) =  L
-  // 2* ends +   body     =  L
+  // 2* ends +   body     =  L  
   //----------------------------------------------------------------------------       
 
   double field       =  arg.Strength();
   double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
   double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
-
-  Edge      usedge( "",   tan(arg.getEntryAngle())*field );
-  sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                );
+  
+  Edge      usedge( "",   tan(arg.getEntryAngle())*field );  
+  sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                ); 
   sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0,                 arg.getExitFaceAngle() );
   Edge      dsedge( "",  -tan(arg.getExitAngle())*field );  
 
@@ -141,15 +130,15 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
 
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
-
+ 
   bml_ = BmlPtr( new beamline("CF_SBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {
 
-    if ( i == 0 ) {
+    if ( i == 0 ) { 
       bml_->append( usedge );
       bml_->append( usbend );
-    }
+    } 
     else {
       bml_->append( separator);
     }
@@ -165,11 +154,11 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
     bml_->append( body     );
     bml_->append( ts       );
     bml_->append( tq       );
-
-    if ( i == n_-1 ) {
+  
+    if ( i == n_-1 ) { 
       bml_->append( dsbend );
       bml_->append( dsedge );
-    }
+    } 
     else {
       bml_->append( separator );
     }
@@ -180,7 +169,7 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_sbend::Propagator::operator()(CF_sbend& elm, Particle& p )
-{
+{ 
   ::propagate(elm,p);
 }
 
@@ -188,7 +177,7 @@ void CF_sbend::Propagator::operator()(CF_sbend& elm, Particle& p )
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_sbend::Propagator::operator()(CF_sbend& elm, JetParticle& p )
-{
+{ 
   ::propagate(elm,p);
 }
 
