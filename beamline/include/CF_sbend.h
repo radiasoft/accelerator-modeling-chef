@@ -8,32 +8,31 @@
 ******                                    
 ******  File:      CF_sbend.h
 ******                                                                
-******  Copyright (c) 1991 Universities Research Association, Inc.    
-******                All Rights Reserved                             
-******                                                                
-******  Usage, modification, and redistribution are subject to terms          
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S. and Foreign Copyright Laws. 
-******                                                                 
-******   
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-******                                                                
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S. and Foreign Copyright Laws.
+******
+******
+******  Authors:   Leo Michelotti         michelotti@fnal.gov
+******             Jean-Francois Ostiguy  ostiguy@fnal.gov
+******
+******
+******  ----------------
 ******  REVISION HISTORY
+******  ----------------
 ******  
 ****** 	Mar 2007            ostiguy@fnal.gov
 ****** 	- use covariant return types
@@ -56,6 +55,11 @@
 ******    with creation of new class CF_sbend_MADPropagator. Putting
 ****** 	  this here should be temporary. It logically belongs
 ****** 	  in class bmlnElmnt.
+******
+******  Dec 2014           michelotti@fnal.gov
+******  - added attribute integrated_strengths_ to capture
+******    integrated values of multipole components.
+******    : replaced "multipoles_" which was never used.
 ******
 **************************************************************************
 *************************************************************************/
@@ -201,7 +205,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
                             // values depend only on edge angles (see
                             // below).
   
-  std::list<std::pair<int, std::complex<double> > > multipoles_;
+  std::vector<double> integrated_strengths_;
 
   PropagatorPtr   propagator_;  
 
