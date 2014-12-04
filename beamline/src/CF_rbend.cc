@@ -8,23 +8,31 @@
 ******
 ******  File:      CF_rbend.cc
 ******
-******  Copyright Universities Research Association, Inc./ Fermilab
-******            All Rights Reserved
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
 ******
 ******  Software and documentation created under
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
 ******  The U.S. Government retains a world-wide non-exclusive,
 ******  royalty-free license to publish or reproduce documentation
 ******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
 ******
-******  Author:    Leo Michelotti
-******             Email: michelotti@fnal.gov
 ******
+******  Authors:   Leo Michelotti         michelotti@fnal.gov
+******             Jean-Francois Ostiguy  ostiguy@fnal.gov
+******
+******
+******  ----------------
 ******  REVISION HISTORY
+******  ----------------
 ******
 ******  Mar 2007           ostiguy@fnal.gov
 ******  - support for reference counted elements
@@ -35,7 +43,7 @@
 ******  Aug 2007           ostiguy@fnal.gov
 ******  - composite structure based on regular beamline
 ******
-******  Dec                ostiguy@fnal.gov
+******  Dec 2007           ostiguy@fnal.gov
 ******  - new typesafe propagator architecture
 ******
 ******  Apr 2008           michelotti@fnal.gov
@@ -47,12 +55,17 @@
 ******  - corrected rbend::Split
 ******    : including adding methods to nullify edge effects
 ******
+******  Dec 2014           michelotti@fnal.gov
+******  - added attribute integrated_strengths_ to capture
+******    integrated values of multipole components
+******
 *************************************************************************
 *************************************************************************/
 
 
 
 #include <iomanip>
+#include <cfloat>
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
@@ -77,6 +90,11 @@ using namespace std;
 using FNAL::pcout;
 using FNAL::pcerr;
 
+#define UPPER_POLE_NUMBER 4   // = 1 + (8/2 - 1)  Octupole is largest multipole
+                              // This needs to be redefined if more multipoles
+                              // are added in the future.
+
+#define SMALL_NUMBER (50.0*DBL_EPSILON)
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -87,7 +105,7 @@ CF_rbend::CF_rbend()
     dsFaceAngle_(0.0),
     usAngle_(M_TWOPI),
     dsAngle_(-M_TWOPI),
-    multipoles_()
+    integrated_strengths_(UPPER_POLE_NUMBER,0.0)
 {
   propagator_ = PropagatorPtr( new Propagator(40) );
   propagator_->setup(*this);
@@ -106,7 +124,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
     dsFaceAngle_(0.0),
     usAngle_(M_TWOPI),
     dsAngle_(-M_TWOPI),
-    multipoles_()
+    integrated_strengths_(UPPER_POLE_NUMBER,0.0)
 {
   propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
@@ -126,7 +144,7 @@ CF_rbend::CF_rbend( char const*   nm,   // name
    dsFaceAngle_(0.0),
        usAngle_(ang/2.0),
        dsAngle_(-ang/2.0),
-    multipoles_()
+    integrated_strengths_(UPPER_POLE_NUMBER,0.0)
 {
   propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
@@ -147,7 +165,7 @@ CF_rbend::CF_rbend( const char*   nm,   // name
    dsFaceAngle_(ds),
        usAngle_(M_TWOPI),
        dsAngle_(-M_TWOPI),
-    multipoles_()
+    integrated_strengths_(UPPER_POLE_NUMBER,0.0)
 {
   propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
@@ -169,7 +187,7 @@ CF_rbend::CF_rbend( const  char*   nm,   // name
     dsFaceAngle_(ds),
     usAngle_((ang/2.0) + us),
     dsAngle_(-((ang/2.0) + ds)),
-    multipoles_()
+    integrated_strengths_(UPPER_POLE_NUMBER,0.0)
 {
   propagator_ = PropagatorPtr( new Propagator(40) ); // number of blocks: 4n+1 bends + 2(4n) multipoles
   propagator_->setup(*this);
@@ -185,9 +203,9 @@ CF_rbend::CF_rbend( CF_rbend const& x )
      dsFaceAngle_(x.dsFaceAngle_),
          usAngle_(x.usAngle_),
          dsAngle_(x.dsAngle_),
-      multipoles_(x.multipoles_),
+    integrated_strengths_(x.integrated_strengths_),
       propagator_(PropagatorPtr(x.propagator_->Clone()))
-{ }
+{}
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -325,6 +343,9 @@ int CF_rbend::setOctupole( double const& arg_x )
       (*it)->setStrength( arg_x/counter );
     }
   }
+
+  integrated_strengths_[3] = arg_x;
+
   return 0;
 }
 
@@ -347,6 +368,8 @@ int CF_rbend::setSextupole( double const& arg_x )
       (*it)->setStrength( arg_x/counter );
     }
   }
+
+  integrated_strengths_[2] = arg_x;
 
   return 0;
 }
@@ -377,7 +400,6 @@ bool CF_rbend::hasStandardFaces() const
 
 int CF_rbend::setQuadrupole( double const& arg_x )
 {
-
   int counter = 0;
   for ( beamline::const_iterator it  = bml_->begin();
                                  it != bml_->end(); ++it ) {
@@ -392,6 +414,9 @@ int CF_rbend::setQuadrupole( double const& arg_x )
       (*it)->setStrength( arg_x/counter );
     }
   }
+
+  integrated_strengths_[1] = arg_x;
+
   return 0;
 }
 
@@ -507,12 +532,37 @@ double CF_rbend::getOctupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it  = bml_->begin();
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
-      strength += (*it)->Strength();
+  if( bml_ ) {
+    for ( beamline::const_iterator it  = bml_->begin();
+                                   it != bml_->end(); ++it ) {
+      if( boost::dynamic_pointer_cast<thinOctupole const>(*it) )  {
+        strength += (*it)->Strength();
+      }
+    }
+
+    double test_value = ( 0. == strength) ? std::abs( integrated_strengths_[3] ) : std::abs( 1.0 - ( integrated_strengths_[3] / strength ) ) ;
+
+    if( SMALL_NUMBER < test_value ) {
+      ostringstream uic;
+      uic << "Discrepancy in octupole strengths: " 
+          << strength << " != " << integrated_strengths_[3];
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getOctupole() const",
+             uic.str().c_str() ) );
     }
   }
+  else {
+    if( 0. != integrated_strengths_[3] ) {    // This should be exact.
+      ostringstream uic;
+      uic << "No internal beamline and integrated_strengths_[3] = "
+          << integrated_strengths_[3]
+          << "!= 0";
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getOctupole() const",
+             uic.str().c_str() ) );
+    }
+  }
+
   return strength;
 }
 
@@ -526,12 +576,37 @@ double CF_rbend::getSextupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it = bml_->begin();
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
-      strength += (*it)->Strength();
+  if( bml_ ) {
+    for ( beamline::const_iterator it = bml_->begin();
+                                   it != bml_->end(); ++it ) {
+      if( boost::dynamic_pointer_cast<thinSextupole const>(*it) ) {
+        strength += (*it)->Strength();
+      }
+    }
+
+    double test_value = ( 0. == strength) ? std::abs( integrated_strengths_[2] ) : std::abs( 1.0 - ( integrated_strengths_[2] / strength ) ) ;
+
+    if( SMALL_NUMBER < test_value ) {
+      ostringstream uic;
+      uic << "Discrepancy in sextupole strengths: " 
+          << strength << " != " << integrated_strengths_[2];
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getSextupole() const",
+             uic.str().c_str() ) );
     }
   }
+  else {
+    if( 0. != integrated_strengths_[2] ) {    // This should be exact.
+      ostringstream uic;
+      uic << "No internal beamline and integrated_strengths_[2] = "
+          << integrated_strengths_[2]
+          << "!= 0";
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getSextupole() const",
+             uic.str().c_str() ) );
+    }
+  }
+
   return strength;
 }
 
@@ -544,11 +619,35 @@ double CF_rbend::getQuadrupole() const
 
   double strength = 0.0;
 
-  for ( beamline::const_iterator it  = bml_->begin();
-                                 it != bml_->end(); ++it ) {
-    if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
-       strength += (*it)->Strength();
-     }
+  if( bml_ ) {
+    for ( beamline::const_iterator it  = bml_->begin();
+                                   it != bml_->end(); ++it ) {
+      if( boost::dynamic_pointer_cast<thinQuad const>(*it) ) {
+         strength += (*it)->Strength();
+       }
+    }
+
+    double test_value = ( 0. == strength) ? std::abs( integrated_strengths_[1] ) : std::abs( 1.0 - ( integrated_strengths_[1] / strength ) ) ;
+
+    if( SMALL_NUMBER < test_value ) {
+      ostringstream uic;
+      uic << "Discrepancy in quadrupole strengths: " 
+          << strength << " != " << integrated_strengths_[1];
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getQuadrupole() const",
+             uic.str().c_str() ) );
+    }
+  }
+  else {
+    if( 0. != integrated_strengths_[1] ) {    // This should be exact.
+      ostringstream uic;
+      uic << "No internal beamline and integrated_strengths_[1] = "
+          << integrated_strengths_[1]
+          << "!= 0";
+      throw( GenericException( __FILE__, __LINE__,
+             "double CF_rbend::getQuadrupole() const",
+             uic.str().c_str() ) );
+    }
   }
 
   return strength;
