@@ -7,31 +7,44 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      CF_sbendPropagators.cc
-******                                                                
-******  Copyright Fermi Research Alliance / Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
+******
+******
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******  REVISION HISTORY:
+******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
 ******  
 ******  Apr 2008            michelotti@fnal.gov
 ******  - bug fix: changed arguments sent to sbend constructors 
 ******    in CF_sbend::Propagator::setup
 ******  - nullified edge effects from internal bends.
 ******    : edge effects to be handled by elements usedge and dsedge only
+******
+******  Dec 2014            michelotti@fnal.gov
+******  - removed the "KLUDGE" that prevented the .setup routine
+******    from working more than once on the same or a cloned CF_rbend.
+******    : as a reminder, the issue of multiply redundant setups
+******      has never been handled satisfactorily.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -94,10 +107,7 @@ template void propagate( CF_sbend& elm, JetParticle& p );
 
 void CF_sbend::Propagator::setup( CF_sbend& arg ) 
 {
-
   BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
-
-  if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
 
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
@@ -111,6 +121,10 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
   double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
   
+  double quadStrength = arg.getQuadrupole();
+  double sextStrength = arg.getSextupole();
+  double octoStrength = arg.getOctupole();
+
   Edge      usedge( "",   tan(arg.getEntryAngle())*field );  
   sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                ); 
   sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0,                 arg.getExitFaceAngle() );
@@ -163,6 +177,9 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
       bml_->append( separator );
     }
   }
+
+  arg.setQuadrupole( quadStrength );
+  arg.setSextupole ( sextStrength );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

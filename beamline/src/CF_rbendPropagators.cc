@@ -7,25 +7,33 @@
 ******             synchrotrons.                      
 ******                                    
 ******  File:      CF_rbendPropagators.cc
-******                                                                
-******  Copyright Fermi Research Alliance / Fermilab    
-******            All Rights Reserved                             
 ******
-******  Usage, modification, and redistribution are subject to terms          
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
+******
+******
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
-******  REVISION HISTORY:
-******  
+******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******
 ******  Apr 2008            michelotti@fnal.gov
 ******  - bug fix: changed arguments sent to rbend constructors 
 ******    in CF_rbend::Propagator::setup
@@ -40,6 +48,12 @@
 ******    : this should be "done right" in both files one day.
 ******    : thanks to Eric Stern for drilling down the effects
 ******      of this error through multiple layers of code.
+******
+******  Dec 2014            michelotti@fnal.gov
+******  - removed the "KLUDGE" that prevented the .setup routine
+******    from working more than once on the same or a cloned CF_rbend.
+******    : as a reminder, the issue of multiply redundant setups
+******      has never been handled satisfactorily.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -106,8 +120,6 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
 
   BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
 
-  if (bml_) return;  // ************** KLUDGE !!!! ********************** FIXME !!! 
-
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
   //       the error when a magnet is split into 4 parts. See R. Talman 
@@ -120,6 +132,10 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   double frontLength =   (6.0/15.0)*( arg.Length()/(4.0*n_) );
   double sepLength   =  (16.0/15.0)*( arg.Length()/(4.0*n_) );
   
+  double quadStrength = arg.getQuadrupole();
+  double sextStrength = arg.getSextupole();
+  double octoStrength = arg.getOctupole();
+
   Edge       usedge( "",  tan( arg.getEntryAngle()*field ) );  
   rbend      usbend( "" , frontLength, field,  0.0,    arg.getEntryFaceAngle(),  0.0                   ); 
   rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      arg.getExitFaceAngle());
@@ -172,6 +188,9 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
       bml_->append( separator );
     }
   }
+
+  arg.setQuadrupole( quadStrength );
+  arg.setSextupole ( sextStrength );
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

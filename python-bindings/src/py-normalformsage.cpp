@@ -34,8 +34,7 @@ void wrap_normalformsage() {
 using namespace boost::python;
 
  class_<normalFormSage>("normalFormSage", 
-			init<Mapping &, const JetParticle&, int>())
-   .def(init<Mapping &, const Particle&>())
+			init<const JetParticle&, int>())
   .def( "cnvDataToNormalForm",&normalFormSage::cnvDataToNormalForm)
   .def( "cnvDataFromNormalForm", &normalFormSage::cnvDataFromNormalForm)
    .def( "getNormalEigenvectors", &normalFormSage::getNormalEigenvectors, return_value_policy<reference_existing_object>())

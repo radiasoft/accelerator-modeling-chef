@@ -82,6 +82,7 @@ void wrap_cf_sbend () {
   .def("hasStandardFaces",        &CF_sbend::hasStandardFaces) 
 //.def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
 //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
+  .def("usePropagator",           &CF_sbend::usePropagator)
   .def("OrbitLength",             OrbitLength_nonconst);
 
 }
