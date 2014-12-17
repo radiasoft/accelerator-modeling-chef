@@ -30,6 +30,13 @@ if (0 == ${?BOOST_INC}) then
   exit 1
 endif
 
+if (0 == ${?BOOST_LIB}) then
+  echo "*** ERROR ***"
+  echo "*** ERROR *** Environment variable BOOST_LIB has not been set."
+  echo "*** ERROR ***"
+  exit 1
+endif
+
 echo "-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-"
 echo "Beginning testing"
 echo "in directory `pwd`"
