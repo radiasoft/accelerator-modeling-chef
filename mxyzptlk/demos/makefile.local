@@ -1,9 +1,17 @@
+#######################################################
 ## 
-## This Makefile requires two environment variables
-## be predefined: BOOST_INC  and INSTALLDIR
-## See the chef-config/config.pri.* files 
-## for examples.
+## File: Makefile for directory mxyzptlk/demos
 ## 
+## This Makefile requires that three environment variables 
+## be predefined: INSTALLDIR, BOOST_INC and BOOST_LIB
+## 
+## Leo Michelotti
+## 
+## Original: August 7, 2007
+## Revised : December 16, 2014
+## 
+#######################################################
+
 
 .SUFFIXES: .o .cpp .cc 
 
@@ -30,7 +38,9 @@ LIBS       = -L$(INSTALLDIR)/lib \
              -lmxyzptlk -lbasic_toolkit \
              -Wl,-rpath,$(INSTALLDIR)/lib 
 
-SYSLIBS    = -lm -lnsl
+## SYSLIBS    = -lm -lnsl 
+
+SYSLIBS    = -L$(BOOST_LIB) -Wl,-rpath,$(BOOST_LIB) -lboost_system
 
 .cc.o:
 	$(C++) $(C++FLAGS) $(INCS) -c $*.cc
@@ -38,9 +48,3 @@ SYSLIBS    = -lm -lnsl
 	$(C++) $(C++FLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 .cc :
 	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
-
-none: 
-
-clean:	
-	\rm *.o; \rm *Test; \rm hptest dfr evaltest pbtest survey concattest
-

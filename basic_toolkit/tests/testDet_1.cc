@@ -52,15 +52,6 @@ int main()
   w(2,1) = 12.0; 
   w(2,2) = 13.0;
 
-  #if 0
-  cout << "DGN: " << __FILE__ << "," << __LINE__ 
-       << ": " << w.determinant() 
-       << endl;
-  cout << "DGN: " << __FILE__ << "," << __LINE__ 
-       << ": " << w.eigenValues()
-       << endl;
-  #endif
-
   if( testValue( __LINE__, w.determinant() ) ) {
     return 1;
   }
