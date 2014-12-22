@@ -164,11 +164,8 @@ void propagate( septum& elm, Particle& p )
     elm.loadPinnedCoordinates(p, pinned_state, 0.0);
     std::cout << elm.Name() << ": entrance: " << setprecision(16)
             << pinned_state[0] << "  " << pinned_state[3] << "  "
-            << state[i_x] << "  " << state[i_npx] << "  "
-            << kick_ << "  " << x << "  " << p.getTag() << std::endl;
-//            << state[i_cdt] << "  " << state[i_ndp] << std::endl;
-//            << pinned_state[1] << "  " << pinned_state[4] << "  "
-//            << state[i_cdt] << "  " << state[i_ndp] << std::endl;
+            << pinned_state[1] << "  " << pinned_state[4] << "  "
+            << state[i_cdt] << "  " << state[i_ndp] << std::endl;
   }
 
   state[i_x] += length_ * xpr + deltaX_;
