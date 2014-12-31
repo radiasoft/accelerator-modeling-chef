@@ -112,9 +112,9 @@ int main( int argc, char** argv )
   }
   BarnacleList::iterator bli = cellPtr->dataHook.find( "Tunes" );
 
-  LattFuncSage::tunes* tuneptr = &( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
-  cout << "\nTune: horizontal = " << ( initialTune_H = tuneptr->hor )
-       <<        "   vertical = " << ( initialTune_V = tuneptr->ver )
+  LattFuncSage::tunes the_tunes( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
+  cout << "\nTune: horizontal = " << ( initialTune_H = the_tunes.hor )
+       <<        "   vertical = " << ( initialTune_V = the_tunes.ver )
        << endl;
   
 
@@ -134,9 +134,9 @@ int main( int argc, char** argv )
   }
   bli = cellPtr->dataHook.find( "Tunes" );
 
-  tuneptr = &( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
-  cout << "\nTune: horizontal = " << ( finalTune_H = tuneptr->hor )
-       <<        "   vertical = " << ( finalTune_V = tuneptr->ver )
+  LattFuncSage::tunes the_tunes2( boost::any_cast<LattFuncSage::tunes>((*bli).info) );
+  cout << "\nTune: horizontal = " << ( finalTune_H = the_tunes2.hor )
+       <<        "   vertical = " << ( finalTune_V = the_tunes2.ver )
        << endl;
 
 

@@ -62,18 +62,14 @@ int main( int argc, char** argv )
  thinQuad D ( "D", - strength );
 
 
- // Instantiate monitors and bind
- // to files.
+ // Instantiate monitors within smart pointers
+ // for later readout.
  // 
  ofstream hStr( "hor.dat" );
- hmonitor bpmH( "HORIZONTAL" );
- bpmH.setOutputStream( hStr );
- bpmH.on();
+ HMonitorPtr bpmH( new hmonitor( "HORIZONTAL" ) );
 
  ofstream vStr( "ver.dat" );
- vmonitor bpmV( "VERTICAL" );
- bpmV.setOutputStream( vStr );
- bpmV.on();
+ VMonitorPtr bpmV( new vmonitor( "VERTICAL" ) );
 
 
  // Create a standard FODO cell
@@ -93,8 +89,14 @@ int main( int argc, char** argv )
  // number of times.
  // 
  for( int k = 0; k < atoi( argv[8] ); k++ ) {
-  cell.propagate( p );
+   cell.propagate( p );
+   hStr << bpmH->hposition() << endl;
+   vStr << bpmV->vposition() << endl;
+   cout << p.State() << endl;
  }
+
+ hStr.close();
+ vStr.close();
 
  return 0;
 }
