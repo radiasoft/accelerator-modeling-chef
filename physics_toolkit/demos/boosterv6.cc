@@ -48,8 +48,8 @@ int main( int argc, char* argv[] )
  thinQuad  QFhf( "QFhf", (  (16.0761/10.)*0.722403 )/( npt - 1.0 ) );
 
 
- beamline D = beamline( "D" );
- beamline F = beamline( "F" );
+ beamline D( "D" );
+ beamline F( "F" );
  for( int i = 0; i < ipt - 1; i++ ) {
   D.append( Dhf );
   D.append( QDhf );
@@ -109,8 +109,6 @@ int main( int argc, char* argv[] )
 
  EdwardsTeng      ET( &cell );
  ElmPtr           lbe;
- ETtunes*         tunes;
- ETinfo*          infoPtr;
 
  double energy;
  energy =         PH_CNV_brho_to_p*( 296.5/10. );
@@ -124,9 +122,9 @@ int main( int argc, char* argv[] )
  }
  
  BarnacleList::iterator bli = cell.dataHook.find( "Tunes" );
- tunes = &( boost::any_cast<ETtunes>((*bli).info) );
- cout << "\nTune: horizontal = " << tunes->hor 
-      <<        "   vertical = " << tunes->ver 
+ ETtunes tunes( boost::any_cast<ETtunes>((*bli).info) );
+ cout << "\nTune: horizontal = " << tunes.hor 
+      <<        "   vertical = " << tunes.ver 
       << endl;
  
  int i = 0;
@@ -141,16 +139,16 @@ int main( int argc, char* argv[] )
 
    if( lbe->dataHook.begin() != lbe->dataHook.end() ) {
      BarnacleList::iterator bli = lbe->dataHook.find( "EdwardsTeng" );
-     infoPtr = &( boost::any_cast<ETinfo>((*bli).info) );
-     if( 0 != infoPtr ) {
-       cout << "infoPtr->beta.hor  " << infoPtr->beta.hor  << endl;
-       cout << "infoPtr->beta.ver  " << infoPtr->beta.ver  << endl;
-       cout << "infoPtr->alpha.hor " << infoPtr->alpha.hor << endl;
-       cout << "infoPtr->alpha.ver " << infoPtr->alpha.ver << endl;
-       cout << "infoPtr->phi       " << infoPtr->phi       << endl;
-       cout << "infoPtr->D \n"       << infoPtr->D         << endl;
-       lbe->dataHook.eraseFirst( "EdwardsTeng" );
-     }
+     ETinfo inform( boost::any_cast<ETinfo>((*bli).info) );
+
+     cout << "inform.beta.hor  " << inform.beta.hor  << endl;
+     cout << "inform.beta.ver  " << inform.beta.ver  << endl;
+     cout << "inform.alpha.hor " << inform.alpha.hor << endl;
+     cout << "inform.alpha.ver " << inform.alpha.ver << endl;
+     cout << "inform.phi       " << inform.phi       << endl;
+     cout << "inform.D \n"       << inform.D         << endl;
+
+     lbe->dataHook.eraseFirst( "EdwardsTeng" );
    }
    else {
      cout << "*** DATA NOT FOUND ***" << endl;
