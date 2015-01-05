@@ -7,7 +7,7 @@
 ## 
 ## Leo Michelotti
 ## 
-## Original: MMMM DD, 2007
+## Original: July 26, 2007
 ## Revised : December 20, 2014
 ## 
 #######################################################
@@ -15,7 +15,7 @@
 
 .SUFFIXES: .o .cpp .cc 
 
-C++        = g++
+CPP        = g++
 
 INCS       = -I$(BOOST_INC) \
              -I$(INSTALLDIR)/include
@@ -26,8 +26,8 @@ LIBS       = -L$(INSTALLDIR)/lib -lbeamline -lmxyzptlk -lbasic_toolkit \
 SYSLIBS    = -L$(BOOST_LIB) -Wl,-rpath,$(BOOST_LIB) -lboost_system
 
 .cc.o:
-	$(C++) $(C++FLAGS) $(INCS) -c $*.cc
+	$(CPP) $(CPPFLAGS) $(INCS) -c $*.cc
 .o :
-	$(C++) $(C++FLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
+	$(CPP) $(CPPFLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 .cc :
-	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
+	$(CPP) $(CPPFLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
