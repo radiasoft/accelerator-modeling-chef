@@ -461,8 +461,8 @@ beamline::~beamline()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* beamline::Clone() const {
-
+beamline* beamline::Clone() const 
+{
  beamline*  bml  = new beamline("");
 
  bml->bmlnElmnt::operator=(*this); // copy bmlnElmnt state
@@ -470,6 +470,10 @@ beamline* beamline::Clone() const {
  bml->mode_          = mode_;
  bml->nominalEnergy_ = nominalEnergy_;
  bml->twissDone_     = false;
+
+ // Reset length to zero before appending elements.
+
+ bml->length_ = 0.0;
 
  // Recursively clone all the beamlines and all the elements.
 
