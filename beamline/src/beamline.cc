@@ -593,6 +593,21 @@ double beamline::OrbitLength( Particle const& x ) const
  for ( beamline::const_iterator it = begin(); it != end(); ++it) {
   s += (*it)->OrbitLength( x );
  }
+
+ return s;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beamline::OrbitLength( Particle const& x )
+{
+ double s = 0.0;
+
+ for ( beamline::iterator it = begin(); it != end(); ++it) {
+  s += (*it)->OrbitLength( x );
+ }
+
  return s;
 }
 
