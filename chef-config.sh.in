@@ -1,8 +1,8 @@
 #!/bin/sh
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-includedir="@includedir@"
-libdir="@libdir@"
+tmp_bin_dir="`dirname \"$0\"`"
+prefix="`dirname \"$tmp_bin_dir\"`"
+includedir="$prefix/include"
+libdir="$prefix/lib"
 glib_inc="@GLIB_INC@"
 glibconfig_inc="@GLIBCONFIG_INC@"
 glib_lib="@GLIB_LIB@"
