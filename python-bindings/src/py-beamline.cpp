@@ -92,6 +92,7 @@ void (beamline::*accept1) (  BmlVisitor& )                         =  &beamline:
 
 int (beamline::*countHowMany1)()       const                       =  &beamline::countHowMany;
 int (beamline::*countHowManyDeeply1)() const                       =  &beamline::countHowManyDeeply;
+double (beamline::*OrbitLength1) ( Particle const& )  const        =  &beamline::OrbitLength;
 
 bmlnElmnt& beamline_firstElement ( beamline& bml ) { return *bml.firstElement(); }
 bmlnElmnt& beamline_lastElement  ( beamline& bml ) { return *bml.lastElement(); }
@@ -198,7 +199,7 @@ beamline_.def("reverse_deep_iterator",
  beamline_.def("setTwissIsDone",             &beamline::setTwissIsDone);
  beamline_.def("unsetTwissIsDone",           &beamline::unsetTwissIsDone);
  beamline_.def("Energy",                     &beamline::Energy);
- beamline_.def("OrbitLength",                &beamline::OrbitLength);
+ beamline_.def("OrbitLength",                OrbitLength1);
  beamline_.def("accept",                     accept1);
  //beamline_.def("flatten",&beamline::flatten,
  //     return_value_policy<reference_existing_object>());
