@@ -905,7 +905,12 @@ void beamline::putAbove( beamline::iterator it, ElmPtr const&  y )
 
  unTwiss();
 
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround(it);
+ theList_.insert( workaround, y );
+#else
  theList_.insert( it, y );
+#endif //  __APPLE_CC__ == 6000
 
  length_ += y->length_;
 }
@@ -931,7 +936,12 @@ beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr const& y
 
  ++iter;
 
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround(iter);
+ theList_.insert( workaround, y );
+#else
  theList_.insert( iter, y );
+#endif //  __APPLE_CC__ == 6000
 
  length_ += y->length_;
 
@@ -1229,7 +1239,13 @@ beamline::iterator beamline::erase( beamline::iterator pos1, beamline::iterator 
 //--------------------------------------------------
 
  unTwiss();
+
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround1(pos1), workaround2(pos2);
+ return iterator( this, theList_.erase( workaround1, workaround2) );
+#else
  return iterator( this, theList_.erase( pos1, pos2) );
+#endif //  __APPLE_CC__ == 6000
 
 }
 
