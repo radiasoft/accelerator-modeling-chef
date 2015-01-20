@@ -26,6 +26,13 @@ if (0 == ${?BOOST_INC}) then
   exit 1
 endif
 
+if (0 == ${?BOOST_LIB}) then
+  echo "*** ERROR ***"
+  echo "*** ERROR *** Environment variable BOOST_LIB has not been set."
+  echo "*** ERROR ***"
+  exit 1
+endif
+
 echo "-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-"
 echo "Beginning testing"
 echo "in directory `pwd`"
@@ -38,12 +45,12 @@ foreach w ( `ls *.cc | sed -e "s/.cc//"` )
     echo "*** WARNING *** Omitting test $w"
     echo "*** WARNING ***"
   else
-    gmake -f makefile.local $w
+    make -f makefile.local $w
     set return_status = $status
     if( $return_status ) then
-      echo "*** FAILED ***"
-      echo "*** FAILED *** File $w.cc failed to build."
-      echo "*** FAILED ***"
+      echo "*** ERROR ***"
+      echo "*** ERROR *** File $w.cc failed to build."
+      echo "*** ERROR ***"
       exit $return_status
     endif
     if( -e $w.sh ) then
@@ -54,10 +61,10 @@ foreach w ( `ls *.cc | sed -e "s/.cc//"` )
       ./$w.sh
       set return_status = $status
       if( $return_status ) then
-        echo "*** FAILED ***"
-        echo "*** FAILED *** File $w.sh test failed."
-        echo "*** FAILED *** Returned status: $return_status"
-        echo "*** FAILED ***"
+        echo "*** ERROR ***"
+        echo "*** ERROR *** File $w.sh test failed."
+        echo "*** ERROR *** Returned status: $return_status"
+        echo "*** ERROR ***"
         exit $return_status
       else
         echo Finished $w.sh: tests passed! > $w.tag

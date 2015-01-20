@@ -3,7 +3,7 @@
 *.a
 *.la
 *.so
-
+*.dylib
 *~
 
 cmake_install.cmake

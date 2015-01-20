@@ -104,37 +104,24 @@ int main( int argc, char** argv )
  }
 
  cellPtr->dataHook.eraseAll( "Ring" );
- lfs.Disp_Calc( jpr3 );
+ lfs.NewDisp_Calc( jpr3 );
+ LattFuncSage::lattRing answers( lfs.getLattRing() );
 
- LattFuncSage::lattRing* tuneptr = 0;
- if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
-   cout << "Whoops" << endl;
-   exit(1);
- }
- BarnacleList::iterator bli = cellPtr->dataHook.find( "Ring" );
- tuneptr = &( boost::any_cast<LattFuncSage::lattRing>((*bli).info) );
- cout << "\nTune:         horizontal  = " << ((double) N) * tuneptr->tune.hor
-      << "\n              vertical    = " << ((double) N) * tuneptr->tune.ver
-      << "\nChromaticity: horizontal  = " << ((double) N) * tuneptr->chromaticity.hor
-      << "\n              vertical    = " << ((double) N) * tuneptr->chromaticity.ver
+ cout << "\nTune:         horizontal  = " << ((double) N) * answers.tune.hor
+      << "\n              vertical    = " << ((double) N) * answers.tune.ver
+      << "\nChromaticity: horizontal  = " << ((double) N) * answers.chromaticity.hor
+      << "\n              vertical    = " << ((double) N) * answers.chromaticity.ver
       << endl;
 
  adj.changeChromaticityBy( delta_H/((double) N), delta_V/((double) N), jpr );
 
- cellPtr->dataHook.eraseAll( "Ring" );
- lfs.Disp_Calc( jpr2 );
+ lfs.NewDisp_Calc( jpr2 );
+ LattFuncSage::lattRing answers2( lfs.getLattRing() );
 
- tuneptr = 0;
- if( cellPtr->dataHook.begin() == cellPtr->dataHook.end() ) {
-   cout << "Whoopsie" << endl;
-   exit(1);
- }
- bli = cellPtr->dataHook.find( "Ring" );
- tuneptr = &( boost::any_cast<LattFuncSage::lattRing>((*bli).info) );
- cout << "\nTune:         horizontal  = " << ((double) N)*tuneptr->tune.hor
-      << "\n              vertical    = " << ((double) N)*tuneptr->tune.ver
-      << "\nChromaticity: horizontal  = " << ((double) N)*tuneptr->chromaticity.hor
-      << "\n              vertical    = " << ((double) N)*tuneptr->chromaticity.ver
+ cout << "\nTune:         horizontal  = " << ((double) N)*answers2.tune.hor
+      << "\n              vertical    = " << ((double) N)*answers2.tune.ver
+      << "\nChromaticity: horizontal  = " << ((double) N)*answers2.chromaticity.hor
+      << "\n              vertical    = " << ((double) N)*answers2.chromaticity.ver
       << endl;
 
  cout << "The control:\n"

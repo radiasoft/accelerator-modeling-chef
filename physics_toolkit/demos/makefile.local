@@ -1,20 +1,36 @@
+#######################################################
 ## 
-## This Makefile requires two environment variables
-## be predefined: BOOST_INC  and INSTALLDIR
-## See the chef-config/config.pri.* files 
-## for examples.
+## File: Makefile for directory physics_toolkit/demos
 ## 
+## This Makefile requires that three environment variables 
+## be predefined: INSTALLDIR, BOOST_INC and BOOST_LIB
+## 
+## Leo Michelotti
+## 
+## Original: Thursday, November 15, 2007
+## Revised : Monday,   December 29, 2014
+## 
+#######################################################
+
 .SUFFIXES: .o .cpp .cc 
 
 C++        = g++
 
+## INCS       = -I$(BOOST_INC) \
+##              -I$(GLIB_INC) \
+##              -I$(GLIBCONFIG_INC) \
+##              -I$(INSTALLDIR)/include
+
 INCS       = -I$(BOOST_INC) \
-             -I$(GLIB_INC) \
-             -I$(GLIBCONFIG_INC) \
              -I$(INSTALLDIR)/include
 
-LIBS       = -L$(INSTALLDIR)/lib -lphysics_toolkit -lbeamline -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
-SYSLIBS    = -lglib -lm -lnsl -lintl
+LIBS       = -L$(INSTALLDIR)/lib -lphysics_toolkit -lbeamline \
+                                 -lmxyzptlk -lbasic_toolkit \
+             -Wl,-rpath,$(INSTALLDIR)/lib 
+
+SYSLIBS    = -L$(BOOST_LIB) -Wl,-rpath,$(BOOST_LIB) -lboost_system
+
+## SYSLIBS    = -lglib -lm -lnsl -lintl
 
 .cc.o:
 	$(C++) $(C++FLAGS) $(INCS) -c $*.cc
@@ -22,7 +38,3 @@ SYSLIBS    = -lglib -lm -lnsl -lintl
 	$(C++) $(C++FLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 .cc :
 	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
-
-all: boosterv6 \
-     TuneAdjusterTest \
-     ChromaticityAdjusterTest

@@ -461,8 +461,8 @@ beamline::~beamline()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-beamline* beamline::Clone() const {
-
+beamline* beamline::Clone() const 
+{
  beamline*  bml  = new beamline("");
 
  bml->bmlnElmnt::operator=(*this); // copy bmlnElmnt state
@@ -470,6 +470,10 @@ beamline* beamline::Clone() const {
  bml->mode_          = mode_;
  bml->nominalEnergy_ = nominalEnergy_;
  bml->twissDone_     = false;
+
+ // Reset length to zero before appending elements.
+
+ bml->length_ = 0.0;
 
  // Recursively clone all the beamlines and all the elements.
 
@@ -589,6 +593,21 @@ double beamline::OrbitLength( Particle const& x ) const
  for ( beamline::const_iterator it = begin(); it != end(); ++it) {
   s += (*it)->OrbitLength( x );
  }
+
+ return s;
+}
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+double beamline::OrbitLength( Particle const& x )
+{
+ double s = 0.0;
+
+ for ( beamline::iterator it = begin(); it != end(); ++it) {
+  s += (*it)->OrbitLength( x );
+ }
+
  return s;
 }
 
@@ -886,7 +905,12 @@ void beamline::putAbove( beamline::iterator it, ElmPtr const&  y )
 
  unTwiss();
 
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround(it);
+ theList_.insert( workaround, y );
+#else
  theList_.insert( it, y );
+#endif //  __APPLE_CC__ == 6000
 
  length_ += y->length_;
 }
@@ -912,7 +936,12 @@ beamline::iterator beamline::putBelow( beamline::iterator  iter, ElmPtr const& y
 
  ++iter;
 
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround(iter);
+ theList_.insert( workaround, y );
+#else
  theList_.insert( iter, y );
+#endif //  __APPLE_CC__ == 6000
 
  length_ += y->length_;
 
@@ -1210,7 +1239,13 @@ beamline::iterator beamline::erase( beamline::iterator pos1, beamline::iterator 
 //--------------------------------------------------
 
  unTwiss();
+
+#if __APPLE_CC__ == 6000
+ std::list<ElmPtr>::iterator workaround1(pos1), workaround2(pos2);
+ return iterator( this, theList_.erase( workaround1, workaround2) );
+#else
  return iterator( this, theList_.erase( pos1, pos2) );
+#endif //  __APPLE_CC__ == 6000
 
 }
 

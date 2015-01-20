@@ -1,8 +1,8 @@
 #!/bin/sh
-prefix="@prefix@"
-exec_prefix="@exec_prefix@"
-includedir="@includedir@"
-libdir="@libdir@"
+tmp_bin_dir="`dirname \"$0\"`"
+prefix="`dirname \"$tmp_bin_dir\"`"
+includedir="$prefix/include"
+libdir="$prefix/lib"
 glib_inc="@GLIB_INC@"
 glibconfig_inc="@GLIBCONFIG_INC@"
 glib_lib="@GLIB_LIB@"
@@ -18,6 +18,7 @@ help ()
     echo "  --includes_list     print semicolon-separated list of include paths"
     echo "  --link              print library linking information"
     echo "  --lib_dirs_list     print semicolon-separated list of library directories"
+    echo "  --lib_dirs_list_sh  print semicolon-separated list of library directories"
     echo "  --libs_list         print semicolon-separated list of libraries"
     echo "  --help              print this help and exit"
     echo ""
@@ -71,7 +72,16 @@ lib_dirs_list ()
 {
     echoval="$libdir"
     if [ -n "$glib_lib" ]; then
-	echoval="$echoval;$glib_lib"
+    echoval="$echoval;$glib_lib"
+    fi
+    echo "$echoval"
+}
+
+lib_dirs_list_sh ()
+{
+    echoval="$libdir"
+    if [ -n "$glib_lib" ]; then
+	echoval="$echoval $glib_lib"
     fi
     echo "$echoval"
 }
@@ -118,6 +128,9 @@ process_args ()
                 ;;
             lib_dirs_list)
                 lib_dirs_list
+                ;;
+            lib_dirs_list_sh)
+                lib_dirs_list_sh
                 ;;
             libs_list)
                 libs_list

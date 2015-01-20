@@ -1,32 +1,33 @@
+#######################################################
 ## 
-## This Makefile requires two environment variables
-## be predefined: BOOST_INC  and INSTALLDIR
-## See the chef-config/config.pri.* files 
-## for examples.
+## File: Makefile for directory beamline/demos
 ## 
+## This Makefile requires that three environment variables 
+## be predefined: INSTALLDIR, BOOST_INC and BOOST_LIB
+## 
+## Leo Michelotti
+## 
+## Original: July 26, 2007
+## Revised : December 20, 2014
+## 
+#######################################################
+
+
 .SUFFIXES: .o .cpp .cc 
 
-C++        = g++
+CPP        = g++
 
 INCS       = -I$(BOOST_INC) \
-             -I$(GLIB_INC) \
-             -I$(GLIBCONFIG_INC) \
              -I$(INSTALLDIR)/include
 
-## NOTE: Using a factory object in this directory breaks hierarchy.
-## NOTE: beamline_iterators.cc does so.
-## NOTE: The demo belongs at a higher level: e.g. bmlfactory.
-LIBS       = -L$(INSTALLDIR)/lib -lbmlfactory -lbeamline -lmxyzptlk -lbasic_toolkit -Wl,-rpath,$(INSTALLDIR)/lib 
-SYSLIBS    = -lglib -lm -lnsl -lintl
+LIBS       = -L$(INSTALLDIR)/lib -lbeamline -lmxyzptlk -lbasic_toolkit \
+             -Wl,-rpath,$(INSTALLDIR)/lib 
+
+SYSLIBS    = -L$(BOOST_LIB) -Wl,-rpath,$(BOOST_LIB) -lboost_system
 
 .cc.o:
-	$(C++) $(C++FLAGS) $(INCS) -c $*.cc
+	$(CPP) $(CPPFLAGS) $(INCS) -c $*.cc
 .o :
-	$(C++) $(C++FLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
+	$(CPP) $(CPPFLAGS) -o $@ $< $(LIBS) $(SYSLIBS)
 .cc :
-	$(C++) $(C++FLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
-
-all: FODO_A  beamline_iterators
-
-clean:	
-	\rm *.o; \rm *Test; \rm hptest dfr evaltest pbtest survey concattest
+	$(CPP) $(CPPFLAGS) $(INCS) -o $@ $< $(LIBS) $(SYSLIBS)
