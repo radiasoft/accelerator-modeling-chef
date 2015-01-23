@@ -127,30 +127,36 @@ template void mad_propagate( sbend& elm, JetParticle& p );
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void sbend::Propagator::setup( sbend& arg)
+void sbend::Propagator::setup( sbend& arg )
 { 
-  
-  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
-  bml = BmlPtr( new beamline("SBEND_PRIVATE") );
- 
+  bool hasEntryEdge = false;
+  bool hasExitEdge  = false;
+  bool hasOldBml    = false;
+
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg); 
+
+  if( bml ) {
+    hasOldBml    = true;
+    hasEntryEdge = ( typeid(*(bml->firstElement())) == typeid(Edge) );
+    hasExitEdge  = ( typeid(*(bml->lastElement()))  == typeid(Edge) );
+  }
+
   double& angle_       = sbend::sbend_core_access::get_angle(arg);  
   double& usAngle_     = sbend::sbend_core_access::get_usAngle(arg); 
   double& dsAngle_     = sbend::sbend_core_access::get_dsAngle(arg); 
   double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(arg); 
   double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(arg); 
 
+  bml = BmlPtr( new beamline("SBEND_PRIVATE") );
+  bml->append( EdgePtr( new Edge("",  tan(usAngle_) * arg.Strength() ) ) );
+  bml->append( BendPtr( new Bend( "", arg.Length(),  arg.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) ) );
+  bml->append( EdgePtr( new Edge( "", -tan(dsAngle_)* arg.Strength() ) ) );
 
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * arg.Strength() ) );
-
-  BendPtr bend( new Bend( "", arg.Length(),  arg.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) );
-
-  EdgePtr dedge( new Edge( "", -tan(dsAngle_)* arg.Strength() ) );
-
-
-  bml->append( uedge );
-  bml->append( bend  );
-  bml->append( dedge );
-
+  if( hasOldBml ) 
+  {
+    if( !hasEntryEdge ) { arg.nullEntryEdge(); }
+    if( !hasExitEdge  ) { arg.nullExitEdge();  }
+  }
 }
 
 
