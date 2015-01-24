@@ -55,6 +55,11 @@
 ******    : as a reminder, the issue of multiply redundant setups
 ******      has never been handled satisfactorily.
 ******  
+******  Jan 2015            michelotti@fnal.gov
+******  - bug fix: added code to the .setup routine for reinitializing
+******    a pre-existing CF_rbend with fewer than two edge elements.
+*f****    : repeat "as a reminder" from Dec 2014 entry (above).
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -117,8 +122,17 @@ template void propagate( CF_rbend& elm, JetParticle& p );
 
 void CF_rbend::Propagator::setup( CF_rbend& arg ) 
 {
+  bool hasEntryEdge = false;
+  bool hasExitEdge  = false;
+  bool hasOldBml    = false;
 
-  BmlPtr& bml_ = bmlnElmnt::core_access::get_BmlPtr(arg);
+  BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
+
+  if( bml ) {
+    hasOldBml    = true;
+    hasEntryEdge = ( typeid(*(bml->firstElement())) == typeid(Edge) );
+    hasExitEdge  = ( typeid(*(bml->lastElement()))  == typeid(Edge) );
+  }
 
   //----------------------------------------------------------------------------
   // NOTE: the proportions below come from a quadrature rule meant to minimize 
@@ -156,41 +170,47 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   thinSextupole ts( "",0.0 );
   thinQuad      tq( "",0.0 );
 
-  bml_ = BmlPtr( new beamline("CF_RBEND_INTERNALS") );
+  bml = BmlPtr( new beamline("CF_RBEND_INTERNALS") );
 
   for( int i=0; i<n_; ++i) {
 
     if ( i == 0 ) { 
-      bml_->append( usedge );
-      bml_->append( usbend );
+      bml->append( usedge );
+      bml->append( usbend );
     } 
     else {
-      bml_->append( separator );
+      bml->append( separator );
     }
 
-    bml_->append( ts       );
-    bml_->append( tq       );
-    bml_->append( body     );
-    bml_->append( ts       );
-    bml_->append( tq       );
-    bml_->append( body     );
-    bml_->append( ts       );
-    bml_->append( tq       );
-    bml_->append( body     );
-    bml_->append( ts       );
-    bml_->append( tq       );
+    bml->append( ts       );
+    bml->append( tq       );
+    bml->append( body     );
+    bml->append( ts       );
+    bml->append( tq       );
+    bml->append( body     );
+    bml->append( ts       );
+    bml->append( tq       );
+    bml->append( body     );
+    bml->append( ts       );
+    bml->append( tq       );
   
     if ( i == n_-1 ) { 
-      bml_->append( dsbend );
-      bml_->append( dsedge );
+      bml->append( dsbend );
+      bml->append( dsedge );
     } 
     else {
-      bml_->append( separator );
+      bml->append( separator );
     }
   }
 
   arg.setQuadrupole( quadStrength );
   arg.setSextupole ( sextStrength );
+
+  if( hasOldBml ) 
+  {
+    if( !hasEntryEdge ) { arg.nullEntryEdge(); }
+    if( !hasExitEdge  ) { arg.nullExitEdge();  }
+  }
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
