@@ -8,25 +8,38 @@
 ******                                    
 ******  File:      RbendPropagators.tcc
 ******                                                                
-******  Copyright Fermi Research Alliance / Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
+******
+******
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
 ******
-******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  
+******  Jan 2015            michelotti@fnal.gov
+******  - bug fix: added code to the .setup routine for reinitializing
+******    a pre-existing rbend with fewer than two edge elements.
+******    : as a reminder, the issue of multiply redundant setups
+******      has never been handled satisfactorily.
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -155,28 +168,39 @@ template void propagate(     rbend& elm, JetParticle& p );
 
 void rbend::Propagator::setup( rbend& arg) 
 {
-  
+  bool hasEntryEdge = false;
+  bool hasExitEdge  = false;
+  bool hasOldBml    = false;
+
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr( arg); 
-  bml = BmlPtr(new beamline("RBEND_PRIVATE") );
- 
+
+  if( bml ) {
+    hasOldBml    = true;
+    hasEntryEdge = ( typeid(*(bml->firstElement())) == typeid(Edge) );
+    hasExitEdge  = ( typeid(*(bml->lastElement()))  == typeid(Edge) );
+  }
+
   double& usFaceAngle_ = rbend::rbend_core_access::get_usFaceAngle(arg); 
   double& dsFaceAngle_ = rbend::rbend_core_access::get_dsFaceAngle(arg); 
   double& usAngle_     = rbend::rbend_core_access::get_usAngle(arg); 
   double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(arg); 
 
-
-  EdgePtr uedge( new Edge("",  tan(usAngle_) * arg.Strength() ) );
-
-  BendPtr bend( new Bend( "RBEND_PRIVATE",  arg.Length(), arg.Strength() , arg.getBendAngle(),  usAngle_,  dsAngle_, 
-                                                          usFaceAngle_,  dsFaceAngle_ , Bend::type_rbend)  );
-
+  EdgePtr uedge( new Edge( "",  tan(usAngle_) * arg.Strength() ) );
   EdgePtr dedge( new Edge( "", -tan(dsAngle_) * arg.Strength() ) );
+  BendPtr bend ( new Bend( "",  arg.Length(),   arg.Strength(), arg.getBendAngle(),
+                                usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_,
+                                Bend::type_rbend ) );
 
-
+  bml = BmlPtr(new beamline("RBEND_PRIVATE") );
   bml->append( uedge );
   bml->append( bend  );
   bml->append( dedge );
 
+  if( hasOldBml ) 
+  {
+    if( !hasEntryEdge ) { arg.nullEntryEdge(); }
+    if( !hasExitEdge  ) { arg.nullExitEdge();  }
+  }
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

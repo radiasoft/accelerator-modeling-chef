@@ -8,24 +8,37 @@
 ******                                    
 ******  File:      SBendPropagators.cc
 ******                                                                
-******  Copyright Fermi Research Alliance / Fermilab    
-******            All Rights Reserved                             
-*****
-******  Usage, modification, and redistribution are subject to terms          
+******  Copyright (c) Fermi Research Alliance, LLC
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
+******
+******  Usage, modification, and redistribution are subject to terms
 ******  of the License supplied with this software.
-******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-07CH11359 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
+******
+******
 ******  Authors:   Leo Michelotti         michelotti@fnal.gov
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
 ******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  
+******  Jan 2015            michelotti@fnal.gov
+******  - bug fix: added code to the .setup routine for reinitializing
+******    a pre-existing sbend with fewer than two edge elements.
+******    : as a reminder, the issue of multiply redundant setups
+******      has never been handled satisfactorily.
 ******
 **************************************************************************
 *************************************************************************/
@@ -147,10 +160,16 @@ void sbend::Propagator::setup( sbend& arg )
   double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(arg); 
   double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(arg); 
 
+  EdgePtr uedge( new Edge( "",  tan(usAngle_) * arg.Strength() ) );
+  EdgePtr dedge( new Edge( "", -tan(dsAngle_) * arg.Strength() ) );
+  BendPtr bend(  new Bend( "",  arg.Length(),   arg.Strength() , angle_,  
+                                usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_, 
+                                Bend::type_sbend ) );
+
   bml = BmlPtr( new beamline("SBEND_PRIVATE") );
-  bml->append( EdgePtr( new Edge("",  tan(usAngle_) * arg.Strength() ) ) );
-  bml->append( BendPtr( new Bend( "", arg.Length(),  arg.Strength() , angle_,  usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_ , Bend::type_sbend ) ) );
-  bml->append( EdgePtr( new Edge( "", -tan(dsAngle_)* arg.Strength() ) ) );
+  bml->append( uedge );
+  bml->append( bend  );
+  bml->append( dedge );
 
   if( hasOldBml ) 
   {
