@@ -12,7 +12,7 @@
 ******                                                                
 ******  Copyright Universities Research Association, Inc./ Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -31,36 +31,39 @@
 ******             Phone: (630) 840 4956                              
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-****** - eliminated unneeded dynamic casts in Split(...);
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface. 
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations. 
+******  - eliminated unneeded dynamic casts in Split(...);
 ****** 
-****** Oct 2007           michelotti@fnal.gov
-****** - extended sbend::Split so that local alignment information 
-******   (i.e. the alignment struct) is carried over to the new, 
-******   split elements.  The results should be interpreted carefully.
-******   This is a stopgap measure. In the longer term, I intend
-******   to remove the (vestigial) alignment data from these classes.
+******  Oct 2007           michelotti@fnal.gov
+******  - extended sbend::Split so that local alignment information 
+******    (i.e. the alignment struct) is carried over to the new, 
+******    split elements.  The results should be interpreted carefully.
+******    This is a stopgap measure. In the longer term, I intend
+******    to remove the (vestigial) alignment data from these classes.
 ****** 
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
-****** - new implementation: sbend is now a composite element
-******                                                                  
-****** Apr 2008           michelotti@fnal.gov
-****** - added placeholder setLength method
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     sbend had no internal structure then.
-****** - modified sbend::Split
-****** - added member functions to nullify edge effects
-******   : used by modified sbend::Split
-****** 
+******  Dec 2007           ostiguy@fnal.gov
+******  - new typesafe propagators
+******  - new implementation: sbend is now a composite element
+******                                                                   
+******  Apr 2008           michelotti@fnal.gov
+******  - added placeholder setLength method
+******  - added setStrength method
+******    : not needed in earlier implementations because
+******      sbend had no internal structure then.
+******  - modified sbend::Split
+******  - added member functions to nullify edge effects
+******    : used by modified sbend::Split
+******
+******  Jan 2015           michelotti@fnal.gov
+******  - bug fix: added code to the sbend::Split(...) for handling
+******    sbends with fewer than two edge elements.
+******
 **************************************************************************
 *************************************************************************/
-
 
 
 #include <iomanip>
@@ -466,7 +469,7 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
 
   // -------------------------------------------------------------------
   // WARNING: The following code assumes that an sbend element
-  //          is modeled with a nested beamline, whith edge effects 
+  //          is modeled with a nested beamline, with edge effects 
   //          incorporated in upstream and downstream edge elements. 
   //          Il will *fail* if propagator assumes otherwise. 
   //--------------------------------------------------------------------
@@ -481,6 +484,9 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
           "Error: Cannot split: incompatible or missing nested beamline.");
   }
 
+  bool hasEntryEdge = ( typeid(*(bml_->firstElement())) == typeid(Edge) );
+  bool hasExitEdge  = ( typeid(*(bml_->lastElement()))  == typeid(Edge) );
+
   SBendPtr sb_a = SBendPtr( new sbend(   ""
                                        , length_*pc
                                        , strength_
@@ -488,6 +494,8 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                        , usFaceAngle_
                                        , 0.0           ));
   sb_a->setEntryAngle( this->getEntryAngle() );  // Reset from default
+
+  if( !hasEntryEdge ) { sb_a->nullEntryEdge(); }
   sb_a->nullExitEdge();
 
   SBendPtr sb_b = SBendPtr( new sbend(   ""
@@ -496,8 +504,11 @@ void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                        , angle_*(1.0-pc)
                                        , 0.0
                                        , dsFaceAngle_  ));
-  sb_b->nullEntryEdge();
+
   sb_b->setExitAngle( this->getExitAngle() );    // Reset from default
+
+  sb_b->nullEntryEdge();
+  if( !hasExitEdge  ) { sb_b->nullExitEdge();  }
 
   a = sb_a;
   b = sb_b;

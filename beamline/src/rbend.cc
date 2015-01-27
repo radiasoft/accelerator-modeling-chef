@@ -33,34 +33,39 @@
 ******             Email: michelotti@fnal.gov                         
 ******                                                                
 ******                                                                
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations. 
-****** - eliminated unneeded dynamic casts in Split(...);
+******  Mar 2007           ostiguy@fnal.gov
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface. 
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations. 
+******  - eliminated unneeded dynamic casts in Split(...);
 ****** 
-****** Oct 2007           michelotti@fnal.gov
-****** - extended rbend::Split so that local alignment information 
-******   (i.e. the alignment struct) is carried over to the new, 
-******   split elements.  The results should be interpreted carefully.
-******   This is a stopgap measure. In the longer term, I intend
-******   to remove the (vestigial) alignment data from these classes.
+******  Oct 2007           michelotti@fnal.gov
+******  - extended rbend::Split so that local alignment information 
+******    (i.e. the alignment struct) is carried over to the new, 
+******    split elements.  The results should be interpreted carefully.
+******    This is a stopgap measure. In the longer term, I intend
+******    to remove the (vestigial) alignment data from these classes.
 ****** 
-****** Dec 2007           ostiguy@fnal.gov
-****** - new typesafe propagators
-****** - new implementation: rbend is now a composite element
+******  Dec 2007           ostiguy@fnal.gov
+******  - new typesafe propagators
+******  - new implementation: rbend is now a composite element
 ******
-****** Apr 2008            michelotti@fnal.gov
-****** - added setStrength method
-******   : not needed in earlier implementations because
-******     rbend had no internal structure then.
-****** - added placeholder setLength method
-****** - corrected rbend::Split
-******   : including adding methods to nullify edge effects
+******  Apr 2008            michelotti@fnal.gov
+******  - added setStrength method
+******    : not needed in earlier implementations because
+******      rbend had no internal structure then.
+******  - added placeholder setLength method
+******  - corrected rbend::Split
+******    : including adding methods to nullify edge effects
+******
+******  Jan 2015           michelotti@fnal.gov
+******  - bug fix: added code to the rbend::Split(...) for handling
+******    rbends with fewer than two edge elements.
 ******
 **************************************************************************
 *************************************************************************/
+
 //----------------------------------------------------------------------------------------------
 //
 // usFaceAngle_, dsFaceAngle_ 
@@ -469,14 +474,19 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   //          incorporated in upstream and downstream edge elements. 
   //          It will *fail* when the propagator that assumes otherwise. 
   //--------------------------------------------------------------------
+
   // .. Check for the presence of a nested beamline with 3 elements ... 
-  // ---------------------------------------------------------------
+
   bool valid_nested_beamline = bml_ ?  ( bml_->howMany() == 3 ) : false;
+
   if ( !valid_nested_beamline) { 
        throw GenericException( __FILE__, __LINE__, 
 	  "void sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const",
           "Error: Cannot split: incompatible or missing nested beamline.");
   }
+
+  bool hasEntryEdge = ( typeid(*(bml_->firstElement())) == typeid(Edge) );
+  bool hasExitEdge  = ( typeid(*(bml_->lastElement()))  == typeid(Edge) );
 
   RBendPtr rb_a( new rbend(   ""
                             , pc*length_
@@ -485,6 +495,8 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                             , usFaceAngle_
                             , 0.0 ) ); 
   rb_a->setEntryAngle( this->getEntryAngle() ); // Reset from default
+
+  if( !hasEntryEdge ) { rb_a->nullEntryEdge(); }
   rb_a->nullExitEdge();
 
   RBendPtr rb_b( new rbend(   ""
@@ -493,8 +505,11 @@ void rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                             , angle_*(1.0-pc)   // Wrong, but unimportant (I hope)!
                             , 0.0
                             , dsFaceAngle_ ) );
-  rb_b->nullEntryEdge();
+
   rb_b->setExitAngle( this->getExitAngle() );   // Reset from default
+
+  rb_b->nullEntryEdge();
+  if( !hasExitEdge  ) { rb_b->nullExitEdge();  }
 
   a = rb_a;
   b = rb_b;
