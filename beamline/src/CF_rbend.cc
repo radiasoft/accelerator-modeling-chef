@@ -52,16 +52,19 @@
 ******  - changed interpretation of "ang" argument to
 ******    two constructors from "entry angle" to "bend angle,"
 ******    in order to conform with usage in other bend constructors.
-******  - corrected rbend::Split
+******  - corrected CF_rbend::Split
 ******    : including adding methods to nullify edge effects
 ******
 ******  Dec 2014           michelotti@fnal.gov
 ******  - added attribute integrated_strengths_ to capture
 ******    integrated values of multipole components
 ******
+******  Jan 2015           michelotti@fnal.gov
+******  - bug fix: added code to CF_rbend::Split(...) for handling
+******    CF_rbends with fewer than two edge elements.
+******
 *************************************************************************
 *************************************************************************/
-
 
 
 #include <iomanip>
@@ -706,6 +709,10 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "_angle" are private data members.
   // -----------------------------
+
+  bool hasEntryEdge = ( typeid(*(bml_->firstElement())) == typeid(Edge) );
+  bool hasExitEdge  = ( typeid(*(bml_->lastElement()))  == typeid(Edge) );
+
   CF_rbend* p_a = 0;
   CF_rbend* p_b = 0;
 
@@ -715,6 +722,8 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                       , usFaceAngle_
                                       , 0.0           ));
   p_a->setEntryAngle( getEntryAngle() );
+
+  if( !hasEntryEdge ) { p_a->nullEntryEdge(); }
   p_a->nullExitEdge();
 
   b = CFRbendPtr ( p_b = new CF_rbend(   ""
@@ -722,9 +731,10 @@ void CF_rbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                        , strength_
                                        , 0.0
                                        , dsFaceAngle_        ));
-  p_b->nullEntryEdge();
   p_b->setExitAngle( getExitAngle() );
 
+  p_b->nullEntryEdge();
+  if( !hasExitEdge  ) { p_b->nullExitEdge();  }
 
   // Assign pole strengths
   // Note: pole strengths scale with length.

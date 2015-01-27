@@ -63,6 +63,10 @@
 ******  - added attribute integrated_strengths_ to capture
 ******    integrated values of multipole components
 ******
+******  Jan 2015           michelotti@fnal.gov
+******  - bug fix: added code to CF_sbend::Split(...) for handling
+******    CF_sbends with fewer than two edge elements.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -744,6 +748,10 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
   // We assume "strength_" means field, not field*length_.
   // "length_," "strength_," and "angle_" are private data members.
   // -----------------------------
+
+  bool hasEntryEdge = ( typeid(*(bml_->firstElement())) == typeid(Edge) );
+  bool hasExitEdge  = ( typeid(*(bml_->lastElement()))  == typeid(Edge) );
+
   CF_sbend* p_a = 0;
   CF_sbend* p_b = 0;
 
@@ -754,6 +762,8 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                       , usFaceAngle_
                                       , 0.0            ));
   p_a->setEntryAngle( getEntryAngle() );
+
+  if( !hasEntryEdge ) { p_a->nullEntryEdge(); }
   p_a->nullExitEdge();
 
   b = CFSbendPtr( p_b = new CF_sbend(   ""
@@ -762,9 +772,10 @@ void CF_sbend::Split( double const& pc, ElmPtr& a, ElmPtr& b ) const
                                       , (1.0 - pc)*angle_
                                       , 0.0
                                       , dsFaceAngle_       ));
-  p_b->nullEntryEdge();
   p_b->setExitAngle( getExitAngle() );
 
+  p_b->nullEntryEdge();
+  if( !hasExitEdge  ) { p_b->nullExitEdge();  }
 
   // Assign pole strengths
   // Note: pole strengths scale with length.
