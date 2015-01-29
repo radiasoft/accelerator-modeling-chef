@@ -84,6 +84,8 @@ void propagate( septum& elm, Particle& p )
   double const wireWidth_ = elm.getWireWidth();
   double const gap_ = elm.getGap();
 
+  p.setTag( "" );
+
   bool is_finite = true;
   int i = 0;
   while( is_finite && (i < 6) ) {
