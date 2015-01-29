@@ -52,10 +52,13 @@
 ******    two-point algorithm, error is reduced from O((dp/p)^2) to
 ******    O((dp/p)^5).
 ******
+******  Jan 2015           michelotti@fnal.gov
+******  - modified LattFuncSage::FourPointDisp_Calc(...) so internally
+******    the dispersion calculation operates on cloned beamlines,
+******    leaving the original in the correct state for a closed orbit.
 ******
 **************************************************************************
 *************************************************************************/
-
 
 #include <iomanip>
 
@@ -1114,6 +1117,25 @@ int LattFuncSage::FourPointDisp_Calc( JetParticle const& arg_jp,  bool onClosedO
     if( 2 != i )
     {
       JetParticle jp = JetParticle(probes[i]);
+
+      #if 1
+      BmlPtr copied_bml( myBeamlinePtr_->Clone() );
+      #endif
+
+      #if 0
+      BmlPtr copied_bml( new beamline( "" ) );
+
+      for ( beamline::deep_iterator it  = myBeamlinePtr_->deep_begin();
+                                    it != myBeamlinePtr_->deep_end();
+                                  ++it )
+      {
+        copied_bml->append( ElmPtr( (*it)->Clone() ) );
+      }
+      copied_bml->setEnergy( myBeamlinePtr_->Energy() );
+      #endif
+
+      ClosedOrbitSage clsg( copied_bml );
+      if( verbose_ ) { clsg.set_verbose(); }
 
       clsg.setForcedCalc();
       ret = clsg.findClosedOrbit( jp );
