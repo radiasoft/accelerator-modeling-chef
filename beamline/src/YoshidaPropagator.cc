@@ -41,6 +41,11 @@
 ******    (esp. by using templates to expand the application beyond
 ******    quadrupole to other beamline elements).
 ******
+******  Feb 2015           michelotti@fnal.gov
+******  - removed BmlPtr my_beamline_ptr_ from YoshidaPropagator's
+******    private data. Combined with lack of virtual destructors
+******    for base propagators, it resulted in a memory leak.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -110,8 +115,7 @@ YoshidaPropagator::YoshidaPropagator( int n, int steps )
   steps_(steps),
   accum_az_(0.0),
   accum_kick_(0.0),
-  prev_az_(0.0),
-  my_beamline_ptr_()
+  prev_az_(0.0)
 {
   if( order_ < 0 ) {
     (*pcerr) << "*** ERROR *** "
@@ -148,7 +152,10 @@ YoshidaPropagator::YoshidaPropagator( int n, int steps )
 
 YoshidaPropagator::YoshidaPropagator( YoshidaPropagator const& x ) // Should not be necessary
 : order_(x.order_),
-  my_beamline_ptr_(x.my_beamline_ptr_)
+  steps_(x.steps_),
+  accum_az_(x.accum_az_),
+  accum_kick_(x.accum_kick_),
+  prev_az_(x.prev_az_)
 {
 }
 
@@ -167,10 +174,10 @@ void YoshidaPropagator::DriftMap_( double length )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void YoshidaPropagator::KickMap_( double faux_length, double strength )
+void YoshidaPropagator::KickMap_( BmlPtr& my_beamline_ptr, double faux_length, double strength )
 {
-   my_beamline_ptr_->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
-   my_beamline_ptr_->append( ThinQuadPtr( new thinQuad( "", faux_length*strength ) ) );
+   my_beamline_ptr->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
+   my_beamline_ptr->append( ThinQuadPtr( new thinQuad( "", faux_length*strength ) ) );
 
    accum_kick_ += faux_length*strength;
    prev_az_ = accum_az_;
@@ -182,11 +189,11 @@ void YoshidaPropagator::KickMap_( double faux_length, double strength )
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 
-void YoshidaPropagator::generate_map_( int n, double t, double strength )
+void YoshidaPropagator::generate_map_( BmlPtr& my_beamline_ptr, int n, double t, double strength )
 {
   if( 0 == n ) {
     DriftMap_( t/2.0 );
-    KickMap_( t, strength );
+    KickMap_( my_beamline_ptr, t, strength );
     DriftMap_( t/2.0 );
 
     return;
@@ -197,9 +204,9 @@ void YoshidaPropagator::generate_map_( int n, double t, double strength )
     x1 = 1.0/(2.0 - a );
     x0 = - a*x1;
 
-    generate_map_( n-1, x1*t, strength );
-    generate_map_( n-1, x0*t, strength );
-    generate_map_( n-1, x1*t, strength );
+    generate_map_( my_beamline_ptr, n-1, x1*t, strength );
+    generate_map_( my_beamline_ptr, n-1, x0*t, strength );
+    generate_map_( my_beamline_ptr, n-1, x1*t, strength );
 
     return;
   }
@@ -216,18 +223,18 @@ void YoshidaPropagator::setup( quadrupole& arg)
   // --------------------------------
   accum_kick_ = 0.0;
 
-  my_beamline_ptr_ = BmlPtr( new beamline );
+  BmlPtr my_beamline_ptr( new beamline );
 
   for( int step = 0 ; step < steps_ ; ++step ) {
     accum_az_   = 0.0;
     prev_az_    = 0.0;
-    generate_map_( order_, arg.Length()/steps_, arg.Strength() );
+    generate_map_( my_beamline_ptr, order_, arg.Length()/steps_, arg.Strength() );
 
 
     // A final drift must be added to get the particle
     // to the end of the step.
     // --------------------------
-    my_beamline_ptr_->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
+    my_beamline_ptr->append( DriftPtr   ( new drift   ( "", accum_az_ - prev_az_ ) ) );
   }
   prev_az_ = accum_az_;
 
@@ -271,7 +278,7 @@ void YoshidaPropagator::setup( quadrupole& arg)
   // Final step: transfer the constructed line
   // -----------------------------------------
   BmlPtr& bml = bmlnElmnt::core_access::get_BmlPtr(arg);
-  bml = my_beamline_ptr_;
+  bml = my_beamline_ptr;
 
   return;
 }

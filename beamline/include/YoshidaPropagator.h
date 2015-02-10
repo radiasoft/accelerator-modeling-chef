@@ -41,6 +41,11 @@
 ******    (esp. by using templates to expand the application beyond
 ******    quadrupole to other beamline elements).
 ******
+******  Feb 2015           michelotti@fnal.gov
+******  - removed BmlPtr my_beamline_ptr_ from YoshidaPropagator's
+******    private data. Combined with lack of virtual destructors
+******    for base propagators, it resulted in a memory leak.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -86,11 +91,9 @@ class YoshidaPropagator : public BasePropagator<quadrupole>
   double accum_kick_;
   double prev_az_;
 
-  BmlPtr my_beamline_ptr_;
-
   void DriftMap_( double length );
-  void KickMap_ ( double length, double strength );
-  void generate_map_( int n, double t, double strength );
+  void KickMap_ ( BmlPtr&, double length, double strength );
+  void generate_map_( BmlPtr&, int n, double t, double strength );
 
 };
 
