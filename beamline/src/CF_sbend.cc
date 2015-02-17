@@ -920,3 +920,27 @@ double const&  CF_sbend::getExitAngle()    const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+void CF_sbend::setNumberOfKicks( const int n )
+{
+  // This piece of code must mimic the body of the CF_sbend constructor.
+  propagator_ = PropagatorPtr( new Propagator(n) );
+  propagator_->setup(*this);
+}
+
+
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+int CF_sbend::numberOfKicks() const
+{
+  CF_sbend::Propagator const* the_pointer = dynamic_cast<CF_sbend::Propagator*>(propagator_.get());
+  return the_pointer->numberOfKicks();
+}
+
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

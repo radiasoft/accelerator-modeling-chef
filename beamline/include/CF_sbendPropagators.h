@@ -49,12 +49,18 @@ public:
   void  operator()(  CF_sbend& elm,            Particle& p);
   void  operator()(  CF_sbend& elm,         JetParticle& p);
 
+  int numberOfKicks() const;
+
  private:
 
   int n_; // number of slices  
  
 };
 
+inline int CF_sbend::Propagator::numberOfKicks() const
+{
+  return n_;
+}
 
 #endif // CFSBENDPROPAGATORS_H
 

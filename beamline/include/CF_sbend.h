@@ -193,6 +193,11 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   void usePropagator( PropagatorPtr& );
 
+  void setNumberOfKicks( const int n ); // Changes number of talman
+                                  // sandwiches in the propagator .
+  int numberOfKicks() const;      // Returns number of talman
+                                  // sandwiches in the propagator.
+
  private:
 
   double  angle_;           // total bend angle  [ radians ]
@@ -211,6 +216,7 @@ class DLLEXPORT CF_sbend : public bmlnElmnt  {
 
   std::ostream& writeTo(std::ostream&);
   std::istream& readFrom(std::istream&);
+
 };
 
 
