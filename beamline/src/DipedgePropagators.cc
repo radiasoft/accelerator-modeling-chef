@@ -159,13 +159,11 @@ void propagate( Dipedge& elm, Particle_t& p )
 
   state[i_x]   +=   te_1_1_1*x*x   + te_1_3_3*y*y;
   state[i_npx] +=   te_2_1_1*x*x   + te_2_3_3*y*y
-                  + te_2_1_2*x*npx + te_2_3_4*y*npy;
-  state[i_y]   +=   te_3_1_3*x*y;
-  state[i_npy] +=   te_4_1_3*x*y;
-                  + te_4_1_4*x*npy + te_4_2_3*npx*y;
+                  + te_2_1_2*x*npx*2 + te_2_3_4*y*npy*2; // tmsymm
+  state[i_y]   +=   te_3_1_3*x*y * 2; // tmsymm
+  state[i_npy] +=   te_4_1_3*x*y * 2 // tmsymm
+                  + te_4_1_4*x*npy*2  + te_4_2_3*npx*y*2; // tmsymm
   
-
-  // ??? what does call tmsymm do ???
 
   // ------------------
   // Typical final step ??? ??? ???
