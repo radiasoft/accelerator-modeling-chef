@@ -123,44 +123,11 @@ quadrupole::~quadrupole()
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-void quadrupole::setStrength( double const& s ) 
+
+void quadrupole::setStrength( double const& s )
 {
   bmlnElmnt::setStrength(s);
-  double integratedStrength = strength_*length_;
-
-  if( bml_) 
-  {
-    int counter = 0;
-    for ( beamline::iterator it  = bml_->begin();
-                             it != bml_->end(); ++it ) {
-      if( typeid(**it) == typeid(thinQuad ) )  ++counter;
-    }
-
-    if( counter <= 0 ) {
-      throw( GenericException( __FILE__, __LINE__, 
-             "void quadrupole::setStrength( double const& s ) {", 
-             "No thin quads in the internal beamline." ) );
-    }
-    else if( counter == 1) {
-      if(elm_) 
-      {
-        elm_->setStrength( integratedStrength );
-      }
-      else 
-      {
-        throw( GenericException( __FILE__, __LINE__, 
-               "void quadrupole::setStrength( double const& s ) {", 
-               "elm_ not set." ) );
-      }
-    }
-    else {
-      for ( beamline::iterator it  = bml_->begin(); it != bml_->end(); ++it ) {
-        if( typeid(**it) == typeid(thinQuad) ) {
-          (*it)->setStrength( integratedStrength/counter );
-        }
-      }
-    }
-  }
+  propagator_->setup(*this);
 }
 
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
