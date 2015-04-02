@@ -58,7 +58,10 @@
 ******  Jan 2015            michelotti@fnal.gov
 ******  - bug fix: added code to the .setup routine for reinitializing
 ******    a pre-existing CF_rbend with fewer than two edge elements.
-*f****    : repeat "as a reminder" from Dec 2014 entry (above).
+******    : repeat "as a reminder" from Dec 2014 entry (above).
+******  
+******  Apr 2015            michelotti@fnal.gov
+******  - bug fix: displaced parenthesis in Edge constructor argument.
 ******  
 **************************************************************************
 *************************************************************************/
@@ -150,10 +153,10 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   double sextStrength = arg.getSextupole();
   double octoStrength = arg.getOctupole();
 
-  Edge       usedge( "",  tan( arg.getEntryAngle()*field ) );  
+  Edge       usedge( "",  tan(arg.getEntryAngle())*field );
   rbend      usbend( "" , frontLength, field,  0.0,    arg.getEntryFaceAngle(),  0.0                   ); 
   rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      arg.getExitFaceAngle());
-  Edge       dsedge( "",  -tan( arg.getExitAngle()* field ) );  
+  Edge       dsedge( "",  -tan(arg.getExitAngle())*field );
 
   rbend   separator( "",  frontLength, field,  0.0,    0.0,                      0.0                   );
   rbend        body( "",  sepLength,   field,  0.0,    0.0,                      0.0                   );
