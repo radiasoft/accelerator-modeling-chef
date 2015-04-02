@@ -94,61 +94,6 @@ template <>
 double toDouble( Jet const& value)
 { return value.standardPart();}
 
-#if 0
-template <typename Particle_t> 
-void mad_propagate( rbend& elm, Particle_t& p ) 
-{
-
-  typedef typename PropagatorTraits<Particle_t>::State_t       State_t;
-  typedef typename PropagatorTraits<Particle_t>::Component_t   Component_t;
-
-  State_t&     state    = p.State();
-
-  Component_t rho   = p.BRho()/ elm.Strength();
-
-  double const length = elm.Length();
-  double const angle  = 2.0 * asin( length /( 2.0* p.ReferenceBrho() )); // ????? 
-
-  Component_t m00 =  cos(angle);
-  Component_t m03 =  sin(angle)*rho;
-  Component_t m05 =  rho*(1.0 - cos(angle))/p.Beta();
-  Component_t m14 =  length;
-  Component_t m20 = -sin(angle)/p.Beta();
-  Component_t m23 = -m05;
-  Component_t m25 =  length/p.Beta()/p.Gamma()/p.Gamma() - ( length - sin(angle)*rho )/p.Beta();
-  Component_t m30 = -sin(angle)/rho;
-  Component_t m33 =  m00;
-  Component_t m35 = -m20;
-  
-  Component_t edge30 =  tan( angle/2.0 )/(rho);
-  Component_t edge41 = -edge30;
- 
- // entrance edge
-   
-  State_t      instate  = state;
-
-  state[i_npx] = edge30*state[i_x];
-  state[i_npy] = edge41*state[i_y];
-
-  // bend  
-
-  instate  = state;
-   
-  state[i_x  ] = m00*instate[i_x  ] + m03*instate[i_npx] +  m05*instate[i_ndp];  
-  state[i_y  ] = m14*instate[i_npy];
-  state[i_cdt] = m20*instate[i_x  ] + m23*instate[i_npx] +  m25*instate[i_ndp];
-  state[i_npx] = m30*instate[i_x  ] + m33*instate[i_npx] +  m35*instate[i_ndp];
-
-  instate  = state;
-
- // exit edge
-
-  state[i_npx] = edge30*state[i_x];
-  state[i_npy] = edge41*state[i_y];
-
-}
-#endif
-
 
 //----------------------------------------------------------------------------------
 // Workaround for gcc < 4.2 mishandling of templates defined in anonymous namespace
