@@ -49,8 +49,14 @@
 ******  Jan 2015            michelotti@fnal.gov
 ******  - bug fix: added code to the .setup routine for reinitializing
 ******    a pre-existing CF_sbend with fewer than two edge elements.
-*f****    : repeat "as a reminder" from Dec 2014 entry (above).
+******    : repeat "as a reminder" from Dec 2014 entry (above).
 ******  
+******  Apr 2015            michelotti@fnal.gov
+******  - added option of using dynamically calculated entry and exit
+******    angles in the edge propagators, instead of the angles 
+******    "hard-wired" by RefRegVisitor. To enable this option,
+******    pass a -DNO_FIXED_ENTRY_ANGLE macro definition to the compiler.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -140,10 +146,16 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   double sextStrength = arg.getSextupole();
   double octoStrength = arg.getOctupole();
 
-  Edge      usedge( "",   tan(arg.getEntryAngle())*field );  
+  #ifdef NO_FIXED_ENTRY_ANGLE
+  Edge      usedge( "",   field );
+  Edge      dsedge( "",  -field );
+  #else
+  Edge      usedge( "",   tan(arg.getEntryAngle())*field );
+  Edge      dsedge( "",  -tan(arg.getExitAngle())*field );
+  #endif
+
   sbend     usbend( "" ,  frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), arg.getEntryFaceAngle(), 0.0                ); 
   sbend     dsbend( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0,                 arg.getExitFaceAngle() );
-  Edge      dsedge( "",  -tan(arg.getExitAngle())*field );  
 
   sbend  separator( "",   frontLength,     field, (frontLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
   sbend       body( "",   sepLength,       field, (  sepLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
