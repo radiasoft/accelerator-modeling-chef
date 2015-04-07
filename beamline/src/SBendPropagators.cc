@@ -39,6 +39,12 @@
 ******    a pre-existing sbend with fewer than two edge elements.
 ******    : as a reminder, the issue of multiply redundant setups
 ******      has never been handled satisfactorily.
+******  
+******  Apr 2015            michelotti@fnal.gov
+******  - added option of using dynamically calculated entry and exit
+******    angles in the edge propagators, instead of the angles 
+******    "hard-wired" by RefRegVisitor. To enable this option,
+******    pass a -DNO_FIXED_ENTRY_ANGLE macro definition to the compiler.
 ******
 **************************************************************************
 *************************************************************************/
@@ -160,11 +166,17 @@ void sbend::Propagator::setup( sbend& arg )
   double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(arg); 
   double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(arg); 
 
+  #ifdef NO_FIXED_ENTRY_ANGLE
+  EdgePtr uedge( new Edge( "",  arg.Strength() ) );
+  EdgePtr dedge( new Edge( "", -arg.Strength() ) );
+  #else
   EdgePtr uedge( new Edge( "",  tan(usAngle_) * arg.Strength() ) );
   EdgePtr dedge( new Edge( "", -tan(dsAngle_) * arg.Strength() ) );
+  #endif
+
   BendPtr bend(  new Bend( "",  arg.Length(),   arg.Strength() , angle_,  
-                                usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_, 
-                                Bend::type_sbend ) );
+                                usAngle_,  dsAngle_, usFaceAngle_,  dsFaceAngle_,  // ??? Bends should not need
+                                Bend::type_sbend ) );                              // ??? usAngle_ and dsAngle_
 
   bml = BmlPtr( new beamline("SBEND_PRIVATE") );
   bml->append( uedge );

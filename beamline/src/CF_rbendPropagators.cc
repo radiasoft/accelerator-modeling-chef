@@ -63,6 +63,12 @@
 ******  Apr 2015            michelotti@fnal.gov
 ******  - bug fix: displaced parenthesis in Edge constructor argument.
 ******  
+******  Apr 2015            michelotti@fnal.gov
+******  - added option of using dynamically calculated entry and exit
+******    angles in the edge propagators, instead of the angles 
+******    "hard-wired" by RefRegVisitor. To enable this option,
+******    pass a -DNO_FIXED_ENTRY_ANGLE macro definition to the compiler.
+******
 **************************************************************************
 *************************************************************************/
 
@@ -153,10 +159,16 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   double sextStrength = arg.getSextupole();
   double octoStrength = arg.getOctupole();
 
-  Edge       usedge( "",  tan(arg.getEntryAngle())*field );
+  #ifdef NO_FIXED_ENTRY_ANGLE
+  Edge      usedge( "",   field );
+  Edge      dsedge( "",  -field );
+  #else
+  Edge      usedge( "",   tan(arg.getEntryAngle())*field );
+  Edge      dsedge( "",  -tan(arg.getExitAngle())*field );
+  #endif
+
   rbend      usbend( "" , frontLength, field,  0.0,    arg.getEntryFaceAngle(),  0.0                   ); 
   rbend      dsbend( "",  frontLength, field,  0.0,    0.0,                      arg.getExitFaceAngle());
-  Edge       dsedge( "",  -tan(arg.getExitAngle())*field );
 
   rbend   separator( "",  frontLength, field,  0.0,    0.0,                      0.0                   );
   rbend        body( "",  sepLength,   field,  0.0,    0.0,                      0.0                   );

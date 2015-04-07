@@ -10,7 +10,7 @@
 ******                                                                
 ******  Copyright Fermi Research Alliance / Fermilab    
 ******            All Rights Reserved                             
-*****
+******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
@@ -25,6 +25,15 @@
 ******             Jean-Francois Ostiguy  ostiguy@fnal.gov
 ******
 ******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******  
+******  Apr 2015            michelotti@fnal.gov
+******  - added option of using dynamically calculated entry and exit
+******    angles in the edge propagators, instead of the angles 
+******    "hard-wired" by RefRegVisitor. To enable this option,
+******    pass a -DNO_FIXED_ENTRY_ANGLE macro definition to the compiler.
 ******
 **************************************************************************
 *************************************************************************/
@@ -60,7 +69,12 @@ void propagate( Edge& elm, Particle_t & p )
 
  if( elm.Strength() == 0.0 ) return; 
  
+ #ifdef NO_FIXED_ENTRY_ANGLE
+ Component_t const k = ( p.Charge() > 0.0 ) ? (  (p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) 
+                                            : ( -(p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) ;
+ #else
  double const k = ( p.Charge() > 0.0 ) ? ( elm.Strength() / p.ReferenceBRho()) : (-elm.Strength() / p.ReferenceBRho() ) ;
+ #endif
 
  state[i_npy] -=  k * state[i_y];
 
