@@ -2778,7 +2778,7 @@ void TJL<T>::transferFromScratchPad() {
   // **** Look for and set the maximum weight present
   // -------------------------------------------------  	 
 
-  weight_ = ( begin() == itend ) ? 0 : ( itend-1 )->weight_;
+  weight_ = ( begin() == itend ) ? 0 : ( --itend )->weight_;
  
 }
 
