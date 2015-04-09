@@ -399,11 +399,11 @@
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
    template <typename held_type>
-   class post_order_iter : public boost::iterator_facade <post_order_iter<held_type>,  // Derived
-                                                         held_type,                    // Value
-                                                         boost::forward_traversal_tag, // class CategoryOrTraversal
-                                                         held_type&,                   // Reference  
-                                                         ptrdiff_t                     // Difference // ???? 
+   class post_order_iter : public boost::iterator_facade <post_order_iter<held_type>,        // Derived
+                                                         held_type,                          // Value
+                                                         boost::bidirectional_traversal_tag, // class CategoryOrTraversal
+                                                         held_type&,                         // Reference
+                                                         ptrdiff_t                           // Difference // ????
                                                        >   
    {
      private:
