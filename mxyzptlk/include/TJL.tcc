@@ -2778,8 +2778,14 @@ void TJL<T>::transferFromScratchPad() {
   // **** Look for and set the maximum weight present
   // -------------------------------------------------  	 
 
-  weight_ = ( begin() == itend ) ? 0 : ( --itend )->weight_;
- 
+  if( begin() == itend ) {           // The original code,
+    weight_ = 0;                     // |  weight_ = ( begin() == itend ) ? 0 : ( itend-1 )->weight_;
+  }                                  // does not work with Boost 1.57.
+  else {                             // An alternative,
+    weight_ = ( --itend )->weight_;  // |  weight_ = ( begin() == itend ) ? 0 : ( --itend )->weight_;
+    ++itend;                         // leaves the value of itend changed.  If no one ever adds
+  }                                  // a line using itend after this one, it wouldn't matter.
+
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
