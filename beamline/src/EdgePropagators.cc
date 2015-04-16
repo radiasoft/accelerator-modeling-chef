@@ -70,15 +70,22 @@ void propagate( Edge& elm, Particle_t & p )
  if( elm.Strength() == 0.0 ) return; 
  
  #ifdef NO_FIXED_ENTRY_ANGLE
- Component_t const k = ( p.Charge() > 0.0 ) ? (  (p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) 
-                                            : ( -(p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) ;
- #else
- double const k = ( p.Charge() > 0.0 ) ? ( elm.Strength() / p.ReferenceBRho()) : (-elm.Strength() / p.ReferenceBRho() ) ;
- #endif
-
+ // --------------------------
+ Component_t k = ( p.Charge() > 0.0 ) ? (  (p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) 
+                                      : ( -(p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) ;
  state[i_npy] -=  k * state[i_y];
 
- 
+             k = ( p.Charge() > 0.0 ) ? (  (p.get_npy()/p.get_npz())*elm.Strength() / p.ReferenceBRho() )
+                                      : ( -(p.get_npy()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) ;
+ state[i_npx] +=  k * state[i_y];
+ // --------------------------
+ #else
+ // --------------------------
+ double const k = ( p.Charge() > 0.0 ) ? ( elm.Strength() / p.ReferenceBRho()) : (-elm.Strength() / p.ReferenceBRho() ) ;
+ state[i_npy] -=  k * state[i_y];
+ // --------------------------
+ #endif
+
 }
 
 //----------------------------------------------------------------------------------
