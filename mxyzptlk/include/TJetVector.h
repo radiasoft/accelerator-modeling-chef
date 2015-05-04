@@ -51,7 +51,6 @@
 ******   for explicit instantiations, define MXYZPTLK_EXPLICIT_TEMPLATES
 ******
 ******  Dec 2006 ostiguy@fnal.gov    
-****** 
 ******  - New implementation. TJetVector is now based on a std::vector<Jet>
 ******    container (the previous version was based on a dynamically allocated 
 ******    array of raw Jet*). Since Jet is now basically an envelopp for a 
@@ -60,8 +59,12 @@
 ******    management.       
 ******  
 ******  Apr 2007 ostiguy@fnal.gov
-******
-******   - added STL-style iterators
+******  - added STL-style iterators
+****** 
+******  Jun 2014 michelotti@fnal.gov
+******  - added very dangerous but useful environment reset, needed by
+******    upgraded normalFormSage. Protection on this is abysmal, 
+******    i.e. non-existent.
 ****** 
 **************************************************************************
 *************************************************************************/
@@ -260,7 +263,11 @@ public:
   TJetVector filter( int, int ) const;
   TJetVector filter( bool (*[]) ( IntArray const&, T const& ) ) const;
 
+
+  // Dangerous but useful: environment reset
+  EnvPtr<T> setEnvTo( EnvPtr<T> const& );          // returns previous environment
 };
+
 
 //--------------------------------------
 // Inline functions ...
@@ -302,6 +309,17 @@ inline TJet<T> operator*( Vector const& x, TJetVector<T> const& y )
 template<typename T>
 inline TJetVector<T> operator*( Vector const& x, TJet<T> const& y )
 { return operator*(y,x); }
+
+template<typename T>
+inline EnvPtr<T> TJetVector<T>::setEnvTo( EnvPtr<T> const& new_environment )
+{
+  EnvPtr<T> ret = myEnv_;
+  myEnv_ = new_environment;
+  for( iterator it = begin(); it != end(); ++it ) {
+    (*it).setEnvTo( myEnv_ );
+  }
+  return ret;
+}
 
 
 // Specializations _________________________________

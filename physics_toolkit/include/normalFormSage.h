@@ -73,9 +73,14 @@
 ******  - modified code in anticipation of need to extend to
 ******    usage with offset closed orbits (for Alex Macridin).
 ******
+******  May 2015        michelotti@fnal.gov
+******  - this version is (or should be) functionally equivalent to
+******    the file given to Alex Macridin in June, 2014. All differences
+******    are (or should be) cosmetic only.
 ******
 **************************************************************************
 *************************************************************************/
+
 
 #ifndef NORMALFORMSAGE_H
 #define NORMALFORMSAGE_H
@@ -86,7 +91,8 @@
 #include <basic_toolkit/Matrix.h>
 #include <basic_toolkit/VectorD.h>
 #include <mxyzptlk/mxyzptlk.h>
-#include <beamline/JetParticle.h>
+
+class JetParticle;
 
 class normalFormSage
 {
@@ -116,9 +122,18 @@ class normalFormSage
 
   std::vector<double> stationaryActions( double sx, double sy, double sz );
 
+  #if 0
+  // placeholder for future development
+  Vector         tolerance_mask;
+  #endif
+
   // private:
+  int              dim_;
+  Vector           closed_orbit_;
 
   int              order_;
+  Jet__environment_ptr p_je_;
+
   Mapping          canonMap_;    // the canonical map used for normal form calc
 };
 
