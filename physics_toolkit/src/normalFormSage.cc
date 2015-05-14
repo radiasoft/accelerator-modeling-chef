@@ -437,11 +437,11 @@ normalFormSage::~normalFormSage()
 // coordinates are assumed to be "sensibly ordered" in the Michelotti sense
 // hform are the coordinates in human form input
 // nform are the (complex) normal form coordinates (output)
-void normalFormSage::cnvDataToNormalForm( Vector const& hform, VectorC &nform )
+void normalFormSage::cnvDataToNormalForm( Vector const& hform_in, VectorC &nform )
 {
   // Subtract closed orbit before proceeding.
   // ----------------------------------------
-  hform = hform - closed_orbit_;
+  Vector hform(hform_in - closed_orbit_);
 
   static MatrixC u(DIM,1);
   std::vector<std::complex<double> > a(DIM);
