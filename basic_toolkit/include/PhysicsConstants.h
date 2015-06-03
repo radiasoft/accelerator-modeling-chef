@@ -58,15 +58,24 @@
  *  April 10, 1995
  */
 
-#include "MathConstants.h"   // needed for the value of M_PI
+#include <basic_toolkit/MathConstants.h>   // needed for M_PI and M_TWOPI
 
 #ifndef PHYSC_H
 #define PHYSC_H
 
 #define PDG_VERSION 2012
 
-#define PH_NORM_h          4.13566733e-24     /* Planck's constant [ GeV-sec ]       */
-#define PH_NORM_hbar       6.58211899e-25     /* Planck's constant [ twopi GeV-sec ] */
+// Planck's constant
+// -----------------
+#define PH_MKS_h           6.62606957e-34     /* Planck's constant [ Joule-sec ]     */
+#define PH_CGS_h           (PH_MKS_h*1.0e7)   /* Planck's constant [ erg-sec ]       */
+#define PH_NORM_h (PH_MKS_h/(PH_MKS_e*1.0e9)) /* Planck's constant [ GeV-sec ]       */
+/*                 -- approx. 4.13567e-24 GeV-sec --                                 */
+#define PH_MKS_hbar       (PH_MKS_h/M_TWOPI)  /* Planck's constant [ twopi J-sec]    */
+#define PH_CGS_hbar       (PH_CGS_h/M_TWOPI)  /* Planck's constant [ twopi erg-sec]  */
+#define PH_NORM_hbar      (PH_NORM_h/M_TWOPI) /* Planck's constant [ twopi GeV-sec ] */
+
+
 
 #if PDG_VERSION == 2012
 #define PH_NORM_me         0.510998928e-3     /* Mass of electron  [GeV/c^2]         */
