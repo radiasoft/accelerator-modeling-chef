@@ -48,6 +48,10 @@
 ******  Apr 2014       James Amundson (amundson@fnal.gov)
 ******  - Use 2012 PDG values.
 ******  
+******  Jun 2015       michelotti@fnal.gov
+******  - Added magnetic moment parameters for protons,
+******    electrons and (negatively charged) muons.
+******  
 **************************************************************************
 *************************************************************************/
 
@@ -76,12 +80,43 @@
 #define PH_NORM_hbar      (PH_NORM_h/M_TWOPI) /* Planck's constant [ twopi GeV-sec ] */
 
 
+// Bohr magneton
+// -------------
+#define PH_MKS_mu_bohr   ( PH_MKS_e * PH_MKS_hbar / ( 2.0 * PH_MKS_me ) )  /* [Joules/Tesla]    */
+/*                       927.400968e-26                                       [Joules/Tesla]    */
+#define PH_CGS_mu_bohr   (PH_MKS_mu_bohr*1.0e7)                            /* [erg/Tesla]       */
+#define PH_NORM_mu_bohr  (PH_MKS_mu_bohr/(PH_MKS_e*1.0e9))                 /* [GeV/Tesla]       */
+/*                       5.7883818066e-14                                     [GeV/Tesla]       */
+
+
+// Magnetic moments
+// ----------------
+#define PH_MKS_mu_proton   1.410606743e-26    /* Proton   magnetic moment [J/Tesla]  */
+#define PH_MKS_mu_electron -928.476430e-26    /* Electron magnetic moment [J/Tesla]  */
+#define PH_MKS_mu_muon     -4.49044807e-26    /* Muon     magnetic moment [J/Tesla]  */
+
+#define PH_g_proton       (PH_MKS_mu_proton  *(2.0*PH_MKS_mp /(  PH_MKS_e *(PH_MKS_hbar/2.0))))
+#define PH_g_electron     (PH_MKS_mu_electron*(2.0*PH_MKS_me /((-PH_MKS_e)*(PH_MKS_hbar/2.0))))
+#define PH_g_muon         (PH_MKS_mu_muon    *(2.0*PH_MKS_mmu/((-PH_MKS_e)*(PH_MKS_hbar/2.0))))
+
+#define PH_a_proton       ((PH_g_proton   - 2.0)/2.0)
+#define PH_a_electron     ((PH_g_electron - 2.0)/2.0)
+#define PH_a_muon         ((PH_g_muon     - 2.0)/2.0)
+
 
 #if PDG_VERSION == 2012
+
+#define PH_MKS_mp          1.672621777e-27    /* Mass of proton    [kg]              */
+#define PH_MKS_me          9.10938291e-31     /* Mass of electron  [kg]              */
+#define PH_MKS_mmu         1.883531475e-28    /* mass of muon      [kg]              */
+
+#define PH_NORM_mp         0.938272046        /* Mass of proton    [GeV/c^2]         */
 #define PH_NORM_me         0.510998928e-3     /* Mass of electron  [GeV/c^2]         */
 #define PH_NORM_mmu        0.1056583715       /* mass of muon      [GeV/c^2]         */
+
 #define PH_MKS_e           1.602176565e-19    /* Proton charge     [Coulombs]        */
-#define PH_NORM_mp         0.938272046        /* Mass of proton    [GeV/c^2]         */
+#define PH_NORM_e   (10.0*PH_MKS_c*PH_MKS_e)  /* Proton charge     [statCoulombs]    */
+/*                         4.80320425e-10 statCoulombs                               */
 
 #else
 #if PDG_VERSION == 2010 // use PDG_VERSION 2010 values
@@ -90,6 +125,7 @@
 #define PH_NORM_me         0.510998910e-3     /* Mass of electron  [GeV/c^2]         */
 #define PH_NORM_mmu        0.105658367        /* mass of muon      [GeV/c^2]         */
 #define PH_MKS_e           1.602176487e-19    /* Proton charge     [Coulombs]        */
+
 #else
 #if PDG_VERSION == 2008 // use PDG_VERSION 2008 value
 
