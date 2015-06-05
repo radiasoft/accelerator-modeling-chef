@@ -134,16 +134,16 @@ TML<std::complex<double> >::TML( TML<double> const& ml): nrows_(ml.nrows_), ncol
 
 template<>
 MLPtr<std::complex<double> > 
-TML<std::complex<double> >::dagger() const {
+TML<std::complex<double> >::dagger() const 
+{
+  MLPtr<std::complex<double> >  zPtr( new TML<std::complex<double> >( ncols_, nrows_, std::complex<double>(0,0) ) );
 
-  MLPtr<std::complex<double> >  z( new  TML<std::complex<double> >(*this) );
-
-  for(int row=0;  row<nrows_; ++row) {
-    for(int col=0; col < ncols_; ++col) {
-      z->mdata_[col][row] = conj(mdata_[row][col]);
+  for( int row = 0;  row < nrows_; ++row ) {
+    for( int col = 0; col < ncols_; ++col ) {
+      zPtr->mdata_[col][row] = conj( mdata_[row][col] );
     }
   }
-  return z;
+  return zPtr;
 }
 
 
