@@ -191,7 +191,7 @@
 /*                                                       */
 /*    Q [ y units ] = PH_CNV_x_to_y * Q [ x units ]      */
 
-#define PH_CNV_eV_to_cgs   (PH_MKS_E * 1.0e7)   /* Energy [erg] = -- * Energy [eV]          */
+#define PH_CNV_eV_to_cgs   (PH_MKS_e * 1.0e7)   /* Energy [erg] = -- * Energy [eV]          */
 #define PH_CNV_eV_to_mks   PH_MKS_e             /* Energy [N-m] = -- * Energy [eV]          */
 #define PH_CNV_brho_to_p   (1.0e-9 * PH_MKS_c)  /* p [Gev/c] = -- * B*rho [ Tesla meters ]  */
 
