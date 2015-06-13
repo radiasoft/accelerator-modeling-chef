@@ -495,6 +495,10 @@ void CF_rbend::setStrength( double const& s )
       // one or both edges have been replaced with markers --
       // setting its strength will do no harm.
     }
+    // update the saved strengths of the integrated quadru-, sextu-, octu- pole moments
+    for (int pole=1; pole<UPPER_POLE_NUMBER; ++pole) {
+        integrated_strengths_[pole] *= ratio;
+    }
   }
   else {
     throw( GenericException( __FILE__, __LINE__,
