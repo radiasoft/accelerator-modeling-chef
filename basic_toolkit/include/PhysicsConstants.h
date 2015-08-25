@@ -107,10 +107,12 @@
 #if PDG_VERSION == 2012
 
 #define PH_MKS_mp          1.672621777e-27    /* Mass of proton    [kg]              */
+#define PH_MKS_mn          1.674927351e-27    /* Mass of neutron   [kg]              */
 #define PH_MKS_me          9.10938291e-31     /* Mass of electron  [kg]              */
 #define PH_MKS_mmu         1.883531475e-28    /* mass of muon      [kg]              */
 
 #define PH_NORM_mp         0.938272046        /* Mass of proton    [GeV/c^2]         */
+#define PH_NORM_mn         0.939565379        /* Mass of neutron   [GeV/c^2]         */
 #define PH_NORM_me         0.510998928e-3     /* Mass of electron  [GeV/c^2]         */
 #define PH_NORM_mmu        0.1056583715       /* mass of muon      [GeV/c^2]         */
 
