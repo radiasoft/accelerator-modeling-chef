@@ -136,7 +136,7 @@ void rbend::Propagator::setup( rbend& arg)
   double& usAngle_     = rbend::rbend_core_access::get_usAngle(arg); 
   double& dsAngle_     = rbend::rbend_core_access::get_dsAngle(arg); 
 
-  #ifdef NO_FIXED_ENTRY_ANGLE
+  #if NO_FIXED_ENTRY_ANGLE
   EdgePtr uedge( new Edge( "",  arg.Strength() ) );
   EdgePtr dedge( new Edge( "", -arg.Strength() ) );
   #else

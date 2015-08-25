@@ -159,7 +159,7 @@ void CF_rbend::Propagator::setup( CF_rbend& arg )
   double sextStrength = arg.getSextupole();
   double octoStrength = arg.getOctupole();
 
-  #ifdef NO_FIXED_ENTRY_ANGLE
+  #if NO_FIXED_ENTRY_ANGLE
   Edge      usedge( "",   field );
   Edge      dsedge( "",  -field );
   #else

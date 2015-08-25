@@ -146,7 +146,7 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   double sextStrength = arg.getSextupole();
   double octoStrength = arg.getOctupole();
 
-  #ifdef NO_FIXED_ENTRY_ANGLE
+  #if NO_FIXED_ENTRY_ANGLE
   Edge      usedge( "",   field );
   Edge      dsedge( "",  -field );
   #else
@@ -161,6 +161,7 @@ void CF_sbend::Propagator::setup( CF_sbend& arg )
   sbend       body( "",   sepLength,       field, (  sepLength/arg.Length())*arg.getBendAngle(), 0.0, 0.0 );
 
   usbend.nullEntryEdge();
+  dsbend.nullExitEdge();
   usbend.nullExitEdge();
   separator.nullEntryEdge();
   separator.nullExitEdge();

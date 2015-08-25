@@ -69,7 +69,7 @@ void propagate( Edge& elm, Particle_t & p )
 
  if( elm.Strength() == 0.0 ) return; 
  
- #ifdef NO_FIXED_ENTRY_ANGLE
+ #if NO_FIXED_ENTRY_ANGLE
  // --------------------------
  Component_t k = ( p.Charge() > 0.0 ) ? (  (p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) 
                                       : ( -(p.get_npx()/p.get_npz())*elm.Strength() / p.ReferenceBRho() ) ;

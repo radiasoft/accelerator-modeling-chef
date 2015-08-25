@@ -166,7 +166,7 @@ void sbend::Propagator::setup( sbend& arg )
   double& usFaceAngle_ = sbend::sbend_core_access::get_usFaceAngle(arg); 
   double& dsFaceAngle_ = sbend::sbend_core_access::get_dsFaceAngle(arg); 
 
-  #ifdef NO_FIXED_ENTRY_ANGLE
+  #if NO_FIXED_ENTRY_ANGLE
   EdgePtr uedge( new Edge( "",  arg.Strength() ) );
   EdgePtr dedge( new Edge( "", -arg.Strength() ) );
   #else
