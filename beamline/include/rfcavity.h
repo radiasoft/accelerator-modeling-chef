@@ -134,6 +134,8 @@ public:
   void            addHarmonic( int const& harmonic, double const& relativeStrength, double const& phase );
 
   void             turnUpdate();
+  void      setCumulativeDisplacedPhaseSlip(double cum_phase_slip);
+  double    getCumulativeDisplacedPhaseSlip(void);
 
   struct multiple_harmonic_parameters
   {
@@ -230,6 +232,8 @@ public:
   void setRadialFrequencyRelativeTo( double const& );
   void        setDisplacedFrequency( double const& freq /* Hz */, double const& ref_rev_period /* sec */ );
   void                       setPhi( double const& );  // radians
+  void      setCumulativeDisplacedPhaseSlip(double cum_phase_slip);
+  double    getCumulativeDisplacedPhaseSlip(void);
 
   char const* Type() const;
   bool    isMagnet() const;
