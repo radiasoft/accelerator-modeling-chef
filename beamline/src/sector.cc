@@ -8,47 +8,47 @@
 ******
 ******  File:      sector.cc
 ******                                                                
-******  Copyright Universities Research Association, Inc./ Fermilab    
-******            All Rights Reserved                             
+******  Copyright (c) Fermi Research Alliance
+******                Universities Research Association, Inc.
+******                Fermilab
+******                All Rights Reserved
 ******
 ******  Usage, modification, and redistribution are subject to terms          
 ******  of the License supplied with this software.
 ******  
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
+******  Software and documentation created under
+******  U.S. Department of Energy Contracts No. DE-AC02-76CH03000
+******  and No. DE-AC02-07CH11359.
+******
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
 ******  is protected under the U.S. and Foreign Copyright Laws.
-******                                                                
-******                                                                
-******  Author:    Leo Michelotti                                     
-******                                                                
-******             Fermilab                                           
-******             P.O.Box 500                                        
-******             Mail Stop 220                                      
-******             Batavia, IL   60510                                
-******                                                                
-******             Phone: (630) 840 4956                              
-******             Email: michelotti@fnal.gov                         
-******                                                                
-****** REVISION HISTORY
 ******
-****** Mar 2007           ostiguy@fnal.gov
-****** - support for reference counted elements
-****** - reduced src file coupling due to visitor interface. 
-******   visit() takes advantage of (reference) dynamic type.
-****** - use std::string for string operations.
 ******
-****** July 2007         ostiguy@fnal.gov
-****** - restructured constructors   
-****** Dec 2007         ostiguy@fnal.gov
-****** - new typesafe propagators
+******  Original author: Leo Michelotti  (michelotti@fnal.gov)
+******
+******  ----------------
+******  REVISION HISTORY
+******  ----------------
+******
+******  Mar 2007         Jean-Francois Ostiguy  (ostiguy@fnal.gov)
+******  - support for reference counted elements
+******  - reduced src file coupling due to visitor interface. 
+******    visit() takes advantage of (reference) dynamic type.
+******  - use std::string for string operations.
+******
+******  Jul 2007         ostiguy@fnal.gov
+******  - restructured constructors   
+******
+******  Dec 2007         ostiguy@fnal.gov
+******  - new typesafe propagators
+******
+******  Aug 2015         michelotti@fnal.gov
+******  - added constructor with a matrix argument
 ******
 **************************************************************************
 *************************************************************************/
-
-
 
 #include <basic_toolkit/iosetup.h>
 #include <basic_toolkit/GenericException.h>
@@ -151,6 +151,26 @@ sector::sector( const char* n, Mapping const& m, double const& l, char mpt )
  propagator_ = PropagatorPtr( new Propagator() );
  propagator_->setup(*this);
  if( mpt == 0 ) { mapMatrix_ = myMap_.Jacobian(); } 
+}
+
+
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+sector::sector( const char* nm, MatrixD const& transmat, double const& lng )
+  : bmlnElmnt( nm, lng, 0.0), 
+      mapType_(0),
+        myMap_(),
+        betaH_(),     
+       alphaH_(),    
+    deltaPsiH_(0.0),
+        betaV_(),     
+       alphaV_(),    
+    deltaPsiV_(0.0),
+    mapMatrix_(transmat)
+{
+ propagator_ = PropagatorPtr( new Propagator() );
+ propagator_->setup(*this);
 }
 
 
