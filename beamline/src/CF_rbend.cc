@@ -502,7 +502,7 @@ void CF_rbend::setStrength( double const& s )
   }
   else {
     throw( GenericException( __FILE__, __LINE__,
-           "void sbend::setStrength( double const& s )",
+           "void CF_rbend::setStrength( double const& s )",
            "IMPOSSIBLE: Internal beamline not initialized!" ) );
   }
 }
@@ -1185,6 +1185,28 @@ double CF_rbend::getExitAngle() const
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+void CF_rbend::setNumberOfKicks( const int n )
+{
+  // This piece of code must mimic the body of the CF_rbend constructor.
+  propagator_ = PropagatorPtr( new Propagator(n) );
+  propagator_->setup(*this);
+}
+
+
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+int CF_rbend::numberOfKicks() const
+{
+  CF_rbend::Propagator const* the_pointer = dynamic_cast<CF_rbend::Propagator*>(propagator_.get());
+  return the_pointer->numberOfKicks();
+}
+
+
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+///|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 void CF_rbend::accept( BmlVisitor& v )
 {

@@ -203,6 +203,11 @@ class DLLEXPORT CF_rbend : public bmlnElmnt
 
   void usePropagator( PropagatorPtr& );
 
+  void setNumberOfKicks( const int n ); // Changes number of talman
+                                        // sandwiches in the propagator .
+  int numberOfKicks() const;            // Returns number of talman
+                                        // sandwiches in the propagator.
+
  private:
 
   double  angle_;           // total bend angle  [ radians ]

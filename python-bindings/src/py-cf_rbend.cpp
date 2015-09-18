@@ -82,7 +82,9 @@ void wrap_cf_rbend () {
   .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
     //  .def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
     //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
-  .def("OrbitLength",             OrbitLength_nonconst);
+  .def("OrbitLength",             OrbitLength_nonconst)
+  .def("numberOfKicks", &CF_sbend::numberOfKicks)
+  .def("setNumberOfKicks", &CF_sbend::setNumberOfKicks);
 
 }
 
