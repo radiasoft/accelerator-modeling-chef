@@ -2,24 +2,24 @@
 ****************************************************************************
 ****************************************************************************
 ******
-******  Python bindings for mxyzpltk/beamline libraries 
-******                                    
-******  File:      py-cf_rbend.h
-******                                                                
-******  Copyright (c) Universities Research Association, Inc./ Fermilab    
-******                All Rights Reserved                             
+******  Python bindings for mxyzpltk/beamline libraries
 ******
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S.and Foreign Copyright Laws. 
-******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
-******                                                                
+******  File:      py-cf_rbend.h
+******
+******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******                All Rights Reserved
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S.and Foreign Copyright Laws.
+******
+******  Author:    Jean-Francois Ostiguy
+******
 ******             Fermi National Laboratory, Batavia, IL   60510
-******             ostiguy@fnal.gov                         
+******             ostiguy@fnal.gov
 ******
 ****************************************************************************
 ****************************************************************************
@@ -64,12 +64,12 @@ void wrap_cf_rbend () {
   .def(init<const char*,  double const&,  double const&, double const&, double const& , double const& >() )
   .def("setQuadrupole",           &CF_rbend::setQuadrupole)
   .def("setSextupole",            &CF_rbend::setSextupole)
-  .def("setOctupole",             &CF_rbend::setOctupole) 
+  .def("setOctupole",             &CF_rbend::setOctupole)
   .def("setDipoleField",          &CF_rbend::setDipoleField)
-  .def("getQuadrupole",           &CF_rbend::getQuadrupole) 
-  .def("getSextupole",            &CF_rbend::getSextupole)  
+  .def("getQuadrupole",           &CF_rbend::getQuadrupole)
+  .def("getSextupole",            &CF_rbend::getSextupole)
   .def("getOctupole",             &CF_rbend::getOctupole)
-  .def("getDipoleField",          &CF_rbend::getDipoleField) 
+  .def("getDipoleField",          &CF_rbend::getDipoleField)
   .def("setEntryAngle",           setEntryAngleDouble_Ptr)
   .def("setExitAngle",            setExitAngleDouble_Ptr)
   .def("setEntryAngleParticle",   setEntryAngleParticle_Ptr)
@@ -79,12 +79,8 @@ void wrap_cf_rbend () {
   .def("getEntryFaceAngle",       &CF_rbend::getEntryFaceAngle)
   .def("getExitFaceAngle",        &CF_rbend::getExitFaceAngle)
   .def("hasParallelFaces",        &CF_rbend::hasParallelFaces)
-  .def("hasStandardFaces",        &CF_rbend::hasStandardFaces) 
+  .def("hasStandardFaces",        &CF_rbend::hasStandardFaces)
     //  .def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
     //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
-  .def("OrbitLength",             OrbitLength_nonconst)
-  .def("numberOfKicks", &CF_sbend::numberOfKicks)
-  .def("setNumberOfKicks", &CF_sbend::setNumberOfKicks);
-
+  .def("OrbitLength",             OrbitLength_nonconst);
 }
-
