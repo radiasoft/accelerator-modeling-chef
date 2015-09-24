@@ -2,25 +2,25 @@
 ********************************************************************************
 ********************************************************************************
 ******
-******  Python bindings for mxyzpltk/beamline libraries 
-******  
-******                                    
-******  File:      py-cf_sbend.h
-******                                                                
-******  Copyright (c) Universities Research Association, Inc./ Fermilab    
-******                All Rights Reserved                             
+******  Python bindings for mxyzpltk/beamline libraries
 ******
-******  Software and documentation created under 
-******  U.S. Department of Energy Contract No. DE-AC02-76CH03000. 
-******  The U.S. Government retains a world-wide non-exclusive, 
-******  royalty-free license to publish or reproduce documentation 
-******  and software for U.S. Government purposes. This software 
-******  is protected under the U.S.and Foreign Copyright Laws. 
-******                                                                
-******  Author:    Jean-Francois Ostiguy                                     
-******                                                                
-******             Fermi National Laboratory, Batavia, IL   60510                                
-******             ostiguy@fnal.gov                         
+******
+******  File:      py-cf_sbend.h
+******
+******  Copyright (c) Universities Research Association, Inc./ Fermilab
+******                All Rights Reserved
+******
+******  Software and documentation created under
+******  U.S. Department of Energy Contract No. DE-AC02-76CH03000.
+******  The U.S. Government retains a world-wide non-exclusive,
+******  royalty-free license to publish or reproduce documentation
+******  and software for U.S. Government purposes. This software
+******  is protected under the U.S.and Foreign Copyright Laws.
+******
+******  Author:    Jean-Francois Ostiguy
+******
+******             Fermi National Laboratory, Batavia, IL   60510
+******             ostiguy@fnal.gov
 ******
 ******************************************************************************
 ******************************************************************************
@@ -51,7 +51,7 @@ double (CF_sbend::*OrbitLength_nonconst)           (const Particle &  ) = &CF_sb
 //double (CF_sbend::*AdjustPositionParticle_Ptr)    (const Particle&        ) = &CF_sbend::AdjustPosition;
 //double (CF_sbend::*AdjustPositionJetParticle_Ptr) (const JetParticle&     ) = &CF_sbend::AdjustPosition;
 
-} // anonymous namespace 
+} // anonymous namespace
 
 //-------------------------------------------------------------------------------
 // wrapper code
@@ -63,12 +63,12 @@ void wrap_cf_sbend () {
   .def(init<const char*, double const&, double const&, double const&, double const&, double const&>() )
   .def("setQuadrupole",           &CF_sbend::setQuadrupole   )
   .def("setSextupole",            &CF_sbend::setSextupole    )
-  .def("setOctupole",             &CF_sbend::setOctupole     ) 
+  .def("setOctupole",             &CF_sbend::setOctupole     )
   .def("setDipoleField",          &CF_sbend::setDipoleField  )
-  .def("getQuadrupole",           &CF_sbend::getQuadrupole   ) 
-  .def("getSextupole",            &CF_sbend::getSextupole    )  
+  .def("getQuadrupole",           &CF_sbend::getQuadrupole   )
+  .def("getSextupole",            &CF_sbend::getSextupole    )
   .def("getOctupole",             &CF_sbend::getOctupole     )
-  .def("getDipoleField",          &CF_sbend::getDipoleField,   return_value_policy<copy_const_reference>() ) 
+  .def("getDipoleField",          &CF_sbend::getDipoleField,   return_value_policy<copy_const_reference>() )
   .def("getBendAngle",            &CF_sbend::getBendAngle,     return_value_policy<copy_const_reference>() )
   .def("setEntryAngle",           setEntryAngleDouble_Ptr    )
   .def("setExitAngle",            setExitAngleDouble_Ptr     )
@@ -79,13 +79,9 @@ void wrap_cf_sbend () {
   .def("getEntryFaceAngle",       &CF_sbend::getEntryFaceAngle,return_value_policy<copy_const_reference>() )
   .def("getExitFaceAngle",        &CF_sbend::getExitFaceAngle, return_value_policy<copy_const_reference>() )
   .def("hasParallelFaces",        &CF_sbend::hasParallelFaces)
-  .def("hasStandardFaces",        &CF_sbend::hasStandardFaces) 
+  .def("hasStandardFaces",        &CF_sbend::hasStandardFaces)
 //.def("AdjustPositionParticle",    AdjustPositionParticle_Ptr)
 //.def("AdjustPositionJetParticle", AdjustPositionJetParticle_Ptr )
   .def("usePropagator",           &CF_sbend::usePropagator)
-  .def("OrbitLength",             OrbitLength_nonconst)
-  .def("numberOfKicks", &CF_sbend::numberOfKicks)
-  .def("setNumberOfKicks", &CF_sbend::setNumberOfKicks);
+  .def("OrbitLength",             OrbitLength_nonconst);
 }
-
-
